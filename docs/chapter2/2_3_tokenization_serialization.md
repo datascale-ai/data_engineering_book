@@ -18,23 +18,23 @@
 
 ---
 
-## 5.1 分词器原理
+## 5_1 分词器原理
 
 分词器的核心任务是将连续的文本字符串切分为离散的 token 序列，并将每个 token 映射到一个整数 ID。这个看似简单的任务，实际上涉及到复杂的算法设计和工程权衡。
 
-### 5.1.1 为什么需要子词分词？
+### 5_1.1 为什么需要子词分词？
 
 在深度学习时代早期，自然语言处理通常采用词级别（Word-level）或字符级别（Character-level）的分词方式。词级别分词将每个完整的单词视为一个 token，优点是语义清晰，缺点是词表规模庞大（需要覆盖所有可能出现的单词），且无法处理未登录词（Out-of-Vocabulary, OOV）。字符级别分词将每个字符视为一个 token，优点是词表极小且没有 OOV 问题，缺点是序列过长，模型难以捕捉长程依赖。
 
 子词分词（Subword Tokenization）是一种折中方案。它将文本切分为比单词更小、比字符更大的单元。高频词保持完整，低频词则被拆分为更小的子词单元。例如，"unhappiness" 可能被拆分为 "un" + "happi" + "ness"。这种方式既控制了词表规模，又保留了一定的语义信息，还能通过子词组合处理未见过的词汇。
 
-![图5-1：分词粒度对比](../images/第5章/图5-1_分词粒度对比.png)
+![图5-1：分词粒度对比](../images/chapter2/图5_1_分词粒度对比.png)
 
 *图5-1：分词粒度对比 —— 词级别、字符级别与子词级别的权衡*
 
 目前主流的大语言模型几乎都采用子词分词。GPT 系列使用 BPE，BERT 使用 WordPiece，T5 和 LLaMA 使用 SentencePiece（支持 BPE 和 Unigram）。理解这些算法的原理，是进行分词器定制和优化的基础。
 
-### 5.1.2 BPE：字节对编码
+### 5_1.2 BPE：字节对编码
 
 BPE（Byte Pair Encoding）最初是一种数据压缩算法，后被 Sennrich 等人在 2015 年引入到神经机器翻译中，成为最广泛使用的子词分词算法。
 
@@ -141,7 +141,7 @@ def apply_bpe(text: str, merges: dict) -> list:
 
 BPE 的一个重要变体是 Byte-level BPE，由 GPT-2 引入。传统 BPE 在字符级别操作，需要处理 Unicode 编码问题。Byte-level BPE 直接在字节级别操作，将每个字节映射到一个可打印字符，从而避免了编码问题，且天然支持任何语言。这也是为什么 GPT 系列模型可以处理任意语言文本的原因。
 
-### 5.1.3 WordPiece：BERT 的选择
+### 5_1.3 WordPiece：BERT 的选择
 
 WordPiece 是 Google 为 BERT 开发的分词算法，与 BPE 非常相似，主要区别在于选择合并对的标准。
 
@@ -174,7 +174,7 @@ output = tokenizer.encode("unhappiness")
 print(output.tokens)  # ['un', '##happi', '##ness']
 ```
 
-### 5.1.4 Unigram：概率视角的分词
+### 5_1.4 Unigram：概率视角的分词
 
 Unigram 分词由 Kudo 在 2018 年提出，采用了与 BPE/WordPiece 完全不同的思路。BPE 和 WordPiece 都是自底向上的方法——从小的单元开始，逐步合并成大的单元。Unigram 则是自顶向下的方法——从一个包含所有可能子词的大词表开始，逐步删减到目标大小。
 
@@ -186,7 +186,7 @@ $$P(x_1, x_2, ..., x_n) = \prod_{i=1}^{n} P(x_i)$$
 
 Unigram 的一个独特优势是它天然支持多种分词结果的概率建模。对于一个给定的文本，可能存在多种合法的分词方式，Unigram 可以为每种方式赋予一个概率。这在某些应用场景（如语音识别中的多假设处理）中非常有用。
 
-### 5.1.5 三种算法的对比
+### 5_1.5 三种算法的对比
 
 三种主流子词分词算法各有特点，选择时需要根据具体场景权衡。
 
@@ -196,7 +196,7 @@ Unigram 的一个独特优势是它天然支持多种分词结果的概率建模
 | WordPiece | 自底向上，似然驱动合并 | 对低频有意义模式敏感 | 计算复杂度较高 | BERT、DistilBERT |
 | Unigram | 自顶向下，概率建模 | 理论优雅，支持多分词 | 训练较慢 | T5、mT5、ALBERT |
 
-![图5-2：分词算法对比](../images/第5章/图5-2_分词算法对比.png)
+![图5-2：分词算法对比](../images/chapter2/图5_2_分词算法对比.png)
 
 *图5-2：BPE、WordPiece、Unigram 三种分词算法的对比*
 
@@ -211,7 +211,7 @@ spm.SentencePieceTrainer.train(
     model_prefix='my_tokenizer',
     vocab_size=32000,
     model_type='bpe',  # 或 'unigram'
-    character_coverage=0.9995,
+    character_coverage=0_9995,
     num_threads=16
 )
 
@@ -225,11 +225,11 @@ print(ids)  # [1234, 56, 789, 10]
 
 ---
 
-## 5.2 词表设计与扩充
+## 5_2 词表设计与扩充
 
 词表（Vocabulary）是分词器的核心组成部分。词表的大小、覆盖范围和结构直接影响模型的性能和效率。
 
-### 5.2.1 词表大小的权衡
+### 5_2.1 词表大小的权衡
 
 词表大小是分词器设计中最重要的超参数之一。较大的词表意味着更多的 token 被保留为完整单元，序列长度更短，但嵌入矩阵更大，参数更多；较小的词表意味着更多的词被拆分为子词，序列长度更长，但模型参数更少。
 
@@ -269,7 +269,7 @@ def analyze_vocab_size_impact(text: str, vocab_sizes: list) -> dict:
     return results
 ```
 
-### 5.2.2 多语言词表设计
+### 5_2.2 多语言词表设计
 
 训练多语言模型时，词表设计面临额外的挑战：如何在有限的词表空间中平衡不同语言的覆盖？
 
@@ -293,7 +293,7 @@ spm.SentencePieceTrainer.train(
     model_prefix='multilingual_tokenizer',
     vocab_size=64000,
     model_type='unigram',
-    character_coverage=0.9999,  # 高覆盖率确保稀有字符被包含
+    character_coverage=0_9999,  # 高覆盖率确保稀有字符被包含
     input_sentence_size=10000000,
     shuffle_input_sentence=True,
     # 特殊处理中日韩字符
@@ -301,7 +301,7 @@ spm.SentencePieceTrainer.train(
 )
 ```
 
-### 5.2.3 领域特定词表扩充
+### 5_2.3 领域特定词表扩充
 
 在将预训练模型应用于特定领域（如医疗、法律、代码）时，经常会遇到大量领域术语被过度切分的问题。这不仅增加了序列长度，还可能影响模型对专业概念的理解。
 
@@ -380,7 +380,7 @@ def resize_model_embeddings(model_name: str,
     model.save_pretrained(output_dir)
 ```
 
-### 5.2.4 词表设计的最佳实践
+### 5_2.4 词表设计的最佳实践
 
 基于业界的经验，以下是词表设计的一些最佳实践：
 
@@ -394,11 +394,11 @@ def resize_model_embeddings(model_name: str,
 
 ---
 
-## 5.3 数据混合与课程学习
+## 5_3 数据混合与课程学习
 
 确定了分词器之后，下一个关键问题是：如何组织和呈现训练数据？不同来源、不同质量的数据应该以怎样的比例混合？训练过程中数据的顺序是否重要？
 
-### 5.3.1 数据混合策略
+### 5_3.1 数据混合策略
 
 正如我们在第 3 章讨论的，高质量的预训练数据集通常混合了多种来源：网页、书籍、代码、论文、对话等。每种来源的数据量和质量都不同，简单地按原始比例混合往往不是最优的。
 
@@ -440,17 +440,17 @@ def static_mix(data_sources: dict, target_size: int) -> list:
 
 # 使用示例
 data_sources = {
-    'web': (web_data, 0.6),
-    'books': (book_data, 0.15),
-    'code': (code_data, 0.1),
-    'papers': (paper_data, 0.1),
-    'wikipedia': (wiki_data, 0.05)
+    'web': (web_data, 0_6),
+    'books': (book_data, 0_15),
+    'code': (code_data, 0_1),
+    'papers': (paper_data, 0_1),
+    'wikipedia': (wiki_data, 0_05)
 }
 
 mixed = static_mix(data_sources, target_size=1000000)
 ```
 
-![图5-3：数据混合策略](../images/第5章/图5-3_数据混合策略.png)
+![图5-3：数据混合策略](../images/chapter2/图5_3_数据混合策略.png)
 
 *图5-3：静态混合与动态混合策略对比*
 
@@ -496,15 +496,15 @@ class DynamicDataMixer:
 
 # 使用示例：训练早期强调多样性，后期强调质量
 schedule = [
-    (0, {'web': 0.5, 'books': 0.2, 'code': 0.15, 'papers': 0.1, 'wiki': 0.05}),
-    (100000, {'web': 0.4, 'books': 0.25, 'code': 0.15, 'papers': 0.15, 'wiki': 0.05}),
-    (500000, {'web': 0.3, 'books': 0.3, 'code': 0.2, 'papers': 0.15, 'wiki': 0.05}),
+    (0, {'web': 0_5, 'books': 0_2, 'code': 0_15, 'papers': 0_1, 'wiki': 0_05}),
+    (100000, {'web': 0_4, 'books': 0_25, 'code': 0_15, 'papers': 0_15, 'wiki': 0_05}),
+    (500000, {'web': 0_3, 'books': 0_3, 'code': 0_2, 'papers': 0_15, 'wiki': 0_05}),
 ]
 
 mixer = DynamicDataMixer(data_sources, schedule)
 ```
 
-### 5.3.2 课程学习
+### 5_3.2 课程学习
 
 课程学习（Curriculum Learning）是一种受人类学习过程启发的训练策略。核心思想是：先让模型学习"简单"的样本，再逐渐过渡到"困难"的样本。这种策略在多项研究中被证明可以加速收敛并提升最终性能。
 
@@ -576,11 +576,11 @@ class CurriculumScheduler:
         return available_data[indices].tolist()
 ```
 
-![图5-4：课程学习示意图](../images/第5章/图5-4_课程学习示意图.png)
+![图5-4：课程学习示意图](../images/chapter2/图5_4_课程学习示意图.png)
 
 *图5-4：课程学习原理 —— 从简单样本逐渐过渡到困难样本*
 
-### 5.3.3 数据采样与批次构建
+### 5_3.3 数据采样与批次构建
 
 在实际训练中，数据的组织方式对效率和效果都有影响。以下是一些重要的工程考量：
 
@@ -631,7 +631,7 @@ def pack_sequences(sequences: list, max_length: int, eos_token_id: int) -> list:
 
 **数据加载效率**：对于 TB 级数据集，数据加载本身可能成为瓶颈。常用的优化手段包括：预处理后以二进制格式存储（如 numpy 的 memmap）、多进程并行加载、预取（prefetch）下一批数据。
 
-### 5.3.4 序列化与存储格式
+### 5_3.4 序列化与存储格式
 
 完成分词后，需要将 token 序列以高效的格式存储，以便训练时快速读取。
 
@@ -690,7 +690,7 @@ def tokenize_and_save(raw_data: list, tokenizer, output_dir: str):
 
 ---
 
-## 5.4 完整的数据准备流水线
+## 5_4 完整的数据准备流水线
 
 将前面讨论的各个步骤串联起来，构建一个从原始文本到训练就绪数据的完整流水线。
 
@@ -747,14 +747,14 @@ class DataPreparationPipeline:
     def mix_sources(self, sources: dict) -> list:
         """混合多个数据源"""
         mixed = []
-        weights = self.config.mix_weights or {s: 1.0 for s in sources}
+        weights = self.config.mix_weights or {s: 1_0 for s in sources}
         total_weight = sum(weights.values())
         
         # 确定每个来源的采样数
         total_samples = sum(len(data) for data in sources.values())
         
         for source_name, data in sources.items():
-            weight = weights.get(source_name, 1.0) / total_weight
+            weight = weights.get(source_name, 1_0) / total_weight
             num_samples = int(total_samples * weight)
             
             if len(data) >= num_samples:
@@ -811,13 +811,13 @@ class DataPreparationPipeline:
         print(f"Done! Saved {len(mixed)} samples to {output_path}")
 ```
 
-![图5-5：数据准备完整流水线](../images/第5章/图5-5_数据准备完整流水线.png)
+![图5-5：数据准备完整流水线](../images/chapter2/图5_5_数据准备完整流水线.png)
 
 *图5-5：从原始文本到训练就绪数据的完整流水线*
 
 ---
 
-## 5.5 本章小结
+## 5_5 本章小结
 
 本章系统介绍了分词与数据序列化的核心技术。
 
@@ -827,7 +827,7 @@ class DataPreparationPipeline:
 
 在数据混合方面，静态混合简单直接，动态混合允许训练过程中调整配比。课程学习策略从简单样本开始、逐渐过渡到困难样本，可以加速收敛并提升性能。数据打包和高效的存储格式对于大规模训练至关重要。
 
-![图5-6：本章知识结构](../images/第5章/图5-6_本章知识结构.png)
+![图5-6：本章知识结构](../images/chapter2/图5_6_本章知识结构.png)
 
 *图5-6：第5章知识结构 —— 分词算法、词表设计、数据组织三大主题*
 
