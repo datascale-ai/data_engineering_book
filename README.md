@@ -86,7 +86,7 @@ git clone https://github.com/datascale-ai/data_engineering_book.git
 cd data_engineering_book
 
 # 安装依赖
-pip install mkdocs-material pymdown-extensions
+pip install -r requirements.txt
 
 # 本地预览
 mkdocs serve
@@ -132,7 +132,7 @@ data_engineering_book/
 
 ## 贡献指南
 
-欢迎提交 Issue 和 Pull Request！
+欢迎提交 Issue 和 Pull Request！详细贡献指南请参阅 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 1. Fork 本仓库
 2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
