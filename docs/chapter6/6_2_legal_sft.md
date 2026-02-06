@@ -19,7 +19,7 @@
 
 **数据流水线图：**
 
-![图2：构建垂直领域专家 SFT](../images/实战项目/图2_构建垂直领域专家SFT数据流水线图.png)
+![图2：构建垂直领域专家 SFT](../images/chapter6/图2_构建垂直领域专家SFT数据流水线图.png)
 
 
 - **技术栈清单：**
@@ -68,11 +68,11 @@ def clean_text_smart(text):
 # 任务权重配置 (实现数据分布控制)
 TASK_POOL = [
     # 任务A: 复杂案情分析 (侧重推理) - 权重 60%
-    ("case_analysis", PROMPT_CASE_ANALYSIS, 0.6),
+    ("case_analysis", PROMPT_CASE_ANALYSIS, 0_6),
     # 任务B: 法律文书起草 (侧重生成) - 权重 20%
-    ("doc_drafting", PROMPT_DOCUMENT_DRAFTING, 0.2),
+    ("doc_drafting", PROMPT_DOCUMENT_DRAFTING, 0_2),
     # 任务C: 法律概念辨析 (侧重知识) - 权重 20%
-    ("concept_explain", PROMPT_CONCEPT_EXPLAIN, 0.2)
+    ("concept_explain", PROMPT_CONCEPT_EXPLAIN, 0_2)
 ]
 
 # 轮盘赌选择逻辑
@@ -124,7 +124,7 @@ if isinstance(raw_output, dict):
 ### 5. 成本与优化 (Cost & Optimization)
 
 - **资源消耗：**
-  - **API 成本**：使用 DeepSeek-V3，生成 1000 条高质量 CoT 数据约为 $0.5 - $1.0（输入输出 token 较长）。
+  - **API 成本**：使用 DeepSeek-V3，生成 1000 条高质量 CoT 数据约为 $0_5 - $1_0（输入输出 token 较长）。
   - **时间成本**：单线程处理约 2秒/条。
 - **扩展性思考：**
   - **并发加速**：当前代码为单线程（`time.sleep`），生产环境应使用 `asyncio` + `Semaphore` 实现并发请求，效率可提升 10-20 倍。

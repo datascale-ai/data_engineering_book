@@ -18,15 +18,15 @@
 
 ---
 
-## 4.1 启发式过滤规则
+## 4_1 启发式过滤规则
 
 启发式过滤（Heuristic Filtering）是数据清洗的第一道防线。它基于一系列可量化的规则，快速筛选出明显低质量的文档。虽然这些规则看起来简单，但在实践中能够过滤掉大部分噪声数据，是性价比极高的清洗手段。
 
-![图4-1：数据清洗流水线](../images/第4章/图4-1_数据清洗流水线.png)
+![图4-1：数据清洗流水线](../images/chapter2/图4_1_数据清洗流水线.png)
 
 *图4-1：数据清洗流水线架构 —— 从原始数据到清洁语料的八阶段处理流程*
 
-### 4.1.1 语言识别
+### 4_1.1 语言识别
 
 语言识别是多语言数据处理的基础步骤。对于训练中文模型而言，首先需要从 Common Crawl 的海量数据中筛选出中文内容，这就需要准确的语言识别能力。
 
@@ -38,7 +38,7 @@ import fasttext
 # 加载语言识别模型
 lang_model = fasttext.load_model('lid.176.bin')
 
-def detect_language(text: str, min_confidence: float = 0.8) -> tuple:
+def detect_language(text: str, min_confidence: float = 0_8) -> tuple:
     """
     识别文本语言
     
@@ -75,7 +75,7 @@ def filter_by_language(documents: list, target_lang: str = 'zh') -> list:
 
 语言识别在实践中会遇到一些边界情况。混合语言的文档（如中英文混杂的技术博客）可能被错误分类。短文本的识别准确率较低，建议对长度不足 50 字符的文本跳过语言过滤。代码片段可能被识别为各种语言，需要结合内容类型进行判断。
 
-### 4.1.2 文本质量评分
+### 4_1.2 文本质量评分
 
 语言识别只能确保文档是目标语言，但无法判断内容质量。一段语法正确的垃圾广告和一篇优质的技术文章，在语言识别上可能得到相同的分数。这就需要更精细的质量评估机制。
 
@@ -120,7 +120,7 @@ class PerplexityFilter:
 
 困惑度阈值的设定需要根据具体数据进行调优。一般而言，高质量的新闻和百科文本困惑度在 100-200 之间，普通网页内容在 200-500 之间，低质量内容（如乱码、机器翻译）通常超过 500。建议先在小规模样本上分析困惑度分布，再确定合适的阈值。
 
-### 4.1.3 启发式规则集
+### 4_1.3 启发式规则集
 
 除了语言识别和困惑度过滤，还有一系列简单但有效的启发式规则，可以快速剔除明显的低质量内容。这些规则的设计来源于对大量数据的观察和经验总结。
 
@@ -149,12 +149,12 @@ class HeuristicFilter:
             'min_length': 200,           # 最小字符数
             'max_length': 100000,        # 最大字符数
             'min_words': 50,             # 最小词数
-            'max_special_ratio': 0.3,    # 最大特殊字符比例
-            'max_digit_ratio': 0.3,      # 最大数字比例
-            'max_duplicate_line_ratio': 0.3,  # 最大重复行比例
+            'max_special_ratio': 0_3,    # 最大特殊字符比例
+            'max_digit_ratio': 0_3,      # 最大数字比例
+            'max_duplicate_line_ratio': 0_3,  # 最大重复行比例
             'min_avg_word_length': 2,    # 最小平均词长
             'max_avg_word_length': 20,   # 最大平均词长
-            'min_unique_word_ratio': 0.1 # 最小词汇多样性
+            'min_unique_word_ratio': 0_1 # 最小词汇多样性
         }
     
     def check_length(self, text: str) -> bool:
@@ -217,7 +217,7 @@ class HeuristicFilter:
         return True, None
 ```
 
-### 4.1.4 质量分层策略
+### 4_1.4 质量分层策略
 
 在实践中，将数据简单地二分为"保留"和"丢弃"往往过于粗暴。更精细的做法是对数据进行质量分层，为不同质量层级的数据赋予不同的采样权重。
 
@@ -225,19 +225,19 @@ class HeuristicFilter:
 
 RefinedWeb 的论文详细记录了他们的分层策略，将数据分为五个层级，每个层级使用不同的过滤阈值。这种精细化的质量管理是构建高质量预训练数据集的关键。
 
-![图4-2：质量过滤漏斗](../images/第4章/图4-2_质量过滤漏斗.png)
+![图4-2：质量过滤漏斗](../images/chapter2/图4_2_质量过滤漏斗.png)
 
 *图4-2：数据质量过滤漏斗 —— 从100%原始数据到最终4%清洁语料的逐层过滤过程*
 
 ---
 
-## 4.2 大规模去重
+## 4_2 大规模去重
 
 数据重复是预训练数据的大敌。Common Crawl 中，同一篇文章可能被多个网站转载，同一个网页可能在不同月份被反复抓取，导致大量重复内容。研究表明，未经去重的数据会导致模型过拟合于重复内容，产生"复读机"现象，严重影响模型质量。
 
 去重可以分为两个层次：精确去重（Exact Deduplication）移除完全相同的文档；模糊去重（Fuzzy Deduplication）移除高度相似但不完全相同的文档（如转载时略有修改的文章）。在 TB 级数据上，这两种去重都需要高效的算法和分布式实现。
 
-### 4.2.1 精确去重：哈希方法
+### 4_2.1 精确去重：哈希方法
 
 精确去重的核心思想是为每个文档计算一个指纹（fingerprint），相同指纹的文档视为重复。最简单的方法是使用 MD5 或 SHA256 等哈希函数。
 
@@ -289,7 +289,7 @@ def distributed_exact_dedup(documents_path: str, output_path: str):
 
 精确去重效率很高，但只能处理完全相同的文档。对于略有差异的重复内容（如同一篇新闻在不同网站的转载，可能有不同的页眉页脚），精确去重无能为力。
 
-### 4.2.2 模糊去重：MinHash LSH
+### 4_2.2 模糊去重：MinHash LSH
 
 模糊去重的目标是识别"高度相似但不完全相同"的文档。这是一个计算复杂度很高的问题——朴素地比较任意两个文档需要 O(n²) 的时间复杂度，对于数十亿文档的数据集完全不可行。
 
@@ -305,7 +305,7 @@ MinHash LSH（Locality-Sensitive Hashing）是解决这一问题的核心算法�
 
 以下是一个完整的 MinHash LSH 实现：
 
-![图4-3：MinHash LSH算法](../images/第4章/图4-3_MinHash_LSH算法.png)
+![图4-3：MinHash LSH算法](../images/chapter2/图4_3_MinHash_LSH算法.png)
 
 *图4-3：MinHash LSH 算法三步骤 —— N-gram分解、MinHash签名计算、LSH分桶，将复杂度从O(n²)降至O(n)*
 
@@ -320,7 +320,7 @@ class MinHashLSH:
                  num_hashes: int = 128,
                  num_bands: int = 16,
                  ngram_size: int = 5,
-                 threshold: float = 0.8):
+                 threshold: float = 0_8):
         """
         初始化 MinHash LSH
         
@@ -416,7 +416,7 @@ def jaccard_similarity(set1: Set, set2: Set) -> float:
     return intersection / union if union > 0 else 0
 ```
 
-### 4.2.3 分布式去重实践
+### 4_2.3 分布式去重实践
 
 在 TB 级数据上运行 MinHash LSH 需要精心设计的分布式策略。一个典型的流程包括：
 
@@ -434,7 +434,7 @@ def jaccard_similarity(set1: Set, set2: Set) -> float:
 import ray
 
 def distributed_fuzzy_dedup(input_path: str, output_path: str, 
-                            threshold: float = 0.8):
+                            threshold: float = 0_8):
     """
     分布式模糊去重流水线
     """
@@ -466,7 +466,7 @@ def distributed_fuzzy_dedup(input_path: str, output_path: str,
 
 实际工程中，推荐使用现成的工具。**text-dedup** 是一个开源的文本去重库，实现了多种去重算法，包括 MinHash LSH、SimHash、Suffix Array 等，并提供了 Spark 和 Ray 的分布式实现。**Dolma** 的去重模块也是一个高质量的参考实现。
 
-### 4.2.4 文档内去重
+### 4_2.4 文档内去重
 
 除了文档级别的去重，还需要处理文档内部的重复内容。常见的情况包括：网页中反复出现的导航栏、页眉页脚；由于 JavaScript 渲染问题导致的内容重复；某些 CMS 系统生成的模板化重复段落。
 
@@ -520,21 +520,21 @@ def remove_duplicate_ngrams(text: str, n: int = 10, threshold: int = 3) -> str:
 
 ---
 
-## 4.3 隐私数据清洗 (PII Removal)
+## 4_3 隐私数据清洗 (PII Removal)
 
 预训练数据中不可避免地包含个人身份信息（Personally Identifiable Information, PII），如邮箱地址、电话号码、身份证号、银行卡号、家庭住址等。在数据合规要求日益严格的今天（如 GDPR、CCPA、《个人信息保护法》），清洗 PII 不仅是道德责任，也是法律义务。
 
-### 4.3.1 PII 的类型与风险
+### 4_3.1 PII 的类型与风险
 
 PII 可以分为直接标识符和准标识符两类。直接标识符可以单独识别个人身份，如姓名、身份证号、社会保障号、电话号码、电子邮箱。准标识符单独难以识别个人，但组合使用可能导致识别，如出生日期、邮政编码、职业、工作单位。
 
 在预训练数据中保留 PII 存在多重风险。首先是隐私泄露风险：模型可能"记住"训练数据中的敏感信息，在推理时被恶意提取。其次是合规风险：违反数据保护法规可能导致巨额罚款。最后是声誉风险：如果模型输出他人隐私信息，会严重损害企业形象。
 
-![图4-4：PII类型与风险](../images/第4章/图4-4_PII类型与风险.png)
+![图4-4：PII类型与风险](../images/chapter2/图4_4_PII类型与风险.png)
 
 *图4-4：PII类型与风险等级 —— 直接标识符（高风险）与准标识符（中风险）的分类*
 
-### 4.3.2 Microsoft Presidio
+### 4_3.2 Microsoft Presidio
 
 Presidio 是微软开源的 PII 识别和匿名化工具包，支持多种语言和多种 PII 类型。它采用模块化设计，包含两个核心组件：Analyzer 负责在文本中识别 PII 实体，Anonymizer 负责对识别出的 PII 进行处理（如替换、掩码、删除）。
 
@@ -594,7 +594,7 @@ def anonymize_pii(text: str, language: str = 'en') -> str:
     return anonymized.text
 ```
 
-### 4.3.3 中文 PII 处理
+### 4_3.3 中文 PII 处理
 
 Presidio 对中文的支持相对有限。对于中文预训练数据，通常需要补充基于正则表达式的规则匹配。
 
@@ -667,7 +667,7 @@ class ChinesePIIFilter:
         return text
 ```
 
-### 4.3.4 PII 处理策略的权衡
+### 4_3.4 PII 处理策略的权衡
 
 PII 处理面临准确率与召回率的权衡。过于激进的过滤可能误伤正常内容（如将普通数字序列误判为电话号码），过于保守则可能遗漏真正的敏感信息。
 
@@ -677,11 +677,11 @@ PII 处理面临准确率与召回率的权衡。过于激进的过滤可能误�
 
 ---
 
-## 4.4 完整清洗流水线
+## 4_4 完整清洗流水线
 
 将前面介绍的各个组件串联起来，构建一个完整的数据清洗流水线。
 
-### 4.4.1 流水线架构
+### 4_4.1 流水线架构
 
 一个工业级的清洗流水线通常包括以下阶段，按顺序执行：
 
@@ -713,7 +713,7 @@ class CleaningConfig:
     min_length: int = 200
     max_length: int = 100000
     max_perplexity: float = 500
-    dedup_threshold: float = 0.8
+    dedup_threshold: float = 0_8
     anonymize_pii: bool = True
 
 class DataCleaningPipeline:
@@ -775,7 +775,7 @@ class DataCleaningPipeline:
         ds.write_parquet(output_path)
 ```
 
-### 4.4.2 质量监控与迭代
+### 4_4.2 质量监控与迭代
 
 清洗流水线不是一次性任务，而是需要持续监控和迭代优化的过程。建议建立以下监控机制：
 
@@ -787,7 +787,7 @@ class DataCleaningPipeline:
 
 ---
 
-## 4.5 本章小结
+## 4_5 本章小结
 
 本章系统介绍了预训练数据清洗的核心技术。
 
@@ -799,7 +799,7 @@ class DataCleaningPipeline:
 
 完整的清洗流水线将各个组件串联，按照格式标准化、语言过滤、启发式过滤、文档内去重、PII 清洗、质量评分、文档间去重、质量分层的顺序执行。持续的质量监控和迭代优化是保证数据质量的关键。
 
-![图4-5：本章知识结构](../images/第4章/图4-5_本章知识结构.png)
+![图4-5：本章知识结构](../images/chapter2/图4_5_本章知识结构.png)
 
 *图4-5：第4章知识结构 —— 启发式过滤、大规模去重、PII清洗三大核心主题*
 

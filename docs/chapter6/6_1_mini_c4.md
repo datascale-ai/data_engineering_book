@@ -17,8 +17,8 @@
 
 **数据流水线图：**
 
-![图1：构建"Mini-C4"预训练集数据流水线图](../images/实战项目/图1_构建"Mini-C4"预训练集数据流水线图.png)
-<!-- ![图1：构建"Mini-C4"预训练集数据流水线图](images/实战项目/图1_构建"Mini-C4"预训练集数据流水线图.png) -->
+![图1：构建"Mini-C4"预训练集数据流水线图](../images/chapter6/图1_构建Mini_C4预训练集数据流水线图.png)
+<!-- ![图1：构建"Mini-C4"预训练集数据流水线图](images/实战项目/图1_构建Mini_C4预训练集数据流水线图.png) -->
 
 **技术栈清单：**
 
@@ -62,7 +62,7 @@ def is_high_quality(text):
     # 规则 B: 符号密度 (Symbol Ratio)
     code_symbols = {'{', '}', '[', ']', '<', '>', '\\'}
     symbol_count = sum(1 for char in text if char in code_symbols)
-    if symbol_count / len(text) > 0.1: # 代码符号过多
+    if symbol_count / len(text) > 0_1: # 代码符号过多
         return False
         
     # 规则 C: 黑名单关键词
@@ -126,7 +126,7 @@ def predict_lang(text):
 
 # 2. 困惑度过滤 (来自 6_quality_filter.py)
 kenlm_model = kenlm.Model('en.arpa.bin')
-PERPLEXITY_THRESHOLD = -6.0  # 经验阈值：低于此值通常为低质量文本
+PERPLEXITY_THRESHOLD = -6_0  # 经验阈值：低于此值通常为低质量文本
 
 def filter_by_perplexity(text):
     words = text.split()
@@ -154,7 +154,7 @@ def filter_by_perplexity(text):
 **Case 3: 高质量正文 (保留并评分)**
 > *Raw:* "The James Webb Space Telescope has captured a new image of the Pillars of Creation..."
 > *Result:* **[保留]**
-> *KenLM Score:* -4.82 (优于阈值 -6.0)
+> *KenLM Score:* -4_82 (优于阈值 -6_0)
 
 **数据统计：**
 在单次 Crawl 的采样测试中：

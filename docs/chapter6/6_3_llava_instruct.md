@@ -22,7 +22,7 @@
 ### 2. 架构设计 (Architecture Design)
 
 - **数据流水线图：**
-![图3：构建LLaVA多模态](../images/实战项目/图3_构建LLaVA多模态指令集数据流水线图.png)
+![图3：构建LLaVA多模态](../images/chapter6/图3_构建LLaVA多模态指令集数据流水线图.png)
 
 
 
@@ -133,13 +133,13 @@ def draw_bbox(image, bbox, label, color):
 
  **效果图生成 **
 
-![图4：效果图生成](../images/实战项目/图4_viz_000000001490.jpg)
+![图4：效果图生成](../images/chapter6/图4_viz_000000001490.jpg)
 
 
 ### 5. 成本与优化 (Cost & Optimization)
 
 - **资源消耗：**
-  - **API 成本：** `interleaved.py` 依赖外部 LLM API。生成 10,000 条多图对比数据，按照 $0.5/1M Tokens 计算，成本约为 $20-$30。
+  - **API 成本：** `interleaved.py` 依赖外部 LLM API。生成 10,000 条多图对比数据，按照 $0_5/1M Tokens 计算，成本约为 $20-$30。
   - **计算耗时：** `alignment.py` 是纯 CPU 计算，处理 COCO 验证集（5k 张图）仅需数秒。
 
 - **扩展性思考：**

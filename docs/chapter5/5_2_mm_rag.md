@@ -6,10 +6,10 @@
 
 在文本 RAG 已经卷出天际的今天，多模态（Multimodal）成为了新的战场。企业文档中往往包含大量**图表、流程图、截屏**，传统 RAG 方案通常选择用 OCR 转文字或直接忽略图片，导致关键信息丢失（Information Loss）。本章将突破“纯文本”的限制，构建能够“看见”数据的系统。我们将从基础的 CLIP/SigLIP 跨模态检索讲起，深入探讨颠覆性的 **ColPali 架构**——并手把手实现包含**二进制量化（BQ）**和**Late Interaction 打分逻辑**的端到端检索流水线。
 
-## 13.0 学习目标 (Learning Objectives)
+## 13_0 学习目标 (Learning Objectives)
 
 * **理解多模态向量空间**：掌握 CLIP 与 SigLIP 的对比损失原理，理解文本与图像是如何在同一个向量空间对齐的。
-* **掌握 ColPali 架构**：理解 Late Interaction（晚期交互）机制，学会使用 `colpali-v1.2-merged` 处理复杂的 PDF 表格与图表。
+* **掌握 ColPali 架构**：理解 Late Interaction（晚期交互）机制，学会使用 `colpali-v1_2-merged` 处理复杂的 PDF 表格与图表。
 * **工程落地能力**：编写 Python 代码实现 **MaxSim 打分**算法，并利用**二进制量化**将存储成本降低 32 倍。
 * **可视化验证**：通过注意力热力图（Attention Heatmap）验证模型的可解释性。
 
@@ -27,11 +27,11 @@
 
 ---
 
-## 13.1 跨模态检索：打破图文壁垒
+## 13_1 跨模态检索：打破图文壁垒
 
 要实现“以文搜图”或“以图搜文”，我们需要一个能同时理解两种模态的模型。
 
-### 13.1.1 核心原理：对比学习 (Contrastive Learning)
+### 13_1.1 核心原理：对比学习 (Contrastive Learning)
 
 OpenAI 的 CLIP (Contrastive Language-Image Pre-training) 是这一领域的基石。它的训练逻辑简单而暴力：
 1.  收集数亿对 `(图片, 文本)` 数据。
@@ -40,12 +40,12 @@ OpenAI 的 CLIP (Contrastive Language-Image Pre-training) 是这一领域的基�
 
 最终结果是：一张“狗”的照片向量，与单词“Dog”的文本向量，在数学空间中是非常接近的。
 
-![图13-1：CLIP多模态向量空间示意图](../images/第13章/图13-1_CLIP架构.png)
-<!-- ![图13-1：CLIP多模态向量空间示意图](images/第13章/图13-1_CLIP架构.png) -->
+![图13-1：CLIP多模态向量空间示意图](../images/chapter5/图13_1_CLIP架构.png)
+<!-- ![图13-1：CLIP多模态向量空间示意图](images/第13章/图13_1_CLIP架构.png) -->
 
 *图13-1：CLIP 架构 —— 文本与图像被映射到同一个高维球面上，通过计算余弦相似度来判断关联性*
 
-### 13.1.2 技术选型：CLIP vs. SigLIP
+### 13_1.2 技术选型：CLIP vs. SigLIP
 
 虽然 CLIP 名气最大，但在工程落地时，我们有更好的选择。Google 推出的 **SigLIP (Sigmoid Loss for Language Image Pre-training)** 在多项指标上超越了 CLIP。
 
@@ -59,41 +59,41 @@ OpenAI 的 CLIP (Contrastive Language-Image Pre-training) 是这一领域的基�
 
 ---
 
-## 13.2 ColPali 架构实战：终结 OCR 的噩梦
+## 13_2 ColPali 架构实战：终结 OCR 的噩梦
 
 对于 PDF 文档检索，CLIP 有一个致命弱点：它擅长自然图像（猫、狗、风景），但对**富文本图像**（包含密集文字、表格的文档页）理解能力极差。
 传统做法是 `PDF -> OCR -> Text Embedding`，但 OCR 会丢失布局信息，且对图表束手无策。
 
 **ColPali (ColBERT + PaliGemma)** 提出了一种革命性的思路：**不要 OCR，直接把 PDF 页面当图看。**
 
-### 13.2.1 核心原理：视觉语言模型的晚期交互
+### 13_2.1 核心原理：视觉语言模型的晚期交互
 
 ColPali 结合了视觉语言模型（VLM）和 ColBERT 的检索机制。
 
 1.  **Patch Embedding**：将文档图像切分为多个小块（Patches），每个 Patch 生成一个向量。一张图可能对应 1024 个向量。
 2.  **Late Interaction (MaxSim)**：检索时，将用户 Query 的每个 Token 向量与文档的所有 Patch 向量进行计算，取最大相似度。
 
-![图13-2：ColPali vs OCR 对比图](../images/第13章/图13-2_ColPali对比.png)
-<!-- ![图13-2：ColPali vs OCR 对比图](images/第13章/图13-2_ColPali对比.png) -->
+![图13-2：ColPali vs OCR 对比图](../images/chapter5/图13_2_ColPali对比.png)
+<!-- ![图13-2：ColPali vs OCR 对比图](images/第13章/图13_2_ColPali对比.png) -->
 
 *图13-2：Bad Case (左) vs Good Case (右) —— 左侧 OCR 将表格识别为乱码字符；右侧 ColPali 直接在图像层面对齐了 Query 与表格行*
 
 ---
 
-## 13.3 工程实现：构建混合多模态检索流水线
+## 13_3 工程实现：构建混合多模态检索流水线
 
 本节我们将实现一个兼容 **SigLIP（自然图）** 和 **ColPali（文档图）** 的检索系统框架。
 
-### 13.3.1 总体架构与数据流
+### 13_3.1 总体架构与数据流
 
 在编写代码之前，我们需要明确数据是如何流动的。这不再是简单的“文本进，文本出”。
 
-![图13-3：多模态RAG端到端流水线](../images/第13章/图13-3_多模态流水线.png)
-<!-- ![图13-3：多模态RAG端到端流水线](images/第13章/图13-3_多模态流水线.png) -->
+![图13-3：多模态RAG端到端流水线](../images/chapter5/图13_3_多模态流水线.png)
+<!-- ![图13-3：多模态RAG端到端流水线](images/第13章/图13_3_多模态流水线.png) -->
 
 *图13-3：End-to-End Pipeline —— 左侧为入库流程（PDF转图 -> Vision Encoder -> 量化 -> 向量库）；右侧为检索流程（Query -> Text Encoder -> MaxSim 打分 -> Re-rank）*
 
-### 13.3.2 核心代码：多模态索引与打分
+### 13_3.2 核心代码：多模态索引与打分
 
 我们定义一个 `MultimodalIndexer`。为了让系统具备实战能力，我们不仅要写“向量化（Embedding）”逻辑，更要显式实现“打分（Scoring）”逻辑，因为 ColPali 的检索不能简单依赖向量数据库的 Cosine Similarity。
 
@@ -117,7 +117,7 @@ class MultimodalIndexer:
             from colpali_engine.models import ColPali
             from colpali_engine.utils.processing_utils import ColPaliProcessor
             
-            model_name = "vidore/colpali-v1.2-merged"
+            model_name = "vidore/colpali-v1_2-merged"
             print(f"Loading ColPali model: {model_name}...")
             
             self.model = ColPali.from_pretrained(
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     # top_k = np.argsort(scores)[::-1]
 
 ```
-## 13.3.3 性能优化：二进制量化 (Binary Quantization)
+## 13_3.3 性能优化：二进制量化 (Binary Quantization)
 
 ColPali 最大的工程痛点是**存储爆炸**。
 
@@ -234,11 +234,11 @@ def score_binary(query_emb, binary_doc_emb):
 
 ---
 
-## 13.4 性能与评估 (Performance & Evaluation)
+## 13_4 性能与评估 (Performance & Evaluation)
 
 多模态 RAG 不仅要看“找得对不对”，还要看“因为什么找到的”。
 
-### 13.4.1 评价指标
+### 13_4.1 评价指标
 
 | 指标 | 适用场景 | 说明 |
 | --- | --- | --- |
@@ -246,7 +246,7 @@ def score_binary(query_emb, binary_doc_emb):
 | **NDCG@10** | 排序质量 | 越相关的图片排在越前面得分越高。 |
 | **OCR-Free Efficiency** | ColPali 场景 | 相比 OCR + Dense Retrieval 方案的时间/成本节省比率。 |
 
-### 13.4.2 基准测试 (Benchmarks)
+### 13_4.2 基准测试 (Benchmarks)
 
 * **测试环境**：Dual Intel Xeon Gold 6226R, NVIDIA RTX 3090 。
 * **数据集**：ViDoRe Benchmark（包含复杂财务报表）。
@@ -254,7 +254,7 @@ def score_binary(query_emb, binary_doc_emb):
 #### 1. 准确率对比 (Recall@5)
 
 * **Unstructured OCR + BGE-M3**: 43% (表格结构丢失是主因)。
-* **ColPali v1.2**: 81% (直接理解视觉布局)。
+* **ColPali v1_2**: 81% (直接理解视觉布局)。
 
 #### 2. 延迟对比 (Latency)
 
@@ -263,14 +263,14 @@ def score_binary(query_emb, binary_doc_emb):
 
 **结论**：ColPali 适合做 Re-rank 或高质量检索，海量数据需配合量化使用。
 
-### 13.4.3 可解释性：模型到底在看哪里？
+### 13_4.3 可解释性：模型到底在看哪里？
 
 ColPali 的另一大优势是**可解释性**。通过将 MaxSim 计算中的交互矩阵可视化，我们可以生成热力图，确切知道模型关注的是文档的哪一部分。
 
 
 ---
 
-## 13.5 常见误区与避坑指南
+## 13_5 常见误区与避坑指南
 
 * **误区一：“所有图片都值得索引”**
 * 网页或文档中的 Icon、装饰性线条、页眉页脚的 Logo 会产生大量噪音。
@@ -279,7 +279,7 @@ ColPali 的另一大优势是**可解释性**。通过将 MaxSim 计算中的交
 
 * **误区二：“忽视 Embedding 维度爆炸”**
 * 不要天真地把 ColPali 的所有向量直接存入常规 PGVector。
-* **修正**：必须实施 13.3.3 中的二进制量化。或者，仅对复杂的“关键页”使用 ColPali，普通文本页依然使用 BGE/OpenAI Embedding，构建混合索引。
+* **修正**：必须实施 13_3.3 中的二进制量化。或者，仅对复杂的“关键页”使用 ColPali，普通文本页依然使用 BGE/OpenAI Embedding，构建混合索引。
 
 
 * **误区三：“直接用 CLIP 做 OCR 替代品”**
