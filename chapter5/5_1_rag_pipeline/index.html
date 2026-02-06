@@ -1,0 +1,2352 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/chapter5/5_1_rag_pipeline/">
+      
+      
+        <link rel="prev" href="../../chapter4/4_3/">
+      
+      
+        <link rel="next" href="../5_2_mm_rag/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>第12章：RAG数据流水线 - 大模型数据工程：架构、算法及项目实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#12rag" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-header__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型数据工程：架构、算法及项目实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第12章：RAG数据流水线
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="切换至夜间模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至夜间模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="切换至日间模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至日间模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-nav__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大模型数据工程：架构、算法及项目实战
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    目录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一部分：基础设施与核心理念
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一部分：基础设施与核心理念
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter1/1_1_data_change/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第1章：大模型时代的数据变革
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter1/1_2_data_infra/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第2章：数据基础设施选型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二部分：文本预训练数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二部分：文本预训练数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter2/2_1_data_acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第3章：数据获取与采集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter2/2_2_cleaning_denoising/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第4章：清洗与去噪
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter2/2_3_tokenization_serialization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第5章：分词与序列化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三部分：多模态数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三部分：多模态数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第6章：图文对数据处理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第7章：数据重描述
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第8章：视频与音频数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第四部分：对齐与合成数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第四部分：对齐与合成数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第9章：指令微调数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第10章：合成数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第11章：人类偏好数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第五部分：应用级数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第五部分：应用级数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第12章：RAG数据流水线
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第12章：RAG数据流水线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章摘要
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12_0-learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_0 学习目标 (Learning Objectives)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景引入
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_1 文档深度解析：攻克非结构化数据的“最后一公里”
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12_1 文档深度解析：攻克非结构化数据的“最后一公里”">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#12_11-pdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_1.1 复杂的 PDF 处理：不仅仅是提取文本
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_1.2 解析工具选型对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12_2-chunking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_2 切片策略 (Chunking)：上下文与检索粒度的平衡艺术
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12_2 切片策略 (Chunking)：上下文与检索粒度的平衡艺术">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#12_21-recursive-character-splitter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_2.1 基础策略：递归字符切片 (Recursive Character Splitter)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12_22-semantic-chunking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_2.2 进阶策略：语义切片 (Semantic Chunking)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12_23-parent-child-indexing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_2.3 高级策略：父子索引 (Parent-Child Indexing)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_3 向量化与存储：让机器听懂行业“黑话”
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12_3 向量化与存储：让机器听懂行业“黑话”">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#12_31-embedding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_3.1 Embedding 模型微调
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12_32-hybrid-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_3.2 向量数据库与混合检索 (Hybrid Search)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_4 工程实现：构建父子索引流水线
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12_4 工程实现：构建父子索引流水线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#12_41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_4.1 依赖环境
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12_42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_4.2 核心代码拆解
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12_43-pro-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_4.3 实战技巧 (Pro Tips)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12_5-performance-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_5 性能与评估 (Performance &amp; Evaluation)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12_5 性能与评估 (Performance &amp; Evaluation)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#12_51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_5.1 评价指标
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12_52-benchmarks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_5.2 基准测试 (Benchmarks)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_6 常见误区与避坑指南
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12_6 常见误区与避坑指南">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pdf-pypdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        误区一：“PDF 解析用 PyPDF 就够了”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        误区二：“切片越小越好”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        误区三：“忽视元数据”
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章小结
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        延伸阅读
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../5_2_mm_rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第13章：多模态RAG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第六部分：实战项目集
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第六部分：实战项目集
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_1_mini_c4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目一：构建Mini-C4预训练集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_2_legal_sft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目二：垂直领域专家SFT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_3_llava_instruct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目三：构建LLaVA多模态指令集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_4_synthetic_textbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目四：合成数学代码教科书
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_5_mm_rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目五：多模态RAG企业财报助手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章摘要
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12_0-learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_0 学习目标 (Learning Objectives)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景引入
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_1 文档深度解析：攻克非结构化数据的“最后一公里”
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12_1 文档深度解析：攻克非结构化数据的“最后一公里”">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#12_11-pdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_1.1 复杂的 PDF 处理：不仅仅是提取文本
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_1.2 解析工具选型对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12_2-chunking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_2 切片策略 (Chunking)：上下文与检索粒度的平衡艺术
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12_2 切片策略 (Chunking)：上下文与检索粒度的平衡艺术">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#12_21-recursive-character-splitter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_2.1 基础策略：递归字符切片 (Recursive Character Splitter)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12_22-semantic-chunking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_2.2 进阶策略：语义切片 (Semantic Chunking)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12_23-parent-child-indexing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_2.3 高级策略：父子索引 (Parent-Child Indexing)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_3 向量化与存储：让机器听懂行业“黑话”
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12_3 向量化与存储：让机器听懂行业“黑话”">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#12_31-embedding" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_3.1 Embedding 模型微调
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12_32-hybrid-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_3.2 向量数据库与混合检索 (Hybrid Search)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_4 工程实现：构建父子索引流水线
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12_4 工程实现：构建父子索引流水线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#12_41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_4.1 依赖环境
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12_42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_4.2 核心代码拆解
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12_43-pro-tips" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_4.3 实战技巧 (Pro Tips)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12_5-performance-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_5 性能与评估 (Performance &amp; Evaluation)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12_5 性能与评估 (Performance &amp; Evaluation)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#12_51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_5.1 评价指标
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12_52-benchmarks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_5.2 基准测试 (Benchmarks)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12_6 常见误区与避坑指南
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12_6 常见误区与避坑指南">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pdf-pypdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        误区一：“PDF 解析用 PyPDF 就够了”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        误区二：“切片越小越好”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        误区三：“忽视元数据”
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章小结
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        延伸阅读
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<hr />
+<h1 id="12rag">第12章：RAG 数据流水线<a class="headerlink" href="#12rag" title="Permanent link">&para;</a></h1>
+<hr />
+<h2 id="_1">本章摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>检索增强生成（Retrieval-Augmented Generation, RAG）已成为企业落地大模型的首选架构。然而，许多 RAG 系统在 Demo 阶段表现惊艳，上线后却因检索准确率低下而烂尾。本章将揭示 RAG 系统的核心真理：<strong>检索质量的上限由数据解析与切片的粒度决定</strong>。我们将深入“文档解析”这一非结构化数据的深水区，探讨 PDF 表格还原与多栏识别难题；对比语义切片与父子索引等高级切片策略；并解析 Embedding 模型微调与向量数据库优化的关键路径。</p>
+<h2 id="12_0-learning-objectives">12_0 学习目标 (Learning Objectives)<a class="headerlink" href="#12_0-learning-objectives" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>掌握非结构化解析策略</strong>：学会针对多栏 PDF 和复杂表格选择正确的解析工具（Rule-based vs. Vision-based）。</li>
+<li><strong>实现高级切片算法</strong>：能够编写 Python 代码实现“父子索引（Parent-Child Indexing）”策略，解决上下文丢失问题。</li>
+<li><strong>构建混合检索流水线</strong>：掌握如何结合 Dense Embedding 与 BM25 关键词检索，并实现 RRF 排序融合。</li>
+<li><strong>评估与优化</strong>：学会使用 RAGAS 框架评估检索质量，并针对特定领域微调 Embedding 模型。</li>
+</ul>
+<hr />
+<h2 id="_2">场景引入<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>团队开发的企业级知识问答系统终于上线了。CEO 兴致勃勃地输入了一个问题：“根据 2023 年 Q4 财报，我们华东区的净利润是多少？”</p>
+<p>系统自信地回答：“根据财报，净利润为 15%。”
+CEO 皱起了眉头：“我要的是具体金额，不是利润率！而且这是全公司的，不是华东区的。”</p>
+<p>作为数据负责人，你紧急排查日志，发现问题出在源头：
+1.  <strong>解析错误</strong>：财报 PDF 是双栏排版，普通的解析工具按行读取，把左栏的文字和右栏的数据拼在了一起，导致语义错乱。
+2.  <strong>表格丢失</strong>：华东区的数据在一个跨页表格中，解析工具完全忽略了表格结构，将其变成了一堆乱码字符串。
+3.  <strong>切片割裂</strong>：“华东区”这个标题和具体的数值被切分到了两个不同的 Chunk 中，向量检索时丢失了上下文关联。</p>
+<p>这个“翻车”现场揭示了 RAG 系统的残酷现实：<strong>Garbage In, Garbage Out（垃圾进，垃圾出）</strong>。如果说预训练是“吃满汉全席”，那么 RAG 就是“精准的外科手术”。任何一点数据解析的偏差，都会在检索和生成阶段被无限放大。</p>
+<hr />
+<h2 id="12_1">12_1 文档深度解析：攻克非结构化数据的“最后一公里”<a class="headerlink" href="#12_1" title="Permanent link">&para;</a></h2>
+<p>在 RAG 数据流中，最难处理的往往不是纯文本，而是承载企业核心知识的 <strong>PDF</strong>、<strong>PPT</strong> 和 <strong>扫描件</strong>。这些格式专为“人类阅读”设计，对机器却极不友好。</p>
+<h3 id="12_11-pdf">12_1.1 复杂的 PDF 处理：不仅仅是提取文本<a class="headerlink" href="#12_11-pdf" title="Permanent link">&para;</a></h3>
+<p>PDF 本质上是一组绘制指令的集合，而非结构化数据。普通的 Python 库（如 PyPDF2）只能提取文本流，却无法理解版面信息（Layout）。</p>
+<p><strong>痛点一：多栏排版（Multi-column Layout）</strong>
+在学术论文和技术手册中，双栏甚至三栏排版非常常见。简单的文本提取会横跨栏目读取，生成类似“左栏第一行 + 右栏第一行”的无意义拼接。解决这一问题的关键在于<strong>版面分析（Layout Analysis）</strong>。现代工具（如 Microsoft 的 LayoutLM 系列）使用视觉模型先识别版面块（Block），再按阅读顺序提取文本。</p>
+<p><strong>痛点二：表格还原（Table Extraction）</strong>
+表格是 RAG 的噩梦。一旦表格被展平为文本，行与列的对应关系就会丢失。
+* <strong>规则法</strong>：利用 PDF 中的线条绘制指令重建网格（如 <code>pdfplumber</code>）。适用于原生 PDF。
+* <strong>视觉法</strong>：将 PDF 转换为图片，使用目标检测模型识别单元格结构，再结合 OCR 提取内容。这是处理扫描件和复杂嵌套表格的唯一途径。</p>
+<h3 id="12_12">12_1.2 解析工具选型对比<a class="headerlink" href="#12_12" title="Permanent link">&para;</a></h3>
+<p>面对复杂的企业文档，我们需要根据文档类型和预算选择构建解析管道。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">特性</th>
+<th style="text-align: left;">Unstructured (Open Source)</th>
+<th style="text-align: left;">LlamaParse (Proprietary)</th>
+<th style="text-align: left;">PyPDF/PDFMiner (Basic)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>核心原理</strong></td>
+<td style="text-align: left;">规则 + 基础 OCR 混合模型</td>
+<td style="text-align: left;">大模型视觉理解 (Vision LLM)</td>
+<td style="text-align: left;">提取底层文本流</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>表格处理能力</strong></td>
+<td style="text-align: left;">中等（能识别表格区域，但复杂表头易乱）</td>
+<td style="text-align: left;"><strong>极强</strong>（重构为 Markdown 表格，保留语义）</td>
+<td style="text-align: left;">差（行列完全错乱）</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>多栏识别</strong></td>
+<td style="text-align: left;">支持（基于检测模型）</td>
+<td style="text-align: left;">支持（原生理解版面）</td>
+<td style="text-align: left;">不支持（跨栏读取）</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>成本</strong></td>
+<td style="text-align: left;">低（本地计算资源）</td>
+<td style="text-align: left;">高（按页数计费 API）</td>
+<td style="text-align: left;">极低</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>适用场景</strong></td>
+<td style="text-align: left;">简单的 Word/HTML，规则固定的 PDF</td>
+<td style="text-align: left;"><strong>复杂财报、扫描件、嵌套表格</strong></td>
+<td style="text-align: left;">纯文本电子书</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>建议</strong>：对于核心业务文档（如合同、财报），优先使用 LlamaParse 或 Azure Document Intelligence；对于海量普通文档，使用 Unstructured 进行清洗以降低成本。</p>
+</blockquote>
+<!-- ![图12-1：文档解析流程对比](images/第12章/图12_1_文档解析流程对比.png) -->
+
+<p><img alt="图12-1：文档解析流程对比" src="../../images/chapter5/%E5%9B%BE12_1_%E6%96%87%E6%A1%A3%E8%A7%A3%E6%9E%90%E6%B5%81%E7%A8%8B%E5%AF%B9%E6%AF%94.png" /></p>
+<p><em>图12-1：传统解析 vs. 智能解析 —— 智能解析通过版面分析保留了多栏顺序和表格结构</em></p>
+<hr />
+<h2 id="12_2-chunking">12_2 切片策略 (Chunking)：上下文与检索粒度的平衡艺术<a class="headerlink" href="#12_2-chunking" title="Permanent link">&para;</a></h2>
+<p>文档解析完成后，我们需要将其切分为模型可处理的片段（Chunk）。切分策略直接决定了检索的准确度。</p>
+<h3 id="12_21-recursive-character-splitter">12_2.1 基础策略：递归字符切片 (Recursive Character Splitter)<a class="headerlink" href="#12_21-recursive-character-splitter" title="Permanent link">&para;</a></h3>
+<p>最朴素的方法是按固定字符数切分（如每 500 字一刀）。但这往往会把一个完整的句子或逻辑段落拦腰截断。
+<strong>递归切片</strong>是目前的基准方案。它通过定义一组分隔符优先级（如 <code>\n\n</code> &gt; <code>\n</code> &gt; <code>。</code> &gt; <code></code>），优先在段落间切分，其次在句子间切分。这保证了尽可能保留语义的完整性。</p>
+<h3 id="12_22-semantic-chunking">12_2.2 进阶策略：语义切片 (Semantic Chunking)<a class="headerlink" href="#12_22-semantic-chunking" title="Permanent link">&para;</a></h3>
+<p>即使是递归切片，也无法判断两个段落是否在讨论同一个话题。<strong>语义切片</strong>利用 Embedding 模型来解决这个问题：
+1.  计算相邻句子的向量相似度。
+2.  设定阈值，当相邻句子的相似度骤降时（意味着话题发生了转换），在此处进行切分。
+这种方法生成的 Chunk 长度不一，但语义纯度极高，避免了“一个 Chunk 包含半个产品介绍和半个售后政策”的噪音。</p>
+<h3 id="12_23-parent-child-indexing">12_2.3 高级策略：父子索引 (Parent-Child Indexing)<a class="headerlink" href="#12_23-parent-child-indexing" title="Permanent link">&para;</a></h3>
+<p>这是解决 RAG <strong>“检索粒度”与“生成上下文”矛盾</strong>的终极武器。
+* <strong>矛盾</strong>：Chunk 越小，语义越聚焦，向量检索越准；但 Chunk 太小，丢失了上下文，LLM 无法生成全面回答。
+* <strong>解法</strong>：
+    1.  将文档切分为<strong>大块（Parent Chunk）</strong>，例如 1000 Token。
+    2.  将每个大块进一步切分为<strong>小块（Child Chunk）</strong>，例如 200 Token。
+    3.  对<strong>小块</strong>进行向量化并建立索引。
+    4.  检索时，匹配到小块，但返回给 LLM 的是该小块所属的<strong>大块</strong>。</p>
+<p>这种“小块检索，大块生成”的策略（Small-to-Big Retrieval），既保证了检索的精准度，又为模型提供了充足的上下文信息。</p>
+<p><img alt="图12-2：父子索引原理图" src="../../images/chapter5/%E5%9B%BE12_2_%E7%88%B6%E5%AD%90%E7%B4%A2%E5%BC%95%E5%8E%9F%E7%90%86%E5%9B%BE.png" /></p>
+<!-- ![图12-2：父子索引原理图](images/第12章/图12_2_父子索引原理图.png) -->
+
+<p><em>图12-2：父子索引机制 —— 检索命中 Child Node，实际返回 Parent Node，兼顾精准度与上下文</em></p>
+<hr />
+<h2 id="12_3">12_3 向量化与存储：让机器听懂行业“黑话”<a class="headerlink" href="#12_3" title="Permanent link">&para;</a></h2>
+<p>数据切片后，需要通过 Embedding 模型转化为向量并存入向量数据库。在这个环节，通用的方案往往不够用。</p>
+<h3 id="12_31-embedding">12_3.1 Embedding 模型微调<a class="headerlink" href="#12_31-embedding" title="Permanent link">&para;</a></h3>
+<p>通用的 Embedding 模型（如 OpenAI text-embedding-3 或 BGE-M3）是在通用语料上训练的。在垂直领域，它们可能表现不佳。
+例如，在医疗领域，“感冒”和“发烧”在通用语义下很接近，但在诊断逻辑中可能指向完全不同的病理。
+<strong>微调（Fine-tuning）</strong> 旨在调整向量空间分布，让相似的专业概念靠得更近。通常使用 <strong>对比学习（Contrastive Learning）</strong> 损失函数：</p>
+<div class="arithmatex">\[
+L = - \log \frac{e^{sim(q, d^+)/\tau}}{\sum_{i} e^{sim(q, d^-_i)/\tau}}
+\]</div>
+<p>其中 <span class="arithmatex">\(d^+\)</span> 是正例（正确的文档），<span class="arithmatex">\(d^-\)</span> 是负例（错误的文档）。通过构造“问题-相关文档”的正例对和“问题-不相关文档”的负例对进行微调，可以显著提升特定领域的检索召回率（Recall）。</p>
+<h3 id="12_32-hybrid-search">12_3.2 向量数据库与混合检索 (Hybrid Search)<a class="headerlink" href="#12_32-hybrid-search" title="Permanent link">&para;</a></h3>
+<p>单纯依赖向量检索（Dense Retrieval）存在缺陷：它对专有名词、精确数字、产品型号等<strong>关键词匹配</strong>并不敏感。
+企业级 RAG 必须采用 <strong>混合检索（Hybrid Search）</strong>：
+* <strong>向量检索</strong>：捕捉语义相关性（如“苹果”与“水果”）。
+* <strong>关键词检索（BM25）</strong>：捕捉精确匹配（如产品 ID "A123-X"）。</p>
+<p>通过倒排排序融合（Reciprocal Rank Fusion, RRF）算法将两者的结果重新排序，可以兼采众长。此外，向量数据库（如 Milvus, Pinecone, Weaviate）的选型还需考虑元数据过滤（Metadata Filtering）性能，以便在检索前先通过“年份=2023”等条件过滤数据，大幅降低计算量。</p>
+<hr />
+<h2 id="12_4">12_4 工程实现：构建父子索引流水线<a class="headerlink" href="#12_4" title="Permanent link">&para;</a></h2>
+<p>本节我们将实现前文提到的核心策略——<strong>父子索引 (Parent-Child Indexing)</strong>。我们将使用 Python 定义一个可复用的处理类，模拟从文档加载到向量存储的全过程。</p>
+<h3 id="12_41">12_4.1 依赖环境<a class="headerlink" href="#12_41" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span class="w"> </span>install<span class="w"> </span>langchain<span class="w"> </span>lancedb<span class="w"> </span>numpy<span class="w"> </span>unstructured
+</code></pre></div>
+<h3 id="12_42">12_4.2 核心代码拆解<a class="headerlink" href="#12_42" title="Permanent link">&para;</a></h3>
+<p>我们不直接调用封装好的高级 API，而是拆解其逻辑以便理解数据流向。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">uuid</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nd">@dataclass</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">Document</span><span class="p">:</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">page_content</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">metadata</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">doc_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="k">class</span><span class="w"> </span><span class="nc">ParentChildIndexer</span><span class="p">:</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="sd">    实现父子索引策略：</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="sd">    1. Parent Chunk: 用于存储和生成，保留完整上下文。</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="sd">    2. Child Chunk: 用于向量化和检索，保证语义精准度。</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_chunk_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">child_chunk_size</span><span class="o">=</span><span class="mi">200</span><span class="p">):</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">parent_size</span> <span class="o">=</span> <span class="n">parent_chunk_size</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">child_size</span> <span class="o">=</span> <span class="n">child_chunk_size</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>        <span class="c1"># 模拟向量数据库（KV Store + Vector Store）</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">doc_store</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># 存 Parent 文档: {doc_id: content}</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">vector_index</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># 存 Child 向量: [(vector, parent_doc_id)]</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">process_documents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raw_docs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]):</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Step 1: 数据处理流水线&quot;&quot;&quot;</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>        <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">raw_docs</span><span class="p">:</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>            <span class="c1"># 生成唯一 ID</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>            <span class="k">if</span> <span class="ow">not</span> <span class="n">doc</span><span class="o">.</span><span class="n">doc_id</span><span class="p">:</span>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>                <span class="n">doc</span><span class="o">.</span><span class="n">doc_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>            <span class="c1"># 1. 存入 Parent Document (KV Store)</span>
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">doc_store</span><span class="p">[</span><span class="n">doc</span><span class="o">.</span><span class="n">doc_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">doc</span>
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>            <span class="c1"># 2. 生成 Child Chunks</span>
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>            <span class="n">child_chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_child_chunks</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>
+<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>            <span class="c1"># 3. 向量化并建立索引</span>
+<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_index_children</span><span class="p">(</span><span class="n">child_chunks</span><span class="p">,</span> <span class="n">doc</span><span class="o">.</span><span class="n">doc_id</span><span class="p">)</span>
+<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_create_child_chunks</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_doc</span><span class="p">:</span> <span class="n">Document</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a><span class="sd">        Step 2: 切片逻辑</span>
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a><span class="sd">        这里简化为按固定字符数切分，生产环境建议使用 RecursiveCharacterTextSplitter</span>
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>        <span class="n">text</span> <span class="o">=</span> <span class="n">parent_doc</span><span class="o">.</span><span class="n">page_content</span>
+<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a>        <span class="n">children</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_size</span><span class="p">):</span>
+<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>            <span class="n">end</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_size</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">))</span>
+<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>            <span class="n">children</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">end</span><span class="p">])</span>
+<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a>        <span class="k">return</span> <span class="n">children</span>
+<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a>
+<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">_index_children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">children</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">parent_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Step 3: 向量化逻辑 (伪代码)&quot;&quot;&quot;</span>
+<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a>        <span class="k">for</span> <span class="n">child_text</span> <span class="ow">in</span> <span class="n">children</span><span class="p">:</span>
+<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a>            <span class="c1"># 模拟 Embedding 过程</span>
+<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a>            <span class="c1"># vector = embedding_model.encode(child_text) </span>
+<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a>            <span class="n">vector</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0_1</span><span class="p">,</span> <span class="mi">0_2</span><span class="p">]</span> <span class="c1"># 占位符</span>
+<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a>
+<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a>            <span class="c1"># 关键：在 Child 的元数据中存储 Parent ID</span>
+<a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">vector_index</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a>                <span class="s2">&quot;vec&quot;</span><span class="p">:</span> <span class="n">vector</span><span class="p">,</span>
+<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a>                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">child_text</span><span class="p">,</span>
+<a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a>                <span class="s2">&quot;parent_id&quot;</span><span class="p">:</span> <span class="n">parent_id</span>
+<a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a>            <span class="p">})</span>
+<a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a>
+<a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">retrieve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Document</span><span class="p">]:</span>
+<a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a><span class="sd">        Step 4: 检索逻辑 (Small-to-Big)</span>
+<a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a><span class="sd">        检索命中 Child -&gt; 返回 Parent</span>
+<a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a>        <span class="c1"># 1. 向量检索找到 Top-K Children (模拟)</span>
+<a id="__codelineno-1-73" name="__codelineno-1-73" href="#__codelineno-1-73"></a>        <span class="c1"># top_children = vector_db.search(query)</span>
+<a id="__codelineno-1-74" name="__codelineno-1-74" href="#__codelineno-1-74"></a>        <span class="c1"># 注意: 这里仅为示例, 实际应该基于向量相似度排序</span>
+<a id="__codelineno-1-75" name="__codelineno-1-75" href="#__codelineno-1-75"></a>        <span class="n">top_child</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vector_index</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># 假设命中了第一个</span>
+<a id="__codelineno-1-76" name="__codelineno-1-76" href="#__codelineno-1-76"></a>
+<a id="__codelineno-1-77" name="__codelineno-1-77" href="#__codelineno-1-77"></a>        <span class="c1"># 2. 回溯 Parent</span>
+<a id="__codelineno-1-78" name="__codelineno-1-78" href="#__codelineno-1-78"></a>        <span class="n">parent_id</span> <span class="o">=</span> <span class="n">top_child</span><span class="p">[</span><span class="s2">&quot;parent_id&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-79" name="__codelineno-1-79" href="#__codelineno-1-79"></a>        <span class="n">parent_doc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">doc_store</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">parent_id</span><span class="p">)</span>
+<a id="__codelineno-1-80" name="__codelineno-1-80" href="#__codelineno-1-80"></a>
+<a id="__codelineno-1-81" name="__codelineno-1-81" href="#__codelineno-1-81"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;检索命中片段: </span><span class="si">{</span><span class="n">top_child</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">][:</span><span class="mi">20</span><span class="p">]</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-82" name="__codelineno-1-82" href="#__codelineno-1-82"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;回溯父文档ID: </span><span class="si">{</span><span class="n">parent_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-83" name="__codelineno-1-83" href="#__codelineno-1-83"></a>        <span class="k">return</span> <span class="p">[</span><span class="n">parent_doc</span><span class="p">]</span>
+<a id="__codelineno-1-84" name="__codelineno-1-84" href="#__codelineno-1-84"></a>
+<a id="__codelineno-1-85" name="__codelineno-1-85" href="#__codelineno-1-85"></a><span class="c1"># --- Usage Example ---</span>
+<a id="__codelineno-1-86" name="__codelineno-1-86" href="#__codelineno-1-86"></a><span class="n">indexer</span> <span class="o">=</span> <span class="n">ParentChildIndexer</span><span class="p">()</span>
+<a id="__codelineno-1-87" name="__codelineno-1-87" href="#__codelineno-1-87"></a><span class="n">doc</span> <span class="o">=</span> <span class="n">Document</span><span class="p">(</span><span class="n">page_content</span><span class="o">=</span><span class="s2">&quot;RAG系统的核心在于数据质量...&quot;</span> <span class="o">*</span> <span class="mi">50</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="s2">&quot;manual.pdf&quot;</span><span class="p">})</span>
+<a id="__codelineno-1-88" name="__codelineno-1-88" href="#__codelineno-1-88"></a><span class="n">indexer</span><span class="o">.</span><span class="n">process_documents</span><span class="p">([</span><span class="n">doc</span><span class="p">])</span>
+<a id="__codelineno-1-89" name="__codelineno-1-89" href="#__codelineno-1-89"></a><span class="n">result</span> <span class="o">=</span> <span class="n">indexer</span><span class="o">.</span><span class="n">retrieve</span><span class="p">(</span><span class="s2">&quot;数据质量&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="12_43-pro-tips">12_4.3 实战技巧 (Pro Tips)<a class="headerlink" href="#12_43-pro-tips" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p><strong>💡 Tip: ID 管理至关重要</strong>
+在生产环境中，<code>doc_id</code> 必须具有确定性（例如使用 <code>hash(file_path + update_time)</code>）。否则，当源文件更新重新运行时，向量数据库中会产生大量无法删除的“僵尸切片”。</p>
+</blockquote>
+<hr />
+<h2 id="12_5-performance-evaluation">12_5 性能与评估 (Performance &amp; Evaluation)<a class="headerlink" href="#12_5-performance-evaluation" title="Permanent link">&para;</a></h2>
+<p>RAG 系统的性能不仅仅是“回答准确”，还包括索引构建的成本和检索的延迟。</p>
+<h3 id="12_51">12_5.1 评价指标<a class="headerlink" href="#12_51" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">指标</th>
+<th style="text-align: left;">说明</th>
+<th style="text-align: left;">目标值 (参考)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Hit Rate (Recall@K)</strong></td>
+<td style="text-align: left;">检索出的前 K 个文档中包含正确答案的比例</td>
+<td style="text-align: left;">&gt; 85%</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MRR (Mean Reciprocal Rank)</strong></td>
+<td style="text-align: left;">正确文档在检索列表中的排名权重</td>
+<td style="text-align: left;">&gt; 0_7</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Faithfulness</strong></td>
+<td style="text-align: left;">生成的答案是否忠实于检索到的上下文（防幻觉）</td>
+<td style="text-align: left;">&gt; 90% (基于 RAGAS)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12_52-benchmarks">12_5.2 基准测试 (Benchmarks)<a class="headerlink" href="#12_52-benchmarks" title="Permanent link">&para;</a></h3>
+<p>我们在服务器 (Dual Xeon 6226R + 1x RTX 3090) 实例上，针对 10,000 页 PDF 文档（混合文本与表格）进行了测试：</p>
+<ul>
+<li><strong>解析耗时 (Unstructured)</strong>: <ul>
+<li>纯 CPU: 28 分钟</li>
+<li>GPU 加速 (OCR): 11 分钟 (<strong>加速 2_5 倍</strong>)</li>
+</ul>
+</li>
+<li><strong>检索延迟 (10M 向量规模)</strong>:<ul>
+<li>纯 Dense 检索: 9ms</li>
+<li>Hybrid 检索 (Dense + Sparse + RRF): 45ms</li>
+<li><em>结论：混合检索虽然增加了延迟，但在精准度要求高的场景下（如合同审查），36ms的额外开销是完全值得的。</em></li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2 id="12_6">12_6 常见误区与避坑指南<a class="headerlink" href="#12_6" title="Permanent link">&para;</a></h2>
+<h3 id="pdf-pypdf">误区一：“PDF 解析用 PyPDF 就够了”<a class="headerlink" href="#pdf-pypdf" title="Permanent link">&para;</a></h3>
+<p>许多初学者低估了 PDF 的复杂性。对于包含图表、多栏的财报或手册，简单的文本提取会导致严重的信息丢失。建议在项目初期就引入 Layout Analysis 工具。</p>
+<h3 id="_3">误区二：“切片越小越好”<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<p>过小的切片虽然能提高检索的余弦相似度，但会导致“断章取义”。LLM 缺乏足够的上下文（Context）来推断正确答案。</p>
+<h3 id="_4">误区三：“忽视元数据”<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>只存文本向量，不存元数据（如文件名、页码、发布日期），会导致无法进行时间过滤或来源追溯，降低系统的可用性。</p>
+<hr />
+<h2 id="_5">本章小结<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>RAG 系统的核心竞争力在于数据处理的精细度。本章我们解析了 RAG 数据流水线的三大关卡：
+1.  <strong>解析关</strong>：必须从视觉层面理解文档结构，解决表格和多栏问题。
+2.  <strong>切片关</strong>：告别单一的固定切分，采用父子索引或语义切片来平衡检索精度与上下文完整性。
+3.  <strong>检索关</strong>：通过微调 Embedding 模型适配领域知识，并结合混合检索弥补向量匹配的不足。</p>
+<p>做好了这些，你的 RAG 系统才能从“能用”进化为“好用”。</p>
+<p><img alt="图12-3：RAG数据处理全景图" src="../../images/chapter5/%E5%9B%BE12_3_RAG%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86%E5%85%A8%E6%99%AF%E5%9B%BE.png" /></p>
+<!-- ![图12-3：RAG数据处理全景图](images/第12章/图12_3_RAG数据处理全景图.png) -->
+
+<p><em>图12-3：企业级 RAG 数据流水线架构 —— 强调从非结构化解析到混合检索的全流程优化</em></p>
+<hr />
+<h2 id="_6">延伸阅读<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p><strong>工具与框架</strong>
+* <strong>LlamaIndex</strong>：目前最先进的 RAG 数据框架，提供了丰富的 Data Loaders 和 Indexing 策略（包括本文提到的父子索引）。
+* <strong>RAGAS</strong>：一个用于评估 RAG 管道性能的框架，关注检索准确率（Retrieval Accuracy）和生成忠实度（Faithfulness）。</p>
+<p><strong>核心论文</strong>
+* Lewis 等人于 2020 年发表的 <em>Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks</em> 是 RAG 的开山之作。
+* Karpukhin 等人发表的 <em>Dense Passage Retrieval for Open-Domain Question Answering (DPR)</em> 奠定了现代双塔向量检索的基础。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../../chapter4/4_3/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 第11章：人类偏好数据">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                第11章：人类偏好数据
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../5_2_mm_rag/" class="md-footer__link md-footer__link--next" aria-label="下一页: 第13章：多模态RAG">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                第13章：多模态RAG
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

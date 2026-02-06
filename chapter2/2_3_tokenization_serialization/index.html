@@ -1,0 +1,2664 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/chapter2/2_3_tokenization_serialization/">
+      
+      
+        <link rel="prev" href="../2_2_cleaning_denoising/">
+      
+      
+        <link rel="next" href="../../chapter3/3_1/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>第5章：分词与序列化 - 大模型数据工程：架构、算法及项目实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#5" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-header__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型数据工程：架构、算法及项目实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第5章：分词与序列化
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="切换至夜间模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至夜间模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="切换至日间模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至日间模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-nav__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大模型数据工程：架构、算法及项目实战
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    目录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一部分：基础设施与核心理念
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一部分：基础设施与核心理念
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter1/1_1_data_change/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第1章：大模型时代的数据变革
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter1/1_2_data_infra/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第2章：数据基础设施选型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二部分：文本预训练数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二部分：文本预训练数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2_1_data_acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第3章：数据获取与采集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2_2_cleaning_denoising/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第4章：清洗与去噪
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第5章：分词与序列化
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第5章：分词与序列化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章摘要
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景引入
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_1 分词器原理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5_1 分词器原理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_1.1 为什么需要子词分词？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_12-bpe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_1.2 BPE：字节对编码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_13-wordpiecebert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_1.3 WordPiece：BERT 的选择
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_14-unigram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_1.4 Unigram：概率视角的分词
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_1.5 三种算法的对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_2 词表设计与扩充
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5_2 词表设计与扩充">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_2.1 词表大小的权衡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_2.2 多语言词表设计
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_2.3 领域特定词表扩充
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_2.4 词表设计的最佳实践
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_3 数据混合与课程学习
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5_3 数据混合与课程学习">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5_31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_3.1 数据混合策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_3.2 课程学习
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_3.3 数据采样与批次构建
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_34" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_3.4 序列化与存储格式
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_4 完整的数据准备流水线
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_5 本章小结
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        延伸阅读
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        下一章预告
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三部分：多模态数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三部分：多模态数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第6章：图文对数据处理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第7章：数据重描述
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第8章：视频与音频数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第四部分：对齐与合成数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第四部分：对齐与合成数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第9章：指令微调数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第10章：合成数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第11章：人类偏好数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第五部分：应用级数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第五部分：应用级数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter5/5_1_rag_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第12章：RAG数据流水线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter5/5_2_mm_rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第13章：多模态RAG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第六部分：实战项目集
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第六部分：实战项目集
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_1_mini_c4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目一：构建Mini-C4预训练集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_2_legal_sft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目二：垂直领域专家SFT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_3_llava_instruct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目三：构建LLaVA多模态指令集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_4_synthetic_textbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目四：合成数学代码教科书
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_5_mm_rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目五：多模态RAG企业财报助手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章摘要
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景引入
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_1 分词器原理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5_1 分词器原理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_1.1 为什么需要子词分词？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_12-bpe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_1.2 BPE：字节对编码
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_13-wordpiecebert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_1.3 WordPiece：BERT 的选择
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_14-unigram" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_1.4 Unigram：概率视角的分词
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_1.5 三种算法的对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_2 词表设计与扩充
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5_2 词表设计与扩充">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_2.1 词表大小的权衡
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_2.2 多语言词表设计
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_2.3 领域特定词表扩充
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_2.4 词表设计的最佳实践
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_3 数据混合与课程学习
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5_3 数据混合与课程学习">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#5_31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_3.1 数据混合策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_32" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_3.2 课程学习
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_3.3 数据采样与批次构建
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5_34" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_3.4 序列化与存储格式
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_4 完整的数据准备流水线
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5_5 本章小结
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        延伸阅读
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        下一章预告
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="5">第5章：分词与序列化<a class="headerlink" href="#5" title="Permanent link">&para;</a></h1>
+<hr />
+<h2 id="_1">本章摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>分词（Tokenization）是连接原始文本与神经网络的桥梁。清洗后的高质量语料需要转换为模型可以理解的数字序列，才能输入到 Transformer 中进行训练。本章将深入探讨分词器的工作原理，包括 BPE、WordPiece、Unigram 三大主流算法；介绍如何为特定领域构建和扩充词表；最后讨论数据混合与课程学习策略，这些策略决定了不同类型数据在训练过程中的呈现顺序和比例。</p>
+<hr />
+<h2 id="_2">场景引入<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>你的团队正在训练一个专门处理代码的大模型。使用标准的 GPT-2 分词器进行初步实验后，发现了一个奇怪的现象：模型生成的代码经常在缩进处出错，把四个空格拆成了多个不同的 token，导致缩进不一致。更糟糕的是，一些常见的编程关键字（如 <code>def</code>、<code>return</code>）被拆分成了多个子词，模型需要额外的上下文才能理解它们的含义。</p>
+<p>经过分析，你发现问题出在分词器上。GPT-2 的分词器是在网页文本上训练的，对代码的特殊结构（如空白符、驼峰命名、特殊符号）处理得并不好。为代码任务设计专门的分词器，成为了提升模型性能的关键一步。</p>
+<p>这个例子说明：分词器绝非可以忽视的"预处理细节"，它对模型的能力有实质性的影响。</p>
+<hr />
+<h2 id="5_1">5_1 分词器原理<a class="headerlink" href="#5_1" title="Permanent link">&para;</a></h2>
+<p>分词器的核心任务是将连续的文本字符串切分为离散的 token 序列，并将每个 token 映射到一个整数 ID。这个看似简单的任务，实际上涉及到复杂的算法设计和工程权衡。</p>
+<h3 id="5_11">5_1.1 为什么需要子词分词？<a class="headerlink" href="#5_11" title="Permanent link">&para;</a></h3>
+<p>在深度学习时代早期，自然语言处理通常采用词级别（Word-level）或字符级别（Character-level）的分词方式。词级别分词将每个完整的单词视为一个 token，优点是语义清晰，缺点是词表规模庞大（需要覆盖所有可能出现的单词），且无法处理未登录词（Out-of-Vocabulary, OOV）。字符级别分词将每个字符视为一个 token，优点是词表极小且没有 OOV 问题，缺点是序列过长，模型难以捕捉长程依赖。</p>
+<p>子词分词（Subword Tokenization）是一种折中方案。它将文本切分为比单词更小、比字符更大的单元。高频词保持完整，低频词则被拆分为更小的子词单元。例如，"unhappiness" 可能被拆分为 "un" + "happi" + "ness"。这种方式既控制了词表规模，又保留了一定的语义信息，还能通过子词组合处理未见过的词汇。</p>
+<p><img alt="图5-1：分词粒度对比" src="../../images/chapter2/%E5%9B%BE5_1_%E5%88%86%E8%AF%8D%E7%B2%92%E5%BA%A6%E5%AF%B9%E6%AF%94.png" /></p>
+<p><em>图5-1：分词粒度对比 —— 词级别、字符级别与子词级别的权衡</em></p>
+<p>目前主流的大语言模型几乎都采用子词分词。GPT 系列使用 BPE，BERT 使用 WordPiece，T5 和 LLaMA 使用 SentencePiece（支持 BPE 和 Unigram）。理解这些算法的原理，是进行分词器定制和优化的基础。</p>
+<h3 id="5_12-bpe">5_1.2 BPE：字节对编码<a class="headerlink" href="#5_12-bpe" title="Permanent link">&para;</a></h3>
+<p>BPE（Byte Pair Encoding）最初是一种数据压缩算法，后被 Sennrich 等人在 2015 年引入到神经机器翻译中，成为最广泛使用的子词分词算法。</p>
+<p>BPE 的核心思想非常直观：从字符级别开始，反复合并出现频率最高的相邻 token 对，直到达到预定的词表大小。具体步骤如下：</p>
+<ol>
+<li>将所有训练文本拆分为字符序列，每个字符作为初始 token</li>
+<li>统计所有相邻 token 对的出现频率</li>
+<li>将频率最高的 token 对合并为一个新 token</li>
+<li>重复步骤 2-3，直到词表达到目标大小</li>
+</ol>
+<p>以下是一个简化的 BPE 训练实现：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span><span class="p">,</span> <span class="n">defaultdict</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">train_bpe</span><span class="p">(</span><span class="n">corpus</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">vocab_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="sd">    训练 BPE 分词器</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="sd">        corpus: 训练语料列表</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="sd">        vocab_size: 目标词表大小</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="sd">        合并规则字典</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="c1"># 初始化：将每个词拆分为字符，并添加词尾标记</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="n">word_freqs</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">corpus</span><span class="p">:</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>            <span class="c1"># 添加词尾标记 &lt;/w&gt; 以区分词中和词尾的相同字符</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>            <span class="n">word_freqs</span><span class="p">[</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">word</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39; &lt;/w&gt;&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="n">merges</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="n">vocab</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    <span class="c1"># 初始词表为所有字符</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">word_freqs</span><span class="p">:</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>        <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">word</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>            <span class="n">vocab</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">char</span><span class="p">)</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">vocab_size</span><span class="p">:</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>        <span class="c1"># 统计相邻 token 对频率</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>        <span class="n">pair_freqs</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>        <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">freq</span> <span class="ow">in</span> <span class="n">word_freqs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>            <span class="n">tokens</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>                <span class="n">pair</span> <span class="o">=</span> <span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">tokens</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>                <span class="n">pair_freqs</span><span class="p">[</span><span class="n">pair</span><span class="p">]</span> <span class="o">+=</span> <span class="n">freq</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">pair_freqs</span><span class="p">:</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>            <span class="k">break</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>        <span class="c1"># 找到频率最高的 pair</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>        <span class="n">best_pair</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">pair_freqs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">pair_freqs</span><span class="o">.</span><span class="n">get</span><span class="p">)</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>        <span class="c1"># 合并这个 pair</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>        <span class="n">new_token</span> <span class="o">=</span> <span class="n">best_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">best_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>        <span class="n">merges</span><span class="p">[</span><span class="n">best_pair</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_token</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>        <span class="n">vocab</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_token</span><span class="p">)</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>        <span class="c1"># 更新词频表</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>        <span class="n">new_word_freqs</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>        <span class="k">for</span> <span class="n">word</span><span class="p">,</span> <span class="n">freq</span> <span class="ow">in</span> <span class="n">word_freqs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>            <span class="n">new_word</span> <span class="o">=</span> <span class="n">word</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>                <span class="n">best_pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="n">best_pair</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> 
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>                <span class="n">new_token</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>            <span class="p">)</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>            <span class="n">new_word_freqs</span><span class="p">[</span><span class="n">new_word</span><span class="p">]</span> <span class="o">=</span> <span class="n">freq</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>        <span class="n">word_freqs</span> <span class="o">=</span> <span class="n">new_word_freqs</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>    <span class="k">return</span> <span class="n">merges</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a><span class="k">def</span><span class="w"> </span><span class="nf">apply_bpe</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">merges</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;应用 BPE 分词&quot;&quot;&quot;</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a>    <span class="n">tokens</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;&lt;/w&gt;&#39;</span><span class="p">]</span>
+<a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a>
+<a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a>    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a>        <span class="c1"># 找到可以合并的 pair</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a>        <span class="n">pairs</span> <span class="o">=</span> <span class="p">[(</span><span class="n">tokens</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">tokens</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a>        <span class="n">merge_pair</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a>        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a>            <span class="k">if</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">merges</span><span class="p">:</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a>                <span class="n">merge_pair</span> <span class="o">=</span> <span class="n">pair</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>                <span class="k">break</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a>
+<a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>        <span class="k">if</span> <span class="n">merge_pair</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a>            <span class="k">break</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a>
+<a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a>        <span class="c1"># 执行合并</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a>        <span class="n">new_tokens</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a>        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a>        <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">):</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a>            <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">and</span> <span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">tokens</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="n">merge_pair</span><span class="p">:</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a>                <span class="n">new_tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">merges</span><span class="p">[</span><span class="n">merge_pair</span><span class="p">])</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a>                <span class="n">i</span> <span class="o">+=</span> <span class="mi">2</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a>            <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a>                <span class="n">new_tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a>                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a>        <span class="n">tokens</span> <span class="o">=</span> <span class="n">new_tokens</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a>
+<a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a>    <span class="k">return</span> <span class="n">tokens</span>
+</code></pre></div>
+<p>BPE 的一个重要变体是 Byte-level BPE，由 GPT-2 引入。传统 BPE 在字符级别操作，需要处理 Unicode 编码问题。Byte-level BPE 直接在字节级别操作，将每个字节映射到一个可打印字符，从而避免了编码问题，且天然支持任何语言。这也是为什么 GPT 系列模型可以处理任意语言文本的原因。</p>
+<h3 id="5_13-wordpiecebert">5_1.3 WordPiece：BERT 的选择<a class="headerlink" href="#5_13-wordpiecebert" title="Permanent link">&para;</a></h3>
+<p>WordPiece 是 Google 为 BERT 开发的分词算法，与 BPE 非常相似，主要区别在于选择合并对的标准。</p>
+<p>BPE 选择出现频率最高的 pair 进行合并。WordPiece 则选择能够最大化训练数据似然的 pair。具体来说，对于候选 pair (A, B)，WordPiece 计算合并后词表对训练数据的语言模型概率增益，选择增益最大的 pair 进行合并。</p>
+<p>在实践中，这意味着 WordPiece 倾向于合并那些"在一起出现的概率远高于独立出现概率之积"的 pair。这个标准使得 WordPiece 对于低频但有意义的模式更加敏感。</p>
+<p>WordPiece 的另一个特点是使用 <code>##</code> 前缀来标识非词首的子词。例如，"playing" 可能被分词为 ["play", "##ing"]。这种表示方式明确区分了子词在原词中的位置，有助于模型理解词汇结构。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># WordPiece 分词示例（使用 HuggingFace tokenizers）</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">tokenizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tokenizer</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">tokenizers.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">WordPiece</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">tokenizers.trainers</span><span class="w"> </span><span class="kn">import</span> <span class="n">WordPieceTrainer</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">tokenizers.pre_tokenizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Whitespace</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># 初始化 WordPiece 分词器</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">Tokenizer</span><span class="p">(</span><span class="n">WordPiece</span><span class="p">(</span><span class="n">unk_token</span><span class="o">=</span><span class="s2">&quot;[UNK]&quot;</span><span class="p">))</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="n">tokenizer</span><span class="o">.</span><span class="n">pre_tokenizer</span> <span class="o">=</span> <span class="n">Whitespace</span><span class="p">()</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># 训练</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="n">trainer</span> <span class="o">=</span> <span class="n">WordPieceTrainer</span><span class="p">(</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">vocab_size</span><span class="o">=</span><span class="mi">30000</span><span class="p">,</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">special_tokens</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;[UNK]&quot;</span><span class="p">,</span> <span class="s2">&quot;[CLS]&quot;</span><span class="p">,</span> <span class="s2">&quot;[SEP]&quot;</span><span class="p">,</span> <span class="s2">&quot;[PAD]&quot;</span><span class="p">,</span> <span class="s2">&quot;[MASK]&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="p">)</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">tokenizer</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">files</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;corpus.txt&quot;</span><span class="p">],</span> <span class="n">trainer</span><span class="o">=</span><span class="n">trainer</span><span class="p">)</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="c1"># 使用</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="n">output</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;unhappiness&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="nb">print</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">tokens</span><span class="p">)</span>  <span class="c1"># [&#39;un&#39;, &#39;##happi&#39;, &#39;##ness&#39;]</span>
+</code></pre></div>
+<h3 id="5_14-unigram">5_1.4 Unigram：概率视角的分词<a class="headerlink" href="#5_14-unigram" title="Permanent link">&para;</a></h3>
+<p>Unigram 分词由 Kudo 在 2018 年提出，采用了与 BPE/WordPiece 完全不同的思路。BPE 和 WordPiece 都是自底向上的方法——从小的单元开始，逐步合并成大的单元。Unigram 则是自顶向下的方法——从一个包含所有可能子词的大词表开始，逐步删减到目标大小。</p>
+<p>Unigram 将分词建模为一个概率问题。给定词表 V 和每个 token 的概率 P(t)，一个文本的分词结果是使得总概率最大化的切分方式：</p>
+<div class="arithmatex">\[P(x_1, x_2, ..., x_n) = \prod_{i=1}^{n} P(x_i)\]</div>
+<p>训练过程使用 EM 算法：E 步骤计算当前词表下每个 token 的期望出现次数，M 步骤更新 token 概率。然后删除那些删除后对总似然影响最小的 token，直到达到目标词表大小。</p>
+<p>Unigram 的一个独特优势是它天然支持多种分词结果的概率建模。对于一个给定的文本，可能存在多种合法的分词方式，Unigram 可以为每种方式赋予一个概率。这在某些应用场景（如语音识别中的多假设处理）中非常有用。</p>
+<h3 id="5_15">5_1.5 三种算法的对比<a class="headerlink" href="#5_15" title="Permanent link">&para;</a></h3>
+<p>三种主流子词分词算法各有特点，选择时需要根据具体场景权衡。</p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>核心思想</th>
+<th>优势</th>
+<th>劣势</th>
+<th>典型应用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BPE</td>
+<td>自底向上，频率驱动合并</td>
+<td>简单直观，训练快</td>
+<td>贪心策略可能非最优</td>
+<td>GPT系列、LLaMA</td>
+</tr>
+<tr>
+<td>WordPiece</td>
+<td>自底向上，似然驱动合并</td>
+<td>对低频有意义模式敏感</td>
+<td>计算复杂度较高</td>
+<td>BERT、DistilBERT</td>
+</tr>
+<tr>
+<td>Unigram</td>
+<td>自顶向下，概率建模</td>
+<td>理论优雅，支持多分词</td>
+<td>训练较慢</td>
+<td>T5、mT5、ALBERT</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="图5-2：分词算法对比" src="../../images/chapter2/%E5%9B%BE5_2_%E5%88%86%E8%AF%8D%E7%AE%97%E6%B3%95%E5%AF%B9%E6%AF%94.png" /></p>
+<p><em>图5-2：BPE、WordPiece、Unigram 三种分词算法的对比</em></p>
+<p>在实际工程中，SentencePiece 是最常用的分词工具包。它支持 BPE 和 Unigram 两种算法，提供了语言无关的预处理（不依赖空格分词），并且与主流深度学习框架无缝集成。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">sentencepiece</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spm</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># 训练 SentencePiece 模型</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">spm</span><span class="o">.</span><span class="n">SentencePieceTrainer</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="nb">input</span><span class="o">=</span><span class="s1">&#39;corpus.txt&#39;</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">model_prefix</span><span class="o">=</span><span class="s1">&#39;my_tokenizer&#39;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">vocab_size</span><span class="o">=</span><span class="mi">32000</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;bpe&#39;</span><span class="p">,</span>  <span class="c1"># 或 &#39;unigram&#39;</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">character_coverage</span><span class="o">=</span><span class="mi">0_9995</span><span class="p">,</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">num_threads</span><span class="o">=</span><span class="mi">16</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">)</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="c1"># 加载和使用</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="n">sp</span> <span class="o">=</span> <span class="n">spm</span><span class="o">.</span><span class="n">SentencePieceProcessor</span><span class="p">(</span><span class="n">model_file</span><span class="o">=</span><span class="s1">&#39;my_tokenizer.model&#39;</span><span class="p">)</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="n">tokens</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;Hello, world!&#39;</span><span class="p">,</span> <span class="n">out_type</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="nb">print</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>  <span class="c1"># [&#39;▁Hello&#39;, &#39;,&#39;, &#39;▁world&#39;, &#39;!&#39;]</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="n">ids</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;Hello, world!&#39;</span><span class="p">)</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="nb">print</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>  <span class="c1"># [1234, 56, 789, 10]</span>
+</code></pre></div>
+<hr />
+<h2 id="5_2">5_2 词表设计与扩充<a class="headerlink" href="#5_2" title="Permanent link">&para;</a></h2>
+<p>词表（Vocabulary）是分词器的核心组成部分。词表的大小、覆盖范围和结构直接影响模型的性能和效率。</p>
+<h3 id="5_21">5_2.1 词表大小的权衡<a class="headerlink" href="#5_21" title="Permanent link">&para;</a></h3>
+<p>词表大小是分词器设计中最重要的超参数之一。较大的词表意味着更多的 token 被保留为完整单元，序列长度更短，但嵌入矩阵更大，参数更多；较小的词表意味着更多的词被拆分为子词，序列长度更长，但模型参数更少。</p>
+<p>主流大模型的词表大小通常在 32K 到 128K 之间。GPT-2 使用 50,257 的词表，LLaMA 使用 32,000，GPT-4 据报道使用约 100,000。选择词表大小时需要考虑以下因素：</p>
+<p><strong>计算效率</strong>：词表越大，嵌入层和输出层的参数越多。对于一个 d 维的模型，词表大小为 V 时，嵌入矩阵包含 V × d 个参数。当 V 从 32K 增加到 128K 时，这部分参数量增加 4 倍。</p>
+<p><strong>序列长度</strong>：词表越大，平均每个 token 覆盖的字符越多，同样的文本被分成的 token 数越少。这对于处理长文档尤为重要，因为 Transformer 的计算复杂度与序列长度的平方成正比。</p>
+<p><strong>稀有词处理</strong>：词表越大，越多的稀有词可以被保留为完整 token，减少了 UNK 和过度切分的问题。但这也意味着稀有 token 在训练中见到的样本更少，可能导致嵌入质量不佳。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># 分析不同词表大小对序列长度的影响</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">analyze_vocab_size_impact</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">vocab_sizes</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;分析词表大小对分词结果的影响&quot;&quot;&quot;</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">sentencepiece</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spm</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="k">for</span> <span class="n">vocab_size</span> <span class="ow">in</span> <span class="n">vocab_sizes</span><span class="p">:</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        <span class="c1"># 训练不同词表大小的分词器</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">spm</span><span class="o">.</span><span class="n">SentencePieceTrainer</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>            <span class="nb">input</span><span class="o">=</span><span class="s1">&#39;corpus.txt&#39;</span><span class="p">,</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>            <span class="n">model_prefix</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;tokenizer_</span><span class="si">{</span><span class="n">vocab_size</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>            <span class="n">vocab_size</span><span class="o">=</span><span class="n">vocab_size</span><span class="p">,</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>            <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;bpe&#39;</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>        <span class="p">)</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>        <span class="n">sp</span> <span class="o">=</span> <span class="n">spm</span><span class="o">.</span><span class="n">SentencePieceProcessor</span><span class="p">(</span><span class="n">model_file</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;tokenizer_</span><span class="si">{</span><span class="n">vocab_size</span><span class="si">}</span><span class="s1">.model&#39;</span><span class="p">)</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        <span class="n">tokens</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>        <span class="n">results</span><span class="p">[</span><span class="n">vocab_size</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>            <span class="s1">&#39;num_tokens&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">),</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>            <span class="s1">&#39;chars_per_token&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">),</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>            <span class="s1">&#39;compression_ratio&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>        <span class="p">}</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>    <span class="k">return</span> <span class="n">results</span>
+</code></pre></div>
+<h3 id="5_22">5_2.2 多语言词表设计<a class="headerlink" href="#5_22" title="Permanent link">&para;</a></h3>
+<p>训练多语言模型时，词表设计面临额外的挑战：如何在有限的词表空间中平衡不同语言的覆盖？</p>
+<p>一个常见的问题是"词表诅咒"（Vocabulary Curse）。如果直接在多语言语料上训练分词器，高资源语言（如英语）会占据大部分词表空间，低资源语言的覆盖严重不足。这导致低资源语言的文本被过度切分，序列长度膨胀，模型性能下降。</p>
+<p>解决这一问题的常用策略包括：</p>
+<p><strong>语料平衡</strong>：在训练分词器之前，对不同语言的语料进行上采样或下采样，使每种语言的权重更加均衡。</p>
+<p><strong>温度采样</strong>：类似于我们在第 3 章讨论的多语言数据平衡策略，使用温度参数控制不同语言的采样概率。</p>
+<p><strong>语言特定的字符覆盖</strong>：确保每种目标语言的基本字符集都被纳入词表，即使它们的频率很低。SentencePiece 提供了 <code>character_coverage</code> 参数来控制这一点。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># 多语言分词器训练示例</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">sentencepiece</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spm</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># 使用字符覆盖率确保多语言支持</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">spm</span><span class="o">.</span><span class="n">SentencePieceTrainer</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="nb">input</span><span class="o">=</span><span class="s1">&#39;multilingual_corpus.txt&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">model_prefix</span><span class="o">=</span><span class="s1">&#39;multilingual_tokenizer&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="n">vocab_size</span><span class="o">=</span><span class="mi">64000</span><span class="p">,</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;unigram&#39;</span><span class="p">,</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="n">character_coverage</span><span class="o">=</span><span class="mi">0_9999</span><span class="p">,</span>  <span class="c1"># 高覆盖率确保稀有字符被包含</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="n">input_sentence_size</span><span class="o">=</span><span class="mi">10000000</span><span class="p">,</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="n">shuffle_input_sentence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    <span class="c1"># 特殊处理中日韩字符</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="n">byte_fallback</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># 未知字符回退到字节级别</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="p">)</span>
+</code></pre></div>
+<h3 id="5_23">5_2.3 领域特定词表扩充<a class="headerlink" href="#5_23" title="Permanent link">&para;</a></h3>
+<p>在将预训练模型应用于特定领域（如医疗、法律、代码）时，经常会遇到大量领域术语被过度切分的问题。这不仅增加了序列长度，还可能影响模型对专业概念的理解。</p>
+<p>词表扩充（Vocabulary Extension）是解决这一问题的有效手段。基本思路是：在保留原有词表的基础上，添加新的领域特定 token。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoTokenizer</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">extend_tokenizer</span><span class="p">(</span><span class="n">base_tokenizer_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>                     <span class="n">domain_terms</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>                     <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="sd">    扩充预训练分词器的词表</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="sd">    Args:</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="sd">        base_tokenizer_name: 基础分词器名称</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="sd">        domain_terms: 领域特定术语列表</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="sd">        output_dir: 输出目录</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>    <span class="c1"># 加载基础分词器</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">base_tokenizer_name</span><span class="p">)</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;原始词表大小: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>    <span class="c1"># 过滤已存在的 token</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>    <span class="n">new_tokens</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>    <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="n">domain_terms</span><span class="p">:</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>        <span class="k">if</span> <span class="n">term</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">get_vocab</span><span class="p">():</span>
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>            <span class="n">new_tokens</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>
+<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>    <span class="c1"># 添加新 token</span>
+<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>    <span class="n">num_added</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">add_tokens</span><span class="p">(</span><span class="n">new_tokens</span><span class="p">)</span>
+<a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;添加了 </span><span class="si">{</span><span class="n">num_added</span><span class="si">}</span><span class="s2"> 个新 token&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;新词表大小: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>
+<a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>    <span class="c1"># 保存扩充后的分词器</span>
+<a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a>    <span class="n">tokenizer</span><span class="o">.</span><span class="n">save_pretrained</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+<a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a>
+<a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a>    <span class="k">return</span> <span class="n">tokenizer</span>
+<a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a>
+<a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a><span class="c1"># 示例：为医疗领域扩充词表</span>
+<a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a><span class="n">medical_terms</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a>    <span class="s1">&#39;冠状动脉&#39;</span><span class="p">,</span>
+<a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a>    <span class="s1">&#39;心肌梗死&#39;</span><span class="p">,</span>
+<a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a>    <span class="s1">&#39;动脉粥样硬化&#39;</span><span class="p">,</span>
+<a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a>    <span class="s1">&#39;COVID-19&#39;</span><span class="p">,</span>
+<a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a>    <span class="s1">&#39;mRNA疫苗&#39;</span><span class="p">,</span>
+<a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a>    <span class="s1">&#39;计算机断层扫描&#39;</span><span class="p">,</span>
+<a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a>    <span class="c1"># ... 更多术语</span>
+<a id="__codelineno-5-44" name="__codelineno-5-44" href="#__codelineno-5-44"></a><span class="p">]</span>
+<a id="__codelineno-5-45" name="__codelineno-5-45" href="#__codelineno-5-45"></a>
+<a id="__codelineno-5-46" name="__codelineno-5-46" href="#__codelineno-5-46"></a><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">extend_tokenizer</span><span class="p">(</span>
+<a id="__codelineno-5-47" name="__codelineno-5-47" href="#__codelineno-5-47"></a>    <span class="s1">&#39;meta-llama/Llama-2-7b&#39;</span><span class="p">,</span>
+<a id="__codelineno-5-48" name="__codelineno-5-48" href="#__codelineno-5-48"></a>    <span class="n">medical_terms</span><span class="p">,</span>
+<a id="__codelineno-5-49" name="__codelineno-5-49" href="#__codelineno-5-49"></a>    <span class="s1">&#39;./medical_tokenizer&#39;</span>
+<a id="__codelineno-5-50" name="__codelineno-5-50" href="#__codelineno-5-50"></a><span class="p">)</span>
+</code></pre></div>
+<p>词表扩充后，需要同步扩展模型的嵌入矩阵。新增 token 的嵌入通常初始化为随机值或现有相关 token 的平均值，然后通过继续预训练来学习有意义的表示。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoModelForCausalLM</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">resize_model_embeddings</span><span class="p">(</span><span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>                            <span class="n">tokenizer</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>                            <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;调整模型嵌入层大小以匹配扩充后的词表&quot;&quot;&quot;</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForCausalLM</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="c1"># 调整嵌入层大小</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>    <span class="n">model</span><span class="o">.</span><span class="n">resize_token_embeddings</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tokenizer</span><span class="p">))</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="c1"># 可选：使用相似 token 的均值初始化新嵌入</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="c1"># 这比随机初始化通常能带来更好的效果</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="n">model</span><span class="o">.</span><span class="n">save_pretrained</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="5_24">5_2.4 词表设计的最佳实践<a class="headerlink" href="#5_24" title="Permanent link">&para;</a></h3>
+<p>基于业界的经验，以下是词表设计的一些最佳实践：</p>
+<p><strong>保留足够的特殊 token 位置</strong>：预留一些 token ID 用于未来可能添加的特殊 token（如新的控制符、领域标记等）。许多分词器预留了 100-1000 个位置。</p>
+<p><strong>确保数字和代码符号的合理切分</strong>：数字在很多任务中很重要，但标准分词器往往对数字处理不佳。考虑将单个数字作为独立 token，或使用特殊的数字编码策略。</p>
+<p><strong>测试边界情况</strong>：在确定词表之前，测试各种边界情况：超长单词、特殊字符、混合语言文本、代码片段等。确保分词结果符合预期。</p>
+<p><strong>文档化词表决策</strong>：记录词表大小、训练语料、特殊 token 列表等信息，便于后续的模型迭代和问题排查。</p>
+<hr />
+<h2 id="5_3">5_3 数据混合与课程学习<a class="headerlink" href="#5_3" title="Permanent link">&para;</a></h2>
+<p>确定了分词器之后，下一个关键问题是：如何组织和呈现训练数据？不同来源、不同质量的数据应该以怎样的比例混合？训练过程中数据的顺序是否重要？</p>
+<h3 id="5_31">5_3.1 数据混合策略<a class="headerlink" href="#5_31" title="Permanent link">&para;</a></h3>
+<p>正如我们在第 3 章讨论的，高质量的预训练数据集通常混合了多种来源：网页、书籍、代码、论文、对话等。每种来源的数据量和质量都不同，简单地按原始比例混合往往不是最优的。</p>
+<p><strong>静态混合</strong>是最简单的策略：在训练开始前确定各来源的混合比例，将数据打乱后顺序训练。这种方法简单易实现，但缺乏灵活性。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># 静态数据混合示例</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">static_mix</span><span class="p">(</span><span class="n">data_sources</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">target_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="sd">    静态混合多个数据源</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="sd">    Args:</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="sd">        data_sources: {source_name: (data_list, weight)}</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="sd">        target_size: 目标数据集大小</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="sd">        混合后的数据列表</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>    <span class="n">mixed_data</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>    <span class="c1"># 计算每个来源的采样数量</span>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>    <span class="n">total_weight</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">w</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">data_sources</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>    <span class="k">for</span> <span class="n">source_name</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span> <span class="ow">in</span> <span class="n">data_sources</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>        <span class="n">num_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">target_size</span> <span class="o">*</span> <span class="n">weight</span> <span class="o">/</span> <span class="n">total_weight</span><span class="p">)</span>
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>        <span class="c1"># 如果数据不足，重复采样</span>
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">num_samples</span><span class="p">:</span>
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a>            <span class="n">sampled</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">num_samples</span><span class="p">)</span>
+<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a>            <span class="n">sampled</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">)</span>
+<a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a>
+<a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a>        <span class="n">mixed_data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">sampled</span><span class="p">)</span>
+<a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a>
+<a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a>    <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">mixed_data</span><span class="p">)</span>
+<a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a>    <span class="k">return</span> <span class="n">mixed_data</span>
+<a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a>
+<a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a><span class="c1"># 使用示例</span>
+<a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a><span class="n">data_sources</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-7-36" name="__codelineno-7-36" href="#__codelineno-7-36"></a>    <span class="s1">&#39;web&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">web_data</span><span class="p">,</span> <span class="mi">0_6</span><span class="p">),</span>
+<a id="__codelineno-7-37" name="__codelineno-7-37" href="#__codelineno-7-37"></a>    <span class="s1">&#39;books&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">book_data</span><span class="p">,</span> <span class="mi">0_15</span><span class="p">),</span>
+<a id="__codelineno-7-38" name="__codelineno-7-38" href="#__codelineno-7-38"></a>    <span class="s1">&#39;code&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">code_data</span><span class="p">,</span> <span class="mi">0_1</span><span class="p">),</span>
+<a id="__codelineno-7-39" name="__codelineno-7-39" href="#__codelineno-7-39"></a>    <span class="s1">&#39;papers&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">paper_data</span><span class="p">,</span> <span class="mi">0_1</span><span class="p">),</span>
+<a id="__codelineno-7-40" name="__codelineno-7-40" href="#__codelineno-7-40"></a>    <span class="s1">&#39;wikipedia&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">wiki_data</span><span class="p">,</span> <span class="mi">0_05</span><span class="p">)</span>
+<a id="__codelineno-7-41" name="__codelineno-7-41" href="#__codelineno-7-41"></a><span class="p">}</span>
+<a id="__codelineno-7-42" name="__codelineno-7-42" href="#__codelineno-7-42"></a>
+<a id="__codelineno-7-43" name="__codelineno-7-43" href="#__codelineno-7-43"></a><span class="n">mixed</span> <span class="o">=</span> <span class="n">static_mix</span><span class="p">(</span><span class="n">data_sources</span><span class="p">,</span> <span class="n">target_size</span><span class="o">=</span><span class="mi">1000000</span><span class="p">)</span>
+</code></pre></div>
+<p><img alt="图5-3：数据混合策略" src="../../images/chapter2/%E5%9B%BE5_3_%E6%95%B0%E6%8D%AE%E6%B7%B7%E5%90%88%E7%AD%96%E7%95%A5.png" /></p>
+<p><em>图5-3：静态混合与动态混合策略对比</em></p>
+<p><strong>动态混合</strong>允许在训练过程中调整混合比例。一些研究表明，不同训练阶段的最优数据配比可能不同。例如，训练早期使用更多样化的数据帮助模型建立广泛的语言理解；训练后期增加高质量数据的比例以提升模型的精细能力。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">DynamicDataMixer</span><span class="p">:</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;动态数据混合器&quot;&quot;&quot;</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_sources</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">schedule</span><span class="p">:</span> <span class="nb">list</span><span class="p">):</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="sd">        初始化动态混合器</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="sd">        Args:</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="sd">            data_sources: 数据源字典</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="sd">            schedule: [(step_threshold, weights_dict), ...]</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="sd">                     在不同训练步数使用不同的混合权重</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data_sources</span> <span class="o">=</span> <span class="n">data_sources</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">schedule</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">current_step</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;获取当前步数对应的权重&quot;&quot;&quot;</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>        <span class="k">for</span> <span class="n">step_threshold</span><span class="p">,</span> <span class="n">weights</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">):</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_step</span> <span class="o">&gt;=</span> <span class="n">step_threshold</span><span class="p">:</span>
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>                <span class="k">return</span> <span class="n">weights</span>
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>
+<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">sample_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;采样一个 batch&quot;&quot;&quot;</span>
+<a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a>        <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_weights</span><span class="p">()</span>
+<a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a>        <span class="n">batch</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a>
+<a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a>        <span class="k">for</span> <span class="n">source_name</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="n">weights</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-8-30" name="__codelineno-8-30" href="#__codelineno-8-30"></a>            <span class="n">num_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">batch_size</span> <span class="o">*</span> <span class="n">weight</span><span class="p">)</span>
+<a id="__codelineno-8-31" name="__codelineno-8-31" href="#__codelineno-8-31"></a>            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_sources</span><span class="p">[</span><span class="n">source_name</span><span class="p">]</span>
+<a id="__codelineno-8-32" name="__codelineno-8-32" href="#__codelineno-8-32"></a>            <span class="n">batch</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">num_samples</span><span class="p">))</span>
+<a id="__codelineno-8-33" name="__codelineno-8-33" href="#__codelineno-8-33"></a>
+<a id="__codelineno-8-34" name="__codelineno-8-34" href="#__codelineno-8-34"></a>        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+<a id="__codelineno-8-35" name="__codelineno-8-35" href="#__codelineno-8-35"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">current_step</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-8-36" name="__codelineno-8-36" href="#__codelineno-8-36"></a>        <span class="k">return</span> <span class="n">batch</span><span class="p">[:</span><span class="n">batch_size</span><span class="p">]</span>
+<a id="__codelineno-8-37" name="__codelineno-8-37" href="#__codelineno-8-37"></a>
+<a id="__codelineno-8-38" name="__codelineno-8-38" href="#__codelineno-8-38"></a><span class="c1"># 使用示例：训练早期强调多样性，后期强调质量</span>
+<a id="__codelineno-8-39" name="__codelineno-8-39" href="#__codelineno-8-39"></a><span class="n">schedule</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-8-40" name="__codelineno-8-40" href="#__codelineno-8-40"></a>    <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;web&#39;</span><span class="p">:</span> <span class="mi">0_5</span><span class="p">,</span> <span class="s1">&#39;books&#39;</span><span class="p">:</span> <span class="mi">0_2</span><span class="p">,</span> <span class="s1">&#39;code&#39;</span><span class="p">:</span> <span class="mi">0_15</span><span class="p">,</span> <span class="s1">&#39;papers&#39;</span><span class="p">:</span> <span class="mi">0_1</span><span class="p">,</span> <span class="s1">&#39;wiki&#39;</span><span class="p">:</span> <span class="mi">0_05</span><span class="p">}),</span>
+<a id="__codelineno-8-41" name="__codelineno-8-41" href="#__codelineno-8-41"></a>    <span class="p">(</span><span class="mi">100000</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;web&#39;</span><span class="p">:</span> <span class="mi">0_4</span><span class="p">,</span> <span class="s1">&#39;books&#39;</span><span class="p">:</span> <span class="mi">0_25</span><span class="p">,</span> <span class="s1">&#39;code&#39;</span><span class="p">:</span> <span class="mi">0_15</span><span class="p">,</span> <span class="s1">&#39;papers&#39;</span><span class="p">:</span> <span class="mi">0_15</span><span class="p">,</span> <span class="s1">&#39;wiki&#39;</span><span class="p">:</span> <span class="mi">0_05</span><span class="p">}),</span>
+<a id="__codelineno-8-42" name="__codelineno-8-42" href="#__codelineno-8-42"></a>    <span class="p">(</span><span class="mi">500000</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;web&#39;</span><span class="p">:</span> <span class="mi">0_3</span><span class="p">,</span> <span class="s1">&#39;books&#39;</span><span class="p">:</span> <span class="mi">0_3</span><span class="p">,</span> <span class="s1">&#39;code&#39;</span><span class="p">:</span> <span class="mi">0_2</span><span class="p">,</span> <span class="s1">&#39;papers&#39;</span><span class="p">:</span> <span class="mi">0_15</span><span class="p">,</span> <span class="s1">&#39;wiki&#39;</span><span class="p">:</span> <span class="mi">0_05</span><span class="p">}),</span>
+<a id="__codelineno-8-43" name="__codelineno-8-43" href="#__codelineno-8-43"></a><span class="p">]</span>
+<a id="__codelineno-8-44" name="__codelineno-8-44" href="#__codelineno-8-44"></a>
+<a id="__codelineno-8-45" name="__codelineno-8-45" href="#__codelineno-8-45"></a><span class="n">mixer</span> <span class="o">=</span> <span class="n">DynamicDataMixer</span><span class="p">(</span><span class="n">data_sources</span><span class="p">,</span> <span class="n">schedule</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="5_32">5_3.2 课程学习<a class="headerlink" href="#5_32" title="Permanent link">&para;</a></h3>
+<p>课程学习（Curriculum Learning）是一种受人类学习过程启发的训练策略。核心思想是：先让模型学习"简单"的样本，再逐渐过渡到"困难"的样本。这种策略在多项研究中被证明可以加速收敛并提升最终性能。</p>
+<p>在预训练场景下，"简单"和"困难"可以有多种定义：</p>
+<p><strong>基于长度</strong>：短文本通常比长文本更容易学习。课程可以从短序列开始，逐渐增加序列长度。</p>
+<p><strong>基于困惑度</strong>：困惑度低的文本（语言模型更"熟悉"的文本）可以视为"简单"样本。可以使用一个预训练的小模型评估样本难度，然后按难度排序呈现给主模型。</p>
+<p><strong>基于噪声水平</strong>：高质量、低噪声的文本先呈现，然后逐渐引入质量较低但可能包含独特信息的文本。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">CurriculumScheduler</span><span class="p">:</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;课程学习调度器&quot;&quot;&quot;</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>                 <span class="n">data</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> 
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>                 <span class="n">difficulty_scores</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>                 <span class="n">total_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>                 <span class="n">strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;linear&#39;</span><span class="p">):</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="sd">        初始化课程调度器</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="sd">        Args:</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="sd">            data: 数据列表</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="sd">            difficulty_scores: 每个样本的难度分数（越高越难）</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="sd">            total_steps: 总训练步数</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="sd">            strategy: 课程策略 (&#39;linear&#39;, &#39;sqrt&#39;, &#39;exp&#39;)</span>
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">difficulty_scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">difficulty_scores</span><span class="p">)</span>
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span> <span class="o">=</span> <span class="n">total_steps</span>
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">=</span> <span class="n">strategy</span>
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a>
+<a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>        <span class="c1"># 按难度排序</span>
+<a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>        <span class="n">sorted_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">difficulty_scores</span><span class="p">)</span>
+<a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">sorted_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">sorted_indices</span><span class="p">]</span>
+<a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">sorted_scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">difficulty_scores</span><span class="p">[</span><span class="n">sorted_indices</span><span class="p">]</span>
+<a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a>
+<a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_curriculum_fraction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a><span class="sd">        计算当前步数应该使用的数据比例</span>
+<a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a>
+<a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a><span class="sd">        返回值在 [0, 1] 之间，表示使用最简单的多少比例的数据</span>
+<a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a>        <span class="n">progress</span> <span class="o">=</span> <span class="n">current_step</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_steps</span>
+<a id="__codelineno-9-37" name="__codelineno-9-37" href="#__codelineno-9-37"></a>
+<a id="__codelineno-9-38" name="__codelineno-9-38" href="#__codelineno-9-38"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">==</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span>
+<a id="__codelineno-9-39" name="__codelineno-9-39" href="#__codelineno-9-39"></a>            <span class="k">return</span> <span class="n">progress</span>
+<a id="__codelineno-9-40" name="__codelineno-9-40" href="#__codelineno-9-40"></a>        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">==</span> <span class="s1">&#39;sqrt&#39;</span><span class="p">:</span>
+<a id="__codelineno-9-41" name="__codelineno-9-41" href="#__codelineno-9-41"></a>            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">progress</span><span class="p">)</span>
+<a id="__codelineno-9-42" name="__codelineno-9-42" href="#__codelineno-9-42"></a>        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">==</span> <span class="s1">&#39;exp&#39;</span><span class="p">:</span>
+<a id="__codelineno-9-43" name="__codelineno-9-43" href="#__codelineno-9-43"></a>            <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span> <span class="o">*</span> <span class="n">progress</span><span class="p">)</span>
+<a id="__codelineno-9-44" name="__codelineno-9-44" href="#__codelineno-9-44"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-9-45" name="__codelineno-9-45" href="#__codelineno-9-45"></a>            <span class="k">return</span> <span class="n">progress</span>
+<a id="__codelineno-9-46" name="__codelineno-9-46" href="#__codelineno-9-46"></a>
+<a id="__codelineno-9-47" name="__codelineno-9-47" href="#__codelineno-9-47"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">sample_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-9-48" name="__codelineno-9-48" href="#__codelineno-9-48"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;根据当前进度采样 batch&quot;&quot;&quot;</span>
+<a id="__codelineno-9-49" name="__codelineno-9-49" href="#__codelineno-9-49"></a>        <span class="n">fraction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_curriculum_fraction</span><span class="p">(</span><span class="n">current_step</span><span class="p">)</span>
+<a id="__codelineno-9-50" name="__codelineno-9-50" href="#__codelineno-9-50"></a>
+<a id="__codelineno-9-51" name="__codelineno-9-51" href="#__codelineno-9-51"></a>        <span class="c1"># 确定可用数据范围</span>
+<a id="__codelineno-9-52" name="__codelineno-9-52" href="#__codelineno-9-52"></a>        <span class="n">available_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sorted_data</span><span class="p">)</span> <span class="o">*</span> <span class="n">fraction</span><span class="p">),</span> <span class="n">batch_size</span><span class="p">)</span>
+<a id="__codelineno-9-53" name="__codelineno-9-53" href="#__codelineno-9-53"></a>        <span class="n">available_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sorted_data</span><span class="p">[:</span><span class="n">available_size</span><span class="p">]</span>
+<a id="__codelineno-9-54" name="__codelineno-9-54" href="#__codelineno-9-54"></a>
+<a id="__codelineno-9-55" name="__codelineno-9-55" href="#__codelineno-9-55"></a>        <span class="c1"># 从可用范围内随机采样</span>
+<a id="__codelineno-9-56" name="__codelineno-9-56" href="#__codelineno-9-56"></a>        <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">available_data</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-9-57" name="__codelineno-9-57" href="#__codelineno-9-57"></a>        <span class="k">return</span> <span class="n">available_data</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+</code></pre></div>
+<p><img alt="图5-4：课程学习示意图" src="../../images/chapter2/%E5%9B%BE5_4_%E8%AF%BE%E7%A8%8B%E5%AD%A6%E4%B9%A0%E7%A4%BA%E6%84%8F%E5%9B%BE.png" /></p>
+<p><em>图5-4：课程学习原理 —— 从简单样本逐渐过渡到困难样本</em></p>
+<h3 id="5_33">5_3.3 数据采样与批次构建<a class="headerlink" href="#5_33" title="Permanent link">&para;</a></h3>
+<p>在实际训练中，数据的组织方式对效率和效果都有影响。以下是一些重要的工程考量：</p>
+<p><strong>Pack 打包策略</strong>：为了充分利用计算资源，通常将多个短序列打包到一个固定长度的序列中。这样可以减少 padding 带来的计算浪费。关键问题是如何处理打包后的注意力掩码——不同文档之间不应该相互注意。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">pack_sequences</span><span class="p">(</span><span class="n">sequences</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">max_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">eos_token_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="sd">    将多个短序列打包到固定长度</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="sd">    Args:</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="sd">        sequences: token id 序列列表</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="sd">        max_length: 目标序列长度</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="sd">        eos_token_id: 序列结束符 ID</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="sd">        打包后的序列列表，每个长度为 max_length</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>    <span class="n">packed</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>    <span class="n">current_pack</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>    <span class="n">current_length</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>    <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="n">sequences</span><span class="p">:</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>        <span class="n">seq_with_eos</span> <span class="o">=</span> <span class="n">seq</span> <span class="o">+</span> <span class="p">[</span><span class="n">eos_token_id</span><span class="p">]</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>        <span class="k">if</span> <span class="n">current_length</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq_with_eos</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">max_length</span><span class="p">:</span>
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>            <span class="n">current_pack</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">seq_with_eos</span><span class="p">)</span>
+<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a>            <span class="n">current_length</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq_with_eos</span><span class="p">)</span>
+<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a>            <span class="c1"># 当前 pack 已满，开始新的</span>
+<a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a>            <span class="k">if</span> <span class="n">current_pack</span><span class="p">:</span>
+<a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a>                <span class="c1"># padding 到 max_length</span>
+<a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a>                <span class="n">current_pack</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">eos_token_id</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_length</span> <span class="o">-</span> <span class="n">current_length</span><span class="p">))</span>
+<a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a>                <span class="n">packed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_pack</span><span class="p">)</span>
+<a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a>
+<a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a>            <span class="n">current_pack</span> <span class="o">=</span> <span class="n">seq_with_eos</span>
+<a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a>            <span class="n">current_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq_with_eos</span><span class="p">)</span>
+<a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a>
+<a id="__codelineno-10-33" name="__codelineno-10-33" href="#__codelineno-10-33"></a>    <span class="c1"># 处理最后一个 pack</span>
+<a id="__codelineno-10-34" name="__codelineno-10-34" href="#__codelineno-10-34"></a>    <span class="k">if</span> <span class="n">current_pack</span><span class="p">:</span>
+<a id="__codelineno-10-35" name="__codelineno-10-35" href="#__codelineno-10-35"></a>        <span class="n">current_pack</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">eos_token_id</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">max_length</span> <span class="o">-</span> <span class="n">current_length</span><span class="p">))</span>
+<a id="__codelineno-10-36" name="__codelineno-10-36" href="#__codelineno-10-36"></a>        <span class="n">packed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_pack</span><span class="p">)</span>
+<a id="__codelineno-10-37" name="__codelineno-10-37" href="#__codelineno-10-37"></a>
+<a id="__codelineno-10-38" name="__codelineno-10-38" href="#__codelineno-10-38"></a>    <span class="k">return</span> <span class="n">packed</span>
+</code></pre></div>
+<p><strong>文档边界处理</strong>：在打包序列时，需要创建一个"文档边界掩码"，确保模型在生成时不会跨越文档边界进行注意力计算。</p>
+<p><strong>数据加载效率</strong>：对于 TB 级数据集，数据加载本身可能成为瓶颈。常用的优化手段包括：预处理后以二进制格式存储（如 numpy 的 memmap）、多进程并行加载、预取（prefetch）下一批数据。</p>
+<h3 id="5_34">5_3.4 序列化与存储格式<a class="headerlink" href="#5_34" title="Permanent link">&para;</a></h3>
+<p>完成分词后，需要将 token 序列以高效的格式存储，以便训练时快速读取。</p>
+<p><strong>常见的存储格式</strong>包括：</p>
+<p><strong>NumPy memmap</strong>：将 token ID 存储为 numpy 数组，使用内存映射访问。优点是简单直接，支持随机访问；缺点是不支持压缩，存储空间较大。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">save_as_memmap</span><span class="p">(</span><span class="n">token_ids</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;将 token ID 列表保存为 memmap 格式&quot;&quot;&quot;</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">token_ids</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">)</span>  <span class="c1"># 假设词表 &lt; 65536</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span class="n">fp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;uint16&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w+&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">arr</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="n">fp</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[:]</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span class="n">fp</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">load_memmap</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">):</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;加载 memmap 格式的 token ID&quot;&quot;&quot;</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;uint16&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>Arrow/Parquet</strong>：使用 Apache Arrow 格式存储，支持压缩和高效的列式访问。HuggingFace Datasets 库内部使用这种格式。</p>
+<p><strong>自定义二进制格式</strong>：一些大型项目使用自定义的二进制格式，针对特定的访问模式优化。例如 GPT-NeoX 使用的二进制打包格式。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># 使用 HuggingFace Datasets 处理分词后的数据</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">tokenize_and_save</span><span class="p">(</span><span class="n">raw_data</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;分词并保存为 Datasets 格式&quot;&quot;&quot;</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">tokenize_function</span><span class="p">(</span><span class="n">examples</span><span class="p">):</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>        <span class="k">return</span> <span class="n">tokenizer</span><span class="p">(</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>            <span class="n">examples</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">],</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>            <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>            <span class="n">max_length</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>            <span class="n">return_attention_mask</span><span class="o">=</span><span class="kc">False</span>
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>        <span class="p">)</span>
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>
+<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>    <span class="c1"># 创建 Dataset</span>
+<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>    <span class="n">ds</span> <span class="o">=</span> <span class="n">Dataset</span><span class="o">.</span><span class="n">from_dict</span><span class="p">({</span><span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">raw_data</span><span class="p">})</span>
+<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>
+<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>    <span class="c1"># 分词</span>
+<a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a>    <span class="n">tokenized_ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+<a id="__codelineno-12-20" name="__codelineno-12-20" href="#__codelineno-12-20"></a>        <span class="n">tokenize_function</span><span class="p">,</span>
+<a id="__codelineno-12-21" name="__codelineno-12-21" href="#__codelineno-12-21"></a>        <span class="n">batched</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-12-22" name="__codelineno-12-22" href="#__codelineno-12-22"></a>        <span class="n">num_proc</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+<a id="__codelineno-12-23" name="__codelineno-12-23" href="#__codelineno-12-23"></a>        <span class="n">remove_columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span>
+<a id="__codelineno-12-24" name="__codelineno-12-24" href="#__codelineno-12-24"></a>    <span class="p">)</span>
+<a id="__codelineno-12-25" name="__codelineno-12-25" href="#__codelineno-12-25"></a>
+<a id="__codelineno-12-26" name="__codelineno-12-26" href="#__codelineno-12-26"></a>    <span class="c1"># 保存</span>
+<a id="__codelineno-12-27" name="__codelineno-12-27" href="#__codelineno-12-27"></a>    <span class="n">tokenized_ds</span><span class="o">.</span><span class="n">save_to_disk</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="5_4">5_4 完整的数据准备流水线<a class="headerlink" href="#5_4" title="Permanent link">&para;</a></h2>
+<p>将前面讨论的各个步骤串联起来，构建一个从原始文本到训练就绪数据的完整流水线。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">sentencepiece</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spm</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="nd">@dataclass</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">DataPrepConfig</span><span class="p">:</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;数据准备配置&quot;&quot;&quot;</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>    <span class="c1"># 分词器配置</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>    <span class="n">tokenizer_path</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>    <span class="n">max_seq_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2048</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>    <span class="c1"># 数据混合配置</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>    <span class="n">mix_weights</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># {source: weight}</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>    <span class="c1"># 课程学习配置</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>    <span class="n">use_curriculum</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>    <span class="n">curriculum_strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;linear&#39;</span>
+<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>
+<a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a>    <span class="c1"># 输出配置</span>
+<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a>    <span class="n">pack_sequences</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a>    <span class="n">output_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;arrow&#39;</span>  <span class="c1"># &#39;arrow&#39;, &#39;memmap&#39;, &#39;jsonl&#39;</span>
+<a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a>
+<a id="__codelineno-13-23" name="__codelineno-13-23" href="#__codelineno-13-23"></a><span class="k">class</span><span class="w"> </span><span class="nc">DataPreparationPipeline</span><span class="p">:</span>
+<a id="__codelineno-13-24" name="__codelineno-13-24" href="#__codelineno-13-24"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;数据准备流水线&quot;&quot;&quot;</span>
+<a id="__codelineno-13-25" name="__codelineno-13-25" href="#__codelineno-13-25"></a>
+<a id="__codelineno-13-26" name="__codelineno-13-26" href="#__codelineno-13-26"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">DataPrepConfig</span><span class="p">):</span>
+<a id="__codelineno-13-27" name="__codelineno-13-27" href="#__codelineno-13-27"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+<a id="__codelineno-13-28" name="__codelineno-13-28" href="#__codelineno-13-28"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">spm</span><span class="o">.</span><span class="n">SentencePieceProcessor</span><span class="p">(</span><span class="n">model_file</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">tokenizer_path</span><span class="p">)</span>
+<a id="__codelineno-13-29" name="__codelineno-13-29" href="#__codelineno-13-29"></a>
+<a id="__codelineno-13-30" name="__codelineno-13-30" href="#__codelineno-13-30"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">tokenize_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-13-31" name="__codelineno-13-31" href="#__codelineno-13-31"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;分词单个文档&quot;&quot;&quot;</span>
+<a id="__codelineno-13-32" name="__codelineno-13-32" href="#__codelineno-13-32"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-13-33" name="__codelineno-13-33" href="#__codelineno-13-33"></a>
+<a id="__codelineno-13-34" name="__codelineno-13-34" href="#__codelineno-13-34"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">process_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">source_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-13-35" name="__codelineno-13-35" href="#__codelineno-13-35"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;处理单个数据源&quot;&quot;&quot;</span>
+<a id="__codelineno-13-36" name="__codelineno-13-36" href="#__codelineno-13-36"></a>        <span class="n">documents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_documents</span><span class="p">(</span><span class="n">source_path</span><span class="p">)</span>
+<a id="__codelineno-13-37" name="__codelineno-13-37" href="#__codelineno-13-37"></a>
+<a id="__codelineno-13-38" name="__codelineno-13-38" href="#__codelineno-13-38"></a>        <span class="n">tokenized</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-13-39" name="__codelineno-13-39" href="#__codelineno-13-39"></a>        <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">:</span>
+<a id="__codelineno-13-40" name="__codelineno-13-40" href="#__codelineno-13-40"></a>            <span class="n">tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenize_document</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">])</span>
+<a id="__codelineno-13-41" name="__codelineno-13-41" href="#__codelineno-13-41"></a>            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>  <span class="c1"># 过滤过短的文档</span>
+<a id="__codelineno-13-42" name="__codelineno-13-42" href="#__codelineno-13-42"></a>                <span class="n">tokenized</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+<a id="__codelineno-13-43" name="__codelineno-13-43" href="#__codelineno-13-43"></a>                    <span class="s1">&#39;input_ids&#39;</span><span class="p">:</span> <span class="n">tokens</span><span class="p">,</span>
+<a id="__codelineno-13-44" name="__codelineno-13-44" href="#__codelineno-13-44"></a>                    <span class="s1">&#39;source&#39;</span><span class="p">:</span> <span class="n">source_name</span><span class="p">,</span>
+<a id="__codelineno-13-45" name="__codelineno-13-45" href="#__codelineno-13-45"></a>                    <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+<a id="__codelineno-13-46" name="__codelineno-13-46" href="#__codelineno-13-46"></a>                <span class="p">})</span>
+<a id="__codelineno-13-47" name="__codelineno-13-47" href="#__codelineno-13-47"></a>
+<a id="__codelineno-13-48" name="__codelineno-13-48" href="#__codelineno-13-48"></a>        <span class="k">return</span> <span class="n">tokenized</span>
+<a id="__codelineno-13-49" name="__codelineno-13-49" href="#__codelineno-13-49"></a>
+<a id="__codelineno-13-50" name="__codelineno-13-50" href="#__codelineno-13-50"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">mix_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sources</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-13-51" name="__codelineno-13-51" href="#__codelineno-13-51"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;混合多个数据源&quot;&quot;&quot;</span>
+<a id="__codelineno-13-52" name="__codelineno-13-52" href="#__codelineno-13-52"></a>        <span class="n">mixed</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-13-53" name="__codelineno-13-53" href="#__codelineno-13-53"></a>        <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">mix_weights</span> <span class="ow">or</span> <span class="p">{</span><span class="n">s</span><span class="p">:</span> <span class="mi">1_0</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">}</span>
+<a id="__codelineno-13-54" name="__codelineno-13-54" href="#__codelineno-13-54"></a>        <span class="n">total_weight</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<a id="__codelineno-13-55" name="__codelineno-13-55" href="#__codelineno-13-55"></a>
+<a id="__codelineno-13-56" name="__codelineno-13-56" href="#__codelineno-13-56"></a>        <span class="c1"># 确定每个来源的采样数</span>
+<a id="__codelineno-13-57" name="__codelineno-13-57" href="#__codelineno-13-57"></a>        <span class="n">total_samples</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">sources</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+<a id="__codelineno-13-58" name="__codelineno-13-58" href="#__codelineno-13-58"></a>
+<a id="__codelineno-13-59" name="__codelineno-13-59" href="#__codelineno-13-59"></a>        <span class="k">for</span> <span class="n">source_name</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">sources</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-13-60" name="__codelineno-13-60" href="#__codelineno-13-60"></a>            <span class="n">weight</span> <span class="o">=</span> <span class="n">weights</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">source_name</span><span class="p">,</span> <span class="mi">1_0</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_weight</span>
+<a id="__codelineno-13-61" name="__codelineno-13-61" href="#__codelineno-13-61"></a>            <span class="n">num_samples</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">total_samples</span> <span class="o">*</span> <span class="n">weight</span><span class="p">)</span>
+<a id="__codelineno-13-62" name="__codelineno-13-62" href="#__codelineno-13-62"></a>
+<a id="__codelineno-13-63" name="__codelineno-13-63" href="#__codelineno-13-63"></a>            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">num_samples</span><span class="p">:</span>
+<a id="__codelineno-13-64" name="__codelineno-13-64" href="#__codelineno-13-64"></a>                <span class="n">sampled</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">)</span>
+<a id="__codelineno-13-65" name="__codelineno-13-65" href="#__codelineno-13-65"></a>            <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-13-66" name="__codelineno-13-66" href="#__codelineno-13-66"></a>                <span class="n">sampled</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">num_samples</span><span class="p">)</span>
+<a id="__codelineno-13-67" name="__codelineno-13-67" href="#__codelineno-13-67"></a>
+<a id="__codelineno-13-68" name="__codelineno-13-68" href="#__codelineno-13-68"></a>            <span class="n">mixed</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">sampled</span><span class="p">)</span>
+<a id="__codelineno-13-69" name="__codelineno-13-69" href="#__codelineno-13-69"></a>
+<a id="__codelineno-13-70" name="__codelineno-13-70" href="#__codelineno-13-70"></a>        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">mixed</span><span class="p">)</span>
+<a id="__codelineno-13-71" name="__codelineno-13-71" href="#__codelineno-13-71"></a>        <span class="k">return</span> <span class="n">mixed</span>
+<a id="__codelineno-13-72" name="__codelineno-13-72" href="#__codelineno-13-72"></a>
+<a id="__codelineno-13-73" name="__codelineno-13-73" href="#__codelineno-13-73"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">pack_and_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-13-74" name="__codelineno-13-74" href="#__codelineno-13-74"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;打包并保存数据&quot;&quot;&quot;</span>
+<a id="__codelineno-13-75" name="__codelineno-13-75" href="#__codelineno-13-75"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pack_sequences</span><span class="p">:</span>
+<a id="__codelineno-13-76" name="__codelineno-13-76" href="#__codelineno-13-76"></a>            <span class="n">sequences</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+<a id="__codelineno-13-77" name="__codelineno-13-77" href="#__codelineno-13-77"></a>            <span class="n">packed</span> <span class="o">=</span> <span class="n">pack_sequences</span><span class="p">(</span>
+<a id="__codelineno-13-78" name="__codelineno-13-78" href="#__codelineno-13-78"></a>                <span class="n">sequences</span><span class="p">,</span> 
+<a id="__codelineno-13-79" name="__codelineno-13-79" href="#__codelineno-13-79"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">max_seq_length</span><span class="p">,</span>
+<a id="__codelineno-13-80" name="__codelineno-13-80" href="#__codelineno-13-80"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_id</span><span class="p">()</span>
+<a id="__codelineno-13-81" name="__codelineno-13-81" href="#__codelineno-13-81"></a>            <span class="p">)</span>
+<a id="__codelineno-13-82" name="__codelineno-13-82" href="#__codelineno-13-82"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-13-83" name="__codelineno-13-83" href="#__codelineno-13-83"></a>            <span class="n">packed</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;input_ids&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+<a id="__codelineno-13-84" name="__codelineno-13-84" href="#__codelineno-13-84"></a>
+<a id="__codelineno-13-85" name="__codelineno-13-85" href="#__codelineno-13-85"></a>        <span class="c1"># 根据配置选择输出格式</span>
+<a id="__codelineno-13-86" name="__codelineno-13-86" href="#__codelineno-13-86"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">output_format</span> <span class="o">==</span> <span class="s1">&#39;arrow&#39;</span><span class="p">:</span>
+<a id="__codelineno-13-87" name="__codelineno-13-87" href="#__codelineno-13-87"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">save_as_arrow</span><span class="p">(</span><span class="n">packed</span><span class="p">,</span> <span class="n">output_path</span><span class="p">)</span>
+<a id="__codelineno-13-88" name="__codelineno-13-88" href="#__codelineno-13-88"></a>        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">output_format</span> <span class="o">==</span> <span class="s1">&#39;memmap&#39;</span><span class="p">:</span>
+<a id="__codelineno-13-89" name="__codelineno-13-89" href="#__codelineno-13-89"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">save_as_memmap</span><span class="p">(</span><span class="n">packed</span><span class="p">,</span> <span class="n">output_path</span><span class="p">)</span>
+<a id="__codelineno-13-90" name="__codelineno-13-90" href="#__codelineno-13-90"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-13-91" name="__codelineno-13-91" href="#__codelineno-13-91"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">save_as_jsonl</span><span class="p">(</span><span class="n">packed</span><span class="p">,</span> <span class="n">output_path</span><span class="p">)</span>
+<a id="__codelineno-13-92" name="__codelineno-13-92" href="#__codelineno-13-92"></a>
+<a id="__codelineno-13-93" name="__codelineno-13-93" href="#__codelineno-13-93"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_paths</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-13-94" name="__codelineno-13-94" href="#__codelineno-13-94"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;运行完整流水线&quot;&quot;&quot;</span>
+<a id="__codelineno-13-95" name="__codelineno-13-95" href="#__codelineno-13-95"></a>        <span class="c1"># 1. 处理各数据源</span>
+<a id="__codelineno-13-96" name="__codelineno-13-96" href="#__codelineno-13-96"></a>        <span class="n">sources</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-13-97" name="__codelineno-13-97" href="#__codelineno-13-97"></a>        <span class="k">for</span> <span class="n">source_name</span><span class="p">,</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">source_paths</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-13-98" name="__codelineno-13-98" href="#__codelineno-13-98"></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">source_name</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-99" name="__codelineno-13-99" href="#__codelineno-13-99"></a>            <span class="n">sources</span><span class="p">[</span><span class="n">source_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_source</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">source_name</span><span class="p">)</span>
+<a id="__codelineno-13-100" name="__codelineno-13-100" href="#__codelineno-13-100"></a>
+<a id="__codelineno-13-101" name="__codelineno-13-101" href="#__codelineno-13-101"></a>        <span class="c1"># 2. 混合数据</span>
+<a id="__codelineno-13-102" name="__codelineno-13-102" href="#__codelineno-13-102"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mixing data sources...&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-103" name="__codelineno-13-103" href="#__codelineno-13-103"></a>        <span class="n">mixed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mix_sources</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+<a id="__codelineno-13-104" name="__codelineno-13-104" href="#__codelineno-13-104"></a>
+<a id="__codelineno-13-105" name="__codelineno-13-105" href="#__codelineno-13-105"></a>        <span class="c1"># 3. 可选：应用课程学习排序</span>
+<a id="__codelineno-13-106" name="__codelineno-13-106" href="#__codelineno-13-106"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_curriculum</span><span class="p">:</span>
+<a id="__codelineno-13-107" name="__codelineno-13-107" href="#__codelineno-13-107"></a>            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Applying curriculum ordering...&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-108" name="__codelineno-13-108" href="#__codelineno-13-108"></a>            <span class="n">mixed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_curriculum</span><span class="p">(</span><span class="n">mixed</span><span class="p">)</span>
+<a id="__codelineno-13-109" name="__codelineno-13-109" href="#__codelineno-13-109"></a>
+<a id="__codelineno-13-110" name="__codelineno-13-110" href="#__codelineno-13-110"></a>        <span class="c1"># 4. 打包并保存</span>
+<a id="__codelineno-13-111" name="__codelineno-13-111" href="#__codelineno-13-111"></a>        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Packing and saving...&quot;</span><span class="p">)</span>
+<a id="__codelineno-13-112" name="__codelineno-13-112" href="#__codelineno-13-112"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">pack_and_save</span><span class="p">(</span><span class="n">mixed</span><span class="p">,</span> <span class="n">output_path</span><span class="p">)</span>
+<a id="__codelineno-13-113" name="__codelineno-13-113" href="#__codelineno-13-113"></a>
+<a id="__codelineno-13-114" name="__codelineno-13-114" href="#__codelineno-13-114"></a>        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Done! Saved </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">mixed</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples to </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><img alt="图5-5：数据准备完整流水线" src="../../images/chapter2/%E5%9B%BE5_5_%E6%95%B0%E6%8D%AE%E5%87%86%E5%A4%87%E5%AE%8C%E6%95%B4%E6%B5%81%E6%B0%B4%E7%BA%BF.png" /></p>
+<p><em>图5-5：从原始文本到训练就绪数据的完整流水线</em></p>
+<hr />
+<h2 id="5_5">5_5 本章小结<a class="headerlink" href="#5_5" title="Permanent link">&para;</a></h2>
+<p>本章系统介绍了分词与数据序列化的核心技术。</p>
+<p>在分词器原理方面，子词分词是当前大模型的主流选择，在词表大小和序列长度之间取得了良好平衡。BPE 采用频率驱动的自底向上合并策略，简单高效；WordPiece 使用似然驱动的合并标准，对低频有意义模式更敏感；Unigram 采用自顶向下的概率建模方法，理论上更优雅。SentencePiece 是最常用的工具包，支持多种算法和语言无关的处理。</p>
+<p>在词表设计方面，词表大小需要在计算效率、序列长度和稀有词处理之间权衡，主流模型通常使用 32K-128K 的词表。多语言词表设计需要平衡不同语言的覆盖，避免"词表诅咒"。领域特定词表扩充可以改善专业术语的处理，但需要配合模型嵌入层的扩展。</p>
+<p>在数据混合方面，静态混合简单直接，动态混合允许训练过程中调整配比。课程学习策略从简单样本开始、逐渐过渡到困难样本，可以加速收敛并提升性能。数据打包和高效的存储格式对于大规模训练至关重要。</p>
+<p><img alt="图5-6：本章知识结构" src="../../images/chapter2/%E5%9B%BE5_6_%E6%9C%AC%E7%AB%A0%E7%9F%A5%E8%AF%86%E7%BB%93%E6%9E%84.png" /></p>
+<p><em>图5-6：第5章知识结构 —— 分词算法、词表设计、数据组织三大主题</em></p>
+<hr />
+<h2 id="_3">延伸阅读<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>关于分词与数据序列化的深入内容，以下资源值得参考：</p>
+<p>SentencePiece 论文（Kudo and Richardson, 2018）介绍了语言无关的子词分词方法。BPE 论文（Sennrich et al., 2015）是将 BPE 引入 NLP 的开创性工作。Unigram 论文（Kudo, 2018）提供了子词分词的概率视角。HuggingFace Tokenizers 库文档（huggingface.co/docs/tokenizers）是实践层面的权威参考。关于课程学习，Bengio 等人的综述论文提供了全面的理论框架。</p>
+<hr />
+<h2 id="_4">下一章预告<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>至此，我们完成了文本预训练数据工程的全部内容。在下一章《图文对数据处理》中，我们将进入多模态数据工程的领域。你将学习如何处理 LAION-5B 风格的图文配对数据，如何使用 img2dataset 进行高并发图像下载，以及如何构建多模态数据清洗流水线。</p>
+<p>带着这个问题进入下一章：一张图片的"质量"应该如何定义？除了分辨率和清晰度，还有哪些维度需要考虑？</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../2_2_cleaning_denoising/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 第4章：清洗与去噪">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                第4章：清洗与去噪
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../chapter3/3_1/" class="md-footer__link md-footer__link--next" aria-label="下一页: 第6章：图文对数据处理">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                第6章：图文对数据处理
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

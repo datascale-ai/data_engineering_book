@@ -1,0 +1,2645 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/chapter2/2_2_cleaning_denoising/">
+      
+      
+        <link rel="prev" href="../2_1_data_acquisition/">
+      
+      
+        <link rel="next" href="../2_3_tokenization_serialization/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>第4章：清洗与去噪 - 大模型数据工程：架构、算法及项目实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#4" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-header__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型数据工程：架构、算法及项目实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第4章：清洗与去噪
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="切换至夜间模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至夜间模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="切换至日间模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至日间模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-nav__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大模型数据工程：架构、算法及项目实战
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    目录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一部分：基础设施与核心理念
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一部分：基础设施与核心理念
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter1/1_1_data_change/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第1章：大模型时代的数据变革
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter1/1_2_data_infra/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第2章：数据基础设施选型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二部分：文本预训练数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二部分：文本预训练数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2_1_data_acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第3章：数据获取与采集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第4章：清洗与去噪
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第4章：清洗与去噪
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章摘要
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景引入
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_1 启发式过滤规则
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4_1 启发式过滤规则">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_1.1 语言识别
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_1.2 文本质量评分
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_1.3 启发式规则集
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_1.4 质量分层策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_2 大规模去重
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4_2 大规模去重">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_2.1 精确去重：哈希方法
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_22-minhash-lsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_2.2 模糊去重：MinHash LSH
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_2.3 分布式去重实践
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_2.4 文档内去重
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4_3-pii-removal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_3 隐私数据清洗 (PII Removal)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4_3 隐私数据清洗 (PII Removal)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4_31-pii" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_3.1 PII 的类型与风险
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_32-microsoft-presidio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_3.2 Microsoft Presidio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_33-pii" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_3.3 中文 PII 处理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_34-pii" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_3.4 PII 处理策略的权衡
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_4 完整清洗流水线
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4_4 完整清洗流水线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4_41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_4.1 流水线架构
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_4.2 质量监控与迭代
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_5 本章小结
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        延伸阅读
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        下一章预告
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2_3_tokenization_serialization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第5章：分词与序列化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三部分：多模态数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三部分：多模态数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第6章：图文对数据处理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第7章：数据重描述
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第8章：视频与音频数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第四部分：对齐与合成数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第四部分：对齐与合成数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第9章：指令微调数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第10章：合成数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第11章：人类偏好数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第五部分：应用级数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第五部分：应用级数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter5/5_1_rag_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第12章：RAG数据流水线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter5/5_2_mm_rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第13章：多模态RAG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第六部分：实战项目集
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第六部分：实战项目集
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_1_mini_c4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目一：构建Mini-C4预训练集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_2_legal_sft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目二：垂直领域专家SFT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_3_llava_instruct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目三：构建LLaVA多模态指令集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_4_synthetic_textbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目四：合成数学代码教科书
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_5_mm_rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目五：多模态RAG企业财报助手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章摘要
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景引入
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_1 启发式过滤规则
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4_1 启发式过滤规则">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_1.1 语言识别
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_1.2 文本质量评分
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_1.3 启发式规则集
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_1.4 质量分层策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_2 大规模去重
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4_2 大规模去重">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_2.1 精确去重：哈希方法
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_22-minhash-lsh" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_2.2 模糊去重：MinHash LSH
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_2.3 分布式去重实践
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_2.4 文档内去重
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4_3-pii-removal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_3 隐私数据清洗 (PII Removal)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4_3 隐私数据清洗 (PII Removal)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4_31-pii" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_3.1 PII 的类型与风险
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_32-microsoft-presidio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_3.2 Microsoft Presidio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_33-pii" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_3.3 中文 PII 处理
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_34-pii" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_3.4 PII 处理策略的权衡
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_4 完整清洗流水线
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4_4 完整清洗流水线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4_41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_4.1 流水线架构
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_4.2 质量监控与迭代
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4_5 本章小结
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        延伸阅读
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        下一章预告
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="4">第4章：清洗与去噪<a class="headerlink" href="#4" title="Permanent link">&para;</a></h1>
+<hr />
+<h2 id="_1">本章摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>从互联网获取的原始数据就像未经加工的矿石，其中真正有价值的"精矿"可能只占很小的比例。本章将深入探讨预训练数据清洗的三大核心技术：启发式过滤规则用于剔除低质量文档，大规模去重技术用于消除重复内容，隐私数据清洗用于保护用户信息。掌握这些技术后，读者将能够构建工业级的数据清洗流水线，将原始网页数据转化为高质量的预训练语料。</p>
+<hr />
+<h2 id="_2">场景引入<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>经过上一章的努力，你的团队成功从 Common Crawl 提取了 50TB 的中文网页文本。然而，当你随机抽样查看数据时，发现了各种令人头疼的问题：大量页面只有几个字的导航文本，完全没有实质内容；有些页面全是 JavaScript 代码或 CSS 样式的残留；某些网站的内容被重复爬取了数百次；还有大量带有用户邮箱、手机号码的敏感信息。</p>
+<p>更糟糕的是，训练工程师告诉你，上次用未经清洗的数据训练的模型有严重的"复读机"问题——模型会反复输出相同的句子，甚至能够背诵出某些网站的完整内容。这显然是数据重复导致的。</p>
+<p>如何系统性地解决这些问题？本章将给出完整的答案。</p>
+<hr />
+<h2 id="4_1">4_1 启发式过滤规则<a class="headerlink" href="#4_1" title="Permanent link">&para;</a></h2>
+<p>启发式过滤（Heuristic Filtering）是数据清洗的第一道防线。它基于一系列可量化的规则，快速筛选出明显低质量的文档。虽然这些规则看起来简单，但在实践中能够过滤掉大部分噪声数据，是性价比极高的清洗手段。</p>
+<p><img alt="图4-1：数据清洗流水线" src="../../images/chapter2/%E5%9B%BE4_1_%E6%95%B0%E6%8D%AE%E6%B8%85%E6%B4%97%E6%B5%81%E6%B0%B4%E7%BA%BF.png" /></p>
+<p><em>图4-1：数据清洗流水线架构 —— 从原始数据到清洁语料的八阶段处理流程</em></p>
+<h3 id="4_11">4_1.1 语言识别<a class="headerlink" href="#4_11" title="Permanent link">&para;</a></h3>
+<p>语言识别是多语言数据处理的基础步骤。对于训练中文模型而言，首先需要从 Common Crawl 的海量数据中筛选出中文内容，这就需要准确的语言识别能力。</p>
+<p><strong>FastText 语言识别器</strong>是目前最常用的工具。它由 Facebook AI Research 开发，预训练模型支持 176 种语言的识别，速度极快，准确率也相当高。FastText 提供两个预训练模型：<code>lid.176.bin</code> 是完整版本，准确率更高但体积较大（约 126MB）；<code>lid.176.ftz</code> 是压缩版本，体积小（约 917KB）但准确率略低。对于大规模数据处理，建议使用完整版本。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">fasttext</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># 加载语言识别模型</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">lang_model</span> <span class="o">=</span> <span class="n">fasttext</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s1">&#39;lid.176.bin&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">detect_language</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">min_confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0_8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="sd">    识别文本语言</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="sd">        text: 待识别的文本</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="sd">        min_confidence: 最低置信度阈值</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="sd">        (语言代码, 置信度) 或 (None, 0) 如果置信度不足</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span class="c1"># 预处理：移除换行符，截取前 1000 字符</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>    <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)[:</span><span class="mi">1000</span><span class="p">]</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>    <span class="c1"># 预测</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="n">predictions</span> <span class="o">=</span> <span class="n">lang_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="n">lang</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;__label__&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    <span class="n">confidence</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    <span class="k">if</span> <span class="n">confidence</span> <span class="o">&gt;=</span> <span class="n">min_confidence</span><span class="p">:</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>        <span class="k">return</span> <span class="n">lang</span><span class="p">,</span> <span class="n">confidence</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>    <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">confidence</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="k">def</span><span class="w"> </span><span class="nf">filter_by_language</span><span class="p">(</span><span class="n">documents</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span> <span class="n">target_lang</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;zh&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;过滤指定语言的文档&quot;&quot;&quot;</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>    <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">:</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>        <span class="n">lang</span><span class="p">,</span> <span class="n">conf</span> <span class="o">=</span> <span class="n">detect_language</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">])</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>        <span class="k">if</span> <span class="n">lang</span> <span class="o">==</span> <span class="n">target_lang</span><span class="p">:</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>            <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;detected_lang&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lang</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>            <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;lang_confidence&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">conf</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>    <span class="k">return</span> <span class="n">results</span>
+</code></pre></div>
+<p>语言识别在实践中会遇到一些边界情况。混合语言的文档（如中英文混杂的技术博客）可能被错误分类。短文本的识别准确率较低，建议对长度不足 50 字符的文本跳过语言过滤。代码片段可能被识别为各种语言，需要结合内容类型进行判断。</p>
+<h3 id="4_12">4_1.2 文本质量评分<a class="headerlink" href="#4_12" title="Permanent link">&para;</a></h3>
+<p>语言识别只能确保文档是目标语言，但无法判断内容质量。一段语法正确的垃圾广告和一篇优质的技术文章，在语言识别上可能得到相同的分数。这就需要更精细的质量评估机制。</p>
+<p><strong>困惑度（Perplexity）过滤</strong>是一种基于语言模型的质量评估方法。困惑度衡量的是语言模型对文本的"惊讶程度"——如果一段文本与模型训练数据的分布相似，困惑度就低；如果文本包含大量噪声、乱码或不自然的表达，困惑度就高。</p>
+<p>KenLM 是计算困惑度最常用的工具。它基于 n-gram 语言模型，速度极快，适合大规模数据处理。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">kenlm</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">PerplexityFilter</span><span class="p">:</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">max_perplexity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">500</span><span class="p">):</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="sd">        初始化困惑度过滤器</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="sd">        Args:</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="sd">            model_path: KenLM 模型路径 (.arpa 或 .bin)</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="sd">            max_perplexity: 困惑度阈值，超过此值的文档将被过滤</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">kenlm</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">max_perplexity</span> <span class="o">=</span> <span class="n">max_perplexity</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">compute_perplexity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;计算文本的困惑度&quot;&quot;&quot;</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>        <span class="c1"># KenLM 返回的是 log10 概率</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>        <span class="n">log_prob</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">bos</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eos</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span class="c1"># 转换为困惑度</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        <span class="n">num_words</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># +1 for EOS</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>        <span class="n">perplexity</span> <span class="o">=</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">log_prob</span> <span class="o">/</span> <span class="n">num_words</span><span class="p">)</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>        <span class="k">return</span> <span class="n">perplexity</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">documents</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;过滤高困惑度文档&quot;&quot;&quot;</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>        <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>        <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">:</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>            <span class="n">ppl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_perplexity</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">])</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>            <span class="k">if</span> <span class="n">ppl</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_perplexity</span><span class="p">:</span>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>                <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;perplexity&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ppl</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>        <span class="k">return</span> <span class="n">results</span>
+</code></pre></div>
+<p>困惑度阈值的设定需要根据具体数据进行调优。一般而言，高质量的新闻和百科文本困惑度在 100-200 之间，普通网页内容在 200-500 之间，低质量内容（如乱码、机器翻译）通常超过 500。建议先在小规模样本上分析困惑度分布，再确定合适的阈值。</p>
+<h3 id="4_13">4_1.3 启发式规则集<a class="headerlink" href="#4_13" title="Permanent link">&para;</a></h3>
+<p>除了语言识别和困惑度过滤，还有一系列简单但有效的启发式规则，可以快速剔除明显的低质量内容。这些规则的设计来源于对大量数据的观察和经验总结。</p>
+<p><strong>长度过滤</strong>是最基本的规则。过短的文档（如只有几个词的导航文本）没有训练价值，应该直接移除。过长的文档可能需要截断或分段处理。典型的阈值设定是：最小长度 200 字符或 50 词，最大长度 100,000 字符。</p>
+<p><strong>特殊字符比例</strong>可以识别出大量噪声内容。如果一个文档中非字母数字字符的比例过高，很可能是代码残留、乱码或格式错误。类似地，数字比例过高可能表示是日志文件或数据表格。</p>
+<p><strong>重复行比例</strong>可以检测出模板化的低质量页面。如果一个文档中有大量完全相同的行（如导航栏在页面多处重复），说明内容质量较低。</p>
+<p><strong>词汇多样性</strong>衡量文档的信息丰富程度。一个只使用 10 个不同词汇的文档显然不如使用 500 个不同词汇的文档有价值。常用的指标是 Type-Token Ratio（TTR），即唯一词数与总词数的比值。</p>
+<p>以下是一个综合的启发式过滤器实现：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">Counter</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">class</span><span class="w"> </span><span class="nc">HeuristicFilter</span><span class="p">:</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="sd">        初始化启发式过滤器</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="sd">        默认配置适用于中文预训练数据</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="p">{</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>            <span class="s1">&#39;min_length&#39;</span><span class="p">:</span> <span class="mi">200</span><span class="p">,</span>           <span class="c1"># 最小字符数</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>            <span class="s1">&#39;max_length&#39;</span><span class="p">:</span> <span class="mi">100000</span><span class="p">,</span>        <span class="c1"># 最大字符数</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>            <span class="s1">&#39;min_words&#39;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>             <span class="c1"># 最小词数</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>            <span class="s1">&#39;max_special_ratio&#39;</span><span class="p">:</span> <span class="mi">0_3</span><span class="p">,</span>    <span class="c1"># 最大特殊字符比例</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>            <span class="s1">&#39;max_digit_ratio&#39;</span><span class="p">:</span> <span class="mi">0_3</span><span class="p">,</span>      <span class="c1"># 最大数字比例</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>            <span class="s1">&#39;max_duplicate_line_ratio&#39;</span><span class="p">:</span> <span class="mi">0_3</span><span class="p">,</span>  <span class="c1"># 最大重复行比例</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>            <span class="s1">&#39;min_avg_word_length&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>    <span class="c1"># 最小平均词长</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>            <span class="s1">&#39;max_avg_word_length&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>   <span class="c1"># 最大平均词长</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>            <span class="s1">&#39;min_unique_word_ratio&#39;</span><span class="p">:</span> <span class="mi">0_1</span> <span class="c1"># 最小词汇多样性</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>        <span class="p">}</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">check_length</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;检查文档长度&quot;&quot;&quot;</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>        <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;min_length&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">length</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;max_length&#39;</span><span class="p">]</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">check_special_chars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;检查特殊字符比例&quot;&quot;&quot;</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>            <span class="k">return</span> <span class="kc">False</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>        <span class="n">special</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;[^\w\s]&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">UNICODE</span><span class="p">))</span>
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>        <span class="n">ratio</span> <span class="o">=</span> <span class="n">special</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>        <span class="k">return</span> <span class="n">ratio</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;max_special_ratio&#39;</span><span class="p">]</span>
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">check_digit_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;检查数字比例&quot;&quot;&quot;</span>
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>            <span class="k">return</span> <span class="kc">False</span>
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a>        <span class="n">digits</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\d&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">))</span>
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>        <span class="n">ratio</span> <span class="o">=</span> <span class="n">digits</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>        <span class="k">return</span> <span class="n">ratio</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;max_digit_ratio&#39;</span><span class="p">]</span>
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>
+<a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">check_duplicate_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;检查重复行比例&quot;&quot;&quot;</span>
+<a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a>        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+<a id="__codelineno-2-47" name="__codelineno-2-47" href="#__codelineno-2-47"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a>            <span class="k">return</span> <span class="kc">False</span>
+<a id="__codelineno-2-49" name="__codelineno-2-49" href="#__codelineno-2-49"></a>        <span class="n">unique_lines</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
+<a id="__codelineno-2-50" name="__codelineno-2-50" href="#__codelineno-2-50"></a>        <span class="n">duplicate_ratio</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="n">unique_lines</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
+<a id="__codelineno-2-51" name="__codelineno-2-51" href="#__codelineno-2-51"></a>        <span class="k">return</span> <span class="n">duplicate_ratio</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;max_duplicate_line_ratio&#39;</span><span class="p">]</span>
+<a id="__codelineno-2-52" name="__codelineno-2-52" href="#__codelineno-2-52"></a>
+<a id="__codelineno-2-53" name="__codelineno-2-53" href="#__codelineno-2-53"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">check_vocabulary_diversity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-2-54" name="__codelineno-2-54" href="#__codelineno-2-54"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;检查词汇多样性&quot;&quot;&quot;</span>
+<a id="__codelineno-2-55" name="__codelineno-2-55" href="#__codelineno-2-55"></a>        <span class="n">words</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+<a id="__codelineno-2-56" name="__codelineno-2-56" href="#__codelineno-2-56"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;min_words&#39;</span><span class="p">]:</span>
+<a id="__codelineno-2-57" name="__codelineno-2-57" href="#__codelineno-2-57"></a>            <span class="k">return</span> <span class="kc">False</span>
+<a id="__codelineno-2-58" name="__codelineno-2-58" href="#__codelineno-2-58"></a>        <span class="n">unique_ratio</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">words</span><span class="p">))</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span>
+<a id="__codelineno-2-59" name="__codelineno-2-59" href="#__codelineno-2-59"></a>        <span class="k">return</span> <span class="n">unique_ratio</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;min_unique_word_ratio&#39;</span><span class="p">]</span>
+<a id="__codelineno-2-60" name="__codelineno-2-60" href="#__codelineno-2-60"></a>
+<a id="__codelineno-2-61" name="__codelineno-2-61" href="#__codelineno-2-61"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">:</span>
+<a id="__codelineno-2-62" name="__codelineno-2-62" href="#__codelineno-2-62"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-63" name="__codelineno-2-63" href="#__codelineno-2-63"></a><span class="sd">        应用所有过滤规则</span>
+<a id="__codelineno-2-64" name="__codelineno-2-64" href="#__codelineno-2-64"></a>
+<a id="__codelineno-2-65" name="__codelineno-2-65" href="#__codelineno-2-65"></a><span class="sd">        Returns:</span>
+<a id="__codelineno-2-66" name="__codelineno-2-66" href="#__codelineno-2-66"></a><span class="sd">            (是否通过, 失败原因或 None)</span>
+<a id="__codelineno-2-67" name="__codelineno-2-67" href="#__codelineno-2-67"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-2-68" name="__codelineno-2-68" href="#__codelineno-2-68"></a>        <span class="n">checks</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-2-69" name="__codelineno-2-69" href="#__codelineno-2-69"></a>            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">check_length</span><span class="p">,</span> <span class="s1">&#39;length&#39;</span><span class="p">),</span>
+<a id="__codelineno-2-70" name="__codelineno-2-70" href="#__codelineno-2-70"></a>            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">check_special_chars</span><span class="p">,</span> <span class="s1">&#39;special_chars&#39;</span><span class="p">),</span>
+<a id="__codelineno-2-71" name="__codelineno-2-71" href="#__codelineno-2-71"></a>            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">check_digit_ratio</span><span class="p">,</span> <span class="s1">&#39;digit_ratio&#39;</span><span class="p">),</span>
+<a id="__codelineno-2-72" name="__codelineno-2-72" href="#__codelineno-2-72"></a>            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">check_duplicate_lines</span><span class="p">,</span> <span class="s1">&#39;duplicate_lines&#39;</span><span class="p">),</span>
+<a id="__codelineno-2-73" name="__codelineno-2-73" href="#__codelineno-2-73"></a>            <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">check_vocabulary_diversity</span><span class="p">,</span> <span class="s1">&#39;vocabulary_diversity&#39;</span><span class="p">)</span>
+<a id="__codelineno-2-74" name="__codelineno-2-74" href="#__codelineno-2-74"></a>        <span class="p">]</span>
+<a id="__codelineno-2-75" name="__codelineno-2-75" href="#__codelineno-2-75"></a>
+<a id="__codelineno-2-76" name="__codelineno-2-76" href="#__codelineno-2-76"></a>        <span class="k">for</span> <span class="n">check_func</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">checks</span><span class="p">:</span>
+<a id="__codelineno-2-77" name="__codelineno-2-77" href="#__codelineno-2-77"></a>            <span class="k">if</span> <span class="ow">not</span> <span class="n">check_func</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<a id="__codelineno-2-78" name="__codelineno-2-78" href="#__codelineno-2-78"></a>                <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">name</span>
+<a id="__codelineno-2-79" name="__codelineno-2-79" href="#__codelineno-2-79"></a>
+<a id="__codelineno-2-80" name="__codelineno-2-80" href="#__codelineno-2-80"></a>        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">None</span>
+</code></pre></div>
+<h3 id="4_14">4_1.4 质量分层策略<a class="headerlink" href="#4_14" title="Permanent link">&para;</a></h3>
+<p>在实践中，将数据简单地二分为"保留"和"丢弃"往往过于粗暴。更精细的做法是对数据进行质量分层，为不同质量层级的数据赋予不同的采样权重。</p>
+<p>一种常见的分层策略是：将数据分为高、中、低三个质量层级。高质量数据（如来自权威网站、通过所有启发式检查、困惑度低）赋予较高的采样权重；中等质量数据赋予正常权重；低质量但仍可接受的数据赋予较低权重。这种策略可以在保证数据多样性的同时，让高质量数据在训练中发挥更大作用。</p>
+<p>RefinedWeb 的论文详细记录了他们的分层策略，将数据分为五个层级，每个层级使用不同的过滤阈值。这种精细化的质量管理是构建高质量预训练数据集的关键。</p>
+<p><img alt="图4-2：质量过滤漏斗" src="../../images/chapter2/%E5%9B%BE4_2_%E8%B4%A8%E9%87%8F%E8%BF%87%E6%BB%A4%E6%BC%8F%E6%96%97.png" /></p>
+<p><em>图4-2：数据质量过滤漏斗 —— 从100%原始数据到最终4%清洁语料的逐层过滤过程</em></p>
+<hr />
+<h2 id="4_2">4_2 大规模去重<a class="headerlink" href="#4_2" title="Permanent link">&para;</a></h2>
+<p>数据重复是预训练数据的大敌。Common Crawl 中，同一篇文章可能被多个网站转载，同一个网页可能在不同月份被反复抓取，导致大量重复内容。研究表明，未经去重的数据会导致模型过拟合于重复内容，产生"复读机"现象，严重影响模型质量。</p>
+<p>去重可以分为两个层次：精确去重（Exact Deduplication）移除完全相同的文档；模糊去重（Fuzzy Deduplication）移除高度相似但不完全相同的文档（如转载时略有修改的文章）。在 TB 级数据上，这两种去重都需要高效的算法和分布式实现。</p>
+<h3 id="4_21">4_2.1 精确去重：哈希方法<a class="headerlink" href="#4_21" title="Permanent link">&para;</a></h3>
+<p>精确去重的核心思想是为每个文档计算一个指纹（fingerprint），相同指纹的文档视为重复。最简单的方法是使用 MD5 或 SHA256 等哈希函数。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">compute_hash</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;计算文本的 SHA256 哈希&quot;&quot;&quot;</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">exact_dedup</span><span class="p">(</span><span class="n">documents</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;精确去重：保留每个哈希值的第一个文档&quot;&quot;&quot;</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">seen_hashes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">:</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>        <span class="n">doc_hash</span> <span class="o">=</span> <span class="n">compute_hash</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">])</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>        <span class="k">if</span> <span class="n">doc_hash</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_hashes</span><span class="p">:</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>            <span class="n">seen_hashes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">doc_hash</span><span class="p">)</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>            <span class="n">doc</span><span class="p">[</span><span class="s1">&#39;hash&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">doc_hash</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>            <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">doc</span><span class="p">)</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>    <span class="k">return</span> <span class="n">results</span>
+</code></pre></div>
+<p>对于分布式场景，可以使用 Spark 或 Ray 进行并行去重：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">ray</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nd">@ray</span><span class="o">.</span><span class="n">remote</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">compute_hashes_batch</span><span class="p">(</span><span class="n">documents</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;批量计算哈希&quot;&quot;&quot;</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="k">return</span> <span class="p">[(</span><span class="n">compute_hash</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]),</span> <span class="n">doc</span><span class="p">)</span> <span class="k">for</span> <span class="n">doc</span> <span class="ow">in</span> <span class="n">documents</span><span class="p">]</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">distributed_exact_dedup</span><span class="p">(</span><span class="n">documents_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;分布式精确去重&quot;&quot;&quot;</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="n">ds</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">documents_path</span><span class="p">)</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="c1"># 计算哈希</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">doc</span><span class="p">:</span> <span class="p">{</span><span class="o">**</span><span class="n">doc</span><span class="p">,</span> <span class="s1">&#39;hash&#39;</span><span class="p">:</span> <span class="n">compute_hash</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">])})</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span class="c1"># 按哈希分组，每组保留第一个</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;hash&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">map_groups</span><span class="p">(</span><span class="k">lambda</span> <span class="n">group</span><span class="p">:</span> <span class="n">group</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>    <span class="c1"># 保存结果</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span class="n">ds</span><span class="o">.</span><span class="n">write_parquet</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+</code></pre></div>
+<p>精确去重效率很高，但只能处理完全相同的文档。对于略有差异的重复内容（如同一篇新闻在不同网站的转载，可能有不同的页眉页脚），精确去重无能为力。</p>
+<h3 id="4_22-minhash-lsh">4_2.2 模糊去重：MinHash LSH<a class="headerlink" href="#4_22-minhash-lsh" title="Permanent link">&para;</a></h3>
+<p>模糊去重的目标是识别"高度相似但不完全相同"的文档。这是一个计算复杂度很高的问题——朴素地比较任意两个文档需要 O(n²) 的时间复杂度，对于数十亿文档的数据集完全不可行。</p>
+<p>MinHash LSH（Locality-Sensitive Hashing）是解决这一问题的核心算法。它的基本思想是：先将文档转换为 n-gram 集合，然后使用 MinHash 技术将集合压缩为固定长度的签名，最后使用 LSH 将相似的签名聚集到同一个桶中。只有落入同一个桶的文档对才需要进行精细比较，大大减少了计算量。</p>
+<p>理解 MinHash LSH 需要分三步来看：</p>
+<p><strong>第一步是 n-gram 分解。</strong> 将文档视为 n-gram（连续 n 个字符或词）的集合。例如，"大模型数据" 的 3-gram 集合为 {"大模型", "模型数", "型数据"}。使用 n-gram 而非整个文档，可以更好地捕捉局部相似性。</p>
+<p><strong>第二步是 MinHash 签名。</strong> MinHash 是一种将集合压缩为固定长度签名的技术。两个集合的 Jaccard 相似度可以通过它们 MinHash 签名的匹配程度来近似估计。签名长度越长，估计越准确，但存储和计算开销也越大。</p>
+<p><strong>第三步是 LSH 分桶。</strong> 将 MinHash 签名分成若干个 band，每个 band 包含若干个 hash 值。如果两个文档在任意一个 band 中的所有 hash 值都相同，则它们被放入同一个桶。调整 band 的数量和每个 band 的大小，可以控制相似度阈值和召回率。</p>
+<p>以下是一个完整的 MinHash LSH 实现：</p>
+<p><img alt="图4-3：MinHash LSH算法" src="../../images/chapter2/%E5%9B%BE4_3_MinHash_LSH%E7%AE%97%E6%B3%95.png" /></p>
+<p><em>图4-3：MinHash LSH 算法三步骤 —— N-gram分解、MinHash签名计算、LSH分桶，将复杂度从O(n²)降至O(n)</em></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">struct</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Set</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">MinHashLSH</span><span class="p">:</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>                 <span class="n">num_hashes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>                 <span class="n">num_bands</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>                 <span class="n">ngram_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>                 <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0_8</span><span class="p">):</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="sd">        初始化 MinHash LSH</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="sd">        Args:</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="sd">            num_hashes: MinHash 签名长度</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="sd">            num_bands: LSH band 数量</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="sd">            ngram_size: n-gram 大小</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="sd">            threshold: 相似度阈值（参考值，实际阈值由 band 参数决定）</span>
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">num_hashes</span> <span class="o">=</span> <span class="n">num_hashes</span>
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">num_bands</span> <span class="o">=</span> <span class="n">num_bands</span>
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">rows_per_band</span> <span class="o">=</span> <span class="n">num_hashes</span> <span class="o">//</span> <span class="n">num_bands</span>
+<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">ngram_size</span> <span class="o">=</span> <span class="n">ngram_size</span>
+<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>
+<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>        <span class="c1"># 生成哈希函数的随机参数</span>
+<a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">hash_params</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a>            <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="o">**</span><span class="mi">31</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="o">**</span><span class="mi">31</span><span class="p">))</span>
+<a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_hashes</span><span class="p">)</span>
+<a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>        <span class="p">]</span>
+<a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a>
+<a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a>        <span class="c1"># LSH 桶</span>
+<a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">buckets</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_bands</span><span class="p">)]</span>
+<a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a>
+<a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_ngrams</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;提取 n-gram 集合&quot;&quot;&quot;</span>
+<a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a>        <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a>        <span class="n">ngrams</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngram_size</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+<a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a>            <span class="n">ngrams</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">text</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ngram_size</span><span class="p">])</span>
+<a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a>        <span class="k">return</span> <span class="n">ngrams</span>
+<a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a>
+<a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">compute_minhash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ngrams</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<a id="__codelineno-5-44" name="__codelineno-5-44" href="#__codelineno-5-44"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;计算 MinHash 签名&quot;&quot;&quot;</span>
+<a id="__codelineno-5-45" name="__codelineno-5-45" href="#__codelineno-5-45"></a>        <span class="n">signature</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_hashes</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+<a id="__codelineno-5-46" name="__codelineno-5-46" href="#__codelineno-5-46"></a>
+<a id="__codelineno-5-47" name="__codelineno-5-47" href="#__codelineno-5-47"></a>        <span class="k">for</span> <span class="n">ngram</span> <span class="ow">in</span> <span class="n">ngrams</span><span class="p">:</span>
+<a id="__codelineno-5-48" name="__codelineno-5-48" href="#__codelineno-5-48"></a>            <span class="c1"># 计算 ngram 的基础哈希值</span>
+<a id="__codelineno-5-49" name="__codelineno-5-49" href="#__codelineno-5-49"></a>            <span class="n">h</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">ngram</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">(),</span> <span class="mi">16</span><span class="p">)</span>
+<a id="__codelineno-5-50" name="__codelineno-5-50" href="#__codelineno-5-50"></a>
+<a id="__codelineno-5-51" name="__codelineno-5-51" href="#__codelineno-5-51"></a>            <span class="c1"># 使用多个哈希函数</span>
+<a id="__codelineno-5-52" name="__codelineno-5-52" href="#__codelineno-5-52"></a>            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hash_params</span><span class="p">):</span>
+<a id="__codelineno-5-53" name="__codelineno-5-53" href="#__codelineno-5-53"></a>                <span class="n">hash_val</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">*</span> <span class="n">h</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span> <span class="o">%</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">31</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-5-54" name="__codelineno-5-54" href="#__codelineno-5-54"></a>                <span class="k">if</span> <span class="n">hash_val</span> <span class="o">&lt;</span> <span class="n">signature</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+<a id="__codelineno-5-55" name="__codelineno-5-55" href="#__codelineno-5-55"></a>                    <span class="n">signature</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">hash_val</span>
+<a id="__codelineno-5-56" name="__codelineno-5-56" href="#__codelineno-5-56"></a>
+<a id="__codelineno-5-57" name="__codelineno-5-57" href="#__codelineno-5-57"></a>        <span class="k">return</span> <span class="n">signature</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+<a id="__codelineno-5-58" name="__codelineno-5-58" href="#__codelineno-5-58"></a>
+<a id="__codelineno-5-59" name="__codelineno-5-59" href="#__codelineno-5-59"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_bands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signature</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-5-60" name="__codelineno-5-60" href="#__codelineno-5-60"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;将签名分割为 bands&quot;&quot;&quot;</span>
+<a id="__codelineno-5-61" name="__codelineno-5-61" href="#__codelineno-5-61"></a>        <span class="n">bands</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-5-62" name="__codelineno-5-62" href="#__codelineno-5-62"></a>        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_bands</span><span class="p">):</span>
+<a id="__codelineno-5-63" name="__codelineno-5-63" href="#__codelineno-5-63"></a>            <span class="n">start</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows_per_band</span>
+<a id="__codelineno-5-64" name="__codelineno-5-64" href="#__codelineno-5-64"></a>            <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows_per_band</span>
+<a id="__codelineno-5-65" name="__codelineno-5-65" href="#__codelineno-5-65"></a>            <span class="n">band</span> <span class="o">=</span> <span class="n">signature</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">]</span>
+<a id="__codelineno-5-66" name="__codelineno-5-66" href="#__codelineno-5-66"></a>            <span class="n">band_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">band</span><span class="o">.</span><span class="n">tobytes</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+<a id="__codelineno-5-67" name="__codelineno-5-67" href="#__codelineno-5-67"></a>            <span class="n">bands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">band_hash</span><span class="p">)</span>
+<a id="__codelineno-5-68" name="__codelineno-5-68" href="#__codelineno-5-68"></a>        <span class="k">return</span> <span class="n">bands</span>
+<a id="__codelineno-5-69" name="__codelineno-5-69" href="#__codelineno-5-69"></a>
+<a id="__codelineno-5-70" name="__codelineno-5-70" href="#__codelineno-5-70"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-5-71" name="__codelineno-5-71" href="#__codelineno-5-71"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;插入文档到 LSH 索引&quot;&quot;&quot;</span>
+<a id="__codelineno-5-72" name="__codelineno-5-72" href="#__codelineno-5-72"></a>        <span class="n">ngrams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ngrams</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-5-73" name="__codelineno-5-73" href="#__codelineno-5-73"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ngrams</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-5-74" name="__codelineno-5-74" href="#__codelineno-5-74"></a>            <span class="k">return</span>
+<a id="__codelineno-5-75" name="__codelineno-5-75" href="#__codelineno-5-75"></a>
+<a id="__codelineno-5-76" name="__codelineno-5-76" href="#__codelineno-5-76"></a>        <span class="n">signature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_minhash</span><span class="p">(</span><span class="n">ngrams</span><span class="p">)</span>
+<a id="__codelineno-5-77" name="__codelineno-5-77" href="#__codelineno-5-77"></a>        <span class="n">bands</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bands</span><span class="p">(</span><span class="n">signature</span><span class="p">)</span>
+<a id="__codelineno-5-78" name="__codelineno-5-78" href="#__codelineno-5-78"></a>
+<a id="__codelineno-5-79" name="__codelineno-5-79" href="#__codelineno-5-79"></a>        <span class="k">for</span> <span class="n">band_idx</span><span class="p">,</span> <span class="n">band_hash</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bands</span><span class="p">):</span>
+<a id="__codelineno-5-80" name="__codelineno-5-80" href="#__codelineno-5-80"></a>            <span class="k">if</span> <span class="n">band_hash</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">buckets</span><span class="p">[</span><span class="n">band_idx</span><span class="p">]:</span>
+<a id="__codelineno-5-81" name="__codelineno-5-81" href="#__codelineno-5-81"></a>                <span class="bp">self</span><span class="o">.</span><span class="n">buckets</span><span class="p">[</span><span class="n">band_idx</span><span class="p">][</span><span class="n">band_hash</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-5-82" name="__codelineno-5-82" href="#__codelineno-5-82"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">buckets</span><span class="p">[</span><span class="n">band_idx</span><span class="p">][</span><span class="n">band_hash</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">doc_id</span><span class="p">)</span>
+<a id="__codelineno-5-83" name="__codelineno-5-83" href="#__codelineno-5-83"></a>
+<a id="__codelineno-5-84" name="__codelineno-5-84" href="#__codelineno-5-84"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">find_candidates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-5-85" name="__codelineno-5-85" href="#__codelineno-5-85"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;查找候选相似文档&quot;&quot;&quot;</span>
+<a id="__codelineno-5-86" name="__codelineno-5-86" href="#__codelineno-5-86"></a>        <span class="n">ngrams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ngrams</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-5-87" name="__codelineno-5-87" href="#__codelineno-5-87"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ngrams</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+<a id="__codelineno-5-88" name="__codelineno-5-88" href="#__codelineno-5-88"></a>            <span class="k">return</span> <span class="nb">set</span><span class="p">()</span>
+<a id="__codelineno-5-89" name="__codelineno-5-89" href="#__codelineno-5-89"></a>
+<a id="__codelineno-5-90" name="__codelineno-5-90" href="#__codelineno-5-90"></a>        <span class="n">signature</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_minhash</span><span class="p">(</span><span class="n">ngrams</span><span class="p">)</span>
+<a id="__codelineno-5-91" name="__codelineno-5-91" href="#__codelineno-5-91"></a>        <span class="n">bands</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_bands</span><span class="p">(</span><span class="n">signature</span><span class="p">)</span>
+<a id="__codelineno-5-92" name="__codelineno-5-92" href="#__codelineno-5-92"></a>
+<a id="__codelineno-5-93" name="__codelineno-5-93" href="#__codelineno-5-93"></a>        <span class="n">candidates</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<a id="__codelineno-5-94" name="__codelineno-5-94" href="#__codelineno-5-94"></a>        <span class="k">for</span> <span class="n">band_idx</span><span class="p">,</span> <span class="n">band_hash</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bands</span><span class="p">):</span>
+<a id="__codelineno-5-95" name="__codelineno-5-95" href="#__codelineno-5-95"></a>            <span class="k">if</span> <span class="n">band_hash</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">buckets</span><span class="p">[</span><span class="n">band_idx</span><span class="p">]:</span>
+<a id="__codelineno-5-96" name="__codelineno-5-96" href="#__codelineno-5-96"></a>                <span class="n">candidates</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">buckets</span><span class="p">[</span><span class="n">band_idx</span><span class="p">][</span><span class="n">band_hash</span><span class="p">])</span>
+<a id="__codelineno-5-97" name="__codelineno-5-97" href="#__codelineno-5-97"></a>
+<a id="__codelineno-5-98" name="__codelineno-5-98" href="#__codelineno-5-98"></a>        <span class="k">return</span> <span class="n">candidates</span>
+<a id="__codelineno-5-99" name="__codelineno-5-99" href="#__codelineno-5-99"></a>
+<a id="__codelineno-5-100" name="__codelineno-5-100" href="#__codelineno-5-100"></a><span class="k">def</span><span class="w"> </span><span class="nf">jaccard_similarity</span><span class="p">(</span><span class="n">set1</span><span class="p">:</span> <span class="n">Set</span><span class="p">,</span> <span class="n">set2</span><span class="p">:</span> <span class="n">Set</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<a id="__codelineno-5-101" name="__codelineno-5-101" href="#__codelineno-5-101"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;计算 Jaccard 相似度&quot;&quot;&quot;</span>
+<a id="__codelineno-5-102" name="__codelineno-5-102" href="#__codelineno-5-102"></a>    <span class="n">intersection</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">set1</span> <span class="o">&amp;</span> <span class="n">set2</span><span class="p">)</span>
+<a id="__codelineno-5-103" name="__codelineno-5-103" href="#__codelineno-5-103"></a>    <span class="n">union</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">set1</span> <span class="o">|</span> <span class="n">set2</span><span class="p">)</span>
+<a id="__codelineno-5-104" name="__codelineno-5-104" href="#__codelineno-5-104"></a>    <span class="k">return</span> <span class="n">intersection</span> <span class="o">/</span> <span class="n">union</span> <span class="k">if</span> <span class="n">union</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+</code></pre></div>
+<h3 id="4_23">4_2.3 分布式去重实践<a class="headerlink" href="#4_23" title="Permanent link">&para;</a></h3>
+<p>在 TB 级数据上运行 MinHash LSH 需要精心设计的分布式策略。一个典型的流程包括：</p>
+<p><strong>阶段一：签名计算。</strong> 并行遍历所有文档，为每个文档计算 MinHash 签名。这一步是完全并行的，可以充分利用分布式计算资源。</p>
+<p><strong>阶段二：Band 分组。</strong> 将每个文档按 band 值进行分组。相同 band 值的文档被分配到同一个分区，便于后续比较。</p>
+<p><strong>阶段三：组内去重。</strong> 在每个分区内，对候选重复文档对进行精细的相似度计算，确定真正的重复关系。</p>
+<p><strong>阶段四：传递闭包。</strong> 如果文档 A 与 B 重复，B 与 C 重复，则 A、B、C 都应视为一组重复。需要计算重复关系的传递闭包。</p>
+<p><strong>阶段五：选择保留文档。</strong> 在每组重复文档中选择一个代表（通常选择质量最高或长度最长的）保留，其他删除。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">ray</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">distributed_fuzzy_dedup</span><span class="p">(</span><span class="n">input_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>                            <span class="n">threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0_8</span><span class="p">):</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="sd">    分布式模糊去重流水线</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span class="c1"># 读取数据</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="n">ds</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">input_path</span><span class="p">)</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>    <span class="c1"># 阶段一：计算 MinHash 签名</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">compute_signature</span><span class="p">(</span><span class="n">doc</span><span class="p">):</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>        <span class="n">lsh</span> <span class="o">=</span> <span class="n">MinHashLSH</span><span class="p">()</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>        <span class="n">ngrams</span> <span class="o">=</span> <span class="n">lsh</span><span class="o">.</span><span class="n">get_ngrams</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">])</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>        <span class="n">signature</span> <span class="o">=</span> <span class="n">lsh</span><span class="o">.</span><span class="n">compute_minhash</span><span class="p">(</span><span class="n">ngrams</span><span class="p">)</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>        <span class="n">bands</span> <span class="o">=</span> <span class="n">lsh</span><span class="o">.</span><span class="n">get_bands</span><span class="p">(</span><span class="n">signature</span><span class="p">)</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a>        <span class="k">return</span> <span class="p">{</span><span class="o">**</span><span class="n">doc</span><span class="p">,</span> <span class="s1">&#39;signature&#39;</span><span class="p">:</span> <span class="n">signature</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="s1">&#39;bands&#39;</span><span class="p">:</span> <span class="n">bands</span><span class="p">}</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a>    <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">compute_signature</span><span class="p">)</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>    <span class="c1"># 阶段二：按 band 值分组，找候选对</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>    <span class="c1"># （这里简化处理，实际实现需要更复杂的分组逻辑）</span>
+<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>
+<a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>    <span class="c1"># 阶段三&amp;四：组内精确比较，建立重复关系图</span>
+<a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a>    <span class="c1"># ...</span>
+<a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a>
+<a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a>    <span class="c1"># 阶段五：选择保留文档</span>
+<a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a>    <span class="c1"># ...</span>
+<a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a>
+<a id="__codelineno-6-30" name="__codelineno-6-30" href="#__codelineno-6-30"></a>    <span class="c1"># 保存结果</span>
+<a id="__codelineno-6-31" name="__codelineno-6-31" href="#__codelineno-6-31"></a>    <span class="n">ds</span><span class="o">.</span><span class="n">write_parquet</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+</code></pre></div>
+<p>实际工程中，推荐使用现成的工具。<strong>text-dedup</strong> 是一个开源的文本去重库，实现了多种去重算法，包括 MinHash LSH、SimHash、Suffix Array 等，并提供了 Spark 和 Ray 的分布式实现。<strong>Dolma</strong> 的去重模块也是一个高质量的参考实现。</p>
+<h3 id="4_24">4_2.4 文档内去重<a class="headerlink" href="#4_24" title="Permanent link">&para;</a></h3>
+<p>除了文档级别的去重，还需要处理文档内部的重复内容。常见的情况包括：网页中反复出现的导航栏、页眉页脚；由于 JavaScript 渲染问题导致的内容重复；某些 CMS 系统生成的模板化重复段落。</p>
+<p>文档内去重的策略相对简单：将文档按段落或固定长度分块，计算每个块的哈希值，移除重复的块。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">remove_duplicate_paragraphs</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">min_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;移除文档内的重复段落&quot;&quot;&quot;</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span class="n">paragraphs</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="n">seen_hashes</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="n">unique_paragraphs</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="k">for</span> <span class="n">para</span> <span class="ow">in</span> <span class="n">paragraphs</span><span class="p">:</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>        <span class="n">para</span> <span class="o">=</span> <span class="n">para</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">para</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_length</span><span class="p">:</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>            <span class="n">unique_paragraphs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">para</span><span class="p">)</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>            <span class="k">continue</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>        <span class="n">para_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">para</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>        <span class="k">if</span> <span class="n">para_hash</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_hashes</span><span class="p">:</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>            <span class="n">seen_hashes</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">para_hash</span><span class="p">)</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>            <span class="n">unique_paragraphs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">para</span><span class="p">)</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>    <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">unique_paragraphs</span><span class="p">)</span>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="k">def</span><span class="w"> </span><span class="nf">remove_duplicate_ngrams</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;移除文档内高频重复的 n-gram&quot;&quot;&quot;</span>
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>    <span class="n">words</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>    <span class="n">ngram_counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+<a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a>
+<a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a>    <span class="c1"># 计算 n-gram 频次</span>
+<a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="o">-</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+<a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a>        <span class="n">ngram</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="n">n</span><span class="p">])</span>
+<a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a>        <span class="n">ngram_counts</span><span class="p">[</span><span class="n">ngram</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a>
+<a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a>    <span class="c1"># 标记需要移除的位置</span>
+<a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a>    <span class="n">remove_positions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="o">-</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+<a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a>        <span class="n">ngram</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="n">n</span><span class="p">])</span>
+<a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a>        <span class="k">if</span> <span class="n">ngram_counts</span><span class="p">[</span><span class="n">ngram</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">threshold</span><span class="p">:</span>
+<a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a>            <span class="c1"># 保留第一次出现，移除后续重复</span>
+<a id="__codelineno-7-36" name="__codelineno-7-36" href="#__codelineno-7-36"></a>            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">n</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="o">-</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+<a id="__codelineno-7-37" name="__codelineno-7-37" href="#__codelineno-7-37"></a>                <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">words</span><span class="p">[</span><span class="n">j</span><span class="p">:</span><span class="n">j</span> <span class="o">+</span> <span class="n">n</span><span class="p">])</span> <span class="o">==</span> <span class="n">ngram</span><span class="p">:</span>
+<a id="__codelineno-7-38" name="__codelineno-7-38" href="#__codelineno-7-38"></a>                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">j</span> <span class="o">+</span> <span class="n">n</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">words</span><span class="p">))):</span>
+<a id="__codelineno-7-39" name="__codelineno-7-39" href="#__codelineno-7-39"></a>                        <span class="n">remove_positions</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+<a id="__codelineno-7-40" name="__codelineno-7-40" href="#__codelineno-7-40"></a>
+<a id="__codelineno-7-41" name="__codelineno-7-41" href="#__codelineno-7-41"></a>    <span class="c1"># 重建文本</span>
+<a id="__codelineno-7-42" name="__codelineno-7-42" href="#__codelineno-7-42"></a>    <span class="n">result_words</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">words</span><span class="p">)</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">remove_positions</span><span class="p">]</span>
+<a id="__codelineno-7-43" name="__codelineno-7-43" href="#__codelineno-7-43"></a>    <span class="k">return</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result_words</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="4_3-pii-removal">4_3 隐私数据清洗 (PII Removal)<a class="headerlink" href="#4_3-pii-removal" title="Permanent link">&para;</a></h2>
+<p>预训练数据中不可避免地包含个人身份信息（Personally Identifiable Information, PII），如邮箱地址、电话号码、身份证号、银行卡号、家庭住址等。在数据合规要求日益严格的今天（如 GDPR、CCPA、《个人信息保护法》），清洗 PII 不仅是道德责任，也是法律义务。</p>
+<h3 id="4_31-pii">4_3.1 PII 的类型与风险<a class="headerlink" href="#4_31-pii" title="Permanent link">&para;</a></h3>
+<p>PII 可以分为直接标识符和准标识符两类。直接标识符可以单独识别个人身份，如姓名、身份证号、社会保障号、电话号码、电子邮箱。准标识符单独难以识别个人，但组合使用可能导致识别，如出生日期、邮政编码、职业、工作单位。</p>
+<p>在预训练数据中保留 PII 存在多重风险。首先是隐私泄露风险：模型可能"记住"训练数据中的敏感信息，在推理时被恶意提取。其次是合规风险：违反数据保护法规可能导致巨额罚款。最后是声誉风险：如果模型输出他人隐私信息，会严重损害企业形象。</p>
+<p><img alt="图4-4：PII类型与风险" src="../../images/chapter2/%E5%9B%BE4_4_PII%E7%B1%BB%E5%9E%8B%E4%B8%8E%E9%A3%8E%E9%99%A9.png" /></p>
+<p><em>图4-4：PII类型与风险等级 —— 直接标识符（高风险）与准标识符（中风险）的分类</em></p>
+<h3 id="4_32-microsoft-presidio">4_3.2 Microsoft Presidio<a class="headerlink" href="#4_32-microsoft-presidio" title="Permanent link">&para;</a></h3>
+<p>Presidio 是微软开源的 PII 识别和匿名化工具包，支持多种语言和多种 PII 类型。它采用模块化设计，包含两个核心组件：Analyzer 负责在文本中识别 PII 实体，Anonymizer 负责对识别出的 PII 进行处理（如替换、掩码、删除）。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">presidio_analyzer</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnalyzerEngine</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">presidio_anonymizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">AnonymizerEngine</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">presidio_anonymizer.entities</span><span class="w"> </span><span class="kn">import</span> <span class="n">OperatorConfig</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="c1"># 初始化引擎</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="n">analyzer</span> <span class="o">=</span> <span class="n">AnalyzerEngine</span><span class="p">()</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="n">anonymizer</span> <span class="o">=</span> <span class="n">AnonymizerEngine</span><span class="p">()</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="k">def</span><span class="w"> </span><span class="nf">analyze_pii</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">language</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;en&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="sd">    识别文本中的 PII</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="sd">        PII 实体列表，包含类型、位置和置信度</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>    <span class="n">results</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>        <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>        <span class="n">language</span><span class="o">=</span><span class="n">language</span><span class="p">,</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>        <span class="n">entities</span><span class="o">=</span><span class="p">[</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>            <span class="s1">&#39;EMAIL_ADDRESS&#39;</span><span class="p">,</span> <span class="s1">&#39;PHONE_NUMBER&#39;</span><span class="p">,</span> <span class="s1">&#39;CREDIT_CARD&#39;</span><span class="p">,</span>
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>            <span class="s1">&#39;IP_ADDRESS&#39;</span><span class="p">,</span> <span class="s1">&#39;PERSON&#39;</span><span class="p">,</span> <span class="s1">&#39;LOCATION&#39;</span><span class="p">,</span> <span class="s1">&#39;DATE_TIME&#39;</span>
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>        <span class="p">]</span>
+<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>    <span class="p">)</span>
+<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>    <span class="k">return</span> <span class="n">results</span>
+<a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a>
+<a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a><span class="k">def</span><span class="w"> </span><span class="nf">anonymize_pii</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">language</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;en&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a><span class="sd">    匿名化文本中的 PII</span>
+<a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a>
+<a id="__codelineno-8-30" name="__codelineno-8-30" href="#__codelineno-8-30"></a><span class="sd">    将识别出的 PII 替换为占位符</span>
+<a id="__codelineno-8-31" name="__codelineno-8-31" href="#__codelineno-8-31"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-8-32" name="__codelineno-8-32" href="#__codelineno-8-32"></a>    <span class="c1"># 先识别</span>
+<a id="__codelineno-8-33" name="__codelineno-8-33" href="#__codelineno-8-33"></a>    <span class="n">analyzer_results</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">analyze</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span> <span class="n">language</span><span class="o">=</span><span class="n">language</span><span class="p">)</span>
+<a id="__codelineno-8-34" name="__codelineno-8-34" href="#__codelineno-8-34"></a>
+<a id="__codelineno-8-35" name="__codelineno-8-35" href="#__codelineno-8-35"></a>    <span class="c1"># 定义匿名化策略</span>
+<a id="__codelineno-8-36" name="__codelineno-8-36" href="#__codelineno-8-36"></a>    <span class="n">operators</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-8-37" name="__codelineno-8-37" href="#__codelineno-8-37"></a>        <span class="s1">&#39;EMAIL_ADDRESS&#39;</span><span class="p">:</span> <span class="n">OperatorConfig</span><span class="p">(</span><span class="s1">&#39;replace&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;new_value&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;EMAIL&gt;&#39;</span><span class="p">}),</span>
+<a id="__codelineno-8-38" name="__codelineno-8-38" href="#__codelineno-8-38"></a>        <span class="s1">&#39;PHONE_NUMBER&#39;</span><span class="p">:</span> <span class="n">OperatorConfig</span><span class="p">(</span><span class="s1">&#39;replace&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;new_value&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;PHONE&gt;&#39;</span><span class="p">}),</span>
+<a id="__codelineno-8-39" name="__codelineno-8-39" href="#__codelineno-8-39"></a>        <span class="s1">&#39;CREDIT_CARD&#39;</span><span class="p">:</span> <span class="n">OperatorConfig</span><span class="p">(</span><span class="s1">&#39;replace&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;new_value&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;CREDIT_CARD&gt;&#39;</span><span class="p">}),</span>
+<a id="__codelineno-8-40" name="__codelineno-8-40" href="#__codelineno-8-40"></a>        <span class="s1">&#39;IP_ADDRESS&#39;</span><span class="p">:</span> <span class="n">OperatorConfig</span><span class="p">(</span><span class="s1">&#39;replace&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;new_value&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;IP&gt;&#39;</span><span class="p">}),</span>
+<a id="__codelineno-8-41" name="__codelineno-8-41" href="#__codelineno-8-41"></a>        <span class="s1">&#39;PERSON&#39;</span><span class="p">:</span> <span class="n">OperatorConfig</span><span class="p">(</span><span class="s1">&#39;replace&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;new_value&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;PERSON&gt;&#39;</span><span class="p">}),</span>
+<a id="__codelineno-8-42" name="__codelineno-8-42" href="#__codelineno-8-42"></a>        <span class="s1">&#39;LOCATION&#39;</span><span class="p">:</span> <span class="n">OperatorConfig</span><span class="p">(</span><span class="s1">&#39;replace&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;new_value&#39;</span><span class="p">:</span> <span class="s1">&#39;&lt;LOCATION&gt;&#39;</span><span class="p">}),</span>
+<a id="__codelineno-8-43" name="__codelineno-8-43" href="#__codelineno-8-43"></a>        <span class="s1">&#39;DATE_TIME&#39;</span><span class="p">:</span> <span class="n">OperatorConfig</span><span class="p">(</span><span class="s1">&#39;keep&#39;</span><span class="p">,</span> <span class="p">{})</span>  <span class="c1"># 日期时间通常可以保留</span>
+<a id="__codelineno-8-44" name="__codelineno-8-44" href="#__codelineno-8-44"></a>    <span class="p">}</span>
+<a id="__codelineno-8-45" name="__codelineno-8-45" href="#__codelineno-8-45"></a>
+<a id="__codelineno-8-46" name="__codelineno-8-46" href="#__codelineno-8-46"></a>    <span class="c1"># 匿名化</span>
+<a id="__codelineno-8-47" name="__codelineno-8-47" href="#__codelineno-8-47"></a>    <span class="n">anonymized</span> <span class="o">=</span> <span class="n">anonymizer</span><span class="o">.</span><span class="n">anonymize</span><span class="p">(</span>
+<a id="__codelineno-8-48" name="__codelineno-8-48" href="#__codelineno-8-48"></a>        <span class="n">text</span><span class="o">=</span><span class="n">text</span><span class="p">,</span>
+<a id="__codelineno-8-49" name="__codelineno-8-49" href="#__codelineno-8-49"></a>        <span class="n">analyzer_results</span><span class="o">=</span><span class="n">analyzer_results</span><span class="p">,</span>
+<a id="__codelineno-8-50" name="__codelineno-8-50" href="#__codelineno-8-50"></a>        <span class="n">operators</span><span class="o">=</span><span class="n">operators</span>
+<a id="__codelineno-8-51" name="__codelineno-8-51" href="#__codelineno-8-51"></a>    <span class="p">)</span>
+<a id="__codelineno-8-52" name="__codelineno-8-52" href="#__codelineno-8-52"></a>
+<a id="__codelineno-8-53" name="__codelineno-8-53" href="#__codelineno-8-53"></a>    <span class="k">return</span> <span class="n">anonymized</span><span class="o">.</span><span class="n">text</span>
+</code></pre></div>
+<h3 id="4_33-pii">4_3.3 中文 PII 处理<a class="headerlink" href="#4_33-pii" title="Permanent link">&para;</a></h3>
+<p>Presidio 对中文的支持相对有限。对于中文预训练数据，通常需要补充基于正则表达式的规则匹配。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">ChinesePIIFilter</span><span class="p">:</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;中文 PII 过滤器&quot;&quot;&quot;</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    <span class="n">patterns</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>        <span class="s1">&#39;phone&#39;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>            <span class="sa">r</span><span class="s1">&#39;1[3-9]\d</span><span class="si">{9}</span><span class="s1">&#39;</span><span class="p">,</span>  <span class="c1"># 手机号</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>            <span class="sa">r</span><span class="s1">&#39;0\d{2,3}-?\d{7,8}&#39;</span><span class="p">,</span>  <span class="c1"># 固定电话</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>        <span class="p">],</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>        <span class="s1">&#39;id_card&#39;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>            <span class="sa">r</span><span class="s1">&#39;\d</span><span class="si">{17}</span><span class="s1">[\dXx]&#39;</span><span class="p">,</span>  <span class="c1"># 18位身份证</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>            <span class="sa">r</span><span class="s1">&#39;\d</span><span class="si">{15}</span><span class="s1">&#39;</span><span class="p">,</span>  <span class="c1"># 15位身份证</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>        <span class="p">],</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>        <span class="s1">&#39;email&#39;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>            <span class="sa">r</span><span class="s1">&#39;[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}&#39;</span><span class="p">,</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>        <span class="p">],</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>        <span class="s1">&#39;bank_card&#39;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>            <span class="sa">r</span><span class="s1">&#39;\d{16,19}&#39;</span><span class="p">,</span>  <span class="c1"># 银行卡号（需要结合上下文判断）</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>        <span class="p">],</span>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>        <span class="s1">&#39;ip_address&#39;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>            <span class="sa">r</span><span class="s1">&#39;\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}&#39;</span><span class="p">,</span>
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>        <span class="p">],</span>
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a>        <span class="s1">&#39;qq&#39;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>            <span class="sa">r</span><span class="s1">&#39;[Qq][Qq][:：]?\s*\d{5,11}&#39;</span><span class="p">,</span>
+<a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>            <span class="sa">r</span><span class="s1">&#39;[Qq][:：]?\s*\d{5,11}&#39;</span><span class="p">,</span>
+<a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a>        <span class="p">],</span>
+<a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>        <span class="s1">&#39;wechat&#39;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a>            <span class="sa">r</span><span class="s1">&#39;[Vv][Xx][:：]?\s*[a-zA-Z0-9_-]{6,20}&#39;</span><span class="p">,</span>
+<a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a>            <span class="sa">r</span><span class="s1">&#39;微信[:：]?\s*[a-zA-Z0-9_-]{6,20}&#39;</span><span class="p">,</span>
+<a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a>        <span class="p">],</span>
+<a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a>    <span class="p">}</span>
+<a id="__codelineno-9-33" name="__codelineno-9-33" href="#__codelineno-9-33"></a>
+<a id="__codelineno-9-34" name="__codelineno-9-34" href="#__codelineno-9-34"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-9-35" name="__codelineno-9-35" href="#__codelineno-9-35"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">compiled_patterns</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-9-36" name="__codelineno-9-36" href="#__codelineno-9-36"></a>        <span class="k">for</span> <span class="n">pii_type</span><span class="p">,</span> <span class="n">patterns</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">patterns</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-9-37" name="__codelineno-9-37" href="#__codelineno-9-37"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">compiled_patterns</span><span class="p">[</span><span class="n">pii_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-9-38" name="__codelineno-9-38" href="#__codelineno-9-38"></a>                <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">patterns</span>
+<a id="__codelineno-9-39" name="__codelineno-9-39" href="#__codelineno-9-39"></a>            <span class="p">]</span>
+<a id="__codelineno-9-40" name="__codelineno-9-40" href="#__codelineno-9-40"></a>
+<a id="__codelineno-9-41" name="__codelineno-9-41" href="#__codelineno-9-41"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">find_pii</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-9-42" name="__codelineno-9-42" href="#__codelineno-9-42"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;查找所有 PII&quot;&quot;&quot;</span>
+<a id="__codelineno-9-43" name="__codelineno-9-43" href="#__codelineno-9-43"></a>        <span class="n">findings</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-9-44" name="__codelineno-9-44" href="#__codelineno-9-44"></a>        <span class="k">for</span> <span class="n">pii_type</span><span class="p">,</span> <span class="n">patterns</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compiled_patterns</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+<a id="__codelineno-9-45" name="__codelineno-9-45" href="#__codelineno-9-45"></a>            <span class="k">for</span> <span class="n">pattern</span> <span class="ow">in</span> <span class="n">patterns</span><span class="p">:</span>
+<a id="__codelineno-9-46" name="__codelineno-9-46" href="#__codelineno-9-46"></a>                <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">pattern</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+<a id="__codelineno-9-47" name="__codelineno-9-47" href="#__codelineno-9-47"></a>                    <span class="n">findings</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+<a id="__codelineno-9-48" name="__codelineno-9-48" href="#__codelineno-9-48"></a>                        <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="n">pii_type</span><span class="p">,</span>
+<a id="__codelineno-9-49" name="__codelineno-9-49" href="#__codelineno-9-49"></a>                        <span class="s1">&#39;value&#39;</span><span class="p">:</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(),</span>
+<a id="__codelineno-9-50" name="__codelineno-9-50" href="#__codelineno-9-50"></a>                        <span class="s1">&#39;start&#39;</span><span class="p">:</span> <span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">(),</span>
+<a id="__codelineno-9-51" name="__codelineno-9-51" href="#__codelineno-9-51"></a>                        <span class="s1">&#39;end&#39;</span><span class="p">:</span> <span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+<a id="__codelineno-9-52" name="__codelineno-9-52" href="#__codelineno-9-52"></a>                    <span class="p">})</span>
+<a id="__codelineno-9-53" name="__codelineno-9-53" href="#__codelineno-9-53"></a>        <span class="k">return</span> <span class="n">findings</span>
+<a id="__codelineno-9-54" name="__codelineno-9-54" href="#__codelineno-9-54"></a>
+<a id="__codelineno-9-55" name="__codelineno-9-55" href="#__codelineno-9-55"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">anonymize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-9-56" name="__codelineno-9-56" href="#__codelineno-9-56"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;匿名化 PII&quot;&quot;&quot;</span>
+<a id="__codelineno-9-57" name="__codelineno-9-57" href="#__codelineno-9-57"></a>        <span class="n">findings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_pii</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-9-58" name="__codelineno-9-58" href="#__codelineno-9-58"></a>
+<a id="__codelineno-9-59" name="__codelineno-9-59" href="#__codelineno-9-59"></a>        <span class="c1"># 按位置倒序处理，避免替换影响后续位置</span>
+<a id="__codelineno-9-60" name="__codelineno-9-60" href="#__codelineno-9-60"></a>        <span class="n">findings</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">],</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-9-61" name="__codelineno-9-61" href="#__codelineno-9-61"></a>
+<a id="__codelineno-9-62" name="__codelineno-9-62" href="#__codelineno-9-62"></a>        <span class="k">for</span> <span class="n">finding</span> <span class="ow">in</span> <span class="n">findings</span><span class="p">:</span>
+<a id="__codelineno-9-63" name="__codelineno-9-63" href="#__codelineno-9-63"></a>            <span class="n">placeholder</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&lt;</span><span class="si">{</span><span class="n">finding</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s2">&gt;&quot;</span>
+<a id="__codelineno-9-64" name="__codelineno-9-64" href="#__codelineno-9-64"></a>            <span class="n">text</span> <span class="o">=</span> <span class="n">text</span><span class="p">[:</span><span class="n">finding</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]]</span> <span class="o">+</span> <span class="n">placeholder</span> <span class="o">+</span> <span class="n">text</span><span class="p">[</span><span class="n">finding</span><span class="p">[</span><span class="s1">&#39;end&#39;</span><span class="p">]:]</span>
+<a id="__codelineno-9-65" name="__codelineno-9-65" href="#__codelineno-9-65"></a>
+<a id="__codelineno-9-66" name="__codelineno-9-66" href="#__codelineno-9-66"></a>        <span class="k">return</span> <span class="n">text</span>
+</code></pre></div>
+<h3 id="4_34-pii">4_3.4 PII 处理策略的权衡<a class="headerlink" href="#4_34-pii" title="Permanent link">&para;</a></h3>
+<p>PII 处理面临准确率与召回率的权衡。过于激进的过滤可能误伤正常内容（如将普通数字序列误判为电话号码），过于保守则可能遗漏真正的敏感信息。</p>
+<p>在实践中，建议采用分层策略。对于高风险 PII（如身份证号、银行卡号），使用较严格的匹配规则，宁可误删也不遗漏。对于中风险 PII（如电话号码、邮箱），使用适中的阈值，平衡准确率和召回率。对于低风险信息（如日期、地点），可以根据具体场景决定是否处理。</p>
+<p>另一个重要决策是替换策略。常见的选择包括：完全删除，简单但可能破坏语句流畅性；固定占位符替换（如 <code>&lt;EMAIL&gt;</code>），保留语义信息但可能引入不自然的模式；随机生成替换（如用随机邮箱替换真实邮箱），最接近原始分布但实现复杂。大多数预训练数据集采用占位符替换策略，作为准确率和复杂度的平衡。</p>
+<hr />
+<h2 id="4_4">4_4 完整清洗流水线<a class="headerlink" href="#4_4" title="Permanent link">&para;</a></h2>
+<p>将前面介绍的各个组件串联起来，构建一个完整的数据清洗流水线。</p>
+<h3 id="4_41">4_4.1 流水线架构<a class="headerlink" href="#4_41" title="Permanent link">&para;</a></h3>
+<p>一个工业级的清洗流水线通常包括以下阶段，按顺序执行：</p>
+<p><strong>阶段一：格式标准化。</strong> 将各种来源的数据转换为统一格式，处理编码问题，提取必要的元数据。</p>
+<p><strong>阶段二：语言过滤。</strong> 使用 FastText 识别语言，保留目标语言的文档。对于混合语言文档，根据主要语言进行分类。</p>
+<p><strong>阶段三：启发式过滤。</strong> 应用长度、特殊字符、重复行等启发式规则，快速过滤明显的低质量内容。</p>
+<p><strong>阶段四：文档内去重。</strong> 移除文档内部的重复段落和重复 n-gram。</p>
+<p><strong>阶段五：PII 清洗。</strong> 识别并匿名化敏感个人信息。</p>
+<p><strong>阶段六：质量评分。</strong> 计算困惑度等质量指标，为后续的质量分层提供依据。</p>
+<p><strong>阶段七：文档间去重。</strong> 使用 MinHash LSH 进行大规模模糊去重，移除高度相似的文档。</p>
+<p><strong>阶段八：质量分层与采样。</strong> 根据质量评分将数据分层，确定各层的采样权重。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">ray</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="nd">@dataclass</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="k">class</span><span class="w"> </span><span class="nc">CleaningConfig</span><span class="p">:</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;清洗配置&quot;&quot;&quot;</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span class="n">target_language</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;zh&#39;</span>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>    <span class="n">min_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">200</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>    <span class="n">max_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100000</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>    <span class="n">max_perplexity</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">500</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>    <span class="n">dedup_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0_8</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>    <span class="n">anonymize_pii</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="k">class</span><span class="w"> </span><span class="nc">DataCleaningPipeline</span><span class="p">:</span>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">CleaningConfig</span><span class="p">):</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">lang_filter</span> <span class="o">=</span> <span class="n">LanguageFilter</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">target_language</span><span class="p">)</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">heuristic_filter</span> <span class="o">=</span> <span class="n">HeuristicFilter</span><span class="p">()</span>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">perplexity_filter</span> <span class="o">=</span> <span class="n">PerplexityFilter</span><span class="p">(</span><span class="n">max_ppl</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">max_perplexity</span><span class="p">)</span>
+<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">pii_filter</span> <span class="o">=</span> <span class="n">ChinesePIIFilter</span><span class="p">()</span> <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">target_language</span> <span class="o">==</span> <span class="s1">&#39;zh&#39;</span> <span class="k">else</span> <span class="kc">None</span>
+<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">deduplicator</span> <span class="o">=</span> <span class="n">MinHashLSH</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">dedup_threshold</span><span class="p">)</span>
+<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a>
+<a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">process_document</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">doc</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;处理单个文档&quot;&quot;&quot;</span>
+<a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a>        <span class="n">text</span> <span class="o">=</span> <span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;text&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a>
+<a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a>        <span class="c1"># 阶段二：语言过滤</span>
+<a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a>        <span class="n">lang</span><span class="p">,</span> <span class="n">conf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lang_filter</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a>        <span class="k">if</span> <span class="n">lang</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">target_language</span><span class="p">:</span>
+<a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a>            <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a>
+<a id="__codelineno-10-33" name="__codelineno-10-33" href="#__codelineno-10-33"></a>        <span class="c1"># 阶段三：启发式过滤</span>
+<a id="__codelineno-10-34" name="__codelineno-10-34" href="#__codelineno-10-34"></a>        <span class="n">passed</span><span class="p">,</span> <span class="n">reason</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">heuristic_filter</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-10-35" name="__codelineno-10-35" href="#__codelineno-10-35"></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">passed</span><span class="p">:</span>
+<a id="__codelineno-10-36" name="__codelineno-10-36" href="#__codelineno-10-36"></a>            <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-10-37" name="__codelineno-10-37" href="#__codelineno-10-37"></a>
+<a id="__codelineno-10-38" name="__codelineno-10-38" href="#__codelineno-10-38"></a>        <span class="c1"># 阶段四：文档内去重</span>
+<a id="__codelineno-10-39" name="__codelineno-10-39" href="#__codelineno-10-39"></a>        <span class="n">text</span> <span class="o">=</span> <span class="n">remove_duplicate_paragraphs</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-10-40" name="__codelineno-10-40" href="#__codelineno-10-40"></a>
+<a id="__codelineno-10-41" name="__codelineno-10-41" href="#__codelineno-10-41"></a>        <span class="c1"># 阶段五：PII 清洗</span>
+<a id="__codelineno-10-42" name="__codelineno-10-42" href="#__codelineno-10-42"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">anonymize_pii</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pii_filter</span><span class="p">:</span>
+<a id="__codelineno-10-43" name="__codelineno-10-43" href="#__codelineno-10-43"></a>            <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pii_filter</span><span class="o">.</span><span class="n">anonymize</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-10-44" name="__codelineno-10-44" href="#__codelineno-10-44"></a>
+<a id="__codelineno-10-45" name="__codelineno-10-45" href="#__codelineno-10-45"></a>        <span class="c1"># 阶段六：质量评分</span>
+<a id="__codelineno-10-46" name="__codelineno-10-46" href="#__codelineno-10-46"></a>        <span class="n">perplexity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">perplexity_filter</span><span class="o">.</span><span class="n">compute_perplexity</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-10-47" name="__codelineno-10-47" href="#__codelineno-10-47"></a>        <span class="k">if</span> <span class="n">perplexity</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">max_perplexity</span><span class="p">:</span>
+<a id="__codelineno-10-48" name="__codelineno-10-48" href="#__codelineno-10-48"></a>            <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-10-49" name="__codelineno-10-49" href="#__codelineno-10-49"></a>
+<a id="__codelineno-10-50" name="__codelineno-10-50" href="#__codelineno-10-50"></a>        <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-10-51" name="__codelineno-10-51" href="#__codelineno-10-51"></a>            <span class="o">**</span><span class="n">doc</span><span class="p">,</span>
+<a id="__codelineno-10-52" name="__codelineno-10-52" href="#__codelineno-10-52"></a>            <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">text</span><span class="p">,</span>
+<a id="__codelineno-10-53" name="__codelineno-10-53" href="#__codelineno-10-53"></a>            <span class="s1">&#39;language&#39;</span><span class="p">:</span> <span class="n">lang</span><span class="p">,</span>
+<a id="__codelineno-10-54" name="__codelineno-10-54" href="#__codelineno-10-54"></a>            <span class="s1">&#39;lang_confidence&#39;</span><span class="p">:</span> <span class="n">conf</span><span class="p">,</span>
+<a id="__codelineno-10-55" name="__codelineno-10-55" href="#__codelineno-10-55"></a>            <span class="s1">&#39;perplexity&#39;</span><span class="p">:</span> <span class="n">perplexity</span>
+<a id="__codelineno-10-56" name="__codelineno-10-56" href="#__codelineno-10-56"></a>        <span class="p">}</span>
+<a id="__codelineno-10-57" name="__codelineno-10-57" href="#__codelineno-10-57"></a>
+<a id="__codelineno-10-58" name="__codelineno-10-58" href="#__codelineno-10-58"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-10-59" name="__codelineno-10-59" href="#__codelineno-10-59"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;运行完整流水线&quot;&quot;&quot;</span>
+<a id="__codelineno-10-60" name="__codelineno-10-60" href="#__codelineno-10-60"></a>        <span class="c1"># 读取数据</span>
+<a id="__codelineno-10-61" name="__codelineno-10-61" href="#__codelineno-10-61"></a>        <span class="n">ds</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">input_path</span><span class="p">)</span>
+<a id="__codelineno-10-62" name="__codelineno-10-62" href="#__codelineno-10-62"></a>
+<a id="__codelineno-10-63" name="__codelineno-10-63" href="#__codelineno-10-63"></a>        <span class="c1"># 阶段一到六：单文档处理</span>
+<a id="__codelineno-10-64" name="__codelineno-10-64" href="#__codelineno-10-64"></a>        <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">process_document</span><span class="p">)</span>
+<a id="__codelineno-10-65" name="__codelineno-10-65" href="#__codelineno-10-65"></a>        <span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-10-66" name="__codelineno-10-66" href="#__codelineno-10-66"></a>
+<a id="__codelineno-10-67" name="__codelineno-10-67" href="#__codelineno-10-67"></a>        <span class="c1"># 阶段七：文档间去重</span>
+<a id="__codelineno-10-68" name="__codelineno-10-68" href="#__codelineno-10-68"></a>        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deduplicator</span><span class="o">.</span><span class="n">deduplicate</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<a id="__codelineno-10-69" name="__codelineno-10-69" href="#__codelineno-10-69"></a>
+<a id="__codelineno-10-70" name="__codelineno-10-70" href="#__codelineno-10-70"></a>        <span class="c1"># 保存结果</span>
+<a id="__codelineno-10-71" name="__codelineno-10-71" href="#__codelineno-10-71"></a>        <span class="n">ds</span><span class="o">.</span><span class="n">write_parquet</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="4_42">4_4.2 质量监控与迭代<a class="headerlink" href="#4_42" title="Permanent link">&para;</a></h3>
+<p>清洗流水线不是一次性任务，而是需要持续监控和迭代优化的过程。建议建立以下监控机制：</p>
+<p><strong>过滤率监控</strong>：统计每个阶段的过滤率。如果某个阶段突然过滤掉大量数据，可能是阈值设置不当或数据分布发生变化。</p>
+<p><strong>样本抽检</strong>：定期人工抽检清洗结果，评估过滤规则的准确性。误删的好样本和漏删的坏样本都需要关注。</p>
+<p><strong>下游反馈</strong>：模型训练后的评测结果是最终的质量验证。如果模型表现不佳，需要回溯分析数据是否存在问题。</p>
+<hr />
+<h2 id="4_5">4_5 本章小结<a class="headerlink" href="#4_5" title="Permanent link">&para;</a></h2>
+<p>本章系统介绍了预训练数据清洗的核心技术。</p>
+<p>在启发式过滤方面，语言识别使用 FastText 快速筛选目标语言文档，困惑度过滤使用 KenLM 评估文本质量，启发式规则集涵盖长度、特殊字符、重复行、词汇多样性等多个维度。质量分层策略将数据划分为不同等级，为后续采样提供依据。</p>
+<p>在大规模去重方面，精确去重使用哈希方法快速移除完全相同的文档，模糊去重使用 MinHash LSH 算法识别高度相似的内容。分布式实现是处理 TB 级数据的必要手段。文档内去重处理段落和 n-gram 级别的重复。</p>
+<p>在隐私清洗方面，PII 识别可以使用 Presidio 或自定义正则规则，匿名化策略需要在准确率和信息保留之间权衡。中文 PII 处理需要特别设计的规则集。</p>
+<p>完整的清洗流水线将各个组件串联，按照格式标准化、语言过滤、启发式过滤、文档内去重、PII 清洗、质量评分、文档间去重、质量分层的顺序执行。持续的质量监控和迭代优化是保证数据质量的关键。</p>
+<p><img alt="图4-5：本章知识结构" src="../../images/chapter2/%E5%9B%BE4_5_%E6%9C%AC%E7%AB%A0%E7%9F%A5%E8%AF%86%E7%BB%93%E6%9E%84.png" /></p>
+<p><em>图4-5：第4章知识结构 —— 启发式过滤、大规模去重、PII清洗三大核心主题</em></p>
+<hr />
+<h2 id="_3">延伸阅读<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>关于数据清洗的深入内容，以下资源值得参考：</p>
+<p>RefinedWeb 论文详细记录了从 Common Crawl 构建高质量预训练集的完整清洗流程。Dolma 数据集的技术报告介绍了 Allen AI 的清洗策略和工具。text-dedup 开源库（github.com/ChenghaoMou/text-dedup）提供了多种去重算法的实现。Microsoft Presidio 文档（microsoft.github.io/presidio）是 PII 处理的权威参考。CCNet 论文介绍了 Facebook 处理 Common Crawl 数据的方法，特别是困惑度过滤的细节。</p>
+<hr />
+<h2 id="_4">下一章预告<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>在下一章《分词与序列化》中，我们将探讨预训练数据准备的最后一个关键步骤：如何将清洗后的文本转换为模型可以理解的 Token 序列。你将学习 BPE、WordPiece、Unigram 等分词算法的原理与选择，如何为特定领域扩充词表，以及数据混合与课程学习的采样策略。</p>
+<p>带着这个问题进入下一章：如果你要训练一个专门处理代码的模型，标准的 GPT-2 分词器会遇到什么问题？</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../2_1_data_acquisition/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 第3章：数据获取与采集">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                第3章：数据获取与采集
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../2_3_tokenization_serialization/" class="md-footer__link md-footer__link--next" aria-label="下一页: 第5章：分词与序列化">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                第5章：分词与序列化
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

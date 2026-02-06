@@ -1,0 +1,2412 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/chapter2/2_1_data_acquisition/">
+      
+      
+        <link rel="prev" href="../../chapter1/1_2_data_infra/">
+      
+      
+        <link rel="next" href="../2_2_cleaning_denoising/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>第3章：数据获取与采集 - 大模型数据工程：架构、算法及项目实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#3" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-header__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型数据工程：架构、算法及项目实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第3章：数据获取与采集
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="切换至夜间模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至夜间模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="切换至日间模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至日间模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-nav__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大模型数据工程：架构、算法及项目实战
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    目录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一部分：基础设施与核心理念
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一部分：基础设施与核心理念
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter1/1_1_data_change/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第1章：大模型时代的数据变革
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter1/1_2_data_infra/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第2章：数据基础设施选型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二部分：文本预训练数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二部分：文本预训练数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第3章：数据获取与采集
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第3章：数据获取与采集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章摘要
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景引入
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_1 开源数据集解构
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3_1 开源数据集解构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3_11-common-crawl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_1.1 Common Crawl：互联网的快照
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_12-refinedweb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_1.2 RefinedWeb：高质量英文语料
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_13-the-pile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_1.3 The Pile：多元化的数据混合
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_1.4 中文数据集概览
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_2 高性能网页解析
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3_2 高性能网页解析">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_2.1 网页解析的挑战
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_22-trafilatura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_2.2 Trafilatura：工业级的解析库
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_2.3 其他解析工具对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_2.4 分布式解析架构
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_3 特种数据获取
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3_3 特种数据获取">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3_31-github-the-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_3.1 代码数据：GitHub 与 The Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_32-arxiv-s2orc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_3.2 学术论文：ArXiv 与 S2ORC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_3.3 书籍数据：版权与替代方案
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_34" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_3.4 多语言数据平衡
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_4 数据获取的工程实践
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3_4 数据获取的工程实践">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3_41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_4.1 爬虫架构设计
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_4.2 增量更新策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_4.3 质量监控与反馈
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_5 常见陷阱与最佳实践
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_6 本章小结
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        延伸阅读
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        下一章预告
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2_2_cleaning_denoising/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第4章：清洗与去噪
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../2_3_tokenization_serialization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第5章：分词与序列化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三部分：多模态数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三部分：多模态数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第6章：图文对数据处理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第7章：数据重描述
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第8章：视频与音频数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第四部分：对齐与合成数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第四部分：对齐与合成数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第9章：指令微调数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第10章：合成数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第11章：人类偏好数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第五部分：应用级数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第五部分：应用级数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter5/5_1_rag_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第12章：RAG数据流水线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter5/5_2_mm_rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第13章：多模态RAG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第六部分：实战项目集
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第六部分：实战项目集
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_1_mini_c4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目一：构建Mini-C4预训练集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_2_legal_sft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目二：垂直领域专家SFT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_3_llava_instruct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目三：构建LLaVA多模态指令集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_4_synthetic_textbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目四：合成数学代码教科书
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_5_mm_rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目五：多模态RAG企业财报助手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章摘要
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景引入
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_1 开源数据集解构
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3_1 开源数据集解构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3_11-common-crawl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_1.1 Common Crawl：互联网的快照
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_12-refinedweb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_1.2 RefinedWeb：高质量英文语料
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_13-the-pile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_1.3 The Pile：多元化的数据混合
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_1.4 中文数据集概览
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_2 高性能网页解析
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3_2 高性能网页解析">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_2.1 网页解析的挑战
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_22-trafilatura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_2.2 Trafilatura：工业级的解析库
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_2.3 其他解析工具对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_2.4 分布式解析架构
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_3 特种数据获取
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3_3 特种数据获取">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3_31-github-the-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_3.1 代码数据：GitHub 与 The Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_32-arxiv-s2orc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_3.2 学术论文：ArXiv 与 S2ORC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_3.3 书籍数据：版权与替代方案
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_34" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_3.4 多语言数据平衡
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_4 数据获取的工程实践
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3_4 数据获取的工程实践">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3_41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_4.1 爬虫架构设计
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_4.2 增量更新策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3_43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_4.3 质量监控与反馈
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_5 常见陷阱与最佳实践
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3_6 本章小结
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        延伸阅读
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        下一章预告
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="3">第3章：数据获取与采集<a class="headerlink" href="#3" title="Permanent link">&para;</a></h1>
+<hr />
+<h2 id="_1">本章摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>预训练数据是大模型的"燃料"，其质量和规模直接决定了模型的基础能力。本章将深入探讨预训练数据的获取策略，从 Common Crawl 等开源数据集的解构与使用，到高性能网页爬虫系统的设计与实现，再到代码、论文、书籍等特种数据的获取技巧。掌握这些内容后，读者将具备构建 TB 级预训练语料库的能力。</p>
+<hr />
+<h2 id="_2">场景引入<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>你的团队决定训练一个 7B 参数的中文基座模型。按照 Chinchilla 的最优配比，这需要约 140B Token 的高质量中文语料——换算成原始文本大约是 280TB。去哪里找这么多数据？直接从网上爬取显然不现实，一个小团队不可能在短时间内爬完整个中文互联网。</p>
+<p>这时有人提议使用 Common Crawl——这是一个每月抓取数十亿网页的开源项目，累计数据量超过 PB 级。听起来是完美的解决方案，但当你真正下载一个月的数据后，发现原始的 WARC 文件完全无法直接使用：充斥着 HTML 标签、JavaScript 代码、导航栏、广告，真正有价值的正文内容可能不到 10%。</p>
+<p>如何从这片"数据沼泽"中提取出可用于训练的"黄金语料"？这正是本章要解决的核心问题。</p>
+<hr />
+<h2 id="3_1">3_1 开源数据集解构<a class="headerlink" href="#3_1" title="Permanent link">&para;</a></h2>
+<p>在动手爬取数据之前，首先应该充分利用已有的开源数据集。这些数据集经过社区的精心处理，可以大大降低预训练数据准备的时间和成本。理解它们的构成和处理方法，也是设计自己数据管线的重要参考。</p>
+<h3 id="3_11-common-crawl">3_1.1 Common Crawl：互联网的快照<a class="headerlink" href="#3_11-common-crawl" title="Permanent link">&para;</a></h3>
+<p>Common Crawl 是一个非营利组织，自 2008 年起持续抓取互联网网页，并免费提供给研究和商业使用。它是目前绝大多数大规模预训练数据集的上游来源，无论是 GPT 系列、LLaMA 还是国内的各种大模型，都或多或少地使用了 Common Crawl 的数据。</p>
+<p>Common Crawl 的数据以"抓取批次"（Crawl）为单位组织，每月发布一个新批次，每个批次包含数十亿个网页。数据以三种格式提供：WARC（Web ARChive）文件包含原始的 HTTP 响应，包括响应头和完整的 HTML 内容，是最原始也最完整的格式；WAT 文件是 WARC 的元数据提取版本，包含 URL、响应头、链接关系等结构化信息；WET 文件是纯文本提取版本，已经去除了 HTML 标签，只保留正文文本。</p>
+<table>
+<thead>
+<tr>
+<th>格式</th>
+<th>内容</th>
+<th>单月数据量</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WARC</td>
+<td>原始 HTTP 响应 + HTML</td>
+<td>约 80TB 压缩</td>
+<td>需要完整内容或自定义解析</td>
+</tr>
+<tr>
+<td>WAT</td>
+<td>结构化元数据</td>
+<td>约 3TB 压缩</td>
+<td>URL 分析、链接图研究</td>
+</tr>
+<tr>
+<td>WET</td>
+<td>纯文本提取</td>
+<td>约 15TB 压缩</td>
+<td>快速获取文本、初步实验</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="图3-1：Common Crawl数据流水线" src="../../images/chapter2/%E5%9B%BE3_1_CommonCrawl%E6%95%B0%E6%8D%AE%E6%B5%81%E6%B0%B4%E7%BA%BF.png" /></p>
+<p><em>图3-1：Common Crawl 数据流水线 —— 从互联网抓取到清洁语料的完整处理流程</em></p>
+<p>对于预训练数据工程而言，WARC 和 WET 是最常用的两种格式。WET 文件看似方便，因为已经提取了纯文本，但实际上 Common Crawl 的默认文本提取质量较差，会保留大量噪声（如导航栏、页脚、JavaScript 文本）。因此，专业的数据处理流程通常从 WARC 文件开始，使用更高质量的解析器（如 Trafilatura）重新提取正文。</p>
+<p>使用 Common Crawl 数据需要注意几个关键点。首先是版本选择：每月的抓取批次质量略有差异，一般建议使用较新的版本（如 2023 年以后的批次），因为 Common Crawl 持续改进其抓取策略。其次是语言过滤：Common Crawl 以英文网页为主，中文、日文等非英语内容占比较低（通常不到 10%），需要额外的语言识别步骤进行筛选。最后是法律合规：虽然 Common Crawl 是开放数据，但其中抓取的网页内容可能涉及版权问题，使用时需要根据当地法律进行评估。</p>
+<h3 id="3_12-refinedweb">3_1.2 RefinedWeb：高质量英文语料<a class="headerlink" href="#3_12-refinedweb" title="Permanent link">&para;</a></h3>
+<p>RefinedWeb 是 Falcon 模型团队（UAE 的 TII 实验室）发布的高质量英文预训练数据集，包含约 5T Token。与直接使用 Common Crawl 不同，RefinedWeb 经过了严格的清洗和去重处理，被认为是目前公开可用的最高质量英文预训练语料之一。</p>
+<p>RefinedWeb 的处理流程具有很强的参考价值。其核心步骤包括：URL 过滤（移除成人网站、垃圾站点等）、文本提取（使用 Trafilatura 进行高质量正文提取）、语言识别（使用 FastText 保留英文内容）、质量过滤（基于启发式规则移除低质量文档）、模糊去重（使用 MinHash LSH 在大规模数据上进行近似去重）。</p>
+<p>RefinedWeb 论文详细记录了每个步骤的实现细节和效果评估，是学习预训练数据处理的绝佳教材。值得注意的是，虽然 RefinedWeb 公开了数据集的一个子集（约 600B Token），但完整版本仍保留为 Falcon 模型的独家使用。</p>
+<h3 id="3_13-the-pile">3_1.3 The Pile：多元化的数据混合<a class="headerlink" href="#3_13-the-pile" title="Permanent link">&para;</a></h3>
+<p>The Pile 是 EleutherAI 发布的开源预训练数据集，规模约 800GB（解压后），包含约 300B Token。与 RefinedWeb 专注于网页数据不同，The Pile 的设计理念是多元化——它混合了来自 22 个不同来源的数据，覆盖网页、书籍、代码、论文、法律文件等多个领域。</p>
+<p>The Pile 的数据来源构成反映了预训练数据多样性的重要性。其中 Pile-CC 是经过清洗的 Common Crawl 子集，占比约 50%；PubMed Central 提供生物医学论文；ArXiv 提供科学预印本；GitHub 提供开源代码；Books3 提供书籍文本；StackExchange 提供技术问答；Wikipedia 提供百科知识。这种多来源混合策略被证明能够提升模型在各类下游任务上的表现，后来的 LLaMA、Mistral 等模型的数据配方都借鉴了类似的思路。</p>
+<p>然而，The Pile 在法律层面存在争议。其中的 Books3 子集包含大量版权书籍，已引发多起诉讼。在使用 The Pile 时，建议根据自身的法律风险承受能力进行评估，或者选择性地排除争议子集。</p>
+<h3 id="3_14">3_1.4 中文数据集概览<a class="headerlink" href="#3_14" title="Permanent link">&para;</a></h3>
+<p>对于训练中文大模型，可用的开源数据集相对较少，但近年来有所改善。</p>
+<p>WuDaoCorpora 是智源研究院发布的大规模中文语料库，包含约 3TB 的中文文本，涵盖百科、新闻、论坛、问答等多种来源。数据需要通过申请获取，使用时需遵守相关协议。ChineseCrawl 是中文版的 Common Crawl 子集提取，有多个社区版本可用。CLUECorpus 是 CLUE 基准团队发布的中文语料，规模约 100GB，适合中小规模实验。</p>
+<p>相比英文数据集的丰富程度，中文预训练数据仍然是一个"卖方市场"。这意味着中文大模型团队往往需要自行从 Common Crawl 或其他来源获取和处理中文数据，无法完全依赖现有开源数据集。</p>
+<hr />
+<h2 id="3_2">3_2 高性能网页解析<a class="headerlink" href="#3_2" title="Permanent link">&para;</a></h2>
+<p>从 Common Crawl 或自有爬虫获取原始 HTML 后，下一个关键步骤是从中提取正文文本。这看似简单，实际上是整个数据管线中最关键的环节之一——解析质量直接决定了最终语料的质量。</p>
+<h3 id="3_21">3_2.1 网页解析的挑战<a class="headerlink" href="#3_21" title="Permanent link">&para;</a></h3>
+<p>现代网页远比表面看起来复杂。一个典型的网页可能包含：HTML 结构标签、CSS 样式定义、JavaScript 代码（包括内联和外部引用）、导航栏和页脚、广告和推广内容、评论区和用户生成内容、页面侧边栏和推荐内容。而我们需要的只是"正文"——即页面的主体内容部分。</p>
+<p>传统的解析方法（如简单地去除所有 HTML 标签）效果很差，因为它无法区分正文和噪声。更高级的方法需要理解网页的语义结构，识别哪些部分是真正有价值的内容。</p>
+<h3 id="3_22-trafilatura">3_2.2 Trafilatura：工业级的解析库<a class="headerlink" href="#3_22-trafilatura" title="Permanent link">&para;</a></h3>
+<p>Trafilatura 是目前最受推荐的网页正文提取库，被 RefinedWeb、Dolma 等主流数据集采用。它的核心优势在于：精心调优的提取算法，在多个评测数据集上表现优异；良好的多语言支持，特别是对中文、日文等亚洲语言的处理；丰富的配置选项，可以根据需求调整提取策略；合理的性能表现，适合大规模数据处理。</p>
+<p>使用 Trafilatura 的基本流程如下：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">trafilatura</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># 从 HTML 中提取正文</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_content</span><span class="p">(</span><span class="n">html</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="sd">    从 HTML 提取正文内容</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="sd">        html: 原始 HTML 字符串</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="sd">        url: 可选的 URL，用于解析相对链接</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="sd">    Returns:</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="sd">        包含正文和元数据的字典</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="c1"># 核心提取</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">trafilatura</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        <span class="n">html</span><span class="p">,</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>        <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>        <span class="n">include_comments</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>    <span class="c1"># 排除评论区</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>        <span class="n">include_tables</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>       <span class="c1"># 保留表格内容</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>        <span class="n">no_fallback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>         <span class="c1"># 允许使用备选算法</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>        <span class="n">favor_precision</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>      <span class="c1"># 优先保证精确度</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>        <span class="n">output_format</span><span class="o">=</span><span class="s1">&#39;txt&#39;</span>        <span class="c1"># 输出纯文本</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    <span class="p">)</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>    <span class="c1"># 提取元数据</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>    <span class="n">metadata</span> <span class="o">=</span> <span class="n">trafilatura</span><span class="o">.</span><span class="n">extract_metadata</span><span class="p">(</span><span class="n">html</span><span class="p">)</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>        <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">result</span><span class="p">,</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>        <span class="s1">&#39;title&#39;</span><span class="p">:</span> <span class="n">metadata</span><span class="o">.</span><span class="n">title</span> <span class="k">if</span> <span class="n">metadata</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>        <span class="s1">&#39;author&#39;</span><span class="p">:</span> <span class="n">metadata</span><span class="o">.</span><span class="n">author</span> <span class="k">if</span> <span class="n">metadata</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>        <span class="s1">&#39;date&#39;</span><span class="p">:</span> <span class="n">metadata</span><span class="o">.</span><span class="n">date</span> <span class="k">if</span> <span class="n">metadata</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="n">url</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>    <span class="p">}</span>
+</code></pre></div>
+<p>Trafilatura 提供了丰富的配置选项，不同的参数组合适用于不同的场景。<code>include_comments</code> 控制是否保留页面评论区内容，对于论坛类网站可以设为 True，对于新闻网站通常设为 False。<code>include_tables</code> 控制是否保留表格，对于数据类页面（如 Wikipedia）应该设为 True。<code>favor_precision</code> 和 <code>favor_recall</code> 是一对权衡参数，前者优先保证提取内容的准确性（宁可漏掉也不要错误），后者优先保证提取的完整性（宁可有噪声也要完整）。对于预训练数据，通常选择 <code>favor_precision=True</code>，因为噪声数据对模型训练有害。</p>
+<h3 id="3_23">3_2.3 其他解析工具对比<a class="headerlink" href="#3_23" title="Permanent link">&para;</a></h3>
+<p>除了 Trafilatura，还有几个常用的网页解析工具，各有特点。</p>
+<p><strong>Readability</strong> 最初由 Mozilla 开发，用于 Firefox 的阅读模式。它的算法相对简单，速度快，但对复杂页面的处理效果一般。Python 生态中有 readability-lxml 等移植版本。</p>
+<p><strong>Newspaper3k</strong> 专门针对新闻网站优化，能够较好地提取文章标题、正文、发布日期、作者等信息。但对非新闻类网站的效果较差，且项目维护不够活跃。</p>
+<p><strong>Justext</strong> 是一个专注于"样板文本去除"（boilerplate removal）的库，算法基于文本块的链接密度和文本密度。它在学术研究中较常引用，但工程实用性不如 Trafilatura。</p>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>优势</th>
+<th>劣势</th>
+<th>推荐场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trafilatura</td>
+<td>综合效果最佳，多语言支持好</td>
+<td>速度中等</td>
+<td>通用场景，首选</td>
+</tr>
+<tr>
+<td>Readability</td>
+<td>速度快，算法简单</td>
+<td>复杂页面效果差</td>
+<td>快速原型</td>
+</tr>
+<tr>
+<td>Newspaper3k</td>
+<td>新闻网站效果好</td>
+<td>泛化能力弱</td>
+<td>新闻语料专项</td>
+</tr>
+<tr>
+<td>Justext</td>
+<td>学术验证充分</td>
+<td>工程适配较少</td>
+<td>研究场景</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="图3-2：解析器质量对比" src="../../images/chapter2/%E5%9B%BE3_2_%E8%A7%A3%E6%9E%90%E5%99%A8%E8%B4%A8%E9%87%8F%E5%AF%B9%E6%AF%94.png" /></p>
+<p><em>图3-2：网页解析器质量对比 —— Trafilatura 在 F1 分数上领先，是 LLM 数据处理的首选工具</em></p>
+<p>在实际项目中，一个常见的策略是使用 Trafilatura 作为主解析器，当提取结果为空或过短时，回退到 Readability 进行尝试。这种"主备"策略可以提高整体的提取成功率。</p>
+<h3 id="3_24">3_2.4 分布式解析架构<a class="headerlink" href="#3_24" title="Permanent link">&para;</a></h3>
+<p>单机处理能力有限，面对 TB 级的 WARC 文件，需要构建分布式解析系统。以下是一个基于 Ray Data 的分布式解析示例：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">ray</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">trafilatura</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">warcio.archiveiterator</span><span class="w"> </span><span class="kn">import</span> <span class="n">ArchiveIterator</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">parse_warc_record</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;解析单条 WARC 记录&quot;&quot;&quot;</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">rec_type</span> <span class="o">!=</span> <span class="s1">&#39;response&#39;</span><span class="p">:</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">url</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">rec_headers</span><span class="o">.</span><span class="n">get_header</span><span class="p">(</span><span class="s1">&#39;WARC-Target-URI&#39;</span><span class="p">)</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">content_type</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">http_headers</span><span class="o">.</span><span class="n">get_header</span><span class="p">(</span><span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="c1"># 只处理 HTML 页面</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="k">if</span> <span class="s1">&#39;text/html&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">content_type</span><span class="p">:</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>        <span class="n">html</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">content_stream</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>        <span class="n">text</span> <span class="o">=</span> <span class="n">trafilatura</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">html</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">favor_precision</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>        <span class="k">if</span> <span class="n">text</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">200</span><span class="p">:</span>  <span class="c1"># 过滤过短的内容</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>            <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>                <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>                <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">text</span><span class="p">,</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>                <span class="s1">&#39;length&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>            <span class="p">}</span>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>    <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a><span class="k">def</span><span class="w"> </span><span class="nf">process_warc_file</span><span class="p">(</span><span class="n">warc_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;处理单个 WARC 文件&quot;&quot;&quot;</span>
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>
+<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>    <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">warc_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">ArchiveIterator</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>            <span class="n">result</span> <span class="o">=</span> <span class="n">parse_warc_record</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>            <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>                <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>    <span class="k">return</span> <span class="n">results</span>
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>
+<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a><span class="c1"># 获取所有 WARC 文件路径</span>
+<a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a><span class="n">warc_files</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>  <span class="c1"># S3 或本地路径列表</span>
+<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>
+<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a><span class="c1"># 分布式并行处理</span>
+<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a><span class="n">ds</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">from_items</span><span class="p">(</span><span class="n">warc_files</span><span class="p">)</span>
+<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a><span class="n">ds</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">flat_map</span><span class="p">(</span><span class="n">process_warc_file</span><span class="p">)</span>
+<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a>
+<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a><span class="c1"># 保存结果</span>
+<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a><span class="n">ds</span><span class="o">.</span><span class="n">write_parquet</span><span class="p">(</span><span class="s2">&quot;s3://bucket/parsed_data/&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>这个架构的关键设计点包括：使用 Ray Data 的 <code>flat_map</code> 算子实现文件级并行；在解析函数内部进行错误处理，避免单条数据的失败影响整批处理；通过 <code>len(text) &gt; 200</code> 等条件进行早期过滤，减少下游处理量；输出为 Parquet 格式，便于后续的去重和过滤步骤。</p>
+<hr />
+<h2 id="3_3">3_3 特种数据获取<a class="headerlink" href="#3_3" title="Permanent link">&para;</a></h2>
+<p>除了通用的网页数据，预训练语料库通常还需要包含代码、学术论文、书籍等专门领域的数据。这些"特种数据"的获取和处理有其独特的挑战和技巧。</p>
+<h3 id="3_31-github-the-stack">3_3.1 代码数据：GitHub 与 The Stack<a class="headerlink" href="#3_31-github-the-stack" title="Permanent link">&para;</a></h3>
+<p>代码能力是现代大模型的核心竞争力之一，而高质量代码数据的获取是实现这一能力的基础。目前最主要的代码数据来源是 GitHub。</p>
+<p>直接从 GitHub API 获取代码是可行的，但效率较低且有请求限制。更常见的做法是使用 GitHub 的公开数据镜像。Google BigQuery 托管了 GitHub 公开仓库的完整快照，可以使用 SQL 进行查询和导出。Software Heritage 是一个致力于保存人类软件遗产的组织，维护着 GitHub 的完整归档。</p>
+<p>对于大规模代码数据需求，最便捷的选择是使用 BigCode 项目发布的 The Stack 数据集。这个数据集从 GitHub 爬取了超过 300 种编程语言的代码，总规模约 3TB。The Stack 的处理流程包括：基于许可证过滤（只保留开源许可证允许使用的代码）、去重（移除重复的文件和代码片段）、PII 清洗（移除敏感信息）。</p>
+<p>使用代码数据时需要特别注意以下几点：</p>
+<p><strong>许可证合规</strong>是首要问题。不同的开源许可证对代码使用有不同的限制。The Stack 数据集提供了许可证标签，可以根据需求进行筛选。对于商业模型训练，建议只使用 MIT、Apache 2_0 等宽松许可证的代码。</p>
+<p><strong>代码质量差异巨大</strong>。GitHub 上既有 Linux 内核这样的高质量项目，也有大量学生作业和个人实验代码。常用的质量过滤策略包括：按仓库 star 数筛选（保留 star &gt; 10 的仓库）、按文件长度过滤（移除过短或过长的文件）、基于 AST 解析检测语法错误。</p>
+<p><strong>处理代码数据的示例</strong>：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">ast</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">is_valid_python</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;检查 Python 代码是否语法正确&quot;&quot;&quot;</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="n">ast</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="k">return</span> <span class="kc">True</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="k">except</span> <span class="ne">SyntaxError</span><span class="p">:</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="k">return</span> <span class="kc">False</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_functions</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;提取代码中的函数定义&quot;&quot;&quot;</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>        <span class="n">tree</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">code</span><span class="p">)</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>        <span class="n">functions</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">ast</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">ast</span><span class="o">.</span><span class="n">FunctionDef</span><span class="p">):</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>                <span class="n">functions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ast</span><span class="o">.</span><span class="n">unparse</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>        <span class="k">return</span> <span class="n">functions</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>    <span class="k">except</span><span class="p">:</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>        <span class="k">return</span> <span class="p">[]</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="k">def</span><span class="w"> </span><span class="nf">filter_code_quality</span><span class="p">(</span><span class="n">code</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>                        <span class="n">min_lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> 
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>                        <span class="n">max_lines</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>                        <span class="n">require_docstring</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;代码质量过滤&quot;&quot;&quot;</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>    <span class="n">lines</span> <span class="o">=</span> <span class="n">code</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>    <span class="c1"># 长度过滤</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">min_lines</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">max_lines</span><span class="p">):</span>
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>    <span class="c1"># 语法检查</span>
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_valid_python</span><span class="p">(</span><span class="n">code</span><span class="p">):</span>
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a>
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>    <span class="c1"># Docstring 检查（可选）</span>
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a>    <span class="k">if</span> <span class="n">require_docstring</span> <span class="ow">and</span> <span class="s1">&#39;&quot;&quot;&quot;&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">code</span> <span class="ow">and</span> <span class="s2">&quot;&#39;&#39;&#39;&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">code</span><span class="p">:</span>
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>    <span class="k">return</span> <span class="n">code</span>
+</code></pre></div>
+<h3 id="3_32-arxiv-s2orc">3_3.2 学术论文：ArXiv 与 S2ORC<a class="headerlink" href="#3_32-arxiv-s2orc" title="Permanent link">&para;</a></h3>
+<p>学术论文是高质量知识的重要来源，对于提升模型的推理能力和专业知识水平有显著帮助。</p>
+<p><strong>ArXiv</strong> 是最重要的开放获取预印本平台，涵盖物理、数学、计算机科学、生物学等领域的学术论文。ArXiv 提供批量下载服务，可以通过其 S3 桶获取 LaTeX 源文件和 PDF。LaTeX 源文件是更理想的数据来源，因为它保留了论文的结构信息（章节、公式、引用等），且是纯文本格式，易于处理。</p>
+<p>处理 ArXiv LaTeX 数据的主要挑战在于 LaTeX 语法的复杂性。一篇论文可能包含数十个 <code>.tex</code> 文件，使用自定义的宏和样式。一个实用的简化策略是：只提取主文件（通常是 <code>main.tex</code> 或与论文标题相关的文件），使用正则表达式去除图表和复杂公式环境，保留正文文本和简单的数学表达式。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">tarfile</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">extract_arxiv_text</span><span class="p">(</span><span class="n">latex_content</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;从 LaTeX 中提取纯文本&quot;&quot;&quot;</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">text</span> <span class="o">=</span> <span class="n">latex_content</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="c1"># 移除注释</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;%.*$&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="c1"># 移除图表环境</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">begin\{figure\}.*?</span><span class="se">\\</span><span class="s1">end\{figure\}&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">begin\{table\}.*?</span><span class="se">\\</span><span class="s1">end\{table\}&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="c1"># 简化引用</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">cite\{[^}]+\}&#39;</span><span class="p">,</span> <span class="s1">&#39;[CITATION]&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">ref\{[^}]+\}&#39;</span><span class="p">,</span> <span class="s1">&#39;[REF]&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>    <span class="c1"># 移除常见的命令但保留参数</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span class="n">commands_to_strip</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;textbf&#39;</span><span class="p">,</span> <span class="s1">&#39;textit&#39;</span><span class="p">,</span> <span class="s1">&#39;emph&#39;</span><span class="p">,</span> <span class="s1">&#39;section&#39;</span><span class="p">,</span> <span class="s1">&#39;subsection&#39;</span><span class="p">,</span> 
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>                         <span class="s1">&#39;paragraph&#39;</span><span class="p">,</span> <span class="s1">&#39;title&#39;</span><span class="p">,</span> <span class="s1">&#39;author&#39;</span><span class="p">]</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>    <span class="k">for</span> <span class="n">cmd</span> <span class="ow">in</span> <span class="n">commands_to_strip</span><span class="p">:</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>        <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">rf</span><span class="s1">&#39;</span><span class="se">\\</span><span class="si">{</span><span class="n">cmd</span><span class="si">}</span><span class="s1">\</span><span class="se">{{</span><span class="s1">([^</span><span class="se">}}</span><span class="s1">]+)\</span><span class="se">}}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;\1&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>    <span class="c1"># 移除其他命令</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">[a-zA-Z]+(\[[^\]]*\])?\{[^}]*\}&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">[a-zA-Z]+&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>    <span class="c1"># 清理空白</span>
+<a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a>    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\n\s*\n&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a>    <span class="n">text</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39; +&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+<a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a>
+<a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a>    <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+</code></pre></div>
+<p><strong>Semantic Scholar Open Research Corpus (S2ORC)</strong> 是 Allen AI 发布的大规模学术论文数据集，包含超过 80M 篇论文的元数据和约 8M 篇论文的全文。相比 ArXiv，S2ORC 覆盖的领域更广，包括 PubMed、ACL Anthology 等多个来源。S2ORC 的全文已经处理为结构化的 JSON 格式，省去了 LaTeX/PDF 解析的麻烦，是快速获取论文数据的便捷选择。</p>
+<h3 id="3_33">3_3.3 书籍数据：版权与替代方案<a class="headerlink" href="#3_33" title="Permanent link">&para;</a></h3>
+<p>书籍是高质量长文本的重要来源，对于训练模型的长程理解能力和知识深度有重要价值。然而，书籍数据的版权问题尤为敏感。</p>
+<p><strong>The Pile 中的 Books3</strong> 数据集包含约 20 万本书籍，来自 Bibliotik 等来源。这个数据集已引发多起版权诉讼，多家公司因使用该数据集训练模型而被起诉。在当前的法律环境下，直接使用 Books3 存在显著的法律风险。</p>
+<p><strong>合规的替代方案</strong>包括：</p>
+<p><img alt="图3-3：预训练数据来源混合" src="../../images/chapter2/%E5%9B%BE3_3_%E9%A2%84%E8%AE%AD%E7%BB%83%E6%95%B0%E6%8D%AE%E6%9D%A5%E6%BA%90%E6%B7%B7%E5%90%88.png" /></p>
+<p><em>图3-3：预训练数据来源混合 —— 多源混合策略可提升模型的综合能力</em></p>
+<p>Project Gutenberg 是一个志愿者项目，提供版权过期的经典书籍。主要是 1928 年前出版的英文书籍，约 70,000 本。数据质量高，但时代较远，现代用语覆盖不足。</p>
+<p>Internet Archive 的 Open Library 提供可借阅的电子书。使用时需要遵守其借阅协议，大规模批量获取可能违反服务条款。</p>
+<p>维基文库（Wikisource）提供公共领域的文学作品，覆盖多种语言，包括大量中文古籍。</p>
+<p>学术教材和开放教育资源（OER）如 OpenStax 提供高质量的教材内容，适合用于构建教育类预训练数据。</p>
+<p>对于商业模型训练，最安全的策略是只使用明确获得授权或处于公共领域的书籍数据。虽然这会限制数据规模，但可以避免潜在的法律风险。</p>
+<h3 id="3_34">3_3.4 多语言数据平衡<a class="headerlink" href="#3_34" title="Permanent link">&para;</a></h3>
+<p>训练多语言模型时，不同语言的数据可用性差异巨大。英语数据最为丰富，中文、日文、德文等主要语言次之，而小语种的高质量数据则极为稀缺。</p>
+<p>数据不平衡会导致模型能力的不均衡。如果简单按原始比例混合，英语将占据绝对优势，小语种几乎学不到。常见的解决策略包括：</p>
+<p><strong>上采样小语种</strong>是最直接的方法，通过重复采样提高小语种数据的权重。但过度重复可能导致过拟合。</p>
+<p><strong>温度采样</strong>是更精细的方法。设定一个温度参数 T，语言 L 的采样概率为 <span class="arithmatex">\(p_L \propto n_L^{1/T}\)</span>，其中 <span class="arithmatex">\(n_L\)</span> 是该语言的原始数据量。T=1 时退化为原始比例，T→∞ 时接近均匀分布。LLaMA 2 使用了 T=0_3 左右的温度采样。</p>
+<p><strong>质量代替数量</strong>的思路也值得考虑。对于数据稀缺的小语种，可以使用翻译或合成的方式增强数据，但需要注意翻译质量和翻译腔问题。</p>
+<hr />
+<h2 id="3_4">3_4 数据获取的工程实践<a class="headerlink" href="#3_4" title="Permanent link">&para;</a></h2>
+<p>将上述各个环节串联起来，构建一个完整的数据获取流水线，需要考虑工程层面的诸多细节。</p>
+<h3 id="3_41">3_4.1 爬虫架构设计<a class="headerlink" href="#3_41" title="Permanent link">&para;</a></h3>
+<p>对于需要自主爬取数据的场景（而非使用 Common Crawl），分布式爬虫架构的设计至关重要。一个典型的架构包括以下组件：</p>
+<p><strong>URL 管理器</strong>负责维护待爬取 URL 的队列，记录已爬取 URL 的状态，处理 URL 的去重和优先级排序。常用的实现方式包括 Redis 队列配合 Bloom Filter 去重。</p>
+<p><img alt="图3-4：分布式爬虫架构" src="../../images/chapter2/%E5%9B%BE3_4_%E5%88%86%E5%B8%83%E5%BC%8F%E7%88%AC%E8%99%AB%E6%9E%B6%E6%9E%84.png" /></p>
+<p><em>图3-4：分布式网页爬取系统架构 —— URL管理器、下载器集群、解析器与存储层的协作</em></p>
+<p><strong>下载器集群</strong>负责实际的 HTTP 请求。关键考虑因素包括：并发控制（避免对目标网站造成过大压力）、代理池管理（应对反爬虫机制）、重试策略（处理网络波动和临时故障）、robots.txt 遵守（尊重网站的爬虫规则）。</p>
+<p><strong>解析器</strong>负责从下载的 HTML 中提取正文和元数据，这部分在上一节已详细讨论。</p>
+<p><strong>存储层</strong>负责持久化爬取结果。对于大规模爬取，建议直接写入对象存储（S3/MinIO），采用 WARC 或 Parquet 格式。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># 简化的爬虫示例</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">aiohttp</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">urllib.parse</span><span class="w"> </span><span class="kn">import</span> <span class="n">urlparse</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="kn">import</span><span class="w"> </span><span class="nn">trafilatura</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="k">class</span><span class="w"> </span><span class="nc">SimpleCrawler</span><span class="p">:</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_concurrent</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span><span class="p">):</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">max_concurrent</span> <span class="o">=</span> <span class="n">max_concurrent</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">semaphore</span> <span class="o">=</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">Semaphore</span><span class="p">(</span><span class="n">max_concurrent</span><span class="p">)</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">visited</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">fetch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">session</span><span class="p">:</span> <span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientSession</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;异步获取并解析单个 URL&quot;&quot;&quot;</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>        <span class="k">if</span> <span class="n">url</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">visited</span><span class="p">:</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>            <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>        <span class="k">async</span> <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">semaphore</span><span class="p">:</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>            <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>                <span class="k">async</span> <span class="k">with</span> <span class="n">session</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span> <span class="k">as</span> <span class="n">response</span><span class="p">:</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>                    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="mi">200</span><span class="p">:</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>                        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>                    <span class="n">html</span> <span class="o">=</span> <span class="k">await</span> <span class="n">response</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>                    <span class="n">text</span> <span class="o">=</span> <span class="n">trafilatura</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="n">html</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">)</span>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>                    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span> <span class="s1">&#39;text&#39;</span><span class="p">:</span> <span class="n">text</span><span class="p">}</span> <span class="k">if</span> <span class="n">text</span> <span class="k">else</span> <span class="kc">None</span>
+<a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+<a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>                <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a>
+<a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>    <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">crawl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">urls</span><span class="p">:</span> <span class="nb">list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;批量爬取 URL 列表&quot;&quot;&quot;</span>
+<a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a>        <span class="k">async</span> <span class="k">with</span> <span class="n">aiohttp</span><span class="o">.</span><span class="n">ClientSession</span><span class="p">()</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+<a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a>            <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="n">session</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">]</span>
+<a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a>            <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
+<a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a>            <span class="k">return</span> <span class="p">[</span><span class="n">r</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span> <span class="k">if</span> <span class="n">r</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+</code></pre></div>
+<h3 id="3_42">3_4.2 增量更新策略<a class="headerlink" href="#3_42" title="Permanent link">&para;</a></h3>
+<p>预训练数据不是一次性任务。随着时间推移，需要持续吸收新数据以保持模型知识的时效性。增量更新的关键挑战在于：</p>
+<p><strong>识别新数据</strong>：对于 Common Crawl，每月发布新批次，可以直接处理新批次。对于自主爬取，需要维护更新时间戳，定期重新访问已知 URL 检查更新。</p>
+<p><strong>避免重复处理</strong>：已经处理过的数据不应重复进入流水线。可以通过 URL 指纹、内容哈希等方式进行去重。</p>
+<p><strong>版本管理</strong>：每个处理批次应该有明确的版本标识，便于追溯和回滚。这与第二章讨论的数据版本控制（DVC/LakeFS）紧密相关。</p>
+<h3 id="3_43">3_4.3 质量监控与反馈<a class="headerlink" href="#3_43" title="Permanent link">&para;</a></h3>
+<p>数据获取流水线需要建立完善的质量监控机制。关键的监控指标包括：</p>
+<p><strong>下载成功率</strong>：失败请求的比例。如果突然升高，可能是目标网站封禁了爬虫。</p>
+<p><strong>解析成功率</strong>：成功提取正文的比例。如果降低，可能是目标网站改变了页面结构。</p>
+<p><strong>平均文档长度</strong>：正文的平均字符数。异常波动可能表示解析器有问题。</p>
+<p><strong>语言分布</strong>：各语言数据的比例。确保符合预期的语言配比。</p>
+<p><strong>重复率</strong>：与历史数据的重复比例。过高的重复率意味着新增数据的边际价值降低。</p>
+<p>建议将这些指标集成到监控系统中（如 Prometheus + Grafana），设置告警阈值，及时发现和处理异常。</p>
+<hr />
+<h2 id="3_5">3_5 常见陷阱与最佳实践<a class="headerlink" href="#3_5" title="Permanent link">&para;</a></h2>
+<p>在数据获取阶段，有几个常见的陷阱值得警惕。</p>
+<p><strong>第一个陷阱是过度依赖单一数据源。</strong> 如果预训练数据全部来自 Common Crawl，模型可能会继承网页数据的偏见和噪声。合理的做法是混合多种来源：网页数据提供广度，书籍和论文提供深度，代码数据提供逻辑能力。The Pile 式的多源混合策略被证明是有效的。</p>
+<p><strong>第二个陷阱是忽视数据的时效性。</strong> Common Crawl 的历史批次虽然量大，但可能包含过时信息。对于需要时效性的应用（如新闻、时事），应该优先使用最近的数据批次。同时，过老的数据可能包含已失效的链接、已更正的错误信息等。</p>
+<p><strong>第三个陷阱是低估合规风险。</strong> 版权问题、隐私问题、robots.txt 违规等，可能在项目后期引发严重的法律问题。最佳实践是在数据获取阶段就建立完善的元数据记录——记录每条数据的来源 URL、获取时间、声称的许可证等信息，为日后可能的审计留下依据。</p>
+<p><strong>第四个陷阱是重采集轻处理。</strong> 许多团队花费大量精力扩大数据采集规模，却在解析和清洗环节草草了事。正如第一章所述，数据质量的重要性远超数据数量。宁可少采集一些，也要确保每份数据经过严格的质量把关。</p>
+<hr />
+<h2 id="3_6">3_6 本章小结<a class="headerlink" href="#3_6" title="Permanent link">&para;</a></h2>
+<p>本章系统介绍了预训练数据获取的方法论和工程实践。</p>
+<p>在开源数据集方面，Common Crawl 是最重要的上游数据源，提供 WARC、WAT、WET 三种格式。RefinedWeb 和 The Pile 是经过精心处理的高质量数据集，其处理方法值得学习借鉴。中文数据集相对稀缺，往往需要自行从 Common Crawl 提取。</p>
+<p>在网页解析方面，Trafilatura 是目前最推荐的工业级解析库，能够从复杂的 HTML 中准确提取正文内容。分布式解析架构（如基于 Ray Data）是处理 TB 级数据的必要手段。</p>
+<p>在特种数据方面，代码数据可通过 The Stack 或 GitHub BigQuery 获取，需注意许可证合规；学术论文可通过 ArXiv 和 S2ORC 获取；书籍数据的版权风险较高，建议使用公共领域资源。多语言数据需要通过温度采样等策略进行平衡。</p>
+<p>在工程实践方面，完整的数据获取流水线需要考虑爬虫架构设计、增量更新策略和质量监控机制。核心原则是多源混合、质量优先、合规先行。</p>
+<p><img alt="图3-5：本章知识结构" src="../../images/chapter2/%E5%9B%BE3_5_%E6%9C%AC%E7%AB%A0%E7%9F%A5%E8%AF%86%E7%BB%93%E6%9E%84.png" /></p>
+<p><em>图3-5：第3章知识结构 —— 涵盖开源数据集、网页解析、特种数据、工程实践四大主题</em></p>
+<hr />
+<h2 id="_3">延伸阅读<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>关于预训练数据获取的深入内容，以下资源值得参考：</p>
+<p>Common Crawl 官方文档（commoncrawl.org/the-data）详细介绍了数据格式和获取方式。RefinedWeb 论文（Falcon LLM: A Large Language Model for High-Quality Web Data）详细记录了从 Common Crawl 构建高质量预训练集的完整流程。The Pile 论文（The Pile: An 800GB Dataset of Diverse Text for Language Modeling）介绍了多源混合的数据构建策略。Trafilatura 文档（trafilatura.readthedocs.io）提供了全面的 API 说明和使用示例。The Stack 论文（StarCoder: May the Source Be with You!）介绍了大规模代码数据集的构建方法。</p>
+<hr />
+<h2 id="_4">下一章预告<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>获取原始数据只是第一步。在下一章《清洗与去噪》中，我们将深入探讨如何从海量原始数据中筛选出高质量内容。你将学习启发式过滤规则（语言识别、困惑度过滤、长度分布）、大规模去重技术（MinHash LSH 的原理与分布式实现），以及隐私数据清洗（PII 识别与移除）。</p>
+<p>带着这个问题进入下一章：如果两篇文档有 80% 的内容相同，你如何高效地识别并处理它们？</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../../chapter1/1_2_data_infra/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 第2章：数据基础设施选型">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                第2章：数据基础设施选型
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../2_2_cleaning_denoising/" class="md-footer__link md-footer__link--next" aria-label="下一页: 第4章：清洗与去噪">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                第4章：清洗与去噪
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

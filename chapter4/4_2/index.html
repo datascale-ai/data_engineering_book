@@ -1,0 +1,2457 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/chapter4/4_2/">
+      
+      
+        <link rel="prev" href="../4_1/">
+      
+      
+        <link rel="next" href="../4_3/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>第10章：合成数据 - 大模型数据工程：架构、算法及项目实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#10-synthetic-data" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-header__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型数据工程：架构、算法及项目实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第10章：合成数据
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="切换至夜间模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至夜间模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="切换至日间模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至日间模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-nav__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大模型数据工程：架构、算法及项目实战
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    目录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一部分：基础设施与核心理念
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一部分：基础设施与核心理念
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter1/1_1_data_change/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第1章：大模型时代的数据变革
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter1/1_2_data_infra/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第2章：数据基础设施选型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二部分：文本预训练数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二部分：文本预训练数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter2/2_1_data_acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第3章：数据获取与采集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter2/2_2_cleaning_denoising/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第4章：清洗与去噪
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter2/2_3_tokenization_serialization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第5章：分词与序列化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三部分：多模态数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三部分：多模态数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第6章：图文对数据处理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第7章：数据重描述
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第8章：视频与音频数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第四部分：对齐与合成数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第四部分：对齐与合成数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../4_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第9章：指令微调数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第10章：合成数据
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第10章：合成数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章摘要
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="本章摘要">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标 (Learning Objectives)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景引入：当数据成为瓶颈
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10_1-concepts-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_1 核心概念与原理 (Concepts &amp; Principles)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10_1 核心概念与原理 (Concepts &amp; Principles)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#10_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_1.1 为什么合成数据的质量远比数量重要？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10_12-textbooks-are-all-you-need" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_1.2 教科书级数据 (Textbooks Are All You Need)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10_13-pot-program-of-thought" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_1.3 代码与数学合成：PoT (Program of Thought)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_1.4 多模态指令合成：跨越感知的桥梁
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10_2-engineering-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_2 工程实现 (Engineering Implementation)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10_2 工程实现 (Engineering Implementation)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#10_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_2.1 教科书级数据：分类器与合成流水线
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10_22-back-translation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_2.2 逆向翻译 (Back-Translation)：从答案反推问题
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10_23-pot-program-of-thought" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_2.3 代码与数学合成：PoT (Program of Thought)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10_24-llava-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_2.4 多模态指令合成：LLaVA Pipeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10_2.4 多模态指令合成：LLaVA Pipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 工程流水线：从像素到符号
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-prompt-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Prompt Engineering：设计与考量
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_2.5 多模态指令数据合成的进阶策略
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10_2.5 多模态指令数据合成的进阶策略">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-visual-model-distillation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 视觉强模型蒸馏 (Visual Model Distillation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-mixture-of-experts-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 领域特化：多专家混合流水线 (Mixture-of-Experts Pipeline)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-visual-evol-instruct" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 进化指令生成 (Visual Evol-Instruct)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10_3-performance-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_3. 性能与评估 (Performance &amp; Evaluation)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10_3. 性能与评估 (Performance &amp; Evaluation)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        评价指标
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        基准测试
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10_4-pitfalls-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_4. 避坑指南 (Pitfalls &amp; Troubleshooting)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_5. 本章小结与延伸阅读
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10_5. 本章小结与延伸阅读">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        参考文献
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../4_3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第11章：人类偏好数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第五部分：应用级数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第五部分：应用级数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter5/5_1_rag_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第12章：RAG数据流水线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter5/5_2_mm_rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第13章：多模态RAG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第六部分：实战项目集
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第六部分：实战项目集
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_1_mini_c4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目一：构建Mini-C4预训练集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_2_legal_sft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目二：垂直领域专家SFT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_3_llava_instruct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目三：构建LLaVA多模态指令集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_4_synthetic_textbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目四：合成数学代码教科书
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_5_mm_rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目五：多模态RAG企业财报助手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章摘要
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="本章摘要">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        学习目标 (Learning Objectives)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景引入：当数据成为瓶颈
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10_1-concepts-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_1 核心概念与原理 (Concepts &amp; Principles)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10_1 核心概念与原理 (Concepts &amp; Principles)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#10_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_1.1 为什么合成数据的质量远比数量重要？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10_12-textbooks-are-all-you-need" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_1.2 教科书级数据 (Textbooks Are All You Need)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10_13-pot-program-of-thought" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_1.3 代码与数学合成：PoT (Program of Thought)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_1.4 多模态指令合成：跨越感知的桥梁
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10_2-engineering-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_2 工程实现 (Engineering Implementation)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10_2 工程实现 (Engineering Implementation)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#10_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_2.1 教科书级数据：分类器与合成流水线
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10_22-back-translation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_2.2 逆向翻译 (Back-Translation)：从答案反推问题
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10_23-pot-program-of-thought" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_2.3 代码与数学合成：PoT (Program of Thought)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10_24-llava-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_2.4 多模态指令合成：LLaVA Pipeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10_2.4 多模态指令合成：LLaVA Pipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 工程流水线：从像素到符号
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-prompt-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Prompt Engineering：设计与考量
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_2.5 多模态指令数据合成的进阶策略
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10_2.5 多模态指令数据合成的进阶策略">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-visual-model-distillation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 视觉强模型蒸馏 (Visual Model Distillation)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-mixture-of-experts-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 领域特化：多专家混合流水线 (Mixture-of-Experts Pipeline)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-visual-evol-instruct" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 进化指令生成 (Visual Evol-Instruct)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10_3-performance-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_3. 性能与评估 (Performance &amp; Evaluation)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10_3. 性能与评估 (Performance &amp; Evaluation)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        评价指标
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        基准测试
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10_4-pitfalls-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_4. 避坑指南 (Pitfalls &amp; Troubleshooting)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10_5. 本章小结与延伸阅读
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10_5. 本章小结与延伸阅读">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        参考文献
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="10-synthetic-data">第10章：合成数据 (Synthetic Data) —— 从“数据挖掘”到“数据农场”<a class="headerlink" href="#10-synthetic-data" title="Permanent link">&para;</a></h1>
+<h2 id="_1">本章摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>随着大模型竞赛的白热化，公网上的高质量自然数据（Natural Data）正在面临枯竭的危机。我们几乎已经“读”完了整个互联网，但模型的智力上限远未触达。此时，合成数据（Synthetic Data）不再是一个可选项，而是模型能力跃升的新引擎。本章将深入剖析微软 Phi 系列模型的“教科书级”数据合成方法，探讨如何从被动的“数据采集者”转变为主动的“数据创造者”。</p>
+<p>我们将不仅限于生成文本，而是通过 Program of Thought (PoT) 利用代码执行来构建严密的逻辑验证闭环，以及如何利用 GPT-4o 等多模态模型合成复杂的图文指令数据。我们将展示如何从简单的“模仿人类”转向“超越人类”，通过算法手段构建出比真实世界更纯净、更具教育意义的训练集。</p>
+<h3 id="learning-objectives">学习目标 (Learning Objectives)<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h3>
+<ul>
+<li>构建 “Textbook Quality” 分类器，从海量 Web 数据中筛选高价值样本。</li>
+<li>实现 PoT (Program of Thought) 数据生成流水线，利用 Python 解释器验证数学/代码数据的正确性。</li>
+<li>掌握基于 LLaVA/GPT-4o 的多模态指令合成技术，构造图像推理问答对。</li>
+</ul>
+<h3 id="_2">场景引入：当数据成为瓶颈<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>“你正在训练一个专门用于 Python 编程的小型模型（1_3B）。为了让它尽可能强大，你编写爬虫爬取了 GitHub 上所有的开源代码。然而，当训练结束进行测试时，你绝望地发现模型学会了写满是 Bug 的代码，甚至学会了在函数里写‘TODO: Fix this later’或者‘This code is trash, do not use’。
+仅仅增加数据量已经无效了，因为你喂给模型的垃圾越多，它的输出就越混乱。这时候，微软的 Phi-1 论文给了你一记当头棒喝：‘Textbooks Are All You Need’。你需要的是像教科书一样逻辑清晰、注释完美、由浅入深的教学代码，而不是只有上帝和原作者能看懂的‘屎山’。但是，去哪里找几百亿 Token 的完美教科书呢？既然找不到，我们就必须学会凭空‘变’出这些数据。如何构建一个不知疲倦的‘虚拟教授’来批量生产这些完美的教材？这就是本章要解决的核心工程挑战。”</p>
+</blockquote>
+<hr />
+<h2 id="10_1-concepts-principles">10_1 核心概念与原理 (Concepts &amp; Principles)<a class="headerlink" href="#10_1-concepts-principles" title="Permanent link">&para;</a></h2>
+<p>合成数据的核心挑战在于<strong>质量控制</strong>与<strong>验证闭环</strong>。因为模型生成的文本如果不加检查，往往包含幻觉或错误。如果使用含有错误的数据训练模型，会导致模型产生“自我吞噬”（Model Autophagy）或“模型坍塌”（Model Collapse），即模型输出的方差逐渐消失，内容变得极度同质化且脱离现实。本章介绍的三种方法分别解决了文本、代码/数学、多模态数据的质量问题。</p>
+<h3 id="10_11">10_1.1 为什么合成数据的质量远比数量重要？<a class="headerlink" href="#10_11" title="Permanent link">&para;</a></h3>
+<p>在深度学习的早期，我们迷信“数据量即正义”，认为只要数据足够多，模型就能学会一切。但在合成数据时代，这一信条被彻底推翻。</p>
+<p><strong>信噪比理论 (Signal-to-Noise Ratio):</strong>
+模型的训练本质上是一个压缩信息的过程。高质量数据（如教科书）具有极高的信息密度和严密的逻辑链条，模型只需要很少的样本就能捕捉到其背后的规律。而低质量数据（如论坛灌水、闲聊）充满了噪音和逻辑断层。如果训练集中混入了大量低质量合成数据，模型为了降低 Loss，会被迫去拟合这些噪音，导致“逻辑电路”短路。</p>
+<p>这就好比学习物理，读一本经典的《费曼物理学讲义》（高质量合成数据）胜过刷一万条碎片化的物理科普短视频（低质量数据）。Phi-1 的成功证明了：6B Token 的教科书级数据，其训练效果可以吊打 1000B Token 的网络爬取数据。在合成数据领域，<strong>验证（Verification）的成本</strong>成为了新的货币。</p>
+<h3 id="10_12-textbooks-are-all-you-need">10_1.2 教科书级数据 (Textbooks Are All You Need)<a class="headerlink" href="#10_12-textbooks-are-all-you-need" title="Permanent link">&para;</a></h3>
+<p>微软 Phi-1 的核心思想是：与其用 1TB 垃圾数据训练，不如用 6B Token 的高质量数据。其核心在于构建一个“过滤器”和一个“放大器”。</p>
+<p>首先，我们并不是完全抛弃 Web 数据，而是训练一个分类器（Quality Classifier），专门识别那些“具有教育价值”的内容。这不仅仅是看语法是否正确，更是看内容是否逻辑自洽、是否包含定义与推理。其次，我们利用强大的生成式模型（如 GPT-4）作为“扩音器”，参考这些高质量片段，合成出风格类似但内容全新的、自包含的知识片段。</p>
+<p><img alt="图 10-1： Phi-1流程示意图" src="../../images/chapter4/10_1_Phi-1%E6%B5%81%E7%A8%8B%E7%A4%BA%E6%84%8F%E5%9B%BE.png" />
+<em>图 10-1： Phi-1流程示意图</em></p>
+<h3 id="10_13-pot-program-of-thought">10_1.3 代码与数学合成：PoT (Program of Thought)<a class="headerlink" href="#10_13-pot-program-of-thought" title="Permanent link">&para;</a></h3>
+<p>LLM 本质上是一个概率模型，它不具备真正的逻辑推理芯片。因此，让 LLM 做算术运算（如 234 * 567）或复杂逻辑推演时，它很容易产生幻觉。PoT (Program of Thought) 的思想是：既然 LLM 不擅长计算但擅长翻译，不如让它把数学问题“翻译”成代码，然后让 Python 解释器来计算结果。</p>
+<p>这是合成数据中唯一能做到 <strong>100% 准确率验证</strong> 的领域。我们将生成的代码放入 Python Sandbox 执行。如果报错，直接丢弃；如果运行成功，执行结果即为 Ground Truth。这种“执行即验证”的机制，彻底解决了合成数据无法验证正确性的难题，使得我们可以低成本地生成无穷无尽的数学和逻辑推理数据。</p>
+<p><strong>表 10-1：合成数据验证策略对比</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">数据类型</th>
+<th style="text-align: left;">生成器 (Generator)</th>
+<th style="text-align: left;">核心挑战</th>
+<th style="text-align: left;">验证者 (Verifier)</th>
+<th style="text-align: left;">验证机制</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>通用文本</strong></td>
+<td style="text-align: left;">GPT-4 / Gemini</td>
+<td style="text-align: left;">幻觉 (Hallucination)</td>
+<td style="text-align: left;">LLM (Judge) / Reward Model</td>
+<td style="text-align: left;">依赖强模型打分，一致性较低，且容易出现“裁判偏见”</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>数学/逻辑</strong></td>
+<td style="text-align: left;">GPT-4 + PoT Prompt</td>
+<td style="text-align: left;">计算错误</td>
+<td style="text-align: left;">Python Interpreter</td>
+<td style="text-align: left;"><strong>执行一致性</strong>：代码运行结果与预设答案匹配，逻辑绝对正确</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>代码 (Code)</strong></td>
+<td style="text-align: left;">DeepSeek Coder / GPT-4</td>
+<td style="text-align: left;">语法错误、逻辑 Bug</td>
+<td style="text-align: left;">Unit Tests / Compiler</td>
+<td style="text-align: left;"><strong>单元测试</strong>：通过 assert 断言或成功编译，确保功能正常</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>多模态</strong></td>
+<td style="text-align: left;">GPT-4o / LLaVA</td>
+<td style="text-align: left;">视觉幻觉 (无中生有)</td>
+<td style="text-align: left;">CLIP Score / Grounding DINO</td>
+<td style="text-align: left;">检查生成的描述是否与图片 Embedding 相似，防止编造不存在的物体</td>
+</tr>
+</tbody>
+</table>
+<h3 id="10_14">10_1.4 多模态指令合成：跨越感知的桥梁<a class="headerlink" href="#10_14" title="Permanent link">&para;</a></h3>
+<p>对于图像数据，传统的标注成本极高且描述简短。LLaVA 提出了一种天才般的“盲人摸象”策略。我们利用现有的检测模型将图像转化为符号化的文本描述（Caption + Bounding Boxes），然后将这些纯文本喂给强大的纯文本模型（如 GPT-4）。GPT-4 虽然看不见图，但它可以通过这些元数据“想象”出图像的内容，并基于此生成复杂的推理对话。这不仅解决了多模态数据稀缺的问题，还极大地提升了指令的复杂度和逻辑性。</p>
+<hr />
+<h2 id="10_2-engineering-implementation">10_2 工程实现 (Engineering Implementation)<a class="headerlink" href="#10_2-engineering-implementation" title="Permanent link">&para;</a></h2>
+<p>本节我们将深入代码层面，构建一套完整的数据合成流水线。我们将重点关注如何保证数据的多样性，防止生成的“教科书”千篇一律。</p>
+<h3 id="10_21">10_2.1 教科书级数据：分类器与合成流水线<a class="headerlink" href="#10_21" title="Permanent link">&para;</a></h3>
+<p><strong>Step 1: 训练质量分类器 (The Quality Classifier)</strong>
+我们需要训练一个轻量级模型（如 Random Forest 或 BERT-Tiny），从海量数据中挑出“教科书”。这里的关键在于标注数据的来源。通常，我们需要人工专家或 GPT-4 仔细标注几千条数据作为种子。</p>
+<p><strong>代码实现：特征工程与训练</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.feature_extraction.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">TfidfVectorizer</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># 1. 准备标注数据 (Annotation)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># 我们首先用 GPT-4 标注少量样本（例如 1000 条），作为“金标准”</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># Prompt: &quot;Determine if this text is of educational value for a student...&quot;</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="c1"># Label 1: High Quality (Textbook-like), Label 0: Low Quality (Noise)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># 这一步至关重要，标注的质量直接决定了分类器的上限</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Python lists are mutable sequences...&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hey guys check out my cat photo...&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="c1"># ... more data</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="p">]</span> 
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="c1"># 2. 构建分类器流水线</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="c1"># Phi-1 论文中使用预训练模型的 Embedding，这里简化使用 TF-IDF 演示原理</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="c1"># 在实际生产中，建议使用 DeBERTa-v3-small 等轻量级 Transformer 获取 Embedding</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="p">(</span><span class="s1">&#39;tfidf&#39;</span><span class="p">,</span> <span class="n">TfidfVectorizer</span><span class="p">(</span><span class="n">max_features</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">stop_words</span><span class="o">=</span><span class="s1">&#39;english&#39;</span><span class="p">)),</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    <span class="p">(</span><span class="s1">&#39;clf&#39;</span><span class="p">,</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="p">])</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="c1"># 3. 训练</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="n">pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="c1"># 4. 预测 (Filtering Phase)</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="c1"># 对海量 Web 数据进行打分，只保留高分数据</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="n">web_snippet</span> <span class="o">=</span> <span class="s2">&quot;Standard library documentation for Python...&quot;</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="n">score</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">([</span><span class="n">web_snippet</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a><span class="k">if</span> <span class="n">score</span> <span class="o">&gt;</span> <span class="mi">0_8</span><span class="p">:</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Keep this data for training: High Educational Value&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a><span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Discard: Low Signal-to-Noise Ratio&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+<p><strong>Step 2: 合成教科书片段 (Synthetic Generation)</strong>
+拥有了分类器过滤出的种子数据后，我们需要将其“扩写”。这里的 Prompt 设计需要极高的技巧。</p>
+<p>Prompt 迭代：合成 Python 教程
+* <strong>V1 Prompt:</strong> "Write a tutorial about Python lists."
+    * <strong>结果：</strong> 平铺直叙，缺乏深度，像是一篇平庸的博客文章。
+* <strong>V3 Prompt (Phi-style):</strong> 引入了具体的教学法（Pedagogy），要求包含定义、对比、复杂度分析和陷阱警示。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># V3 Prompt - 教科书风格合成</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">synthetic_textbook_prompt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="s2">### ROLE</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="s2">You are a professor of Computer Science writing a definitive textbook on Python.</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="s2">### OBJECTIVE</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="s2">Write a comprehensive, self-contained chapter section on the topic: &quot;List Comprehensions vs. Map/Filter&quot;.</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="s2">### REQUIREMENTS</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="s2">1. **Tone**: Educational, clear, precise, and rigorous. Avoid conversational filler.</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="s2">2. **Structure**:</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="s2">   - Start with a conceptual definition explaining *why* this feature exists.</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="s2">   - Provide a &quot;Before and After&quot; code example (Loop vs. Comprehension).</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="s2">   - Explain the *computational complexity* (Big O) implications.</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="s2">   - Include a &quot;Common Pitfall&quot; section (e.g., readability vs. brevity).</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="s2">3. **Diversity**: Use realistic variable names (e.g., `inventory_items`, `sensor_readings`), NOT generic ones like `x`, `y`, `foo`. </span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="s2">   (This is crucial to prevent the model from overfitting to toy examples).</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="s2">### OUTPUT</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="s2">[Markdown Content]</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div>
+<h3 id="10_22-back-translation">10_2.2 逆向翻译 (Back-Translation)：从答案反推问题<a class="headerlink" href="#10_22-back-translation" title="Permanent link">&para;</a></h3>
+<p>除了从头生成，另一种高效方法是“逆向翻译”。在代码领域，我们通常很容易找到高质量的代码片段（例如 GitHub 上的高星库函数），但缺乏对应的自然语言指令。</p>
+<p>我们可以利用 LLM 的总结能力，输入一段复杂的代码，要求模型：“请为这段代码编写一个尽可能详细的各种用户需求指令，使得这段代码恰好能解决这个问题。”这能快速生成大量 (Instruction, Output) 对，且 Output 保证是高质量的人类代码。这种方法特别适合增强模型对复杂代码逻辑的理解能力。</p>
+<h3 id="10_23-pot-program-of-thought">10_2.3 代码与数学合成：PoT (Program of Thought)<a class="headerlink" href="#10_23-pot-program-of-thought" title="Permanent link">&para;</a></h3>
+<p>这是保证合成数据正确性的最强手段。通过强制模型生成代码，我们将模糊的自然语言推理转化为了精确的程序逻辑。</p>
+<p><strong>核心代码拆解：生成与验证闭环</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># 1. PoT 生成 Prompt</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># 我们要求模型把解题步骤写成 Python 函数 solver()</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">pot_prompt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="s2">Question: Janet has 3 times as many eggs as Bob. Bob has 5 eggs. How many eggs do they have in total?</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="s2">Instruction:</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="s2">Write a Python function named `solver()` that returns the answer.</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="s2">Do not output the number directly. Write the code to calculate it.</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="s2">Include comments explaining the logic.</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="c1"># 假设 LLM 返回了以下代码字符串</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="n">generated_code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="s2">def solver():</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="s2">    # Bob has 5 eggs</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="s2">    bob_eggs = 5</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="s2">    # Janet has 3 times as many as Bob</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="s2">    janet_eggs = 3 * bob_eggs</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="s2">    # Total eggs</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="s2">    total = janet_eggs + bob_eggs</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="s2">    return total</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="c1"># 2. 代码执行沙箱 (Sandbox Execution)</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="c1"># 警告：直接执行生成的代码极其危险，必须在沙箱中运行</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span class="k">def</span><span class="w"> </span><span class="nf">execute_generated_code</span><span class="p">(</span><span class="n">code_str</span><span class="p">):</span>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>        <span class="c1"># 生产环境请使用 Docker, gVisor 或 nsjail 进行隔离</span>
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>        <span class="n">local_scope</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>        <span class="c1"># 限制执行时间，防止死循环</span>
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>        <span class="c1"># 这里使用简化的 exec 演示，实际需配合 resource 模块限制 CPU/内存</span>
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a>        <span class="n">exec</span><span class="p">(</span><span class="n">code_str</span><span class="p">,</span> <span class="p">{},</span> <span class="n">local_scope</span><span class="p">)</span>
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a>
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>        <span class="k">if</span> <span class="s1">&#39;solver&#39;</span> <span class="ow">in</span> <span class="n">local_scope</span><span class="p">:</span>
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a>            <span class="n">result</span> <span class="o">=</span> <span class="n">local_scope</span><span class="p">[</span><span class="s1">&#39;solver&#39;</span><span class="p">]()</span>
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>            <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="s2">&quot;Success&quot;</span>
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;No solver function found&quot;</span>
+<a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a>        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Execution Error: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a>
+<a id="__codelineno-2-47" name="__codelineno-2-47" href="#__codelineno-2-47"></a><span class="c1"># 3. 验证与数据保存</span>
+<a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a><span class="n">result</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="n">execute_generated_code</span><span class="p">(</span><span class="n">generated_code</span><span class="p">)</span>
+<a id="__codelineno-2-49" name="__codelineno-2-49" href="#__codelineno-2-49"></a>
+<a id="__codelineno-2-50" name="__codelineno-2-50" href="#__codelineno-2-50"></a><span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;Success&quot;</span><span class="p">:</span>
+<a id="__codelineno-2-51" name="__codelineno-2-51" href="#__codelineno-2-51"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Verified Answer: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-52" name="__codelineno-2-52" href="#__codelineno-2-52"></a>    <span class="c1"># 保存数据策略：</span>
+<a id="__codelineno-2-53" name="__codelineno-2-53" href="#__codelineno-2-53"></a>    <span class="c1"># 策略 A (PoT): 保存 Instruction -&gt; Code。训练模型写代码解题。</span>
+<a id="__codelineno-2-54" name="__codelineno-2-54" href="#__codelineno-2-54"></a>    <span class="c1"># 策略 B (CoT): 保存 Instruction -&gt; &quot;Let&#39;s calculate... [Reasoning]... The answer is {result}&quot;。</span>
+<a id="__codelineno-2-55" name="__codelineno-2-55" href="#__codelineno-2-55"></a>    <span class="c1"># 策略 B 利用代码作为中间步骤，生成纯文本推理数据。</span>
+<a id="__codelineno-2-56" name="__codelineno-2-56" href="#__codelineno-2-56"></a>    <span class="n">save_to_dataset</span><span class="p">(</span><span class="n">pot_prompt</span><span class="p">,</span> <span class="n">generated_code</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-2-57" name="__codelineno-2-57" href="#__codelineno-2-57"></a><span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-2-58" name="__codelineno-2-58" href="#__codelineno-2-58"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Discard bad data: Code failed to execute&quot;</span><span class="p">)</span>
+</code></pre></div>
+<strong>实战技巧 (Pro Tip):</strong> 生成的数据不仅可以用来训练 PoT 模型，还可以用来训练普通的 CoT 模型。方法是将执行成功的代码作为“中间步骤”，将执行结果作为“最终答案”，反向构造成 <code>&lt;thinking&gt;...code...&lt;/thinking&gt;&lt;answer&gt;...result...&lt;/answer&gt;</code> 的格式。这种“借鸡生蛋”的方法可以显著提升纯文本模型的算术准确率。</p>
+<h3 id="10_24-llava-pipeline">10_2.4 多模态指令合成：LLaVA Pipeline<a class="headerlink" href="#10_24-llava-pipeline" title="Permanent link">&para;</a></h3>
+<p>利用纯文本模型合成多模态数据是 LLaVA 的创举。这种方法的核心在于将视觉信息<strong>“符号化” (Symbolization)</strong>——既然纯文本模型（如 GPT-4）看不见图像，我们就把图像翻译成它能读懂的“代码”。</p>
+<p><img alt="图 10-2： LLaVA 数据合成流程示意图" src="../../images/chapter4/10_2_LLaVA%E6%95%B0%E6%8D%AE%E5%90%88%E6%88%90%E6%B5%81%E7%A8%8B%E7%A4%BA%E6%84%8F%E5%9B%BE.png" />
+<em>图 10-2： LLaVA 数据合成流程示意图</em></p>
+<h4 id="1">1. 工程流水线：从像素到符号<a class="headerlink" href="#1" title="Permanent link">&para;</a></h4>
+<p>在设计 Prompt 之前，我们需要先通过工具链把图像“解构”为文本模型可读的结构化数据（Metadata）：</p>
+<ol>
+<li>
+<p><strong>全局语义 (Captioning)</strong></p>
+<ul>
+<li><strong>工具</strong>: 使用 CLIP 或 BLIP 生成一句话描述。</li>
+<li><strong>作用</strong>: 提供整体语境（Context）。</li>
+<li><strong>输出示例</strong>: <code>"A young girl riding a horse on a beach at sunset."</code></li>
+</ul>
+</li>
+<li>
+<p><strong>局部细节 (Object Detection)</strong></p>
+<ul>
+<li><strong>工具</strong>: 使用 Grounding DINO 提取物体及其坐标（Bounding Box）。</li>
+<li><strong>作用</strong>: 提供空间位置实体（Spatial Anchoring）。</li>
+<li><strong>输出示例</strong>: <code>{'girl': [100, 200, 300, 400], ...}</code></li>
+</ul>
+</li>
+<li>
+<p><strong>数据合成 (Synthesis)</strong></p>
+<ul>
+<li><strong>动作</strong>: 将上述信息填入 Prompt，调用 GPT-4 生成对话。</li>
+</ul>
+</li>
+</ol>
+<h4 id="2-prompt-engineering">2. Prompt Engineering：设计与考量<a class="headerlink" href="#2-prompt-engineering" title="Permanent link">&para;</a></h4>
+<p>有了结构化数据后，Prompt 的设计就成了决定数据质量的关键。以下是 LLaVA 风格的 Prompt 模板及其设计背后的架构考量：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># System Prompt for Multimodal Data Generation</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">multimodal_gen_prompt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="s2">### CONTEXT</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="s2">You are an AI visual assistant. You cannot see the image directly, but I will provide its metadata.</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="s2">Your task is to generate a conversation between a Human and Yourself about this image.</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="s2">### IMAGE METADATA</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="s2"># [数据注入点]：我们将流水线提取的数据填入这里</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="s2">- **Caption**: &quot;</span><span class="si">{caption}</span><span class="s2">&quot;</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="s2">- **Objects**: </span><span class="si">{object_list_with_boxes}</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="s2">### INSTRUCTIONS</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="s2">1. **Conversation Style**: Generate a multi-turn Q&amp;A (User asking, Assistant answering).</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="s2">2. **Reasoning**: The Human should ask complex questions (e.g., &quot;What suggests this is a safe environment?&quot;). You answer based on the visual evidence.</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="s2">3. **Spatial Awareness**: Use the bounding box info to describe relative positions if asked (e.g., &quot;The ocean is in the background...&quot;).</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="s2">4. **Visual Consistency**: Do NOT hallucinate objects not listed in the metadata.</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div>
+<p><strong>Prompt 设计背后的架构考量：</strong></p>
+<ul>
+<li>
+<p><strong>为什么要同时提供 Caption 和 Objects？（互补性）</strong>
+    仅有 Object（女孩、马、海）是离散的，缺乏动作和氛围；仅有 Caption（女孩骑马）缺乏具体的方位信息。两者结合，GPT-4 才能构建出完整的思维“场景图（Scene Graph）”。</p>
+</li>
+<li>
+<p><strong>为什么要强调 "Spatial Awareness"？（空间对齐）</strong>
+    纯文本模型天生缺乏空间感。通过强制它处理 <code>[x1, y1, x2, y2]</code> 坐标数据，我们实际上是在强迫文本模型学习“视觉对齐”，让它学会理解“左边”、“右下角”等概念对应的像素区域。</p>
+</li>
+<li>
+<p><strong>为什么要加入 "Visual Consistency" 约束？（抑制幻觉）</strong>
+    文本模型最大的缺陷是容易“脑补”。例如看到“海滩”，它可能会顺嘴编出“有海鸥在飞”。必须显式禁止它生成 Metadata 中不存在的物体，以保证生成数据的高信噪比（High Signal-to-Noise Ratio）。</p>
+</li>
+<li>
+<p><strong>为什么要生成 "Complex Reasoning"？（数据升维）</strong>
+    如果只是简单的“这是什么？这是马”，对模型训练没有价值。我们需要利用 GPT-4 的智力，通过数据合成人为创造出“需要思考”的样本（如因果推断、情绪分析），从而让小模型（Student）通过蒸馏学会大模型的推理能力。</p>
+</li>
+</ul>
+<hr />
+<h3 id="10_25">10_2.5 多模态指令数据合成的进阶策略<a class="headerlink" href="#10_25" title="Permanent link">&para;</a></h3>
+<p>虽然基于纯文本模型的“符号化推理”（如 LLaVA v1 早期方法）开创了多模态指令合成的先河，但其主要缺陷在于“视觉信息的有损压缩”——文本模型无法直接感知像素级的视觉特征，仅依赖元数据（Metadata）进行推理容易导致幻觉（Hallucination）。</p>
+<p>为了突破这一瓶颈，当前工业界与学术界已经演化出三种更为主流且高效的合成策略：<strong>视觉强模型蒸馏</strong>、<strong>多专家混合流水线</strong>以及<strong>进化指令生成</strong>。</p>
+<h4 id="1-visual-model-distillation">1. 视觉强模型蒸馏 (Visual Model Distillation)<a class="headerlink" href="#1-visual-model-distillation" title="Permanent link">&para;</a></h4>
+<p>这是目前（截至 2024-2025 年）构建高性能开源多模态模型（如 LLaVA-NeXT, ShareGPT4V）的最主流方法，常被视为 SOTA（State-of-the-Art）方案。</p>
+<p><strong>核心思想</strong>
+该方法摒弃了“利用文本模型猜测视觉内容”的路径，转而采用“教师-学生”（Teacher-Student）蒸馏范式。利用闭源的顶尖多模态大模型（如 GPT-4o, Gemini 1_5 Pro）作为“教师模型”，直接处理原始图像信号，生成高质量、高密度的详细描述（Dense Caption）和复杂的推理问答对，供开源模型（学生模型）学习。</p>
+<p><strong>优势分析</strong>
+* <strong>消除模态隔阂</strong>：教师模型直接“看”到图像像素，能够捕捉光影、材质、微表情等文本元数据无法承载的细节。
+* <strong>抑制幻觉</strong>：基于真实视觉输入的描述极大降低了事实性错误的概率。</p>
+<p><strong>实现流程</strong>
+其核心在于构建一个能够诱导教师模型输出详尽信息的 Prompt。以下是一个标准的蒸馏流程伪代码：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_dense_instruction</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">api_client</span><span class="p">):</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="sd">    利用 SOTA MLLM 生成高密度多模态指令数据</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="c1"># System Prompt 设计关键：要求极其详尽的细节捕捉与逻辑关联</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">distillation_prompt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="s2">    You are an expert visual analyst. Analyze the provided image with extreme detail.</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="s2">    Tasks:</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="s2">    1. Dense Captioning: Provide a comprehensive description of every corner of the image, covering colors, textures, lighting, and background details.</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="s2">    2. Object Relationships: Analyze the interactions between objects (e.g., causality, spatial relations).</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="s2">    3. OCR Extraction: Transcribe any visible text verbatim.</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="s2">    4. Q&amp;A Generation: Based on the visual details above, create a logical reasoning question that cannot be answered without looking at the image.</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="s2">    &quot;&quot;&quot;</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span class="c1"># 关键差异：输入包含真实的 Image Tensor，而非仅仅是 Bounding Box</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>    <span class="n">response</span> <span class="o">=</span> <span class="n">api_client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>        <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>            <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">distillation_prompt</span><span class="p">},</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>            <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image_url&quot;</span><span class="p">,</span> <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">image_path</span><span class="p">}]}</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>        <span class="p">]</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>    <span class="p">)</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>    <span class="k">return</span> <span class="n">parse_response</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h4 id="2-mixture-of-experts-pipeline">2. 领域特化：多专家混合流水线 (Mixture-of-Experts Pipeline)<a class="headerlink" href="#2-mixture-of-experts-pipeline" title="Permanent link">&para;</a></h4>
+<p>对于通用大模型难以覆盖的垂直领域——如文档智能（Document AI）、复杂图表分析或自动驾驶数据，通用的视觉蒸馏往往缺乏精度。此时，采用“多专家混合”策略是最佳实践。</p>
+<p><strong>核心逻辑</strong>
+该方法不依赖单一模型的端到端能力，而是组装多个专用的小模型（Experts）作为感知前端，将非结构化图像转化为精细的结构化数据，再由 LLM 进行整合。</p>
+<p>逻辑流：
+$$ \text{Image} \xrightarrow{\text{Experts}} [\text{OCR} + \text{Layout} + \text{Detection}] \xrightarrow{\text{Aggregation}} \text{Structured Context} \xrightarrow{\text{LLM}} \text{Instruction} $$</p>
+<p><strong>应用场景与流程图解</strong>
+典型应用包括金融票据处理（Invoices）、医疗影像报告（DICOM）等。</p>
+<ol>
+<li><strong>OCR Expert (如 PaddleOCR)</strong>: 提取图像中所有文本及其精确坐标 <span class="arithmatex">\((x_1, y_1, x_2, y_2)\)</span>。</li>
+<li><strong>Layout Expert (如 LayoutLM)</strong>: 解析文档的拓扑结构，识别表格行列、段落层级和标题关系。</li>
+<li><strong>Synthesis (LLM)</strong>: 将上述结构化数据填入 Prompt 模板。<ul>
+<li><em>Example Prompt:</em> “这是一张发票的结构化数据，发票号码位于 (100, 200)，金额总计为 500_00。请基于此生成一个关于‘财务审计核对’的多轮问答。”</li>
+</ul>
+</li>
+</ol>
+<p><img alt="图 10-3： 多专家混合流水线示意图" src="../../images/chapter4/10_3_%E5%A4%9A%E4%B8%93%E5%AE%B6%E6%B7%B7%E5%90%88%E6%B5%81%E6%B0%B4%E7%BA%BF%E7%A4%BA%E6%84%8F%E5%9B%BE.png" />
+<em>图 10-3： 多专家混合流水线示意图</em></p>
+<hr />
+<h4 id="3-visual-evol-instruct">3. 进化指令生成 (Visual Evol-Instruct)<a class="headerlink" href="#3-visual-evol-instruct" title="Permanent link">&para;</a></h4>
+<p>受纯文本领域 WizardLM 的启发，Visual Evol-Instruct 旨在解决训练数据“同质化”和“简单化”的问题。当基础数据集仅包含简单的识别任务（如“图里有什么？”）时，模型无法学会高阶推理。该方法通过 Prompt Engineering 强制让模型对现有数据进行“升维”。</p>
+<p><strong>核心逻辑</strong>
+$$ \text{Simple VQA} \xrightarrow{\text{Complexity Constraints}} \text{Complex Reasoning VQA} $$</p>
+<p>通过向 LLM 施加特定的进化指令，可以从以下维度提升数据复杂度：</p>
+<ul>
+<li><strong>深度推理化 (Reasoning)</strong>:<ul>
+<li><em>原题</em>: “这个人手里拿着什么？”</li>
+<li><em>进化后</em>: “结合手中物体的用途和人物的穿着，推测此人的职业以及他接下来可能进行的活动。”</li>
+</ul>
+</li>
+<li><strong>反事实推理 (Counterfactual)</strong>:<ul>
+<li><em>原题</em>: “图中的车是红色的。”</li>
+<li><em>进化后</em>: “如果将图中的红色跑车替换为一辆老旧的自行车，整个场景的氛围会发生怎样的变化？这是否符合背景中出现的现代建筑风格？”</li>
+</ul>
+</li>
+<li><strong>比较分析 (Comparative)</strong>:<ul>
+<li>输入两张相似图像，要求模型分析其细微差异（如光照变化、物体位移），训练模型的细粒度观察力。</li>
+</ul>
+</li>
+</ul>
+<p>通过上述三种策略的组合使用，我们可以构建出既包含丰富视觉细节，又具备深度逻辑推理能力的高质量多模态指令数据集，为训练 LLaVA、MiniGPT-4 等模型打下坚实基础。</p>
+<h2 id="10_3-performance-evaluation">10_3. 性能与评估 (Performance &amp; Evaluation)<a class="headerlink" href="#10_3-performance-evaluation" title="Permanent link">&para;</a></h2>
+<p>在合成数据上训练完模型后，评估显得尤为重要，因为我们需要确认模型是真的“学会了”还是仅仅“记住了”合成数据中的模式。</p>
+<h3 id="_3">评价指标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Pass@1 (代码):</strong> 对于 PoT 合成数据，我们在 HumanEval 上测试 Pass@1。Phi-1 仅用 6B 数据就达到了 50%+ 的 Pass@1，超过了许多训练数据量大 100 倍的模型。这证明了数据质量的压倒性优势。</li>
+<li><strong>Hallucination Rate (幻觉率):</strong> 比较合成的多模态回答与原图的 CLIP 相似度，检测是否生成了图中不存在的物体。我们可以构建一个负样本集，专门诱导模型回答不存在的物体，看模型是否能拒绝回答。</li>
+<li><strong>Decontamination (去污染检测):</strong> 这是一个肮脏但必须的步骤。我们需要检查合成数据是否无意中包含了测试集（如 HumanEval）的题目。通过 N-gram 重叠检测，确保模型是在泛化而非作弊。</li>
+</ul>
+<h3 id="_4">基准测试<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>PoT vs CoT:</strong> 在数学题（如 GSM8K）上，PoT 方法通常比纯文本 CoT 准确率高 5-10%。原因在于 PoT 将计算外包给了最擅长计算的 CPU，而让 GPU 专注于其擅长的逻辑翻译，这是一种最优的算力分配。</li>
+</ul>
+<hr />
+<h2 id="10_4-pitfalls-troubleshooting">10_4. 避坑指南 (Pitfalls &amp; Troubleshooting)<a class="headerlink" href="#10_4-pitfalls-troubleshooting" title="Permanent link">&para;</a></h2>
+<p>合成数据虽然美好，但也充满了陷阱。稍有不慎，模型就会陷入“自我陶醉”的怪圈。</p>
+<ul>
+<li>
+<p><strong>陷阱 1：Self-Confirmation Bias (自证偏差)</strong></p>
+<ul>
+<li><strong>现象：</strong> 模型生成的代码虽然能跑通，但逻辑是错的（例如 2+2=5，且模型生成的测试用例也是错的，恰好通过了错误的函数）。</li>
+<li><strong>修正：</strong> 必须引入外部的、确定性的 Solver 或经过人工审核的 Unit Tests 库。永远不要完全依赖模型生成的测试用例来验证模型生成的代码，这就像让罪犯自己审判自己。</li>
+</ul>
+</li>
+<li>
+<p><strong>陷阱 2：Lack of Visual Grounding (视觉锚点缺失)</strong></p>
+<ul>
+<li><strong>现象：</strong> 多模态合成数据中，模型讨论了 metadata 中没提到的细节（瞎编）。例如，Metadata 里只有“狗”，模型却开始描述“狗项圈的颜色”，而图片里的狗根本没戴项圈。</li>
+<li><strong>修正：</strong> 在 Prompt 中加入 strict instruction：“Only strictly rely on the provided metadata. Do not invent details.” 同时，使用 CLIP Score 过滤掉那些与原图相似度过低的生成文本。</li>
+</ul>
+</li>
+<li>
+<p><strong>陷阱 3：The Homogenization Trap (同质化陷阱)</strong></p>
+<ul>
+<li><strong>现象：</strong> 如果所有数据都由 GPT-4 生成，你的模型最终会变成一个“低配版 GPT-4”，失去了多样性。所有的回答语气、句式都惊人的一致。</li>
+<li><strong>修正：</strong> <strong>熵注入 (Entropy Injection)</strong>。在 Prompt 中随机注入不同的 Persona（如“暴躁的程序员”、“耐心的幼儿园老师”），或者要求模型使用不同的编程风格（递归 vs 迭代），强制扩展数据的分布范围。</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2 id="10_5">10_5. 本章小结与延伸阅读<a class="headerlink" href="#10_5" title="Permanent link">&para;</a></h2>
+<p>Textbooks Are All You Need” 范式确立了数据质量（即教育价值）优先于数量的核心原则，而合成数据技术赋予了我们要精确控制数据信噪比的能力。在此体系下，程序思维（PoT）通过将推理过程转化为可执行代码，利用编译器的确定性来验证逻辑，从而保证了数据的严谨性。同时，Symbolic-to-Synthetic 方法利用元数据（如 Bounding Box）引导文本模型生成多模态内容，实现了从单模态向多模态数据的有效转化。这一系列演进标志着数据工程正在经历从被动“挖掘”到主动“生产”的模式转变：即通过种子提示词构建（Seed Prompts）、指令复杂化（Evolution）、质量过滤（Filtering）与最终合成（Synthesis）的标准工业化流程，系统性地构建高质量数据集。</p>
+<h3 id="_5">参考文献<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li><em>Gunasekar, S., et al. (2023). Textbooks Are All You Need (Phi-1).</em></li>
+<li><em>Chen, W., et al. (2022). Program of Thoughts Prompting: Disentangling Computation from Reasoning for Numerical Reasoning Tasks.</em></li>
+<li><em>Liu, H., et al. (2023). Visual Instruction Tuning (LLaVA).</em></li>
+<li><em>Shumailov, I., et al. (2023). The Curse of Recursion: Training on Generated Data Makes Models Forget.</em> (关于模型坍塌的重要研究)</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../4_1/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 第9章：指令微调数据">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                第9章：指令微调数据
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../4_3/" class="md-footer__link md-footer__link--next" aria-label="下一页: 第11章：人类偏好数据">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                第11章：人类偏好数据
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

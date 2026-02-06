@@ -1,0 +1,2338 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/chapter1/1_2_data_infra/">
+      
+      
+        <link rel="prev" href="../1_1_data_change/">
+      
+      
+        <link rel="next" href="../../chapter2/2_1_data_acquisition/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>第2章：数据基础设施选型 - 大模型数据工程：架构、算法及项目实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#2" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-header__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型数据工程：架构、算法及项目实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第2章：数据基础设施选型
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="切换至夜间模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至夜间模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="切换至日间模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至日间模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-nav__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大模型数据工程：架构、算法及项目实战
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    目录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一部分：基础设施与核心理念
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一部分：基础设施与核心理念
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../1_1_data_change/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第1章：大模型时代的数据变革
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第2章：数据基础设施选型
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第2章：数据基础设施选型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章摘要
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景引入
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2_1-modern-data-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_1 现代数据栈 (Modern Data Stack)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2_1 现代数据栈 (Modern Data Stack)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_1.1 什么是现代数据栈？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_1.2 存储层：对象存储与数据湖
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_13-spark-vs-ray-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_1.3 计算层：Spark vs Ray Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2_2-io" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_2 数据格式与 I/O 优化
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2_2 数据格式与 I/O 优化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_2.1 主流数据格式对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_2.2 压缩算法选型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_23-io" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_2.3 I/O 优化实战技巧
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2_3-dataops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_3 数据版本控制 (DataOps)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2_3 数据版本控制 (DataOps)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2_31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_3.1 为什么数据需要版本控制？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_32-dvc-vs-lakefs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_3.2 工具选型：DVC vs LakeFS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_33-data-lineage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_3.3 数据血缘追踪 (Data Lineage)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_4 常见错误与避坑指南
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_5 本章小结
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        延伸阅读
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        下一章预告
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二部分：文本预训练数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二部分：文本预训练数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter2/2_1_data_acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第3章：数据获取与采集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter2/2_2_cleaning_denoising/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第4章：清洗与去噪
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter2/2_3_tokenization_serialization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第5章：分词与序列化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三部分：多模态数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三部分：多模态数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第6章：图文对数据处理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第7章：数据重描述
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter3/3_3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第8章：视频与音频数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第四部分：对齐与合成数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第四部分：对齐与合成数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第9章：指令微调数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第10章：合成数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第11章：人类偏好数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第五部分：应用级数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第五部分：应用级数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter5/5_1_rag_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第12章：RAG数据流水线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter5/5_2_mm_rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第13章：多模态RAG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第六部分：实战项目集
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第六部分：实战项目集
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_1_mini_c4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目一：构建Mini-C4预训练集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_2_legal_sft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目二：垂直领域专家SFT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_3_llava_instruct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目三：构建LLaVA多模态指令集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_4_synthetic_textbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目四：合成数学代码教科书
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_5_mm_rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目五：多模态RAG企业财报助手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章摘要
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        场景引入
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2_1-modern-data-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_1 现代数据栈 (Modern Data Stack)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2_1 现代数据栈 (Modern Data Stack)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_1.1 什么是现代数据栈？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_1.2 存储层：对象存储与数据湖
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_13-spark-vs-ray-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_1.3 计算层：Spark vs Ray Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2_2-io" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_2 数据格式与 I/O 优化
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2_2 数据格式与 I/O 优化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_2.1 主流数据格式对比
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_2.2 压缩算法选型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_23-io" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_2.3 I/O 优化实战技巧
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2_3-dataops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_3 数据版本控制 (DataOps)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2_3 数据版本控制 (DataOps)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2_31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_3.1 为什么数据需要版本控制？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_32-dvc-vs-lakefs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_3.2 工具选型：DVC vs LakeFS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_33-data-lineage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_3.3 数据血缘追踪 (Data Lineage)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_4 常见错误与避坑指南
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2_5 本章小结
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        延伸阅读
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        下一章预告
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="2">第2章：数据基础设施选型<a class="headerlink" href="#2" title="Permanent link">&para;</a></h1>
+<hr />
+<h2 id="_1">本章摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>工欲善其事，必先利其器。在处理 TB 级甚至 PB 级的 LLM 训练数据之前，选择正确的基础设施是决定项目成败的第一步。本章将从<strong>存储、计算、格式、版本控制</strong>四个维度，系统性地介绍现代数据栈的技术选型，帮助读者建立一套高效、可扩展、可复现的数据处理平台。</p>
+<hr />
+<h2 id="_2">场景引入<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>你刚加入一家 AI 初创公司，负责搭建 LLM 预训练数据处理平台。团队的现状令人担忧：数据散落在 50 台机器的本地硬盘上，格式五花八门，包括 <code>.txt</code>、<code>.json</code>、<code>.csv</code>、<code>.parquet</code> 等各种类型。每次处理数据，都要手动编写 Python 脚本，在单机上运行三天才能跑完。上周有人不小心覆盖了一个关键数据集，而这份数据没有任何备份和版本记录。老板问你："一个月后我们要开始训练，数据平台能不能 ready？"</p>
+<p>你面临的第一个决策是：是用团队熟悉的 Spark，还是转向号称"AI 原生"的 Ray？是自建 MinIO 集群，还是直接上云用 S3？这些问题没有"标准答案"，但有明确的决策框架。本章将为你提供这个框架。</p>
+<hr />
+<h2 id="2_1-modern-data-stack">2_1 现代数据栈 (Modern Data Stack)<a class="headerlink" href="#2_1-modern-data-stack" title="Permanent link">&para;</a></h2>
+<h3 id="2_11">2_1.1 什么是现代数据栈？<a class="headerlink" href="#2_11" title="Permanent link">&para;</a></h3>
+<p>"现代数据栈"（Modern Data Stack, MDS）是近年来数据工程领域的热门概念，指的是一套云原生、模块化、解耦合的数据基础设施组合。与传统的一体化数据平台相比，现代数据栈的核心理念是将存储、计算、编排等功能拆分到独立的组件中，每个组件可以根据需求独立替换和扩展。</p>
+<p><img alt="图2-1：现代数据栈架构" src="../../images/chapter1/%E5%9B%BE2_1_%E7%8E%B0%E4%BB%A3%E6%95%B0%E6%8D%AE%E6%A0%88%E6%9E%B6%E6%9E%84.png" /></p>
+<p><em>图2-1：现代数据栈架构 —— 从存储层到应用层的5层解耦架构，每层可独立替换</em></p>
+<p>传统数据平台往往部署在本地机房，采用一体化系统，存储与计算紧密绑定。以 Hadoop 生态为例，HDFS 与 MapReduce 的耦合使得更换任何一个组件都非常困难。数据格式也常常是私有的，导致严重的厂商锁定问题。扩展方式以垂直扩展为主，即通过购买更强大的单机来提升性能，前期投入成本高昂。</p>
+<table>
+<thead>
+<tr>
+<th>特征</th>
+<th>传统方案</th>
+<th>现代数据栈</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>部署模式</strong></td>
+<td>本地机房，一体化系统</td>
+<td>云原生，按需弹性伸缩</td>
+</tr>
+<tr>
+<td><strong>组件耦合</strong></td>
+<td>存储计算绑定（如 HDFS + MapReduce）</td>
+<td>存储计算分离，各层可独立替换</td>
+</tr>
+<tr>
+<td><strong>数据格式</strong></td>
+<td>私有格式、厂商锁定</td>
+<td>开放格式（Parquet、ORC）</td>
+</tr>
+<tr>
+<td><strong>扩展性</strong></td>
+<td>垂直扩展为主</td>
+<td>水平扩展，近乎无限</td>
+</tr>
+<tr>
+<td><strong>成本模式</strong></td>
+<td>固定投入，前期成本高</td>
+<td>按用量付费，弹性成本</td>
+</tr>
+</tbody>
+</table>
+<p>现代数据栈的出现改变了这一局面。云原生的部署模式允许按需弹性伸缩，存储与计算完全分离使得各层可以独立演进。开放的数据格式（如 Parquet、ORC）消除了厂商锁定风险。水平扩展能力使得系统可以处理近乎无限的数据量，而按用量付费的成本模式则大大降低了项目启动的门槛。</p>
+<h3 id="2_12">2_1.2 存储层：对象存储与数据湖<a class="headerlink" href="#2_12" title="Permanent link">&para;</a></h3>
+<p>对象存储是现代数据平台的事实标准底座。无论是 AWS S3、Google Cloud Storage、Azure Blob，还是开源的 MinIO，它们的核心理念相同：采用扁平化命名空间，没有真正的目录层级，只有 <code>bucket/key</code> 的二元结构；理论上可存储无限数据；提供极高的数据持久性（S3 声称达到 11 个 9，即 99_999999999%）；按照实际使用量计费，无需前期大额投入。</p>
+<p>在具体选型时，需要考虑部署模式、兼容性、成本等多个因素。AWS S3 是公有云托管的标杆产品，生态最为成熟，适合绝大多数生产环境。MinIO 是 S3 兼容的开源替代方案，适合有数据合规要求需要私有部署的场景，或用于开发测试环境。Google Cloud Storage 和 Azure Blob 分别适合已经深度使用 GCP 或 Azure 生态的用户。</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>AWS S3</th>
+<th>MinIO</th>
+<th>Google GCS</th>
+<th>Azure Blob</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>部署模式</strong></td>
+<td>公有云托管</td>
+<td>自建/私有云</td>
+<td>公有云托管</td>
+<td>公有云托管</td>
+</tr>
+<tr>
+<td><strong>S3 兼容性</strong></td>
+<td>原生</td>
+<td>100% 兼容</td>
+<td>需适配层</td>
+<td>需适配层</td>
+</tr>
+<tr>
+<td><strong>冷热分层</strong></td>
+<td>Glacier</td>
+<td>Tiering</td>
+<td>Nearline/Coldline</td>
+<td>Cool/Archive</td>
+</tr>
+<tr>
+<td><strong>最低成本</strong></td>
+<td>$0_023/GB/月</td>
+<td>硬件成本</td>
+<td>$0_020/GB/月</td>
+<td>$0_018/GB/月</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>生产环境首选</td>
+<td>私有部署/开发测试</td>
+<td>GCP 生态用户</td>
+<td>Azure 生态用户</td>
+</tr>
+</tbody>
+</table>
+<p>对象存储解决了"存储"问题，但缺乏事务性和元数据管理能力。直接在 S3 上操作 Parquet 文件会遇到诸多困难：无法进行 ACID 事务，并发写入可能损坏数据；无法高效查询，每次都要扫描所有文件的元数据；无法进行时间旅行，一旦数据被覆盖就无法回滚到历史版本。</p>
+<p>数据湖表格式（Table Format）正是为解决这些问题而生。它在对象存储之上增加了一层元数据管理，提供了数据仓库级别的能力。Apache Iceberg、Apache Hudi 和 Delta Lake 是目前最主流的三种数据湖格式。</p>
+<p><img alt="图2-2：数据湖仓架构" src="../../images/chapter1/%E5%9B%BE2_2_%E6%95%B0%E6%8D%AE%E6%B9%96%E4%BB%93%E6%9E%B6%E6%9E%84.png" /></p>
+<p><em>图2-2：数据湖仓架构 —— 表格式层提供ACID事务、时间旅行、Schema演进等能力</em></p>
+<p>Apache Iceberg 由 Netflix 开发并贡献给 Apache 基金会，最大的优势是引擎中立性——它可以与 Spark、Flink、Trino、Dremio、DuckDB 等多种计算引擎良好配合。对于 LLM 数据工程场景，Iceberg 是最推荐的选择。Apache Hudi 由 Uber 开发，特点是对流批一体和实时更新的支持较好，如果有大量实时更新需求（如 RAG 知识库的持续更新），可以考虑 Hudi。Delta Lake 由 Databricks 开发，与 Spark 的集成最为紧密，如果已经深度使用 Databricks 生态，选择 Delta Lake 可以获得最佳体验。</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>Apache Iceberg</th>
+<th>Apache Hudi</th>
+<th>Delta Lake</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>背后厂商</strong></td>
+<td>Netflix → Apache</td>
+<td>Uber → Apache</td>
+<td>Databricks</td>
+</tr>
+<tr>
+<td><strong>开源程度</strong></td>
+<td>完全开源</td>
+<td>完全开源</td>
+<td>核心开源，部分功能商业</td>
+</tr>
+<tr>
+<td><strong>引擎兼容性</strong></td>
+<td>Spark, Flink, Trino, DuckDB</td>
+<td>Spark, Flink, Presto</td>
+<td>主要 Spark</td>
+</tr>
+<tr>
+<td><strong>适用场景</strong></td>
+<td>多引擎混用、厂商中立</td>
+<td>流批一体、实时更新</td>
+<td>Databricks 生态用户</td>
+</tr>
+</tbody>
+</table>
+<p>在实际选型时，可以按照以下决策树进行：首先判断数据规模是否超过 100TB。如果超过，进一步考虑是否需要 ACID 事务和时间旅行能力——如果需要，且有多引擎访问需求，推荐 Iceberg + S3；如果只用 Spark，可以选择 Delta Lake 或 Hudi。如果不需要 ACID 能力，直接使用 S3/MinIO + Parquet 即可。对于数据量在 100TB 以下的场景，如果团队规模较小（少于 5 人），本地磁盘 + Parquet 足以满足原型验证需求；随着规模增长，再逐步迁移到 S3 + Parquet 的方案。</p>
+<p><img alt="图2-3：存储层选型决策树" src="../../images/chapter1/%E5%9B%BE2_3_%E5%AD%98%E5%82%A8%E5%B1%82%E9%80%89%E5%9E%8B%E5%86%B3%E7%AD%96%E6%A0%91.png" /></p>
+<p><em>图2-3：存储层选型决策树 —— 根据数据规模、ACID需求、多引擎访问等因素选择最佳方案</em></p>
+<hr />
+<h3 id="2_13-spark-vs-ray-data">2_1.3 计算层：Spark vs Ray Data<a class="headerlink" href="#2_13-spark-vs-ray-data" title="Permanent link">&para;</a></h3>
+<p>这是 LLM 数据工程中最常见的"二选一"难题。两者都是分布式计算框架，但设计哲学和适用场景截然不同。理解它们的差异，对于做出正确的技术选型至关重要。</p>
+<p>Apache Spark 诞生于 2009 年的 Berkeley AMPLab，经过十五年发展，已成为大数据处理的"瑞士军刀"。Spark 的核心优势在于其成熟稳定——经过 PB 级生产验证，文档和社区资源极其丰富。Spark SQL 的存在使得数据分析师也能编写分布式处理逻辑，降低了使用门槛。Structured Streaming 支持实时数据处理，实现了流批一体。然而，Spark 也有明显的劣势：由于核心是 JVM 实现，Python UDF 需要跨 JVM-Python 序列化，性能损耗较大；对 GPU 和 PyTorch/TensorFlow 的集成支持较弱，不够"AI 原生"；算子之间必须物化中间结果，内存压力较大。</p>
+<p>Ray 诞生于 2017 年的 Berkeley RISELab，最初是一个分布式强化学习框架，后演变为通用的 AI 应用基础设施。Ray Data 是其数据处理模块，专为 AI 工作负载设计。Ray Data 的核心优势在于 Python 原生——没有 JVM 开销，与 PyTorch、HuggingFace 等 AI 生态无缝集成。它天然支持流水线式执行，内存效率高；内置 GPU 调度，轻松调用 CUDA 算子；Actor 模型适合有状态的复杂处理，如需要加载 ML 模型的推理任务。不过，Ray 相对年轻，文档和最佳实践不如 Spark 丰富；SQL 支持较弱，没有 Spark SQL 那样成熟的 SQL 接口；与传统大数据生态（Hive、Iceberg）的集成需要额外工作。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Apache Spark</th>
+<th>Ray Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>语言</strong></td>
+<td>Scala/Java 核心，Python API</td>
+<td>Python 原生</td>
+</tr>
+<tr>
+<td><strong>运行时</strong></td>
+<td>JVM</td>
+<td>Python (Arrow-based)</td>
+</tr>
+<tr>
+<td><strong>数据抽象</strong></td>
+<td>DataFrame (批处理思维)</td>
+<td>Dataset (流处理思维)</td>
+</tr>
+<tr>
+<td><strong>GPU 支持</strong></td>
+<td>需要 RAPIDS 插件</td>
+<td>原生支持</td>
+</tr>
+<tr>
+<td><strong>PyTorch 集成</strong></td>
+<td>繁琐</td>
+<td>一等公民</td>
+</tr>
+<tr>
+<td><strong>SQL 支持</strong></td>
+<td>非常成熟</td>
+<td>有限</td>
+</tr>
+<tr>
+<td><strong>典型用户</strong></td>
+<td>传统大数据团队</td>
+<td>AI/ML 团队</td>
+</tr>
+</tbody>
+</table>
+<p>为了更直观地理解两者的差异，我们来看一个具体的代码对比。假设任务是：读取 Parquet 文件，过滤短文本，计算文本长度，保存结果。</p>
+<p>使用 Spark 实现：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparkSession</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pyspark.sql.functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">length</span><span class="p">,</span> <span class="n">col</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># 初始化 Spark Session</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span> \
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span class="o">.</span><span class="n">appName</span><span class="p">(</span><span class="s2">&quot;TextFilter&quot;</span><span class="p">)</span> \
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="s2">&quot;spark.executor.memory&quot;</span><span class="p">,</span> <span class="s2">&quot;8g&quot;</span><span class="p">)</span> \
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># 读取 → 过滤 → 计算 → 保存</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">parquet</span><span class="p">(</span><span class="s2">&quot;s3://my-bucket/raw_data/&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">df_filtered</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">length</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span> \
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>                <span class="o">.</span><span class="n">withColumn</span><span class="p">(</span><span class="s2">&quot;text_length&quot;</span><span class="p">,</span> <span class="n">length</span><span class="p">(</span><span class="n">col</span><span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">)))</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="n">df_filtered</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">parquet</span><span class="p">(</span><span class="s2">&quot;s3://my-bucket/processed_data/&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">spark</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</code></pre></div>
+<p>使用 Ray Data 实现：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">ray</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># 初始化 Ray（自动检测集群资源）</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># 定义处理函数</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">filter_and_compute</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">mask</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">100</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">filtered</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">filtered</span><span class="p">[</span><span class="s2">&quot;text_length&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">filtered</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="k">return</span> <span class="n">filtered</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="c1"># 读取 → 处理 → 保存（流水线执行）</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="n">ds</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;s3://my-bucket/raw_data/&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="n">ds_processed</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">map_batches</span><span class="p">(</span><span class="n">filter_and_compute</span><span class="p">,</span> <span class="n">batch_format</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="n">ds_processed</span><span class="o">.</span><span class="n">write_parquet</span><span class="p">(</span><span class="s2">&quot;s3://my-bucket/processed_data/&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>可以看到，Spark 需要显式配置 Executor 内存，使用声明式 DataFrame API；而 Ray 自动发现资源，使用函数式 <code>map_batches</code> 接口。Spark 中的自定义逻辑需要定义 UDF，存在序列化开销；Ray 中直接使用普通 Python 函数，更加自然。</p>
+<p><img alt="图2-4：计算框架选型决策树" src="../../images/chapter1/%E5%9B%BE2_4_%E8%AE%A1%E7%AE%97%E6%A1%86%E6%9E%B6%E9%80%89%E5%9E%8B%E5%86%B3%E7%AD%96%E6%A0%91.png" /></p>
+<p><em>图2-4：计算框架选型决策树 —— Spark适合SQL/ETL场景，Ray适合GPU/ML场景</em></p>
+<p>在实际决策时，可以按照以下逻辑进行：如果数据处理需要使用 GPU（如调用 BERT 模型进行质量评分），Ray Data 是更自然的选择。如果有大量 SQL 和 BI 查询需求，Spark 的 SQL 生态更为成熟。如果已有大量 Spark 基础设施和代码资产，需要评估迁移成本——成本高则保留 Spark，成本低可考虑逐步引入 Ray。如果是新项目，团队背景是决定性因素：传统大数据团队选 Spark 更容易上手，AI/ML 团队选 Ray 更加顺畅。</p>
+<p>值得一提的是，在实际大型项目中，Spark 和 Ray 往往共存而非互斥。一种常见的混合策略是：Spark 负责与数据湖/数据仓库的交互，包括读写 Iceberg/Hive 表、执行 SQL 分析等 ETL 任务；Ray Data 负责 ML 密集型处理，如调用大模型进行推理、使用 GPU 进行批量处理。两者通过共享的对象存储（S3 上的 Parquet 文件）进行数据交换，各司其职，相得益彰。</p>
+<hr />
+<h2 id="2_2-io">2_2 数据格式与 I/O 优化<a class="headerlink" href="#2_2-io" title="Permanent link">&para;</a></h2>
+<p>选对了存储和计算，接下来要选择数据的序列化格式。格式选择看似是一个技术细节，实际上直接影响存储成本、读取速度和工具兼容性。不同格式的压缩率差异可达十倍之多，列式与行式格式的查询性能差异同样巨大，而且并非所有框架都支持所有格式。</p>
+<h3 id="2_21">2_2.1 主流数据格式对比<a class="headerlink" href="#2_21" title="Permanent link">&para;</a></h3>
+<p><strong>Parquet</strong> 是目前大规模结构化数据的事实标准。它采用列式存储，相同列的数据物理上连续存放，这带来两个显著优势：一是利于压缩，相同类型的数据聚集在一起可以获得更高的压缩率；二是利于向量化读取，查询特定列时无需扫描整个文件。Parquet 文件是自描述的，Schema 嵌入在文件中，无需外部元数据定义。它还支持嵌套类型，可以存储类似 JSON 的复杂结构，并且天然支持目录分区。Parquet 是预训练语料存储的首选格式，特别是需要按列过滤的分析查询场景，与 Spark、DuckDB、Pandas 等工具都能良好配合。</p>
+<p><strong>JSONL</strong>（JSON Lines）是另一种常见格式，每行是一个独立的 JSON 对象。它的最大优势是人类可读——可以用 <code>head</code>、<code>cat</code> 等命令直接查看内容。同时它支持流式处理，可以逐行读取而无需加载整个文件到内存。Schema 非常灵活，每行可以有不同的字段结构。JSONL 特别适合 SFT 指令数据，因为这类数据需要频繁人工查看和编辑。它也常用于数据交换和小规模数据集（10GB 以下）。然而，JSONL 的劣势也很明显：无压缩时体积是 Parquet 的三到五倍，读取速度较慢（需要解析每一行的 JSON 字符串）。</p>
+<p><strong>WebDataset</strong> 是 NVIDIA 主导开发的格式，专为图文、视频等多模态数据设计。它的核心思想是将相关文件（如一张图片和对应的描述文本）打包成 TAR 归档。这种设计支持流式读取，无需解压即可顺序读取内容；同时对分布式处理非常友好，每个 TAR 是独立的数据分片。WebDataset 是 LAION 风格图文对数据集和视频数据集的最佳选择，适用于任何需要多文件关联的多模态数据。</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>Parquet</th>
+<th>JSONL</th>
+<th>WebDataset</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>存储效率</strong></td>
+<td>高（列式压缩）</td>
+<td>低（文本冗余大）</td>
+<td>中（无压缩但紧凑）</td>
+</tr>
+<tr>
+<td><strong>读取速度</strong></td>
+<td>快（向量化）</td>
+<td>慢（逐行解析）</td>
+<td>中（顺序读取）</td>
+</tr>
+<tr>
+<td><strong>人类可读</strong></td>
+<td>否</td>
+<td>是</td>
+<td>否</td>
+</tr>
+<tr>
+<td><strong>多模态支持</strong></td>
+<td>弱（需编码）</td>
+<td>弱</td>
+<td>强（原生支持）</td>
+</tr>
+<tr>
+<td><strong>典型用例</strong></td>
+<td>预训练文本语料</td>
+<td>SFT 指令数据</td>
+<td>图文对、视频数据</td>
+</tr>
+</tbody>
+</table>
+<h3 id="2_22">2_2.2 压缩算法选型<a class="headerlink" href="#2_22" title="Permanent link">&para;</a></h3>
+<p>无论选择何种格式，压缩算法都会显著影响存储成本和读取速度。正确的压缩策略需要在空间效率和时间效率之间找到平衡。</p>
+<p>Snappy 是最常用的默认选择。它的压缩率中等，但压缩和解压速度都很快，适合读写均衡的场景。LZ4 追求极致的读取速度，解压性能甚至比 Snappy 更快，压缩率略低，适合对读取延迟敏感的场景。Zstandard（ZSTD）提供最高的压缩率，尤其是高级别（如 level 19）时，但压缩速度较慢，适合存储成本敏感的归档场景。Gzip 是兼容性最好的选择，几乎所有工具都支持，适合需要与外部系统交换数据的场景。</p>
+<table>
+<thead>
+<tr>
+<th>算法</th>
+<th>压缩率</th>
+<th>压缩速度</th>
+<th>解压速度</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Snappy</strong></td>
+<td>中等</td>
+<td>快</td>
+<td>快</td>
+<td>默认选择，读写均衡</td>
+</tr>
+<tr>
+<td><strong>LZ4</strong></td>
+<td>较低</td>
+<td>极快</td>
+<td>极快</td>
+<td>极致读取速度</td>
+</tr>
+<tr>
+<td><strong>ZSTD</strong></td>
+<td>高</td>
+<td>中等</td>
+<td>快</td>
+<td>存储成本敏感</td>
+</tr>
+<tr>
+<td><strong>Gzip</strong></td>
+<td>高</td>
+<td>慢</td>
+<td>中等</td>
+<td>兼容性要求高</td>
+</tr>
+</tbody>
+</table>
+<p>在实践中，可以采用分层策略：冷数据（归档存储，长期不读取）使用 ZSTD level 19 以获得最大压缩率；热数据（频繁读取处理）使用 Snappy 或 LZ4 以减少解压开销；网络传输场景使用 ZSTD level 3，在压缩率和速度之间取得平衡。</p>
+<h3 id="2_23-io">2_2.3 I/O 优化实战技巧<a class="headerlink" href="#2_23-io" title="Permanent link">&para;</a></h3>
+<p>在大规模数据处理中，I/O 往往是性能瓶颈。以下三个技巧可以显著提升 I/O 效率。</p>
+<p><strong>合理设置文件大小</strong>是第一个关键点。常见的错误是生成大量小文件——例如 10 万个 1MB 的文件。这会导致元数据开销巨大，S3 的 ListObjects 操作变得极慢。正确的做法是将数据合并成少量大文件，每个 Parquet 文件的大小应在 128MB 到 1GB 之间。太小会导致元数据膨胀和并行度不足，太大会影响任务的负载均衡。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># 错误：生成大量小文件</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">df</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">parquet</span><span class="p">(</span><span class="s2">&quot;s3://bucket/data/&quot;</span><span class="p">,</span> <span class="n">maxRecordsPerFile</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># 正确：生成少量大文件（推荐 128MB - 1GB）</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="n">df</span><span class="o">.</span><span class="n">coalesce</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">parquet</span><span class="p">(</span><span class="s2">&quot;s3://bucket/data/&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>分区裁剪（Partition Pruning）</strong>是第二个重要技巧。通过在写入时按特定列进行分区，读取时可以只扫描需要的分区，避免全表扫描。分区列应选择低基数（Cardinality）的列，如日期、语言、数据来源；应避免高基数列（如用户 ID），否则会产生海量小目录。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># 写入时按日期分区</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">df</span><span class="o">.</span><span class="n">write</span><span class="o">.</span><span class="n">partitionBy</span><span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">parquet</span><span class="p">(</span><span class="s2">&quot;s3://bucket/data/&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># 读取时只扫描需要的分区</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">parquet</span><span class="p">(</span><span class="s2">&quot;s3://bucket/data/date=2024-01-01/&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>列裁剪（Column Pruning）</strong>是第三个技巧。列式存储的最大优势就是只读取需要的列。确保在查询语句中尽早进行列选择，避免先读取全部列再过滤。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># 错误：读取全部列</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">parquet</span><span class="p">(</span><span class="s2">&quot;s3://bucket/data/&quot;</span><span class="p">)</span>  <span class="c1"># 如果有 100 列，全部加载</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># 正确：只读取需要的列</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">df</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">parquet</span><span class="p">(</span><span class="s2">&quot;s3://bucket/data/&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;length&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><img alt="图2-5：I/O优化效果对比" src="../../images/chapter1/%E5%9B%BE2_5_IO%E4%BC%98%E5%8C%96%E6%95%88%E6%9E%9C%E5%AF%B9%E6%AF%94.png" /></p>
+<p><em>图2-5：I/O优化效果对比 —— 分区裁剪+列裁剪可减少91%查询时间和92%数据扫描量</em></p>
+<p>综合使用这三个技巧，可以将查询时间从 55 秒降低到 5 秒，数据扫描量从 100GB 降低到 8GB，效果非常显著。</p>
+<hr />
+<h2 id="2_3-dataops">2_3 数据版本控制 (DataOps)<a class="headerlink" href="#2_3-dataops" title="Permanent link">&para;</a></h2>
+<p>代码有 Git，机器学习模型有 MLflow，那么 TB 级数据集如何进行版本控制？这是 LLM 数据工程中经常被忽视但极其重要的问题。</p>
+<h3 id="2_31">2_3.1 为什么数据需要版本控制？<a class="headerlink" href="#2_31" title="Permanent link">&para;</a></h3>
+<p>考虑这样一个场景：六个月前训练的模型效果特别好，老板要求复现。你翻遍服务器，发现当时的训练数据已被清理——"谁让你删的？""它占了 10TB 啊！"数据处理脚本倒是还在，但依赖的上游数据也变了。重新跑一遍处理流程，发现结果和之前不一样。结论：无法复现。</p>
+<p>这个场景在实际工作中屡见不鲜。数据版本控制正是为了解决这类问题而存在。它的核心价值体现在四个方面：可复现性——任意时刻可以精确还原当时的数据状态；可追溯性——追踪数据从原始输入到最终输出的完整链路；协作安全——多人同时修改数据不会产生冲突；回滚能力——发现数据问题时可以快速回到之前的版本。</p>
+<h3 id="2_32-dvc-vs-lakefs">2_3.2 工具选型：DVC vs LakeFS<a class="headerlink" href="#2_32-dvc-vs-lakefs" title="Permanent link">&para;</a></h3>
+<p>目前最主流的两个数据版本控制工具是 DVC 和 LakeFS，它们的设计哲学截然不同。</p>
+<p><strong>DVC（Data Version Control）</strong>的设计哲学是"Git for Data"——让数据版本控制的体验尽可能接近 Git。其工作原理是：数据文件本身存储在远程存储（S3/GCS），Git 仓库只保存数据的元数据文件（<code>.dvc</code> 文件），通过 <code>dvc push/pull</code> 命令同步实际数据。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># 初始化 DVC</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>dvc<span class="w"> </span>init
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># 将数据集纳入版本控制</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>dvc<span class="w"> </span>add<span class="w"> </span>data/training_corpus.parquet
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># 会生成 data/training_corpus.parquet.dvc 和 .gitignore</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="c1"># 提交到 Git</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>git<span class="w"> </span>add<span class="w"> </span>data/training_corpus.parquet.dvc<span class="w"> </span>.gitignore
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add training corpus v1&quot;</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="c1"># 推送数据到远程存储</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>dvc<span class="w"> </span>push
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="c1"># 切换到历史版本</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>git<span class="w"> </span>checkout<span class="w"> </span>v1_0
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>dvc<span class="w"> </span>checkout<span class="w">  </span><span class="c1"># 同步对应版本的数据</span>
+</code></pre></div>
+<p>DVC 的优势在于与现有 Git 工作流无缝集成，学习曲线平缓，支持 ML 流水线定义（通过 <code>dvc.yaml</code>），适合文件级别的版本控制场景。其劣势是每个数据集需要单独的 <code>.dvc</code> 文件管理，不支持细粒度的"表级"操作（如回滚某个分区）。</p>
+<p><strong>LakeFS</strong> 的设计哲学是"Git for Data Lake"——在对象存储之上提供 Git 风格的分支和提交。其工作原理是：LakeFS 作为对象存储的代理层，所有读写请求通过 LakeFS 的 S3 网关，系统支持分支（Branch）、提交（Commit）、合并（Merge）等 Git 风格的操作。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># 创建开发分支</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>lakectl<span class="w"> </span>branch<span class="w"> </span>create<span class="w"> </span>lakefs://repo/dev<span class="w"> </span>--source<span class="w"> </span>lakefs://repo/main
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># 在开发分支上修改数据（通过 S3 协议）</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>aws<span class="w"> </span>s3<span class="w"> </span>cp<span class="w"> </span>new_data.parquet<span class="w"> </span>s3://lakefs-repo/dev/data/
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># 提交更改</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>lakectl<span class="w"> </span>commit<span class="w"> </span>lakefs://repo/dev<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;Add new training data&quot;</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="c1"># 验证通过后合并到主分支</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>lakectl<span class="w"> </span>merge<span class="w"> </span>lakefs://repo/dev<span class="w"> </span>lakefs://repo/main
+</code></pre></div>
+<p>LakeFS 的核心优势是零拷贝分支——创建分支不复制数据，只记录元数据，这对于 TB 级数据湖来说至关重要。它完全 S3 兼容，现有工具（Spark/Ray）无需修改即可使用。其劣势是需要部署额外的服务（LakeFS Server），学习曲线比 DVC 略陡。</p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>DVC</th>
+<th>LakeFS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>设计理念</strong></td>
+<td>Git 的数据扩展</td>
+<td>对象存储的版本层</td>
+</tr>
+<tr>
+<td><strong>粒度</strong></td>
+<td>文件级</td>
+<td>对象级（更细）</td>
+</tr>
+<tr>
+<td><strong>分支开销</strong></td>
+<td>需复制 .dvc 文件</td>
+<td>零拷贝</td>
+</tr>
+<tr>
+<td><strong>S3 兼容</strong></td>
+<td>需要 dvc 命令</td>
+<td>原生 S3 API</td>
+</tr>
+<tr>
+<td><strong>部署复杂度</strong></td>
+<td>低（CLI 工具）</td>
+<td>中（需要服务端）</td>
+</tr>
+<tr>
+<td><strong>适合场景</strong></td>
+<td>ML 实验管理、少量数据</td>
+<td>数据湖管理、大规模数据</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="图2-6：DVC vs LakeFS架构对比" src="../../images/chapter1/%E5%9B%BE2_6_DVC%E4%B8%8ELakeFS%E6%9E%B6%E6%9E%84%E5%AF%B9%E6%AF%94.png" /></p>
+<p><em>图2-6：DVC vs LakeFS架构对比 —— DVC基于Git的文件级版本控制，LakeFS提供零拷贝分支的对象级版本控制</em></p>
+<p>选型建议非常明确：如果数据量在 1TB 以下，团队熟悉 Git 工作流，主要用于 ML 实验管理，选择 DVC；如果数据量在 TB 级以上，需要数据湖级别的版本控制，有多个团队并行操作，选择 LakeFS。</p>
+<h3 id="2_33-data-lineage">2_3.3 数据血缘追踪 (Data Lineage)<a class="headerlink" href="#2_33-data-lineage" title="Permanent link">&para;</a></h3>
+<p>版本控制解决了"数据是什么"的问题，血缘追踪则解决了"数据从哪来"的问题。血缘追踪记录的信息包括：这份数据是由哪些上游数据处理得来的？使用了什么处理脚本和参数？何时、由谁执行的处理？</p>
+<p>实现血缘追踪有多种方案。如果使用 Spark，可以通过 OpenLineage 集成获得自动化的血缘追踪。如果使用 Airflow 等编排工具，Marquez 是一个很好的选择。对于企业级数据治理需求，DataHub 和 Apache Atlas 提供了更完善的功能。对于简单场景，手动埋点生成元数据文件也是一种轻量级的解决方案：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;v2_0&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="s2">&quot;created_at&quot;</span><span class="p">:</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="s2">&quot;created_by&quot;</span><span class="p">:</span> <span class="s2">&quot;data-pipeline-v3_2&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span class="s2">&quot;inputs&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>        <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;s3://bucket/raw/crawl_2024_01.parquet&quot;</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;abc123&quot;</span><span class="p">},</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>        <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;s3://bucket/raw/crawl_2024_02.parquet&quot;</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;def456&quot;</span><span class="p">}</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span class="p">],</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span class="s2">&quot;processing&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>        <span class="s2">&quot;script&quot;</span><span class="p">:</span> <span class="s2">&quot;cleaning_pipeline.py&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>        <span class="s2">&quot;git_commit&quot;</span><span class="p">:</span> <span class="s2">&quot;789xyz&quot;</span><span class="p">,</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>        <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;min_length&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;dedup_threshold&quot;</span><span class="p">:</span> <span class="mi">0_9</span><span class="p">}</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>    <span class="p">},</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>    <span class="s2">&quot;outputs&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>        <span class="p">{</span><span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;s3://bucket/processed/clean_2024_q1.parquet&quot;</span><span class="p">,</span> <span class="s2">&quot;records&quot;</span><span class="p">:</span> <span class="mi">1000000</span><span class="p">}</span>
+<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>    <span class="p">]</span>
+<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="p">}</span>
+<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>
+<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;clean_2024_q1.metadata.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="2_4">2_4 常见错误与避坑指南<a class="headerlink" href="#2_4" title="Permanent link">&para;</a></h2>
+<p>在基础设施选型过程中，即使是经验丰富的工程师也容易犯一些典型错误。这里总结三个最常见的问题，希望读者能够引以为戒。</p>
+<p><strong>第一个常见错误是过早优化、过度工程。</strong> 有些团队规模只有五人，数据量仅 500GB，却搭建了 Spark 集群 + Iceberg + Airflow + LakeFS 的"全栈"基础设施。结果是 80% 的时间花在维护基础设施上，只有 20% 的时间用于实际数据处理。正确的做法是从简单开始，按需演进。500GB 的数据量，单机 + Parquet + DVC 完全够用，等数据量增长到 10TB 时再考虑分布式方案也不迟。</p>
+<p><strong>第二个常见错误是盲目追新、忽视生态。</strong> 有些团队看了几篇博客，决定抛弃 Spark 全面转向 Ray，结果发现公司的 Hive 表、Iceberg 表全部无法直接读取。最终需要额外编写大量数据转换脚本，增加了数据一致性风险。正确的做法是在做技术选型前，充分评估现有数据资产和上下游依赖。技术选型不是单点决策，而是系统工程，需要考虑整体生态的兼容性。</p>
+<p><strong>第三个常见错误是存储成本优化过激。</strong> 有些团队为了节省存储费用，把所有数据压缩到 ZSTD level 22，并存入 S3 Glacier Deep Archive。结果每次需要读取数据，要等 12 小时解冻，解压又要 4 小时，模型训练一次要排期一周。正确的做法是区分冷热数据。活跃处理的数据放在 S3 Standard + Snappy 压缩；六个月以上不使用的归档数据再放入 Glacier。存储成本和访问效率需要找到平衡点。</p>
+<hr />
+<h2 id="2_5">2_5 本章小结<a class="headerlink" href="#2_5" title="Permanent link">&para;</a></h2>
+<p>本章系统介绍了 LLM 数据工程的基础设施选型，涵盖存储、计算、格式和版本控制四个核心维度。</p>
+<p>在存储选型方面，对象存储（S3/MinIO）是现代数据栈的基础设施，数据湖格式（Iceberg/Hudi/Delta）解决了 ACID 事务、时间旅行等问题。对于 LLM 场景，推荐组合是 S3 + Iceberg，因为 Iceberg 的引擎中立性最好。</p>
+<p>在计算选型方面，Spark 以其成熟稳定和强大的 SQL 生态著称，适合传统大数据团队；Ray Data 是 Python 原生的 AI 友好框架，适合 ML/AI 团队。两者并不互斥，可以混用：Spark 负责 ETL，Ray 负责 ML 处理。</p>
+<p>在数据格式方面，Parquet 是结构化数据的默认选择，JSONL 适合需要人工查看的小规模数据，WebDataset 是多模态数据的最佳格式。压缩算法和 I/O 优化技巧可以显著影响性能和成本。</p>
+<p>在版本控制方面，DVC 轻量级且与 Git 紧密集成，适合 ML 实验；LakeFS 提供数据湖级别的版本控制，适合大规模生产环境。</p>
+<p>贯穿始终的核心原则是：从简单开始，按需演进，避免过度工程。技术选型应该服务于业务目标，而非为了追求技术先进性。</p>
+<p><img alt="图2-7：基础设施选型速查表" src="../../images/chapter1/%E5%9B%BE2_7_%E5%9F%BA%E7%A1%80%E8%AE%BE%E6%96%BD%E9%80%89%E5%9E%8B%E9%80%9F%E6%9F%A5%E8%A1%A8.png" /></p>
+<p><em>图2-7：数据基础设施选型速查表 —— 存储、表格式、计算、版本控制四象限决策指南</em></p>
+<hr />
+<h2 id="_3">延伸阅读<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>对于希望深入了解本章内容的读者，以下资源值得参考：</p>
+<p>Ray Data 官方文档（docs.ray.io）提供了 Ray Data 的最佳实践和详细 API 说明。Apache Iceberg 官方文档（iceberg.apache.org）包含表格式的详细规范和各引擎集成指南。DVC 官方教程（dvc.org/doc）是快速入门的好起点。LakeFS 官方文档（docs.lakefs.io）详细介绍了架构设计和部署方案。</p>
+<p>Databricks 发布的数据湖选型白皮书对 Delta、Iceberg、Hudi 三种格式进行了深度对比分析。Uber 发表的"Scaling MLOps at Uber"一文介绍了如何在 PB 级规模管理 ML 数据。这些资料可以帮助读者建立更全面的技术视野。</p>
+<hr />
+<h2 id="_4">下一章预告<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>在下一章《数据获取与采集》中，我们将正式进入预训练数据的处理流程。你将学习如何获取和解析 Common Crawl、The Pile 等开源数据集，如何使用 Trafilatura 构建高性能网页解析器，以及从 GitHub、ArXiv 抓取代码和论文的特种策略。</p>
+<p>带着这个问题进入下一章：Common Crawl 每月新增 3-5PB 数据，你如何从中高效提取需要的内容？</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../1_1_data_change/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 第1章：大模型时代的数据变革">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                第1章：大模型时代的数据变革
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../chapter2/2_1_data_acquisition/" class="md-footer__link md-footer__link--next" aria-label="下一页: 第3章：数据获取与采集">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                第3章：数据获取与采集
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

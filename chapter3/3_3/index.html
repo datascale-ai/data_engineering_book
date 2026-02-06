@@ -1,0 +1,2084 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/chapter3/3_3/">
+      
+      
+        <link rel="prev" href="../3_2/">
+      
+      
+        <link rel="next" href="../../chapter4/4_1/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>第8章：视频与音频数据 - 大模型数据工程：架构、算法及项目实战</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#8" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-header__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大模型数据工程：架构、算法及项目实战
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第8章：视频与音频数据
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="切换至夜间模式"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="切换至夜间模式" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="切换至日间模式"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="切换至日间模式" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="大模型数据工程：架构、算法及项目实战" class="md-nav__button md-logo" aria-label="大模型数据工程：架构、算法及项目实战" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大模型数据工程：架构、算法及项目实战
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    目录
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一部分：基础设施与核心理念
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第一部分：基础设施与核心理念
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter1/1_1_data_change/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第1章：大模型时代的数据变革
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter1/1_2_data_infra/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第2章：数据基础设施选型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第二部分：文本预训练数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第二部分：文本预训练数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter2/2_1_data_acquisition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第3章：数据获取与采集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter2/2_2_cleaning_denoising/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第4章：清洗与去噪
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter2/2_3_tokenization_serialization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第5章：分词与序列化
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第三部分：多模态数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第三部分：多模态数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../3_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第6章：图文对数据处理
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../3_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第7章：数据重描述
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第8章：视频与音频数据
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第8章：视频与音频数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第8章：视频与音频数据处理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="第8章：视频与音频数据处理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章摘要
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_1-scene-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_1 视频处理流水线：场景切分 (Scene Detection)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8_1 视频处理流水线：场景切分 (Scene Detection)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#8_11-gop-i" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_1.1 视频结构的微观视角：GOP 与 I 帧
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_1.2 算法选型与策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_1.3 核心代码：场景切分与无损分割
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_2-tokenization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_2 视频 Tokenization：从像素海洋到离散岛屿
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8_2 视频 Tokenization：从像素海洋到离散岛屿">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#8_21-vq-vae" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_2.1 传统方案的痛点：VQ-VAE 与“死码”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_22-sota-magvit-v2-lfq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_2.2 SOTA 方案：MagViT-v2 与 LFQ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_2.3 架构选型对比表
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_3-whisperx-forced-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_3 音频对齐：WhisperX 与强制对齐 (Forced Alignment)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8_3 音频对齐：WhisperX 与强制对齐 (Forced Alignment)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#8_31-forced-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_3.1 为什么需要 Forced Alignment？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_32-whisperx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_3.2 工程实现：WhisperX 全流程流水线
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_3.3 生产环境避坑指南
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第四部分：对齐与合成数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第四部分：对齐与合成数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第9章：指令微调数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第10章：合成数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter4/4_3/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第11章：人类偏好数据
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第五部分：应用级数据工程
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第五部分：应用级数据工程
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter5/5_1_rag_pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第12章：RAG数据流水线
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter5/5_2_mm_rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第13章：多模态RAG
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第六部分：实战项目集
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    第六部分：实战项目集
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_1_mini_c4/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目一：构建Mini-C4预训练集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_2_legal_sft/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目二：垂直领域专家SFT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_3_llava_instruct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目三：构建LLaVA多模态指令集
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_4_synthetic_textbook/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目四：合成数学代码教科书
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../chapter6/6_5_mm_rag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目五：多模态RAG企业财报助手
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第8章：视频与音频数据处理
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="第8章：视频与音频数据处理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        本章摘要
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_1-scene-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_1 视频处理流水线：场景切分 (Scene Detection)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8_1 视频处理流水线：场景切分 (Scene Detection)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#8_11-gop-i" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_1.1 视频结构的微观视角：GOP 与 I 帧
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_1.2 算法选型与策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_1.3 核心代码：场景切分与无损分割
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_2-tokenization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_2 视频 Tokenization：从像素海洋到离散岛屿
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8_2 视频 Tokenization：从像素海洋到离散岛屿">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#8_21-vq-vae" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_2.1 传统方案的痛点：VQ-VAE 与“死码”
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_22-sota-magvit-v2-lfq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_2.2 SOTA 方案：MagViT-v2 与 LFQ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_2.3 架构选型对比表
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_3-whisperx-forced-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_3 音频对齐：WhisperX 与强制对齐 (Forced Alignment)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8_3 音频对齐：WhisperX 与强制对齐 (Forced Alignment)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#8_31-forced-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_3.1 为什么需要 Forced Alignment？
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_32-whisperx" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_3.2 工程实现：WhisperX 全流程流水线
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8_33" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8_3.3 生产环境避坑指南
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>第8章：视频与音频数据</h1>
+
+<h2 id="8">第8章：视频与音频数据处理<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
+<h3 id="_1">本章摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
+<p>视频数据是多模态大模型（LMM）训练中数据量最大、处理难度最高、信息密度最复杂的模态，被誉为多模态工程的“深水区”。与静态图像不同，视频引入了<strong>时间维度（Temporal Dimension）</strong>，这意味着数据不仅仅是像素的堆叠，更是因果逻辑、物理规律和运动模式的载体。</p>
+<p>本章将系统拆解如何将连续的、非结构化的视频流转化为模型可理解的离散 Token。我们将从底层的<strong>镜头边界检测（Shot Boundary Detection）</strong>入手，深入解析基于内容的切分算法；进而剖析视频生成的“心脏”——<strong>视频 Tokenizer</strong>，对比 VQ-VAE 与 Google DeepMind 最新 MagViT-v2 的底层原理；最后，我们将演示如何利用 <strong>WhisperX</strong> 实现音视频的字级（Word-level）乃至音素级（Phoneme-level）精准对齐，为模型构建时空同步的监督信号。</p>
+<p><strong>学习目标</strong>：
+* <strong>工程能力</strong>：掌握使用 PySceneDetect 结合 ffmpeg 关键帧元数据进行两级场景切分（Coarse-to-Fine）的高效策略。
+* <strong>理论深度</strong>：深入理解 Video Tokenization 中的“Codebook Collapse”（码本坍塌）问题，以及 MagViT-v2 如何通过 Lookup-Free Quantization (LFQ) 彻底解决这一瓶颈。
+* <strong>数据管线</strong>：实现基于 WhisperX 的 Forced Alignment 流程，解决多说话人、背景噪音声学环境下的字幕精准对齐。
+* <strong>存储优化</strong>：了解海量视频数据的存储分片（Sharding）与高效加载方案。</p>
+<p><strong>场景引入</strong>：</p>
+<blockquote>
+<p>“想象你正在训练一个像 Sora 一样的世界模型。你下载了一部 2 小时的电影《泰坦尼克号》作为训练数据。</p>
+<p>如果你简单粗暴地按每 10 秒一段进行切分，你会遇到严重的‘语义断裂’：一段视频的前 5 秒是甲板上平静的海风，后 5 秒突然跳到了喧闹的餐厅。这种跨越场景的‘硬切’（Hard Cut）会让模型感到困惑：‘人是怎么在 0_1 秒内从室外瞬移到室内的？’这不仅浪费了算力，还让模型学到了错误的物理规律。</p>
+<p>此外，声音的时序精度就是生命。如果你的字幕比画面慢了 2 秒，当画面中 Rose 在张嘴时，对应的 Token 却是 Jack 的台词。模型会错误地将‘Jack的声音特征’关联到‘Rose的面部特征’上。在万亿级 Token 的训练中，这种微小的错位会被放大为严重的幻觉。”</p>
+</blockquote>
+<hr />
+<h3 id="8_1-scene-detection">8_1 视频处理流水线：场景切分 (Scene Detection)<a class="headerlink" href="#8_1-scene-detection" title="Permanent link">&para;</a></h3>
+<p>视频在本质上并非连续的流，而是由一个个独立的“镜头（Shot）”拼接而成的序列。每一个镜头代表了一次摄像机的开启与关闭（或视角的连续移动）。训练视频生成模型（Video Generative Models），必须保证每个训练样本（Training Clip）都在同一个镜头内，确保<strong>时空连续性（Spatio-Temporal Continuity）</strong>。</p>
+<h4 id="8_11-gop-i">8_1.1 视频结构的微观视角：GOP 与 I 帧<a class="headerlink" href="#8_11-gop-i" title="Permanent link">&para;</a></h4>
+<p>在深入切分算法之前，我们需要理解视频编码的基础。</p>
+<ul>
+<li><strong>I-Frame (Intra-coded picture)</strong>：关键帧。它是一张完整的图片，不依赖其他帧即可解码。通常也是场景变换的起点。</li>
+<li><strong>P-Frame (Predicted picture)</strong>：前向预测帧。只存储与前一帧的差异。</li>
+<li><strong>B-Frame (Bi-predictive picture)</strong>：双向预测帧。参考前后帧进行压缩，压缩率最高。</li>
+</ul>
+<p><strong>GOP (Group of Pictures)</strong>：两个 I 帧之间的序列。视频播放器在拖动进度条时，通常会“吸附”到最近的 I 帧，因为解码必须从这里开始。我们的切分策略必须利用这一特性来加速。</p>
+<h4 id="8_12">8_1.2 算法选型与策略<a class="headerlink" href="#8_12" title="Permanent link">&para;</a></h4>
+<p><img alt="图 8-1：视频场景切分的两种策略与HSV直方图差异" src="../../images/chapter3/8_1_%E8%A7%86%E9%A2%91%E5%9C%BA%E6%99%AF%E5%88%87%E5%88%86%E7%9A%84%E4%B8%A4%E7%A7%8D%E7%AD%96%E7%95%A5%E4%B8%8EHSV%E7%9B%B4%E6%96%B9%E5%9B%BE%E5%B7%AE%E5%BC%82.png" />
+<em>图 8-1：视频场景切分的两种策略与HSV直方图差异</em></p>
+<p><strong>PySceneDetect</strong> 是业界标准的开源工具，它提供了多种检测器，核心逻辑基于帧间差异分析：</p>
+<ul>
+<li>
+<p><strong>策略一：Threshold Detector (阈值检测 - 针对硬切)</strong></p>
+<ul>
+<li><strong>原理</strong>：计算相邻两帧在 HSV 色彩空间或 RGB 亮度上的平均差异值（Delta）。当 Delta &gt; <code>threshold</code>（如 30_0）时，判定为切点。</li>
+<li><strong>适用</strong>：绝大多数电影和用户上传视频（UGC）。</li>
+<li><strong>局限</strong>：无法检测渐变。</li>
+</ul>
+</li>
+<li>
+<p><strong>策略二：Adaptive Detector (自适应检测 - 针对渐变/快节奏)</strong></p>
+<ul>
+<li><strong>原理</strong>：不再使用固定阈值，而是维护一个滑动窗口（Sliding Window）。比较“当前帧”与“窗口内平均帧差”的比率。</li>
+<li><strong>适用</strong>：淡入淡出（Fade In/Out）、叠化（Dissolve）或像动作片那样摄像机剧烈运动的场景。</li>
+</ul>
+</li>
+</ul>
+<p><strong>进阶策略：两级级联切分 (Two-Stage Cascade Splitting)</strong>
+直接对 TB 级视频全量解码运行 PySceneDetect 非常慢。我们推荐“先粗后细”的工业级方案：</p>
+<ol>
+<li><strong>Level-1 (Metadata Scan)</strong>：利用 <code>ffprobe</code> 快速扫描视频流元数据，提取所有 <strong>I-Frame</strong> 的时间戳。I-Frame 往往出现在场景切换处（编码器倾向于在剧变处插入 I 帧）。此步骤无需解码画面，速度是播放速度的 100 倍以上。</li>
+<li><strong>Level-2 (Content Analysis)</strong>：仅在 Level-1 识别出的潜在切点前后 ±2 秒范围内，运行 PySceneDetect 的 <code>ContentDetector</code> 进行精确的帧级定位。</li>
+</ol>
+<h4 id="8_13">8_1.3 核心代码：场景切分与无损分割<a class="headerlink" href="#8_13" title="Permanent link">&para;</a></h4>
+<p>以下代码演示了生产环境中的标准切分流程。注意其中的“流拷贝”技巧，这是处理海量视频时避免存储爆炸的关键。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scenedetect</span><span class="w"> </span><span class="kn">import</span> <span class="n">detect</span><span class="p">,</span> <span class="n">ContentDetector</span><span class="p">,</span> <span class="n">split_video_ffmpeg</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># 配置日志</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">process_video_scenes</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">27_0</span><span class="p">):</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="sd">    检测场景并使用 ffmpeg 无损切割视频</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="sd">        video_path: 输入视频路径</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="sd">        output_dir: 输出目录</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="sd">        threshold: 切分阈值 (经验值: 27_0 适合大部分 1080p 视频)</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_dir</span><span class="p">):</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting scene detection for: </span><span class="si">{</span><span class="n">video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="c1"># 1. 场景检测</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="c1"># threshold=27_0: 基于 HSV 空间的直方图差异阈值</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    <span class="c1"># min_scene_len=15: 忽略小于 0_5秒 (30fps) 的片段。</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    <span class="c1"># 极短的片段通常是闪光灯、故障或者是切分错误的噪音，不适合作为训练数据。</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    <span class="n">scene_list</span> <span class="o">=</span> <span class="n">detect</span><span class="p">(</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>        <span class="n">video_path</span><span class="p">,</span> 
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>        <span class="n">ContentDetector</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span> <span class="n">min_scene_len</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>    <span class="p">)</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>    <span class="c1"># 2. 统计与过滤</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>    <span class="c1"># 在此处可以添加逻辑：比如合并过短的相邻场景，或者丢弃小于 3 秒的场景</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>    <span class="n">valid_scenes</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>    <span class="k">for</span> <span class="n">scene</span> <span class="ow">in</span> <span class="n">scene_list</span><span class="p">:</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">scene</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>        <span class="n">duration</span> <span class="o">=</span> <span class="p">(</span><span class="n">end</span><span class="o">.</span><span class="n">get_frames</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="o">.</span><span class="n">get_frames</span><span class="p">())</span> <span class="o">/</span> <span class="n">start</span><span class="o">.</span><span class="n">get_framerate</span><span class="p">()</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>        <span class="k">if</span> <span class="n">duration</span> <span class="o">&gt;=</span> <span class="mi">3_0</span><span class="p">:</span> <span class="c1"># 只保留大于3秒的片段用于训练</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>            <span class="n">valid_scenes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scene</span><span class="p">)</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">scene_list</span><span class="p">)</span><span class="si">}</span><span class="s2"> scenes, kept </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">valid_scenes</span><span class="p">)</span><span class="si">}</span><span class="s2"> valid scenes.&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    <span class="c1"># 3. 分割视频 (Stream Copy)</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>    <span class="c1"># 关键点：arg_override=&#39;-c:v copy -c:a copy&#39;</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    <span class="c1"># 这指示 ffmpeg 直接拷贝二进制流，不进行 [解码 -&gt; 像素 -&gt; 编码] 的过程。</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    <span class="c1"># 优点 1：速度极快（受限于磁盘 I/O，而非 CPU）。</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    <span class="c1"># 优点 2：画质 100% 无损，没有任何重编码带来的伪影。</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    <span class="n">split_video_ffmpeg</span><span class="p">(</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>        <span class="n">video_path</span><span class="p">,</span> 
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>        <span class="n">valid_scenes</span><span class="p">,</span> 
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>        <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span> 
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>        <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>        <span class="n">arg_override</span><span class="o">=</span><span class="s1">&#39;-c:v copy -c:a copy&#39;</span> 
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>    <span class="p">)</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a><span class="c1"># 避坑指南：数据膨胀灾难</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a><span class="c1"># 千万不要把切分后的视频解码成图片序列（png/jpg）或 numpy array 长期存盘！</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a><span class="c1"># 算一笔账：</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a><span class="c1"># 1小时 1080p H.264 视频 ≈ 2GB</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a><span class="c1"># 解码后：3600秒 * 30帧 * 1920 * 1080 * 3字节 ≈ 670 GB</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a><span class="c1"># 膨胀系数 &gt; 300倍。</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a><span class="c1"># 始终存储压缩格式 (mp4/mkv)，只在训练 DataLoader 的 __getitem__ 中利用 GPU (NVDEC) 实时解码。</span>
+</code></pre></div>
+<hr />
+<h3 id="8_2-tokenization">8_2 视频 Tokenization：从像素海洋到离散岛屿<a class="headerlink" href="#8_2-tokenization" title="Permanent link">&para;</a></h3>
+<p>对于 Sora、Gen-2 这样基于 Transformer 的扩散模型（DiT），直接在像素空间（Pixel Space）建模是不可行的。一个 4 秒的 1080p 视频包含约 <span class="arithmatex">\(3 \times 10^8\)</span> 个像素点，计算注意力矩阵（Attention Matrix）会导致显存瞬间溢出。</p>
+<p>因此，视频必须先被“压缩”成潜在空间（Latent Space）的离散 Token。这个过程由 <strong>Video Tokenizer</strong> 完成。</p>
+<h4 id="8_21-vq-vae">8_2.1 传统方案的痛点：VQ-VAE 与“死码”<a class="headerlink" href="#8_21-vq-vae" title="Permanent link">&para;</a></h4>
+<p><strong>VQ-VAE (Vector Quantized Variational AutoEncoder)</strong> 是早期视频生成模型（如 VideoGPT）的基石。</p>
+<ul>
+<li>
+<p><strong>流程</strong>：</p>
+<ol>
+<li><strong>Encoder</strong>：将视频切分为 3D Patch（例如 <span class="arithmatex">\(16 \times 16 \times 16\)</span> 的时空块），压缩成低维向量 <span class="arithmatex">\(z_e(x)\)</span>。</li>
+<li><strong>Quantization (量化)</strong>：维护一个 Codebook（码本），包含 <span class="arithmatex">\(K\)</span> 个原型向量（Embedding）。对于每个 <span class="arithmatex">\(z_e(x)\)</span>，在 Codebook 中找到欧氏距离最近的向量 <span class="arithmatex">\(e_k\)</span> 来替换它。</li>
+<li><strong>Decoder</strong>：利用 <span class="arithmatex">\(e_k\)</span> 重建视频。</li>
+</ol>
+</li>
+<li>
+<p><strong>致命缺陷：Codebook Collapse (码本坍塌)</strong>
+    在训练初期，只有少数几个 Code（例如 Code #5 和 Code #100）偶然被选中。由于只有被选中的 Code 才会获得梯度更新，它们会变得越来越“好”，从而更容易被选中。这就形成了“富者愈富”的马太效应。</p>
+<ul>
+<li><strong>后果</strong>：Codebook 中 90% 的向量变成了“死码”（Dead Codes），从未被使用。这导致模型的有效词汇量极低，生成的视频模糊且缺乏细节。</li>
+<li><strong>补救措施</strong>：传统方法需要复杂的 Reset 策略（如 k-means 重置），训练极不稳定。</li>
+</ul>
+</li>
+</ul>
+<h4 id="8_22-sota-magvit-v2-lfq">8_2.2 SOTA 方案：MagViT-v2 与 LFQ<a class="headerlink" href="#8_22-sota-magvit-v2-lfq" title="Permanent link">&para;</a></h4>
+<p>Google DeepMind 在 MagViT-v2 中引入了 <strong>LFQ (Lookup-Free Quantization)</strong>，彻底改变了游戏规则。</p>
+<ul>
+<li>
+<p><strong>核心思想：不查表，直接算。</strong>
+    LFQ 抛弃了“寻找最近邻”的思想，而是直接根据潜在变量（Latent Variable）的<strong>符号（Sign）</strong>生成 Token。</p>
+</li>
+<li>
+<p><strong>数学原理</strong>：
+    假设 Encoder 输出的潜在向量 <span class="arithmatex">\(z \in \mathbb{R}^D\)</span>（例如维度 <span class="arithmatex">\(D=18\)</span>）。
+    LFQ 对每一维进行二值化：
+    $<span class="arithmatex">\(q_i = \begin{cases} 1 &amp; \text{if } z_i &gt; 0 \\ 0 &amp; \text{if } z_i \le 0 \end{cases}\)</span>$</p>
+<p>然后，将这 <span class="arithmatex">\(D\)</span> 个二进制位组合成一个整数索引（Integer Index）：
+$<span class="arithmatex">\(\text{Token ID} = \sum_{i=0}^{D-1} q_i \cdot 2^i\)</span>$</p>
+</li>
+<li>
+<p><strong>为何 LFQ 是颠覆性的？</strong></p>
+<ol>
+<li><strong>无限的有效码本</strong>：如果 <span class="arithmatex">\(D=18\)</span>，则自然形成的码本大小为 <span class="arithmatex">\(2^{18} = 262,144\)</span>。所有这些 Code 都是由 <span class="arithmatex">\(D\)</span> 个独立的维度组合而成，每个维度都始终参与梯度更新。<strong>Codebook 利用率恒定为 100%。</strong></li>
+<li><strong>零计算成本</strong>：没有昂贵的“全码本距离计算”，只有简单的位运算。</li>
+<li><strong>时空压缩</strong>：MagViT-v2 结合了 <strong>3D Causal CNN</strong>，在压缩空间的同时保留了时间因果性（即当前的 Token 不会泄露未来的信息），这对生成模型至关重要。</li>
+</ol>
+</li>
+</ul>
+<h4 id="8_23">8_2.3 架构选型对比表<a class="headerlink" href="#8_23" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">特性</th>
+<th style="text-align: left;">VQ-VAE (TATS/VideoGPT)</th>
+<th style="text-align: left;">MagViT-v2 (LFQ)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>量化机制</strong></td>
+<td style="text-align: left;">Nearest Neighbor Search (查表)</td>
+<td style="text-align: left;">Sign Function (符号函数投影)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>词汇表大小 (Vocab)</strong></td>
+<td style="text-align: left;">通常 1024 - 8192 (受限于显存和坍塌)</td>
+<td style="text-align: left;"><span class="arithmatex">\(2^{18}\)</span> (262k) 甚至更大，轻松扩展</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>码本利用率</strong></td>
+<td style="text-align: left;">低 (容易坍塌，需 EMA 等技巧)</td>
+<td style="text-align: left;"><strong>100% (设计上避免了坍塌)</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>梯度反传</strong></td>
+<td style="text-align: left;">需 Straight-Through Estimator (STE)</td>
+<td style="text-align: left;">改进的 Entropy Penalty + STE</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>生成质量</strong></td>
+<td style="text-align: left;">易模糊，细节纹理丢失</td>
+<td style="text-align: left;">极其清晰，甚至优于原片 (去噪效应)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>推理速度</strong></td>
+<td style="text-align: left;">较慢 (尤其是大码本时)</td>
+<td style="text-align: left;">极快</td>
+</tr>
+<tr>
+<td style="text-align: left;">---</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<p>从 VQ-VAE 到 MagViT-v2 的演进并非简单的参数优化，而是视频离散化技术的一次范式转移（Paradigm Shift）——即从“基于搜索的近似（Search-based Approximation）”向“基于计算的构造（Computation-based Construction）”的跨越。</p>
+<p>首先，在计算复杂度与扩展性方面，传统的 VQ-VAE 存在根本性的瓶颈。其量化过程依赖于最近邻搜索（Nearest Neighbor Search），需要计算特征向量与码本中所有 <span class="arithmatex">\(K\)</span> 个原型的欧氏距离，其时间复杂度为 <span class="arithmatex">\(O(K)\)</span>。这意味着扩大词汇表（Vocabulary Size）以提升表征能力将直接导致推理延迟的线性增长。相比之下，MagViT-v2 引入的 LFQ (Lookup-Free Quantization) 机制摒弃了查表操作，转而利用符号函数（Sign Function）将潜在变量投影为二进制串。这一过程将计算复杂度恒定降维至 <span class="arithmatex">\(O(1)\)</span>，使得模型能够在不牺牲推理速度的前提下，轻松支撑起 <span class="arithmatex">\(2^{18}\)</span> 甚至更大的词汇空间，从而解决了大词汇表与低延迟不可兼得的矛盾。</p>
+<p>其次，在码本利用率与训练稳定性方面，两者表现迥异。VQ-VAE 长期受困于“码本坍塌（Codebook Collapse）”问题，即部分编码向量因初始化或梯度分配不均而从未被激活，导致有效词汇量远小于设计值（通常仅为 1024-8192）。这迫使研究者引入 EMA（指数移动平均）或 k-means 重置等复杂的工程技巧来维持训练。而 MagViT-v2 的 LFQ 机制基于各维度的独立二值化组合，从数学结构上保证了码本空间是被“组合生成”而非“离散查找”的。只要潜在空间的各个维度保持激活，组合出的编码便能自然覆盖整个码本空间，实现了理论上 100% 的码本利用率。</p>
+<p>综上所述，MagViT-v2 通过 LFQ 机制实现了高压缩率、高保真度与低计算成本的统一，彻底解决了传统 VQ-VAE 在细节纹理丢失和时空一致性差的缺陷。对于构建如 Sora 级别的大规模视频生成模型而言，MagViT-v2 及其衍生的 Tokenizer 架构已成为当前工业界的各种首选方案。</p>
+<h3 id="8_3-whisperx-forced-alignment">8_3 音频对齐：WhisperX 与强制对齐 (Forced Alignment)<a class="headerlink" href="#8_3-whisperx-forced-alignment" title="Permanent link">&para;</a></h3>
+<p>视频不仅是视觉数据，声音（Audio）提供了天然的、时间密集的文本描述。利用音频，我们可以让模型学习到“爆炸声对应火光”、“哭声对应流泪”等多模态关联。</p>
+<p>然而，普通的 ASR（如原始 Whisper）只能给出“句子级”的时间戳，误差通常在 1-2 秒。这对于精细的视频训练（如唇形同步 Lip-sync）是完全不够的。我们需要 <strong>WhisperX</strong>。</p>
+<p><img alt="图 8-2：普通 ASR (Segment-level) 与 WhisperX (Word/Phoneme-level) 的精度对比" src="../../images/chapter3/8_2_ASR%E4%B8%8EWhisperX%E7%9A%84%E7%B2%BE%E5%BA%A6%E5%AF%B9%E6%AF%94.png" />
+<em>图 8-2：普通 ASR (Segment-level) 与 WhisperX (Word/Phoneme-level) 的精度对比</em></p>
+<h4 id="8_31-forced-alignment">8_3.1 为什么需要 Forced Alignment？<a class="headerlink" href="#8_31-forced-alignment" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>ASR (OpenAI Whisper)</strong>：<ul>
+<li>输出：<code>"Hello world"</code> -&gt; <code>Timestamp: [0_0s -&gt; 2_0s]</code></li>
+<li>问题：模型只知道这句话落在这两秒内，不知道 "world" 具体在哪一毫秒开始。</li>
+</ul>
+</li>
+<li><strong>Forced Alignment (WhisperX)</strong>：<ul>
+<li>原理：先转录出文本，然后利用一个预训练的声学模型（如 Wav2Vec2），将文本中的<strong>音素（Phonemes）</strong>与音频波形进行强制匹配。</li>
+<li>输出：<ul>
+<li><code>"Hello"</code>: <code>[0_12s -&gt; 0_58s]</code></li>
+<li><code>"world"</code>: <code>[0_85s -&gt; 1_45s]</code></li>
+</ul>
+</li>
+<li><strong>价值</strong>：你可以构建这样的训练对：当视频帧处于 0_85s 时，强制模型关注 "world" 的 Text Embedding。这是多模态精细对齐的基础。</li>
+</ul>
+</li>
+</ul>
+<h4 id="8_32-whisperx">8_3.2 工程实现：WhisperX 全流程流水线<a class="headerlink" href="#8_32-whisperx" title="Permanent link">&para;</a></h4>
+<p>WhisperX 是一个复杂的 Pipeline，结合了 VAD（语音活动检测）、Whisper（转录）、Wav2Vec2（对齐）和 Pyannote（说话人分离）。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">whisperx</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">gc</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">align_audio_transcript</span><span class="p">(</span><span class="n">audio_file</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="sd">    使用 WhisperX 进行转录和字级强制对齐</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="c1"># Step 1: 转录 (Transcription)</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="c1"># 使用 Large-v2 模型保证文本转录的准确性</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="c1"># compute_type=&quot;float16&quot; 能显著加速，但需要 Ampere 架构以上显卡 (A100/A10/3090/4090)</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;1. Loading Whisper model...&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">whisperx</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="s2">&quot;large-v2&quot;</span><span class="p">,</span> 
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="n">device</span><span class="p">,</span> 
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>        <span class="n">compute_type</span><span class="o">=</span><span class="s2">&quot;float16&quot;</span> 
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="p">)</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;2. Transcribing...&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="n">audio</span> <span class="o">=</span> <span class="n">whisperx</span><span class="o">.</span><span class="n">load_audio</span><span class="p">(</span><span class="n">audio_file</span><span class="p">)</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">transcribe</span><span class="p">(</span><span class="n">audio</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>    <span class="c1"># 关键操作：显存管理</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>    <span class="c1"># Whisper 模型巨大，而接下来的 Alignment 模型也是显存大户。</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>    <span class="c1"># 必须显式删除模型并触发垃圾回收，否则极易 OOM (Out of Memory)。</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="k">del</span> <span class="n">model</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>    <span class="c1"># Step 2: 强制对齐 (Forced Alignment)</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>    <span class="c1"># 自动加载对应语言的 Wav2Vec2 模型 (如英语用 wav2vec2-large-960h)</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;3. Aligning...&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>    <span class="n">model_a</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">whisperx</span><span class="o">.</span><span class="n">load_align_model</span><span class="p">(</span>
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>        <span class="n">language_code</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;language&quot;</span><span class="p">],</span> 
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>        <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>    <span class="p">)</span>
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>
+<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>    <span class="c1"># align() 函数执行类似动态规划（Dynamic Programming）的算法</span>
+<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>    <span class="c1"># 寻找文本音素序列与音频波形特征之间的最佳匹配路径</span>
+<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>    <span class="n">aligned_result</span> <span class="o">=</span> <span class="n">whisperx</span><span class="o">.</span><span class="n">align</span><span class="p">(</span>
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;segments&quot;</span><span class="p">],</span> 
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>        <span class="n">model_a</span><span class="p">,</span> 
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>        <span class="n">metadata</span><span class="p">,</span> 
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>        <span class="n">audio</span><span class="p">,</span> 
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>        <span class="n">device</span><span class="p">,</span> 
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>        <span class="n">return_char_alignments</span><span class="o">=</span><span class="kc">False</span> <span class="c1"># 设为 True 可获得字符级对齐（如用于卡拉OK字幕）</span>
+<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a>    <span class="p">)</span>
+<a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a>
+<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>    <span class="c1"># 结果包含 word_segments，其中有每个单词的精确 start/end</span>
+<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>    <span class="c1"># 例如: [{&#39;word&#39;: &#39;Hello&#39;, &#39;start&#39;: 0_1, &#39;end&#39;: 0_5, &#39;score&#39;: 0_98}, ...]</span>
+<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a>    <span class="k">return</span> <span class="n">aligned_result</span>
+<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a>
+<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a><span class="c1"># 进阶提示：</span>
+<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a><span class="c1"># 如果需要区分是谁在说话（Speaker Diarization），可以进一步调用：</span>
+<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a><span class="c1"># diarize_model = whisperx.DiarizationPipeline(use_auth_token=&quot;YOUR_HF_TOKEN&quot;, device=device)</span>
+<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a><span class="c1"># diarize_segments = diarize_model(audio)</span>
+<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a><span class="c1"># whisperx.assign_word_speakers(diarize_segments, aligned_result)</span>
+</code></pre></div>
+<h4 id="8_33">8_3.3 生产环境避坑指南<a class="headerlink" href="#8_33" title="Permanent link">&para;</a></h4>
+<ol>
+<li>
+<p><strong>VAD 误判与背景音乐干扰</strong>：</p>
+<ul>
+<li><strong>问题</strong>：WhisperX 极其依赖 VAD 来切分静音片段。如果视频 BGM（背景音乐）很响，VAD 会认为整段都是人声，或者反之，把人声淹没。</li>
+<li><strong>解决方案</strong>：引入 <strong>Demucs</strong> 或 <strong>Spleeter</strong> 进行源分离（Source Separation）。</li>
+<li><strong>流程</strong>：<code>Raw Audio</code> -&gt; <code>Demucs (Extract Vocal Track)</code> -&gt; <code>WhisperX</code>。仅将提取出的纯人声轨道送入识别，可以大幅提高准确率。</li>
+</ul>
+</li>
+<li>
+<p><strong>多说话人重叠 (Overlapping Speech)</strong>：</p>
+<ul>
+<li><strong>问题</strong>：Whisper 对于多人同时说话（Cocktail Party Problem）处理能力较弱，通常只能转录声音最大的人，或者生成混乱的文本。</li>
+<li><strong>解决方案</strong>：开启 <code>diarization=True</code>。虽然这会增加 30%-50% 的推理时间，但对于电视剧、访谈类视频数据，这是区分“谁在说什么”的唯一方法，避免模型混淆角色身份。</li>
+</ul>
+</li>
+<li>
+<p><strong>幻觉时间戳</strong>：</p>
+<ul>
+<li><strong>问题</strong>：在长时间静音或纯音乐片段，Whisper 有时会产生“幻觉”，重复输出上一句歌词，并给出一个错误的时间戳。</li>
+<li><strong>检查</strong>：在后处理中，检查 <code>word['score']</code>（置信度）。如果连续一串单词的置信度低于 0_4，建议丢弃该片段的对齐信息。</li>
+</ul>
+</li>
+</ol>
+<hr />
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="页脚" >
+        
+          
+          <a href="../3_2/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 第7章：数据重描述">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              <div class="md-ellipsis">
+                第7章：数据重描述
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../chapter4/4_1/" class="md-footer__link md-footer__link--next" aria-label="下一页: 第9章：指令微调数据">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              <div class="md-ellipsis">
+                第9章：指令微调数据
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
