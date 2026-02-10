@@ -152,7 +152,7 @@ response = client.chat.completions.create(
 ### 5. 成本与优化 (Cost & Optimization)
 
 - **资源消耗：**
-  - **索引成本**：ColPali 处理速度较慢（约 0_5s/页），一份 200 页的财报索引需 2-3 分钟。
+  - **索引成本**：ColPali 处理速度较慢（约 0.5s/页），一份 200 页的财报索引需 2-3 分钟。
   - **推理成本**：多模态 Token 消耗巨大。一张 1024x1024 的图片约为 1000-1500 tokens。每次 Top-4 检索意味着 Input Token 至少 5000+。使用 SiliconFlow API 调用 Qwen2_5-VL-72B，单次问答成本约 0.05-0.1 元人民币。
 
 - **优化思路：**

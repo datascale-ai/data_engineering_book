@@ -128,7 +128,7 @@ def predict_lang(text):
 
 # 2. 困惑度过滤 (来自 6_quality_filter.py)
 kenlm_model = kenlm.Model('en.arpa.bin')
-PERPLEXITY_THRESHOLD = -6_0  # 经验阈值：低于此值通常为低质量文本
+PERPLEXITY_THRESHOLD = -6.0  # 经验阈值：低于此值通常为低质量文本
 
 def filter_by_perplexity(text):
     words = text.split()
@@ -159,7 +159,7 @@ def filter_by_perplexity(text):
 **Case 3: 高质量正文 (保留并评分)**
 > *Raw:* "The James Webb Space Telescope has captured a new image of the Pillars of Creation..."
 > *Result:* **[保留]**
-> *KenLM Score:* -4_82 (优于阈值 -6_0)
+> *KenLM Score:* -4.82 (优于阈值 -6.0)
 
 **数据统计：**
 在单次 Crawl 的采样测试中：

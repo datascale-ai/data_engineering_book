@@ -68,11 +68,11 @@ def clean_text_smart(text):
 # 任务权重配置 (实现数据分布控制)
 TASK_POOL = [
     # 任务A: 复杂案情分析 (侧重推理) - 权重 60%
-    ("case_analysis", PROMPT_CASE_ANALYSIS, 0_6),
+    ("case_analysis", PROMPT_CASE_ANALYSIS, 0.6),
     # 任务B: 法律文书起草 (侧重生成) - 权重 20%
-    ("doc_drafting", PROMPT_DOCUMENT_DRAFTING, 0_2),
+    ("doc_drafting", PROMPT_DOCUMENT_DRAFTING, 0.2),
     # 任务C: 法律概念辨析 (侧重知识) - 权重 20%
-    ("concept_explain", PROMPT_CONCEPT_EXPLAIN, 0_2)
+    ("concept_explain", PROMPT_CONCEPT_EXPLAIN, 0.2)
 ]
 
 # 轮盘赌选择逻辑
