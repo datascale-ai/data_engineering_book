@@ -3,6 +3,8 @@
 [![GitHub Pages](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://datascale-ai.github.io/data_engineering_book/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
+**[English](README_en.md) | 中文**
+
 ## 简介
 
 > *"Data is the new oil, but only if you know how to refine it."*
@@ -94,6 +96,7 @@
 
 - Python 3.8+
 - MkDocs Material
+- mkdocs-static-i18n（多语言支持）
 
 ### 安装与预览
 
@@ -103,13 +106,13 @@ git clone https://github.com/datascale-ai/data_engineering_book.git
 cd data_engineering_book
 
 # 安装依赖
-pip install mkdocs-material mkdocs-glightbox pymdown-extensions
+pip install mkdocs-material mkdocs-glightbox pymdown-extensions "mkdocs-static-i18n[material]"
 
 # 本地预览
 mkdocs serve
 ```
 
-访问 http://127.0.0.1:8000 即可预览书籍。
+访问 http://127.0.0.1:8000 即可预览书籍（支持中英文切换）。
 
 ### 构建静态站点
 
@@ -123,22 +126,22 @@ mkdocs build
 
 ```
 data_engineering_book/
-├── docs/                    # 书籍内容
-│   ├── index.md            # 首页/目录
-│   ├── part1/              # 第一部分：基础设施与核心理念
-│   ├── part2/              # 第二部分：文本预训练数据工程
-│   ├── part3/              # 第三部分：多模态数据工程
-│   ├── part4/              # 第四部分：对齐与合成数据工程
-│   ├── part5/              # 第五部分：应用级数据工程
-│   ├── part6/              # 第六部分：实战项目集
-│   ├── images/             # 图片资源
-│   ├── stylesheets/        # 自定义样式
-│   └── javascripts/        # JavaScript (MathJax等)
-├── .github/workflows/      # GitHub Actions 自动部署
-├── mkdocs.yml              # MkDocs 配置文件
-├── 框架图.png               # 全书架构图
-├── LICENSE                 # 开源协议
-└── README.md               # 本文件
+├── docs/
+│   ├── zh/                  # 中文内容
+│   │   ├── index.md         # 中文首页
+│   │   └── part1/ ~ part6/  # 各章节
+│   ├── en/                  # 英文内容
+│   │   ├── index.md         # 英文首页
+│   │   └── part1/ ~ part6/  # 各章节
+│   ├── images/              # 图片资源（中英共享）
+│   ├── stylesheets/         # 自定义样式
+│   └── javascripts/         # JavaScript (MathJax等)
+├── .github/workflows/       # GitHub Actions 自动部署
+├── mkdocs.yml               # MkDocs 配置文件
+├── 框架图.png                # 全书架构图
+├── LICENSE                  # 开源协议
+├── README.md                # 中文说明（本文件）
+└── README_en.md             # English README
 ```
 
 ## 适合读者

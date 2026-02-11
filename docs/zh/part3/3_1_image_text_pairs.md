@@ -1,0 +1,389 @@
+## 第6章：图文对数据处理 (Image-Text Pairs)
+
+### 本章摘要
+
+在构建下一代基础模型（Foundation Models）的征途中，数据工程的重心已从单纯的文本清洗转向了对物理世界多维信号的捕获、对齐与重构。如果说语言模型的数据工程是关于“去噪”，那么多模态数据工程则是关于“关联”与“对齐”。随着 GPT-4V、Gemini 和 Sora 的横空出世，我们意识到单一模态的数据已无法满足模型对世界认知的渴望。
+
+本章将深入剖析构建亿级多模态数据集的完整工程链路。这不仅仅是写几个脚本下载图片那么简单，它是一场涉及网络协议、分布式存储、异构计算和美学评估的综合战役。我们将探讨数据范式的底层逻辑，解析如何利用分布式计算框架解决海量图片的高并发获取难题，并利用 GPU 硬件加速技术突破图像预处理的 I/O 瓶颈。此外，我们将构建一套基于语义和美学的自动化清洗闭环，确保输入模型的数据兼具相关性与安全性。
+
+**学习目标 (Learning Objectives)**：
+* 深度理解 LAION-5B（图文对）与 OBELICS（交错文档）范式的训练收益与工程挑战，掌握混合数据策略的设计方法。
+* 能够编写基于 PySpark 和 Ray Data 的分布式下载器，处理 DNS 瓶颈与长尾延迟，实现 10,000+ img/s 的吞吐量。
+* 精通 NVIDIA DALI 的流水线设计，解决 CPU 解码瓶颈，利用 GPU Direct 思想优化数据加载。
+* 构建包含 CLIP 语义过滤、美学评分及安全检测的多级清洗漏斗，并掌握针对不同业务场景的阈值调优策略。
+
+**场景引入**：
+> “设想这样一个场景：我们的爬虫团队刚刚从 Common Crawl 中提取了 20 亿个原始 URL，存储在数千个 Parquet 文件中。你的任务是在两周内将这些数据转化为可供 GPT-4V 预训练的高质量数据集。当你尝试用传统的 Python requests 库单机下载时，发现预估耗时竟然高达 15 年——这是典型的网络 I/O 阻塞问题。更糟糕的是，初步采样显示，下载的图片中有 30% 是电商广告图（充满噪点），15% 带有严重的水印，甚至还有严重的 NSFW 内容。如果直接使用这些数据，不仅会浪费数百万美元的算力，训练出的模型还可能因为生成违规内容而面临法律风险。我们需要一套工业级的、高吞吐的、智能的数据工程方案来应对这一挑战。”
+
+### 6.1 数据范式：图文对 (LAION-5B) vs 交错文档 (OBELICS/MMC4)
+
+在设计数据管道之前，我们的首要职责是明确数据的组织形式。这不仅关乎存储结构，更直接决定了下游模型的训练目标（Objective）和涌现能力（Emergent Capabilities）。不同的数据形态，本质上是对“知识如何存在于世界中”的不同抽象。
+
+
+
+#### 6.1.1 核心概念与原理
+
+**图文对 (Image-Text Pairs)**
+是多模态学习的基石，以 CLIP、ALIGN 和 LAION-5B 为代表。
+* **理论解析**：这种范式假设图像 $I$ 和文本 $T$ 之间存在强语义关联，且这种关联是独立的、原子的。训练目标通常是最大化 $I$ 和 $T$ 在共享嵌入空间中的余弦相似度（Contrastive Learning）。它的优势在于极高的“信噪比”提炼潜力，通过对比学习，模型能学会物体与词汇的直接映射。
+* **工程视角**：数据结构简单，通常表示为 `(url, caption, metadata)` 的扁平化记录。这种数据极易于分片（Sharding）和随机打散（Shuffle）。在训练时，由于样本间相互独立，我们可以轻易地实现 Global Batch Shuffling，从而提升对比学习的效果。
+
+**交错文档 (Interleaved Image-Text Documents)**
+是新一代多模态大模型（如 Flamingo, GPT-4V, MM1）的关键燃料，以 OBELICS 和 MMC4 为代表。
+* **理论解析**：这种范式保留了网页原始的 DOM 结构顺序，数据呈现为 `<text>, <image>, <text>...` 的序列。这迫使模型学习“多模态上下文依赖”（Multimodal In-Context Learning）。例如，在一个“如何制作蛋糕”的网页中，图片 1（原料图）和图片 5（成品图）之间的关系，以及它们与周围文本的逻辑联系，是图文对无法提供的。它模拟了人类阅读图文混排书籍的认知过程。
+* **工程视角**：数据管道极其复杂。由于单个样本（文档）的长度不固定且可能包含多张图片，Batch 的组装变得困难。传统的 Collator 需要复杂的 Padding 策略。此外，清洗时必须小心维护文档的完整性，随意删除一张低质量图片可能会破坏上下文逻辑，导致模型学到错误的指代关系。
+
+#### 6.1.2 架构决策：选型对比表
+
+在资源有限的情况下，如何权衡这两种数据？这并非一个简单的二元选择，而是涉及到模型架构、训练成本和最终应用场景的深度博弈。
+
+在早期的多模态研究中（如 2021 年之前），业界普遍认为只要数据量够大（如 CLIP 的 4亿对），模型就能学会一切。但随着 GPT-4V 的出现，我们发现仅靠图文对训练出的模型，虽然能准确识别“这是一只猫”，却无法回答“图中这只猫可能会做什么”，因为它缺乏逻辑推理的上下文。反之，交错文档虽然富含逻辑，但数据稀疏，处理成本极高。
+
+下表详细对比了两种范式在工程落地层面的核心差异，旨在帮助架构师根据实际需求进行技术选型：
+
+| 特性维度 | 图文对范式 (LAION-style) | 交错文档范式 (OBELICS-style) | 深度解读与建议 |
+| :--- | :--- | :--- | :--- |
+| **训练目标** | 对比学习 (CLIP), 文生图 (Stable Diffusion) | 下一个Token预测 (Next-Token Prediction), 多模态对话 (GPT-4V) | **混合策略是王道**。研究表明，仅使用交错文档训练视觉编码器效率较低（因为图片不够密集），而仅使用图文对则缺乏推理能力。推荐采用 Curriculum Learning（课程学习）策略。 |
+| **数据源解析** | 简单：仅需提取 `<img>` 标签及其 Alt-text | 复杂：需解析 DOM 树，过滤广告、侧边栏，保留正文逻辑 | **工程复杂度预警**。构建交错文档需要处理极其复杂的 HTML 渲染逻辑。建议初期利用 Common Crawl 的 WET 文件构建，或者直接使用 OBELICS 开源集做增强，不要试图从零开始重新清洗整个互联网。 |
+| **存储成本** | 中等：元数据仅为 CSV/Parquet，图片独立存储 | 高：需保存文档拓扑结构，建议使用 WebDataset 或 TFRecord 封装 | **I/O 性能瓶颈**。对于交错文档，必须使用分片式存储（Sharding），避免小文件碎片化。读取时需预读整个文档，这对内存带宽提出了更高要求。 |
+| **清洗挑战** | 单点清洗：每张图独立判断，易于并行化 | 上下文清洗：需同时考虑文本连贯性和图片质量，清洗逻辑耦合 | **策略选择**。在处理交错文档时，若某张图被判定为 NSFW，建议用特殊的 `<BLOCKED_IMAGE>` Token 替换，而非直接删除，以保持位置编码（Positional Embedding）的准确性。 |
+| **模型收益** | 极强的视觉-语义对齐，Zero-shot 分类能力强 | 强大的 Few-shot Learning 能力，支持多轮对话和逻辑推理 | **业务导向**。若业务场景是“以图搜图”，图文对足矣；若业务涉及复杂文档理解（如研报分析、长篇故事生成），必须引入交错文档数据。 |
+
+> **tips：**
+> 在 MM1 和 Idefics2 等前沿研究中，最佳实践并非二选一，而是配比。通常建议在预训练（Pre-training）早期阶段，使用 **80% 的图文对** 来建立坚实的视觉-语言映射基础，同时混入 **20% 的交错文档**；在预训练后期（Annealing Phase），大幅增加交错文档的比例，以激发模型的长窗口推理能力。这种“先打基础，后练逻辑”的策略能最大化算力利用率。
+
+### 6.2 图像获取与预处理
+
+一旦确定了数据清单（Manifest），下一步就是构建高吞吐的下载与预处理流水线。这是一个典型的 IO 密集型任务，主要瓶颈在于网络带宽、DNS 解析延迟以及海量小文件的磁盘写入。
+
+#### 6.2.1 img2dataset 高并发下载实战
+
+`img2dataset` 是目前社区公认的最佳实践工具。它不仅仅是一个下载脚本，更是一个基于 MapReduce 思想的分布式数据处理框架。
+
+我们为什么要使用专门的工具而不是自己写个 `requests.get` 循环？因为互联网环境是极其恶劣的。链接会失效（Link Rot），服务器会限流（Rate Limiting），DNS 会超时。处理 10 亿级别的 URL，任何微小的长尾延迟都会被放大成数周的时间成本。
+
+**核心原理**：
+1.  **分片 (Sharding)**：将 10 亿条 URL 切分为数万个小任务（Shard）。这是分布式计算的基础。
+2.  **异步 I/O (Async I/O)**：利用 Python 的 aiohttp 或 Go 的协程，在单核上并发发起数百个网络请求，掩盖网络延迟。
+3.  **流式归档 (Streaming Archival)**：下载的图片不落盘，直接在内存中组合成 tar 包（WebDataset 格式），然后流式写入对象存储（S3/HDFS）。这避免了在一个目录下创建百万个小文件导致的文件系统 inode 耗尽问题——这是新手最容易踩的坑。
+
+**工程实现：PySpark 分布式下载脚本**
+
+在处理 PB 级数据时，单机 multiprocessing 模式已不足以应对，必须使用 Spark 集群。
+
+```python
+# 建议环境: PySpark 3_2+, img2dataset 1_41+
+# 运行命令: spark-submit --master yarn --deploy-mode cluster...
+
+from img2dataset import download
+import shutil
+import os
+
+def run_distributed_download():
+    """
+    配置项的调优是吞吐量的关键。
+    process_count: 每个 Spark Executor 的进程数。
+    thread_count: 每个进程内的异步线程数。
+    对于 10Gbps 网卡的节点，通常建议 total_concurrency 在 1000 左右。
+    """
+    
+    # 定义输出路径 (S3 或 HDFS)
+    output_dir = "s3a://multimodal-lake/raw-images/laion-5b-subset"
+    
+    # 清理旧数据 (慎用，生产环境建议带版本号)
+    if os.path.exists(output_dir): 
+        # shutil.rmtree(output_dir) # 危险操作，注释掉
+        pass
+
+    download(
+        processes_count=4,          # 每个节点使用 4 个 CPU 核
+        thread_count=64,            # 每个核并发 64 个下载线程
+        url_list="s3a://multimodal-lake/meta/laion-urls.parquet",
+        image_size=256,             # 预训练阶段 256x256 足够，节省带宽
+        resize_only_if_bigger=True, # 避免小图硬放大造成的模糊
+        resize_mode="keep_ratio",   # 保持比例，填充黑边或中心裁剪
+        skip_reencode=True,         # 如果原图就是 JPG 且大小合适，直接存储，节省 CPU
+        output_folder=output_dir,
+        output_format="webdataset", # 强制使用 WebDataset
+        input_format="parquet",
+        url_col="url",
+        caption_col="caption",
+        enable_wandb=True,          # 强烈建议开启，用于监控下载速率和错误率
+        number_sample_per_shard=10000, # 每个 tar 包包含 1万 张图，约 200-300MB，便于传输
+        distributor="pyspark",      # 使用 Spark 分发任务
+        save_additional_columns=["similarity", "hash"], # 保留原始元数据
+        timeout=10                  # 设置较短超时，快速失败，长尾请求不值得等待
+    )
+
+if __name__ == "__main__":
+    # 初始化 Spark Session (通常由 spark-submit 自动处理，但也需显式声明以便 IDE 调试)
+    from pyspark.sql import SparkSession
+    spark = SparkSession.builder \
+        .appName("Img2Dataset-Production") \
+        .config("spark.executor.memory", "8g") \
+        .config("spark.task.maxFailures", "10") \
+        .getOrCreate()
+    
+    run_distributed_download()
+```
+
+**实战技巧 (Pro Tips)**：
+* **DNS 缓存**：在高并发下，DNS 解析可能成为瓶颈甚至被服务商封禁。建议在 Worker 节点部署本地 DNS 缓存（如 dnsmasq），或者在代码层面维护一个域名到 IP 的映射表。
+* **User-Agent 轮询**：虽然这是一个“公开”的秘密，但轮询 User-Agent 可以减少 403 Forbidden 的比例。
+* **错误处理**：关注 WandB 面板中的 success_rate。如果低于 80%，通常意味着 URL 列表过期严重，或者你的 IP 池被污染了。
+
+#### 6.2.2 视觉预处理的陷阱：裁剪与语义对齐
+
+在解决了海量数据的获取（Getting bytes）之后，我们立刻面临第二个挑战：数据的可用性（Usability）。原始互联网图片的长宽比（Aspect Ratio）千奇百怪，而模型通常需要固定的分辨率输入（如 224x224 或 512x512）。
+
+很多初级工程方案习惯于简单粗暴的随机预处理来统一尺寸，但这往往是模型性能“隐形天花板”的根源。我们不仅要关注“把图放进去”，还要关注“放进去的是什么”。
+
+
+
+![图6-1：图片预处理中裁剪与语义对齐问题](../../images/part3/图6_1_图片预处理中裁剪与语义对齐问题.png)
+*图6-1：图片预处理中裁剪与语义对齐问题*
+
+* **Bad Case（左图 - 机械裁剪的代价）**：
+    传统的 `RandomCrop` 或 `CenterCrop` 对构图没有感知。当处理一张竖构图的人像照片时，中心裁剪极易切掉关键特征（如头部），只保留躯干。此时，如果文本标签依然是“一个微笑的男人”，模型就会被迫建立错误的映射关系（把躯干特征误认为是“微笑的人”），导致训练出的模型产生严重的视觉幻觉。
+
+* **Good Case（右图 - 语义完整性）**：
+    高质量的数据工程追求“图文一致性”。
+    1.  **Smart Resize**: 尽量采用 `Resize with Padding`（保持比例，填充黑边/白边）来保留完整的视觉主体。虽然这引入了无效像素，但保证了语义完整。
+    2.  **Aspect Ratio Bucketing (长宽比分桶)**：这是目前 SDXL 和 Midjourney 等生成模型常用的高级技巧。将长宽比相似的图片分到同一个 Batch 中训练，既避免了裁剪，又减少了 Padding 的浪费。
+    3.  **Recaptioning (重打标)**：如下文第 7 章将详细阐述的，利用 VLM 生成高密度的描述，能让文本精准对应画面中的细节（如招牌文字、背景物体），从而最大化数据的训练价值。
+
+#### 6.2.3 GPU 加速解码与变换 (NVIDIA DALI)
+
+在深度学习模型训练环节，多数研究者和开发者的核心注意力往往集中在模型架构设计、超参数调优、损失函数改进等直接影响模型精度的模块上，却容易忽视数据加载（DataLoader）这一基础环节——而实际上，它常常成为制约训练效率的“隐形性能杀手”，甚至导致高端GPU的算力无法得到充分释放，造成硬件资源的严重浪费。
+要理解这一痛点，需先明确深度学习训练的完整流程逻辑：模型训练的核心算力依赖GPU的大规模并行计算能力，GPU能够高效处理海量张量运算、完成反向传播与参数更新；但在数据输入GPU之前，必须经过一系列预处理操作，其中最基础且耗时的就是图像数据的解码与尺寸变换（如Resize）。在传统的PyTorch训练流程中，这些关键预处理操作完全依赖CPU完成，这就形成了“CPU预处理瓶颈”与“GPU算力冗余”的矛盾。
+
+具体而言，传统PyTorch Dataset的工作机制的是：首先通过CPU读取存储在硬盘中的图像文件（多为JPEG格式），随后由CPU完成JPEG解码操作——这一过程需要对压缩的图像二进制数据进行Huffman解码、逆离散余弦变换（IDCT）等复杂计算，属于典型的CPU密集型任务；解码完成后，再由CPU执行Resize（尺寸缩放）、归一化、色域转换等后续预处理操作，最终将处理后的图像张量通过数据拷贝传输至GPU进行模型训练。
+
+更为关键的是，CPU的架构设计更适合串行计算和逻辑控制，其并行计算能力远不及GPU，而图像预处理中的解码、Resize等操作本身具备极强的并行性，能够通过多线程或多核心并行处理提升效率，但传统PyTorch Dataset即便通过DataLoader的num_workers参数提升CPU并行度，也难以突破CPU本身的算力上限——尤其是当训练数据集规模庞大（如百万级以上图像）、单张图像分辨率较高（如1080P及以上）时，CPU的预处理速度会严重滞后于GPU的训练速度，导致GPU频繁处于“等待数据”的空闲状态，GPU利用率大幅下降，最终拖累整个训练流程的效率，这也是为何数据加载会被称为“被忽视的性能杀手”的核心原因。
+
+针对这一核心痛点，NVIDIA推出了DALI（Data Loading Library），一款专为深度学习训练优化的GPU加速数据预处理库，其核心目标就是将原本依赖CPU的图像解码、尺寸变换等密集型预处理操作，迁移到GPU上并行执行，打破数据加载的性能瓶颈，让GPU的算力得到充分发挥。
+
+
+
+
+![图6-2：使用DALI与不使用DALI下数据解码与变换的区别](../../images/part3/图6_2_使用DALI与不使用DALI下数据解码与变换的区别.png)
+*图6-2：使用DALI与不使用DALI下数据解码与变换的区别*
+
+**代码拆解：基于 DALI 的高性能流水线**
+
+```python
+import nvidia.dali.fn as fn
+import nvidia.dali.types as types
+from nvidia.dali.pipeline import pipeline_def
+
+
+@pipeline_def(batch_size=256, num_threads=8, device_id=0)
+def webdataset_gpu_pipeline(shard_id, num_shards):
+    """
+    定义端到端 GPU 数据加载流水线
+    输入: WebDataset (Tar) -> 输出: GPU Tensor
+    """
+    
+    # Step 1: 读取 WebDataset (CPU 阶段)
+    # 使用 index_paths 是必须的，否则初始化阶段需要遍历整个 tar 包，耗时极长 [5]
+    jpegs, captions = fn.readers.webdataset(
+        paths=["/data/shards/shard-{:05d}.tar".format(i) for i in range(100)],
+        index_paths=["/data/indices/shard-{:05d}.idx".format(i) for i in range(100)],
+        ext=["jpg", "txt"],
+        shard_id=shard_id,
+        num_shards=num_shards,
+        random_shuffle=True,
+        initial_fill=10000,      # 乱序缓冲区大小，越大越随机，但启动越慢
+        pad_last_batch=True,     # 保证所有 Batch 大小一致
+        name="Reader",
+        read_ahead=True          # 开启预读
+    )
+
+    # Step 2: GPU 解码 (核心加速点)
+    # device="mixed" 表示输入在 Host 内存，输出在 Device 显存
+    # output_type=types.RGB 自动处理色彩空间转换
+    images = fn.decoders.image(
+        jpegs,
+        device="mixed",
+        output_type=types.RGB,
+        # 针对损坏图片的容错处理
+        # 生产环境中，千万不要因为一张坏图导致训练崩溃
+    )
+
+    # Step 3: GPU 变换流水线
+    # resize: 保持长宽比缩放
+    images = fn.resize(
+        images,
+        resize_x=224,
+        resize_y=224,
+        interp_type=types.INTERP_LINEAR
+    )
+    
+    # crop_mirror_normalize: 随机裁剪 + 翻转 + 归一化 (融合算子)
+    # 这一步将 uint8 转为 float，并减均值除方差
+    images = fn.crop_mirror_normalize(
+        images,
+        dtype=types.FLOAT,
+        output_layout="CHW",
+        crop=(224, 224),
+        mean=[0_485 * 255, 0_456 * 255, 0_406 * 255],
+        std=[0_229 * 255, 0_224 * 255, 0_225 * 255],
+        mirror=fn.random.coin_flip(probability=0_5)
+    )
+
+    # 文本数据通常直接在 CPU 处理或传递给 Tokenizer
+    # 这里我们只返回原始 bytes，后续由 PyTorch 处理
+    return images, captions
+
+# 使用与 PyTorch 集成的 DALIGenericIterator
+from nvidia.dali.plugin.pytorch import DALIGenericIterator
+
+pipe = webdataset_gpu_pipeline(shard_id=0, num_shards=1)
+pipe.build()
+dataloader = DALIGenericIterator(pipe, ["images", "captions"], reader_name="Reader")
+
+# Benchmark 测试
+# 在 A100 上，此流水线通常能达到 3000-5000 FPS，是 CPU Loader 的 5-10 倍
+```
+
+### 6.3 多模态清洗流水线
+
+海量数据伴随着海量噪声。LAION-5B 原始数据中，真正高质量的样本可能不足 10%。我们需要建立一个多级清洗漏斗（Funnel），在尽可能少地损失数据多样性的前提下，提升数据密度。所谓的“数据清洗”，本质上是在做**Data Diet（数据节食）**——给模型吃得少但吃得好。
+
+#### 6.3.1 架构设计：Ray Data 分布式清洗
+
+在数据清洗阶段，我们为何选择 Ray 而非 Spark？因为清洗过程不再是简单的 ETL，而是包含了大量的**深度学习推理（Model Inference）**。相比于 Spark 的 MapReduce 范式，Ray 提供了更灵活的 Actor 机制，允许我们常驻 GPU 模型（如 CLIP, Safety Checker），避免了每次处理小批数据都要重新加载几个 GB 模型的巨大开销。
+
+Ray Data 适合处理这种既有 CPU 密集型（解压、哈希、Regex）又有 GPU 密集型（CLIP Embedding 推理）的混合负载。下面给出一个典型的三阶段流水线设计：
+* **Stage 1 (CPU)**: 快速过滤。直接剔除分辨率不足（<256px）、文本过短、非英语（如果只练英语模型）或长宽比异常的样本。
+* **Stage 2 (GPU)**: 深度特征提取。利用 CLIP 模型生成 Embedding，并基于 Embedding 计算图文相似度和美学评分。
+* **Stage 3 (CPU/Mixed)**: 逻辑判定与去重。综合安全性（NSFW）、美学分数及图文相关性进行最终阈值截断，并进行语义去重。
+
+
+
+**数据流向图 (Data Flow)**
+
+![图6-3：Ray Data分布式清洗数据流向图](../../images/part3/图6_3_Ray_Data分布式清洗数据流向图.png)
+*图6-3：Ray Data分布式清洗数据流向图*
+
+#### 6.3.2 核心算法实现
+
+清洗不仅仅是删除，更是对数据价值的量化。我们需要多维度的指标来衡量一张图片及其对应文本的“含金量”。
+
+1.  **美学评分 (Aesthetics Scoring)**
+    * **原理**：数据集中充斥着发票、截图、模糊的监控画面，这些对生成美观图片毫无帮助。通常使用 LAION-Aesthetics Predictor。
+    * **技术细节**：这是一个简单的 MLP（多层感知机），输入是 CLIP Image Embedding，输出是 1-10 的分数。训练数据来自 AVA 数据集（包含人类专业摄影师打分）。
+    * **建议阈值**：对于基础预训练，保留 Score > 4_5 的数据；对于微调高质量生成模型（SFT阶段），建议 Score > 6_0，甚至 6_5。
+
+2.  **图文对齐过滤 (Image-Text Alignment)**
+    * **原理**：很多 Alt-text 是 SEO 垃圾词堆砌，或者文件名（"DSC_001.jpg"），与图片内容无关。
+    * **技术细节**：计算 CLIP Image Embedding 和 Text Embedding 的余弦相似度（Dot Product）。
+    * **坑点**：不同版本的 CLIP 模型（如 OpenAI ViT-L/14 vs OpenCLIP ViT-G/14）的嵌入空间分布不同，分数不可直接比较。必须根据具体模型重新校准阈值。通常的做法是计算整个数据集的相似度分布，然后保留 Top 50% 或 Top 70% 的数据。
+
+3.  **安全性检测 (Safety & Watermark)**
+    * **原理**：必须剔除色情、暴力以及带有明显品牌水印的图片。
+    * **策略**：使用专门训练的分类器头（也是基于 CLIP Embedding）来检测 NSFW 和水印。对于水印检测，如果目标是训练生成模型（如 SDXL），必须极其严格（Recall 优先），因为生成模型极易过拟合水印特征；如果目标是训练理解模型（如 GPT-4V），可以适当放宽，因为理解模型需要识别“图片里有水印”这个事实。
+
+**代码实现：Ray Data 清洗算子**
+
+```python
+import ray
+import torch
+import open_clip
+import numpy as np
+from PIL import Image
+import io
+
+# 定义 Ray Actor 类，确保模型只加载一次
+class QualityScorer:
+    def __init__(self):
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        # 加载 CLIP 模型 (ViT-B-32 速度快，适合清洗)
+        self.model, _, self.preprocess = open_clip.create_model_and_transforms(
+            'ViT-B-32', pretrained='laion2b_s34b_b79k', device=self.device
+        )
+        # 加载美学评分头 (Linear Layer)
+        self.aesthetic_head = torch.nn.Linear(512, 1).to(self.device)
+        self.aesthetic_head.load_state_dict(torch.load("sac+logos+ava1-l14-linearMSE.pth"))
+        self.aesthetic_head.eval()
+
+    def __call__(self, batch: dict) -> dict:
+        """
+        处理一个 batch 的数据。Ray 会自动将数据分片传输给 Actor。
+        """
+        images = []
+        valid_indices = []
+        
+        # 预处理图片 (CPU 操作)
+        for idx, img_bytes in enumerate(batch["jpg"]):
+            try:
+                img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+                img_tensor = self.preprocess(img)
+                images.append(img_tensor)
+                valid_indices.append(idx)
+            except Exception:
+                # 记录坏图日志，但不要中断
+                continue
+        
+        if not images:
+            return {"aesthetic_score": [], "clip_score": []}
+
+        image_input = torch.stack(images).to(self.device)
+        
+        with torch.no_grad():
+            # 1. 提取特征
+            image_features = self.model.encode_image(image_input)
+            image_features /= image_features.norm(dim=-1, keepdim=True)
+            
+            # 2. 计算美学分
+            aesthetic_scores = self.aesthetic_head(image_features).squeeze().cpu().numpy()
+            
+            # 3. 计算图文匹配度 (假设 batch 中有 text 字段)
+            # text_tokens = self.tokenizer(batch["txt"]).to(self.device)
+            # text_features = self.model.encode_text(text_tokens)
+            #... 计算 cosine similarity
+            
+        # 返回结果 (需注意与原始 batch 索引对齐)
+        return {"aesthetic_score": aesthetic_scores}
+
+# 编排 Ray 流水线
+ray.init()
+ds = ray.data.read_webdataset("s3://raw-bucket/{00000..00099}.tar")
+
+# map_batches 会自动调度 GPU 资源
+# num_gpus=0_25 意味着一张 GPU 可以并发跑 4 个 Actor，提高吞吐
+scored_ds = ds.map_batches(
+    QualityScorer, 
+    compute=ray.data.ActorPoolStrategy(size=8), 
+    num_gpus=0_25, 
+    batch_size=128
+)
+
+# 最终过滤
+filtered_ds = scored_ds.filter(lambda row: row["aesthetic_score"] > 4_5)
+filtered_ds.write_webdataset("s3://clean-bucket/")
+```
+
+### 6.4 避坑指南 (Pitfalls & Troubleshooting)
+
+在构建亿级多模态数据集的过程中，工程团队往往会在细节处翻车。以下是几个血泪教训总结：
+
+* **Parquet 元数据爆炸**：
+    * **错误**：习惯性地在 pandas 中直接读取包含 20 亿行的 Parquet 文件。
+    * **后果**：内存溢出（OOM），因为 pandas 会尝试将整个索引加载到内存，即使你只读一列。
+    * **修正**：使用 Polars 或 PySpark 的 lazy evaluation 模式；或者严格将 Parquet 文件按行数（如 100万行）拆分成小文件，避免处理单个巨型元数据文件。
+
+* **WebDataset 的 Shuffle 不足**：
+    * **错误**：数据下载时按域名顺序写入，训练时仅依赖 DataLoader 的 buffer shuffle（通常 buffer 只有 1万）。
+    * **后果**：模型训练时会先连续看 10 万张电商图，再连续看 10 万张风景图。小 buffer 无法打散这种“时域相关性”，导致模型训练曲线剧烈震荡，甚至发散。
+    * **修正**：在写入 WebDataset 之前，必须对 URL 列表进行**全局随机打散（Global Shuffle）**。可以使用 Spark 的 `orderBy(rand())` 实现。
+
+* **误删长尾数据**：
+    * **错误**：为了追求极致的美学分，把所有 Score < 4_5 的图片都删了。
+    * **后果**：模型变得“偏科”，只认识艺术照和壁纸，不认识真实世界的（可能比较丑的）照片，如医疗影像、街景图、手写笔记。这大大降低了模型的泛化能力。
+    * **修正**：采用分层采样策略。保留 5%-10% 的低分数据作为“正则化”，或者针对特定领域（如 OCR、图表）单独设立白名单，不通过美学过滤器。
+
+* **重复数据的隐患 (Deduplication)**:
+    * **错误**: 忽视了互联网上大量重复图片（如 Memes、热门新闻图）。
+    * **后果**: 模型过拟合特定样本，甚至在生成时直接“背诵”出训练集图片（Memorization），导致严重的版权风险。
+    * **修正**: 必须在清洗流程中加入**语义去重**。计算所有图片的 Embedding，使用 Faiss 或 MinHashLSH 进行聚类，对相似度极高的图片群组只保留一张。
