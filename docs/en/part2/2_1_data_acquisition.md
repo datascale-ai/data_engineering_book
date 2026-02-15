@@ -1,383 +1,495 @@
-## Chapter 6: Image-Text Pairs Processing
+# Chapter 3: Data Acquisition and Collection
 
-### Chapter Summary
+---
 
-In building the next generation of Foundation Models, the focus of data engineering has shifted from simple text cleaning to capturing, aligning, and reconstructing multi-dimensional signals from the physical world. If language model data engineering is about "denoising," multimodal data engineering is about "correlation" and "alignment." With the emergence of GPT-4V, Gemini, and Sora, we have come to realize that single-modality data can no longer satisfy models' desire to understand the world.
+## Chapter Summary
 
-This chapter provides an in-depth analysis of the complete engineering pipeline for building billion-scale multimodal datasets. This is far more than writing a few scripts to download images—it is a comprehensive campaign involving network protocols, distributed storage, heterogeneous computing, and aesthetic evaluation. We will explore the underlying logic of data paradigms, analyze how to use distributed computing frameworks to solve the challenge of high-concurrency acquisition of massive images, and leverage GPU hardware acceleration to break through the I/O bottleneck of image preprocessing. Additionally, we will build an automated cleaning loop based on semantic and aesthetic criteria to ensure that data fed to the model is both relevant and safe.
+Pre-training data is the "fuel" of large models, and its quality and scale directly determine the model's foundational capabilities. This chapter delves into pre-training data acquisition strategies, from deconstructing and using open-source datasets like Common Crawl, to designing and implementing high-performance web crawler systems, and to acquiring specialized data such as code, papers, and books. After mastering this content, readers will possess the ability to build TB-level pre-training corpora.
 
-**Learning Objectives**:
-* Deeply understand the training benefits and engineering challenges of LAION-5B (image-text pairs) and OBELICS (interleaved documents) paradigms, and master the design methods for hybrid data strategies.
-* Be able to write distributed downloaders based on PySpark and Ray Data, handle DNS bottlenecks and long-tail latency, and achieve throughput of 10,000+ img/s.
-* Master NVIDIA DALI pipeline design, solve CPU decoding bottlenecks, and optimize data loading using GPU Direct concepts.
-* Build a multi-stage cleaning funnel including CLIP semantic filtering, aesthetic scoring, and safety detection, and master threshold tuning strategies for different business scenarios.
+---
 
-**Scenario Introduction**:
-> "Imagine this scenario: Your crawler team has just extracted 2 billion raw URLs from Common Crawl, stored in thousands of Parquet files. Your task is to transform this data into a high-quality dataset suitable for GPT-4V pre-training within two weeks. When you try to download with the traditional Python requests library on a single machine, you find the estimated time is a staggering 15 years—a classic network I/O blocking problem. Worse yet, preliminary sampling shows that 30% of downloaded images are e-commerce ads (full of noise), 15% have severe watermarks, and there is even serious NSFW content. If we use this data directly, we will not only waste millions of dollars in compute, but the trained model may also face legal risks due to generating prohibited content. We need an industrial-grade, high-throughput, intelligent data engineering solution to meet this challenge."
+## Scenario Introduction
 
-### 6.1 Data Paradigms: Image-Text Pairs (LAION-5B) vs. Interleaved Documents (OBELICS/MMC4)
+Your team has decided to train a 7B parameter Chinese base model. According to Chinchilla's optimal ratio, this requires approximately 140B tokens of high-quality Chinese corpus—translating to about 280TB of raw text. Where can you find this much data? Directly crawling from the web is clearly impractical; a small team cannot crawl the entire Chinese internet in a short time.
 
-Before designing the data pipeline, our first responsibility is to clarify the organizational form of the data. This is not only about storage structure but also directly determines the training objective and emergent capabilities of downstream models. Different data forms are essentially different abstractions of "how knowledge exists in the world."
+At this point, someone suggests using Common Crawl—an open-source project that crawls billions of web pages each month, with cumulative data exceeding PB scale. It sounds like a perfect solution, but when you actually download one month's data, you discover that the raw WARC files are completely unusable: filled with HTML tags, JavaScript code, navigation bars, and ads—the truly valuable body content may be less than 10%.
 
-#### 6.1.1 Core Concepts and Principles
+How do you extract usable "golden corpus" for training from this "data swamp"? This is the core problem this chapter aims to solve.
 
-**Image-Text Pairs**
-are the cornerstone of multimodal learning, represented by CLIP, ALIGN, and LAION-5B.
-* **Theoretical Analysis**: This paradigm assumes a strong semantic correlation between image $I$ and text $T$, and this correlation is independent and atomic. The training objective is typically to maximize the cosine similarity of $I$ and $T$ in a shared embedding space (Contrastive Learning). Its advantage lies in extremely high "signal-to-noise ratio" refinement potential—through contrastive learning, the model can learn direct mapping between objects and vocabulary.
-* **Engineering Perspective**: The data structure is simple, typically represented as flattened records of `(url, caption, metadata)`. This data is extremely easy to shard and randomly shuffle. During training, due to sample independence, we can easily implement Global Batch Shuffling to improve contrastive learning effectiveness.
+---
 
-**Interleaved Image-Text Documents**
-are the key fuel for the new generation of multimodal large models (e.g., Flamingo, GPT-4V, MM1), represented by OBELICS and MMC4.
-* **Theoretical Analysis**: This paradigm preserves the original DOM structure order of web pages, with data presented as sequences of `<text>, <image>, <text>...`. This forces the model to learn "multimodal contextual dependencies" (Multimodal In-Context Learning). For example, in a "how to make a cake" webpage, the relationship between the first image (ingredients) and the fifth image (final product), as well as their logical connection to surrounding text, cannot be provided by image-text pairs. It simulates the cognitive process of humans reading image-text mixed documents.
-* **Engineering Perspective**: The data pipeline is extremely complex. Because single samples (documents) have variable lengths and may contain multiple images, batch assembly becomes difficult. Traditional Collators require complex padding strategies. Furthermore, when cleaning, care must be taken to maintain document integrity—arbitrarily deleting a low-quality image may break contextual logic and cause the model to learn incorrect referential relationships.
+## 3.1 Deconstruction of Open-Source Datasets
 
-#### 6.1.2 Architectural Decisions: Paradigm Comparison Table
+Before starting to crawl data yourself, you should first fully leverage existing open-source datasets. These datasets have been carefully processed by the community and can significantly reduce the time and cost of preparing pre-training data. Understanding their composition and processing methods is also an important reference for designing your own data pipeline.
 
-With limited resources, how do we balance these two data paradigms? This is not a simple binary choice but involves deep trade-offs between model architecture, training cost, and ultimate application scenarios.
+### 3.1.1 Common Crawl: A Snapshot of the Internet
 
-In early multimodal research (before 2021), the industry widely believed that sufficient data volume (e.g., CLIP's 400 million pairs) would suffice for models to learn everything. However, with the emergence of GPT-4V, we found that models trained solely on image-text pairs, while able to accurately identify "this is a cat," cannot answer "what might this cat in the image do" because they lack the context for logical reasoning. Conversely, interleaved documents, though rich in logic, are sparse in data and have extremely high processing costs.
+Common Crawl is a non-profit organization that has been continuously crawling internet web pages since 2008 and provides them free of charge for research and commercial use. It is currently the upstream source for the vast majority of large-scale pre-training datasets—whether GPT series, LLaMA, or various Chinese large models, they all use Common Crawl data to varying degrees.
 
-The table below compares the core differences between the two paradigms at the engineering implementation level, helping architects make technical selections based on actual requirements:
+Common Crawl data is organized in "crawl batches," releasing a new batch each month, with each batch containing billions of web pages. The data is provided in three formats: WARC (Web ARChive) files contain raw HTTP responses, including response headers and complete HTML content, making it the most original and complete format; WAT files are metadata-extracted versions of WARC, containing structured information such as URLs, response headers, and link relationships; WET files are plain text extracted versions that have removed HTML tags, preserving only body text.
 
-| Dimension | Image-Text Pairs (LAION-style) | Interleaved Documents (OBELICS-style) | In-depth Analysis & Recommendation |
-| :--- | :--- | :--- | :--- |
-| **Training Objective** | Contrastive Learning (CLIP), Text-to-Image (Stable Diffusion) | Next-Token Prediction, Multimodal Dialogue (GPT-4V) | **Hybrid strategy is the way to go**. Research shows that training visual encoders solely with interleaved documents is inefficient (images are not dense enough), while using only image-text pairs lacks reasoning ability. A Curriculum Learning strategy is recommended. |
-| **Data Source Parsing** | Simple: only need to extract `<img>` tags and Alt-text | Complex: need to parse DOM tree, filter ads/sidebars, preserve main content logic | **Engineering complexity warning**. Building interleaved documents requires handling extremely complex HTML rendering logic. It is recommended to initially use Common Crawl's WET files for construction, or directly use OBELICS open-source dataset for augmentation, rather than attempting to re-clean the entire internet from scratch. |
-| **Storage Cost** | Medium: metadata only in CSV/Parquet, images stored separately | High: need to save document topology, recommend WebDataset or TFRecord | **I/O performance bottleneck**. For interleaved documents, sharded storage must be used to avoid small file fragmentation. Reading requires pre-reading entire documents, placing higher demands on memory bandwidth. |
-| **Cleaning Challenges** | Point-wise: each image judged independently, easy to parallelize | Contextual: need to consider text coherence and image quality simultaneously, cleaning logic coupled | **Strategy choice**. When processing interleaved documents, if an image is deemed NSFW, recommend replacing with a special `<BLOCKED_IMAGE>` token rather than deleting it directly, to maintain positional embedding accuracy. |
-| **Model Benefits** | Extremely strong visual-semantic alignment, strong Zero-shot classification | Strong Few-shot Learning, supports multi-turn dialogue and logical reasoning | **Business-oriented**. If the scenario is "image search," image-text pairs suffice; if the business involves complex document understanding (e.g., research report analysis, long-form story generation), interleaved documents must be introduced. |
+| Format | Content | Monthly Data Volume | Use Case |
+|--------|---------|---------------------|----------|
+| WARC | Raw HTTP Response + HTML | ~80TB compressed | Need complete content or custom parsing |
+| WAT | Structured metadata | ~3TB compressed | URL analysis, link graph research |
+| WET | Plain text extraction | ~15TB compressed | Quick text acquisition, preliminary experiments |
 
-> **Tips:**
-> In cutting-edge research like MM1 and Idefics2, best practice is not to choose one or the other, but to mix. It is typically recommended to use **80% image-text pairs** in the early pre-training phase to establish a solid visual-language mapping foundation, while mixing in **20% interleaved documents**; in the late pre-training phase (Annealing Phase), significantly increase the proportion of interleaved documents to stimulate the model's long-context reasoning ability. This "foundation first, logic later" strategy maximizes compute utilization.
+![Figure 3-1: Common Crawl Data Pipeline](../../images/part2/图3_1_CommonCrawl数据流水线.png)
 
-### 6.2 Image Acquisition and Preprocessing
+*Figure 3-1: Common Crawl Data Pipeline — Complete processing flow from internet crawling to clean corpus*
 
-Once the data manifest is determined, the next step is to build a high-throughput download and preprocessing pipeline. This is a typical I/O-intensive task, with main bottlenecks in network bandwidth, DNS resolution latency, and disk writes for massive small files.
+For pre-training data engineering, WARC and WET are the two most commonly used formats. WET files seem convenient because text has already been extracted, but in reality Common Crawl's default text extraction quality is poor, retaining large amounts of noise (such as navigation bars, footers, JavaScript text). Therefore, professional data processing pipelines typically start from WARC files and use higher-quality parsers (such as Trafilatura) to re-extract the body content.
 
-#### 6.2.1 img2dataset High-Concurrency Download in Practice
+Several key points need attention when using Common Crawl data. First is version selection: each monthly crawl batch varies slightly in quality, and it is generally recommended to use more recent versions (such as batches from after 2023), as Common Crawl continuously improves its crawling strategies. Second is language filtering: Common Crawl is predominantly English web pages, with non-English content like Chinese and Japanese accounting for relatively low proportions (typically less than 10%), requiring additional language identification steps for screening. Finally is legal compliance: although Common Crawl is open data, the web page content it crawls may involve copyright issues and needs to be evaluated according to local laws when using.
 
-`img2dataset` is currently the community-recognized best practice tool. It is not merely a download script but a distributed data processing framework based on MapReduce principles.
+### 3.1.2 RefinedWeb: High-Quality English Corpus
 
-Why use a specialized tool rather than writing a simple `requests.get` loop? Because the internet environment is extremely harsh. Links expire (Link Rot), servers rate-limit, and DNS times out. When processing billions of URLs, any tiny long-tail latency gets amplified into weeks of time cost.
+RefinedWeb is a high-quality English pre-training dataset released by the Falcon model team (TII Lab of UAE), containing approximately 5T tokens. Unlike directly using Common Crawl, RefinedWeb has undergone strict cleaning and deduplication processing and is considered one of the highest quality publicly available English pre-training corpora.
 
-**Core Principles**:
-1.  **Sharding**: Split 1 billion URLs into tens of thousands of small tasks (Shards). This is the foundation of distributed computing.
-2.  **Async I/O**: Use Python's aiohttp or Go's goroutines to concurrently initiate hundreds of network requests per core, masking network latency.
-3.  **Streaming Archival**: Downloaded images are not written to disk; they are directly assembled into tar packages (WebDataset format) in memory, then streamed to object storage (S3/HDFS). This avoids exhausting the filesystem inode when creating millions of small files in one directory—a pitfall that new practitioners often encounter.
+RefinedWeb's processing pipeline has strong reference value. Its core steps include: URL filtering (removing adult websites, spam sites, etc.), text extraction (using Trafilatura for high-quality body extraction), language identification (using FastText to retain English content), quality filtering (removing low-quality documents based on heuristic rules), and fuzzy deduplication (using MinHash LSH for approximate deduplication at large scale).
 
-**Engineering Implementation: PySpark Distributed Download Script**
+The RefinedWeb paper details the implementation and effectiveness evaluation of each step, making it an excellent textbook for learning pre-training data processing. It's worth noting that although RefinedWeb has publicly released a subset of the dataset (~600B tokens), the complete version remains exclusive to the Falcon model.
 
-When processing PB-scale data, single-machine multiprocessing mode is insufficient; a Spark cluster must be used.
+### 3.1.3 The Pile: Diversified Data Mixture
 
-```python
-# Recommended environment: PySpark 3_2+, img2dataset 1_41+
-# Run command: spark-submit --master yarn --deploy-mode cluster...
+The Pile is an open-source pre-training dataset released by EleutherAI, approximately 800GB in size (uncompressed), containing about 300B tokens. Unlike RefinedWeb's focus on web data, The Pile's design philosophy is diversification—it mixes data from 22 different sources, covering web pages, books, code, papers, legal documents, and other domains.
 
-from img2dataset import download
-import shutil
-import os
+The Pile's data source composition reflects the importance of pre-training data diversity. Among them, Pile-CC is a cleaned Common Crawl subset, accounting for approximately 50%; PubMed Central provides biomedical papers; ArXiv provides scientific preprints; GitHub provides open-source code; Books3 provides book text; StackExchange provides technical Q&A; Wikipedia provides encyclopedic knowledge. This multi-source mixing strategy has been proven to improve model performance across various downstream tasks, with later models like LLaMA and Mistral borrowing similar approaches in their data recipes.
 
-def run_distributed_download():
-    """
-    Configuration tuning is key to throughput.
-    process_count: Number of processes per Spark Executor.
-    thread_count: Number of async threads per process.
-    For nodes with 10Gbps NIC, typically recommend total_concurrency around 1000.
-    """
-    
-    # Define output path (S3 or HDFS)
-    output_dir = "s3a://multimodal-lake/raw-images/laion-5b-subset"
-    
-    # Clean old data (use with caution, production recommends versioning)
-    if os.path.exists(output_dir): 
-        # shutil.rmtree(output_dir) # Dangerous operation, commented out
-        pass
+However, The Pile faces legal controversies. Its Books3 subset contains large amounts of copyrighted books and has triggered multiple lawsuits. When using The Pile, it is recommended to evaluate based on your own legal risk tolerance, or selectively exclude controversial subsets.
 
-    download(
-        processes_count=4,          # 4 CPU cores per node
-        thread_count=64,            # 64 download threads per core
-        url_list="s3a://multimodal-lake/meta/laion-urls.parquet",
-        image_size=256,             # 256x256 sufficient for pre-training, saves bandwidth
-        resize_only_if_bigger=True, # Avoid blur from upscaling small images
-        resize_mode="keep_ratio",   # Maintain aspect ratio, pad or center crop
-        skip_reencode=True,         # If original is JPG and size suitable, store directly, saves CPU
-        output_folder=output_dir,
-        output_format="webdataset", # Force WebDataset format
-        input_format="parquet",
-        url_col="url",
-        caption_col="caption",
-        enable_wandb=True,          # Strongly recommended for monitoring download rate and error rate
-        number_sample_per_shard=10000, # 10k images per tar, ~200-300MB, easy to transfer
-        distributor="pyspark",      # Use Spark for task distribution
-        save_additional_columns=["similarity", "hash"], # Preserve original metadata
-        timeout=10                  # Short timeout, fail fast, long-tail requests not worth waiting
-    )
+### 3.1.4 Overview of Chinese Datasets
 
-if __name__ == "__main__":
-    # Initialize Spark Session (usually handled by spark-submit, but declare explicitly for IDE debugging)
-    from pyspark.sql import SparkSession
-    spark = SparkSession.builder \
-        .appName("Img2Dataset-Production") \
-        .config("spark.executor.memory", "8g") \
-        .config("spark.task.maxFailures", "10") \
-        .getOrCreate()
-    
-    run_distributed_download()
-```
+For training Chinese large models, available open-source datasets are relatively scarce, though there has been improvement in recent years.
 
-**Pro Tips**:
-* **DNS Caching**: Under high concurrency, DNS resolution can become a bottleneck or even get blocked by providers. Deploy local DNS cache (e.g., dnsmasq) on worker nodes, or maintain a domain-to-IP mapping table in code.
-* **User-Agent Rotation**: Though an "open" secret, rotating User-Agent can reduce 403 Forbidden rates.
-* **Error Handling**: Monitor success_rate in the WandB dashboard. If below 80%, it usually means the URL list is severely stale or your IP pool is contaminated.
+WuDaoCorpora is a large-scale Chinese corpus released by BAAI, containing approximately 3TB of Chinese text, covering encyclopedias, news, forums, Q&A, and other sources. Data must be obtained through application, and usage must comply with relevant agreements. ChineseCrawl is a Chinese Common Crawl subset extraction, with multiple community versions available. CLUECorpus is Chinese corpus released by the CLUE benchmark team, approximately 100GB in size, suitable for small to medium-scale experiments.
 
-#### 6.2.2 The Pitfalls of Visual Preprocessing: Cropping and Semantic Alignment
+Compared to the richness of English datasets, Chinese pre-training data remains a "seller's market." This means Chinese large model teams often need to acquire and process Chinese data themselves from Common Crawl or other sources, and cannot rely entirely on existing open-source datasets.
 
-After solving the challenge of acquiring massive data (Getting bytes), we immediately face the second challenge: data usability. Raw internet images have wildly varying aspect ratios, while models typically require fixed resolution input (e.g., 224x224 or 512x512).
+---
 
-Many novice engineering solutions habitually use brute-force random preprocessing to unify dimensions, but this is often the root of the model's "invisible performance ceiling." We must not only focus on "getting the image in" but also "what is being put in."
+## 3.2 High-Performance Web Parsing
 
+After obtaining raw HTML from Common Crawl or your own crawler, the next critical step is extracting body text from it. This seems simple but is actually one of the most critical steps in the entire data pipeline—parsing quality directly determines the quality of the final corpus.
 
+### 3.2.1 Challenges of Web Parsing
 
-![Figure 6-1: Cropping and Semantic Alignment in Image Preprocessing](../../images/part3/图6_1_图片预处理中裁剪与语义对齐问题.png)
-*Figure 6-1: Cropping and Semantic Alignment in Image Preprocessing*
+Modern web pages are far more complex than they appear on the surface. A typical web page may contain: HTML structural tags, CSS style definitions, JavaScript code (including inline and external references), navigation bars and footers, ads and promotional content, comment sections and user-generated content, page sidebars and recommended content. What we need is only the "body"—the main content section of the page.
 
-* **Bad Case (Left - The Cost of Mechanical Cropping)**:
-    Traditional `RandomCrop` or `CenterCrop` have no awareness of composition. When processing a portrait photo in vertical composition, center cropping can easily cut off key features (e.g., the head), leaving only the torso. At this point, if the text label is still "a smiling man," the model is forced to establish incorrect mappings (mistaking torso features for "smiling person"), causing severe visual hallucinations in the trained model.
+Traditional parsing methods (such as simply removing all HTML tags) work poorly because they cannot distinguish between body content and noise. More advanced methods need to understand the semantic structure of web pages and identify which parts are truly valuable content.
 
-* **Good Case (Right - Semantic Integrity)**:
-    High-quality data engineering pursues "image-text consistency."
-    1.  **Smart Resize**: Prefer `Resize with Padding` (maintain aspect ratio, pad with black/white borders) to preserve complete visual subjects. Though this introduces invalid pixels, it ensures semantic integrity.
-    2.  **Aspect Ratio Bucketing**: This is an advanced technique commonly used by generation models like SDXL and Midjourney. Group images with similar aspect ratios into the same batch for training, avoiding cropping while reducing padding waste.
-    3.  **Recaptioning**: As detailed in Chapter 7, using VLM to generate high-density descriptions allows text to precisely correspond to details in the image (e.g., sign text, background objects), maximizing training value of the data.
+### 3.2.2 Trafilatura: Industrial-Grade Parsing Library
 
-#### 6.2.3 GPU-Accelerated Decoding and Transformation (NVIDIA DALI)
+Trafilatura is currently the most recommended web body extraction library, adopted by mainstream datasets like RefinedWeb and Dolma. Its core advantages lie in: finely-tuned extraction algorithms with excellent performance on multiple evaluation datasets; good multilingual support, especially for Asian languages like Chinese and Japanese; rich configuration options that can adjust extraction strategies according to needs; and reasonable performance suitable for large-scale data processing.
 
-In the deep learning model training phase, most researchers and developers focus their attention on model architecture design, hyperparameter tuning, loss function improvements, and other modules that directly affect model accuracy, while easily overlooking the data loading (DataLoader) phase—yet in practice, it often becomes the "invisible performance killer" that constrains training efficiency, even preventing full utilization of high-end GPU compute and causing serious hardware waste.
-
-To understand this pain point, we must first clarify the complete logic of the deep learning training flow: model training's core compute relies on GPU's massive parallel computing capability; GPUs can efficiently process massive tensor operations and complete backpropagation and parameter updates. But before data reaches the GPU, it must go through a series of preprocessing operations, among which the most basic and time-consuming are image decoding and resizing. In the traditional PyTorch training flow, these critical preprocessing operations are entirely performed by the CPU, creating a contradiction between "CPU preprocessing bottleneck" and "GPU compute redundancy."
-
-Specifically, the traditional PyTorch Dataset workflow is: first read image files stored on disk (mostly JPEG format) via CPU, then the CPU performs JPEG decoding—this process requires complex computation such as Huffman decoding and inverse discrete cosine transform (IDCT) on compressed image binary data, a typical CPU-intensive task; after decoding, the CPU performs Resize, normalization, color space conversion, and other preprocessing, and finally transfers the processed image tensor to the GPU for model training via data copy.
-
-More critically, CPU architecture is designed for serial computation and logic control, with parallel computing capability far inferior to GPU. However, decoding and Resize in image preprocessing are highly parallelizable and can improve efficiency through multi-threading or multi-core processing. But even with DataLoader's num_workers parameter to increase CPU parallelism, traditional PyTorch Dataset struggles to break through the CPU's compute ceiling—especially when the training dataset is large (e.g., millions of images) and single-image resolution is high (e.g., 1080P and above), CPU preprocessing speed will seriously lag behind GPU training speed, causing the GPU to frequently idle waiting for data, significantly reducing GPU utilization, and ultimately dragging down overall training efficiency. This is why data loading is called the "neglected performance killer."
-
-To address this core pain point, NVIDIA introduced DALI (Data Loading Library), a GPU-accelerated data preprocessing library optimized for deep learning training. Its core goal is to migrate image decoding, resizing, and other intensive preprocessing operations that originally relied on CPU to the GPU for parallel execution, breaking the data loading performance bottleneck and unleashing GPU compute.
-
-
-![Figure 6-2: Data Decoding and Transformation with vs. without DALI](../../images/part3/图6_2_使用DALI与不使用DALI下数据解码与变换的区别.png)
-*Figure 6-2: Data Decoding and Transformation with vs. without DALI*
-
-**Code Walkthrough: High-Performance Pipeline Based on DALI**
+The basic workflow for using Trafilatura is as follows:
 
 ```python
-import nvidia.dali.fn as fn
-import nvidia.dali.types as types
-from nvidia.dali.pipeline import pipeline_def
+import trafilatura
 
-
-@pipeline_def(batch_size=256, num_threads=8, device_id=0)
-def webdataset_gpu_pipeline(shard_id, num_shards):
+# Extract body content from HTML
+def extract_content(html: str, url: str = None) -> dict:
     """
-    Define end-to-end GPU data loading pipeline
-    Input: WebDataset (Tar) -> Output: GPU Tensor
-    """
+    Extract body content from HTML
     
-    # Step 1: Read WebDataset (CPU stage)
-    # Using index_paths is required; otherwise init phase needs to traverse entire tar, extremely slow [5]
-    jpegs, captions = fn.readers.webdataset(
-        paths=["/data/shards/shard-{:05d}.tar".format(i) for i in range(100)],
-        index_paths=["/data/indices/shard-{:05d}.idx".format(i) for i in range(100)],
-        ext=["jpg", "txt"],
-        shard_id=shard_id,
-        num_shards=num_shards,
-        random_shuffle=True,
-        initial_fill=10000,      # Shuffle buffer size, larger = more random but slower startup
-        pad_last_batch=True,     # Ensure all batches have consistent size
-        name="Reader",
-        read_ahead=True          # Enable prefetch
-    )
-
-    # Step 2: GPU Decoding (core acceleration point)
-    # device="mixed" means input in Host memory, output in Device memory
-    # output_type=types.RGB handles color space conversion automatically
-    images = fn.decoders.image(
-        jpegs,
-        device="mixed",
-        output_type=types.RGB,
-        # Fault tolerance for corrupted images
-        # In production, never let one bad image crash training
-    )
-
-    # Step 3: GPU transformation pipeline
-    # resize: scale while maintaining aspect ratio
-    images = fn.resize(
-        images,
-        resize_x=224,
-        resize_y=224,
-        interp_type=types.INTERP_LINEAR
+    Args:
+        html: Raw HTML string
+        url: Optional URL for resolving relative links
+    
+    Returns:
+        Dictionary containing body content and metadata
+    """
+    # Core extraction
+    result = trafilatura.extract(
+        html,
+        url=url,
+        include_comments=False,    # Exclude comment section
+        include_tables=True,       # Preserve table content
+        no_fallback=False,         # Allow fallback algorithms
+        favor_precision=True,      # Prioritize precision
+        output_format='txt'        # Output plain text
     )
     
-    # crop_mirror_normalize: random crop + flip + normalize (fused operator)
-    # This step converts uint8 to float and subtracts mean, divides by std
-    images = fn.crop_mirror_normalize(
-        images,
-        dtype=types.FLOAT,
-        output_layout="CHW",
-        crop=(224, 224),
-        mean=[0_485 * 255, 0_456 * 255, 0_406 * 255],
-        std=[0_229 * 255, 0_224 * 255, 0_225 * 255],
-        mirror=fn.random.coin_flip(probability=0_5)
-    )
-
-    # Text data typically processed directly on CPU or passed to Tokenizer
-    # Here we only return raw bytes for subsequent PyTorch processing
-    return images, captions
-
-# Use DALIGenericIterator integrated with PyTorch
-from nvidia.dali.plugin.pytorch import DALIGenericIterator
-
-pipe = webdataset_gpu_pipeline(shard_id=0, num_shards=1)
-pipe.build()
-dataloader = DALIGenericIterator(pipe, ["images", "captions"], reader_name="Reader")
-
-# Benchmark: On A100, this pipeline typically achieves 3000-5000 FPS, 5-10x CPU Loader
+    # Extract metadata
+    metadata = trafilatura.extract_metadata(html)
+    
+    return {
+        'text': result,
+        'title': metadata.title if metadata else None,
+        'author': metadata.author if metadata else None,
+        'date': metadata.date if metadata else None,
+        'url': url
+    }
 ```
 
-### 6.3 Multimodal Cleaning Pipeline
+Trafilatura provides rich configuration options, with different parameter combinations suitable for different scenarios. `include_comments` controls whether to preserve page comment section content—can be set to True for forum-type websites, usually set to False for news websites. `include_tables` controls whether to preserve tables—should be set to True for data-type pages (such as Wikipedia). `favor_precision` and `favor_recall` are a pair of trade-off parameters; the former prioritizes ensuring extraction accuracy (better to miss than include errors), the latter prioritizes ensuring extraction completeness (better to have noise than be incomplete). For pre-training data, typically choose `favor_precision=True`, as noisy data harms model training.
 
-Massive data comes with massive noise. In raw LAION-5B data, truly high-quality samples may account for less than 10%. We need to build a multi-stage cleaning funnel to improve data density while losing as little data diversity as possible. So-called "data cleaning" is essentially **Data Diet**—feeding the model less but better.
+### 3.2.3 Comparison of Other Parsing Tools
 
-#### 6.3.1 Architecture Design: Ray Data Distributed Cleaning
+Besides Trafilatura, there are several commonly used web parsing tools, each with their own characteristics.
 
-Why choose Ray over Spark for the cleaning phase? Because cleaning is no longer simple ETL but includes substantial **deep learning inference (Model Inference)**. Compared to Spark's MapReduce paradigm, Ray provides a more flexible Actor mechanism, allowing us to keep GPU models (e.g., CLIP, Safety Checker) resident, avoiding the huge overhead of reloading multi-GB models for each small batch.
+**Readability** was originally developed by Mozilla for Firefox's reading mode. Its algorithm is relatively simple and fast, but performance on complex pages is average. The Python ecosystem has ported versions like readability-lxml.
 
-Ray Data is suitable for handling this mixed workload of both CPU-intensive (decompression, hashing, Regex) and GPU-intensive (CLIP Embedding inference) tasks. Below is a typical three-stage pipeline design:
-* **Stage 1 (CPU)**: Quick filtering. Directly remove samples with insufficient resolution (<256px), too short text, non-English (if training English-only model), or abnormal aspect ratio.
-* **Stage 2 (GPU)**: Deep feature extraction. Use CLIP model to generate Embeddings, and compute image-text similarity and aesthetic score based on Embeddings.
-* **Stage 3 (CPU/Mixed)**: Logical judgment and deduplication. Comprehensive thresholding based on safety (NSFW), aesthetic score, and image-text relevance, plus semantic deduplication.
+**Newspaper3k** is specifically optimized for news websites and can effectively extract article titles, body text, publication dates, authors, and other information. However, it performs poorly on non-news sites, and the project is not actively maintained.
 
-**Data Flow Diagram**
+**Justext** is a library focused on "boilerplate removal," with algorithms based on link density and text density of text blocks. It is commonly cited in academic research but has less engineering practicality than Trafilatura.
 
-![Figure 6-3: Ray Data Distributed Cleaning Data Flow](../../images/part3/图6_3_Ray_Data分布式清洗数据流向图.png)
-*Figure 6-3: Ray Data Distributed Cleaning Data Flow*
+| Tool | Advantages | Disadvantages | Recommended Scenarios |
+|------|-----------|---------------|----------------------|
+| Trafilatura | Best overall performance, good multilingual support | Medium speed | General scenarios, first choice |
+| Readability | Fast, simple algorithm | Poor on complex pages | Rapid prototyping |
+| Newspaper3k | Good for news sites | Weak generalization | News corpus specialty |
+| Justext | Academically well-validated | Less engineering adaptation | Research scenarios |
 
-#### 6.3.2 Core Algorithm Implementation
+![Figure 3-2: Parser Quality Comparison](../../images/part2/图3_2_解析器质量对比.png)
 
-Cleaning is not just deletion but also quantification of data value. We need multi-dimensional metrics to measure the "gold content" of an image and its corresponding text.
+*Figure 3-2: Web Parser Quality Comparison — Trafilatura leads in F1 score, making it the preferred tool for LLM data processing*
 
-1.  **Aesthetics Scoring**
-    * **Principle**: Datasets are filled with invoices, screenshots, blurry surveillance footage—these are useless for generating beautiful images. LAION-Aesthetics Predictor is typically used.
-    * **Technical Details**: This is a simple MLP (multi-layer perceptron); input is CLIP Image Embedding, output is a 1-10 score. Training data comes from the AVA dataset (containing scores from professional photographers).
-    * **Suggested Threshold**: For base pre-training, retain data with Score > 4_5; for fine-tuning high-quality generation models (SFT phase), recommend Score > 6_0, or even 6_5.
+In actual projects, a common strategy is to use Trafilatura as the primary parser, and when extraction results are empty or too short, fall back to Readability for attempts. This "primary-backup" strategy can improve overall extraction success rate.
 
-2.  **Image-Text Alignment Filtering**
-    * **Principle**: Many Alt-texts are SEO garbage word stacking or filenames ("DSC_001.jpg"), unrelated to image content.
-    * **Technical Details**: Compute cosine similarity (Dot Product) between CLIP Image Embedding and Text Embedding.
-    * **Gotcha**: Different CLIP versions (e.g., OpenAI ViT-L/14 vs OpenCLIP ViT-G/14) have different embedding space distributions; scores are not directly comparable. Must recalibrate thresholds based on specific model. Common practice is to compute similarity distribution across the entire dataset, then retain Top 50% or Top 70%.
+### 3.2.4 Distributed Parsing Architecture
 
-3.  **Safety Detection**
-    * **Principle**: Must remove pornography, violence, and images with obvious brand watermarks.
-    * **Strategy**: Use specially trained classifier heads (also based on CLIP Embedding) to detect NSFW and watermarks. For watermark detection: if the goal is training generation models (e.g., SDXL), must be extremely strict (Recall priority), as generation models easily overfit watermark features; if the goal is training understanding models (e.g., GPT-4V), can be relaxed, as understanding models need to recognize "there is a watermark in the image."
-
-**Code Implementation: Ray Data Cleaning Operators**
+Single-machine processing capacity is limited; facing TB-level WARC files requires building distributed parsing systems. Here's an example of distributed parsing based on Ray Data:
 
 ```python
 import ray
-import torch
-import open_clip
-import numpy as np
-from PIL import Image
-import io
+import trafilatura
+from warcio.archiveiterator import ArchiveIterator
+import gzip
 
-# Define Ray Actor class to ensure model is loaded only once
-class QualityScorer:
-    def __init__(self):
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        # Load CLIP model (ViT-B-32 fast, suitable for cleaning)
-        self.model, _, self.preprocess = open_clip.create_model_and_transforms(
-            'ViT-B-32', pretrained='laion2b_s34b_b79k', device=self.device
-        )
-        # Load aesthetic scoring head (Linear Layer)
-        self.aesthetic_head = torch.nn.Linear(512, 1).to(self.device)
-        self.aesthetic_head.load_state_dict(torch.load("sac+logos+ava1-l14-linearMSE.pth"))
-        self.aesthetic_head.eval()
-
-    def __call__(self, batch: dict) -> dict:
-        """
-        Process one batch of data. Ray automatically shards and transfers data to Actor.
-        """
-        images = []
-        valid_indices = []
-        
-        # Preprocess images (CPU operation)
-        for idx, img_bytes in enumerate(batch["jpg"]):
-            try:
-                img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
-                img_tensor = self.preprocess(img)
-                images.append(img_tensor)
-                valid_indices.append(idx)
-            except Exception:
-                # Log bad image but don't interrupt
-                continue
-        
-        if not images:
-            return {"aesthetic_score": [], "clip_score": []}
-
-        image_input = torch.stack(images).to(self.device)
-        
-        with torch.no_grad():
-            # 1. Extract features
-            image_features = self.model.encode_image(image_input)
-            image_features /= image_features.norm(dim=-1, keepdim=True)
-            
-            # 2. Compute aesthetic score
-            aesthetic_scores = self.aesthetic_head(image_features).squeeze().cpu().numpy()
-            
-            # 3. Compute image-text match (assuming batch has text field)
-            # text_tokens = self.tokenizer(batch["txt"]).to(self.device)
-            # text_features = self.model.encode_text(text_tokens)
-            #... compute cosine similarity
-            
-        # Return results (note alignment with original batch indices)
-        return {"aesthetic_score": aesthetic_scores}
-
-# Orchestrate Ray pipeline
 ray.init()
-ds = ray.data.read_webdataset("s3://raw-bucket/{00000..00099}.tar")
 
-# map_batches automatically schedules GPU resources
-# num_gpus=0_25 means one GPU can run 4 Actors concurrently, improving throughput
-scored_ds = ds.map_batches(
-    QualityScorer, 
-    compute=ray.data.ActorPoolStrategy(size=8), 
-    num_gpus=0_25, 
-    batch_size=128
-)
+def parse_warc_record(record):
+    """Parse single WARC record"""
+    if record.rec_type != 'response':
+        return None
+    
+    url = record.rec_headers.get_header('WARC-Target-URI')
+    content_type = record.http_headers.get_header('Content-Type', '')
+    
+    # Only process HTML pages
+    if 'text/html' not in content_type:
+        return None
+    
+    try:
+        html = record.content_stream().read().decode('utf-8', errors='ignore')
+        text = trafilatura.extract(html, url=url, favor_precision=True)
+        
+        if text and len(text) > 200:  # Filter overly short content
+            return {
+                'url': url,
+                'text': text,
+                'length': len(text)
+            }
+    except Exception as e:
+        return None
+    
+    return None
 
-# Final filtering
-filtered_ds = scored_ds.filter(lambda row: row["aesthetic_score"] > 4_5)
-filtered_ds.write_webdataset("s3://clean-bucket/")
+def process_warc_file(warc_path: str):
+    """Process single WARC file"""
+    results = []
+    
+    with gzip.open(warc_path, 'rb') as f:
+        for record in ArchiveIterator(f):
+            result = parse_warc_record(record)
+            if result:
+                results.append(result)
+    
+    return results
+
+# Get all WARC file paths
+warc_files = [...]  # S3 or local path list
+
+# Distributed parallel processing
+ds = ray.data.from_items(warc_files)
+ds = ds.flat_map(process_warc_file)
+
+# Save results
+ds.write_parquet("s3://bucket/parsed_data/")
 ```
 
-### 6.4 Pitfalls & Troubleshooting
+Key design points of this architecture include: using Ray Data's `flat_map` operator to achieve file-level parallelism; performing error handling inside the parsing function to avoid single data failures affecting batch processing; early filtering through conditions like `len(text) > 200` to reduce downstream processing volume; outputting in Parquet format for convenient subsequent deduplication and filtering steps.
 
-When building billion-scale multimodal datasets, engineering teams often stumble on details. Here are lessons learned from painful experience:
+---
 
-* **Parquet Metadata Explosion**:
-    * **Error**: Habitually reading Parquet files containing 2 billion rows directly in pandas.
-    * **Consequence**: Out of memory (OOM), because pandas tries to load the entire index into memory even when only reading one column.
-    * **Fix**: Use Polars or PySpark's lazy evaluation mode; or strictly split Parquet files by row count (e.g., 1 million rows) into smaller files to avoid processing single giant metadata files.
+## 3.3 Specialized Data Acquisition
 
-* **Insufficient WebDataset Shuffle**:
-    * **Error**: During download, data written in domain order; during training, relying only on DataLoader's buffer shuffle (typically buffer of 10k).
-    * **Consequence**: Model may see 100k e-commerce images consecutively, then 100k landscape images. Small buffer cannot break this "temporal correlation," causing violent training curve oscillation or even divergence.
-    * **Fix**: Before writing WebDataset, must perform**Global Shuffle** on the URL list. Can use Spark's `orderBy(rand())`.
+Besides general web data, pre-training corpora typically also need to include specialized domain data such as code, academic papers, and books. These "specialized data" have unique challenges and techniques for acquisition and processing.
 
-* **Accidentally Deleting Long-tail Data**:
-    * **Error**: Chasing extreme aesthetic scores, deleting all images with Score < 4_5.
-    * **Consequence**: Model becomes "narrow," only recognizing art photos and wallpapers, not real-world (possibly ugly) photos like medical images, street scenes, handwritten notes. Greatly reduces model generalization.
-    * **Fix**: Use stratified sampling. Retain 5%-10% low-score data as "regularization," or establish whitelists for specific domains (e.g., OCR, charts) that bypass the aesthetic filter.
+### 3.3.1 Code Data: GitHub and The Stack
 
-* **The Hidden Danger of Duplicate Data (Deduplication)**:
-    * **Error**: Ignoring the large amount of duplicate images on the internet (e.g., Memes, viral news images).
-    * **Consequence**: Model overfits specific samples, even "memorizing" training set images during generation, leading to serious copyright issues.
-    * **Fix**: Must add**semantic deduplication** to the cleaning pipeline. Compute Embeddings for all images, use Faiss or MinHashLSH for clustering, and retain only one image per highly similar group.
+Code capability is one of the core competencies of modern large models, and acquiring high-quality code data is the foundation for achieving this capability. Currently, the most important source of code data is GitHub.
+
+Obtaining code directly from the GitHub API is feasible but inefficient and has request limits. A more common approach is to use public data mirrors of GitHub. Google BigQuery hosts complete snapshots of GitHub public repositories and allows querying and exporting using SQL. Software Heritage is an organization dedicated to preserving humanity's software heritage and maintains a complete archive of GitHub.
+
+For large-scale code data needs, the most convenient choice is to use The Stack dataset released by the BigCode project. This dataset crawls code in over 300 programming languages from GitHub, with a total size of about 3TB. The Stack's processing pipeline includes: license-based filtering (retaining only code allowed by open-source licenses), deduplication (removing duplicate files and code snippets), and PII cleaning (removing sensitive information).
+
+Special attention is needed when using code data:
+
+**License compliance** is the primary concern. Different open-source licenses have different restrictions on code usage. The Stack dataset provides license tags and can be filtered according to needs. For commercial model training, it is recommended to only use code with permissive licenses like MIT and Apache 2.0.
+
+**Code quality varies greatly**. GitHub contains both high-quality projects like the Linux kernel and large amounts of student assignments and personal experimental code. Common quality filtering strategies include: filtering by repository star count (retaining repositories with star > 10), filtering by file length (removing overly short or long files), and detecting syntax errors based on AST parsing.
+
+**Example of processing code data**:
+
+```python
+import ast
+from typing import Optional
+
+def is_valid_python(code: str) -> bool:
+    """Check if Python code is syntactically correct"""
+    try:
+        ast.parse(code)
+        return True
+    except SyntaxError:
+        return False
+
+def extract_functions(code: str) -> list:
+    """Extract function definitions from code"""
+    try:
+        tree = ast.parse(code)
+        functions = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef):
+                functions.append(ast.unparse(node))
+        return functions
+    except:
+        return []
+
+def filter_code_quality(code: str, 
+                        min_lines: int = 10, 
+                        max_lines: int = 1000,
+                        require_docstring: bool = True) -> Optional[str]:
+    """Code quality filtering"""
+    lines = code.split('\n')
+    
+    # Length filtering
+    if not (min_lines <= len(lines) <= max_lines):
+        return None
+    
+    # Syntax check
+    if not is_valid_python(code):
+        return None
+    
+    # Docstring check (optional)
+    if require_docstring and '"""' not in code and "'''" not in code:
+        return None
+    
+    return code
+```
+
+### 3.3.2 Academic Papers: ArXiv and S2ORC
+
+Academic papers are an important source of high-quality knowledge and significantly help improve models' reasoning abilities and professional knowledge levels.
+
+**ArXiv** is the most important open-access preprint platform, covering academic papers in fields like physics, mathematics, computer science, and biology. ArXiv provides bulk download services, with LaTeX source files and PDFs accessible through its S3 bucket. LaTeX source files are a more ideal data source because they preserve the structural information of papers (sections, formulas, citations, etc.) and are in plain text format, easy to process.
+
+The main challenge in processing ArXiv LaTeX data lies in the complexity of LaTeX syntax. A paper may contain dozens of `.tex` files, using custom macros and styles. A practical simplification strategy is: extract only the main file (usually `main.tex` or files related to the paper title), use regular expressions to remove figure-table and complex formula environments, and preserve body text and simple mathematical expressions.
+
+```python
+import re
+import tarfile
+from pathlib import Path
+
+def extract_arxiv_text(latex_content: str) -> str:
+    """Extract plain text from LaTeX"""
+    text = latex_content
+    
+    # Remove comments
+    text = re.sub(r'%.*$', '', text, flags=re.MULTILINE)
+    
+    # Remove figure environments
+    text = re.sub(r'\\begin\{figure\}.*?\\end\{figure\}', '', text, flags=re.DOTALL)
+    text = re.sub(r'\\begin\{table\}.*?\\end\{table\}', '', text, flags=re.DOTALL)
+    
+    # Simplify citations
+    text = re.sub(r'\\cite\{[^}]+\}', '[CITATION]', text)
+    text = re.sub(r'\\ref\{[^}]+\}', '[REF]', text)
+    
+    # Remove common commands but preserve arguments
+    commands_to_strip = ['textbf', 'textit', 'emph', 'section', 'subsection', 
+                         'paragraph', 'title', 'author']
+    for cmd in commands_to_strip:
+        text = re.sub(rf'\\{cmd}\{{([^}}]+)\}}', r'\1', text)
+    
+    # Remove other commands
+    text = re.sub(r'\\[a-zA-Z]+(\[[^\]]*\])?\{[^}]*\}', '', text)
+    text = re.sub(r'\\[a-zA-Z]+', '', text)
+    
+    # Clean whitespace
+    text = re.sub(r'\n\s*\n', '\n\n', text)
+    text = re.sub(r' +', ' ', text)
+    
+    return text.strip()
+```
+
+**Semantic Scholar Open Research Corpus (S2ORC)** is a large-scale academic paper dataset released by Allen AI, containing metadata for over 80M papers and full text for approximately 8M papers. Compared to ArXiv, S2ORC covers broader fields, including multiple sources like PubMed and ACL Anthology. S2ORC's full text has been processed into structured JSON format, eliminating the hassle of LaTeX/PDF parsing, making it a convenient choice for quickly acquiring paper data.
+
+### 3.3.3 Book Data: Copyright and Alternative Solutions
+
+Books are an important source of high-quality long texts and are valuable for training models' long-range comprehension abilities and knowledge depth. However, the copyright issues of book data are particularly sensitive.
+
+**Books3 in The Pile** contains approximately 200,000 books from sources like Bibliotik. This dataset has triggered multiple copyright lawsuits, with several companies being sued for using this dataset to train models. In the current legal environment, directly using Books3 poses significant legal risks.
+
+**Compliant alternatives** include:
+
+![Figure 3-3: Pre-training Data Source Mixture](../../images/part2/图3_3_预训练数据来源混合.png)
+
+*Figure 3-3: Pre-training Data Source Mixture — Multi-source mixing strategy can improve models' comprehensive capabilities*
+
+Project Gutenberg is a volunteer project providing copyright-expired classic books. Primarily English books published before 1928, about 70,000 volumes. High data quality, but from a distant era with insufficient coverage of modern language.
+
+Internet Archive's Open Library provides borrowable e-books. Usage must comply with its borrowing agreements; large-scale batch acquisition may violate terms of service.
+
+Wikisource provides public domain literary works, covering multiple languages including large amounts of classical Chinese texts.
+
+Academic textbooks and Open Educational Resources (OER) like OpenStax provide high-quality textbook content suitable for building education-focused pre-training data.
+
+For commercial model training, the safest strategy is to only use book data that has been explicitly authorized or is in the public domain. Although this limits data scale, it can avoid potential legal risks.
+
+### 3.3.4 Multilingual Data Balancing
+
+When training multilingual models, data availability varies greatly across languages. English data is most abundant, major languages like Chinese, Japanese, and German are second, while high-quality data for minor languages is extremely scarce.
+
+Data imbalance leads to uneven model capabilities. If simply mixing according to original proportions, English will dominate overwhelmingly and minor languages will barely be learned. Common solution strategies include:
+
+**Upsampling minor languages** is the most direct method, increasing the weight of minor language data through repeated sampling. However, excessive repetition may lead to overfitting.
+
+**Temperature sampling** is a more refined method. Set a temperature parameter T, where the sampling probability for language L is $p_L \propto n_L^{1/T}$, where $n_L$ is the original data volume for that language. When T=1, it degenerates to original proportions; as T→∞, it approaches uniform distribution. LLaMA 2 used temperature sampling around T=0.3.
+
+The **quality over quantity** approach is also worth considering. For minor languages with scarce data, translation or synthesis methods can be used to augment data, but attention must be paid to translation quality and unnatural translation issues.
+
+---
+
+## 3.4 Engineering Practices for Data Acquisition
+
+Connecting all the above steps to build a complete data acquisition pipeline requires considering many engineering details.
+
+### 3.4.1 Crawler Architecture Design
+
+For scenarios requiring independent data crawling (rather than using Common Crawl), distributed crawler architecture design is crucial. A typical architecture includes the following components:
+
+**URL Manager** is responsible for maintaining queues of URLs to be crawled, recording the status of crawled URLs, and handling URL deduplication and priority sorting. Common implementation methods include Redis queues combined with Bloom Filter deduplication.
+
+![Figure 3-4: Distributed Crawler Architecture](../../images/part2/图3_4_分布式爬虫架构.png)
+
+*Figure 3-4: Distributed Web Crawling System Architecture — Collaboration between URL Manager, downloader cluster, parser, and storage layer*
+
+**Downloader Cluster** is responsible for actual HTTP requests. Key considerations include: concurrency control (avoiding excessive pressure on target websites), proxy pool management (dealing with anti-crawler mechanisms), retry strategies (handling network fluctuations and temporary failures), and robots.txt compliance (respecting website crawler rules).
+
+**Parser** is responsible for extracting body content and metadata from downloaded HTML, which was discussed in detail in the previous section.
+
+**Storage Layer** is responsible for persisting crawl results. For large-scale crawling, it is recommended to write directly to object storage (S3/MinIO) in WARC or Parquet format.
+
+```python
+# Simplified crawler example
+import asyncio
+import aiohttp
+from urllib.parse import urlparse
+import trafilatura
+
+class SimpleCrawler:
+    def __init__(self, max_concurrent: int = 100):
+        self.max_concurrent = max_concurrent
+        self.semaphore = asyncio.Semaphore(max_concurrent)
+        self.visited = set()
+    
+    async def fetch(self, session: aiohttp.ClientSession, url: str) -> dict:
+        """Asynchronously fetch and parse single URL"""
+        if url in self.visited:
+            return None
+        self.visited.add(url)
+        
+        async with self.semaphore:
+            try:
+                async with session.get(url, timeout=30) as response:
+                    if response.status != 200:
+                        return None
+                    html = await response.text()
+                    text = trafilatura.extract(html, url=url)
+                    return {'url': url, 'text': text} if text else None
+            except Exception:
+                return None
+    
+    async def crawl(self, urls: list) -> list:
+        """Batch crawl URL list"""
+        async with aiohttp.ClientSession() as session:
+            tasks = [self.fetch(session, url) for url in urls]
+            results = await asyncio.gather(*tasks)
+            return [r for r in results if r is not None]
+```
+
+### 3.4.2 Incremental Update Strategy
+
+Pre-training data is not a one-time task. Over time, new data needs to be continuously absorbed to maintain the timeliness of model knowledge. The key challenges of incremental updates are:
+
+**Identifying new data**: For Common Crawl, new batches are released monthly and can be processed directly. For independent crawling, update timestamps need to be maintained, periodically revisiting known URLs to check for updates.
+
+**Avoiding duplicate processing**: Already processed data should not re-enter the pipeline. Deduplication can be performed through URL fingerprints, content hashes, and other methods.
+
+**Version management**: Each processing batch should have a clear version identifier for traceability and rollback. This is closely related to the data version control (DVC/LakeFS) discussed in Chapter 2.
+
+### 3.4.3 Quality Monitoring and Feedback
+
+Data acquisition pipelines need to establish comprehensive quality monitoring mechanisms. Key monitoring metrics include:
+
+**Download success rate**: Proportion of failed requests. If it suddenly increases, the target website may have blocked the crawler.
+
+**Parsing success rate**: Proportion of successful body text extractions. If it decreases, the target website may have changed its page structure.
+
+**Average document length**: Average character count of body text. Abnormal fluctuations may indicate parser problems.
+
+**Language distribution**: Proportion of data in each language. Ensure it matches the expected language ratio.
+
+**Duplication rate**: Proportion of duplication with historical data. An excessively high duplication rate means the marginal value of new data is declining.
+
+It is recommended to integrate these metrics into monitoring systems (such as Prometheus + Grafana), set alert thresholds, and promptly detect and handle anomalies.
+
+---
+
+## 3.5 Common Pitfalls and Best Practices
+
+In the data acquisition phase, several common pitfalls deserve caution.
+
+**The first pitfall is over-reliance on a single data source.** If pre-training data all comes from Common Crawl, the model may inherit the biases and noise of web data. A reasonable approach is to mix multiple sources: web data provides breadth, books and papers provide depth, and code data provides logical capabilities. The Pile-style multi-source mixing strategy has proven effective.
+
+**The second pitfall is ignoring data timeliness.** Historical batches of Common Crawl, though voluminous, may contain outdated information. For applications requiring timeliness (such as news and current events), more recent data batches should be prioritized. Additionally, very old data may contain defunct links, corrected erroneous information, etc.
+
+**The third pitfall is underestimating compliance risks.** Copyright issues, privacy issues, robots.txt violations, etc., may trigger serious legal problems in later project stages. The best practice is to establish comprehensive metadata records during the data acquisition phase—recording each data item's source URL, acquisition time, claimed license, and other information, leaving evidence for possible future audits.
+
+**The fourth pitfall is emphasizing collection over processing.** Many teams expend great effort expanding data collection scale but rush through parsing and cleaning steps. As stated in Chapter 1, data quality is far more important than data quantity. It's better to collect less data but ensure each piece undergoes strict quality control.
+
+---
+
+## 3.6 Chapter Summary
+
+This chapter systematically introduces the methodology and engineering practices of pre-training data acquisition.
+
+In terms of open-source datasets, Common Crawl is the most important upstream data source, providing three formats: WARC, WAT, and WET. RefinedWeb and The Pile are carefully processed high-quality datasets whose processing methods are worth learning from. Chinese datasets are relatively scarce, often requiring independent extraction from Common Crawl.
+
+In terms of web parsing, Trafilatura is currently the most recommended industrial-grade parsing library, capable of accurately extracting body content from complex HTML. Distributed parsing architectures (such as based on Ray Data) are necessary for processing TB-level data.
+
+In terms of specialized data, code data can be acquired through The Stack or GitHub BigQuery, with attention to license compliance; academic papers can be acquired through ArXiv and S2ORC; book data carries higher copyright risks, and public domain resources are recommended. Multilingual data needs to be balanced through strategies like temperature sampling.
+
+In terms of engineering practices, a complete data acquisition pipeline needs to consider crawler architecture design, incremental update strategies, and quality monitoring mechanisms. Core principles are multi-source mixing, quality first, and compliance foremost.
+
+![Figure 3-5: Chapter Knowledge Structure](../../images/part2/图3_5_本章知识结构.png)
+
+*Figure 3-5: Chapter 3 Knowledge Structure — Covering four major themes: open-source datasets, web parsing, specialized data, and engineering practices*
+
+---
+
+## Further Reading
+
+For in-depth content on pre-training data acquisition, the following resources are worth consulting:
+
+Common Crawl official documentation (commoncrawl.org/the-data) provides detailed introductions to data formats and acquisition methods. The RefinedWeb paper (Falcon LLM: A Large Language Model for High-Quality Web Data) details the complete process of building high-quality pre-training sets from Common Crawl. The Pile paper (The Pile: An 800GB Dataset of Diverse Text for Language Modeling) introduces multi-source mixed data construction strategies. Trafilatura documentation (trafilatura.readthedocs.io) provides comprehensive API documentation and usage examples. The Stack paper (StarCoder: May the Source Be with You!) introduces methods for building large-scale code datasets.
+
+---
+
+## Next Chapter Preview
+
+Acquiring raw data is only the first step. In the next chapter, "Cleaning and Denoising," we will delve into how to screen high-quality content from massive raw data. You will learn heuristic filtering rules (language identification, perplexity filtering, length distribution), large-scale deduplication techniques (principles and distributed implementation of MinHash LSH), and privacy data cleaning (PII identification and removal).
+
+Enter the next chapter with this question: If two documents have 80% identical content, how can you efficiently identify and handle them?
