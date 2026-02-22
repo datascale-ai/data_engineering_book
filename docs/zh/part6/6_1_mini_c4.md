@@ -1,6 +1,6 @@
 
 
-# 项目一：构建"Mini-C4"预训练集
+# 项目一：基于 Ray 构建分布式 Mini-C4 数据流水线 (Distributed Mini-C4)
 
 ### 1. 项目背景 (Project Brief)
 

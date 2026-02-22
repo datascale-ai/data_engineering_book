@@ -1,4 +1,4 @@
-# Project One: Building a "Mini-C4" Pre-training Dataset
+# Project One: Building a Distributed "Mini-C4" Data Pipeline with Ray
 
 ### 1. Project Background (Project Brief)
 
