@@ -38,7 +38,7 @@ import fasttext
 # 加载语言识别模型
 lang_model = fasttext.load_model('lid.176.bin')
 
-def detect_language(text: str, min_confidence: float = 0_8) -> tuple:
+def detect_language(text: str, min_confidence: float = 0.8) -> tuple:
     """
     识别文本语言
     
@@ -149,12 +149,12 @@ class HeuristicFilter:
             'min_length': 200,           # 最小字符数
             'max_length': 100000,        # 最大字符数
             'min_words': 50,             # 最小词数
-            'max_special_ratio': 0_3,    # 最大特殊字符比例
-            'max_digit_ratio': 0_3,      # 最大数字比例
-            'max_duplicate_line_ratio': 0_3,  # 最大重复行比例
+            'max_special_ratio': 0.3,    # 最大特殊字符比例
+            'max_digit_ratio': 0.3,      # 最大数字比例
+            'max_duplicate_line_ratio': 0.3,  # 最大重复行比例
             'min_avg_word_length': 2,    # 最小平均词长
             'max_avg_word_length': 20,   # 最大平均词长
-            'min_unique_word_ratio': 0_1 # 最小词汇多样性
+            'min_unique_word_ratio': 0.1 # 最小词汇多样性
         }
     
     def check_length(self, text: str) -> bool:
@@ -320,7 +320,7 @@ class MinHashLSH:
                  num_hashes: int = 128,
                  num_bands: int = 16,
                  ngram_size: int = 5,
-                 threshold: float = 0_8):
+                 threshold: float = 0.8):
         """
         初始化 MinHash LSH
         
@@ -434,7 +434,7 @@ def jaccard_similarity(set1: Set, set2: Set) -> float:
 import ray
 
 def distributed_fuzzy_dedup(input_path: str, output_path: str, 
-                            threshold: float = 0_8):
+                            threshold: float = 0.8):
     """
     分布式模糊去重流水线
     """
@@ -713,7 +713,7 @@ class CleaningConfig:
     min_length: int = 200
     max_length: int = 100000
     max_perplexity: float = 500
-    dedup_threshold: float = 0_8
+    dedup_threshold: float = 0.8
     anonymize_pii: bool = True
 
 class DataCleaningPipeline:
@@ -721,7 +721,7 @@ class DataCleaningPipeline:
         self.config = config
         self.lang_filter = LanguageFilter(config.target_language)
         self.heuristic_filter = HeuristicFilter()
-        self.perplexity_filter = PerplexityFilter(max_ppl=config.max_perplexity)
+        self.perplexity_filter = PerplexityFilter(max_perplexity=config.max_perplexity)
         self.pii_filter = ChinesePIIFilter() if config.target_language == 'zh' else None
         self.deduplicator = MinHashLSH(threshold=config.dedup_threshold)
     

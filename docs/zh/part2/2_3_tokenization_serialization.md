@@ -211,7 +211,7 @@ spm.SentencePieceTrainer.train(
     model_prefix='my_tokenizer',
     vocab_size=32000,
     model_type='bpe',  # 或 'unigram'
-    character_coverage=0_9995,
+    character_coverage=0.9995,
     num_threads=16
 )
 
@@ -293,7 +293,7 @@ spm.SentencePieceTrainer.train(
     model_prefix='multilingual_tokenizer',
     vocab_size=64000,
     model_type='unigram',
-    character_coverage=0_9999,  # 高覆盖率确保稀有字符被包含
+    character_coverage=0.9999,  # 高覆盖率确保稀有字符被包含
     input_sentence_size=10000000,
     shuffle_input_sentence=True,
     # 特殊处理中日韩字符
@@ -440,11 +440,11 @@ def static_mix(data_sources: dict, target_size: int) -> list:
 
 # 使用示例
 data_sources = {
-    'web': (web_data, 0_6),
-    'books': (book_data, 0_15),
-    'code': (code_data, 0_1),
-    'papers': (paper_data, 0_1),
-    'wikipedia': (wiki_data, 0_05)
+    'web': (web_data, 0.6),
+    'books': (book_data, 0.15),
+    'code': (code_data, 0.1),
+    'papers': (paper_data, 0.1),
+    'wikipedia': (wiki_data, 0.05)
 }
 
 mixed = static_mix(data_sources, target_size=1000000)
@@ -496,9 +496,9 @@ class DynamicDataMixer:
 
 # 使用示例：训练早期强调多样性，后期强调质量
 schedule = [
-    (0, {'web': 0_5, 'books': 0_2, 'code': 0_15, 'papers': 0_1, 'wiki': 0_05}),
-    (100000, {'web': 0_4, 'books': 0_25, 'code': 0_15, 'papers': 0_15, 'wiki': 0_05}),
-    (500000, {'web': 0_3, 'books': 0_3, 'code': 0_2, 'papers': 0_15, 'wiki': 0_05}),
+    (0, {'web': 0.5, 'books': 0.2, 'code': 0.15, 'papers': 0.1, 'wiki': 0.05}),
+    (100000, {'web': 0.4, 'books': 0.25, 'code': 0.15, 'papers': 0.15, 'wiki': 0.05}),
+    (500000, {'web': 0.3, 'books': 0.3, 'code': 0.2, 'papers': 0.15, 'wiki': 0.05}),
 ]
 
 mixer = DynamicDataMixer(data_sources, schedule)
@@ -747,14 +747,14 @@ class DataPreparationPipeline:
     def mix_sources(self, sources: dict) -> list:
         """混合多个数据源"""
         mixed = []
-        weights = self.config.mix_weights or {s: 1_0 for s in sources}
+        weights = self.config.mix_weights or {s: 1.0 for s in sources}
         total_weight = sum(weights.values())
         
         # 确定每个来源的采样数
         total_samples = sum(len(data) for data in sources.values())
         
         for source_name, data in sources.items():
-            weight = weights.get(source_name, 1_0) / total_weight
+            weight = weights.get(source_name, 1.0) / total_weight
             num_samples = int(total_samples * weight)
             
             if len(data) >= num_samples:

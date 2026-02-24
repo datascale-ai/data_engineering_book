@@ -5,7 +5,7 @@
 
 本章将深入探讨大语言模型（LLM）生命周期中至关重要的一环——从“通用预训练”到“特定指令遵循”的关键转变。我们将跳出简单的数据收集层面，深入研究如何通过高度工程化的 Prompt 体系和自动化流水线（Self-Instruct、Evol-Instruct）来构建高质量的 SFT（Supervised Fine-Tuning）数据集。除了技术实现，本章还将剖析背后的理论依据：为何少量高质量数据能撬动巨大的模型能力？我们将重点解决数据多样性不足、指令复杂度不够以及推理能力缺失的问题，最终打造一个既懂知识又懂规矩的智能体。
 
-### 学习目标 (Learning Objectives)
+## 学习目标 (Learning Objectives)
 * **掌握迭代式 System Prompt 工程**：能够编写控制模型输出格式、风格与深度的 System Prompt，理解角色设定对数据分布的影响。
 * **深入理解自动化数据生成流水线**：能够复现并改进 Self-Instruct 和 Evol-Instruct 算法，从零构建领域指令集，理解其背后的“教师-学生”蒸馏逻辑。
 * **学会构造思维链 (Chain-of-Thought, CoT) 数据**：通过显式推理步骤增强模型的逻辑能力，打破 Transformer 的“黑盒”映射。
@@ -52,7 +52,7 @@
 | 特性 | 人工标注 (Manual Annotation) | Self-Instruct | Evol-Instruct |
 | :--- | :--- | :--- | :--- |
 | **核心目标** | 极高精度、特定领域知识 | 增加任务的多样性 (Diversity) | 增加任务的复杂度 (Complexity) |
-| **成本 (Cost)** | 极高 ($1-$10/条) | 低 ($0_01/条) | 中 ($0_03/条，需多轮调用) |
+| **成本 (Cost)** | 极高 ($1-$10/条) | 低 ($0.01/条) | 中 ($0.03/条，需多轮调用) |
 | **输入来源** | 领域专家 | 种子任务池 (Seed Pool) | 现有简单指令 (Base Instruction) |
 | **操作逻辑** | 专家撰写与审核 | “请生成一个与现有任务不同的新任务” | “请将此任务改写得更难，例如增加限制条件” |
 | **典型算子/方法** | 清洗、审核、众包 | ROUGE 去重，动名词过滤 | 深度进化 (Deepening), 广度进化 (Breadth) |
@@ -354,7 +354,7 @@ Chickens: 15, Cows: 5
 在学术界和工业界，有几个公认的榜单用于测试 SFT 后的模型能力：
 * **WizardLM 论文数据 :** 经过 4 轮 Evol-Instruct 进化的数据训练出的模型，在 GSM8K (数学) 和 HumanEval (代码) 上，相比仅使用原始数据的模型，性能提升通常在 10% - 20% 以上。
 * **MT-Bench:** 一个多轮对话的评估集，专门测试模型的指令遵循、推理和多轮对话能力，通常由 GPT-4 打分。
-* **成本参考：** 使用 `gpt-3_5-turbo` 生成 52K 条 Self-Instruct 数据的成本约为 $500 - $1000（取决于 Prompt 长度和轮次）。这相比人工标注数十万美元的成本是极具性价比的。
+* **成本参考：** 使用 `gpt-3.5-turbo` 生成 52K 条 Self-Instruct 数据的成本约为 $500 - $1000（取决于 Prompt 长度和轮次）。这相比人工标注数十万美元的成本是极具性价比的。
 
 ---
 
@@ -365,7 +365,7 @@ Chickens: 15, Cows: 5
 * **陷阱 1：Mode Collapse (模式坍塌)**
     * **现象：** 模型生成的指令千篇一律，例如生成的 1000 条数据全是“请写一篇关于X的文章”或者“请帮我写一个Python函数”。
     * **原因：** Seed Tasks（种子任务）过于单一，或者 System Prompt 的 Temperature 设置过低，导致模型陷入局部最优。
-    * **修正：** 增加 Seed Tasks 的多样性（覆盖 100+ 个不同领域，如烹饪、法律、编程、文学）；提高 Temperature (0_7 -> 1_0)；在 System Prompt 中强制要求“Generate a task from a domain different from previous examples”。
+    * **修正：** 增加 Seed Tasks 的多样性（覆盖 100+ 个不同领域，如烹饪、法律、编程、文学）；提高 Temperature (0.7 -> 1.0)；在 System Prompt 中强制要求“Generate a task from a domain different from previous examples”。
 
 * **陷阱 2：Hallucinated Constraints (幻觉约束)**
     * **现象：** 模型在训练数据中学会了“必须以 JSON 输出”，导致在用户闲聊时（“你好”）也强行输出 JSON，或者在没有要求的情况下输出 `<thinking>` 标签。

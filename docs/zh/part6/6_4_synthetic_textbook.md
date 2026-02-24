@@ -125,6 +125,12 @@ def execute_code(code, timeout=5):
             return True, result.stdout.strip()
         else:
             return False, f"Error: {result.stderr.strip()}"
+    except subprocess.TimeoutExpired:
+        # 超时：代码存在死循环或执行时间过长，直接丢弃该样本
+        return False, f"Error: Execution timed out after {timeout}s."
+    except Exception as e:
+        # 兜底：捕获其他意外异常（如文件描述符耗尽等），避免整个流水线崩溃
+        return False, f"Error: Unexpected exception - {e}"
 ```
 
 ### 4. 效果展示 (Showcase)

@@ -7,13 +7,13 @@
 
 我们将不仅限于生成文本，而是通过 Program of Thought (PoT) 利用代码执行来构建严密的逻辑验证闭环，以及如何利用 GPT-4o 等多模态模型合成复杂的图文指令数据。我们将展示如何从简单的“模仿人类”转向“超越人类”，通过算法手段构建出比真实世界更纯净、更具教育意义的训练集。
 
-### 学习目标 (Learning Objectives)
+## 学习目标 (Learning Objectives)
 * 构建 “Textbook Quality” 分类器，从海量 Web 数据中筛选高价值样本。
 * 实现 PoT (Program of Thought) 数据生成流水线，利用 Python 解释器验证数学/代码数据的正确性。
 * 掌握基于 LLaVA/GPT-4o 的多模态指令合成技术，构造图像推理问答对。
 
 ### 场景引入：当数据成为瓶颈
->“你正在训练一个专门用于 Python 编程的小型模型（1_3B）。为了让它尽可能强大，你编写爬虫爬取了 GitHub 上所有的开源代码。然而，当训练结束进行测试时，你绝望地发现模型学会了写满是 Bug 的代码，甚至学会了在函数里写‘TODO: Fix this later’或者‘This code is trash, do not use’。
+>“你正在训练一个专门用于 Python 编程的小型模型（1.3B）。为了让它尽可能强大，你编写爬虫爬取了 GitHub 上所有的开源代码。然而，当训练结束进行测试时，你绝望地发现模型学会了写满是 Bug 的代码，甚至学会了在函数里写‘TODO: Fix this later’或者‘This code is trash, do not use’。
 仅仅增加数据量已经无效了，因为你喂给模型的垃圾越多，它的输出就越混乱。这时候，微软的 Phi-1 论文给了你一记当头棒喝：‘Textbooks Are All You Need’。你需要的是像教科书一样逻辑清晰、注释完美、由浅入深的教学代码，而不是只有上帝和原作者能看懂的‘屎山’。但是，去哪里找几百亿 Token 的完美教科书呢？既然找不到，我们就必须学会凭空‘变’出这些数据。如何构建一个不知疲倦的‘虚拟教授’来批量生产这些完美的教材？这就是本章要解决的核心工程挑战。”
 
 ---
@@ -107,7 +107,7 @@ pipeline.fit(X, y)
 web_snippet = "Standard library documentation for Python..."
 score = pipeline.predict_proba([web_snippet])[0][1]
 
-if score > 0_8:
+if score > 0.8:
     print("Keep this data for training: High Educational Value")
 else:
     print("Discard: Low Signal-to-Noise Ratio")
@@ -292,7 +292,7 @@ Your task is to generate a conversation between a Human and Yourself about this 
 这是目前（截至 2024-2025 年）构建高性能开源多模态模型（如 LLaVA-NeXT, ShareGPT4V）的最主流方法，常被视为 SOTA（State-of-the-Art）方案。
 
 **核心思想**
-该方法摒弃了“利用文本模型猜测视觉内容”的路径，转而采用“教师-学生”（Teacher-Student）蒸馏范式。利用闭源的顶尖多模态大模型（如 GPT-4o, Gemini 1_5 Pro）作为“教师模型”，直接处理原始图像信号，生成高质量、高密度的详细描述（Dense Caption）和复杂的推理问答对，供开源模型（学生模型）学习。
+该方法摒弃了“利用文本模型猜测视觉内容”的路径，转而采用“教师-学生”（Teacher-Student）蒸馏范式。利用闭源的顶尖多模态大模型（如 GPT-4o, Gemini 1.5 Pro）作为“教师模型”，直接处理原始图像信号，生成高质量、高密度的详细描述（Dense Caption）和复杂的推理问答对，供开源模型（学生模型）学习。
 
 **优势分析**
 * **消除模态隔阂**：教师模型直接“看”到图像像素，能够捕捉光影、材质、微表情等文本元数据无法承载的细节。
@@ -348,7 +348,7 @@ $$ \text{Image} \xrightarrow{\text{Experts}} [\text{OCR} + \text{Layout} + \text
 1.  **OCR Expert (如 PaddleOCR)**: 提取图像中所有文本及其精确坐标 $(x_1, y_1, x_2, y_2)$。
 2.  **Layout Expert (如 LayoutLM)**: 解析文档的拓扑结构，识别表格行列、段落层级和标题关系。
 3.  **Synthesis (LLM)**: 将上述结构化数据填入 Prompt 模板。
-    * *Example Prompt:* “这是一张发票的结构化数据，发票号码位于 (100, 200)，金额总计为 500_00。请基于此生成一个关于‘财务审计核对’的多轮问答。”
+    * *Example Prompt:* “这是一张发票的结构化数据，发票号码位于 (100, 200)，金额总计为 500.00。请基于此生成一个关于‘财务审计核对’的多轮问答。”
 
 
 

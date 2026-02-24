@@ -118,7 +118,7 @@ PDF 本质上是一组绘制指令的集合，而非结构化数据。普通的 
 **微调（Fine-tuning）** 旨在调整向量空间分布，让相似的专业概念靠得更近。通常使用 **对比学习（Contrastive Learning）** 损失函数：
 
 $$
-L = - \log \frac{e^{sim(q, d^+)/\tau}}{\sum_{i} e^{sim(q, d^-_i)/\tau}}
+L = - \log \frac{e^{sim(q, d^+)/\tau}}{e^{sim(q, d^+)/\tau} + \sum_{i} e^{sim(q, d^-_i)/\tau}}
 $$
 
 其中 $d^+$ 是正例（正确的文档），$d^-$ 是负例（错误的文档）。通过构造“问题-相关文档”的正例对和“问题-不相关文档”的负例对进行微调，可以显著提升特定领域的检索召回率（Recall）。
@@ -206,7 +206,7 @@ class ParentChildIndexer:
         for child_text in children:
             # 模拟 Embedding 过程
             # vector = embedding_model.encode(child_text) 
-            vector = [0_1, 0_2] # 占位符
+            vector = [0.1, 0.2] # 占位符
             
             # 关键：在 Child 的元数据中存储 Parent ID
             self.vector_index.append({
@@ -256,7 +256,7 @@ RAG 系统的性能不仅仅是“回答准确”，还包括索引构建的成�
 | 指标 | 说明 | 目标值 (参考) |
 | :--- | :--- | :--- |
 | **Hit Rate (Recall@K)** | 检索出的前 K 个文档中包含正确答案的比例 | > 85% |
-| **MRR (Mean Reciprocal Rank)** | 正确文档在检索列表中的排名权重 | > 0_7 |
+| **MRR (Mean Reciprocal Rank)** | 正确文档在检索列表中的排名权重 | > 0.7 |
 | **Faithfulness** | 生成的答案是否忠实于检索到的上下文（防幻觉） | > 90% (基于 RAGAS) |
 
 ### 12.5.2 基准测试 (Benchmarks)
@@ -265,7 +265,7 @@ RAG 系统的性能不仅仅是“回答准确”，还包括索引构建的成�
 
 *   **解析耗时 (Unstructured)**: 
     *   纯 CPU: 28 分钟
-    *   GPU 加速 (OCR): 11 分钟 (**加速 2_5 倍**)
+    *   GPU 加速 (OCR): 11 分钟 (**加速 2.5 倍**)
 *   **检索延迟 (10M 向量规模)**:
     *   纯 Dense 检索: 9ms
     *   Hybrid 检索 (Dense + Sparse + RRF): 45ms
