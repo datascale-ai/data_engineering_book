@@ -1,10 +1,10 @@
-# 第2章：数据基础设施选型
+# 第2章：AI 原生数据栈（向量库、对象存储、Ray/Spark 分布式计算）
 
 ---
 
 ## 本章摘要
 
-工欲善其事，必先利其器。在处理 TB 级甚至 PB 级的 LLM 训练数据之前，选择正确的基础设施是决定项目成败的第一步。本章将从**存储、计算、格式、版本控制**四个维度，系统性地介绍现代数据栈的技术选型，帮助读者建立一套高效、可扩展、可复现的数据处理平台。
+工欲善其事，必先利其器。在处理 TB 级甚至 PB 级的 LLM 训练数据之前，选择正确的基础设施是决定项目成败的第一步。本章将从**存储、计算、向量数据库、格式、版本控制**五个维度，系统性地介绍 AI 原生数据栈的技术选型。此外，我们特别关注分布式数据处理框架（Ray Data、Apache Spark、Dask）在大规模 Token 处理中的应用，以及针对 GPU 训练的 I/O 瓶颈优化策略，帮助读者建立一套高效、可扩展、可复现的数据处理平台。
 
 ---
 
@@ -149,7 +149,183 @@ ds_processed.write_parquet("s3://my-bucket/processed_data/")
 
 值得一提的是，在实际大型项目中，Spark 和 Ray 往往共存而非互斥。一种常见的混合策略是：Spark 负责与数据湖/数据仓库的交互，包括读写 Iceberg/Hive 表、执行 SQL 分析等 ETL 任务；Ray Data 负责 ML 密集型处理，如调用大模型进行推理、使用 GPU 进行批量处理。两者通过共享的对象存储（S3 上的 Parquet 文件）进行数据交换，各司其职，相得益彰。
 
+#### Dask：Python 原生的第三选择
+
+除了 Spark 和 Ray，**Dask** 是另一个值得关注的分布式计算框架，尤其适合已有大量 Pandas/NumPy 代码的团队。Dask 的核心理念是"并行化 PyData 生态"——它的 API 几乎与 Pandas/NumPy 完全兼容，可以将单机代码以最小改动扩展到集群。
+
+**Dask 的核心优势**：
+
+- **零学习成本**：`dask.dataframe` 的 API 与 Pandas 几乎一致，团队无需学习新语法。
+- **灵活的调度**：既可以在单机多核运行（替代 multiprocessing），也可以扩展到分布式集群。
+- **与科学计算生态的集成**：与 scikit-learn、XGBoost 等 ML 库有良好的集成。
+- **低门槛部署**：不需要 JVM（不像 Spark），不需要复杂的集群管理（比 Ray 简单）。
+
+**Dask 的劣势**：
+
+- **大规模性能不如 Spark**：在 PB 级数据处理上，Dask 的优化器和 shuffle 性能不如 Spark 成熟。
+- **没有 GPU 原生支持**：不像 Ray 那样天然支持 GPU 调度（需要通过 Dask-CUDA 插件）。
+- **社区规模较小**：不如 Spark 和 Ray 的社区活跃度高。
+
+```python
+import dask.dataframe as dd
+import dask
+
+# Dask vs Pandas：几乎相同的 API
+def process_with_dask(input_path: str, output_path: str):
+    """使用 Dask 进行分布式文本处理"""
+    # 读取（自动分区，延迟执行）
+    ddf = dd.read_parquet(input_path)
+    
+    # 过滤短文本（API 与 Pandas 完全一致）
+    ddf_filtered = ddf[ddf['text'].str.len() > 100]
+    
+    # 添加计算列
+    ddf_filtered = ddf_filtered.assign(
+        text_length=ddf_filtered['text'].str.len()
+    )
+    
+    # 保存（触发实际计算）
+    ddf_filtered.to_parquet(output_path)
+
+# 进阶：使用 Dask Bag 处理非结构化数据
+import dask.bag as db
+
+def process_jsonl_with_dask(input_pattern: str):
+    """使用 Dask Bag 处理 JSONL 文件"""
+    bag = db.read_text(input_pattern).map(json.loads)
+    
+    # 链式处理
+    result = (
+        bag
+        .filter(lambda x: len(x.get('text', '')) > 100)
+        .map(lambda x: {**x, 'text_length': len(x['text'])})
+    )
+    
+    # 转换为 DataFrame 后保存
+    result.to_dataframe().to_parquet('output/')
+```
+
+**三大框架选型总结**：
+
+| 维度 | Apache Spark | Ray Data | Dask |
+|------|-------------|----------|------|
+| **最佳场景** | SQL/ETL、数据湖 | GPU/ML 推理 | Pandas 并行化 |
+| **学习曲线** | 中等（需学 Spark API） | 中等（需学 Ray API）| 极低（Pandas 用户零门槛）|
+| **PB 级性能** | ⭐⭐⭐ | ⭐⭐ | ⭐ |
+| **GPU 支持** | 插件 | 原生 | 插件 |
+| **推荐人群** | 大数据工程师 | AI/ML 工程师 | 数据科学家 |
+
+对于 LLM 数据工程的典型场景（TB 级文本数据 + 偶尔需要 GPU 推理），推荐的组合是：**Spark 用于 ETL，Ray 用于 ML 推理，Dask 用于快速原型验证和中小规模处理**。
+
 ---
+
+### 2.1.4 向量数据库选型
+
+随着 RAG（检索增强生成）和多模态搜索的普及，向量数据库已成为 AI 数据栈中不可或缺的组件。向量数据库专门用于存储和检索高维向量（Embedding），是连接数据工程与模型推理的桥梁。
+
+#### 核心概念
+
+向量数据库的核心操作是**近似最近邻搜索（Approximate Nearest Neighbor, ANN）**。给定一个查询向量 $q$，在数据库中找到与 $q$ 最相似的 $k$ 个向量。精确搜索在高维空间中计算代价极高，因此实际系统大多采用近似算法，在**召回率（Recall）**和**查询吞吐量（QPS）**之间进行权衡。
+
+主流的 ANN 索引算法包括：
+
+- **HNSW（Hierarchical Navigable Small World）**：基于图结构的算法，召回率高、查询速度快，但内存占用大。适合对召回率要求极高的场景。
+- **IVF（Inverted File Index）**：基于聚类的算法，将向量空间划分为多个 Voronoi 区域，查询时只搜索最近的几个区域。内存效率好，适合大规模数据。
+- **ScaNN（Scalable Nearest Neighbors）**：Google 开发的算法，结合量化和剪枝技术，在 QPS 和 Recall 之间取得优异平衡。
+
+#### 主流向量数据库对比
+
+| 特性 | Milvus | Qdrant | Weaviate | Pinecone | FAISS |
+|------|--------|--------|----------|----------|-------|
+| **部署模式** | 自建/云 | 自建/云 | 自建/云 | 纯 SaaS | 库（非数据库） |
+| **开源** | 是 | 是 | 是 | 否 | 是 |
+| **索引算法** | HNSW, IVF, DiskANN | HNSW | HNSW | 自研 | HNSW, IVF, PQ |
+| **分布式** | 原生支持 | 支持 | 支持 | 托管 | 手动分片 |
+| **混合搜索** | 支持 | 支持 | 支持 | 支持 | 不支持 |
+| **标量过滤** | 高效 | 高效 | 高效 | 高效 | 需后处理 |
+| **适用场景** | 大规模生产 | 中小规模、高性能 | 全栈语义搜索 | 快速上手、无运维 | 研究原型 |
+
+**选型决策要点**：
+
+- **QPS vs Recall 权衡**：对于预训练数据去重，需要高 Recall（>0.99）但可以容忍较低 QPS；对于在线 RAG 检索，需要高 QPS（>1000）但可以接受略低的 Recall。
+- **数据规模**：百万级向量以下，Qdrant 或 FAISS 即可；千万至亿级向量，Milvus 的分布式架构更有优势。
+- **运维能力**：如果团队没有运维经验，Pinecone 的全托管模式是最低风险选择。
+
+```python
+# 使用 Milvus 进行向量检索示例
+from pymilvus import connections, Collection, FieldSchema, CollectionSchema, DataType, utility
+
+# 连接 Milvus
+connections.connect("default", host="localhost", port="19530")
+
+# 定义 Schema
+fields = [
+    FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, max_length=64),
+    FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=65535),
+    FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=768)
+]
+schema = CollectionSchema(fields, description="Document embeddings")
+
+# 创建 Collection
+collection = Collection("documents", schema)
+
+# 创建 HNSW 索引（高召回率配置）
+index_params = {
+    "metric_type": "COSINE",
+    "index_type": "HNSW",
+    "params": {
+        "M": 16,               # 每个节点的连接数，越大召回越高但内存越大
+        "efConstruction": 256  # 构建时的搜索宽度
+    }
+}
+collection.create_index("embedding", index_params)
+
+# 搜索
+collection.load()
+results = collection.search(
+    data=[query_embedding],
+    anns_field="embedding",
+    param={"metric_type": "COSINE", "params": {"ef": 128}},
+    limit=10,
+    output_fields=["text"]
+)
+```
+
+#### 对象存储的高吞吐读取优化
+
+在 GPU 训练场景下，数据加载速度往往成为瓶颈。当训练数据存储在 S3/MinIO 上时，网络 I/O 延迟和吞吐上限可能导致 GPU 处于"饥饿"状态——计算单元等待数据到达。以下是几个关键优化策略：
+
+**预取与流水线化**：在 GPU 处理当前 batch 的同时，CPU 预取下一个 batch 的数据，实现计算与 I/O 的重叠。
+
+**本地 SSD 缓存**：将频繁访问的热数据缓存到本地 NVMe SSD，首次读取从 S3 拉取，后续读取直接命中本地缓存。工具如 Alluxio、JuiceFS 可以提供透明的缓存层。
+
+**多线程并发读取**：S3 支持分段下载（Range Request），可以对单个大文件发起多个并发分段请求，充分利用网络带宽。
+
+**数据格式优化**：使用列式格式（如 Parquet）配合列裁剪，只加载训练所需的列；使用 Arrow IPC 格式实现零拷贝读取。
+
+```python
+import ray
+import s3fs
+
+def optimized_data_loading(s3_path: str, num_workers: int = 8):
+    """优化的 S3 数据加载，利用 Ray 实现并行预取"""
+    
+    # 使用 Ray Data 的流式读取，自动管理预取和并行度
+    ds = ray.data.read_parquet(
+        s3_path,
+        parallelism=num_workers * 4,  # 预取倍数
+        columns=["input_ids", "attention_mask"],  # 列裁剪
+    )
+    
+    # 流水线化：边读取边处理
+    pipe = ds.iter_batches(
+        batch_size=1024,
+        prefetch_batches=4,  # 预取 4 个 batch
+        local_shuffle_buffer_size=10000  # 本地 shuffle
+    )
+    
+    return pipe
+```
 
 ## 2.2 数据格式与 I/O 优化
 
@@ -284,20 +460,45 @@ lakectl merge lakefs://repo/dev lakefs://repo/main
 
 LakeFS 的核心优势是零拷贝分支——创建分支不复制数据，只记录元数据，这对于 TB 级数据湖来说至关重要。它完全 S3 兼容，现有工具（Spark/Ray）无需修改即可使用。其劣势是需要部署额外的服务（LakeFS Server），学习曲线比 DVC 略陡。
 
-| 特性 | DVC | LakeFS |
-|------|-----|--------|
-| **设计理念** | Git 的数据扩展 | 对象存储的版本层 |
-| **粒度** | 文件级 | 对象级（更细） |
-| **分支开销** | 需复制 .dvc 文件 | 零拷贝 |
-| **S3 兼容** | 需要 dvc 命令 | 原生 S3 API |
-| **部署复杂度** | 低（CLI 工具） | 中（需要服务端） |
-| **适合场景** | ML 实验管理、少量数据 | 数据湖管理、大规模数据 |
+**Pachyderm** 是第三种值得关注的数据版本控制工具，它的独特之处在于将**数据版本控制与数据流水线**融为一体。Pachyderm 基于 Kubernetes 构建，每个数据处理步骤都运行在容器中，系统自动追踪输入数据、处理代码和输出数据之间的对应关系。
+
+```bash
+# Pachyderm 工作流示例
+
+# 创建数据仓库（类似 Git repo）
+pachctl create repo raw_data
+
+# 上传数据（自动版本化）
+pachctl put file raw_data@master:/corpus.parquet -f corpus.parquet
+
+# 创建处理流水线（声明式 YAML）
+pachctl create pipeline -f cleaning_pipeline.json
+# pipeline 定义了：输入 repo、处理容器、输出 repo
+# Pachyderm 自动追踪输入→处理→输出的完整血缘
+
+# 查看数据血缘
+pachctl inspect commit cleaned_data@master
+# 输出会显示该数据是由 raw_data 的哪个 commit 经过哪个 pipeline 生成的
+```
+
+Pachyderm 的核心优势是**自动化血缘追踪**——当输入数据更新时，下游流水线自动触发增量处理，系统天然记录了完整的数据血缘关系。这在需要频繁迭代数据处理流程的 LLM 项目中非常有价值。其劣势是需要 Kubernetes 集群（部署复杂度最高），学习曲线也最陡峭。
+
+| 特性 | DVC | LakeFS | Pachyderm |
+|------|-----|--------|----------|
+| **设计理念** | Git 的数据扩展 | 对象存储的版本层 | 数据流水线+版本控制 |
+| **粒度** | 文件级 | 对象级（更细） | 文件/目录级 |
+| **分支开销** | 需复制 .dvc 文件 | 零拷贝 | 零拷贝 |
+| **S3 兼容** | 需要 dvc 命令 | 原生 S3 API | 原生 S3 API |
+| **血缘追踪** | 手动 | 手动/集成 | **自动** |
+| **增量处理** | 手动 | 手动 | **自动触发** |
+| **部署复杂度** | 低（CLI 工具） | 中（需要服务端） | 高（需 Kubernetes） |
+| **适合场景** | ML 实验管理、少量数据 | 数据湖管理、大规模数据 | 端到端数据流水线 |
 
 ![图2-6：DVC vs LakeFS架构对比](../../images/part1/图2_6_DVC与LakeFS架构对比.png)
 
 *图2-6：DVC vs LakeFS架构对比 —— DVC基于Git的文件级版本控制，LakeFS提供零拷贝分支的对象级版本控制*
 
-选型建议非常明确：如果数据量在 1TB 以下，团队熟悉 Git 工作流，主要用于 ML 实验管理，选择 DVC；如果数据量在 TB 级以上，需要数据湖级别的版本控制，有多个团队并行操作，选择 LakeFS。
+选型建议如下：如果数据量在 1TB 以下，团队熟悉 Git 工作流，主要用于 ML 实验管理，选择 **DVC**；如果数据量在 TB 级以上，需要数据湖级别的版本控制，有多个团队并行操作，选择 **LakeFS**；如果需要端到端的数据流水线管理，且团队有 Kubernetes 运维能力，选择 **Pachyderm**。
 
 ### 2.3.3 数据血缘追踪 (Data Lineage)
 
@@ -347,11 +548,13 @@ with open("clean_2024_q1.metadata.json", "w") as f:
 
 ## 2.5 本章小结
 
-本章系统介绍了 LLM 数据工程的基础设施选型，涵盖存储、计算、格式和版本控制四个核心维度。
+本章系统介绍了 AI 原生数据栈的技术选型，涵盖存储、计算、向量数据库、格式和版本控制五个核心维度。
 
-在存储选型方面，对象存储（S3/MinIO）是现代数据栈的基础设施，数据湖格式（Iceberg/Hudi/Delta）解决了 ACID 事务、时间旅行等问题。对于 LLM 场景，推荐组合是 S3 + Iceberg，因为 Iceberg 的引擎中立性最好。
+在存储选型方面，对象存储（S3/MinIO）是现代数据栈的基础设施，数据湖格式（Iceberg/Hudi/Delta）解决了 ACID 事务、时间旅行等问题。对于 LLM 场景，推荐组合是 S3 + Iceberg，因为 Iceberg 的引擎中立性最好。针对 GPU 训练场景，I/O 瓶颈需要通过预取流水线化、本地 SSD 缓存和并发读取等策略优化。
 
 在计算选型方面，Spark 以其成熟稳定和强大的 SQL 生态著称，适合传统大数据团队；Ray Data 是 Python 原生的 AI 友好框架，适合 ML/AI 团队。两者并不互斥，可以混用：Spark 负责 ETL，Ray 负责 ML 处理。
+
+在向量数据库方面，Milvus、Qdrant、Weaviate 等系统为 RAG 和语义检索提供了基础能力。选型时需要在 QPS 和 Recall 之间权衡，并根据数据规模和运维能力做出决策。
 
 在数据格式方面，Parquet 是结构化数据的默认选择，JSONL 适合需要人工查看的小规模数据，WebDataset 是多模态数据的最佳格式。压缩算法和 I/O 优化技巧可以显著影响性能和成本。
 

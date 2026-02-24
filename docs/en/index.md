@@ -5,7 +5,7 @@
 # Book Overview
 
 - **Part 1: Infrastructure & Core Concepts** (Building the Data Foundation)
-- **Part 2: Text Pre-training Data Engineering** (Cleaning & Denoising)
+- **Part 2: Large-Scale Text Pre-training Engineering** (Cleaning, Deduplication & Quality Control)
 - **Part 3: Multimodal Data Engineering** (Image-Text, Video & Audio)
 - **Part 4: Alignment & Synthetic Data Engineering** (Instructions & Quality)
 - **Part 5: Application-level Data Engineering** (RAG & Agent)
@@ -19,46 +19,50 @@
 
 > **Goal:** Establish a Data-Centric AI mindset and set up a high-performance data processing environment.
 
-### Chapter 1: Data Revolution in the LLM Era
+### Chapter 1: Data Revolution in the LLM Era (From Data Ops to AI Ops)
 
 - 1_1 **Insights from Scaling Laws:** Data quality > quantity — the paradigm shift from "big data" to "high-quality data."
 - 1_2 **LLM Data Lifecycle:** Pre-training $\rightarrow$ SFT $\rightarrow$ RLHF $\rightarrow$ RAG.
 - 1_3 **Challenges & Opportunities:** The interplay of heterogeneous multimodality, copyright compliance, and compute costs.
 
-### Chapter 2: Data Infrastructure Selection
+### Chapter 2: AI-Native Data Stack
 
-- 2_1 **Modern Data Stack:**
+- 2_1 **AI-Native Data Stack:**
   - Storage: Object storage (S3/MinIO) vs Data lakes (Iceberg/Hudi).
-  - Compute: Spark (traditional powerhouse) vs **Ray Data** (AI-native compute framework).
+  - Compute: Spark vs **Ray Data** vs **Dask** — three distributed frameworks compared.
+  - Vector Databases: Milvus / Qdrant / Weaviate / Pinecone selection and QPS vs Recall tradeoffs.
 - 2_2 **Data Formats & I/O Optimization:**
   - Parquet vs JSONL vs WebDataset (multimodal scenarios).
-  - Compression algorithms and read performance optimization.
-- 2_3 **Data Version Control (DataOps):** Managing PB-scale datasets with DVC and LakeFS.
+  - Compression algorithms and read performance optimization, GPU training I/O bottleneck optimization.
+- 2_3 **Data Version Control (DataOps):** Managing PB-scale datasets with DVC, LakeFS, and **Pachyderm**.
 
 ------
 
-## Part 2: Text Pre-training Data Engineering
+## Part 2: Large-Scale Text Pre-training Engineering
 
 > **Goal:** Process massive unstructured text to build the model's linguistic cognitive foundation.
 
-### Chapter 3: Data Acquisition
+### Chapter 3: Data Acquisition (CommonCrawl Parsing & High-Concurrency Crawling)
 
 - 3_1 **Deconstructing Open-source Datasets:** Deep analysis of Common Crawl, C4, RefinedWeb, and The Pile.
 - 3_2 **High-performance Web Crawling:** Application of `Trafilatura` parsing library and distributed crawler architecture design.
 - 3_3 **Specialized Data Acquisition:** Extraction strategies for code (GitHub), papers (ArXiv/S2ORC), and book data.
 
-### Chapter 4: Cleaning & Deduplication
+### Chapter 4: Cleaning & Quality Control
 
 - 4_1 **Heuristic Filtering Rules:** Language identification (FastText), perplexity filtering, length and punctuation distribution.
-- 4_2 **Large-scale Deduplication:**
+- 4_2 **Large-scale Deduplication (Exact vs Fuzzy):**
+  - **Exact Deduplication:** Hash methods for removing identical documents.
   - **Fuzzy Deduplication:** MinHash LSH algorithm principles and distributed implementation.
   - **Intra-document Deduplication:** Eliminating repeated paragraphs and navigation bars.
 - 4_3 **Privacy Cleaning (PII Removal):** Using Presidio to identify and mask emails, IPs, phone numbers, and addresses.
+- 4_4 **Benchmark Decontamination:** Ensuring training data doesn't contain GSM8K, MMLU test questions.
+- 4_5 **Model-based Quality Scoring:** Using fastText/BERT for "textbook quality" scoring (following LLaMA 2 approach).
 
-### Chapter 5: Tokenization & Serialization
+### Chapter 5: Tokenization, Serialization & Efficient Loading (DataLoader Optimization)
 
-- 5_1 **Tokenizer Principles:** BPE, WordPiece, Unigram and their impact on model performance.
-- 5_2 **Efficient Vocabulary Construction:** How to expand vocabularies for specific domains (e.g., medical, legal).
+- 5_1 **Tokenizer Principles:** BPE, WordPiece, Unigram and **Byte-Level BPE** deep analysis.
+- 5_2 **Efficient Vocabulary Construction:** Domain-specific vocabulary expansion and **LLaMA Chinese vocabulary extension engineering**.
 - 5_3 **Data Mixing:** Dynamic sampling strategies and Curriculum Learning data arrangement.
 
 ------

@@ -1,10 +1,10 @@
-# Chapter 2: Data Infrastructure Selection
+# Chapter 2: AI-Native Data Stack (Vector DB, Object Storage, Ray/Spark Distributed Computing)
 
 ---
 
 ## Chapter Summary
 
-A craftsman must sharpen his tools before he can do his work well. Before processing TB-level or even PB-level LLM training data, choosing the right infrastructure is the first step that determines project success or failure. This chapter systematically introduces modern data stack technology selection from four dimensions—**storage, compute, format, and version control**—helping readers build an efficient, scalable, and reproducible data processing platform.
+A craftsman must sharpen his tools before he can do his work well. Before processing TB-level or even PB-level LLM training data, choosing the right infrastructure is the first step that determines project success or failure. This chapter systematically introduces AI-native data stack technology selection from five dimensions—**storage, compute, vector databases, format, and version control**. We pay special attention to distributed data processing frameworks (Ray Data, Apache Spark, Dask) in large-scale token processing, as well as GPU training I/O bottleneck optimization strategies, helping readers build an efficient, scalable, and reproducible data processing platform.
 
 ---
 
@@ -145,11 +145,188 @@ As can be seen, Spark requires explicit Executor memory configuration and uses d
 
 *Figure 2-4: Compute Framework Selection Decision Tree — Spark suits SQL/ETL scenarios, Ray suits GPU/ML scenarios*
 
-When making actual decisions, the following logic can be used: If data processing requires GPU (e.g., calling BERT model for quality scoring), Ray Data is the more natural choice. If there are substantial SQL and BI query needs, Spark's SQL ecosystem is more mature. If there is already extensive Spark infrastructure and code assets, migration cost must be evaluated—high cost then keep Spark, low cost consider gradually introducing Ray. If a new project, team background is decisive: traditional big data teams find Spark easier to adopt, AI/ML teams find Ray smoother.
+When making actual decisions, the following logic can be used: If data processing requires GPU (e.g., calling BERT model for quality scoring), Ray Data is the more natural choice. If there are substantial SQL and BI query needs, Spark’s SQL ecosystem is more mature. If there is already extensive Spark infrastructure and code assets, migration cost must be evaluated—high cost then keep Spark, low cost consider gradually introducing Ray. If a new project, team background is decisive: traditional big data teams find Spark easier to adopt, AI/ML teams find Ray smoother.
 
 Worth mentioning: in actual large projects, Spark and Ray often coexist rather than being mutually exclusive. A common hybrid strategy: Spark handles interaction with data lake/data warehouse, including reading/writing Iceberg/Hive tables, executing SQL analysis and other ETL tasks; Ray Data handles ML-intensive processing, such as invoking large models for inference, using GPU for batch processing. The two exchange data through shared object storage (Parquet files on S3), each performing its role, complementing each other.
 
+#### Dask: A Python-Native Third Option
+
+Besides Spark and Ray, **Dask** is another noteworthy distributed computing framework, especially suited for teams with existing Pandas/NumPy code. Dask’s core principle is "parallelize the PyData ecosystem"—its API is nearly identical to Pandas/NumPy, allowing single-machine code to scale to clusters with minimal changes.
+
+**Dask’s core strengths**:
+
+- **Zero learning cost**: `dask.dataframe` API is nearly identical to Pandas; teams don’t need to learn new syntax.
+- **Flexible scheduling**: Can run on a single machine with multiple cores (replacing multiprocessing) or scale to distributed clusters.
+- **Integration with scientific computing ecosystem**: Good integration with scikit-learn, XGBoost, and other ML libraries.
+- **Low deployment barrier**: No JVM required (unlike Spark), no complex cluster management needed (simpler than Ray).
+
+**Dask’s weaknesses**:
+
+- **Large-scale performance inferior to Spark**: At PB-level data processing, Dask’s optimizer and shuffle performance are less mature than Spark.
+- **No native GPU support**: Unlike Ray’s native GPU scheduling (requires Dask-CUDA plugin).
+- **Smaller community**: Not as active as Spark and Ray communities.
+
+```python
+import dask.dataframe as dd
+import dask
+
+# Dask vs Pandas: nearly identical API
+def process_with_dask(input_path: str, output_path: str):
+    """Distributed text processing with Dask"""
+    # Read (auto-partitioned, lazy execution)
+    ddf = dd.read_parquet(input_path)
+    
+    # Filter short text (API identical to Pandas)
+    ddf_filtered = ddf[ddf['text'].str.len() > 100]
+    
+    # Add computed column
+    ddf_filtered = ddf_filtered.assign(
+        text_length=ddf_filtered['text'].str.len()
+    )
+    
+    # Save (triggers actual computation)
+    ddf_filtered.to_parquet(output_path)
+
+# Advanced: Using Dask Bag for unstructured data
+import dask.bag as db
+
+def process_jsonl_with_dask(input_pattern: str):
+    """Process JSONL files with Dask Bag"""
+    bag = db.read_text(input_pattern).map(json.loads)
+    
+    # Chained processing
+    result = (
+        bag
+        .filter(lambda x: len(x.get('text', '')) > 100)
+        .map(lambda x: {**x, 'text_length': len(x['text'])})
+    )
+    
+    # Convert to DataFrame and save
+    result.to_dataframe().to_parquet('output/')
+```
+
+**Three-Framework Selection Summary**:
+
+| Dimension | Apache Spark | Ray Data | Dask |
+|------|-------------|----------|------|
+| **Best Scenario** | SQL/ETL, data lake | GPU/ML inference | Pandas parallelization |
+| **Learning Curve** | Medium (need Spark API) | Medium (need Ray API) | Very low (zero barrier for Pandas users) |
+| **PB-level Performance** | ⭐⭐⭐ | ⭐⭐ | ⭐ |
+| **GPU Support** | Plugin | Native | Plugin |
+| **Target Audience** | Data engineers | AI/ML engineers | Data scientists |
+
+For typical LLM data engineering scenarios (TB-level text data + occasional GPU inference), the recommended combination is: **Spark for ETL, Ray for ML inference, Dask for rapid prototyping and medium-scale processing**.
+
 ---
+
+### 2.1.4 Vector Database Selection
+
+With the rise of RAG (Retrieval-Augmented Generation) and multimodal search, vector databases have become an indispensable component of the AI data stack. Vector databases are purpose-built for storing and retrieving high-dimensional vectors (embeddings), serving as the bridge between data engineering and model inference.
+
+#### Core Concepts
+
+The core operation of a vector database is **Approximate Nearest Neighbor (ANN) search**. Given a query vector $q$, find the $k$ most similar vectors in the database. Exact search is prohibitively expensive in high-dimensional spaces, so practical systems use approximate algorithms, trading off between **Recall** and **Query Throughput (QPS)**.
+
+Mainstream ANN indexing algorithms include:
+
+- **HNSW (Hierarchical Navigable Small World)**: Graph-based algorithm with high recall and fast queries, but large memory footprint. Best for scenarios requiring very high recall.
+- **IVF (Inverted File Index)**: Clustering-based algorithm that partitions the vector space into Voronoi regions, searching only the nearest regions at query time. Good memory efficiency, suitable for large-scale data.
+- **ScaNN (Scalable Nearest Neighbors)**: Developed by Google, combining quantization and pruning techniques for excellent QPS-Recall balance.
+
+#### Vector Database Comparison
+
+| Feature | Milvus | Qdrant | Weaviate | Pinecone | FAISS |
+|------|--------|--------|----------|----------|-------|
+| **Deployment** | Self-hosted/Cloud | Self-hosted/Cloud | Self-hosted/Cloud | Pure SaaS | Library (not a DB) |
+| **Open Source** | Yes | Yes | Yes | No | Yes |
+| **Index Algorithms** | HNSW, IVF, DiskANN | HNSW | HNSW | Proprietary | HNSW, IVF, PQ |
+| **Distributed** | Native support | Supported | Supported | Managed | Manual sharding |
+| **Hybrid Search** | Supported | Supported | Supported | Supported | Not supported |
+| **Suitable Scenario** | Large-scale production | Small-medium, high perf | Full-stack semantic search | Quick start, zero ops | Research prototypes |
+
+**Selection Decision Points**:
+
+- **QPS vs Recall tradeoff**: For pre-training data deduplication, high Recall (>0.99) is needed but lower QPS is tolerable; for online RAG retrieval, high QPS (>1000) is needed with slightly lower Recall acceptable.
+- **Data scale**: Under millions of vectors, Qdrant or FAISS suffice; for tens of millions to billions, Milvus’s distributed architecture has advantages.
+- **Operations capability**: If the team lacks ops experience, Pinecone’s fully managed mode is the lowest-risk choice.
+
+```python
+# Milvus vector retrieval example
+from pymilvus import (
+    connections, Collection, FieldSchema,
+    CollectionSchema, DataType, utility
+)
+
+# Connect to Milvus
+connections.connect("default", host="localhost", port="19530")
+
+# Define Schema
+fields = [
+    FieldSchema(name="id", dtype=DataType.VARCHAR, is_primary=True, max_length=64),
+    FieldSchema(name="text", dtype=DataType.VARCHAR, max_length=65535),
+    FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=768)
+]
+schema = CollectionSchema(fields, description="Document embeddings")
+
+# Create Collection
+collection = Collection("documents", schema)
+
+# Create HNSW index (high recall configuration)
+index_params = {
+    "metric_type": "COSINE",
+    "index_type": "HNSW",
+    "params": {
+        "M": 16,               # Connections per node; higher = better recall but more memory
+        "efConstruction": 256  # Search width during construction
+    }
+}
+collection.create_index("embedding", index_params)
+
+# Search
+collection.load()
+results = collection.search(
+    data=[query_embedding],
+    anns_field="embedding",
+    param={"metric_type": "COSINE", "params": {"ef": 128}},
+    limit=10,
+    output_fields=["text"]
+)
+```
+
+#### Object Storage High-Throughput Read Optimization
+
+In GPU training scenarios, data loading speed often becomes the bottleneck. When training data is stored on S3/MinIO, network I/O latency and throughput limits can leave GPUs in a "starving" state—compute units waiting for data arrival. Key optimization strategies include:
+
+**Prefetching and pipelining**: While GPU processes the current batch, CPU prefetches next batch data, overlapping compute and I/O.
+
+**Local SSD caching**: Cache frequently accessed hot data on local NVMe SSD. First read pulls from S3, subsequent reads hit local cache. Tools like Alluxio and JuiceFS provide transparent caching layers.
+
+**Multi-threaded concurrent reads**: S3 supports Range Requests; multiple concurrent segment requests can fully utilize network bandwidth.
+
+**Data format optimization**: Use columnar formats (Parquet) with column pruning to load only training-needed columns; use Arrow IPC format for zero-copy reads.
+
+```python
+import ray
+
+def optimized_data_loading(s3_path: str, num_workers: int = 8):
+    """Optimized S3 data loading with Ray parallel prefetch"""
+    
+    # Use Ray Data streaming reads with automatic prefetch management
+    ds = ray.data.read_parquet(
+        s3_path,
+        parallelism=num_workers * 4,  # Prefetch multiplier
+        columns=["input_ids", "attention_mask"],  # Column pruning
+    )
+    
+    # Pipelining: read and process simultaneously
+    pipe = ds.iter_batches(
+        batch_size=1024,
+        prefetch_batches=4,  # Prefetch 4 batches
+        local_shuffle_buffer_size=10000  # Local shuffle
+    )
+    
+    return pipe
+```
 
 ## 2.2 Data Format and I/O Optimization
 
@@ -284,20 +461,45 @@ lakectl merge lakefs://repo/dev lakefs://repo/main
 
 LakeFS's core advantage is zero-copy branching—creating branches doesn't copy data, only records metadata, crucial for TB-level data lakes. It's fully S3 compatible; existing tools (Spark/Ray) work without modification. Its disadvantage is requiring deployment of additional service (LakeFS Server), slightly steeper learning curve than DVC.
 
-| Feature | DVC | LakeFS |
-|------|-----|--------|
-| **Design Philosophy** | Git extension for data | Version layer for object storage |
-| **Granularity** | File-level | Object-level (finer) |
-| **Branch Overhead** | Need to copy .dvc files | Zero-copy |
-| **S3 Compatibility** | Requires dvc commands | Native S3 API |
-| **Deployment Complexity** | Low (CLI tool) | Medium (requires server) |
-| **Suitable Scenario** | ML experiment management, small data | Data lake management, large-scale data |
+**Pachyderm** is a third noteworthy data version control tool, unique in that it **integrates data version control with data pipelines**. Pachyderm is built on Kubernetes, where each data processing step runs in a container, and the system automatically tracks the correspondence between input data, processing code, and output data.
+
+```bash
+# Pachyderm workflow example
+
+# Create data repository (similar to Git repo)
+pachctl create repo raw_data
+
+# Upload data (auto-versioned)
+pachctl put file raw_data@master:/corpus.parquet -f corpus.parquet
+
+# Create processing pipeline (declarative YAML)
+pachctl create pipeline -f cleaning_pipeline.json
+# Pipeline defines: input repo, processing container, output repo
+# Pachyderm automatically tracks the complete input→processing→output lineage
+
+# View data lineage
+pachctl inspect commit cleaned_data@master
+# Output shows which commit from raw_data, through which pipeline, generated this data
+```
+
+Pachyderm’s core advantage is **automated lineage tracking**—when input data is updated, downstream pipelines automatically trigger incremental processing, with the system naturally recording complete data lineage relationships. This is very valuable in LLM projects that require frequent iteration of data processing flows. Its downside is requiring a Kubernetes cluster (highest deployment complexity) and the steepest learning curve.
+
+| Feature | DVC | LakeFS | Pachyderm |
+|------|-----|--------|----------|
+| **Design Philosophy** | Git extension for data | Version layer for object storage | Data pipeline + version control |
+| **Granularity** | File-level | Object-level (finer) | File/directory-level |
+| **Branch Overhead** | Need to copy .dvc files | Zero-copy | Zero-copy |
+| **S3 Compatibility** | Requires dvc commands | Native S3 API | Native S3 API |
+| **Lineage Tracking** | Manual | Manual/integration | **Automatic** |
+| **Incremental Processing** | Manual | Manual | **Auto-triggered** |
+| **Deployment Complexity** | Low (CLI tool) | Medium (requires server) | High (requires Kubernetes) |
+| **Suitable Scenario** | ML experiment management, small data | Data lake management, large-scale data | End-to-end data pipelines |
 
 ![Figure 2-6: DVC vs LakeFS Architecture Comparison](../../images/part1/图2_6_DVC与LakeFS架构对比.png)
 
 *Figure 2-6: DVC vs LakeFS Architecture Comparison — DVC provides file-level version control based on Git, LakeFS provides zero-copy object-level version control with branching*
 
-Selection recommendation is very clear: If data volume under 1TB, team familiar with Git workflow, mainly for ML experiment management, choose DVC; if data volume TB-level or above, need data lake-level version control, multiple teams operating in parallel, choose LakeFS.
+Selection recommendations: If data volume under 1TB, team familiar with Git workflow, mainly for ML experiment management, choose **DVC**; if data volume TB-level or above, need data lake-level version control, multiple teams operating in parallel, choose **LakeFS**; if you need end-to-end data pipeline management and the team has Kubernetes operations capability, choose **Pachyderm**.
 
 ### 2.3.3 Data Lineage Tracking
 
@@ -347,15 +549,17 @@ In the infrastructure selection process, even experienced engineers easily make 
 
 ## 2.5 Chapter Summary
 
-This chapter systematically introduced LLM data engineering infrastructure selection, covering four core dimensions: storage, compute, format, and version control.
+This chapter systematically introduced AI-native data stack technology selection, covering five core dimensions: storage, compute, vector databases, format, and version control.
 
-For storage selection: object storage (S3/MinIO) is the foundation of modern data stack; data lake formats (Iceberg/Hudi/Delta) solve ACID transactions, time travel, and other issues. For LLM scenarios, the recommended combination is S3 + Iceberg, because Iceberg has the best engine neutrality.
+For storage selection: object storage (S3/MinIO) is the foundation of modern data stack; data lake formats (Iceberg/Hudi/Delta) solve ACID transactions, time travel, and other issues. For LLM scenarios, the recommended combination is S3 + Iceberg, because Iceberg has the best engine neutrality. For GPU training scenarios, I/O bottlenecks need optimization through prefetch pipelining, local SSD caching, and concurrent reads.
 
-For compute selection: Spark is known for maturity and stability and powerful SQL ecosystem, suitable for traditional big data teams; Ray Data is Python-native AI-friendly framework, suitable for ML/AI teams. The two are not mutually exclusive—can be mixed: Spark handles ETL, Ray handles ML processing.
+For compute selection: Spark is known for maturity and stability and powerful SQL ecosystem, suitable for traditional big data teams; Ray Data is Python-native AI-friendly framework, suitable for ML/AI teams; Dask offers a zero-learning-curve option for teams with existing Pandas code. The three are not mutually exclusive—can be mixed according to needs.
+
+For vector databases: Milvus, Qdrant, Weaviate, and other systems provide foundational capabilities for RAG and semantic retrieval. Selection requires balancing QPS and Recall based on data scale and operations capability.
 
 For data format: Parquet is the default for structured data, JSONL suitable for small-scale data requiring manual viewing, WebDataset is the best format for multimodal data. Compression algorithms and I/O optimization tips can significantly affect performance and cost.
 
-For version control: DVC is lightweight and tightly integrated with Git, suitable for ML experiments; LakeFS provides data lake-level version control, suitable for large-scale production environments.
+For version control: DVC is lightweight and tightly integrated with Git, suitable for ML experiments; LakeFS provides data lake-level version control, suitable for large-scale production environments; Pachyderm integrates version control with data pipelines, suitable for teams needing end-to-end lineage tracking.
 
 The core principle throughout: start simple, evolve on demand, avoid over-engineering. Technical selection should serve business goals, not pursue technical advancement for its own sake.
 

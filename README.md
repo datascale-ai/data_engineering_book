@@ -24,7 +24,7 @@
 
 ## 全书架构
 
-![大模型数据工程全书架构](框架图.png)
+![大模型数据工程全书架构](images/structure_cn.png)
 
 *从原始数据到端到端应用的完整数据工程流水线*
 
@@ -34,13 +34,13 @@
 📖 全书六大部分，13章 + 5个实战项目
 │
 ├── 第一部分：基础设施与核心理念
-│   ├── 第1章：大模型时代的数据变革
-│   └── 第2章：数据基础设施选型
+│   ├── 第1章：大模型时代的数据变革（从 Data Ops 到 AI Ops）
+│   └── 第2章：AI 原生数据栈
 │
-├── 第二部分：文本预训练数据工程
-│   ├── 第3章：数据获取与采集
-│   ├── 第4章：清洗与去噪
-│   └── 第5章：分词与序列化
+├── 第二部分：海量文本预训练工程
+│   ├── 第3章：数据获取
+│   ├── 第4章：清洗与质量控制
+│   └── 第5章：分词、序列化与高效加载
 │
 ├── 第三部分：多模态数据工程
 │   ├── 第6章：图文对数据处理
@@ -74,11 +74,11 @@
 ### 技术栈现代化
 | 领域 | 技术选型 |
 |------|----------|
-| 分布式计算 | Ray Data, Spark |
-| 数据存储 | Parquet, WebDataset, 向量数据库 |
-| 文本处理 | Trafilatura, KenLM, MinHash LSH |
+| 分布式计算 | Ray Data, Spark, Dask |
+| 数据存储 | Parquet, WebDataset, 向量数据库 (Milvus/Qdrant) |
+| 文本处理 | Trafilatura, KenLM, MinHash LSH, fastText 质量评分 |
 | 多模态 | CLIP, ColPali, img2dataset |
-| 数据版本 | DVC, LakeFS |
+| 数据版本 | DVC, LakeFS, Pachyderm |
 
 ### 实战项目丰富
 
@@ -137,8 +137,10 @@ data_engineering_book/
 │   ├── stylesheets/         # 自定义样式
 │   └── javascripts/         # JavaScript (MathJax等)
 ├── .github/workflows/       # GitHub Actions 自动部署
+├── images/                  # 项目图片资源
+│   ├── structure_cn.png     # 全书架构图（中文）
+│   └── structure_en.png     # 全书架构图（英文）
 ├── mkdocs.yml               # MkDocs 配置文件
-├── 框架图.png                # 全书架构图
 ├── LICENSE                  # 开源协议
 ├── README.md                # 中文说明（本文件）
 └── README_en.md             # English README

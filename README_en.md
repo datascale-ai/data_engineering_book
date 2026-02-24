@@ -24,7 +24,7 @@ Beyond in-depth theoretical explanations, the book includes **5 end-to-end capst
 
 ## Book Architecture
 
-![Book Architecture](框架图.png)
+![Book Architecture](images/structure_en.png)
 
 *A complete data engineering pipeline from raw data to end-to-end applications*
 
@@ -34,13 +34,13 @@ Beyond in-depth theoretical explanations, the book includes **5 end-to-end capst
 📖 6 Parts, 13 Chapters + 5 Capstone Projects
 │
 ├── Part 1: Infrastructure & Core Concepts
-│   ├── Chapter 1: Data Revolution in the LLM Era
-│   └── Chapter 2: Data Infrastructure Selection
+│   ├── Chapter 1: Data Revolution in the LLM Era (From Data Ops to AI Ops)
+│   └── Chapter 2: AI-Native Data Stack
 │
-├── Part 2: Text Pre-training Data Engineering
+├── Part 2: Large-Scale Text Pre-training Engineering
 │   ├── Chapter 3: Data Acquisition
-│   ├── Chapter 4: Cleaning & Deduplication
-│   └── Chapter 5: Tokenization & Serialization
+│   ├── Chapter 4: Cleaning & Quality Control
+│   └── Chapter 5: Tokenization, Serialization & Efficient Loading
 │
 ├── Part 3: Multimodal Data Engineering
 │   ├── Chapter 6: Image-Text Pair Processing
@@ -74,11 +74,11 @@ Beyond in-depth theoretical explanations, the book includes **5 end-to-end capst
 ### Modern Tech Stack
 | Domain | Technologies |
 |--------|-------------|
-| Distributed Computing | Ray Data, Spark |
-| Data Storage | Parquet, WebDataset, Vector Databases |
-| Text Processing | Trafilatura, KenLM, MinHash LSH |
+| Distributed Computing | Ray Data, Spark, Dask |
+| Data Storage | Parquet, WebDataset, Vector Databases (Milvus/Qdrant) |
+| Text Processing | Trafilatura, KenLM, MinHash LSH, fastText Quality Scoring |
 | Multimodal | CLIP, ColPali, img2dataset |
-| Data Versioning | DVC, LakeFS |
+| Data Versioning | DVC, LakeFS, Pachyderm |
 
 ### Rich Capstone Projects
 
@@ -137,8 +137,10 @@ data_engineering_book/
 │   ├── stylesheets/         # Custom styles
 │   └── javascripts/         # JavaScript (MathJax etc.)
 ├── .github/workflows/       # GitHub Actions CI/CD
+├── images/                  # Project image assets
+│   ├── structure_cn.png     # Book architecture diagram (Chinese)
+│   └── structure_en.png     # Book architecture diagram (English)
 ├── mkdocs.yml               # MkDocs configuration
-├── 框架图.png                # Book architecture diagram
 ├── LICENSE                  # License
 ├── README.md                # 中文说明
 └── README_en.md             # English README (this file)
