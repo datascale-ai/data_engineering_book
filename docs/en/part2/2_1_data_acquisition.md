@@ -1,4 +1,4 @@
-# Chapter 3: Data Acquisition and Collection
+# Chapter 3: Data Acquisition (CommonCrawl Parsing and High-Concurrency Crawling)
 
 ---
 
@@ -400,7 +400,7 @@ class SimpleCrawler:
         if url in self.visited:
             return None
         self.visited.add(url)
-        
+        ntigravity: Reset onboarding
         async with self.semaphore:
             try:
                 async with session.get(url, timeout=30) as response:

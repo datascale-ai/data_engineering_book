@@ -5,7 +5,7 @@
 # 全书目录概览
 
 - **第一部分：基础设施与核心理念** (构建数据底座)
-- **第二部分：文本预训练数据工程** (清洗与去噪)
+- **第二部分：海量文本预训练工程** (清洗、去重、质量控制)
 - **第三部分：多模态数据工程** (图文、视频与音频)
 - **第四部分：对齐与合成数据工程** (指令与质量)
 - **第五部分：应用级数据工程** (RAG与Agent)
@@ -19,46 +19,50 @@
 
 > **目标：** 建立 Data-Centric AI 的认知，完成高性能数据处理环境的搭建。
 
-### 第1章：大模型时代的数据变革
+### 第1章：大模型时代的数据变革（从 Data Ops 到 AI Ops）
 
 - 1_1 **Scaling Laws 的启示：** 数据质量 > 数量，从“大数据”到“高质量数据”的范式转移。
 - 1_2 **LLM 数据全生命周期：** 预训练(Pre-train) $\rightarrow$ 微调(SFT) $\rightarrow$ 强化学习(RLHF) $\rightarrow$ 检索增强(RAG)。
 - 1_3 **挑战与机遇：** 异构多模态、版权合规与算力成本的博弈。
 
-### 第2章：数据基础设施选型
+### 第2章：AI 原生数据栈
 
-- 2_1 **现代数据栈 (Modern Data Stack)：**
+- 2_1 **AI 原生数据栈 (AI-Native Data Stack)：**
   - 存储：对象存储 (S3/MinIO) vs 数据湖 (Iceberg/Hudi)。
-  - 计算：Spark (传统霸主) vs **Ray Data** (AI原生计算框架)。
+  - 计算：Spark vs **Ray Data** vs **Dask** 三大分布式框架对比。
+  - 向量数据库：Milvus / Qdrant / Weaviate / Pinecone 选型与 QPS vs Recall 权衡。
 - 2_2 **数据格式与I/O优化：**
   - Parquet vs JSONL vs WebDataset (多模态场景)。
-  - 压缩算法与读取性能优化。
-- 2_3 **数据版本控制 (DataOps)：** 使用 DVC 和 LakeFS 管理 PB 级数据集。
+  - 压缩算法与读取性能优化，GPU 训练 I/O 瓶颈优化策略。
+- 2_3 **数据版本控制 (DataOps)：** 使用 DVC、LakeFS 和 **Pachyderm** 管理 PB 级数据集。
 
 ------
 
-## 第二部分：文本预训练数据工程 (Text Pre-training)
+## 第二部分：海量文本预训练工程
 
 > **目标：** 处理海量无结构文本，构建模型的语言认知基座。
 
-### 第3章：数据获取与采集
+### 第3章：数据获取（CommonCrawl 解析与高并发爬虫）
 
 - 3_1 **开源数据集解构：** Common Crawl, C4, RefinedWeb, The Pile 深度剖析。
 - 3_2 **高性能爬虫系统：** `Trafilatura` 解析库应用与分布式爬虫架构设计。
 - 3_3 **特种数据获取：** 代码 (GitHub)、论文 (ArXiv/S2ORC)、书籍数据的提取策略。
 
-### 第4章：清洗与去噪 (Cleaning & Deduplication)
+### 第4章：清洗与质量控制 (Cleaning & Quality Control)
 
 - 4_1 **启发式过滤规则：** 语言识别 (FastText)、困惑度 (Perplexity) 过滤、长度与标点分布。
-- 4_2 **大规模去重技术：**
+- 4_2 **大规模去重（精确 vs 模糊）：**
+  - **精确去重：** 哈希方法快速移除完全相同文档。
   - **模糊去重 (Fuzzy Deduplication)：** MinHash LSH 算法原理与分布式实现。
   - **文档内去重：** 消除重复段落与导航栏。
 - 4_3 **隐私清洗 (PII Removal)：** 使用 Presidio 识别并掩盖 Email、IP、电话、地址。
+- 4_4 **基准测试集防污染：** 确保训练数据不包含 GSM8K、MMLU 等测试集原题。
+- 4_5 **基于模型的质量评分：** 使用 fastText/BERT 进行"教科书级质量"打分（参考 LLaMA 2）。
 
-### 第5章：分词与序列化 (Tokenization)
+### 第5章：分词、序列化与高效加载 (Tokenization & DataLoader)
 
-- 5_1 **分词器原理：** BPE, WordPiece, Unigram 及其对模型性能的影响。
-- 5_2 **高效词表构建：** 如何为特定领域（如医疗、法律）扩充词表。
+- 5_1 **分词器原理：** BPE, WordPiece, Unigram 及 **Byte-Level BPE** 深入解析。
+- 5_2 **高效词表构建：** 领域特定词表扩充与 **LLaMA 中文词表扩充工程实践**。
 - 5_3 **数据混合 (Data Mixing)：** 动态采样策略与 Curriculum Learning (课程学习) 数据排布。
 
 ------

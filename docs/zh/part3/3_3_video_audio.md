@@ -15,7 +15,7 @@
 **场景引入**：
 > “想象你正在训练一个像 Sora 一样的世界模型。你下载了一部 2 小时的电影《泰坦尼克号》作为训练数据。
 >
-> 如果你简单粗暴地按每 10 秒一段进行切分，你会遇到严重的‘语义断裂’：一段视频的前 5 秒是甲板上平静的海风，后 5 秒突然跳到了喧闹的餐厅。这种跨越场景的‘硬切’（Hard Cut）会让模型感到困惑：‘人是怎么在 0_1 秒内从室外瞬移到室内的？’这不仅浪费了算力，还让模型学到了错误的物理规律。
+> 如果你简单粗暴地按每 10 秒一段进行切分，你会遇到严重的‘语义断裂’：一段视频的前 5 秒是甲板上平静的海风，后 5 秒突然跳到了喧闹的餐厅。这种跨越场景的‘硬切’（Hard Cut）会让模型感到困惑：‘人是怎么在 0.1 秒内从室外瞬移到室内的？’这不仅浪费了算力，还让模型学到了错误的物理规律。
 >
 > 此外，声音的时序精度就是生命。如果你的字幕比画面慢了 2 秒，当画面中 Rose 在张嘴时，对应的 Token 却是 Jack 的台词。模型会错误地将‘Jack的声音特征’关联到‘Rose的面部特征’上。在万亿级 Token 的训练中，这种微小的错位会被放大为严重的幻觉。”
 
@@ -45,7 +45,7 @@
 **PySceneDetect** 是业界标准的开源工具，它提供了多种检测器，核心逻辑基于帧间差异分析：
 
 * **策略一：Threshold Detector (阈值检测 - 针对硬切)**
-    * **原理**：计算相邻两帧在 HSV 色彩空间或 RGB 亮度上的平均差异值（Delta）。当 Delta > `threshold`（如 30_0）时，判定为切点。
+    * **原理**：计算相邻两帧在 HSV 色彩空间或 RGB 亮度上的平均差异值（Delta）。当 Delta > `threshold`（如 30.0）时，判定为切点。
     * **适用**：绝大多数电影和用户上传视频（UGC）。
     * **局限**：无法检测渐变。
 
@@ -71,13 +71,13 @@ import logging
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def process_video_scenes(video_path, output_dir, threshold=27_0):
+def process_video_scenes(video_path, output_dir, threshold=27.0):
     """
     检测场景并使用 ffmpeg 无损切割视频
     Args:
         video_path: 输入视频路径
         output_dir: 输出目录
-        threshold: 切分阈值 (经验值: 27_0 适合大部分 1080p 视频)
+        threshold: 切分阈值 (经验值: 27.0 适合大部分 1080p 视频)
     """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -85,8 +85,8 @@ def process_video_scenes(video_path, output_dir, threshold=27_0):
     logging.info(f"Starting scene detection for: {video_path}")
 
     # 1. 场景检测
-    # threshold=27_0: 基于 HSV 空间的直方图差异阈值
-    # min_scene_len=15: 忽略小于 0_5秒 (30fps) 的片段。
+    # threshold=27.0: 基于 HSV 空间的直方图差异阈值
+    # min_scene_len=15: 忽略小于 0.5秒 (30fps) 的片段。
     # 极短的片段通常是闪光灯、故障或者是切分错误的噪音，不适合作为训练数据。
     scene_list = detect(
         video_path, 
@@ -99,7 +99,7 @@ def process_video_scenes(video_path, output_dir, threshold=27_0):
     for scene in scene_list:
         start, end = scene
         duration = (end.get_frames() - start.get_frames()) / start.get_framerate()
-        if duration >= 3_0: # 只保留大于3秒的片段用于训练
+        if duration >= 3.0: # 只保留大于3秒的片段用于训练
             valid_scenes.append(scene)
 
     logging.info(f"Detected {len(scene_list)} scenes, kept {len(valid_scenes)} valid scenes.")
@@ -203,14 +203,14 @@ Google DeepMind 在 MagViT-v2 中引入了 **LFQ (Lookup-Free Quantization)**，
 
 #### 8.3.1 为什么需要 Forced Alignment？
 * **ASR (OpenAI Whisper)**：
-    * 输出：`"Hello world"` -> `Timestamp: [0_0s -> 2_0s]`
+    * 输出：`"Hello world"` -> `Timestamp: [0.0s -> 2.0s]`
     * 问题：模型只知道这句话落在这两秒内，不知道 "world" 具体在哪一毫秒开始。
 * **Forced Alignment (WhisperX)**：
     * 原理：先转录出文本，然后利用一个预训练的声学模型（如 Wav2Vec2），将文本中的**音素（Phonemes）**与音频波形进行强制匹配。
     * 输出：
-        * `"Hello"`: `[0_12s -> 0_58s]`
-        * `"world"`: `[0_85s -> 1_45s]`
-    * **价值**：你可以构建这样的训练对：当视频帧处于 0_85s 时，强制模型关注 "world" 的 Text Embedding。这是多模态精细对齐的基础。
+        * `"Hello"`: `[0.12s -> 0.58s]`
+        * `"world"`: `[0.85s -> 1.45s]`
+    * **价值**：你可以构建这样的训练对：当视频帧处于 0.85s 时，强制模型关注 "world" 的 Text Embedding。这是多模态精细对齐的基础。
 
 #### 8.3.2 工程实现：WhisperX 全流程流水线
 WhisperX 是一个复杂的 Pipeline，结合了 VAD（语音活动检测）、Whisper（转录）、Wav2Vec2（对齐）和 Pyannote（说话人分离）。
@@ -265,7 +265,7 @@ def align_audio_transcript(audio_file, device="cuda", batch_size=16):
     )
 
     # 结果包含 word_segments，其中有每个单词的精确 start/end
-    # 例如: [{'word': 'Hello', 'start': 0_1, 'end': 0_5, 'score': 0_98}, ...]
+    # 例如: [{'word': 'Hello', 'start': 0.1, 'end': 0.5, 'score': 0.98}, ...]
     return aligned_result
 
 # 进阶提示：
@@ -288,6 +288,6 @@ def align_audio_transcript(audio_file, device="cuda", batch_size=16):
 
 3.  **幻觉时间戳**：
     * **问题**：在长时间静音或纯音乐片段，Whisper 有时会产生“幻觉”，重复输出上一句歌词，并给出一个错误的时间戳。
-    * **检查**：在后处理中，检查 `word['score']`（置信度）。如果连续一串单词的置信度低于 0_4，建议丢弃该片段的对齐信息。
+    * **检查**：在后处理中，检查 `word['score']`（置信度）。如果连续一串单词的置信度低于 0.4，建议丢弃该片段的对齐信息。
 
 ---

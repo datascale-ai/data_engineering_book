@@ -1,4 +1,4 @@
-# Chapter 4: Cleaning and Denoising
+# Chapter 4: Cleaning and Quality Control (Deduplication, PII Masking, Benchmark Decontamination)
 
 ---
 
@@ -231,7 +231,7 @@ The RefinedWeb paper documents their stratification strategy in detail, dividing
 
 ---
 
-## 4.2 Large-Scale Deduplication
+## 4.2 Large-Scale Deduplication: Exact vs Fuzzy Deduplication
 
 Data duplication is the enemy of pre-training data. In Common Crawl, the same article may be reprinted by multiple websites, and the same webpage may be crawled repeatedly in different months, leading to large amounts of duplicate content. Research shows that non-deduplicated data causes models to overfit on repeated content, producing a "parrot" phenomenon that seriously affects model quality.
 
@@ -677,11 +677,273 @@ Another important decision is the replacement strategy. Common choices include: 
 
 ---
 
-## 4.4 Complete Cleaning Pipeline
+## 4.4 Benchmark Decontamination
+
+When evaluating the true capabilities of large models, a key question is: did the model truly "learn" to solve problems, or did it merely "memorize" the test questions? If training data contains original questions from benchmarks like GSM8K, MMLU, or HumanEval, high scores on these tests are meaningless.
+
+This is the "Benchmark Contamination" problem. As the scale of LLM training data explodes, benchmark test content is repeatedly reposted, discussed, and analyzed on the internet, easily mixing into web-crawled training corpora. This is a critical engineering step for evaluating a model's true capabilities.
+
+### 4.4.1 Types and Risks of Contamination
+
+Benchmark contamination can be categorized into two types:
+
+**Direct contamination**: Training data contains original questions or slight variants from benchmark test sets. For example, GSM8K math problems reposted on educational websites, or MMLU multiple-choice questions appearing on an online quiz platform.
+
+**Indirect contamination**: Training data contains detailed explanations and answers to benchmark test questions. While not the original questions themselves, models may "indirectly memorize" answers through these explanations.
+
+### 4.4.2 Decontamination Detection Methods
+
+The core approach to decontamination is: match training data against known benchmark test sets and remove matched content.
+
+**N-gram overlap detection** is the most commonly used method. Compute the n-gram overlap ratio between training documents and benchmark test samples; when overlap exceeds a threshold, mark the document as contaminated. GPT-3, LLaMA, and other models' training all adopted this method.
+
+```python
+from collections import Counter
+from typing import Set, List
+
+class BenchmarkDecontaminator:
+    """Benchmark test set decontaminator"""
+    
+    def __init__(self, ngram_size: int = 13, threshold: float = 0.8):
+        """
+        Args:
+            ngram_size: n-gram size, GPT-3 uses 13-gram
+            threshold: Overlap ratio threshold, above this is considered contamination
+        """
+        self.ngram_size = ngram_size
+        self.threshold = threshold
+        self.benchmark_ngrams: Set[tuple] = set()
+    
+    def load_benchmarks(self, benchmark_datasets: dict):
+        """
+        Load benchmark test sets
+        
+        Args:
+            benchmark_datasets: {"name": [sample text list]}
+        """
+        for name, samples in benchmark_datasets.items():
+            for sample in samples:
+                ngrams = self._extract_ngrams(sample)
+                self.benchmark_ngrams.update(ngrams)
+        
+        print(f"Loaded {len(self.benchmark_ngrams)} unique {self.ngram_size}-grams")
+    
+    def _extract_ngrams(self, text: str) -> Set[tuple]:
+        """Extract n-gram set from text"""
+        text = ' '.join(text.lower().split())
+        words = text.split()
+        
+        ngrams = set()
+        for i in range(len(words) - self.ngram_size + 1):
+            ngram = tuple(words[i:i + self.ngram_size])
+            ngrams.add(ngram)
+        
+        return ngrams
+    
+    def check_contamination(self, document: str) -> dict:
+        """
+        Check if a single document is contaminated
+        
+        Returns:
+            {
+                'is_contaminated': bool,
+                'overlap_ratio': float,
+                'matched_ngrams': int
+            }
+        """
+        doc_ngrams = self._extract_ngrams(document)
+        
+        if len(doc_ngrams) == 0:
+            return {'is_contaminated': False, 'overlap_ratio': 0.0, 'matched_ngrams': 0}
+        
+        matched = doc_ngrams & self.benchmark_ngrams
+        overlap_ratio = len(matched) / len(doc_ngrams)
+        
+        return {
+            'is_contaminated': overlap_ratio > self.threshold,
+            'overlap_ratio': overlap_ratio,
+            'matched_ngrams': len(matched)
+        }
+    
+    def decontaminate(self, documents: list) -> list:
+        """Batch decontamination filtering"""
+        clean_docs = []
+        contaminated_count = 0
+        
+        for doc in documents:
+            result = self.check_contamination(doc['text'])
+            if not result['is_contaminated']:
+                clean_docs.append(doc)
+            else:
+                contaminated_count += 1
+        
+        print(f"Removed {contaminated_count} contaminated documents "
+              f"({contaminated_count/len(documents)*100:.2f}%)")
+        return clean_docs
+
+# Usage example
+decontaminator = BenchmarkDecontaminator(ngram_size=13, threshold=0.8)
+
+# Load common benchmark test sets
+benchmarks = {
+    'gsm8k': ["Janet's ducks lay 16 eggs per day...", ...],
+    'mmlu': ["What is the capital of France? A) London B) Paris...", ...],
+    'humaneval': ["def has_close_elements(numbers: List[float]...", ...],
+}
+decontaminator.load_benchmarks(benchmarks)
+
+# Decontaminate training data
+clean_data = decontaminator.decontaminate(training_documents)
+```
+
+### 4.4.3 Engineering Best Practices
+
+1. **Maintain a benchmark library**: Maintain a library containing all common benchmark test sets, including GSM8K, MMLU, HumanEval, MBPP, HellaSwag, ARC, WinoGrande, etc. Every time new data is processed, it must be checked against this library.
+2. **Multi-granularity detection**: Besides n-gram overlap, also use MinHash LSH from the previous section for fuzzy matching to catch rewritten test questions.
+3. **Regular updates**: New benchmark test sets keep emerging; the decontamination library needs regular updates.
+4. **Documentation and reporting**: Clearly disclose decontamination methods and results in model technical reports — this is a basic requirement for responsible AI research (see LLaMA 3 and DeepSeek technical reports).
+
+---
+
+## 4.5 Model-based Quality Scoring
+
+In Section 4.1, we introduced heuristic rule-based quality filtering. These rules are fast and effective but cannot capture deeper quality differences. For example, an advertising article that passes all heuristic checks and a high-quality technical article that also passes may receive the same score under heuristic rules.
+
+**Model-based quality scoring** uses lightweight machine learning models for more refined quality assessment. This approach was widely adopted in LLaMA 2 training — Meta's team used a fastText classifier to identify "textbook-quality" web pages, significantly improving the overall quality of pre-training data.
+
+### 4.5.1 fastText Quality Classifier
+
+fastText is the most commonly used quality scoring tool because it has extremely fast inference speed and can run efficiently on TB-scale data. The core approach is:
+
+1. **Build training set**: Sample positive examples from high-quality sources (e.g., Wikipedia, academic journals, curated websites), and negative examples from low-quality sources (spam pages, ad pages).
+2. **Train classifier**: Train a binary classification model using fastText.
+3. **Batch scoring**: Score all data to be processed, then filter or stratified-sample based on scores.
+
+```python
+import fasttext
+import random
+
+def build_quality_training_data(
+    high_quality_texts: list,
+    low_quality_texts: list,
+    output_path: str
+):
+    """
+    Build fastText quality classification training data
+    
+    Args:
+        high_quality_texts: High-quality text list (e.g., Wikipedia articles)
+        low_quality_texts: Low-quality text list (e.g., spam pages)
+        output_path: Output file path
+    """
+    with open(output_path, 'w') as f:
+        for text in high_quality_texts:
+            clean_text = ' '.join(text.split()[:500])  # Take first 500 words
+            f.write(f"__label__hq {clean_text}\n")
+        
+        for text in low_quality_texts:
+            clean_text = ' '.join(text.split()[:500])
+            f.write(f"__label__lq {clean_text}\n")
+
+def train_quality_classifier(training_data_path: str, model_path: str):
+    """Train quality classifier"""
+    model = fasttext.train_supervised(
+        input=training_data_path,
+        lr=0.1,
+        epoch=25,
+        wordNgrams=2,
+        dim=100,
+        loss='softmax'
+    )
+    model.save_model(model_path)
+    return model
+
+class ModelBasedQualityScorer:
+    """Model-based quality scorer"""
+    
+    def __init__(self, model_path: str):
+        self.model = fasttext.load_model(model_path)
+    
+    def score(self, text: str) -> float:
+        """
+        Score text quality
+        
+        Returns:
+            Quality score between 0-1, higher is better
+        """
+        text = ' '.join(text.split()[:500])
+        labels, probs = self.model.predict(text, k=2)
+        
+        for label, prob in zip(labels, probs):
+            if label == '__label__hq':
+                return prob
+        return 0.0
+    
+    def filter_by_quality(self, documents: list, 
+                         min_score: float = 0.5) -> list:
+        """Filter documents by quality score"""
+        filtered = []
+        for doc in documents:
+            score = self.score(doc['text'])
+            if score >= min_score:
+                doc['quality_score'] = score
+                filtered.append(doc)
+        return filtered
+```
+
+### 4.5.2 BERT-based Fine-grained Quality Assessment
+
+For higher-precision quality assessment needs, BERT or its variants can be used for classification. This approach is more accurate than fastText but slower for inference, suitable for fine-grained classification of borderline samples after fastText coarse filtering.
+
+```python
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import torch
+
+class BERTQualityScorer:
+    """BERT-based fine-grained quality scorer"""
+    
+    def __init__(self, model_name: str = 'bert-base-chinese'):
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModelForSequenceClassification.from_pretrained(
+            model_name, num_labels=2
+        )
+        self.model.eval()
+    
+    def score_batch(self, texts: list) -> list:
+        """Batch scoring"""
+        encodings = self.tokenizer(
+            texts, 
+            padding=True, 
+            truncation=True, 
+            max_length=512, 
+            return_tensors='pt'
+        )
+        
+        with torch.no_grad():
+            outputs = self.model(**encodings)
+            probs = torch.softmax(outputs.logits, dim=-1)
+            quality_scores = probs[:, 1].tolist()  # High-quality class probability
+        
+        return quality_scores
+```
+
+### 4.5.3 Hierarchical Application of Quality Scoring
+
+In practice, a "coarse screening + fine screening" two-stage strategy is recommended:
+
+1. **Stage one**: Use fastText for rapid scoring of all data, removing obviously low-quality content (e.g., score < 0.3).
+2. **Stage two**: For borderline samples (e.g., scores between 0.3-0.7), use BERT for fine-grained classification.
+3. **Quality stratification**: Divide data into high, medium, and low tiers based on final scores, assigning different sampling weights during training.
+
+This stratification strategy was adopted by Meta in LLaMA 2 training — by increasing sampling weights for high-quality data, model performance on various benchmarks was significantly improved.
+
+---
+
+## 4.6 Complete Cleaning Pipeline
 
 Connect the components introduced above to build a complete data cleaning pipeline.
 
-### 4.4.1 Pipeline Architecture
+### 4.6.1 Pipeline Architecture
 
 An industrial-grade cleaning pipeline typically includes the following stages, executed in order:
 
@@ -695,11 +957,15 @@ An industrial-grade cleaning pipeline typically includes the following stages, e
 
 **Phase 5: PII cleaning.** Identify and anonymize sensitive personal information.
 
-**Phase 6: Quality scoring.** Compute quality metrics like perplexity to provide basis for subsequent quality stratification.
+**Phase 7: Benchmark decontamination.** Use N-gram overlap detection to remove documents highly overlapping with benchmark test sets.
 
-**Phase 7: Inter-document deduplication.** Use MinHash LSH for large-scale fuzzy deduplication to remove highly similar documents.
+**Phase 8: Quality scoring.** Use fastText/BERT quality classifiers for refined quality scoring of data.
 
-**Phase 8: Quality stratification and sampling.** Stratify data by quality score, determine sampling weights for each tier.
+**Phase 9: Perplexity scoring.** Compute quality metrics like perplexity to provide basis for subsequent quality stratification.
+
+**Phase 10: Inter-document deduplication.** Use MinHash LSH for large-scale fuzzy deduplication to remove highly similar documents.
+
+**Phase 11: Quality stratification and sampling.** Stratify data by quality score, determine sampling weights for each tier.
 
 ```python
 import ray
@@ -775,7 +1041,7 @@ class DataCleaningPipeline:
         ds.write_parquet(output_path)
 ```
 
-### 4.4.2 Quality Monitoring and Iteration
+### 4.6.2 Quality Monitoring and Iteration
 
 The cleaning pipeline is not a one-time task but a process requiring continuous monitoring and iterative optimization. The following monitoring mechanisms are recommended:
 
@@ -787,17 +1053,21 @@ The cleaning pipeline is not a one-time task but a process requiring continuous 
 
 ---
 
-## 4.5 Chapter Summary
+## 4.7 Chapter Summary
 
-This chapter systematically introduced the core technologies of pre-training data cleaning.
+This chapter systematically introduced the core technologies of pre-training data cleaning and quality control.
 
 In heuristic filtering: language detection uses FastText to quickly filter target language documents; perplexity filtering uses KenLM to evaluate text quality; the heuristic rule set covers multiple dimensions including length, special characters, duplicate lines, and vocabulary diversity. Quality stratification strategy divides data into different tiers, providing basis for subsequent sampling.
 
-In large-scale deduplication: exact deduplication uses hash methods to quickly remove identical documents; fuzzy deduplication uses the MinHash LSH algorithm to identify highly similar content. Distributed implementation is necessary for TB-scale data. Intra-document deduplication handles paragraph and n-gram level duplicates.
+In large-scale deduplication: we clearly distinguished exact and fuzzy deduplication as two technical approaches. Exact deduplication uses hash methods to quickly remove identical documents; fuzzy deduplication uses the MinHash LSH algorithm to identify highly similar content. Distributed implementation is necessary for TB-scale data. Intra-document deduplication handles paragraph and n-gram level duplicates.
 
 In privacy cleaning: PII detection can use Presidio or custom regex rules; anonymization strategy requires trade-offs between accuracy and information retention. Chinese PII handling requires specially designed rule sets.
 
-The complete cleaning pipeline connects each component, executing in the order of format standardization, language filtering, heuristic filtering, intra-document deduplication, PII cleaning, quality scoring, inter-document deduplication, and quality stratification. Continuous quality monitoring and iterative optimization are key to ensuring data quality.
+In benchmark decontamination: this is a critical engineering step for ensuring evaluation validity. Through N-gram overlap detection and fuzzy matching, training data content containing benchmark test sets (GSM8K, MMLU, HumanEval, etc.) is removed, preventing models from "memorizing answers" rather than truly learning.
+
+In quality scoring: model-based quality assessment (fastText/BERT) complements heuristic rules by more precisely distinguishing "textbook-quality" content from ordinary web pages. The hierarchical strategy (coarse screening + fine screening) is the best engineering practice for balancing efficiency and precision.
+
+The complete cleaning pipeline connects each component, executing in the order of format standardization, language filtering, heuristic filtering, intra-document deduplication, PII cleaning, benchmark decontamination, quality scoring, perplexity scoring, inter-document deduplication, and quality stratification. Continuous quality monitoring and iterative optimization are key to ensuring data quality.
 
 ![Figure 4-5: Chapter Knowledge Structure](../../images/part2/图4_5_本章知识结构.png)
 

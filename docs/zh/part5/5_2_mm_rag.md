@@ -9,7 +9,7 @@
 ## 13.0 学习目标 (Learning Objectives)
 
 * **理解多模态向量空间**：掌握 CLIP 与 SigLIP 的对比损失原理，理解文本与图像是如何在同一个向量空间对齐的。
-* **掌握 ColPali 架构**：理解 Late Interaction（晚期交互）机制，学会使用 `colpali-v1_2-merged` 处理复杂的 PDF 表格与图表。
+* **掌握 ColPali 架构**：理解 Late Interaction（晚期交互）机制，学会使用 `colpali-v1.2-merged` 处理复杂的 PDF 表格与图表。
 * **工程落地能力**：编写 Python 代码实现 **MaxSim 打分**算法，并利用**二进制量化**将存储成本降低 32 倍。
 * **可视化验证**：通过注意力热力图（Attention Heatmap）验证模型的可解释性。
 
@@ -118,7 +118,7 @@ class MultimodalIndexer:
             from colpali_engine.models import ColPali
             from colpali_engine.utils.processing_utils import ColPaliProcessor
             
-            model_name = "vidore/colpali-v1_2-merged"
+            model_name = "vidore/colpali-v1.2-merged"
             print(f"Loading ColPali model: {model_name}...")
             
             self.model = ColPali.from_pretrained(
@@ -255,7 +255,7 @@ def score_binary(query_emb, binary_doc_emb):
 #### 1. 准确率对比 (Recall@5)
 
 * **Unstructured OCR + BGE-M3**: 43% (表格结构丢失是主因)。
-* **ColPali v1_2**: 81% (直接理解视觉布局)。
+* **ColPali v1.2**: 81% (直接理解视觉布局)。
 
 #### 2. 延迟对比 (Latency)
 
@@ -280,7 +280,7 @@ ColPali 的另一大优势是**可解释性**。通过将 MaxSim 计算中的交
 
 * **误区二：“忽视 Embedding 维度爆炸”**
 * 不要天真地把 ColPali 的所有向量直接存入常规 PGVector。
-* **修正**：必须实施 13_3.3 中的二进制量化。或者，仅对复杂的“关键页”使用 ColPali，普通文本页依然使用 BGE/OpenAI Embedding，构建混合索引。
+* **修正**：必须实施 13.3.3 中的二进制量化。或者，仅对复杂的“关键页”使用 ColPali，普通文本页依然使用 BGE/OpenAI Embedding，构建混合索引。
 
 
 * **误区三：“直接用 CLIP 做 OCR 替代品”**

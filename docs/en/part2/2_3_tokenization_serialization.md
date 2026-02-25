@@ -1,4 +1,4 @@
-# Chapter 5: Tokenization and Serialization
+# Chapter 5: Tokenization, Serialization, and Efficient Loading (DataLoader Optimization)
 
 ---
 
@@ -139,7 +139,74 @@ def apply_bpe(text: str, merges: dict) -> list:
     return tokens
 ```
 
-An important variant of BPE is Byte-level BPE, introduced by GPT-2. Traditional BPE operates at the character level and needs to handle Unicode encoding issues. Byte-level BPE operates directly at the byte level, mapping each byte to a printable character, thus avoiding encoding issues and natively supporting any language. This is why the GPT series can process text in any language.
+### 5.1.6 Byte-Level BPE: Deep Dive
+
+An important variant of BPE is **Byte-level BPE**, first introduced by GPT-2. Traditional BPE operates at the character level and needs to handle Unicode encoding issues—character sets differ enormously across languages, and some characters (such as Emoji, special symbols) may not appear in training data, leading to UNK.
+
+Byte-level BPE operates directly at the **byte level**, mapping each byte (0-255) to a printable character, thus avoiding encoding issues and natively supporting any language. This is also why GPT series models can process text in any language.
+
+#### Working Principles
+
+1. **Byte encoding**: Encode input text as UTF-8 byte sequences. For example, the Chinese character "你" is encoded as 3 bytes `[0xe4, 0xbd, 0xa0]` in UTF-8.
+2. **Byte mapping**: Map the 256 possible byte values to 256 printable Unicode characters. This allows standard character-level BPE algorithms to process byte sequences.
+3. **BPE training and application**: Perform standard BPE algorithm on the mapped byte sequences.
+
+#### Impact on Multilingual Text
+
+Byte-level BPE has significantly different impacts across languages:
+
+- **English**: ASCII characters require only 1 byte, nearly equivalent to character-level BPE.
+- **Chinese**: Each Chinese character requires 3 bytes; if the vocabulary doesn't contain sufficient Chinese tokens, one character may be split into 2-3 tokens, severely affecting sequence length and computational efficiency.
+- **Japanese/Korean**: Require 3 and 3-4 bytes respectively, with similar issues.
+
+This is why the original LLaMA model had poor Chinese capabilities—its vocabulary was primarily trained on English, causing Chinese characters to be excessively segmented, inflating input sequence lengths. The solution is **Chinese vocabulary extension**, which we'll discuss in detail in Section 5.2.4.
+
+```python
+# Core implementation of Byte-level BPE byte mapping
+def bytes_to_unicode():
+    """
+    GPT-2's byte-to-Unicode mapping
+    Maps 256 byte values to printable Unicode characters
+    """
+    # Directly printable ASCII ranges
+    bs = list(range(ord('!'), ord('~') + 1)) + \
+         list(range(ord('¡'), ord('¬') + 1)) + \
+         list(range(ord('®'), ord('ÿ') + 1))
+    
+    cs = bs[:]
+    n = 0
+    # Map remaining bytes to higher Unicode code points
+    for b in range(256):
+        if b not in bs:
+            bs.append(b)
+            cs.append(256 + n)
+            n += 1
+    
+    cs = [chr(n) for n in cs]
+    return dict(zip(bs, cs))
+
+def analyze_byte_level_impact(text: str, tokenizer_name: str):
+    """Analyze the impact of Byte-level BPE on different languages"""
+    from transformers import AutoTokenizer
+    
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+    tokens = tokenizer.tokenize(text)
+    
+    # Compute compression ratio
+    utf8_bytes = len(text.encode('utf-8'))
+    num_tokens = len(tokens)
+    chars_per_token = len(text) / num_tokens
+    bytes_per_token = utf8_bytes / num_tokens
+    
+    print(f"Text: '{text[:50]}...'")
+    print(f"Characters: {len(text)}, UTF-8 bytes: {utf8_bytes}")
+    print(f"Tokens: {num_tokens}")
+    print(f"Average characters per token: {chars_per_token:.2f}")
+    print(f"Average bytes per token: {bytes_per_token:.2f}")
+    print(f"Tokens: {tokens[:20]}")
+    
+    return {'num_tokens': num_tokens, 'chars_per_token': chars_per_token}
+```
 
 ### 5.1.3 WordPiece: BERT's Choice
 
@@ -380,7 +447,137 @@ def resize_model_embeddings(model_name: str,
     model.save_pretrained(output_dir)
 ```
 
-### 5.2.4 Vocabulary Design Best Practices
+### 5.2.4 LLaMA Chinese Vocabulary Extension: Engineering Practice
+
+In practice, extending LLaMA-type models with Chinese vocabulary is a very common engineering task. Since LLaMA's original tokenizer was trained primarily on English data, Chinese characters are excessively segmented, leading to three major issues: sequences are 2-3x longer (higher compute cost), model struggles to learn complete Chinese semantics, and context window is effectively shortened.
+
+The complete workflow for Chinese vocabulary extension is as follows:
+
+**Step 1: Train Chinese SentencePiece model**
+
+First, train a dedicated Chinese BPE model on a Chinese corpus.
+
+```python
+import sentencepiece as spm
+
+# Train Chinese SentencePiece model
+spm.SentencePieceTrainer.train(
+    input='chinese_corpus.txt',  # Large-scale Chinese corpus
+    model_prefix='chinese_sp',
+    vocab_size=20000,            # Number of Chinese tokens to add
+    model_type='bpe',
+    character_coverage=0.9999,   # Ensure CJK character coverage
+    byte_fallback=True,
+    num_threads=32
+)
+```
+
+**Step 2: Merge vocabularies**
+
+Merge new Chinese tokens into LLaMA's original vocabulary, avoiding duplicates.
+
+```python
+from transformers import LlamaTokenizer
+import sentencepiece as spm
+
+def merge_tokenizers(
+    base_tokenizer_path: str,
+    chinese_sp_model_path: str,
+    output_path: str
+):
+    """Merge LLaMA tokenizer with Chinese SentencePiece model"""
+    # Load base tokenizer
+    base_tokenizer = LlamaTokenizer.from_pretrained(base_tokenizer_path)
+    base_vocab = set(base_tokenizer.get_vocab().keys())
+    
+    # Load Chinese model
+    chinese_sp = spm.SentencePieceProcessor(model_file=chinese_sp_model_path)
+    
+    # Extract new tokens (not in original vocabulary)
+    new_tokens = []
+    for i in range(chinese_sp.get_piece_size()):
+        piece = chinese_sp.id_to_piece(i)
+        if piece not in base_vocab:
+            new_tokens.append(piece)
+    
+    # Add new tokens
+    num_added = base_tokenizer.add_tokens(new_tokens)
+    print(f"Added {num_added} Chinese tokens")
+    print(f"Vocabulary size: {len(base_tokenizer.get_vocab().keys())} -> {len(base_tokenizer)}")
+    
+    # Save
+    base_tokenizer.save_pretrained(output_path)
+    return base_tokenizer
+```
+
+**Step 3: Resize model embedding matrix**
+
+After vocabulary expansion, the model's embedding and output layers must be resized accordingly.
+
+```python
+from transformers import LlamaForCausalLM
+import torch
+
+def resize_model_for_new_vocab(
+    model_path: str,
+    new_tokenizer,
+    output_path: str
+):
+    """Resize model to accommodate extended vocabulary"""
+    model = LlamaForCausalLM.from_pretrained(model_path)
+    
+    original_vocab_size = model.config.vocab_size
+    new_vocab_size = len(new_tokenizer)
+    
+    # Resize embedding layer
+    model.resize_token_embeddings(new_vocab_size)
+    
+    # Initialize new embeddings: use mean of existing embeddings
+    with torch.no_grad():
+        # Input embedding
+        embed_weight = model.model.embed_tokens.weight
+        mean_embed = embed_weight[:original_vocab_size].mean(dim=0)
+        embed_weight[original_vocab_size:] = mean_embed
+        
+        # Output layer (lm_head)
+        lm_head_weight = model.lm_head.weight
+        mean_head = lm_head_weight[:original_vocab_size].mean(dim=0)
+        lm_head_weight[original_vocab_size:] = mean_head
+    
+    model.save_pretrained(output_path)
+    print(f"Model resized: {original_vocab_size} -> {new_vocab_size}")
+```
+
+**Step 4: Verify the effect**
+
+```python
+def verify_chinese_extension(original_tokenizer_path: str, 
+                              extended_tokenizer_path: str):
+    """Verify the effect of Chinese vocabulary extension"""
+    from transformers import AutoTokenizer
+    
+    original = AutoTokenizer.from_pretrained(original_tokenizer_path)
+    extended = AutoTokenizer.from_pretrained(extended_tokenizer_path)
+    
+    test_texts = [
+        "人工智能是计算机科学的一个重要分支",
+        "大语言模型的训练数据质量决定了模型的上限",
+        "深度学习在自然语言处理领域取得了重大突破"
+    ]
+    
+    for text in test_texts:
+        orig_tokens = original.tokenize(text)
+        ext_tokens = extended.tokenize(text)
+        
+        print(f"\nText: {text}")
+        print(f"  Original: {len(orig_tokens)} tokens -> {orig_tokens}")
+        print(f"  Extended: {len(ext_tokens)} tokens -> {ext_tokens}")
+        print(f"  Compression: {len(orig_tokens)/len(ext_tokens):.1f}x")
+```
+
+Typically, after Chinese vocabulary extension, Chinese text token count is reduced by 50-70%, meaning the same context window can process 2-3x more Chinese content.
+
+### 5.2.5 Vocabulary Design Best Practices
 
 Based on industry experience, here are some best practices for vocabulary design:
 

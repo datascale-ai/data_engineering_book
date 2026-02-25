@@ -174,13 +174,12 @@ response = client.chat.completions.create(
 
 ### 5. 成本与优化 (Cost & Optimization)
 
-<<<<<<< HEAD:docs/part6/6_5_mm_rag.md
 在企业级落地中，多模态 RAG 的成本远高于纯文本 RAG，需要精细化计算。
 =======
 - **资源消耗：**
   - **索引成本**：ColPali 处理速度较慢（约 0.5s/页），一份 200 页的财报索引需 2-3 分钟。
   - **推理成本**：多模态 Token 消耗巨大。一张 1024x1024 的图片约为 1000-1500 tokens。每次 Top-4 检索意味着 Input Token 至少 5000+。使用 SiliconFlow API 调用 Qwen2_5-VL-72B，单次问答成本约 0.05-0.1 元人民币。
->>>>>>> main:docs/zh/part6/6_5_mm_rag.md
+
 
 #### 资源消耗：
 * **索引时间成本**：ColPali 处理速度相对较慢（约 0.5s/页）。一份 200 页的财报索引构建需 2-3 分钟（依赖 GPU 性能）。

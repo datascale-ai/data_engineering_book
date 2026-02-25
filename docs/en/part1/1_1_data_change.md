@@ -1,4 +1,4 @@
-# Chapter 1: Data Transformation in the Era of Large Language Models
+# Chapter 1: Data Transformation in the Era of Large Language Models (From Data Ops to AI Ops)
 
 ---
 

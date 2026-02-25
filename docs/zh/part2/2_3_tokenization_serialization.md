@@ -1,4 +1,4 @@
-# 第5章：分词与序列化
+# 第5章：分词、序列化与高效加载（DataLoader 优化）
 
 ---
 
@@ -139,7 +139,74 @@ def apply_bpe(text: str, merges: dict) -> list:
     return tokens
 ```
 
-BPE 的一个重要变体是 Byte-level BPE，由 GPT-2 引入。传统 BPE 在字符级别操作，需要处理 Unicode 编码问题。Byte-level BPE 直接在字节级别操作，将每个字节映射到一个可打印字符，从而避免了编码问题，且天然支持任何语言。这也是为什么 GPT 系列模型可以处理任意语言文本的原因。
+### 5.1.6 Byte-Level BPE：深入解析
+
+BPE 的一个重要变体是 **Byte-level BPE**，由 GPT-2 首先引入。传统 BPE 在字符级别操作，需要处理 Unicode 编码问题——不同语言的字符集差异巨大，且某些字符（如 Emoji、特殊符号）可能不在训练数据中出现，导致 UNK。
+
+Byte-level BPE 直接在**字节级别**操作，将每个字节（0-255）映射到一个可打印字符，从而避免了编码问题，且天然支持任何语言。这也是 GPT 系列模型能够处理任意语言文本的原因。
+
+#### 工作原理
+
+1. **字节编码**：将输入文本编码为 UTF-8 字节序列。例如，中文字"你"在 UTF-8 中编码为 3 个字节 `[0xe4, 0xbd, 0xa0]`。
+2. **字节映射**：将 256 个可能的字节值映射到 256 个可打印的 Unicode 字符。这样可以用标准的字符级 BPE 算法处理字节序列。
+3. **BPE 训练与应用**：在映射后的字节序列上执行标准的 BPE 算法。
+
+#### 对多语言的影响
+
+Byte-level BPE 对不同语言的影响差异显著：
+
+- **英文**：ASCII 字符只需 1 个字节，与字符级 BPE 几乎等价。
+- **中文**：每个汉字需要 3 个字节，如果词表中没有充分的中文 token，一个汉字可能被分解为 2-3 个 token，严重影响序列长度和计算效率。
+- **日语/韩语**：分别需要 3 和 3-4 个字节，也存在类似问题。
+
+这就是为什么原版 LLaMA 的中文能力较差——其词表主要基于英文训练，中文字符被过度切分，导致输入序列长度膨胀。解决方案是 **中文词表扩充**，我们将在 5.2.5 节详细讨论。
+
+```python
+# Byte-level BPE 的字节映射的核心实现
+def bytes_to_unicode():
+    """
+    GPT-2 的字节到 Unicode 映射
+    将 256 个字节值映射到可打印的 Unicode 字符
+    """
+    # 可直接打印的 ASCII 范围
+    bs = list(range(ord('!'), ord('~') + 1)) + \
+         list(range(ord('¡'), ord('¬') + 1)) + \
+         list(range(ord('®'), ord('ÿ') + 1))
+    
+    cs = bs[:]
+    n = 0
+    # 其余字节映射到更高的 Unicode 码点
+    for b in range(256):
+        if b not in bs:
+            bs.append(b)
+            cs.append(256 + n)
+            n += 1
+    
+    cs = [chr(n) for n in cs]
+    return dict(zip(bs, cs))
+
+def analyze_byte_level_impact(text: str, tokenizer_name: str):
+    """分析 Byte-level BPE 对不同语言的影响"""
+    from transformers import AutoTokenizer
+    
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_name)
+    tokens = tokenizer.tokenize(text)
+    
+    # 计算压缩率
+    utf8_bytes = len(text.encode('utf-8'))
+    num_tokens = len(tokens)
+    chars_per_token = len(text) / num_tokens
+    bytes_per_token = utf8_bytes / num_tokens
+    
+    print(f"文本: '{text[:50]}...'")
+    print(f"字符数: {len(text)}, UTF-8 字节数: {utf8_bytes}")
+    print(f"Token 数: {num_tokens}")
+    print(f"每个 token 平均字符数: {chars_per_token:.2f}")
+    print(f"每个 token 平均字节数: {bytes_per_token:.2f}")
+    print(f"Tokens: {tokens[:20]}")
+    
+    return {'num_tokens': num_tokens, 'chars_per_token': chars_per_token}
+```
 
 ### 5.1.3 WordPiece：BERT 的选择
 
@@ -211,7 +278,7 @@ spm.SentencePieceTrainer.train(
     model_prefix='my_tokenizer',
     vocab_size=32000,
     model_type='bpe',  # 或 'unigram'
-    character_coverage=0_9995,
+    character_coverage=0.9995,
     num_threads=16
 )
 
@@ -293,7 +360,7 @@ spm.SentencePieceTrainer.train(
     model_prefix='multilingual_tokenizer',
     vocab_size=64000,
     model_type='unigram',
-    character_coverage=0_9999,  # 高覆盖率确保稀有字符被包含
+    character_coverage=0.9999,  # 高覆盖率确保稀有字符被包含
     input_sentence_size=10000000,
     shuffle_input_sentence=True,
     # 特殊处理中日韩字符
@@ -380,7 +447,109 @@ def resize_model_embeddings(model_name: str,
     model.save_pretrained(output_dir)
 ```
 
-### 5.2.4 词表设计的最佳实践
+### 5.2.4 给 LLaMA 扩充中文词表：实战工程
+
+在实际工作中，给 LLaMA 类模型扩充中文词表是一个非常高频的工程任务。由于 LLaMA 的原始词表主要基于英文语料训练，中文字符在 Byte-level BPE 下被严重切分（一个汉字可能被分解为 2-3 个 token），导致：
+
+1. **序列长度膨胀**：同样内容的中文文本比英文占用更多 token，浪费宝贵的上下文窗口。
+2. **计算成本增加**：Transformer 的计算复杂度与序列长度的平方成正比，序列长度增加 2 倍意味着计算量增加 4 倍。
+3. **语义理解困难**：字节级切分破坏了汉字的完整性，增加了模型理解中文语义的难度。
+
+以下是一个完整的 LLaMA 中文词表扩充流程：
+
+```python
+import sentencepiece as spm
+from transformers import AutoTokenizer, AutoModelForCausalLM
+import os
+
+def extend_llama_chinese_vocab(
+    base_model_name: str = 'meta-llama/Llama-2-7b',
+    chinese_corpus_path: str = 'chinese_corpus.txt',
+    target_chinese_vocab_size: int = 20000,
+    output_dir: str = './llama_zh_tokenizer'
+):
+    """
+    给 LLaMA 扩充中文词表的完整流程
+    
+    步骤：
+    1. 在中文语料上训练 SentencePiece 分词器
+    2. 合并原始 LLaMA 词表和中文词表
+    3. 扩展模型嵌入矩阵
+    """
+    # Step 1: 在中文语料上训练分词器
+    spm.SentencePieceTrainer.train(
+        input=chinese_corpus_path,
+        model_prefix='chinese_sp',
+        vocab_size=target_chinese_vocab_size,
+        model_type='bpe',
+        character_coverage=0.9999,
+        num_threads=16,
+        byte_fallback=True,  # 关键：确保与 LLaMA 的字节回退兼容
+    )
+    
+    # Step 2: 加载两个词表
+    llama_tokenizer = AutoTokenizer.from_pretrained(base_model_name)
+    chinese_sp = spm.SentencePieceProcessor(model_file='chinese_sp.model')
+    
+    # 获取中文词表中的新 token
+    llama_vocab = set(llama_tokenizer.get_vocab().keys())
+    chinese_tokens = [
+        chinese_sp.id_to_piece(i) 
+        for i in range(chinese_sp.get_piece_size())
+    ]
+    
+    # 过滤已存在的 token 和特殊 token
+    new_tokens = [
+        token for token in chinese_tokens 
+        if token not in llama_vocab 
+        and not token.startswith('<') 
+        and len(token.strip()) > 0
+    ]
+    
+    print(f"LLaMA 原始词表大小: {len(llama_tokenizer)}")
+    print(f"中文新增 token: {len(new_tokens)}")
+    
+    # Step 3: 添加新 token
+    num_added = llama_tokenizer.add_tokens(new_tokens)
+    print(f"实际添加: {num_added} 个 token")
+    print(f"新词表大小: {len(llama_tokenizer)}")
+    
+    # Step 4: 保存扩充后的分词器
+    llama_tokenizer.save_pretrained(output_dir)
+    
+    # Step 5: 扩展模型嵌入矩阵
+    model = AutoModelForCausalLM.from_pretrained(base_model_name)
+    model.resize_token_embeddings(len(llama_tokenizer))
+    
+    # 新 token 的嵌入初始化为现有 token 的均值
+    # 这比随机初始化效果更好
+    with torch.no_grad():
+        embedding_layer = model.get_input_embeddings()
+        old_embeddings = embedding_layer.weight[:len(llama_vocab)]
+        mean_embedding = old_embeddings.mean(dim=0)
+        
+        for i in range(len(llama_vocab), len(llama_tokenizer)):
+            embedding_layer.weight[i] = mean_embedding
+    
+    model.save_pretrained(output_dir)
+    
+    return llama_tokenizer, model
+
+# 效果验证
+def compare_tokenization(text: str, original_tokenizer, extended_tokenizer):
+    """对比扩充前后的分词效果"""
+    orig_tokens = original_tokenizer.tokenize(text)
+    ext_tokens = extended_tokenizer.tokenize(text)
+    
+    print(f"原文: {text}")
+    print(f"原始 LLaMA: {len(orig_tokens)} tokens -> {orig_tokens[:20]}")
+    print(f"扩充后: {len(ext_tokens)} tokens -> {ext_tokens[:20]}")
+    print(f"压缩比: {len(orig_tokens)/len(ext_tokens):.2f}x")
+```
+
+通过中文词表扩充，典型的压缩效果是：中文文本的 token 数减少 50-70%，显著提升训练和推理效率。当然，词表扩充后需要对模型进行继续预训练（Continue Pre-training），让新增 token 的嵌入学习到有意义的表示。
+
+### 5.2.5 词表设计的最佳实践
 
 基于业界的经验，以下是词表设计的一些最佳实践：
 
@@ -440,11 +609,11 @@ def static_mix(data_sources: dict, target_size: int) -> list:
 
 # 使用示例
 data_sources = {
-    'web': (web_data, 0_6),
-    'books': (book_data, 0_15),
-    'code': (code_data, 0_1),
-    'papers': (paper_data, 0_1),
-    'wikipedia': (wiki_data, 0_05)
+    'web': (web_data, 0.6),
+    'books': (book_data, 0.15),
+    'code': (code_data, 0.1),
+    'papers': (paper_data, 0.1),
+    'wikipedia': (wiki_data, 0.05)
 }
 
 mixed = static_mix(data_sources, target_size=1000000)
@@ -496,9 +665,9 @@ class DynamicDataMixer:
 
 # 使用示例：训练早期强调多样性，后期强调质量
 schedule = [
-    (0, {'web': 0_5, 'books': 0_2, 'code': 0_15, 'papers': 0_1, 'wiki': 0_05}),
-    (100000, {'web': 0_4, 'books': 0_25, 'code': 0_15, 'papers': 0_15, 'wiki': 0_05}),
-    (500000, {'web': 0_3, 'books': 0_3, 'code': 0_2, 'papers': 0_15, 'wiki': 0_05}),
+    (0, {'web': 0.5, 'books': 0.2, 'code': 0.15, 'papers': 0.1, 'wiki': 0.05}),
+    (100000, {'web': 0.4, 'books': 0.25, 'code': 0.15, 'papers': 0.15, 'wiki': 0.05}),
+    (500000, {'web': 0.3, 'books': 0.3, 'code': 0.2, 'papers': 0.15, 'wiki': 0.05}),
 ]
 
 mixer = DynamicDataMixer(data_sources, schedule)
@@ -747,14 +916,14 @@ class DataPreparationPipeline:
     def mix_sources(self, sources: dict) -> list:
         """混合多个数据源"""
         mixed = []
-        weights = self.config.mix_weights or {s: 1_0 for s in sources}
+        weights = self.config.mix_weights or {s: 1.0 for s in sources}
         total_weight = sum(weights.values())
         
         # 确定每个来源的采样数
         total_samples = sum(len(data) for data in sources.values())
         
         for source_name, data in sources.items():
-            weight = weights.get(source_name, 1_0) / total_weight
+            weight = weights.get(source_name, 1.0) / total_weight
             num_samples = int(total_samples * weight)
             
             if len(data) >= num_samples:

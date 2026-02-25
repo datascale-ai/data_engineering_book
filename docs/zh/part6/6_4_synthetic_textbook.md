@@ -179,15 +179,12 @@ def execute_code(code, timeout=5):
 * `LogicError`: 引用了不存在的变量（幻觉）。
 通过剔除这 18% 的"有毒"数据，我们保证了教科书的严谨性。
 
-<<<<<<< HEAD:docs/part6/6_4_synthetic_textbook.md
-=======
 | 阶段 | 内容示例 |
 | :--- | :--- |
 | **原始种子** | 珍妮有5个苹果，吃了2个，还剩几个？ |
 | **Evol 进化** | 珍妮经营一家水果店，库存5箱苹果（每箱12个）。周一她卖出了库存的40%，且由于存储不当损耗了2个单品。请计算剩余可售卖的苹果具体数量。 |
 | **PoT 解法** | `def solve(): total = 5 * 12; sold = total * 0.4; ... return remaining` |
 | **执行结果** | `34` (验证通过，存入数据集) |
->>>>>>> main:docs/zh/part6/6_4_synthetic_textbook.md
 
 
 ### 5. 成本与优化 (Cost & Optimization)
