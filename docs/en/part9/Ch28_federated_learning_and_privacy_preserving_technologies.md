@@ -4,7 +4,7 @@
 
 ---
 
-## Chapter Summary
+## Summary of this chapter
 
 In the previous chapter, we discussed the data compliance framework and governance, clarified the engineering importance of "compliance shift left" and Privacy by Design, and established a system baseline based on RoPA, DPIA, and classification and grading. However, in the face of highly sensitive data (C3 level) or cross-organizational data islands, relying solely on institutional "data availability and invisibility" or traditional access control and desensitization often cannot completely block the physical risk of data leakage. As machine learning systems, especially large model systems, continue to penetrate into the core business processes, data exposure no longer only occurs in traditional links such as database export, report display, or manual query, but begins to appear in feature construction, parameter training, joint modeling, and inference calls.
 
@@ -22,11 +22,11 @@ After studying this chapter, readers should be able to:
 
 * Understand why privacy protection cannot just stay at the institutional governance and field desensitization layer, but must enter the machine learning system and model training architecture in advance.
 * Master the basic principles, protection objects, applicable stages and main costs of the five core privacy protection technologies (FL, DP, MPC, TEE, HE).
-* Distinguish the three types of implementation models: horizontal federation, vertical federation and federated fine-tuning, and understand their prerequisite differences in data distribution and collaboration relationships.
-* Understand the main attack surfaces in federated learning, including membership inference, gradient inversion, model poisoning, and backdoor attacks.
-* Establish privacy technology selection capabilities to make engineering trade-offs between accuracy, latency, bandwidth, explainability and compliance pressure.
-* Master the verification ideas of privacy enhancement systems and understand why “introducing privacy technology” does not mean “really passing privacy verification”.
-* Understand how the technology in this chapter works with the P09 privacy-preserving data pipeline, Ch27 compliance governance system, and Ch22 multimodal retrieval architecture.
+* Distinguish the three implementation modes of horizontal federation, vertical federation and federated fine-tuning, and understand their prerequisite differences in data distribution and collaboration relationships.
+* Understand the main attack surfaces in federated learning, including membership inference, gradient inversion, model poisoning and backdoor attacks.
+* Establish privacy technology selection capabilities and be able to make engineering trade-offs between accuracy, latency, bandwidth, explainability and compliance pressure.
+* Master the verification ideas of privacy enhancement systems, and understand why "introducing privacy technology" does not mean "really passing privacy verification."
+* Understand how the technology in this chapter works with the P09 privacy-preserving data pipeline, Ch27 compliance governance system, and Ch22 multi-modal retrieval architecture.
 
 ---
 
@@ -38,18 +38,18 @@ However, the project was stopped by both the legal and security departments duri
 
 Faced with the double attack of "data islands" and "strong compliance supervision", the traditional paradigm of "summarizing data into a data lake for centralized training" has completely failed. The team must find an architectural solution that can achieve joint optimization of models without sharing raw data. This is the realistic background for the emergence of federated learning and privacy-enhancing technologies: data no longer flows freely, and collaboration must be reorganized through protocols, algorithms, and system boundaries.
 
-![图28-1：跨机构医疗数据协作中的隐私与合规冲突示意图](../../images/part9/图28_1_跨机构医疗数据协作中的隐私与合规冲突示意图.png)
+![Figure 28-1: Diagram of privacy and compliance conflicts in cross-institutional medical data collaboration](../../images/part9/图28_1_跨机构医疗数据协作中的隐私与合规冲突示意图.png)
 *Figure 28-1: Schematic diagram of privacy and compliance conflicts in cross-institutional medical data collaboration*
 
 ---
 
-## 28.1 Why privacy protection must be front-loaded into architecture design
+## 28.1 Why privacy protection must be front-loaded into architectural design
 
 As we highlighted in Ch27, compliance costs can rise rapidly as the project life cycle progresses, so it is imperative to persist with “compliance shift left.” In terms of underlying technology implementation, privacy protection also follows this iron law. For AI systems, the later you consider privacy, the easier it is to leave irreversible structural flaws in data access, feature engineering, training processes, and inference interfaces. Many teams only focus on model effects and training throughput in the early stages of the project, and regard privacy issues as a secondary matter that "will be fixed after the model is run through." As a result, it is often discovered that the system architecture itself cannot meet regulatory requirements after entering the acceptance, launch, or compliance review stages.
 
 This problem can be partially alleviated in traditional business systems by adding field permissions, adding logs, adding approval, or adding desensitization. However, in machine learning systems, once the risk enters the training process, it is difficult to completely eliminate it through post-processing means. The reason is that the model itself compresses the statistical rules, long-tail sample characteristics and even individual extreme information in the training data into the parameter space. In other words, data exposure is no longer just a question of who exported a table, but a question of whether the model has learned things that should not be remembered.
 
-### 28.1.1 Why post-event encryption and desensitization are often not enough
+### 28.1.1 Why post-encryption and post-desensitization are often not enough
 
 Traditional security thinking emphasizes database encryption, transmission encryption and front-end display desensitization. These measures are certainly important in traditional business systems, but are not sufficient in machine learning, especially large model scenarios.
 
@@ -67,7 +67,7 @@ Privacy protection and data availability are not simple antagonistic relationshi
 
 The task of architectural design is not to eliminate this contradiction, but to find the "Minimum Necessary Exposure Surface" under specific business scenarios. The so-called minimum available exposure surface is to compress the visible data range, exchangeable information types, saveable intermediate results and exposeable model capabilities to the minimum on the premise of meeting the business goals. This goal determines that privacy enhancement technology is never the icing on the cake of "it's better to have it, but it's okay without it", but a prerequisite for the existence of many cross-subject AI systems.
 
-![图28-2：数据可用性与隐私保护的结构性矛盾示意图](../../images/part9/图28_2_数据可用性与隐私保护的结构性矛盾示意图.png)
+![Figure 28-2: Schematic diagram of the structural contradiction between data availability and privacy protection](../../images/part9/图28_2_数据可用性与隐私保护的结构性矛盾示意图.png)
 *Figure 28-2: Schematic diagram of the structural contradiction between data availability and privacy protection*
 
 ### 28.1.3 The concept of “privacy budget” in engineering systems
@@ -82,7 +82,7 @@ In traditional data governance, the security focus is usually "who accessed the 
 
 This means that the security goal shifts from "protecting the database" to "protecting the training process, collaboration boundaries and model behavior". All subsequent technical routes in this chapter, including FL, DP, MPC, TEE and HE, actually serve this paradigm shift: when the data itself cannot be moved freely, the system must re-establish security on the training protocol, aggregation logic and output boundaries.
 
-![图28-3：从数据安全到训练安全的治理重心迁移图](../../images/part9/图28_3_从数据安全到训练安全的治理重心迁移图.png)
+![Figure 28-3: Governance focus migration diagram from data security to training security] (../../images/part9/图28_3_从数据安全到训练安全的治理重心迁移图.png)
 *Figure 28-3: Governance focus migration diagram from data security to training security*
 
 ---
@@ -91,13 +91,13 @@ This means that the security goal shifts from "protecting the database" to "prot
 
 To solve the problem of privacy computing, the industry has currently evolved into five major technical schools. They are not mutually exclusive, but have different emphasis on protection objects, calculation loss and applicable scenarios. The key to understanding these technologies is not to memorize definitions, but to see clearly what they protect, what they sacrifice, and which stage of the system they are suitable for placement.
 
-![图28-4：隐私增强技术全景矩阵图](../../images/part9/图28_4_隐私增强技术全景矩阵图.png)
+![Figure 28-4: Panoramic matrix diagram of privacy enhancement technology](../../images/part9/图28_4_隐私增强技术全景矩阵图.png)
 *Figure 28-4: Panoramic matrix diagram of privacy enhancement technology*
 
 ### 28.2.1 Analysis and comparison of core technologies
 
 | Technical schools | Core principles | Protection objects | Applicable stages | Implementation costs and main bottlenecks |
-| :--------------- | :----------------------------- | :------------- | :------------- | :------------------------ |
+| :--------------- | :-------------------------- | :------------- | :------------- | :-------------------------- |
 | **Federated Learning (FL)** | The data does not move and the model does not move; each node trains locally and only interacts with gradients or parameters.      | The original training data does not go out of the domain directly.   | Model training and fine-tuning | High communication overhead; risk of gradient leakage; sensitive to node heterogeneity.   |
 | **Differential Privacy (DP)** | Inject noise into the data, gradients, or output to mask individual contributions.         | Protect whether the individual is participating in training or inquiry. | Training, statistical release, federated aggregation | Accuracy is impaired; budget management is complex; parameter adjustment is difficult.         |
 | **Secure Multi-Party Computation (MPC)** | Through protocols such as secret sharing, multiple parties can complete joint calculations without exposing inputs. | Input data and intermediate results.     | Joint statistics, joint intersection, and joint risk control | There are many communication rounds and large delays; it is not suitable for large-scale in-depth training.     |
@@ -126,7 +126,7 @@ A typical federated training process usually includes the following steps. First
 
 Such a round-based training process looks similar to distributed training, but the core difference between the two is that distributed training assumes that the training nodes are controlled by the same organization, and the data can usually be viewed as a whole segmentation; federated learning naturally assumes that the participants are independent of each other, have limited trust, and have strong business differences in local data. Therefore, federated training is not simply "slower distributed training", but a set of collaboration paradigms with business boundaries and governance constraints.
 
-![图28-5：联邦学习基本训练闭环](../../images/part9/图28_5_联邦学习基本训练闭环.png)
+![Figure 28-5: Basic training closed loop of federated learning](../../images/part9/图28_5_联邦学习基本训练闭环.png)
 *Figure 28-5: Basic training closed loop of federated learning*
 
 #### (2) FedAvg and local update mechanism
@@ -135,7 +135,7 @@ The most classic algorithm in federated learning is FedAvg. The intuition is ver
 
 However, FedAvg also exposes a typical trade-off of the federated system: if the number of local training steps is too few, there will be many communication rounds, and the cost of bandwidth and synchronization is high; if the number of local training steps is too many, each client will move further in the direction of its own local data distribution, resulting in a more serious drift of the aggregated model, which is often referred to as client drift. In engineering, it is usually necessary to make joint adjustments between the local epoch number, client participation ratio, learning rate and aggregation frequency.
 
-#### (3) Non-IID data issues
+#### (3) Non-IID data problem
 
 In a federated environment, data on each node is usually not independently and identically distributed. Different institutions may have completely different user structures, device sources, regional attributes, annotation standards, and data scales. This will lead to slow convergence of the global model, individual large nodes dominating the training direction, a few nodes not receiving benefits for a long time, and even a situation where the global model is acceptable on average, but is completely unusable for key participants.
 
@@ -151,11 +151,11 @@ The core commitment of federated learning is that “the original data does not 
 
 The core goal of differential privacy is not to make data "completely invisible", but to ensure that whether a single sample participates in the system will not significantly affect the output results. In other words, even if an attacker has a large amount of background knowledge, it is difficult to determine whether an individual appears in the training data based on model output, statistical results, or certain visible signals during the training process.
 
-#### (1) DP’s protection objects
+#### (1) Protection objects of DP
 
 DP focuses on protecting the “indistinguishability of individual contributions”. It does not promise that business results must be kept confidential, nor does it promise that the system will not be leaked at all, but provides a probabilistic sense of protection: in the presence or absence of an individual sample, the difference in system output distribution is limited to a controllable range. This kind of protection is especially suitable for dealing with membership inference risks, because what attackers most often do is to determine whether a person is in the training set.
 
-#### (2)Local DP and Central DP
+#### (2) Local DP and Central DP
 
 From the perspective of deployment location, differential privacy can be roughly divided into Local DP and Central DP. Local DP requires each user or client to add noise themselves before the data leaves local, so the trust assumption is the weakest, but since noise enters the system earlier, the accuracy loss is usually more noticeable. Central DP adds noise uniformly on the center side, and the model quality is usually better, but the premise is that you must trust that the center can correctly perform budget management and noise injection.
 
@@ -165,7 +165,7 @@ In a federal scenario, both approaches are possible. If the organization lacks s
 
 In model training, the most common idea of ​​differential privacy is DP-SGD. The core steps usually include: first clipping the single-sample gradient to limit the maximum impact of each sample on the overall update; then injecting noise of a specific distribution into the aggregated gradient; and finally accumulating and recording the consumption of the privacy budget during the training process. This process embodies the engineering essence of DP: instead of "adding some noise to the gradient casually", it first limits the individual influence boundary, and then injects noise on this controllable boundary, thereby making the risk measurement interpretable.
 
-![图28-6：DP-SGD 训练流程示意图](../../images/part9/图28_6_DPSGD训练流程示意图.png)
+![Figure 28-6: Schematic diagram of DP-SGD training process](../../images/part9/图28_6_DPSGD训练流程示意图.png)
 *Figure 28-6: Schematic diagram of DP-SGD training process*
 
 #### (4) Why is DP difficult to adjust?
@@ -174,7 +174,7 @@ The biggest difficulty in differential privacy is not "whether noise can be adde
 
 ---
 
-### 28.2.5 Deep dive into secure multi-party computation (MPC)
+### 28.2.5 Deep Digging into Secure Multi-Party Computation (MPC)
 
 Secure multi-party computing is more suitable for scenarios with a relatively clear structure, clear calculation rules, and a limited number of participants, such as joint intersection, joint statistics, joint risk control scoring, etc. Its core value is that all parties can collaboratively complete certain calculations without exposing their original inputs, and only obtain visible results.
 
@@ -188,15 +188,15 @@ MPC is particularly suitable for list intersection (PSI), blacklist comparison, 
 
 ---
 
-### 28.2.6 Homomorphic encryption (HE) deep mining
+### 28.2.6 Homomorphic Encryption (HE) Deep Digging
 
 The biggest attraction of homomorphic encryption is that "the ciphertext is computable". In other words, even if the data exists in encrypted form, the system can still perform certain forms of operations on it without decrypting it, and finally obtain results consistent with plaintext operations after decryption. This feature makes HE theoretically very privacy-preserving because the computing nodes do not need to see the plaintext.
 
-#### (1) Why HE is so strong
+#### (1) Why is HE so strong?
 
 HE is especially suitable for scenarios where "data must be handed over to an incompletely trusted environment for processing, but the plain text cannot be exposed", such as cross-cloud inference, aggregation statistics in an encrypted state, or some secure inference tasks. For architectures where the central platform is untrustworthy but must undertake computing tasks, HE provides a very attractive protection idea: transforming "the computing party cannot be trusted" into "the computing party cannot see the plain text at all".
 
-#### (2) Why is HE so heavy?
+#### (2) Why is HE so important?
 
 The problem with HE is that engineering is extremely expensive. Ciphertext operations are usually much slower than plaintext operations, and nonlinear operators, complex control flows, and large-scale matrix operations in the model will significantly increase the difficulty of implementation. Therefore, HE is often suitable for use in some specific links, such as secure aggregation, limited inference or key sub-module encryption calculations, but is not suitable as a full replacement for the entire complex deep training pipeline.
 
@@ -206,7 +206,7 @@ The problem with HE is that engineering is extremely expensive. Ciphertext opera
 
 The logic of TEE is "trust the hardware enclave, not the host environment." It uses a protected execution space provided by the CPU or hardware platform to allow sensitive code and data to run in an isolated environment. Even if the host system, administrator or cloud vendor operation and maintenance has higher permissions, the plain text data and runtime status cannot be easily viewed.
 
-#### (1) The value of TEE
+#### (1) Value of TEE
 
 TEE is particularly suitable for protecting critical nodes in the system, such as aggregation services in federated training, key management services, or certain highly sensitive inference tasks. When organizations cannot fully trust cloud vendor operations, container operating environments, or host operating systems, TEE can provide an additional layer of protection for "the most critical part of the logic that must be executed centrally."
 
@@ -216,7 +216,7 @@ TEE is not a silver bullet. It relies on a hardware root of trust, which itself 
 
 ---
 
-## 28.3 Selection and system cost assessment
+## 28.3 Selection and system cost evaluation
 
 The introduction of privacy enhancement technology essentially uses system performance, engineering complexity and organizational collaboration costs in exchange for stronger compliance and lower leakage risks. Architects must make these costs explicit, rather than packaging privacy solutions as "zero-cost upgrades." In real projects, many privacy technologies fail not because of wrong concepts, but because no one tells the business side in advance: how much computing power, how much delay, how much bandwidth, how much debugging costs, and how much organization and coordination costs you will have to pay for it.
 
@@ -240,7 +240,7 @@ Communication optimization in federated learning is the key to its implementatio
 
 One of the common strategies is gradient compression. For example, only upload the top-k important gradients, use low-bit quantization, or sparsely process parameter updates. The core of these methods is not to pursue mathematical perfection, but to significantly reduce the transmission volume within an acceptable loss of accuracy. The second type of strategy is to reduce synchronization frequency. By increasing the number of local training steps and reducing the number of global synchronization rounds, more local computing power can be exchanged for less network overhead. However, this approach will also bring about client drift, which requires a more robust aggregation strategy. The third type of strategy is **Asynchronous Federation**. It allows different nodes to participate in training at different paces, which helps alleviate the problem of slow node tailing, but the consistency and convergence analysis of the global model will be more complicated.
 
-![图28-7：联邦训练中的通信成本分解图](../../images/part9/图28_7_联邦训练中的通信成本分解图.png)
+![Figure 28-7: Communication cost breakdown diagram in federated training](../../images/part9/图28_7_联邦训练中的通信成本分解图.png)
 *Figure 28-7: Communication cost breakdown diagram in federated training*
 
 ### 28.3.4 Accuracy Optimization Strategy
@@ -271,7 +271,7 @@ Vertical federation is suitable for situations where the participants have simil
 
 The engineering difficulty of vertical federation is usually higher than that of horizontal federation, because it involves not only model collaboration, but also issues such as sample alignment, identity matching, and feature linkage. If strong privacy constraints are added, the system complexity will further increase.
 
-![图28-8：横向联邦与纵向联邦对比示意图](../../images/part9/图28_8_横向联邦与纵向联邦对比示意图.png)
+![Figure 28-8: Schematic diagram comparing horizontal federation and vertical federation](../../images/part9/图28_8_横向联邦与纵向联邦对比示意图.png)
 *Figure 28-8: Schematic diagram comparing horizontal federation and vertical federation*
 
 ### 28.4.3 Federated Fine-Tuning
@@ -294,32 +294,32 @@ Such governance requirements may seem cumbersome, but their essence is to explic
 
 ---
 
-## 28.5 Attack and defense in federated learning
+## 28.5 Attack and Defense in Federated Learning
 
 A mature privacy chapter cannot only talk about technical solutions, but also must talk about the attack surface. Otherwise, it is easy for readers to mistakenly think that "data does not leave the domain" is safe enough. In fact, the attack surface in a federated environment is no less than in centralized training, but the attack paths have changed. The attacker does not necessarily need to have access to the original database, but can also carry out the attack by observing gradients, participating in training, manipulating updates, or analyzing model output.
 
-### 28.5.1 Membership Inference attack
+### 28.5.1 Membership Inference Attack
 
 The goal of the member inference attack is to determine whether a certain sample appears in the training set. In medical and financial scenarios, this judgment itself may already constitute a major privacy leak. For example, if an attacker can determine whether a patient appears in a rare disease training set, even if the attacker does not know all the details of the patient's medical records, it is enough to cause serious ethical and legal problems.
 
 Federated learning does not automatically eliminate this risk. Because the global model may still exhibit higher confidence, more stable prediction patterns, or special output behavior for training samples. An attacker can exploit these differences to infer whether a certain sample participated in training.
 
-### 28.5.2 Gradient Inversion Attack
+### 28.5.2 Gradient Inversion Attack (Gradient Inversion)
 
 Gradient inversion attacks illustrate another core risk of federated learning: even if the original data does not go out of domain, the uploaded gradient or parameter update itself may contain enough information to allow the attacker to recover the original training sample or its approximate characteristics. For image tasks, the attacker may reconstruct the sample outline; for text tasks, the attacker may recover keywords, sentence patterns, and even some sensitive fragments.
 
 The reason why this type of attack is dangerous is that it directly breaks through the first layer of illusions that many organizations have about federated learning: the fact that the data is not uploaded does not mean that the information is not uploaded. As long as the uploaded content retains an analyzable structure, the attack surface remains.
 
-![图28-9：梯度反演攻击示意图](../../images/part9/图28_9_梯度反演攻击示意图.png)
+![Figure 28-9: Schematic diagram of gradient inversion attack](../../images/part9/图28_9_梯度反演攻击示意图.png)
 *Figure 28-9: Schematic diagram of gradient inversion attack*
 
-### 28.5.3 Model poisoning and backdoor attacks
+### 28.5.3 Model Poisoning and Backdoor Attacks
 
 In a federated environment, an attacker does not necessarily have to steal data, but can also pollute the global model by uploading manipulated model updates via a malicious client. If the attack goal is to degrade overall performance, this is model poisoning; if the attack goal is to cause the model to output incorrect results under specific trigger conditions, this is often called a backdoor attack.
 
 This type of attack deserves special attention because federated learning itself encourages multiple parties to participate in training, and multi-party participation also means that it is difficult for the central platform to completely determine whether each client is behaving normally. For medical diagnosis, financial approval and public service systems, even if the attacker does not steal any original data, as long as the attacker can systematically distort model decision-making, it is still a major security incident.
 
-### 28.5.4 Defense mechanisms
+### 28.5.4 Defense Mechanism
 
 The defense of the federal system can be deployed at three levels. The first is **privacy defense**, such as differential privacy, gradient clipping and secure aggregation, which focus on reducing the analyzability of single samples and single client updates. The second is **robust aggregation**, such as Median, Trimmed Mean, Krum and other robust aggregation strategies, which focus on reducing the impact of malicious clients on the global model. The third is **Anomaly Detection**, which monitors and intercepts client update amplitude, update direction, loss changes, and distribution anomalies.
 
@@ -337,13 +337,13 @@ This is also an area that many organizations tend to overlook in privacy enginee
 
 At this point, the chapter must move from "Technical Concepts" to "Systems Engineering." Because whether the technical route can be implemented ultimately depends on how the system splits components, how to organize the control flow, how to record versions and budgets, and how to handle failures and collaborate on changes. In other words, federated learning is not an algorithmic function, but a distributed collaboration system.
 
-### 28.6.1 Core components of a federated system
+### 28.6.1 Core components of the federated system
 
 A complete federal training system usually includes five types of core components. The first category is **Coordinator/Orchestor**, which is responsible for training round scheduling, participant registration, task orchestration and model version control. The second category is **Client Runtime**, which is deployed locally in each organization and is responsible for data loading, local training, policy execution and local log management. The third category is **Aggregator**, which is responsible for summarizing uploaded updates and generating global models. The fourth category is **Privacy Engine**, which is responsible for performing gradient clipping, noise injection, budget recording, secure aggregation, or key-related operations. The fifth category is **Audit & Governance Layer**, which is responsible for logs, approvals, audit trails and abnormal alarms.
 
 A mature federated system often does not pile these capabilities into one service, but clearly separates training orchestration, privacy control and audit governance. The reason for this is that privacy policies and model policies are not always maintained by the same team. If the boundaries are unclear, problems such as "the model is updated, but the privacy parameters are not synchronized" and "the budget is exhausted, but the training is still running" can easily occur later.
 
-![图28-10：联邦系统整体架构图](../../images/part9/图28_10_联邦系统整体架构图.png)
+![Figure 28-10: Overall architecture diagram of the federal system](../../images/part9/图28_10_联邦系统整体架构图.png)
 *Figure 28-10: Overall architecture diagram of the federated system*
 
 ### 28.6.2 Data flow and control flow
@@ -358,7 +358,7 @@ In traditional model platforms, many teams only record the model version number 
 
 This means that version control in the federated system is not just about "saving a weight file", but must be able to trace the entire training governance process. Only in this way, when there is a problem with the model, a partner agency raises a question, or the audit department asks, can the organization explain how the model was formed, within which boundaries it was trained, and why it was allowed to go online.
 
-### 28.6.4 Failures, retries and party withdrawals
+### 28.6.4 Failures, Retries, and Party Exits
 
 Federated systems naturally face problems such as instability of participants, network interruptions, inconsistent node performance, and training dropouts. Therefore, the system must design a fault-tolerance strategy after the client goes offline, whether to continue aggregation when some participants fail, a training round rollback mechanism, and processing rules when the partner organization temporarily or permanently withdraws.
 
@@ -366,7 +366,7 @@ This is very realistic. Centralized training assumes that training nodes are mai
 
 ---
 
-## 28.7 Connection with P09 Privacy Protection Pipeline
+## 28.7 Connection with P09 privacy protection pipeline
 
 From a system perspective, the focus of P09 is not on federal training itself, but on forming a privacy protection data pipeline through classification, permissions, desensitization, isolation, auditing, pre-inspection and accident review. The goal is not to "do a desensitization," but to establish a processing system that can explain the boundaries of responsibility so that sensitive data can be safely controlled before entering the training or analysis system.
 
@@ -376,15 +376,15 @@ In P09, the system first generates the compliance scope, classification policy, 
 
 Although this type of work is not equivalent to federated learning, it is the basic governance that must be completed before federated learning. Because if pre-classification and boundary control are not done well, any subsequent federated training may run on the wrong data boundaries.
 
-### 28.7.2 Federated learning solves the problem of “cross-subject joint training”
+### 28.7.2 Federated learning solves the problem of "cross-subject joint training"
 
 Even if P09 has preprocessed the data cleanly enough, it does not mean that the data is suitable for centralized aggregation. Federated learning and PETs solve another problem: how to continue modeling when the original data cannot be shared centrally. In other words, P09 ensures the quality of governance before data enters the model system, while Ch28 discusses how cross-subject collaborative training can continue to maintain privacy boundaries after the data enters their respective local domains.
 
-### 28.7.3 How the two form a closed loop
+### 28.7.3 How to form a closed loop between the two
 
 Looking at the system of the entire book, this closed loop can be written clearly. Ch27 is responsible for the compliance framework and grading standards at the institutional level; P09 is responsible for the classification, desensitization, permissions, isolation, auditing and pre-inspection of data before entering the model system; Ch28 is responsible for privacy protection in the training and collaboration stages; Ch22 is responsible for multi-modal retrieval and application capability undertaking. In this way, the entire system is no longer an isolated chapter, but a complete link from "data governance" to "model governance" to "application governance".
 
-![图28-11：合规治理、隐私流水线、联邦训练与应用能力闭环图](../../images/part9/图28_11_合规治理隐私流水线联邦训练与应用能力闭环图.png)
+![Figure 28-11: Closed-loop diagram of compliance governance, privacy pipeline, federated training and application capabilities](../../images/part9/图28_11_合规治理隐私流水线联邦训练与应用能力闭环图.png)
 *Figure 28-11: Closed-loop diagram of compliance governance, privacy pipeline, federated training and application capabilities*
 
 ### 28.7.4 Why is this connection important?
@@ -403,13 +403,13 @@ In this case, the more reasonable route is often not "centralized training + des
 
 The key to this case is not whether it is technically possible to centralize the data, but that the governance boundaries simply do not allow it. Because of this, the value of privacy enhancement technology is not just “making the system more secure”, but “making possible collaborative training that would otherwise be impossible.”
 
-### 28.8.2 Financial scenario: joint anti-fraud and blacklist matching
+### 28.8.2 Financial Scenario: Joint Anti-Fraud and Blacklist Matching
 
 Financial scenarios are different from medical care. The goal is often not multi-modal generation or complex representation learning, but joint risk control, blacklist intersection, anomaly identification and rule enhancement. Both institutions may have a certain size of suspicious account information, but neither institution can directly exchange complete user lists because this involves both customer privacy and business boundaries and compliance responsibilities.
 
 In this case, if the task is to do joint intersection or intersection statistics, MPC/PSI is usually given priority; if the task is to jointly train a risk control model, FL can be considered; if the system is still worried about the privacy leakage of the query results, more stringent result auditing and query restrictions can be added. Compared with medical scenarios, finance places more emphasis on rule accuracy, low false positives, and interpretability. Therefore, its technical route is often more biased towards "safe computing + audit traceability" rather than simply pursuing the highest model performance.
 
-![图28-12：医疗与金融场景的隐私技术路线对比图](../../images/part9/图28_12_医疗与金融场景的隐私技术路线对比图.png)
+![Figure 28-12: Comparison chart of privacy technology roadmaps in medical and financial scenarios](../../images/part9/图28_12_医疗与金融场景的隐私技术路线对比图.png)
 *Figure 28-12: Comparison of privacy technology roadmaps in medical and financial scenarios*
 
 ---
@@ -422,7 +422,7 @@ In other words, privacy protection is not a temporary layer added during the tra
 
 ---
 
-## 28.10 Practical Guide: When to do it and when not to do it
+## 28.10 Practical Guide: When to use and when not to use
 
 First, don’t over-engineer for low-sensitivity, single-subject, low-risk data. If the data itself is not sensitive and is used entirely in a controlled environment within a single organization, directly introducing federated learning or MPC will only increase complexity and may not bring real benefits. Second, don’t treat federated learning as “naturally safe.” Federated learning solves the problem of data location and does not automatically solve gradient leakage, member inference, model poisoning and backdoor risks. Third, technology selection should first ask about collaboration boundaries and then algorithm preferences. The real questions that should be answered first are: whether the original data can go out of the domain, whether the central end is trustworthy, whether the participants trust each other, how high the online delay requirement is, whether it is necessary to prevent member inference, and whether the audit is required to be explainable.
 

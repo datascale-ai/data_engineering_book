@@ -1,6 +1,6 @@
 ﻿# Project 10: End-to-end LLM data flywheel
 
-## Chapter overview
+## Overview of this chapter
 
 P10 focuses on organizing data, supervision, training, application, platform governance and feedback backflow into a continuously operating end-to-end LLM data flywheel. The focus of this chapter is not on adding single point capabilities, but on integrating the assets, interfaces, stages and control points of the previous nine projects into a unified system.
 
@@ -39,7 +39,7 @@ This structure is oriented toward organizational-level engineering scenarios tha
 
 ## 2. Project goals and boundaries
 
-### 2.1 Project goals
+### 2.1 Project Goals
 
 This project focuses on the following four goals.
 
@@ -79,9 +79,9 @@ This project has explicitly incorporated organizational division of labor, share
 
 Boundary description is used to clarify the scope of the system that has been opened up currently, the offline assumptions that it still relies on, the conclusions that can be supported at this stage, and the main direction of subsequent expansion:
 
-* Make it clear which links have been opened;
+* Clarify which links have been opened;
 * Clarify which offline assumptions remain;
-* Clarify what conclusions the current results support;
+* Clarify what conclusions the current results can support;
 * Identify which parts need future expansion.
 
 For final assembly level projects, this definition directly determines whether the chapter can be used as a stable method asset, rather than staying at the conceptual description level.
@@ -94,17 +94,17 @@ If the entire LLM engineering capability chain is viewed as a system, then P10 i
 
 This chapter focuses on the following system-level issues:
 
-* How single-point projects can be accumulated into system capabilities;
+* How to accumulate single-point projects into system capabilities;
 * How asset reuse replaces project stacking;
-* How phase planning, interface constraints and governance controls come together to form an operational framework;
-* How the final assembly level maintains consistency through coding, inspection and reporting;
-* How cross-project results are consolidated into a repeatable and scalable unified method framework.
+* How stage planning, interface constraints and governance controls work together to form an operational framework;
+* How the final assembly level maintains consistency through codes, inspections and reports;
+* How to consolidate cross-project results into a repeatable and scalable unified method framework.
 
 ---
 
 ## 4. Overall architecture: from upstream project assets to organization-level flywheel assembly
 
-![图 1：端到端 LLM 数据飞轮总览图](../../images/part10/10_10_fig01_flywheel_overview.png)
+![Figure 1: End-to-end LLM data flywheel overview](../../images/part10/10_10_fig01_flywheel_overview.png)
 
 From an engineering perspective, this project can be broken down into five layers, rather than just looking at a linear process of "data input - model output".
 
@@ -128,26 +128,26 @@ This layer solves "how model capabilities enter real task execution." RAG servic
 
 This layer solves the problem of "how to control the system in the long term." Version management, lineage tracing, rollback mechanisms, privacy controls, auditing, and incident response are all located here. Many teams write governance as an appendix, but in Flywheel, governance itself is one of the main structures.
 
-### 4.6 Engineering role of five-story structure
+### 4.6 Engineering role of five-layer structure
 
 Because it turns the "flywheel" from an abstract concept into a discussable engineering object. The team no longer just says “we have data, we have models, and we have applications”, but is able to clarify:
 
-* Which floor undertakes which type of projects;
+*Which floor undertakes which type of projects;
 * Which interfaces are passed across layers;
-* which boundaries must be controlled individually;
+* Which boundaries must be controlled individually;
 * Which problems cannot be solved within a single layer.
 
 ---
 
-## 5. Summary of upstream projects: registry as system entrance
+## 5. Summary of upstream projects: registry as the system entrance
 
 The reusability of Flywheel is first built on the registry. The registry is responsible for clarifying the upstream project list, stage ownership, output assets and downstream interfaces, and transforming scattered projects into trackable and composable system assets.
 
 P10 has currently integrated the first nine projects into the summary system, forming a project registry and phase inventory. Current structure includes:
 
-* `9` have been included in upstream projects;
+* Has been included in upstream projects `9`;
 * `5` planned stages;
-* `17` interfaces have been aggregated.
+* `17` interfaces have been summarized.
 
 These statistics do not reflect the quantity itself, but that the system already has cross-project asset registration, stage division and interface exposure capabilities, providing a unified entrance for subsequent reuse, stage planning and governance control.
 
@@ -155,7 +155,7 @@ These statistics do not reflect the quantity itself, but that the system already
 
 If there is only the project name in the registry, it is still just a directory index, not a system interface layer. A truly valuable registry should at least answer:
 
-* Which stage does the project belong to;
+* Which stage the project belongs to;
 * Which deliverables are produced;
 * Which interfaces_out are exposed to downstream;
 * Whether these results pass the test;
@@ -168,9 +168,9 @@ Flywheels don’t form automatically. It needs to first define scattered assets 
 * It turns discrete projects into composable modules;
 * It provides input into stage planning;
 * It provides a basis for subsequent architecture mapping and bottleneck identification;
-* It provides a unified language for organization-level review.
+* It provides a unified language for organizational level review.
 
-![图 2：上游项目 registry 与接口映射图](../../images/part10/10_10_fig02_registry_and_interfaces.png)
+![Figure 2: Upstream project registry and interface mapping](../../images/part10/10_10_fig02_registry_and_interfaces.png)
 
 ---
 
@@ -207,14 +207,14 @@ This structure reflects several basic requirements for upstream asset aggregatio
 
 * Upstream projects must be modeled explicitly;
 * Project meta-information must include stages and interfaces;
-* "Project exists" does not mean "project can be consumed downstream";
-* The first step in the flywheel is to turn the project catalog into a structured asset catalog.
+* "Project exists" does not equal "project can be consumed downstream";
+* The first step of the flywheel is to turn the project directory into a structured asset directory.
 
 ### 6.1 Structured summary method of registry
 
 This structured expression summarizes the project into a replicable approach. Subsequent other general assembly level projects can also use the same method to incorporate existing projects into the unified registry one by one without having to rely on manual sorting.
 
-![图 3：上游项目结构化配置示意图](../../images/part10/10_10_fig03_project_specs.png)
+![Figure 3: Schematic diagram of structured configuration of upstream projects](../../images/part10/10_10_fig03_project_specs.png)
 
 ---
 
@@ -228,20 +228,20 @@ One of the values ​​of P10 is that the flywheel is broken down into a cleare
 
 Because the pipeline emphasizes sequence, while phasing emphasizes:
 
-* What are the current goals;
+* What is the current goal;
 * What is the stage output;
-* What is the threshold for moving to the next stage;
-* Which resources and teams have the primary responsibility for this period.
+* What is the threshold for entering the next stage;
+* Which resources and teams have primary responsibility for this period.
 
 ### 7.2 The role of stage planning in the final assembly level
 
 Phase planning expands the flywheel from a simple connected relationship to an organizational structure that can be promoted, reviewed, and governed. What is really important here is to clarify the transferable advancement method instead of staying at the level of static schematic diagrams.
 
-![图 4：五阶段推进与里程碑关系图](../../images/part10/10_10_fig04_stage_plan.png)
+![Figure 4: Five-stage advancement and milestone relationship diagram](../../images/part10/10_10_fig04_stage_plan.png)
 
 ---
 
-## 8. Code expansion two: building a flywheel architecture and stage planning
+## 8. Code expansion 2: Constructing flywheel architecture and stage planning
 
 `src/build_flywheel.py` is responsible for mapping the first nine items into the flywheel structure. The following code snippet shows a structured representation of the five-tier architecture.
 
@@ -274,20 +274,20 @@ This structure illustrates that Flywheel relies on explicit mapping to maintain 
 
 Because the architecture is only written in the diagram, it is difficult to verify and maintain. As new projects are added, phases change, or governance boundaries are adjusted, all diagrams and descriptions will quickly become outdated without a structured representation of the underlying structure.
 
-### 8.2 Understand the flywheel structure from a code perspective
+### 8.2 Understanding the flywheel structure from a code perspective
 
 From a code perspective, flywheel is not an abstract noun, but a group of:
 
 * Level definition;
 * Description of responsibilities;
-* project mapping;
+* Project mapping;
 * stage product;
 * Operation records;
 * Milestones and control points.
 
 This way of expression truly makes the flywheel engineering maintainable.
 
-![图 5：飞轮五层结构代码映射图](../../images/part10/10_10_fig05_architecture_code_mapping.png)
+![Figure 5: Flywheel five-layer structure code mapping](../../images/part10/10_10_fig05_architecture_code_mapping.png)
 
 ---
 
@@ -314,11 +314,11 @@ Because many accidents do not occur during model inference, but before data ente
 
 The existence of control points shows that the flywheel does not pursue indiscriminate acceleration, but configures different flow speeds, review requirements, and traceability for different links.
 
-![图 6：系统边界与控制点示意图](../../images/part10/10_10_fig06_boundaries_and_control_points.png)
+![Figure 6: Schematic diagram of system boundaries and control points](../../images/part10/10_10_fig06_boundaries_and_control_points.png)
 
 ---
 
-## 10. Operation records and milestones
+## 10. Operational records and milestones
 
 If a system project only has a final report, it lacks the time dimension. Real projects usually advance in stages, are completed by nodes, and gradually converge through milestones. Therefore, P10 also retains flywheel runs and milestone boards in addition to the overall report.
 
@@ -326,28 +326,28 @@ If a system project only has a final report, it lacks the time dimension. Real p
 
 Running records give the system a time dimension. Not only can you see the final status, but you can also track:
 
-* What stages does a flywheel go through;
+* What stages does the flywheel go through;
 * What is the status and score of each stage;
-* which milestones have been achieved;
-* Where there have been blockages or risks.
+* Which milestones have been achieved;
+* Where there have been obstructions or risks.
 
-### 10.2 Milestones as organizational interface
+### 10.2 Milestones as organizational layer interface
 
 For engineers, stage plans may be sufficient; but for managers, reviewers, and cross-team collaborators, milestones are often easier to communicate. It converts complex technical processes into more executable organizational rhythms.
 
-![图 7：运行记录与里程碑板示意图](../../images/part10/10_10_fig07_runs_and_milestones.png)
+![Figure 7: Schematic diagram of running records and milestone board](../../images/part10/10_10_fig07_runs_and_milestones.png)
 
 ---
 
-## 11. Indicator Interpretation: The Meaning of System-Level Signals
+## 11. Indicator Interpretation: The meaning of system-level signals
 
 Key results currently given by P10 include:
 
-* `9` have been included in upstream projects;
+* Has been included in upstream projects `9`;
 * `5` planned stages;
 * `17` interfaces have been summarized;
 * Upstream check passed `103/103`;
-* Flywheel Architecture `5` layer;
+* Flywheel architecture `5` layer;
 * Control points `4`;
 * Governance boundary `4` items;
 * Stage completion rate `100.00%`;
@@ -368,7 +368,7 @@ Single model indicators usually answer "How effective is the model"; while syste
 
 * Whether projects can be integrated;
 * Whether the stage is closed loop;
-* Is governance complete;
+* Whether governance is complete;
 * Which places will limit the next round of expansion.
 
 The uniqueness of P10 is that it does not measure local optimality, but whether an engineering chain has closed-loop capabilities.
@@ -383,7 +383,7 @@ The three main bottlenecks identified in the current project include:
 
 * Basic corpus size constraints;
 * PRM verification gap;
-* Platform regression handling issues.
+* Platform regression processing issues.
 
 ### 12.1 Basic corpus size constraints
 
@@ -393,7 +393,7 @@ Flywheels don’t automatically get stronger just by back-end supervision or app
 
 Because reasoning and process supervision are important parts of the gradual maturity of many LLM systems. If the verification chain itself is not stable enough, then even if the downstream model performs well, it may lack strong enough explainable and auditable support.
 
-### 12.3 Impact of platform regression on flywheel
+### 12.3 Impact of Platform Return on Flywheel
 
 Once a flywheel is formed, it means multiple projects share platforms and processes. At this time, any platform return is no longer just a local problem, but will affect multiple downstream links. Therefore, platform governance is not a supporting item in the flywheel, but a core stabilizer.
 
@@ -405,11 +405,11 @@ Bottleneck analysis is used to illustrate three things:
 * Key issues that remain unresolved;
 * The most worthwhile direction for the next round of optimization.
 
-![图 8：飞轮瓶颈定位图](../../images/part10/10_10_fig08_bottleneck_map.png)
+![Figure 8: Flywheel bottleneck positioning diagram](../../images/part10/10_10_fig08_bottleneck_map.png)
 
 ---
 
-## 13. Costs and shared benefits
+## 13. Costs and Shared Benefits
 
 System-level reuse not only brings shared benefits, but also introduces additional integration costs. P10 The current estimation results show that the cross-project manual review time is about `8.06` hours, and the corresponding cost is about `850.33` yuan. This shows that Flywheel has begun to make shared costs explicit, rather than integrating them into zero costs by default.
 
@@ -417,13 +417,13 @@ System-level reuse not only brings shared benefits, but also introduces addition
 
 The flywheel is not an automatic reuse mechanism. To organize upstream projects into an integrable state, it usually requires:
 
-* unified interface;
-* Aggregate meta-information;
+* Unified interface;
+* Summarize meta information;
 * Alignment check results;
-* Generate a new layer of reports and dashboards;
-* Conduct review and re-examination when necessary.
+* Generate a new layer of reports and dashboard;
+* Conduct human review and review again when necessary.
 
-### 13.2 Where are the benefits of sharing platforms reflected?
+### 13.2 Where are the benefits of the sharing platform reflected?
 
 From the perspective of source code logic, P10 not only calculates the cost of manual review, but also explicitly gives examples of shared platform benefits and reuse, such as multi-project reuse of corpus and manifest, reuse of reasoning feedback and tool templates, centralized governance benefits of P8/P9, etc. This way of writing changes "What can a flywheel bring" from an abstract slogan into a concrete benefit item.
 
@@ -452,12 +452,12 @@ This calculation logic implements system-level judgments into structured indicat
 
 The key point here is that both dimensions hold true at the same time:
 
-* The main text needs to explain the engineering significance of system-level indicators;
-* These conclusions need to be supported by structured calculation processes.
+* The text needs to explain the engineering significance of system-level indicators;
+* These conclusions need to be supported by a structured calculation process.
 
 Therefore, this code serves as a link from indicator generation to result interpretation.
 
-![图 9：系统级指标生成逻辑图](../../images/part10/10_10_fig09_metrics_codegen.png)
+![Figure 9: System-level indicator generation logic diagram](../../images/part10/10_10_fig09_metrics_codegen.png)
 
 ---
 
@@ -467,7 +467,7 @@ Whether the final assembly level project is mature or not depends not only on wh
 
 The current inspection results of P10 are:
 
-* Total inspection items: `13`
+* General inspection items: `13`
 * Passed check item: `13`
 * Overall status: `PASS`.
 
@@ -476,15 +476,15 @@ Meanwhile, verification coverage includes:
 * Command-level check items `2`;
 * Data/product level check items `11`;
 * Command level override `py_compile, evaluate_flywheel`;
-* Data-level coverage of key projects such as `required_files_exist`, `all_upstream_projects_registered`, `phase_inventory_consistent`, `architecture_layers_and_control_points_present`, `stage_plan_covers_end_to_end`, `flywheel_runs_complete`, etc.
+* Data-level coverage of key projects such as `required_files_exist`, `all_upstream_projects_registered`, `phase_inventory_consistent`, `architecture_layers_and_control_points_present`, `stage_plan_covers_end_to_end`, `flywheel_runs_complete`.
 
 ### 15.1 Check script for system projects
 
 Because system projects are most prone to the problem of "all parts are correct, but the whole is not correct". For example:
 
 * A JSON file exists, but the fields are inconsistent with the report;
-* The plan for a certain phase is well written, but the milestone is not updated simultaneously;
-* The code runs, but the overall report still references the old data;
+* The plan for a certain phase is well written, but the milestone is not updated synchronously;
+* The code works, but the overall report still references the old data;
 * The governance boundary has been supplemented by the project but not covered by the inspection items.
 
 ### 15.2 Engineering meaning of PASS
@@ -512,8 +512,8 @@ def run_command(command: list[str], name: str) -> dict:
 
 This structure reflects several basic requirements of the inspection mechanism:
 
-* Command execution results must be recorded in a structured manner;
-* The check results cannot be just based on the terminal output;
+* Command execution results should be recorded in a structured manner;
+* The check results cannot just look at the terminal output;
 * Both pass and failure can be entered into follow-up reports;
 * System status must be traceable and reviewable.
 
@@ -523,7 +523,7 @@ Looking further down, the main function will also read many types of products su
 
 This section illustrates that P10 does not stop at summarizing upstream projects, but also incorporates the final assembly layer itself into engineering quality management. For the entire chapter, this part assumes the role of connecting system integration and quality contracts.
 
-![图 10：检查脚本与系统契约图](../../images/part10/10_10_fig10_check_contracts.png)
+![Figure 10: Check script and system contract diagram](../../images/part10/10_10_fig10_check_contracts.png)
 
 ---
 
@@ -551,8 +551,8 @@ For system assembly projects, the deliverable list is an important basis for jud
 
 This set of deliverables shows that the final assembly layer has been settled into a set of specific assets that can be reviewed and serve different roles:
 
-* Engineers look at processed data;
-* Project managers look at milestones and dashboards;
+* Engineers view processed data;
+* The project manager looks at milestones and dashboards;
 * Review reports and metrics;
 * For QA or platform roles, see test_results and test_report.
 
@@ -562,21 +562,21 @@ Common project lists tend to just list "code, reports, diagrams." The list of P1
 
 ---
 
-## 18. Organization and collaboration: Responsibilities interface at the general assembly level
+## 18. Organization and collaboration: Responsibility interface of the general assembly level
 
 Many previous chapters prefer a single capability module, but P10 naturally requires cross-project, cross-stage, and cross-role collaboration. The stability of the general assembly layer not only depends on code implementation, but also depends on whether the responsibility interface is clear.
 
-### 18.1 Key responsibilities involved in the final assembly level
+### 18.1 Key responsibilities involved in the general assembly level
 
 Judging from the structure of P10, it includes at least the following types of roles:
 
-* Upstream project leader: Ensure that the products, indicators and test status of their respective projects are available for production at the final assembly level;
+* Upstream project leader: ensure that the products, indicators and test status of their respective projects are available for production at the final assembly level;
 * Data/training engineering role: Understand various input and output interfaces to ensure that processed assets can be reused;
 * Platform role: Responsible for dashboard, version, rollback and operation management;
-* Privacy/Governance Role: Ensure sensitive data, auditing and boundary controls are explicitly included in the flywheel;
+* Privacy/Governance role: Ensure sensitive data, auditing and boundary controls are explicitly included in the flywheel;
 * Review or project management role: Conduct cross-team reviews based on milestones and phase plans.
 
-### 18.2 The need for collaborative structures
+### 18.2 The necessity of collaborative structure
 
 When many teams build a system flywheel for the first time, the problem lies not in implementation capabilities, but in the collaboration structure itself:
 
@@ -598,11 +598,11 @@ If the processed catalog and check scripts serve the engineering side, then the 
 
 It solves the following problems:
 
-* Is the current overall health of the flywheel?
-* which stages have been completed;
+* Whether the current flywheel is healthy as a whole;
+* Which stages have been completed;
 * Which bottlenecks deserve the most priority;
-* Is there a risk of cross-project regression?
-* Do shared platforms and governance layers work.
+* Whether there is a risk of cross-project regression;
+* Whether shared platforms and governance layers are functioning.
 
 ### 19.2 System role of dashboard
 
@@ -620,29 +620,29 @@ Secondly, the currently identified bottlenecks are still mainly focused on the b
 
 In the end, this is still an **offline system design diagram**. It is far from a real online flywheel, and there are still engineering gaps such as monitoring, experimental feedback, online policy switching, user behavior collection and automatic budget control.
 
-### 20.1 The role of limitation statements
+### 20.1 The role of limitation description
 
 The significance of the limitation description is to help define the degree of completion of the current system and the direction of subsequent expansion:
 
-* What has run through;
-* what is still in the transition state;
+* What has been run through;
+* What is still in the transition state;
 * Which links are most likely to be completed in the next phase.
 
 ---
 
-## 21. Scaling to the Online Flywheel: What’s Next
+## 21. Expanding to the online flywheel: focus of the next phase
 
 P10 has given several clear directions for subsequent expansion, including:
 
-* Incorporate more online feedback, A/B experimentation, and cost budgeting into the flywheel;
+* Incorporate more online feedback, A/B experimentation and cost budgeting into the flywheel;
 * Continue to strengthen cross-team stage review, governance rhythm and interface contracts;
-* Advance executive dashboards from static reports to continuously updated dashboards.
+* Advance the executive dashboard from static reporting to a continuously updated control panel.
 
-### 21.1 Online feedback backflow
+### 21.1 Online Feedback
 
 Because only when the application layer feedback truly flows back to the data and training layer, the flywheel will enter the "dynamic closed loop" from the "static closed loop". This step will significantly increase the actual value of the system, but it will also increase the complexity of governance.
 
-### 21.2 Reserves for A/B Experimentation and Budgetary Control
+### 21.2 Reservations for A/B Experimentation and Budgetary Control
 
 Because many teams wait until the system is already large before starting to supplement these two areas, the cost is often higher. Writing them in advance as expansion directions helps to reserve these locations early in the design.
 
@@ -654,15 +654,15 @@ P10 is located at the back of the book, and its function is to wrap up the previ
 
 The previous items are handled separately:
 
-* The way a certain type of data is produced;
-* A method of constructing a certain type of supervision;
+* The production method of a certain type of data;
+* The construction method of a certain type of supervision;
 * The path to undertake a certain type of application;
 * The implementation of a certain type of platform and governance mechanism.
 
 P10, on the other hand, deals with the system-level organizational relationships between these capabilities:
 
 * How to organize various capabilities into a reusable system chain;
-* How organizational capabilities form stable structures based on single-point capabilities;
+* How organizational capabilities form a stable structure based on single-point capabilities;
 * How to transform the parallel relationship between chapters into an overall system of dependence and mutual explanation.
 
 Therefore, the role of P10 is not to add new local capabilities, but to organize the previous projects from a parallel collection into a structurally complete method system.
@@ -678,7 +678,7 @@ Therefore, the role of P10 is not to add new local capabilities, but to organize
 * `p10_test_report.md`
 * `p10_test_results.json`
 
-### 23.2 Mainly handle intermediate products
+### 23.2 Mainly process intermediate products
 
 * `upstream_project_registry.json`
 * `phase_inventory.json`
@@ -703,11 +703,11 @@ Therefore, the role of P10 is not to add new local capabilities, but to organize
 * `src/run_p10_checks.py`
 * `src/pipeline_utils.py`
 
-### 23.5 Purpose of Deliverables and Code Indexes
+### 23.5 Purpose of Deliverables and Code Index
 
 The goal here is to make it clear to readers:
 
-* Which documents should be looked at;
+* Which documents should be viewed;
 * Which codes correspond to which chapter logic;
 * Which products can be used for review;
 * Which structures can be reused in your own projects.
@@ -721,9 +721,9 @@ The term “data flywheel” often conjures up images of growth, automation, and
 It embodies the following system capabilities:
 
 * Project results can be retained and reused in subsequent projects;
-* Data, models, applications and governance are no longer separate from each other;
-* The system can preserve structure, boundaries, and memory across multiple iterations;
-* Organizations can shift from project stacking to capability system building.
+* Data, models, applications and governance are no longer separated from each other;
+* The system can retain structure, boundaries and memory across multiple iterations;
+* The organization can shift from project stacking to capability system building.
 
 The value of P10 is not just to summarize the previous nine projects, but to reorganize them into an explainable, inspectable, and scalable end-to-end system chain. This is also the most important engineering significance of this chapter.
 
@@ -737,10 +737,10 @@ The key reason why a flywheel is called a "flywheel" is not that it covers many 
 
 When many teams talk about feedback feedback, their first reaction is to collect user satisfaction. But for LLM systems, the truly valuable feedback goes beyond this type of feedback. More complete feedback usually includes at least:
 
-* Failed question answering, refusal to answer, hallucination and false retrieval recall at the application layer;
-* Tool call failures, memory drift and recovery trajectories during Agent execution;
+* Failed question and answer, refusal to answer, hallucination and false retrieval recall at the application layer;
+* Tool call failure, memory drift and recovery trajectory during Agent execution;
 * Missing evidence pages, misreading of figures, and cross-page integration errors in multimodal RAG;
-* Preference pairs, scoring records and correction opinions in manual reviews;
+* Preference pairs, scoring records and correction opinions in manual evaluation;
 * Blocking events, desensitization gaps and audit alerts in privacy governance;
 * Regression experiment, rollback, incident review and exception approval records at the platform layer.
 
@@ -751,22 +751,22 @@ Together, these feedbacks form a set of “evidence of system behavior.” If on
 For Flywheel to form a truly reusable reflow capability, feedback must first be unified into structured events, instead of just staying in chat records, table notes, or scattered issues. A usable feedback event usually contains at least:
 
 * Feedback source, indicating whether it comes from application, review, platform, governance or manual verification;
-* Relate the project and phase to indicate whether it is closer to P02, P05, P07, P08 or P09 type of problem;
-* Failure type or improvement type, distinguishing whether it is a data gap, a retrieval gap, a model gap, or a process gap;
+* Associate the project and phase to indicate whether it is closer to P02, P05, P07, P08 or P09 type of problem;
+* Failure type or improvement type, distinguish whether it is a data gap, a retrieval gap, a model gap or a process gap;
 * Scope of impact, indicating whether the problem affects a single sample, a certain type of task, a certain project, or the entire system chain;
-* Recommended actions indicating where the feedback should end up in the rework or optimization queue.
+* Recommended actions indicating which type of rework or optimization queue the feedback should ultimately go into.
 
 Only when these fields are explicitly retained can the feedback actually be consumed by downstream processes. Otherwise, no matter how much feedback you have, it can only exist as experience and cannot enter the flywheel.
 
-### 3. The key to reflow is not “automatic” but “divertible”
+### 3. The key to reflow is not "automatic", but "shuntable"
 
 A common misunderstanding in flywheel design is the premature pursuit of "fully automatic feedback return". But in the actual stage of most teams, it is more important to be "shuntable" first, that is, to be able to reliably send feedback to the correct upstream project, rather than letting all problems return to the final assembly level.
 
 For example:
 
-* If the question arises primarily from insufficient risk rejection of legal Q&A, it should be prioritized into category P02 SFT with preference data enhancement;
-* If the problem arises from chart misreading or table of contents page misrecall, it should fall back to Category P05 Multimodal RAG Evaluation and Retrieval Optimization;
-* If the problem comes from confusing tool call traces, it is more likely to belong to the Agent Tool-use training modification of P07;
+* If the question mainly comes from insufficient risk rejection of legal Q&A, it should be prioritized into the P02 category SFT with preference data enhancement;
+* If the problem comes from chart misreading or table of contents page misrecall, it should go back to category P05 Multimodal RAG Evaluation and Retrieval Optimization;
+* If the problem comes from confusing tool call traces, it is more likely to belong to the Agent Tool-use training transformation of P07;
 * If the problem comes from regression experiments and out-of-control versions, it should be taken over by the platform governance object of P08;
 * If the problem comes from privacy boundary triggering and data interception, it should be priority absorbed by the privacy process upgrade of P09.
 
@@ -776,27 +776,27 @@ From a system perspective, offloading capabilities are more important than autom
 
 After the feedback event is formed, a closed loop is needed to enter the version cycle. More mature methods usually include the following four steps:
 
-* First perform clustering to group scattered events into several high-frequency issues and themes;
-* Then do priority sorting to distinguish between problems that must be blocked immediately and problems that can be scheduled and optimized;
+* Do clustering first to gather scattered events into several high-frequency issues and topics;
+* Prioritize again and distinguish between problems that must be blocked immediately and problems that can be scheduled and optimized;
 * Then map it to specific projects and stages to generate the next round of version to-do;
-* Finally, review "which feedback has been absorbed, which is still in the queue, and which has been confirmed but not processed" during the next final assembly review.
+* Finally, review "which feedback has been absorbed, which is still queued, and which has been confirmed and not processed" during the next final assembly review.
 
 The value of this design is to make feedback no longer just emotional or occasional input, but to steadily enter the rhythm of version advancement. What the flywheel really needs is not "more and more feedback" but "more and more places for feedback to go."
 
 ---
 
-## Topic: Budget, Priorities and Return on Investment
+## Special Topic: Budget, Priorities and Return on Investment
 
 Another very real problem with a final assembly level project like P10 is that it will expose a lot of things worth doing at the same time. Since the nine upstream projects can provide expansion directions, the team must answer: With limited resources, what should be invested first and why?
 
-### 1. Prioritization should not only look at a single effect
+### 1. Priority judgment should not only look at a single point of effect
 
 In the flywheel system, a small seemingly local change may bring great system benefits; conversely, a seemingly "strong" single-point project may not have high overall benefits if it cannot be reused by other layers. Therefore, priority judgment must consider at least four dimensions simultaneously:
 
 * Scope of impact, whether a certain change affects a single module or can improve multiple downstream links;
-* Reusability, does the change form a one-time result or a long-term reusable system asset?
+* Reusability, whether the change forms a one-time result or a long-term reusable system asset;
 * Risk exposure, whether the current problem has frequently occurred on the core link;
-* Implementation costs, and whether the team has sufficient implementation and maintenance capabilities at the current stage.
+* Implementation cost, whether the team has sufficient implementation and maintenance capabilities at the current stage.
 
 By looking at these four dimensions together, many decisions will become clearer. For example, patching the unified feedback schema may seem less "obtrusive" than training a new model, but its sustainable value to the entire flywheel may be greater.
 
@@ -807,10 +807,10 @@ For the final assembly layer, the thing that deserves the most priority is usual
 Judging from the current flywheel structure, directions that tend to have high leverage include:
 
 * Unify registry and interface contracts to reduce upstream project access costs;
-* Strengthen evaluation access control and quality baselines to reduce the probability of incorrect versions entering the system;
+* Strengthen evaluation access control and quality baseline to reduce the probability of incorrect versions entering the system;
 * Complete the feedback backflow and diversion mechanism to reduce the accumulation of problems at the final assembly level;
 * Improve the dashboard and milestone mechanism to reduce the uncertainty of organizational collaboration;
-* Strengthen platform governance and rollback mechanisms to reduce recovery costs after flywheel amplification.
+* Strengthen platform governance and rollback mechanism to reduce recovery costs after flywheel amplification.
 
 These actions may not be the most "dazzling", but they often determine whether the flywheel can truly spin stably.
 
@@ -822,39 +822,39 @@ A more balanced budget perspective often involves covering both:
 
 * Growth items, such as new data sources, new task forms, and new application links;
 * Efficiency improvement items, such as interface unification, automatic inspection, batch evaluation and pipeline optimization;
-* Defensive items, such as privacy governance, auditing, rollback, incident review and quality access control;
+* Defense items, such as privacy governance, auditing, rollback, incident review and quality access control;
 * Organizational items such as dashboards, milestones, cross-team agreements, and version review mechanisms.
 
 If the budget only invests in growth projects for a long time, the flywheel will appear to be getting faster and faster, but internal friction and hidden risks will also become higher and higher; if the budget only invests in defensive projects for a long time, the system may fall into conservatism and find it difficult to generate external value. Therefore, what the final assembly layer really needs is balance, not fullness on one side.
 
-### 4. Return on investment depends on whether “system memory” is accumulated
+### 4. The return on investment depends on whether "system memory" is accumulated
 
 The returns of a single project can usually be seen relatively directly, such as more samples, higher accuracy, and lower latency. But a more critical and easily overlooked reward for flywheel projects is whether system memory is accumulating.
 
 The so-called system memory refers to whether more and more of these things are accumulated and can be directly reused in the next round:
 
-* What types of assets enter the registry;
-* Which types of failures are automatically identified;
-* which control points have been written into the governance boundaries;
+* Which types of assets enter the registry;
+* Which types of failures will be automatically identified;
+* Which control points have been written into the governance boundary;
 * Which problems can be quickly exposed through dashboards and inspection scripts;
-* Which team collaboration patterns have become a regular rhythm.
+* Which team collaboration patterns have become a fixed rhythm.
 
 As long as these memories continue to accrue, Flywheel’s ROI shouldn’t be judged solely on short-term effects. Because it builds the ability to "avoid many detours in every round in the future."
 
 ---
 
-## Special topic: Annual promotion route for the final assembly level
+## Special Topic: Annual Promotion Route of General Assembly Level
 
 P10 currently displays an offline, teaching-type, but relatively complete flywheel assembly layer. If it is further advanced into more mature organizational practice, a more pragmatic annual advancement route can usually be carried out according to the rhythm of "unification first, then access control, and then online".
 
-### 1. Phase One: Unify Assets and Contracts
+### 1. The first stage: unifying assets and contracts
 
 The starting point of the year is usually not to expand more functions, but to unify the most basic interfaces at the final assembly level. Highlights of this stage include:
 
 * Unify the registry fields of upstream projects;
-* Minimum interface that unifies metrics, test results and reports;
+* Minimum interface to unify metrics, test results and reports;
 * Unify the naming, version and source records of processed assets;
-* Unify partitioning and delivery lists across project phases.
+* Unify cross-project phase division and delivery lists.
 
 After this stage is completed, the biggest benefit of Flywheel is not "smarter" but "clearer". All projects start to be consumed by the final assembly layer in a similar way, so that subsequent automatic inspections, milestone boards and feedback feedback will have a common basis.
 
@@ -864,14 +864,14 @@ When assets and contracts are basically unified, the next step should be to prio
 
 This stage can focus on promoting:
 
-* Quality baseline definition for key stages;
+* Definition of quality baselines at key stages;
 * Check scripts and approval rules before publishing;
 * rollback conditions and incident review triggering mechanism;
-* Pre-positioning privacy and compliance control points.
+* Pre-positioning of privacy and compliance control points.
 
 The goal of this step is to upgrade the flywheel from "connected" to "controllable after connected".
 
-### 3. The third stage: introducing online feedback and experimental mechanisms
+### 3. The third stage: introducing online feedback and experiment mechanism
 
 After the first two stages are relatively stable, Flywheel is suitable for introducing more online elements. For example:
 
@@ -888,7 +888,7 @@ The difficulty of onlineization is not to collect data, but to allow this data t
 When the system has unified interfaces, quality access control and online feedback, Flywheel can further enter the cross-team stable operation stage. The key at this stage is not technical complexity but organizational sustainability, including:
 
 * Fixed stage review and milestone mechanism;
-* Clear final assembly layer owner and upstream interface person;
+* Clear final assembly layer owner and upstream docking person;
 * Different dashboards for business, governance and engineering roles;
 * Clear budget review, priority review and review rhythm;
 * Continuously maintained documentation, reports and knowledge base.
@@ -923,17 +923,17 @@ A more effective quarterly review approach should usually prioritize answering t
 * Which upstream improvements are actually transferred to downstream benefits;
 * Which risks appear repeatedly, indicating that they are no longer single-point accidents;
 * Which governance actions effectively reduce recovery costs;
-* What are the most prioritized leveraged items for investment in the next quarter?
+* What is the most prioritized leveraged item for investment in the next quarter?
 
 Once the review starts around these issues, P10 will no longer be just a "final assembly display layer", but will become a real entry point for system decision-making.
 
-### 3. The value of the risk ledger lies in forming organizational memory
+### 3. The value of risk ledger lies in forming organizational memory
 
 The reason why many systems "repeat old mistakes" every once in a while is not because the team does not work hard, but because the organizational memory has not been accumulated. The most important value of the risk ledger is not to list the questions more beautifully, but to continuously answer three things:
 
 * Has this problem occurred before?
-* how it was handled at the time;
-* Why it appears again this time indicates which layer of the mechanism has not been truly repaired.
+* How it was handled at the time;
+* Why it appears again this time, it shows which layer of the mechanism has not been truly repaired.
 
 As long as this information can continue to be accumulated during quarterly reviews, Flywheel will gradually acquire a very important ability: not only knowing what the system is now, but also why the system is as it is now. For the final assembly layer, this traceable organizational memory is often more valuable in the long term than a local improvement.
 
@@ -951,13 +951,13 @@ When the registry, stage planning, and interface contracts are gradually stabili
 
 The business side does not necessarily care about how many fields the total registry has, but it will be very concerned about one thing: once the system behaves abnormally, how long does it take for the team to figure out where the problem lies. After the flywheel connects projects, stages, control points, inspections and risk ledgers, one of the most direct benefits is to shorten the positioning path. For organizations, this means less hassle, shorter recovery times and clearer priorities.
 
-### 3. The third level of business value of flywheel is to make expansion more predictable.
+### 3. The third layer of business value of flywheel is to make expansion more predictable
 
 When a team is ready to access new data sources, new tasks, new applications or new governance requirements, without the assembly layer, expansion is often like starting a new project; with a flywheel, expansion is more like putting new capabilities into the existing structure. What the business really needs is not just that the system gets bigger and bigger, but that the system remains predictable as it gets bigger. The long-term value of P10 lies precisely in helping organizations transform "expansion" from temporary sprints into a planable capability-building process.
 
 ---
 
-## Special Topic: Responsibility Boundaries of General Assembly Level Owner
+## Special Topic: Responsibility Boundaries of General Assembly Layer Owner
 
 For the flywheel to truly operate, it also needs a role that is often overlooked in many teams, which is the final assembly layer owner. Without this role, P10 can easily degenerate into a summary project that "everyone takes a look at, but no one is really responsible for." With this role, the general assembly layer will become a continuous system entrance.
 
@@ -967,11 +967,11 @@ The most critical responsibility of the general assembly layer owner is not to d
 
 * Whether the registry and interface contracts are continuously unified;
 * Whether the phase plan and milestones are still valid;
-* Check that scripts, risk ledgers, and dashboards continue to reflect true system status;
+* Check whether scripts, risk ledgers and dashboards continue to reflect the real system status;
 * Whether cross-project issues are correctly triaged, followed up and reviewed.
 
 As long as these main chains are maintained continuously, the flywheel can maintain structural integrity for a long time; if not, the system will soon become fragmented again.
 
-### 2. The owner is also responsible for bringing “system language” into the organization
+### 2. The owner is also responsible for bringing the “system language” into the organization
 
 The owner of the general assembly layer also has an implicit but very important responsibility, which is to bring system language into organizational collaboration. That is, get different teams to start discussing issues using the same language of stages, interfaces, control points, risks, and milestones. For Flywheel, this common language is a highly valuable infrastructure in itself, as it directly reduces the cost of ambiguity and interpretation in cross-project communication.

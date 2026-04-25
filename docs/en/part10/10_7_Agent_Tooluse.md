@@ -1,168 +1,168 @@
-﻿# 项目七：Agent Tool-Use 数据工厂
+﻿# Project 7: Agent Tool-Use Data Factory
 
-## 本章概览
+## Overview of this chapter
 
-P07 聚焦把 Agent 的工具使用行为组织成可训练、可评估、可扩展的数据资产。章节重点不在单个函数调用，而在工具规范、执行轨迹、恢复行为、安全边界和训练封装之间的完整数据链。
+P07 focuses on organizing the Agent’s tool usage behavior into trainable, evaluable, and scalable data assets. The focus of the chapter is not on individual function calls, but on the complete data chain between tool specifications, execution traces, recovery behaviors, safety boundaries and training encapsulation.
 
-本章可以按四条主线理解：
+This chapter can be understood according to four main lines:
 
-* 工具规范与任务设计：明确 schema、调用条件和任务结构。
-* 执行轨迹与恢复建模：保留 success、failure、recovery 等不同类型行为链。
-* 安全边界与记忆机制：把 unsafe block、权限限制和记忆读写纳入监督对象。
-* 数据封装与评估验收：形成可训练样本、验证指标和检查机制。
+* Tool specification and task design: clarify the schema, calling conditions and task structure.
+* Execution trajectory and recovery modeling: retain different types of behavior chains such as success, failure, recovery, etc.
+* Security boundary and memory mechanism: Incorporate unsafe blocks, permission restrictions and memory reading and writing into supervision objects.
+* Data encapsulation and evaluation acceptance: forming trainable samples, verification indicators and inspection mechanisms.
 
-如果按工程顺序阅读，本章对应的是一条完整链路：
+If read in engineering order, this chapter corresponds to a complete link:
 
-**工具 schema -> 任务设计 -> 轨迹生成 -> 模拟执行 -> 恢复建模 -> 安全阻断 -> 数据封装 -> 评估验收**
+**Tool schema -> Task design -> Trajectory generation -> Simulation execution -> Recovery modeling -> Security blocking -> Data encapsulation -> Evaluation and acceptance**
 
-这一结构对应的核心目标，是构建一条能够覆盖执行、恢复和安全控制的 Agent Tool-Use 数据流水线。
-
----
-
-## 1. 项目背景：Agent Tool-Use 数据工厂的必要性
-
-通用大模型在开放域问答、摘要和写作等任务中已经展现出很强的语言能力，但一旦进入 Agent 场景，仅靠语言能力就明显不够了。
-
-最常见的问题有三类。
-
-第一类是**动作失真**。模型知道应该“去查一下”，但不知道该调用哪一个工具，或者明明应该查数据库却跑去搜索，明明应该先读记忆却直接回答。
-
-第二类是**执行失真**。模型虽然选对了工具，却填错了参数，或者没看懂工具 schema，或者拿到返回结果后不会继续往下推理。这说明会说“我要调用工具”，并不等于真的会执行工具链。
-
-第三类是**边界失真**。当用户请求涉及危险操作、越权访问或不该持久化的记忆时，模型可能仍然机械地执行。一个没有安全阻断与边界建模的 Agent，在真实场景里是非常危险的。
-
-因此，P07 的目标不是简单收集一些函数调用示例，而是搭建一个**Agent Tool-Use 数据工厂**，把工具定义、任务轨迹、恢复行为、记忆读写和安全阻断组织成一条可复用的数据生产线。
-
-这条生产线服务的不是一次性实验，而是一种方法论：
-
-> 当团队未来需要从简单单工具问答迁移到复杂多工具 Agent、企业 Copilot、工作流助手和具身任务代理时，真正可以复用的不是某个函数调用 prompt，而是这套“从工具规范到监督轨迹”的工程方法。
-
-![图 1：Agent Tool-Use 数据工厂总览](../../images/part10/10_7_fig01_agent_tooluse_factory_overview.png)
+The core goal of this structure is to build an Agent Tool-Use data pipeline that can cover execution, recovery and security control.
 
 ---
 
-## 2. 项目目标与边界
+## 1. Project background: The necessity of Agent Tool-Use data factory
 
-### 2.1 项目目标
+General-purpose large models have demonstrated strong language capabilities in tasks such as open-domain question answering, summarization, and writing. However, once they enter the Agent scenario, language capabilities alone are obviously not enough.
 
-本项目聚焦以下四个目标。
+The most common problems fall into three categories.
 
-**目标一：建立从工具规范到监督轨迹的转化链路。**
-即把工具 schema、任务模板和执行环境，转成适合训练的结构化 Agent 数据。
+The first category is **motion distortion**. The model knows that it should "check it out", but it doesn't know which tool to call, or it should search the database instead, or it should read the memory first but answer directly.
 
-**目标二：建立覆盖 success、recovery、block 的轨迹体系。**
-本项目不把所有样本都统一做成“成功调用案例”，而是明确保留成功轨迹、失败恢复轨迹和安全阻断轨迹，让模型学到更完整的行为分布。
+The second category is **execution distortion**. Although the model selects the right tool, it fills in the wrong parameters, or does not understand the tool schema, or does not continue to reason after getting the returned results. This means that saying "I want to call the tool" does not mean that the tool chain will actually be executed.
 
-**目标三：建立 memory 与安全边界的辅助监督层。**
-Agent 不只是工具调用器，它还涉及多轮上下文和持久状态管理。因此项目把 memory 读写与 unsafe block 作为独立而重要的训练信号建设。
+The third category is **boundary distortion**. Models may still execute mechanically when user requests involve dangerous operations, unauthorized access, or memory that should not be persisted. An Agent without security blocking and boundary modeling is very dangerous in real scenarios.
 
-**目标四：形成训练侧可直接消费的数据资产。**
-最终输出不仅包括中间执行日志，还包括 `agent_tooluse_dataset.jsonl`、`train.jsonl`、`val.jsonl`、`smoke_test.jsonl`、`training_manifest.json` 等训练接口层产物。
+Therefore, the goal of P07 is not to simply collect some function call examples, but to build an **Agent Tool-Use data factory** to organize tool definitions, task trajectories, recovery behaviors, memory reading and writing, and security blocking into a reusable data production line.
 
-### 2.2 项目边界
+This production line serves not a one-time experiment, but a methodology:
 
-为了保持项目可复现性，本项目显式设置了若干边界。
+> When the team needs to migrate from simple single-tool Q&A to complex multi-tool Agent, enterprise Copilot, workflow assistant and embodied task agent in the future, what can be truly reused is not a certain function call prompt, but this set of engineering methods "from tool specification to supervision track".
 
-#### 1）工具范围边界
-
-当前工具范围包括搜索、数据库、日历、Python 执行和 memory 等能力，但仍属于一个较小规模、可控范围内的工具集合，而不是完整企业级工具生态。
-
-#### 2）执行环境边界
-
-本项目采用的是**模拟执行环境**，目标是低成本地复现 Agent 工具调用中的关键行为，而不是直接接入真实生产权限。这样做更适合教学、验证和方法展示。
-
-#### 3）样本规模边界
-
-当前项目样本总量不算大，但轨迹类型较全，更适合作为方法演示与工厂雏形，而不是宣称已经覆盖真实世界全部 Agent 行为。
-
-#### 4）安全能力边界
-
-项目已经纳入 unsafe block 和未授权调用约束，但相关边界仍然较为基础，距离真实上线场景中的复杂权限体系与攻防压力还有明显差距。
-
-### 2.3 边界说明的作用
-
-边界写清楚非常重要。因为一个工程案例通常只有两种写法：
-
-* 一种是把项目写得“什么都能做”；
-* 另一种是把项目写成“在什么前提下能稳定做好什么”。
-
-后者明显更可信，也更适合被团队复用。
+![Figure 1: Agent Tool-Use Data Factory Overview](../../images/part10/10_7_fig01_agent_tooluse_factory_overview.png)
 
 ---
 
-## 3. 项目定位：P07 的能力链位置
+## 2. Project goals and boundaries
 
-如果把全书视作一条大模型数据工程能力链，那么 P07 位于“从对话模型走向可执行 Agent”的关键位置。
+### 2.1 Project Goals
 
-前面的章节可能已经讨论过通用 SFT、偏好数据、RAG、垂直领域监督构造等方法论。本章的价值在于把这些方法进一步推向一个更接近系统行为的场景：**工具使用**。
+This project focuses on the following four goals.
 
-也就是说，本章不是重新讲一遍函数调用基础，而是展示：
+**Goal 1: Establish a transformation link from tool specification to supervision trajectory. **
+That is, the tool schema, task template and execution environment are converted into structured Agent data suitable for training.
 
-* 在一个需要真实动作闭环的场景里，监督数据该如何设计；
-* 为什么 success 轨迹并不足以支撑 Agent 行为学习；
-* 为什么 recovery 和 block 要和普通工具调用并行建设；
-* 为什么 memory 行为不能被当作普通文本上下文的附属物；
-* 如何在项目早期就把评估、检查、一致性和上线边界考虑进去。
+**Goal 2: Establish a trajectory system covering success, recovery, and block. **
+This project does not uniformly make all samples into "successful call cases", but clearly retains success trajectories, failure recovery trajectories and safety blocking trajectories, allowing the model to learn a more complete behavior distribution.
 
-从这个意义上说，本章最重要的不是“工具清单”，而是回答一个更大的问题：
+**Goal 3: Establish an auxiliary supervision layer for memory and security boundaries. **
+Agents are not just tool invokers, they are also involved in multiple rounds of context and persistent state management. Therefore, the project regards memory reading and writing and unsafe block as independent and important training signal construction.
 
-> Agent 数据工厂，究竟应该如何被设计成一套持续生产能力，而不是一堆零散的调用日志？
+**Goal 4: Form data assets that can be directly consumed by the training side. **
+The final output includes not only intermediate execution logs, but also training interface layer products such as `agent_tooluse_dataset.jsonl`, `train.jsonl`, `val.jsonl`, `smoke_test.jsonl`, and `training_manifest.json`.
 
----
+### 2.2 Project Boundaries
 
-## 4. 整体架构：从工具 schema 到训练资产的 Agent 数据流水线
+In order to maintain project reproducibility, this project explicitly sets several boundaries.
 
-从工程视角看，本项目可以拆成三层。
+#### 1) Tool range boundary
 
-### 4.1 第一层：工具规范层
+The current scope of tools includes capabilities such as search, database, calendar, Python execution, and memory, but it is still a smaller, controllable collection of tools rather than a complete enterprise-level tool ecosystem.
 
-这一层解决的是“Agent 面前究竟有哪些可调用能力，以及这些能力如何被机器理解”。主要包括：
+#### 2) Execution environment boundary
 
-* 工具 schema 定义
-* 参数字段规范
-* 调用约束描述
-* 工具类别标注
-* 授权与风险边界说明
+This project uses a **simulated execution environment**, with the goal of reproducing key behaviors in Agent tool calls at low cost, rather than directly accessing real production permissions. This is better suited for teaching, validation, and demonstration of methods.
 
-这一步的目标不是生成样本，而是先把工具世界定义清楚。
+#### 3) Sample size boundary
 
-### 4.2 第二层：轨迹构造层
+The total number of samples in the current project is not large, but the trajectory types are relatively complete. It is more suitable as a method demonstration and factory prototype, rather than claiming to have covered all Agent behaviors in the real world.
 
-这一层解决的是“如何让模型看到有代表性的 Agent 行为”。主要包括：
+#### 4) Security capability boundary
 
-* 任务规格设计
-* 单步与多步轨迹模板
-* success 轨迹生成
-* recovery 轨迹生成
-* memory 轨迹构造
-* unsafe block 轨迹构造
+The project has incorporated unsafe block and unauthorized call constraints, but the relevant boundaries are still relatively basic, and there is still a significant gap between the complex permission system and offensive and defensive pressure in real online scenarios.
 
-这一步是整个项目最核心的部分，因为它决定模型学到的是“一个会输出函数名的模型”，还是“一个会在环境中推进任务的 Agent”。
+### 2.3 The role of boundary description
 
-### 4.3 第三层：执行评估层
+It is very important to write clear boundaries. Because there are usually only two ways to write a project case:
 
-这一层解决的是“这些轨迹是否真的可用于训练和验证”。主要包括：
+* One is to write the project so that "everything can be done";
+* The other is to write the project as "what can be done stably and under what conditions".
 
-* 模拟环境执行
-* 工具日志记录
-* 事件级样本重组
-* 数据集封装
-* 指标评估
-* 项目检查脚本
-
-到这一步，项目才从“调用示例收集”变成“工程闭环”。
-
-![图 2：Agent Tool-Use 三层架构图](../../images/part10/10_7_fig02_three_layer_architecture.png)
+The latter is obviously more credible and more suitable for reuse by the team.
 
 ---
 
-## 5. 工程前置：Agent 数据工厂的关键面
+## 3. Project positioning: P07’s capability chain position
 
-Agent Tool-Use 数据工厂的难点，并不只是“把工具调用样本做出来”，而是先把哪些工程面需要被显式约束写清楚。随着行为复杂度上升，如果这些关键面混在一起，后面的轨迹生成、执行验证和训练封装就会迅速失控。
+If the whole book is regarded as a large model data engineering capability chain, then P07 is at the key position of "from conversation model to executable agent".
 
-当前项目至少涉及下面四个关键面。
+Previous chapters may have discussed methodologies such as general SFT, preference data, RAG, vertical domain supervision constructs, etc. The value of this chapter is to push these methods further into a scenario closer to system behavior: **Tool usage**.
 
-### 5.1 能力与边界定义面
+In other words, this chapter does not teach the basics of function calling again, but shows:
+
+* How to design supervision data in a scene that requires real action closed loop;
+* Why the success trajectory is not enough to support Agent behavior learning;
+* Why recovery and block need to be constructed in parallel with ordinary tool calls;
+* Why memory behavior cannot be treated as an adjunct to ordinary text context;
+* How to take assessment, inspection, consistency and go-live boundaries into account early in the project.
+
+In this sense, the most important thing about this chapter is not a "tool list" but answering a larger question:
+
+> How should the Agent Data Factory be designed as a set of continuous production capabilities instead of a pile of scattered call logs?
+
+---
+
+## 4. Overall architecture: Agent data pipeline from tool schema to training assets
+
+From an engineering perspective, this project can be broken down into three floors.
+
+### 4.1 The first layer: Tool specification layer
+
+This layer solves the problem of "what callable capabilities are available to the Agent and how these capabilities are understood by the machine." Mainly include:
+
+* Tool schema definition
+* Parameter field specifications
+* Call constraint description
+* Tool category label
+* Description of authorization and risk boundaries
+
+The goal of this step is not to generate samples, but to clearly define the tool world first.
+
+### 4.2 The second layer: trajectory construction layer
+
+This layer solves "how to let the model see representative Agent behavior." Mainly include:
+
+* Task specification design
+* Single-step and multi-step trajectory templates
+* success trajectory generation
+* recovery trajectory generation
+* memory trajectory construction
+* unsafe block trajectory construction
+
+This step is the core part of the entire project, because it determines whether the model learns "a model that outputs a function name" or "an Agent that advances tasks in the environment."
+
+### 4.3 The third layer: execution evaluation layer
+
+What this layer solves is "whether these trajectories can really be used for training and verification." Mainly include:
+
+* Simulation environment execution
+* Tool logging
+* Event-level sample reorganization
+*Dataset encapsulation
+*Indicator evaluation
+* Project check script
+
+At this point, the project has changed from "calling sample collection" to "engineering closed loop".
+
+![Figure 2: Agent Tool-Use three-layer architecture diagram](../../images/part10/10_7_fig02_three_layer_architecture.png)
+
+---
+
+## 5. Project pre-processing: key aspects of Agent data factory
+
+The difficulty of the Agent Tool-Use data factory is not just to "make the tool call sample", but to first clearly write down which engineering aspects need to be explicitly constrained. As behavioral complexity increases, if these key aspects are mixed together, the subsequent trajectory generation, execution verification and training encapsulation will quickly get out of control.
+
+The current project involves at least the following four key aspects.
+
+### 5.1 Capability and boundary definition surface
 
 This layer is responsible for defining tool boundaries, task types, recovery rules, and security constraints. The first thing to answer here is: what is "reasonable Agent behavior", rather than just caring about whether a certain trajectory can run through.
 
@@ -190,7 +190,7 @@ Because when many teams are working on Agent data for the first time, what reall
 
 Therefore, it is not the division of labor that needs to be explicitly written down, but the engineering constraints themselves. **Agent Tool-Use is more like system behavior data engineering than prompt word skill demonstration. **
 
-![图 3：Agent 数据工厂关键工程面示意图](../../images/part10/10_7_fig03_roles_and_responsibilities.png)
+![Figure 3: Schematic diagram of key engineering aspects of Agent Data Factory](../../images/part10/10_7_fig03_roles_and_responsibilities.png)
 
 ---
 
@@ -213,7 +213,7 @@ If this layer is not clearly defined, even if the model "want to use tools", it 
 
 ### 6.2 Structured implementation of tool specifications
 
-In `src/build_tooling.py`, the project generates tool specifications, trajectory templates and task specifications at the same stage, instead of handwriting a bunch of JSON first and then passively reading it by subsequent scripts. The three most critical functions here are:
+In `src/build_tooling.py`, the project generates tool specifications, trajectory templates and task specifications at the same stage, instead of hand-writing a bunch of JSON and then passively reading it by subsequent scripts. The three most critical functions here are:
 
 * `build_tool_schemas()`: Generate tool definition;
 * `build_templates()`: Generate trajectory template;
@@ -221,7 +221,9 @@ In `src/build_tooling.py`, the project generates tool specifications, trajectory
 
 The combination of these three functions is actually the "behavioral world definition layer" of P07. It does not simply write out the tool name, but fixes the constraints on which subsequent trajectory generation and execution depend. For example, in addition to `name` and `description`, `build_tool_schemas()` also provides `risk_level`, `safety_boundary`, `parameters`, `returns` and `errors`, which makes the schema simultaneously assume the three roles of **capability description, boundary description and error interface description**.
 
-A highly summarized code form is as follows:```python
+A highly summarized code form is as follows:
+
+```python
 # src/build_tooling.py
 
 def build_tool_schemas() -> list[dict]:
@@ -241,7 +243,9 @@ def build_tool_schemas() -> list[dict]:
         },
         ...
     ]
-```This structural description shows that the project does not regard the tool as "a natural language description for the model", but as a set of structured objects that can drive subsequent data construction. This also explains why although the current project only has `6` tool schema, it can already cover multiple types of behavior boundaries such as search, db, calendar, code, memory, and unsafe.
+```
+
+This structural description shows that the project does not regard the tool as "a natural language description for the model", but as a set of structured objects that can drive subsequent data construction. This also explains why although the current project only has `6` tool schema, it can already cover multiple types of behavior boundaries such as search, db, calendar, code, memory, and unsafe.
 
 ### 6.3 Why schema is not just a list of fields
 
@@ -256,7 +260,7 @@ Many people understand schema as "tool name + parameter list", but in the Agent 
 
 The schema is not to look good, but to align the layers of "tool definition - trajectory generation - environment execution - training encapsulation - evaluation and inspection". Without this level of alignment, an Agent project can easily become a bunch of siled scripts.
 
-![图 4：工具 schema 结构示意图](../../images/part10/10_7_fig04_tool_schema_structure.png)
+![Figure 4: Tool schema structure diagram](../../images/part10/10_7_fig04_tool_schema_structure.png)
 
 ---
 
@@ -286,7 +290,9 @@ The role of task specifications is to connect "what the user wants to do" and "h
 
 ### 7.2 Organization of templates and task specifications
 
-`src/build_tooling.py` does not write the template as an abstract configuration, but directly encodes the template shape explicitly into `shape`. For example:```python
+`src/build_tooling.py` does not write the template as an abstract configuration, but directly encodes the template shape explicitly into `shape`. For example:
+
+```python
 # src/build_tooling.py
 
 def build_templates() -> list[dict]:
@@ -306,7 +312,9 @@ def build_templates() -> list[dict]:
         },
         ...
     ]
-```This way of writing changes the "trajectory template" from an abstract concept into a structure that can be directly placed on the disk, directly inspected, and directly read by downstream. The reason why `run_p7_checks.py` can check `templates_cover_single_multi_and_safety` later is because the template layer has been explicitly structured.
+```
+
+This way of writing changes the "trajectory template" from an abstract concept into a structure that can be directly placed on the disk, directly inspected, and directly read by downstream. The reason why `run_p7_checks.py` can check `templates_cover_single_multi_and_safety` later is because the template layer has been explicitly structured.
 
 Similarly, `build_task_specs()` not only saves user questions, but also saves fields such as `category`, `session_id`, `objective`, `query`, `domain`, `answer_text`, `recovery_mode`, etc. In other words, what this layer defines is not an ordinary prompt, but a "task object with execution intention".
 
@@ -323,7 +331,7 @@ Templates are not intended for mechanical reproduction, but for a unified skelet
 
 The current project contains `5` trajectory templates and generates `22` raw trajectories around these templates. This shows that the project does not rely on massive data to win, but relies on the representativeness of trajectory types to build method models.
 
-![图 5：任务规格与轨迹模板关系图](../../images/part10/10_7_fig05_task_specs_and_templates.png)
+![Figure 5: Relationship diagram between task specifications and trajectory template](../../images/part10/10_7_fig05_task_specs_and_templates.png)
 
 ---
 
@@ -360,7 +368,9 @@ The most worthwhile thing about P07 is that it does not regard recovery as an ac
 
 This means that recovery is not a “note after error” but an object of supervision that is consciously designed and produced.
 
-For example, the structure of `build_search_recovery()` first deliberately constructs a bad parameter, and then explicitly adds the repair plan and the second call:```python
+For example, the structure of `build_search_recovery()` first deliberately constructs a bad parameter, and then explicitly adds the repair plan and the second call:
+
+```python
 # src/generate_trajectories.py
 
 def build_search_recovery(task: dict) -> list[dict]:
@@ -373,9 +383,13 @@ def build_search_recovery(task: dict) -> list[dict]:
         call_event(..., "search_docs", corrected_args),
         final_event(...),
     ]
-```This implementation explicitly writes out the intermediate decision-making of "failure-analysis-retry". This is more valuable for training than just retaining the results of two tool calls.
+```
 
-And `build_blocked(task, reason)` goes one step further, it directly generates blocking traces that do not trigger tool calls:```python
+This implementation explicitly writes out the intermediate decision-making of "failure-analysis-retry". This is more valuable for training than just retaining the results of two tool calls.
+
+And `build_blocked(task, reason)` goes one step further, it directly generates blocking traces that do not trigger tool calls:
+
+```python
 # src/generate_trajectories.py
 
 def build_blocked(task: dict, reason: str) -> list[dict]:
@@ -384,7 +398,9 @@ def build_blocked(task: dict, reason: str) -> list[dict]:
         plan_event(..., reason),
         final_event(..., status="blocked", blocked=True),
     ]
-```This shows that block is not a by-product of "tool call failure", but an independent branch of legitimate behavior.
+```
+
+This shows that block is not a by-product of "tool call failure", but an independent branch of legitimate behavior.
 
 ### 8.5 Why do three types of trajectories exist at the same time?
 
@@ -398,7 +414,7 @@ These three types of abilities are indispensable.
 
 The variant distribution of the current project is: `success = 10`, `recovery = 9`, `block = 3`. This set of proportions is very representative, because it shows that the project does not treat recovery as a scrap, but puts it in a position that is almost as important as success.
 
-![图 6：success / recovery / block 轨迹分层图](../../images/part10/10_7_fig06_trajectory_taxonomy.png)
+![Figure 6: success/recovery/block trajectory layered diagram](../../images/part10/10_7_fig06_trajectory_taxonomy.png)
 
 ---
 
@@ -430,7 +446,9 @@ The role of the environment layer is to turn "calls on paper" into "executable b
 
 This split is very clear: each tool is an independently testable function, the input is arguments and task context, and the output is unified into a binary result like `(success, payload)`. So the subsequent executor `execute_trajectory()` can use the unified interface to gradually advance the entire trajectory.
 
-A high-level execution framework is as follows:```python
+A high-level execution framework is as follows:
+
+```python
 # src/simulate_tool_env.py
 
 def execute_trajectory(trajectory: dict, task_specs: dict[str, dict]) -> tuple[dict, list[dict]]:
@@ -451,175 +469,179 @@ def execute_trajectory(trajectory: dict, task_specs: dict[str, dict]) -> tuple[d
                 successful_calls += 1
             else:
                 ...
-```这段逻辑的关键价值在于：项目把轨迹、环境、工具日志和最终指标真正连在了一起。这样一来，“恢复成功率”和“unsafe block rate”这些指标才不是纸面统计，而是执行后的真实结果。
+```
 
-### 9.3 Python 执行工具为什么值得单独写
+The key value of this logic is that the project truly connects the trajectory, environment, tool logs and final indicators. In this way, indicators such as "recovery success rate" and "unsafe block rate" are not paper statistics, but real results after execution.
 
-`python_exec()` 里有一个很好的安全示例：代码并不是直接无条件执行，而是先检查 `UNSAFE_CODE_TOKENS`，如果命中危险模式就返回 `unsafe_code`。这说明即使在模拟环境里，项目也已经把“可执行工具”视为风险更高的一类对象，而不是普通函数。这样的代码细节非常适合在最终稿里写成“工程上如何把安全边界前移”的例子。
+### 9.3 Why is the Python execution tool worth writing separately?
 
-### 9.4 模拟环境与真实环境的关系
+There is a good security example in `python_exec()`: the code is not directly executed unconditionally, but first checks `UNSAFE_CODE_TOKENS`, and returns `unsafe_code` if it hits a dangerous pattern. This shows that even in the simulation environment, the project has regarded "executable tools" as a higher-risk type of object, rather than ordinary functions. Such code details are very suitable to be written in the final draft as an example of "how to move the safety boundary forward in engineering".
 
-模拟环境不是终点，但它是很好的起点。它让团队先把“轨迹是否合理、字段是否对齐、恢复逻辑是否成立、指标是否可评估”这些基础问题解决，再决定如何迁移到真实环境。项目整体报告也明确说明当前环境以模拟执行为主，而不是直接连接真实生产工具。
+### 9.4 The relationship between simulated environment and real environment
 
-![图 7：模拟工具环境执行闭环图](../../images/part10/10_7_fig07_simulated_env_loop.png)
+A simulation environment is not the end, but it is a good starting point. It allows the team to first solve basic issues such as "whether the trajectory is reasonable, whether the fields are aligned, whether the recovery logic is established, and whether the indicators can be evaluated" before deciding how to migrate to the real environment. The overall project report also clearly states that the current environment is dominated by simulated execution rather than direct connection to real production tools.
 
----
-
-## 10. 流程拆解：P07 是如何从定义到评估逐步落盘的
-
-当前项目的核心流程可以概括为六步。
-
-1. `src/build_tooling.py`：构建工具规范
-2. `src/generate_trajectories.py`：生成轨迹样本
-3. `src/simulate_tool_env.py`：模拟工具环境执行
-4. `src/prepare_agent_dataset.py`：封装 Agent 数据集
-5. `src/evaluate_tooluse.py`：评估工具使用数据
-6. `src/run_p7_checks.py`：项目检查
-
-这六步并不复杂，但它们刚好对应了一个完整数据工厂所需的最小闭环。
-
-### 10.1 先定义，不先生成
-
-项目第一步不是“先找点数据”，而是先定义工具规范。这个顺序很关键，因为工具空间一旦没有被显式定义，后面生成的所有轨迹都可能建立在不稳固的基础上。
-
-### 10.2 先造轨迹，再进环境
-
-项目第二步先生成原始轨迹，而不是一开始就进入执行。这说明系统先关注“行为设计”，再进入“环境验证”，有助于把任务层和执行层拆开。
-
-### 10.3 先执行日志，再封装训练集
-
-项目并没有直接把执行过程写成训练样本，而是先留下事件级记录，再在后处理中重组为数据集。这种设计非常重要，因为它保留了分析、回放和返工的空间。
-
-### 10.4 先评估，再检查一致性
-
-评估并不等于检查。评估回答的是“表现如何”，检查回答的是“代码、数据和报告是否一致”。把两者分开，是工程成熟度的一个明显信号。
-
-![图 8：P07 六步流水线图](../../images/part10/10_7_fig08_pipeline_steps.png)
+![Figure 7: Simulation tool environment execution closed-loop diagram](../../images/part10/10_7_fig07_simulated_env_loop.png)
 
 ---
 
-## 11. 恢复机制：failure 到 recovery 的监督价值
+## 10. Process dismantling: how P07 was gradually implemented from definition to evaluation
 
-P07 最值得强调的一点，是它没有把失败样本简单丢掉，而是显式保留了 recovery 轨迹。
+The core process of the current project can be summarized in six steps.
 
-### 11.1 失败为什么有价值
+1. `src/build_tooling.py`: Build tool specification
+2. `src/generate_trajectories.py`: Generate trajectory samples
+3. `src/simulate_tool_env.py`: Simulation tool environment execution
+4. `src/prepare_agent_dataset.py`: Encapsulate Agent data set
+5. `src/evaluate_tooluse.py`: Assessment tool usage data
+6. `src/run_p7_checks.py`: Project inspection
 
-对普通问答模型来说，错误输出当然是不希望出现的；但对 Agent 来说，“第一次失败”并不等于“整个任务失败”。很多真实任务的关键恰恰在于：模型能否在失败后继续推进。
+These six steps are not complicated, but they just correspond to the minimum closed loop required for a complete data factory.
 
-例如：
+### 10.1 Define first, not generate
 
-* 参数格式错了，能否改正后重试；
-* 查不到结果，能否换一种查询方式；
-* 读到的记忆不充分，能否先补信息再继续；
-* 某个工具不适用，能否切换到替代工具。
+The first step of the project is not to "find some data first", but to define the tool specifications first. This order is critical because once the tool space is not explicitly defined, all trajectories generated subsequently may be based on a shaky foundation.
 
-### 11.2 recovery 训练的本质
+### 10.2 Create the trajectory first, then enter the environment
 
-recovery 训练的本质，不是教模型“犯错”，而是教模型“如何从错误中恢复”。这和只训练成功路径相比，学习目标完全不同。
+The second step of the project is to generate the original trajectory instead of entering execution from the beginning. This shows that the system first focuses on "behavioral design" and then enters "environmental verification", which helps to separate the task layer and execution layer.
 
-### 11.3 为什么 recovery 比 success 更接近真实世界
+### 10.3 Execute the log first, then encapsulate the training set
 
-真实用户环境里，工具会失败、参数会错、依赖会抖动、权限会变、查询会为空。如果模型只在训练中见过顺滑路径，它上线后就会非常脆弱。
+The project does not directly write the execution process into training samples, but first leaves event-level records and then reorganizes them into data sets in post-processing. This design is important because it leaves room for analysis, playback, and rework.
 
-当前项目中，`recovery = 9`，几乎与 `success = 10` 同量级。这说明数据工厂把恢复行为当成主体能力，而不是“补几条失败案例意思一下”。
+### 10.4 Evaluate first, then check for consistency
 
-![图 9：参数修复与重试流程图](../../images/part10/10_7_fig09_recovery_flow.png)
+Assessment is not the same as inspection. Assessment answers "how well it performed" and inspection answers "whether code, data, and reports are consistent." Separating the two is a clear sign of engineering maturity.
 
----
-
-## 12. Memory 轨迹：记忆行为建模
-
-很多人第一次做 Agent 时，会把记忆简单理解为“把前文多拼一点”。但工程上真正的 memory 行为远不止如此。
-
-### 12.1 memory 在 Agent 中解决什么问题
-
-memory 解决的是状态问题。它让系统能够：
-
-* 记住用户偏好；
-* 记住之前执行过的动作；
-* 记住环境中已有的中间结果；
-* 在多轮任务里基于过去信息继续推进。
-
-### 12.2 为什么要单独建模 memory 行为
-
-因为 memory 并不是普通自然语言上下文的线性延长，它包含了更明确的操作性：
-
-* 什么时候读；
-* 什么时候写；
-* 写什么；
-* 什么不该写；
-* 读出来之后如何影响后续决策。
-
-如果这些不被单独建模，模型就容易在两头出错：要么该记的不记，要么不该持久化的信息也写进去。
-
-### 12.3 当前项目的 memory 信号
-
-当前训练集共有 `103` 条记录，其中 memory 记录 `34` 条，且 memory success rate 为 `100%`。这说明 memory 并不是项目中的附属项，而是一个被明确保留和单独统计的核心能力维度。
-
-### 12.4 为什么 memory 数据特别适合早期显式构造
-
-因为 memory 的正确行为通常非常依赖规范。如果把它完全交给线上自然生成，很难得到高质量、可解释的训练信号。相反，早期通过受控模板显式构造，反而更容易建立稳定基础。
-
-![图 10：Memory 读写轨迹示意图](../../images/part10/10_7_fig10_memory_trajectory.png)
+![Figure 8: P07 six-step pipeline diagram](../../images/part10/10_7_fig08_pipeline_steps.png)
 
 ---
 
-## 13. 安全阻断：block 样本的边界作用
+## 11. Recovery mechanism: supervision value from failure to recovery
 
-Agent 与普通生成模型相比，一个更危险的地方在于它真的会“动手”。一旦模型具备工具调用能力，安全问题就不再只是“说错话”，而可能变成“做错事”。
+The most noteworthy point of P07 is that it does not simply discard failed samples, but explicitly retains the recovery track.
 
-### 13.1 unsafe block 在项目中解决什么问题
+### 11.1 Why Failure is Valuable
 
-unsafe block 解决的是：
+For ordinary question and answer models, error output is of course undesirable; but for the Agent, "the first failure" does not mean "the entire task failed." The key to many real-world tasks lies precisely in whether the model can continue to advance after failure.
 
-* 请求是否越权；
-* 是否涉及危险操作；
-* 是否应拒绝执行；
-* 是否应只做信息性回应而不真正调用工具。
+For example:
 
-### 13.2 为什么 block 不等于“简单拒答”
+* The parameter format is wrong. Can you correct it and try again?
+* If no results can be found, can you change the query method?
+* The memory I read is not sufficient. Can I fill in the information before continuing?
+* If a certain tool is not applicable, can I switch to an alternative tool?
 
-block 样本的价值，不只是让模型学会说“不行”，而是让它学会在工具使用场景下做**结构化阻断**：
+### 11.2 Recovery The essence of training
 
-* 识别风险来源；
-* 不触发危险调用；
-* 在可行时提供更安全的替代说明；
-* 不让系统状态进入不受控区域。
+The essence of recovery training is not to teach the model to "make mistakes", but to teach the model "how to recover from errors." This has a completely different learning goal than training only successful paths.
 
-### 13.3 当前项目的安全信号
+### 11.3 Why recovery is closer to the real world than success
 
-当前 unsafe block rate 为 `100%`，未授权工具调用率为 `0%`，训练集中的 safety 记录为 `9` 条。这说明尽管样本规模不大，但项目已经明确把安全边界纳入核心评估。
+In a real user environment, tools will fail, parameters will be wrong, dependencies will jitter, permissions will change, and queries will be empty. If a model has only seen smooth paths during training, it will be very fragile once it goes online.
 
-### 13.4 为什么 block 数据应该早期进入训练集
+In the current project, `recovery = 9` is almost of the same magnitude as `success = 10`. This shows that Data Factory regards recovery behavior as its main capability, rather than "filling in a few failure cases to make sense."
 
-因为安全边界如果只在推理侧用规则补，很容易出现“模型想做，规则在拦”的对抗状态。更好的方式是让模型在训练时就学会哪些事情不该做。
-
-![图 11：Unsafe block 决策分流图](../../images/part10/10_7_fig11_unsafe_block.png)
+![Figure 9: Parameter repair and retry flow chart](../../images/part10/10_7_fig09_recovery_flow.png)
 
 ---
 
-## 14. 数据重组与训练封装：日志到训练接口
+## 12. Memory trace: modeling of memory behavior
 
-环境跑完之后，项目并没有直接把执行日志原样扔给训练框架，而是做了一步很关键的后处理：**把事件级记录重组为训练资产**。
+When many people work as an agent for the first time, they simply interpret memory as "putting together more of the previous text." But the real memory behavior in engineering is much more than that.
 
-### 14.1 为什么原始日志不适合直接训练
+### 12.1 What problems does memory solve in Agent?
 
-因为日志更适合机器记录，不一定适合模型学习。原始日志通常：
+Memory solves the state problem. It enables the system to:
 
-* 粒度不统一；
-* 格式偏执行而非监督；
-* 缺少明确的 instruction / output 对齐；
-* 不利于做 train / val / smoke 切分；
-* 不便于后续版本管理。
+* Remember user preferences;
+* Remember previously performed actions;
+* Remember existing intermediate results in the environment;
+* Continue to advance based on past information in multiple rounds of missions.
 
-### 14.2 轨迹重组的实现方式
+### 12.2 Why model memory behavior separately?
 
-`src/prepare_agent_dataset.py` 的关键，不是简单做文件拷贝，而是把整条轨迹拆成事件级训练记录。这里最核心的两个函数是：
+Because memory is not a linear extension of ordinary natural language context, it contains more explicit operability:
+
+* When to read;
+* When to write;
+* What to write;
+* What not to write;
+* How it affects subsequent decisions after reading it.
+
+If these are not modeled separately, the model is prone to errors on both ends: either information that should be remembered is not remembered, or information that should not be persisted is included.
+
+### 12.3 Memory signal of the current project
+
+The current training set has a total of `103` records, of which memory records are `34`, and the memory success rate is `100%`. This shows that memory is not an accessory item in the project, but a core capability dimension that is explicitly retained and counted separately.
+
+### 12.4 Why memory data is particularly suitable for early explicit construction
+
+Because the correct behavior of memory is often very specification dependent. If it is completely left to online natural generation, it will be difficult to obtain high-quality, interpretable training signals. On the contrary, early explicit construction through controlled templates makes it easier to establish a stable foundation.
+
+![Figure 10: Memory read and write trajectory diagram](../../images/part10/10_7_fig10_memory_trajectory.png)
+
+---
+
+## 13. Security blocking: the boundary function of block samples
+
+Compared with ordinary generative models, one of the more dangerous aspects of Agent is that it can really "hands on". Once the model has the ability to call tools, the security issue is no longer just "saying the wrong thing", but may become "doing the wrong thing".
+
+### 13.1 What problems does unsafe block solve in the project?
+
+What unsafe block solves is:
+
+* Whether the request is ultra vires;
+* Whether dangerous operations are involved;
+* Whether execution should be refused;
+* Whether we should just do an informational response without actually calling the tool.
+
+### 13.2 Why block is not equal to "simple refusal to answer"
+
+The value of block samples is not just to let the model learn to say "no", but to let it learn to do **structured blocking** in tool usage scenarios:
+
+* Identify sources of risk;
+* Does not trigger dangerous calls;
+* Provide safer alternative instructions where feasible;
+* Prevent system status from entering an uncontrolled area.
+
+### 13.3 Safety signals of the current project
+
+The current unsafe block rate is `100%`, the unauthorized tool call rate is `0%`, and the safety records in the training set are `9`. This shows that despite the small sample size, the project has clearly incorporated safety boundaries into the core assessment.
+
+### 13.4 Why block data should enter the training set early
+
+Because if the safety boundary is only supplemented by rules on the inference side, it is easy for a confrontational state of "the model wants to do it, but the rules are blocking it". A better approach is to let the model learn what not to do during training.
+
+![Figure 11: Unsafe block decision-making flow diagram](../../images/part10/10_7_fig11_unsafe_block.png)
+
+---
+
+## 14. Data reorganization and training encapsulation: log to training interface
+
+After running the environment, the project did not directly throw the execution log to the training framework as it is, but did a very critical post-processing step: **reorganize event-level records into training assets**.
+
+### 14.1 Why original logs are not suitable for direct training
+
+Because logs are more suitable for machine recording, they are not necessarily suitable for model learning. Raw logs usually:
+
+* The granularity is not uniform;
+* The format favors execution rather than supervision;
+* Lack of explicit instruction / output alignment;
+* Not conducive to train / val / smoke segmentation;
+* Inconvenient for subsequent version management.
+
+### 14.2 Implementation of trajectory reorganization
+
+The key to `src/prepare_agent_dataset.py` is not to simply copy files, but to split the entire trajectory into event-level training records. The two core functions here are:
 
 * `render_context(events)`: Render users, plans, tool calls, and observation results into a unified context;
 * `build_records(trajectory)`: Based on the trajectory after execution, training records are gradually generated.
 
-For example, `render_context()` will rewrite different events into readable text:```python
+For example, `render_context()` will rewrite different events into readable text:
+
+```python
 # src/prepare_agent_dataset.py
 
 def render_context(events: list[dict]) -> list[str]:
@@ -632,13 +654,15 @@ def render_context(events: list[dict]) -> list[str]:
         else:
             rendered.append(f"observation: {event['tool_name']} -> {event['content']}")
     return rendered
-```这一步很像把“系统日志”翻译成“训练可消费语境”。
+```
 
-而 `build_records()` 更进一步，它并不是一条轨迹只产出一条样本，而是沿着步骤不断产出带 `record_id`、`trajectory_id`、`task_id`、`category`、`variant` 等字段的监督记录。这也是为什么最终训练集虽然只有 `22` 条原始轨迹，却能形成 `103` 条训练记录。
+This step is very similar to translating "system log" into "training consumable context".
 
-### 14.3 训练接口层产物
+`build_records()` goes one step further. It does not only produce one sample per track, but continuously produces supervision records with fields such as `record_id`, `trajectory_id`, `task_id`, `category`, `variant` along the steps. This is why although the final training set only has `22` original trajectories, it can form `103` training records.
 
-项目最终输出了：
+### 14.3 Training interface layer products
+
+The final output of the project is:
 
 * `data/training/agent_tooluse_dataset.jsonl`
 * `data/training/train.jsonl`
@@ -646,95 +670,95 @@ def render_context(events: list[dict]) -> list[str]:
 * `data/training/smoke_test.jsonl`
 * `data/training/training_manifest.json`
 
-这说明项目的输出已经不是“几份运行结果”，而是一组可直接被训练侧消费的资产。
+This shows that the output of the project is no longer "several running results", but a set of assets that can be directly consumed by the training side.
 
-![图 12：事件日志到训练样本重组图](../../images/part10/10_7_fig12_dataset_repacking.png)
-
----
-
-## 15. 指标体系：工具成功率之外的信号
-
-做 Agent 项目时，很多团队最容易盯住一个数字：工具调用成功率。这个指标当然重要，但如果只看它，很容易误判整个项目。
-
-### 15.1 当前项目的关键指标
-
-当前项目的核心指标包括：
-
-* 工具 schema：`6`
-* 模板数量：`5`
-* 原始轨迹：`22`
-* 变体分布：`success = 10`、`recovery = 9`、`block = 3`
-* 工具调用成功率：`78.57%`
-* 轨迹成功率：`100.00%`
-* 恢复成功率：`100.00%`
-* unsafe block rate：`100%`
-* memory success rate：`100%`
-* 未授权工具调用率：`0%`
-* 训练记录数：`103`
-
-### 15.2 为什么工具成功率不等于任务成功率
-
-工具调用成功率衡量的是“单次调用是否顺利”，但轨迹成功率衡量的是“整个任务是否被完成”。如果项目显式建模了 recovery，那么某次单工具调用失败后被修复，并最终完成任务，这在 Agent 视角里仍然是成功。
-
-### 15.3 为什么这组指标有工程意义
-
-这组指标最有意思的地方就在于：工具调用成功率只有 `78.57%`，但轨迹成功率和恢复成功率都达到 `100%`。这恰恰说明 recovery 机制已经在数据层发挥了作用。
-
-这里的低工具成功率并不自动等于系统无效，反而可能意味着：项目确实把失败与修复纳入了训练信号，而不是只保留理想路径。
+![Figure 12: Reorganization diagram from event log to training sample](../../images/part10/10_7_fig12_dataset_repacking.png)
 
 ---
 
-## 16. 指标解读：恢复能力的权重
+## 15. Indicator system: signals other than tool success rate
 
-一个非常常见的误区是：觉得好的 Agent 应该尽量“不出错”。在理想世界里当然如此，但从数据工程视角看，这个目标并不现实。
+When working on Agent projects, many teams tend to focus on one number: tool invocation success rate. This indicator is certainly important, but if you only look at it, it is easy to misjudge the entire project.
 
-### 16.1 真正可用的 Agent 应该具备什么能力
+### 15.1 Key indicators of current projects
 
-真正可用的 Agent，至少需要三层能力：
+Core indicators of current projects include:
 
-* 第一层：正常情况下能完成任务；
-* 第二层：异常情况下能恢复任务；
-* 第三层：危险情况下能阻断任务。
+* Tool schema: `6`
+* Number of templates: `5`
+*Original track: `22`
+* Variant distribution: `success = 10`, `recovery = 9`, `block = 3`
+* Tool call success rate: `78.57%`
+* Trajectory success rate: `100.00%`
+* Recovery success rate: `100.00%`
+* unsafe block rate: `100%`
+* memory success rate: `100%`
+* Unauthorized tool call rate: `0%`
+* Number of training records: `103`
 
-如果只训练第一层，那么模型在演示里看起来很漂亮，但在真实世界里会非常脆弱。
+### 15.2 Why tool success rate is not equal to task success rate
 
-### 16.2 recovery 为什么比“纯净 success 数据”更珍贵
+The tool call success rate measures "whether a single call went smoothly", but the trajectory success rate measures "whether the entire task was completed." If the project explicitly models recovery, then a single tool call failure is repaired and the task is finally completed, which is still a success from the Agent's perspective.
 
-因为 recovery 样本让模型学到的是一种更接近系统智能的行为：
+### 15.3 Why does this set of indicators have engineering significance?
 
-* 识别问题；
-* 理解失败原因；
-* 生成修复动作；
-* 再次尝试；
-* 在必要时切换策略。
+The most interesting thing about this set of indicators is that the tool call success rate is only `78.57%`, but the trajectory success rate and recovery success rate both reach `100%`. This just shows that the recovery mechanism has already played a role in the data layer.
 
-这些能力远比“第一次就成功”更难，也更有现实价值。
-
-### 16.3 为什么这层解读必须保留
-
-如果只报数字，78.57% 很容易被误读为“偏低”的结果。但一旦放回 Agent 场景中，它反而说明项目没有美化数据，而是在如实保留并利用失败恢复行为。
+A low tool success rate here does not automatically mean that the system is ineffective, but may mean that the project does incorporate failure and repair into the training signal, rather than only retaining the ideal path.
 
 ---
 
-## 17. 评估与检查：表现评估与一致性检查
+## 16. Indicator Interpretation: Weight of Recovery Capability
 
-很多项目做到能跑出指标就结束了，但在数据工厂语境里，这还不够。因为即使指标看起来合理，代码、数据、报告三者之间也可能并不一致。
+A very common misunderstanding is that a good agent should try not to make mistakes. In an ideal world, of course, this would be the case, but from a data engineering perspective, this goal is unrealistic.
 
-### 17.1 评估回答什么问题
+### 16.1 What capabilities should a truly usable Agent have?
 
-评估回答的是：
+A truly usable Agent requires at least three levels of capabilities:
 
-* 工具调用整体是否有效；
-* recovery 是否成功；
-* memory 是否正确；
-* block 是否生效；
-* 训练数据分布是否符合预期。
+* Level 1: Can complete tasks under normal circumstances;
+*Level 2: Tasks can be resumed under abnormal circumstances;
+*Level 3: Can block tasks in dangerous situations.
 
-### 17.2 指标计算的结构
+If you only train the first layer, the model will look beautiful in the demo, but will be very fragile in the real world.
 
-`src/evaluate_tooluse.py` 并不是简单统计条数，而是把工具层、轨迹层、恢复层、安全层和 memory 层指标放在同一份 `metrics` 字典中统一输出。这一点很适合在章节里点明，因为它体现了 P07 的评估对象不是单一 success，而是完整行为分布。
+### 16.2 Why recovery is more precious than “pure success data”
 
-从源码结构看，指标至少包括：
+Because recovery samples allow the model to learn a behavior closer to system intelligence:
+
+* Identify problems;
+* Understand the reasons for failure;
+* Generate repair actions;
+* Try again;
+* Switch strategies when necessary.
+
+These abilities are far more difficult and more realistic than "successful the first time".
+
+### 16.3 Why this level of interpretation must be retained
+
+If only numbers were reported, 78.57% could easily be misinterpreted as a “low” result. But once it is put back into the Agent scene, it shows that the project is not beautifying the data, but is faithfully retaining and utilizing failure recovery behavior.
+
+---
+
+## 17. Assessment and Inspection: Performance Assessment and Consistency Check
+
+Many projects end when they can outperform the indicators, but in the context of data factory, this is not enough. Because even if the metrics look reasonable, the code, data, and reports may not be consistent.
+
+### 17.1 What questions does the assessment answer?
+
+The assessment answers:
+
+* Whether the overall tool call is valid;
+* Whether recovery is successful;
+* Is the memory correct?
+* Whether block is effective;
+* Whether the training data distribution is as expected.
+
+### 17.2 Structure of indicator calculation
+
+`src/evaluate_tooluse.py` does not simply count the number of items, but puts the tool layer, track layer, recovery layer, security layer and memory layer indicators in the same `metrics` dictionary for unified output. This is a good point to point out in the chapter, because it reflects that the evaluation object of P07 is not a single success, but the complete behavior distribution.
+
+Judging from the source code structure, the indicators include at least:
 
 * `tool_schema_count`
 * `template_count`
@@ -748,169 +772,169 @@ def render_context(events: list[dict]) -> list[str]:
 * `unauthorized_tool_call_rate`
 * `memory_success_rate`
 
-也正因为评估脚本是基于执行后产物和 manifest 统一计算的，当前报告中才会同时出现“工具调用成功率 78.57%”与“轨迹成功率、恢复成功率均为 100%”这样的组合，而不是只报一个孤立数字。
+It is precisely because the evaluation script is calculated based on the execution product and manifest that the combination of "tool call success rate 78.57%" and "trajectory success rate and recovery success rate are both 100%" appears in the current report, instead of just reporting an isolated number.
 
-### 17.3 检查回答什么问题
+### 17.3 Check what questions are answered
 
-检查回答的是：
+Check the answer is:
 
-* 必要文件是否齐全；
-* 工具 schema 字段是否完整；
-* 模板是否覆盖单步、多步和安全场景；
-* 轨迹变体是否完整；
-* 观察与决策链是否存在；
-* memory 相关 case 是否成功；
-* 代码和报告是否对得上。
+* Whether the necessary documents are complete;
+* Whether the tool schema field is complete;
+* Whether the template covers single-step, multi-step and safety scenarios;
+* Whether the trajectory variant is complete;
+* Whether the observation and decision-making chain exists;
+* Whether the memory related case is successful;
+* Whether the code and report match.
 
-### 17.4 检查机制的落地方式
+### 17.4 How to implement the inspection mechanism
 
-`src/run_p7_checks.py` 先做命令级检查，再做数据/产物级检查。命令级检查里直接运行 `py_compile` 和 `evaluate_tooluse.py`；数据级检查里则逐条验证 `required_files_exist`、`tool_schema_fields_complete`、`templates_cover_single_multi_and_safety`、`variant_coverage`、`observations_and_decision_chain_present`、`memory_cases_succeed` 等规则。当前项目总检查项 `12` 个，全部通过，总体状态为 `PASS`。
+`src/run_p7_checks.py` Perform command-level checks first, then data/product-level checks. In the command-level inspection, `py_compile` and `evaluate_tooluse.py` are run directly; in the data-level inspection, rules such as `required_files_exist`, `tool_schema_fields_complete`, `templates_cover_single_multi_and_safety`, `variant_coverage`, `observations_and_decision_chain_present`, `memory_cases_succeed` are verified one by one. The current project has a total of `12` inspection items, all of which passed, and the overall status is `PASS`.
 
-这一步非常重要，因为它让本章不只是“有一份 notebook 讲故事”，而是“有一条代码可验证、产物可核查、报告可回溯的工程闭环”。
+This step is very important, because it makes this chapter not just "a notebook to tell a story", but "a closed engineering loop with verifiable code, verifiable products, and traceable reports."
 
-![图 13：评估与检查双闭环图](../../images/part10/10_7_fig13_eval_and_checks.png)
-
----
-
-## 18. 当前项目的局限与风险：方法样板的边界
-
-写局限并不是削弱项目，而是在提高项目可信度。P07 目前至少有三个明确局限。
-
-### 18.1 工具范围仍然较小
-
-当前工具种类只有 `6` 类，能够展示方法，但还不足以逼近真实企业 Agent 中那些复杂、多权限、多系统耦合的工具空间。
-
-### 18.2 调用层本身仍不够稳定
-
-工具调用成功率 `78.57%` 说明原始调用层依然存在脆弱性。虽然 recovery 层把任务成功率拉回来了，但这并不意味着底层调用问题已经解决。
-
-### 18.3 安全边界还不够丰富
-
-现有 unsafe block 和未授权调用样本已经覆盖了最基本的边界，但距离真实世界中的越权链路、提示注入、敏感数据外传和复杂权限协商还有很大空间。
-
-### 18.4 为什么局限要提前写出来
-
-因为一个方法样板真正的价值，不在于假装自己已经解决了一切，而在于让后来者知道：下一步最值得投入的地方在哪里。
+![Figure 13: Evaluation and inspection double closed loop diagram](../../images/part10/10_7_fig13_eval_and_checks.png)
 
 ---
 
-## 19. 扩展方向：走向更真实的企业 Agent
+## 18. Limitations and Risks of Current Projects: Boundaries of Method Samples
 
-如果把 P07 视作一个最小可复现的 Agent 数据工厂，那么下一步的扩展方向至少包括以下几类。
+Writing about limitations does not weaken the project, it increases its credibility. P07 currently has at least three clear limitations.
 
-### 19.1 扩展工具类型
+### 18.1 Tool scope is still small
 
-从当前的 search、db、calendar、code、memory 等基础工具，进一步扩展到邮件、文档、工单、审批、知识库、表格、工作流等更接近企业真实场景的能力。
+The current tool type is only the `6` class, which can display methods, but it is not enough to approximate the complex, multi-authority, and multi-system coupling tool space in real enterprise agents.
 
-### 19.2 扩展跨工具链路
+### 18.2 The calling layer itself is still not stable enough
 
-很多真实任务不是单工具完成的，而是需要检索、查询、计算、写入、通知等多步骤协作。后续可以重点补强这类跨工具链路样本。
+The tool call success rate `78.57%` indicates that the original call layer is still vulnerable. Although the recovery layer has brought the task success rate back, this does not mean that the underlying calling problem has been solved.
 
-### 19.3 扩展跨会话状态
+### 18.3 Security boundaries are not rich enough
 
-目前项目已经覆盖 memory，但更复杂的长期状态管理、会话切换、任务恢复和历史依赖仍值得继续建设。
+The existing unsafe block and unauthorized call samples have covered the most basic boundaries, but there is still a lot of room for unauthorized links, prompt injection, sensitive data outgoing and complex permission negotiation in the real world.
 
-### 19.4 扩展安全治理
+### 18.4 Why limitations should be written out in advance
 
-未来可以引入更丰富的越权调用、提示注入、敏感信息泄露、数据污染和策略绕过场景，让安全边界真正接近上线前要求。
-
-### 19.5 扩展评估维度
-
-除了当前指标外，还可以增加更细粒度的工具选择准确率、参数正确率、重试效率、最终回答质量和多轮一致性指标。
-
-![图 14：P07 后续演进路线图](../../images/part10/10_7_fig14_roadmap.png)
+Because the real value of a method model lies not in pretending that it has solved everything, but in letting latecomers know where the next step is most worth investing.
 
 ---
 
-## 20. P07 的关键位置：连接“会说”与“会做”的能力层
+## 19. Expansion direction: towards a more realistic enterprise agent
 
-在很多教程里，大模型工程仍停留在“让模型回答更像样”这一步。但 Agent 场景提出了一个更高的要求：模型不仅要会说，还要会做；不仅要会做，还要能在做错时修回来；不仅要能修回来，还要知道什么时候根本不该做。
+If P07 is regarded as a minimally reproducible Agent data factory, then the next expansion directions include at least the following categories.
 
-P07 的意义就在这里。它不是要证明自己已经是一个成熟企业 Agent，而是要说明：
+### 19.1 Extended tool types
 
-* 工具使用行为可以被结构化；
-* 恢复轨迹可以被训练化；
-* 记忆行为可以被显式建模；
-* 安全阻断可以进入监督层；
-* 执行、评估和检查可以形成闭环。
+From the current basic tools such as search, db, calendar, code, and memory, it has been further expanded to include email, documents, work orders, approvals, knowledge bases, forms, workflows, and other capabilities that are closer to the real enterprise scenarios.
 
-这使得它在整体能力链中承担了一种承上启下的作用：它把“语言监督”推进到了“行为监督”。
+### 19.2 Extending cross-tool links
 
----
+Many real tasks are not completed by a single tool, but require multi-step collaboration such as retrieval, query, calculation, writing, and notification. In the future, we can focus on enhancing this type of cross-tool link samples.
 
-## 21. 与普通函数调用数据的区别：Agent 行为数据的特征
+### 19.3 Extending cross-session state
 
-表面看，P07 也包含工具 schema、调用参数和执行结果，因此有人可能会觉得它和常见 function calling 数据没有本质区别。但其实二者差异很大。
+The project currently covers memory, but more complex long-term state management, session switching, task recovery and historical dependencies are still worthy of continued construction.
 
-### 21.1 普通函数调用数据更强调单次映射
+### 19.4 Extending Security Governance
 
-传统 function calling 样本通常关心的是：
+In the future, more scenarios for unauthorized calls, prompt injection, sensitive information leakage, data pollution, and policy bypass can be introduced to make the security boundary truly close to the pre-launch requirements.
 
-* 用户意图是什么；
-* 应该调用哪个函数；
-* 参数如何填充；
-* 返回值如何呈现。
+### 19.5 Expanding evaluation dimensions
 
-这是一种“输入 -> 调用 -> 输出”的静态映射。
+In addition to the current metrics, more fine-grained tool selection accuracy, parameter correctness, retry efficiency, final answer quality, and multi-round consistency metrics can be added.
 
-### 21.2 Agent Tool-Use 更强调行为过程
-
-P07 更强调的是：
-
-* 为什么现在应该调用工具；
-* 如果调用失败怎么办；
-* 如果需要多轮记忆怎么办；
-* 如果请求危险怎么办；
-* 如何把多步行为沉淀为训练资产。
-
-这已经不是简单的 function calling，而是更接近“可执行智能体的行为数据工程”。
-
-### 21.3 为什么这个区分必须在章节里写清楚
-
-因为很多团队会低估 Agent 数据难度，觉得多加几个函数调用样本就够了。P07 恰好说明：真正困难的不是“能不能调”，而是“调错了怎么办、该停时能不能停、跨轮时能不能记住”。
+![Figure 14: P07 subsequent evolution roadmap](../../images/part10/10_7_fig14_roadmap.png)
 
 ---
 
-## 22. 向其他 Agent 场景迁移：P07 的方法样板价值
+## 20. The key position of P07: the ability layer that connects “being able to speak” and “being able to do”
 
-Agent Tool-Use 并不是唯一需要行为数据工厂的方向，但它是一个非常好的样板。原因在于，它同时具备以下特征：
+In many tutorials, large model engineering still remains at the step of "making the model answer more decent". But the Agent scenario puts forward a higher requirement: the model must not only be able to speak, but also be able to do it; not only must be able to do it, but it must also be able to repair it when it makes a mistake; not only it must be able to repair it, but it must also know when it should not be done at all.
 
-* 工具空间明确；
-* 行为链可拆解；
-* 恢复机制重要；
-* 安全边界刚性；
-* 评估闭环必要。
+This is the significance of P07. It is not to prove that you are a mature enterprise agent, but to explain:
 
-这些特征，其实同样存在于企业 Copilot、自动化工作流助手、开发助手、运维助手和多代理协作系统中。
+* Tool usage behavior can be structured;
+* The recovery trajectory can be trained;
+* Memory behavior can be modeled explicitly;
+* Security blocking can enter the supervision layer;
+* Execution, evaluation and inspection can form a closed loop.
 
-### 22.1 哪些设计可以直接迁移
-
-* 从工具 schema 到任务规格的定义链路；
-* success / recovery / block 并行建设的思路；
-* 模拟环境先行、真实环境后接入的策略；
-* memory 与安全边界单独建模的做法；
-* 训练封装与检查闭环。
-
-### 22.2 哪些部分不能直接照搬
-
-* 工具种类和权限体系必须重写；
-* 企业场景中的安全边界通常更复杂；
-* 多团队协作的工作流比单 Agent 场景更难；
-* 真实系统的异常类型远多于模拟环境。
-
-### 22.3 最具迁移性的核心方法
-
-真正能迁移的不是某个调用模板，而是这条方法链：
-
-> 定义工具空间 -> 设计任务规格 -> 构造 success / recovery / block 轨迹 -> 在环境中执行并记录 -> 重组为训练资产 -> 建立评估与检查闭环。
+This makes it play a connecting role in the overall capability chain: it advances "language supervision" to "behavior supervision".
 
 ---
 
-## 23. 主要交付物清单
+## 21. Differences from ordinary function call data: Characteristics of Agent behavioral data
 
-这里给出主要交付物清单。
+On the surface, P07 also contains tool schema, call parameters and execution results, so some people may think that it is not essentially different from common function calling data. But in fact the two are very different.
 
-### 23.1 工具与处理中间产物
+### 21.1 Ordinary function call data emphasizes single mapping
+
+Traditional function calling samples usually concern themselves with:
+
+* What is the user intention;
+* Which function should be called;
+* How to fill in parameters;
+* How the return value is presented.
+
+This is a static mapping of "input -> call -> output".
+
+### 21.2 Agent Tool-Use puts more emphasis on the behavioral process
+
+P07 puts more emphasis on:
+
+* Why you should call the tool now;
+* What to do if the call fails;
+* What to do if multiple rounds of memorization are needed;
+* What to do if the request is dangerous;
+* How to precipitate multi-step behaviors into training assets.
+
+This is no longer a simple function calling, but closer to "behavioral data engineering of executable agents".
+
+### 21.3 Why this distinction must be clearly stated in the chapter
+
+Because many teams underestimate the difficulty of Agent data and think that adding a few more function call samples is enough. P07 just illustrates: The real difficulty is not "whether it can be adjusted", but "what to do if the adjustment is wrong, whether it can stop when it is time to stop, and whether it can remember when crossing the wheel."
+
+---
+
+## 22. Migrating to other Agent scenarios: the value of P07 method model
+
+Agent Tool-Use is not the only direction that requires behavioral data factories, but it is a very good example. The reason is that it has the following characteristics at the same time:
+
+* The tool space is clear;
+* The behavior chain can be disassembled;
+* The recovery mechanism is important;
+* Safety boundary rigidity;
+* Evaluate closed loop necessary.
+
+These features actually also exist in enterprise Copilot, automated workflow assistants, development assistants, operation and maintenance assistants, and multi-agent collaboration systems.
+
+### 22.1 Which designs can be directly migrated
+
+* Definition link from tool schema to task specification;
+* success / recovery / block parallel construction ideas;
+* The strategy of accessing the simulated environment first and then accessing the real environment;
+* The practice of modeling memory and security boundaries separately;
+* Training encapsulation and inspection closed loop.
+
+### 22.2 Which parts cannot be copied directly?
+
+* Tool types and permission systems must be rewritten;
+* Security boundaries in enterprise scenarios are usually more complex;
+* Multi-team collaboration workflow is more difficult than single-agent scenarios;
+* Real systems have many more types of exceptions than simulated environments.
+
+### 22.3 The most portable core method
+
+What can really be migrated is not a certain calling template, but this method chain:
+
+> Define the tool space -> Design task specifications -> Construct success/recovery/block trajectories -> Execute and record in the environment -> Reorganize into training assets -> Establish a closed loop of evaluation and inspection.
+
+---
+
+## 23. List of major deliverables
+
+A list of the main deliverables is given here.
+
+### 23.1 Tools and Processing Intermediates
 
 * `data/processed/tool_schemas.json`
 * `data/processed/trajectory_templates.json`
@@ -920,7 +944,7 @@ Agent Tool-Use 并不是唯一需要行为数据工厂的方向，但它是一�
 * `data/processed/tool_execution_log.jsonl`
 * `data/processed/execution_summary.json`
 
-### 23.2 训练接口产物
+### 23.2 Training interface products
 
 * `data/training/agent_tooluse_dataset.jsonl`
 * `data/training/train.jsonl`
@@ -928,62 +952,62 @@ Agent Tool-Use 并不是唯一需要行为数据工厂的方向，但它是一�
 * `data/training/smoke_test.jsonl`
 * `data/training/training_manifest.json`
 
-### 23.3 报告与验证产物
+### 23.3 Reporting and Verification Products
 
 * `data/reports/p7_report.md`
 * `data/reports/p7_metrics.json`
 * `data/reports/p7_test_results.json`
 * `data/reports/p7_test_report.md`
 
-这份交付物列表说明，P07 最终沉淀下来的不是“跑通一次实验”，而是一套从工具定义到训练接口再到评估报告的完整资产。
+This list of deliverables shows that what P07 finally settles is not a "run through an experiment", but a complete set of assets from tool definition to training interface to evaluation report.
 
 ---
 
-## 24. 结语：Agent 数据工厂真正要训练的，不只是调用动作，而是行为能力
+## 24. Conclusion: What Agent Data Factory really wants to train is not just calling actions, but behavioral capabilities.
 
-很多人在看到 Tool-Use 项目时，第一反应是把它理解成“让模型学会调用函数”。但 P07 所展示的，其实是更深一层的东西：
+When many people see the Tool-Use project, their first reaction is to understand it as "let the model learn to call functions." But what P07 shows is actually something deeper:
 
-它训练的不是一个机械 API 触发器，而是一个在工具世界中工作的行为系统。这个系统需要知道：
+It trains not a mechanical API trigger, but a behavioral system that works in a world of tools. The system needs to know:
 
-* 什么情况下应该行动；
-* 行动时该如何调用；
-* 调错了怎样修复；
-* 有状态时如何记忆；
-* 有风险时如何停止。
+* Under what circumstances should action be taken;
+* How to call during action;
+* How to fix the wrong adjustment;
+* How to remember when there is a state;
+* How to stop when there is risk.
 
-从这个意义上说，P07 的价值并不只在于它现在有多少样本、多少工具、多少指标，而在于它明确回答了一个对 Agent 时代非常重要的问题：
+In this sense, the value of P07 does not just lie in how many samples, tools, and indicators it has now, but in that it clearly answers a question that is very important to the Agent era:
 
-> 如果我们想让模型真正学会“做事”，那就必须把行为本身变成数据工程对象。
+> If we want the model to truly learn to "do things", we must turn the behavior itself into a data engineering object.
 
-这正是 Agent Tool-Use 数据工厂的核心意义。
+This is exactly what Agent Tool-Use Data Factory is all about.
 
 ---
 
-## 专题：场景库建设与上线前门禁
+## Special topic: Scene library construction and pre-launch access control
 
-Agent Tool-Use 项目在真正落地前，最容易出问题的地方并不是“模型会不会调工具”，而是“团队有没有把场景库和门禁条件建完整”。如果只有少量演示任务，系统看起来很聪明；一旦进入真实环境，工具空间、异常类型和安全要求同时放大，问题就会迅速暴露。
+Before the Agent Tool-Use project is actually implemented, the most likely problem is not "whether the model can adjust the tool", but "whether the team has completed the scene library and access control conditions." If there are only a few demonstration tasks, the system looks smart; once it enters the real environment, the tool space, exception types, and safety requirements are simultaneously magnified, and problems are quickly exposed.
 
-### 一、场景库不能只覆盖成功路径
+### 1. The scene library cannot only cover the successful path
 
-一个可用的 Agent 场景库，至少应同时覆盖三类内容：
+A usable Agent scene library should cover at least three types of content at the same time:
 
-* 常规成功任务，验证模型能否在标准前提下完成目标；
-* 恢复型任务，验证模型在工具失败、参数缺失或环境冲突时能否回到正轨；
-* 阻断型任务，验证模型在越权、敏感或不合规请求前能否停下来。
+* Regular successful tasks to verify whether the model can complete the goal under standard conditions;
+* Recovery tasks to verify whether the model can get back on track when tools fail, parameters are missing, or environmental conflicts occur;
+* Blocking tasks to verify whether the model can be stopped before unauthorized, sensitive or non-compliant requests.
 
-这三类任务缺一不可。只有 success，没有 recovery，系统会在真实环境中显得脆弱；只有 success 和 recovery，没有 block，系统就会在高风险场景里失控。P07 当前最有方法价值的地方，就是已经把这三种轨迹视为并列资产，而不是把恢复和阻断当成附属样本。
+These three types of tasks are indispensable. With only success and no recovery, the system will appear fragile in real environments; with only success and recovery and no block, the system will get out of control in high-risk scenarios. P07 The most valuable part of the current method is that these three trajectories have been regarded as parallel assets, rather than treating recovery and interruption as auxiliary samples.
 
-### 二、门禁应覆盖工具正确性、恢复能力和安全边界
+### 2. Access control should cover tool correctness, recovery capabilities and security boundaries
 
-Agent 项目上线前，至少值得建立三道门禁：
+Before the Agent project goes online, it is worth establishing at least three access controls:
 
-* 工具正确性门禁，确认模型会选对工具、填对关键参数、理解返回结果；
-* 恢复能力门禁，确认模型在报错、冲突和中断后能采取合理的下一步；
-* 安全边界门禁，确认模型不会在禁止条件下继续行动，也不会被简单诱导绕过策略。
+* Tool correctness access control, confirm that the model will select the right tool, fill in the key parameters, and understand the returned results;
+* Recovery capability access control to confirm that the model can take the next reasonable step after errors, conflicts and interruptions;
+* Security boundary access control, confirming that the model will not continue to act under prohibited conditions, nor can it be easily induced to bypass the policy.
 
-如果系统只通过第一道门禁，看起来像“会用工具”，但实际上还不具备进入真实流程的资格。因为真实流程中，错误与风险几乎一定会发生，恢复能力和安全阻断能力并不是少数边角需求，而是主链能力。
+If the system only passes the first gate, it looks like it "knows how to use the tools", but in fact it is not qualified to enter the real process. Because errors and risks will almost certainly occur in real processes, recovery capabilities and security blocking capabilities are not just peripheral requirements, but main chain capabilities.
 
-### 三、场景库需要随着失败案例持续更新
+### 3. The scenario library needs to be continuously updated with failure cases
 
 P07 The scene library of this type of project should not be written all at once, but should continue to grow with failure replay. Whenever the system encounters the following problems in a certain type of scenario, it is worth absorbing it into the scenario library:
 
@@ -1038,3 +1062,4 @@ In the long run, what the team needs to settle down most is not a single templat
 * Can continuously track multiple rounds of memory, recovery efficiency and final task completion rate.
 
 As soon as these few things start to form a regular rhythm, the Agent Tool-Use data factory will no longer be just a project chapter, but will gradually evolve into a real behavioral data infrastructure.
+

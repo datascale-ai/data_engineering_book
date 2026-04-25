@@ -3,7 +3,7 @@
 **Preliminary reading**
 * **Core Goal**: Answer the three core questions of "whether the data can be used, how to use it, and whether the use is controllable."
 * **Design Concept**: Adhere to the "left shift" of compliance and privacy protection, and put it into the system architecture and process design (Privacy by Design).
-* **Implementation support**: With the support of governance templates, access control lists and minimum governance links, system specifications, process control, automated auditing and engineering realization are connected to form a closed loop of compliance governance from demand to offline.
+* **Implementation support**: Supported by governance templates, access control lists, and minimum governance links, system specifications, process control, automated auditing, and engineering implementation are connected to form a closed loop of compliance governance from demand to offline.
 
 ---
 
@@ -11,7 +11,7 @@
 
 ---
 
-## Chapter Summary
+## Summary of this chapter
 
 In the data-driven era, compliance is no longer a stamp stamped by the legal department before a project is launched, but an infrastructure constraint that determines whether the system can operate stably in the long term. Many systems have reached the online standards in terms of algorithm effect, business transformation, and grayscale performance, but were urgently stopped during the final review due to unclear data sources, blurred authorization boundaries, incomplete log traces, or exposure of sensitive information. The problem is not that the team "does not pay attention to compliance", but that compliance requirements have long been regarded as an approval appendix after the completion of research and development, rather than as constraints that must be included at the beginning of the system design.
 
@@ -31,10 +31,10 @@ After studying this chapter, readers should be able to:
 * Master the design principles of data classification and grading, be able to distinguish low-sensitive, medium-sensitive and highly-sensitive data, and design differentiated processing strategies for different levels.
 * Construct a data risk assessment matrix for real business, and combine data levels, usage purposes, processing actions and impact scope into executable risk judgment logic.
 * Design a clear chain of responsibilities and clarify the boundaries of responsibilities of legal, business, platform, algorithm, data development, security and auditing roles in the governance process.
-* Understand the role of RoPA, DPIA, audit trail, consent management, access approval, data retention and destruction mechanisms in the project life cycle.
-* Learn to embed compliance requirements into the R&D pipeline to achieve automated inspection and blocking during the code submission, configuration changes, data access, model training, and online approval phases.
-* Can propose special governance strategies for high-risk scenarios such as medical care, finance, minors, third-party processing and cross-border transmission.
-* Understand how compliance governance is implemented through configuration files, policy rules, log products, and inspection scripts.
+* Understand the role of RoPA, DPIA, audit traces, consent management, access approval, data retention and destruction mechanisms in the project life cycle.
+* Learn to embed compliance requirements into the R&D pipeline to achieve automated inspection and blocking during code submission, configuration changes, data access, model training, and online approval stages.
+* Be able to propose special governance strategies for high-risk scenarios such as medical care, finance, minors, third-party processing and cross-border transmission.
+* Understand how compliance governance is implemented through configuration files, policy rules, log products and inspection scripts.
 
 ---
 
@@ -50,7 +50,7 @@ This case reveals a common but extremely costly problem: **compliance-behind**. 
 
 To further illustrate the problem, let's look at three simplified failure cases.
 
-### Case 1: Purpose Drift in Recommendation Systems
+### Case 1: Purpose Drift in Recommendation System
 
 A content recommendation system initially only performed ranking optimization based on click behavior. Later, in order to improve advertising conversion, device identification, dwell time, transaction records and location data were introduced. The privacy policy in the early stages of the project only covered "improving service experience" and did not cover "precision marketing" and "automated pricing." The resulting system, while technically operational, had drifted in terms of legitimacy of purpose. The problem is not just "adding some more fields", but rather that when the purpose of use changes, the authorization and processing basis are not updated simultaneously.
 
@@ -66,9 +66,9 @@ After receiving a user deletion request, a risk control model only deleted the u
 
 From the above cases, we can summarize four types of pain points in real projects:
 
-1. **The extremely high cost of delayed compliance**: Once problems are discovered late in the system, they are often accompanied by rework, delays, shutdowns and potential penalties.
+1. **The extremely high cost of delayed compliance**: Once problems are discovered late in the system, they are often accompanied by rework, delays, shutdowns, and potential penalties.
 2. **Blurred boundaries of authority and responsibilities**: The business line wants data, the algorithm wants features, the platform side provides capabilities, and there are legal control provisions, but there is no clear closed loop of responsibility.
-3. **Technology and system are out of touch**: Compliance documents appear to be complete, but there are no technical tools such as metadata annotation, desensitization engine, policy verification, and access auditing.
+3. **Technology and system are out of touch**: The compliance document looks complete, but there is no technical grasp such as metadata annotation, desensitization engine, policy verification, and access audit.
 4. **The life cycle is not closed**: From collection, processing, use, sharing, retention to deletion, there is no verifiable, traceable, and auditable closed loop.
 
 ---
@@ -79,7 +79,7 @@ The traditional R&D process places compliance review at the end of the process, 
 
 Modern data governance emphasizes **Privacy by Design**. Its core is not to do an extra round of approvals, but to recognize that privacy and compliance themselves are part of the system architecture. How to layer the database, where to store the logs, whether the features are traceable, how to clean the training set, and whether the third-party API brings out sensitive fields. These are not problems that can be solved by "filling in an approval form before going online", but basic constraints that must be considered in the architecture stage.
 
-### 27.1.1 The price of post-compliance
+### 27.1.1 The cost of post-compliance
 
 The cost of post-compliance is mainly reflected in five aspects.
 
@@ -110,16 +110,16 @@ This means that the system design cannot only focus on "whether the function can
 
 Compliance does not exist in isolation. It is the intersection of data governance, model governance and business governance.
 
-* **Data Governance** focuses on data quality, metadata, lineage, lifecycle, and retention strategies.
-* **Model Governance** focuses on feature sources, risk of bias, interpretability, training set boundaries, and purpose of using the model.
+* **Data Governance** focuses on data quality, metadata, lineage, lifecycle and retention strategies.
+* **Model Governance** focuses on feature sources, risk of bias, interpretability, training set boundaries, and purpose of model use.
 * **Business Governance** focuses on business goals, user commitments, authorization basis, external disclosure and operating rules.
 
 If these three are separated, common misalignments will occur in the system: the business requires new capabilities, the model quickly integrates new features, and the available interfaces are opened on the platform side, but no one makes a unified judgment on whether this data link is compliant. Only through a unified metadata management center, policy center and audit center can these requirements that were originally scattered among different teams be linked.
 
-![图27-1：合规左移与治理协同架构图](../../images/part9/图27_1_合规左移与治理协同架构图.png)
+![Figure 27-1: Compliance shift left and governance collaborative architecture diagram](../../images/part9/图27_1_合规左移与治理协同架构图.png)
 *Figure 27-1: Compliance shift left strategy - showing how compliance review moves from pre-launch to requirements analysis and architecture design stages*
 
-### 27.1.4 Comparison between traditional process and left-shift process
+### 27.1.4 Comparison between traditional process and left shift process
 
 The following table illustrates the differences between the two processes in a more engineering way:
 
@@ -139,10 +139,10 @@ From an architectural perspective, mature compliance governance does not rely on
 
 * Newly accessed data sets have no permission by default and must apply explicitly.
 * Sensitive fields are masked and displayed by default instead of "clear text first, then hidden if necessary".
-* C2/C3 level data cannot directly enter external APIs or large model prompts by default.
-* The test environment does not allow the import of production plaintext snapshots by default.
+*C2/C3 level data cannot directly enter external APIs or large model prompts by default.
+* The test environment does not allow importing production plaintext snapshots by default.
 * Data that has not been registered for use cannot enter the model training link by default.
-* When RoPA, DPIA or approval records are missing, CI/CD is blocked from going online by default.
+* When RoPA, DPIA or approval records are missing, CI/CD will be blocked from going online by default.
 
 The essence of this type of default behavior is to upgrade compliance from "human reminders" to "system guardrails."
 
@@ -153,7 +153,7 @@ The essence of this type of default behavior is to upgrade compliance from "huma
 If "compliance moves left" answers why compliance must move forward, then this section answers: **What exactly does the team need to manage after moving forward**? The answer can be summarized in three questions:
 
 1. What data do we have?
-2. In what scenarios can this data be used?
+2. In what scenarios can these data be used?
 3. Who is responsible if something goes wrong?
 
 ### 27.2.1 Data classification and classification architecture
@@ -170,37 +170,37 @@ This chapter uses a three-level classification as the basic framework:
 
 The value of this grading system is not only to help the team label, but also to provide a unified basis for subsequent permission policies, desensitization rules, approval processes, log requirements, and retention periods.
 
-### 27.2.2 Multidimensional classification from field level, table level to scene level
+### 27.2.2 Multi-dimensional classification from field level, table level to scene level
 
 Many teams understand "grading" as giving an overall label to a table, but real systems are often more complex:
 
 * C1, C2 and C3 fields may exist simultaneously in the same table.
 * The same field has different risks in different scenarios.
-* The same data may have different grades in the original, desensitized and aggregated states.
+* The same data may have different levels in raw, desensitized and aggregated states.
 
 Therefore, mature grading requires at least three dimensions:
 
-**Field-level classification**: For example, fields such as mobile phone number, email address, ID number, precise location, bank card number, and medical record number should have clear labels.
-**Table-level grading**: For example, data sets such as user profile, transaction flow, behavior logs, risk control labels, customer service recordings, etc. should have an overall grade baseline.
+**Field-level classification**: For example, fields such as mobile phone number, email address, ID number, precise location, bank card number, and medical record number should have clear labels.  
+**Table-level grading**: For example, data sets such as user profile, transaction flow, behavior logs, risk control labels, customer service recordings, etc. should have an overall grade baseline.  
 **Scenario-level classification**: For example, "for model training", "for customer service retrieval", "for BI reporting" and "for external interfaces". These usage scenarios themselves will also affect the risk level.
 
 Only by incorporating these three dimensions at the same time can the system avoid the confusion of "same table, different fields, and the same field, different uses".
 
 ### 27.2.3 Typical governance requirements for each level of data
 
-#### 1. L1 low-sensitivity data
+#### 1. L1 low-sensitive data
 
-L1 data is usually public data, anonymized data, or aggregated statistical results. For example, public macro indicators, regional-level conversion rates after de-identification, operational indicators without individual identification, etc.
+L1 data is usually public data, anonymized data, or aggregated statistical results. For example, public macro indicators, regional-level conversion rates after de-identification, operational indicators without individual identification, etc.  
 L1 data can usually be circulated in a wider range and used for scenarios such as BI analysis, model tuning, visual dashboards, and capacity planning. Its governance focuses on basic access controls, data quality assurance, and reasonable retention.
 
 #### 2. Sensitive data in L2
 
-L2 data usually includes general personal information or internal restricted data such as name, mobile phone number, email, device ID, employee number, internal business records, etc.
+L2 data usually includes general personal information or internal restricted data such as name, mobile phone number, email, device ID, employee number, internal business records, etc.  
 This type of data cannot be exported at will, nor should it be explicitly exposed in logs, test environments, and external interfaces. Governance priorities include encryption, hash de-identification, partial mask display, least privilege access, and restricted use.
 
 #### 3. L3 highly sensitive data
 
-L3 data includes biometrics, medical health, precise location, financial accounts, undisclosed trade secrets, etc.
+L3 data includes biometrics, medical health, precise location, financial accounts, undisclosed trade secrets, etc.  
 Once this kind of data is leaked, the impact will be huge, so it usually requires separate consent, strict approval, independent storage, strong encryption and higher standards of auditing. By default, L3 data should not enter the general analysis domain directly, nor should it be consumed arbitrarily by downstream.
 
 ### 27.2.4 Risk Assessment Matrix
@@ -210,21 +210,21 @@ Simply knowing "what grade the data is" is not enough. The risk of a field is no
 For example:
 
 * Using L3 data for automated decision-making is high risk.
-* Using L2 data for internal analysis without direct impact on individuals is a medium risk.
+* Using L2 data for internal analysis and not having a direct impact on individuals is a medium risk.
 * Using L1 data for system stability monitoring is usually a low risk.
 
 Therefore, risk assessment needs to consider the following dimensions simultaneously:
 
 1. **Data Level**: C1/C2/C3
-2. **Purpose of use**: Service fulfillment, risk control, recommendation, marketing, auditing, R&D testing, etc.
+2. **Purpose of use**: service performance, risk control, recommendation, marketing, auditing, R&D testing, etc.
 3. **Processing actions**: query, export, training, sharing, push, automated decision-making
-4. **Affected objects**: internal teams, partners, external users, cross-border recipients
+4. **Influenced objects**: internal teams, partners, external users, cross-border recipients
 5. **Result Impact**: Will it further affect user rights, pricing, portraits, recommendations, credit or account status?
 
 To sum up, the above dimensions can be compressed into a judgment logic that is more convenient for project implementation:
 
 ```text
-风险等级 = 数据敏感度 × 处理动作强度 × 业务影响范围
+Risk level = Data sensitivity × Processing action intensity × Business impact scope
 ```
 
 In engineering practice, this logic is often eventually encoded into a policy engine:
@@ -240,7 +240,7 @@ When the data level is higher, the processing actions are stronger, and the scop
 | C3 | Automated decision-making | Training/scoring | High | DPIA, legal approval, strong audit, online blocking |
 | C3 | Third-party sharing | Export/interface call | Extremely high | DPA, desensitization gateway, minimum field set, special evaluation |
 
-![图27-4：数据分级、用途和处理动作构成的风险矩阵图](../../images/part9/图27_4_数据分级用途和处理动作构成的风险矩阵图.png)
+![Figure 27-4: Risk matrix diagram composed of data classification, usage and processing actions](../../images/part9/图27_4_数据分级用途和处理动作构成的风险矩阵图.png)
 *Figure 27-4: Risk matrix diagram composed of data classification, usage and processing actions*
 
 ### 27.2.6 Responsibility chain construction (RACI Matrix)
@@ -250,7 +250,7 @@ Without a clear chain of responsibilities, no matter how good the rules are, the
 The following table shows a typical RACI design:
 
 | Role | Key Responsibilities | RACI |
-| :------ | :-------------------- | :------------------- |
+| :------ | :------------------- | :------------------- |
 | Legal/Compliance | Interpret regulations, set red lines, and approve high-risk scenarios | Accountable |
 | Business party | Describe the purpose of use, business necessity and user commitment | Responsible |
 | Platform/Infrastructure | Provides classification, desensitization, permissions, auditing and lineage capabilities | Responsible |
@@ -271,17 +271,17 @@ The platform can provide capabilities, but if the business and algorithms do not
 **Misunderstanding 3: Thinking that “approval means compliance”. **
 Approval is just a node. What really matters is whether the information before approval is complete, whether the behavior after approval is verifiable, and whether deviations can be continuously discovered during the runtime.
 
-### 27.2.8 From institutional text to system labels
+### 27.2.8 From institutional text to system label
 
 Mature teams will map the chain of responsibilities to actual objects in the system:
 
-* business owner → project owner field
+* Business owner → project owner field
 * Compliance approver → Approval node and work order flow
-* data owner → data set metadata management
-* Purpose → RoPA form fields
-* Usage Permissions → RBAC/ABAC Policy
-* Risk Level → Preflight Rule Parameters
-* Access Traces → Audit Log Events
+* Data owner → Data set metadata management
+* Purpose of use → RoPA form fields
+* Usage permissions → RBAC/ABAC policy
+* Risk level → Pre-check rule parameters
+* Access traces → Audit log events
 
 This step is very critical, because only when the institutional language enters the system metadata, can compliance truly have the possibility of automated execution.
 
@@ -294,7 +294,7 @@ If compliance governance wants to truly become a part of R&D, it cannot just sta
 1. Is this processing activity registered?
 2. Is there a lawful basis for this processing?
 3. What levels of data are involved?
-4. Has a risk assessment been done?
+4. Has a risk assessment been conducted?
 5. Is it capable of auditing and deleting?
 6. Has the online threshold been reached?
 
@@ -304,12 +304,12 @@ If compliance governance wants to truly become a part of R&D, it cannot just sta
 
 Each project should fill in at least the following information before applying for access to data, training models or open interfaces:
 
-1. Data types and sources (first-party, third-party, public data)
-2. Purpose and legal basis of use
+1. Data type and source (first party, third party, public data)
+2. Purpose of use and legal basis
 3. Involved systems, tables, fields and output objects
 4. Data retention period (TTL) and destruction mechanism
-5. Whether it contains sensitive data, involves third parties or cross-border transfers
-6. Data owner, project owner, approvers, and usage team
+5. Whether it contains sensitive data, involves third parties or cross-border transmission
+6. Data owner, project owner, approvers and usage team
 
 The value of RoPA is that without it, the team will never be able to tell "which data is used by whom for what reasons." Once a complaint, audit or deletion request occurs, the link cannot be located without a ledger.
 
@@ -331,24 +331,24 @@ The value of RoPA is that without it, the team will never be able to tell "which
 | audit_required | Whether to force audit |
 | approval_chain | Approval link |
 
-#### Engineering Requirements for RoPA
+#### Engineering requirements for RoPA
 
 In a mature platform, RoPA should not be offline Excel, but should have the following characteristics:
 
-* Submitted through system forms and stored versioned
-* Associated with project code repository, dataset metadata and approval tickets
+* Submit through system forms and versioned storage
+* Associated with project code warehouse, dataset metadata and approval work orders
 * Support field-level and table-level automatic verification
 * Linked with the CI/CD pipeline to block the online process when key information is missing
 * Traceable historical changes to meet audit requirements
 
-### 27.3.2 Conduct a DPIA (Data Protection Impact Assessment)
+### 27.3.2 Perform a DPIA (Data Protection Impact Assessment)
 
 When the project involves medium-to-highly sensitive data, new processing methods, automated decision-making, or high-impact scenarios, RoPA alone is not enough and requires further **DPIA (Data Protection Impact Assessment)**.
 
 The core of DPIA is not to "write a long report", but to systematically answer the following questions:
 
 * Is it really necessary to collect this data?
-* Does the data exceed the scope of the original authorization?
+* Are these data outside the scope of the original authorization?
 * Will the processing results have a significant impact on users?
 * Is there a risk of discrimination, abuse, cross-border profiling or miscarriage of justice?
 * If leakage, misuse or unauthorized access occurs, does the system have the ability to respond and stop losses?
@@ -389,15 +389,15 @@ The “minimum necessary principle” requires the team to continuously ask:
 * Is this field really necessary?
 * Can a lower sensitivity field be used instead?
 * Is it possible to aggregate first and then use it instead of using details directly?
-* Is it possible to just keep it for a short-term window instead of long-term?
+* Is it possible to only retain for a short-term window, rather than long-term?
 
 In engineering, the implementation of the minimum necessary principle includes:
 
 * Field whitelist instead of opening the entire table
-* Training feature set isolated from original details
-* time window clipping
+* The training feature set is isolated from the original details
+* Time window clipping
 * The original identifier is not retained by default
-* Release after aggregation instead of releasing details
+* Issued after aggregation, rather than releasing details
 
 ### 27.3.4 Consent management, authorization scope and purpose binding
 
@@ -405,33 +405,33 @@ Many data disputes are not about "the data itself is illegal" but "the use of th
 
 This means:
 
-* User authorized versions should be traceable
-* Each use should be mapped to a clear processing activity
-* Re-evaluation required when use changes
-* “Improved experience” cannot be applied to all business scenarios in a general way
-* There should be a higher level of authorization and explanation mechanism for sensitive data, high-risk profiling, and automated decision-making.
+* User authorized version should be traceable
+* Each purpose should be mapped to a clear processing activity
+*Need to be reassessed when use changes
+* "Improved experience" cannot be applied to all business scenarios in a general way
+* There must be a higher level of authorization and explanation mechanism for sensitive data, high-risk profiling, and automated decision-making
 
 From a system perspective, consent management should at least retain: user ID, authorized version, authorization time, scope of use, withdrawal status, applicable product lines and validity period.
 
-### 27.3.5 Audit preparation and compliance footprint
+### 27.3.5 Audit preparation and compliance traces
 
 If any system leaves no traces, it will ultimately be difficult to self-certify and implement it.
 Therefore, authorization records, approval work orders, access logs, export records, policy hits, pre-check results, and deletion execution results should all have tamper-proof storage and traceability capabilities.
 
 A mature audit system needs to record at least the following events:
 
-* Who accessed what data and when
-* What role and approval basis are used for access?
-* Which fields and how many records are accessed?
+* Who accessed what data at what time
+* What roles are used for access and the basis for approval
+* Which fields and how many records are involved in the access
 * Whether exporting, downloading or sharing occurs
 * Whether the desensitization, blocking or alarm rules are hit
-* Is there a deletion, correction, or query request for the specified user?
+* Whether there is a deletion, correction or query request for the specified user
 * How long it took for the request to be completed
 
 #### Audit log design example
 
 | Field | Description |
-| :------------ | :------------- |
+| :--------------------- | :------------- |
 | event_time | event time |
 | actor | operating subject |
 | role | role used |
@@ -450,8 +450,8 @@ The real watershed for many teams is not whether they have written the system, b
 
 A typical CI/CD compliance pre-check should include:
 
-* Is there a valid RoPA?
-* Is the required DPIA present?
+* Whether there is a valid RoPA
+* Whether the required DPIA exists
 * Whether data classification is completed
 * Whether there are field-level desensitization rules
 * Whether to configure access permissions and role boundaries
@@ -463,7 +463,7 @@ A typical CI/CD compliance pre-check should include:
 
 When any high-risk item is missing, the pipeline should block building, blocking deployment, or blocking training task execution.
 
-![图27-5：从数据接入到模型训练的合规门禁流程图](../../images/part9/图27_5_从数据接入到模型训练的合规门禁流程图.png)
+![Figure 27-5: Compliance access control flow chart from data access to model training](../../images/part9/图27_5_从数据接入到模型训练的合规门禁流程图.png)
 *Figure 27-5: Compliance access control flow chart from data access to model training*
 
 ### 27.3.7 Governance Pipeline: From Documentation Requirements to System Execution
@@ -472,13 +472,13 @@ When compliance requirements enter the engineering stage, governance objects can
 
 1. Generate privacy specifications and policies
 2. Execute privacy processing pipeline
-3. Simulation operation and maintenance and event processing
-4. Evaluating privacy pipelines
+3. Simulated operation and maintenance and event processing
+4. Evaluate privacy pipelines
 5. Run project check
 
 This link reflects a key fact: **Compliance is not a single point of action, but an assembly line from policy generation, data processing, alarm response to assessment and verification**.
 
-![图27-3：隐私规格与策略生成流程图](../../images/part9/图27_3_P09隐私规格与策略生成流程图.png)
+![Figure 27-3: Privacy specification and policy generation flow chart](../../images/part9/图27_3_P09隐私规格与策略生成流程图.png)
 *Figure 27-3: Privacy specification and policy generation flow chart*
 
 ### 27.3.8 How to translate governance indicators into engineering language
@@ -487,13 +487,13 @@ The value of governance indicators does not lie in the sample size itself, but i
 
 * There are 8 original records and 7 restricted records, indicating that the system has indeed identified and isolated most of the restricted data.
 * The direct PII removal rate is 100%, indicating that the desensitization logic at least covers the direct identification in the sample.
-* The preflight pass rate is 100%, indicating that the inspection link before going online has formed a clear threshold.
-* The alarm resolution rate is 100%, which means that the alarm is not "seen but no one cares about it", but is processed in a closed loop.
+* The preflight pass rate is 100%, indicating that a clear threshold has been established for the inspection link before going online.
+* The alarm resolution rate is 100%, indicating that the alarm is not "seen but no one cares about it", but entered into a closed-loop process.
 * There are 13 total inspection items and all passed, indicating that the current rules, products and inspection logic are self-consistent within the scope of the sample.
 
 The significance of such indicators does not lie in the absolute value, but in that they transform compliance governance from an abstract concept into a system behavior that can be inspected, reviewed, and operated sustainably.
 
-![图27-2：DPIA与RoPA工程化审批流](../../images/part9/图27_2_DPIA与RoPA工程化审批流.png)
+![Figure 27-2: DPIA and RoPA engineering approval flow](../../images/part9/图27_2_DPIA与RoPA工程化审批流.png)
 *Figure 27-2: Data compliance life cycle - automated interception and audit process from business project establishment to offline*
 
 ### 27.3.9 Compliance online access control list (example)
@@ -502,7 +502,7 @@ Below is a pre-launch access control checklist that can be used directly for pro
 
 **1. Governance and Approval**
 
-- ☐ Completed RoPA registration and approved
+- ☐ RoPA registration completed and approved
 - ☐ Necessary DPIA completed
 - ☐ Completed online approval leaving traces
 
@@ -510,7 +510,7 @@ Below is a pre-launch access control checklist that can be used directly for pro
 
 - ☐ Completed data classification and binding of field labels
 - ☐ Training/analysis sets have been isolated from the original sensitive data
-- ☐ The test environment does not have clear text sensitive data snapshots
+- ☐ The test environment does not have clear-text sensitive data snapshots
 
 **3. Access control and audit traces**
 
@@ -531,20 +531,20 @@ Many teams do a good job in pre-launch management, but quickly become lax after 
 
 * After new members join the team, their permissions are not converged.
 * When new requirements are added, the old approval is reused but its purpose has changed.
-* The calling scope of third-party interfaces gradually expands
+* The calling scope of third-party interfaces is gradually expanding
 * Data export, report sharing and log troubleshooting have become new entrances to leaks
-* Deletion requests, rectification requests and audit inquiries only appear intensively during the runtime
+* Deletion requests, rectification requests and audit inquiries only appear intensively during the running period
 
 Therefore, runtime governance should include:
 
-* Periodic permissions review
+* Periodic permission review
 * Export behavior audit
-* New Use Change Assessment
+* Assessment of new use changes
 * Abnormal access detection
-* Delete Request SLA Tracking
+* Remove request SLA tracking
 * Incident response and postmortem mechanism
 
-![图27-6：审计日志、告警、事件响应与复盘闭环图](../../images/part9/图27_6_审计日志告警事件响应与复盘闭环图.png)
+![Figure 27-6: Audit log, alarm, event response and review closed-loop diagram](../../images/part9/图27_6_审计日志告警事件响应与复盘闭环图.png)
 *Figure 27-6: Audit log, alarm, event response and review closed-loop diagram*
 
 ---
@@ -557,20 +557,20 @@ Not all scenarios require the same intensity of governance. Certain areas inhere
 
 The common characteristics of medical and financial scenarios are: highly sensitive data, extremely high cost of misuse, strict regulatory requirements, and fragile user trust.
 
-#### medical scene
+#### Medical scene
 
 Medical data usually includes medical records, test results, health indicators, physiological characteristics, medication history, medical consultation records, etc. This data is not only highly sensitive personal information, but is often cross-linked with identity, family, insurance and financial information.
 
 Therefore, medical scenarios should focus on controlling:
 
-* Raw health data and behavior log partition storage
+* Original health data and behavior log partition storage
 * Strong encryption and fine-grained access control for sensitive fields
-* Medical details do not enter the general analysis domain by default.
+*Medical details do not enter the general analysis domain by default
 * Must be de-identified and minimized before sharing externally
 * Audit logs must cover access, export and sharing behaviors
 * Deletion and correction requests need to be executed in conjunction with multiple systems
 
-#### financial scene
+#### Financial scene
 
 Common sensitive data in financial scenarios include bank card numbers, transaction flows, credit records, repayment behavior, equipment risk labels and risk control scores.
 In this type of system, automated decisions often directly affect user credit, payment, pricing or account status. Therefore, in addition to data protection, we must also pay attention to model interpretability, fairness and misjudgment correction mechanisms.
@@ -580,10 +580,10 @@ Special controls for financial scenarios usually include:
 * Highly sensitive account information is isolated from ordinary behavior logs
 * Model input features can be tracked, explained, and deleted
 * Manual review mechanism covers high-impact decisions
-* Risk tags and original documents can be associated and traced back
-* Abnormal access, export and batch query key alarms
+* Risk labels and original vouchers can be associated and traced back
+* Key alarms for abnormal access, export and batch query
 
-### 27.4.2 Minors’ Data Governance
+### 27.4.2 Minors Data Governance
 
 The focus of minors' data governance is not just "one more check box", but to restructure the entire data processing method around protective principles.
 
@@ -591,10 +591,10 @@ Important things to consider:
 
 * Independent guardian consent and withdrawal mechanism
 * Stricter data minimization principles
-* Prohibit or strictly limit commercial recommendations and in-depth profiling
-* Shorter retention period
+* Commercial recommendations and in-depth profiling are prohibited or strictly restricted
+*Shorter retention period
 * Stronger default privacy protection
-* A more understandable way of informing and explaining
+* A more understandable way of notification and explanation
 
 In terms of engineering design, this can be achieved through “age stratification + special labels + special use restrictions”. For example, once an account is identified as a minor, certain recommendations, marketing, portraits and third-party sharing links should be turned off by default or enter a higher level of approval.
 
@@ -605,9 +605,9 @@ In this case, the biggest risk is often not the field itself, but unclear source
 
 Governance requirements include:
 
-* Verify data sources and basis for collection
+* Verify data sources and collection basis
 * Review whether the supplier has legal authorization and sub-authorization capabilities
-* Sign a DPA (Data Processing Agreement) and Security Clause
+* Sign DPA (Data Processing Agreement) and security clauses
 * Clarify the division of responsibilities, leak notification and deletion coordination obligations
 * Set independent labels and usage restrictions for external data
 
@@ -620,19 +620,19 @@ Typical risks include:
 * Directly bring plain text C2/C3 data into Prompt or request body
 * The supplier uses the requested content for training or secondary processing
 * Request logs are retained on third-party platforms for a long time
-* The response contains sensitive information that should not be returned
-* The deployment location of third-party services conflicts with data localization requirements.
+* The response result contains sensitive information that should not be returned
+* The deployment location of third-party services conflicts with data localization requirements
 
 Therefore, a border gateway must be established to automatically perform the following actions before requesting to go out of the domain:
 
 * Field detection
 * Plain text recognition
-* desensitization replacement
-* rule hit blocking
-* Request to leave a trace
-* High risk call approval
+* Desensitization replacement
+*Rule hit blocking
+* Request to leave traces
+* Approval of high-risk calls
 
-![图27-7：第三方 API / 大模型调用边界网关图](../../images/part9/图27_7_第三方API与大模型调用边界网关图.png)
+![Figure 27-7: Third-party API/large model call border gateway diagram](../../images/part9/图27_7_第三方API与大模型调用边界网关图.png)
 *Figure 27-7: Third-party API/large model call border gateway diagram*
 
 ### 27.4.5 Cross-border transmission governance
@@ -640,10 +640,10 @@ Therefore, a border gateway must be established to automatically perform the fol
 The core difficulty in cross-border transfers is that once a piece of data leaves the original jurisdiction, its subsequent processing, retention, sharing and auditing may become more complicated.
 Therefore, cross-border governance should not only be solved at the contract level, but should also be done at the system level:
 
-* Mark cross-border flow paths
-* Controlling the minimum set of fields
-* Prioritize desensitized or anonymized results
-* Clarify the recipient’s role, purpose and retention period
+* Mark the cross-border flow path
+* Control the minimum field set
+* Prioritize the use of desensitized or anonymized results
+* Clarify the recipient's role, purpose and retention period
 * Keep special audit records for cross-border incidents
 * Establish a stricter export approval process for highly sensitive data
 
@@ -658,13 +658,13 @@ Governance priorities include:
 * Automatic desensitization of highly sensitive fields
 * Context filtering for external large model calls
 * Retention control of model logs and session records
-* Audit and spot-check reproducible output
-* Establish higher levels of access control for knowledge bases containing personal information
+* Audit and spot check reproducible output
+* Establish higher-level access controls for knowledge bases containing personal information
 
 ### 27.4.7 Summary list of high-risk scenario governance
 
 | Scenario | Main Risks | Core Control Measures |
-| :--------- | :------------- | :------------------- |
+| :---------- | :------------- | :------------------- |
 | Medical | Health data leakage, purpose drift | Independent encryption zone, fine-grained permissions, strong auditing |
 | Finance | Automated decision-making misjudgments, account information exposure | Feature traceability, manual review, export audit |
 | Minors | Insufficient consent, excessive commercialization | Guardian mechanism, use restrictions, short retention period |
@@ -759,7 +759,7 @@ pipeline_gate:
   block_if_deletion_path_missing: true
 ```
 
-![图27-8：用户删除请求的全链路传播与清理示意图](../../images/part9/图27_8_用户删除请求的全链路传播与清理示意图.png)
+![Figure 27-8: Schematic diagram of full-link propagation and cleanup of user deletion requests](../../images/part9/图27_8_用户删除请求的全链路传播与清理示意图.png)
 *Figure 27-8: Schematic diagram of full-link propagation and cleanup of user deletion requests*
 
 ### 27.5.2 Data classification strategy (JSON example)
@@ -770,15 +770,15 @@ pipeline_gate:
   "version": "1.0.0",
   "levels": {
     "C1": {
-      "description": "公开数据或完全匿名化数据",
+"description": "Public data or completely anonymized data",
       "default_controls": ["rbac_basic", "standard_logging"]
     },
     "C2": {
-      "description": "一般个人信息和内部业务数据",
+"description": "General personal information and internal business data",
       "default_controls": ["rbac_strict", "masked_display", "encrypted_storage", "audit_required"]
     },
     "C3": {
-      "description": "敏感个人信息和核心商业机密",
+"description": "Sensitive personal information and core business secrets",
       "default_controls": ["legal_approval", "strong_encryption", "isolation_zone", "full_audit", "export_block"]
     }
   },
@@ -856,51 +856,51 @@ approval_rules:
 ```md
 # DPIA Assessment Form
 
-## 1. 基本信息
-- 项目名称：
-- 项目编号：
-- 业务负责人：
-- 技术负责人：
-- 合规负责人：
-- 评估日期：
+## 1. Basic information
+- Project name:
+- Project number:
+- Business person in charge:
+- Technical person in charge:
+- Compliance Officer:
+- Assessment date:
 
-## 2. 处理活动说明
-- 涉及数据来源：
-- 涉及数据字段：
-- 数据等级：
-- 处理目的：
-- 输出对象：
-- 是否涉及自动化决策：
+## 2. Description of processing activities
+- Data sources involved:
+- Data fields involved:
+- Data level:
+- Purpose of processing:
+- Output object:
+- Whether automated decision-making is involved:
 
-## 3. 必要性与比例性
-- 当前字段是否最小必要：
-- 是否存在低敏感替代字段：
-- 是否存在过度收集风险：
-- 是否存在用途漂移风险：
+## 3. Necessity and proportionality
+- Whether the current field is minimally necessary:
+- Whether there are low-sensitivity alternative fields:
+- Is there a risk of over-collection:
+- Is there a risk of usage drift:
 
-## 4. 风险识别
-- 泄露风险：
-- 越权访问风险：
-- 第三方共享风险：
-- 模型偏见风险：
-- 删除不闭环风险：
-- 日志暴露风险：
+## 4. Risk identification
+- Risk of leakage:
+-Risk of unauthorized access:
+- Third-party sharing risks:
+- Risk of model bias:
+- Delete the risk of not closing the loop:
+- Log exposure risks:
 
-## 5. 控制措施
-- 字段裁剪：
-- 默认脱敏：
-- 审批机制：
-- 审计留痕：
-- 测试环境隔离：
-- 外部调用网关：
+## 5. Control measures
+- Field cropping:
+- Default desensitization:
+- Approval mechanism:
+- Audit traces:
+- Test environment isolation:
+- External call gateway:
 
-## 6. 评估结论
-- [ ] 可上线
-- [ ] 整改后可上线
-- [ ] 禁止上线
+## 6. Evaluation conclusion
+- [ ] available online
+- [ ] Can go online after rectification
+- [ ] Forbidden to go online
 
-## 7. 整改项与责任人
-| 整改项 | 责任人 | 截止日期 | 状态 |
+## 7. Rectification items and responsible persons
+| Correction items | Responsible person | Deadline | Status |
 | :--- | :--- | :--- | :--- |
 |  |  |  |  |
 ```
@@ -944,46 +944,46 @@ approval_rules:
 ```md
 # Privacy Incident Postmortem
 
-## 1. 事件概述
-- 事件编号：
-- 发现时间：
-- 结束时间：
-- 影响范围：
-- 事件等级：
+## 1. Event overview
+- Event number:
+- Discovery time:
+- End time:
+- Scope of influence:
+- Event level:
 
-## 2. 触发原因
-- 直接原因：
-- 根本原因：
-- 是否涉及流程缺失：
-- 是否涉及权限配置错误：
+## 2. Trigger reason
+- Direct cause:
+- root cause:
+- Whether there is a missing process involved:
+- Whether there is a permission configuration error involved:
 
-## 3. 影响分析
-- 涉及数据集：
-- 涉及字段：
-- 涉及记录数：
-- 是否外泄：
-- 是否影响用户权益：
+## 3. Impact Analysis
+- Datasets involved:
+- Involved fields:
+- Number of records involved:
+- Whether it was leaked:
+- Whether it affects user rights:
 
-## 4. 处置过程
-- 告警时间线：
-- 阻断动作：
-- 临时缓解措施：
-- 永久修复措施：
+## 4. Disposal process
+- Alarm timeline:
+- Blocking action:
+- Temporary mitigation measures:
+- Permanent fixes:
 
-## 5. 责任与改进
-| 问题 | 责任团队 | 改进措施 | 完成时间 |
+## 5. Responsibility and Improvement
+| Problem | Responsible Team | Improvement Measures | Completion Time |
 | :--- | :--- | :--- | :--- |
 |  |  |  |  |
 
-## 6. 后续检查
-- [ ] 策略已更新
-- [ ] 权限已收敛
-- [ ] 审计规则已补充
-- [ ] 文档已更新
-- [ ] 相关项目已同步排查
+## 6. Follow-up inspection
+- [ ] Policy updated
+- [ ] Permissions have been converged
+- [ ] Audit rules have been added
+- [ ] Documentation updated
+- [ ] Related items have been checked simultaneously
 ```
 
-### 27.5.8 Governance deliverable mapping (sample)
+### 27.5.8 Governance Deliverable Mapping (Sample)
 
 In order to illustrate that the governance template is not a paper design, the following table takes a common product of a privacy governance pipeline as an example to show how the deliverables are mapped to the corresponding governance capabilities:
 
@@ -992,7 +992,7 @@ In order to illustrate that the governance template is not a paper design, the f
 | `compliance_scope.json` | Define Compliance Scope |
 | `classification_policy.json` | Define grading strategy |
 | `access_policy.json` | Define access and permission boundaries |
-| `privacy_tech_options.json` | Define privacy technology options |
+| `privacy_tech_options.json` | Defining privacy technology options |
 | `raw_sensitive_records.jsonl` | Original sensitive sample |
 | `classified_records.jsonl` | Classification results |
 | `redacted_records.jsonl` | Desensitization results |
@@ -1007,7 +1007,7 @@ In order to illustrate that the governance template is not a paper design, the f
 | `p9_test_results.json` | Check results |
 | `p9_test_report.md` | Test report |
 
-### 27.5.9 From template to platform: evolution path of governance system
+### 27.5.9 From template to platform: Evolution path of governance system
 
 Many organizations cannot build a complete platform at once at the beginning, so they can evolve at the following pace:
 
@@ -1029,7 +1029,7 @@ Unify metadata, permissions, policies, approvals, traces, and incident responses
 
 The governance framework, access control templates and deliverable mapping have been shown above. This section does not expand on the complete project details, but extracts a reusable minimum governance link to explain how compliance requirements are connected in series in the system.
 
-### 27.6.1 Specification and Scope Definition
+### 27.6.1 Specification and scope definition
 
 The starting point of the governance link is not a processing script, but a structured definition of scope, classification, access boundaries, and technical options. Only by clarifying the purpose, data level, role boundaries and available technologies can subsequent processing have an executable basis.
 
@@ -1055,8 +1055,8 @@ What this stage completes is "how the system interprets its own behavior":
 * Audit log output
 * Abnormal access alarm
 * Preflight result verification
-* event simulation
-* Accident review
+* Event simulation
+*Accident review
 
 Without these capabilities, it will be difficult for the governance system to support online approval, exception tracking, and post-auditing.
 
@@ -1064,18 +1064,18 @@ Without these capabilities, it will be difficult for the governance system to su
 
 The role of governance indicators is not to pursue a large sample, but to confirm whether the closed loop is established. The following indicators correspond to the four types of capabilities: identification, processing, release and auditing:
 
-* Total inspection items 13 items
+* 13 total inspection items
 * All passed
 * Covers command-level inspection and data/product-level inspection
 
 If these indicators can be stably generated and passed continuously, it means that the governance system has moved from document requirements to operational inspection logic.
 
-### 27.6.5 Division of labor with project chapters
+### 27.6.5 Division of labor with project-type chapters
 
 The governance chapter focuses on the framework, templates, access control and acceptance logic, while the project chapter is more suitable for specific script organization, data directory, running interface and expansion path. This division of labor has two advantages:
 
 * The governance chapter remains generic to facilitate migration to different business systems.
-* Project chapters retain implementation details to facilitate independent development of data products and engineering evolution.
+* The project chapter retains implementation details to facilitate independent development of data products and project evolution.
 
 A project-based pipeline like P09 is more suitable to be fully developed in an independent project chapter; in this chapter, it is more suitable as a lightweight template after the governance template is implemented.
 
@@ -1090,20 +1090,20 @@ The real difficulty of the governance system is not to write a beautiful framewo
 For most teams, the most realistic path is not to “platform it all in one step”, but to first seize a few key control points:
 
 1. Unify the grading standards first
-2. Reunification of RoPA and DPIA templates
+2. Reunify RoPA and DPIA templates
 3. Then add the strategy file into the code repository
-4. Then connect key checks to CI/CD
+4. Then connect the key checks to CI/CD
 5. Finally, gradually build a unified audit and metadata platform
 
-### 27.7.2 Make “high-value default items” first
+### 27.7.2 Make “high value default items” first
 
 If resources are limited, the first to go online should be the default rules that are prone to problems if they are missing, such as:
 
-* Logs prohibited from printing direct PII
+* Logs are prohibited from printing direct PII
 * The test environment prohibits importing production clear text snapshots
-* C3 data cannot be exported directly by default
+*C3 data cannot be exported directly by default
 * High-risk uses must be registered before use
-* The desensitization gateway must be passed before calling the external model.
+* The desensitization gateway must be passed before calling the external model
 
 These default rules immediately create guardrails that significantly reduce low-level risks.
 
@@ -1111,7 +1111,7 @@ These default rules immediately create guardrails that significantly reduce low-
 
 Communication breakdowns often occur between business, legal, platform and algorithm teams because they speak different languages:
 
-* Legal Affairs Says "Legal Basis, Consent, and Proportionality"
+* Legal affairs say "Legal basis, consent, proportionality"
 * Business says "goals, conversions, efficiency"
 * The platform says "Permissions, tables, interfaces, logs"
 * The algorithm says "features, training, inference, effect"
@@ -1133,10 +1133,10 @@ Whether governance is effective ultimately depends on indicators. Consider estab
 * Sensitive field annotation coverage
 * Test environment desensitization coverage
 * Audit log completeness rate
-* Delete request completion rate on time
+* On-time completion rate of deletion requests
 * Abnormal export alarm closing rate
-* Preflight blocking hit rate
-* Runtime permission convergence rate
+* Pre-check blocking hit rate
+*Runtime permission convergence rate
 
 Once indicators are established, governance changes from an “initiative” to a “managed object.”
 
@@ -1155,9 +1155,9 @@ A system without guardrails may run faster in the short term, but once it encoun
 
 ## 27.9 Extended thinking
 
-1. What is the biggest difference between Prompt compliance and traditional data desensitization in generative AI applications?
-2. Why is it said that the "right to delete" is not a test of single-table capabilities, but full-link blood and life cycle management capabilities?
-3. If your organization is unable to build a complete governance platform in the short term, what default guardrails should be put online first?
-4. When business goals and compliance requirements conflict, how to find a compromise through the "minimum necessary" and "alternative field" ideas?
+1. What is the biggest difference between prompt compliance and traditional data desensitization in generative AI applications?
+2. Why is it said that the "right to delete" does not test the ability of a single table, but the ability of full-link blood and life cycle management?
+3. If your organization is unable to build a complete governance platform in the short term, what default guardrails should be put in place first?
+4. When business goals and compliance requirements conflict, how to find a compromise solution through the ideas of "minimum necessary" and "alternative fields"?
 5. For cross-border, multi-regional, and multi-product line businesses, how can the governance system maintain unity while allowing differentiated implementation of rules?
 

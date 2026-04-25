@@ -1,14 +1,14 @@
-# Project 3: LLaVA Multimodal Instruction Data Factory
+# Project 3: LLaVA multi-modal instruction data factory
 
-## Chapter overview
+## Overview of this chapter
 
 P03 focuses on processing images, area annotations, OCR information, and multi-image relationships into multi-modal supervised data assets that are trainable, quality-inspectable, and encapsulated. The focus of this chapter is not on single image question and answer, but on the engineering transformation process of multi-modal assets into training samples.
 
 This chapter can be understood according to four main lines:
 
-* Multimodal asset organization: Manage original images, derived documents, diagram structures, and task tags.
-* Command composition and region alignment: Handling OCR, bounding box, object-level grounding and multi-image relationships.
-* Quality audit and failed sample review: monitor quality through visual sampling and error sample attribution control.
+* Multi-modal asset organization: manage original images, derived documents, diagram structures and task labels.
+* Command composition and area alignment: handle OCR, bounding box, object-level grounding and multi-image relationships.
+* Quality audit and failed sample review: Supervise quality through visual sampling and error sample attribution control.
 * Training encapsulation and result verification: forming a unified training interface, segmentation results and inspection reports.
 
 If read in engineering order, this chapter corresponds to a complete link:
@@ -41,14 +41,14 @@ This production line serves not a one-off demonstration, but a methodology:
 
 ## 2. Project goals and boundaries
 
-### 2.1 Project goals
+### 2.1 Project Goals
 
 This project focuses on the following four goals.
 
 **Goal 1: Establish a conversion link from multi-modal assets to supervised samples. **
 That is, the original image, annotation box and derived visual assets are converted into structured samples that can be directly used for visual instruction fine-tuning.
 
-**目标二：建立面向 LLaVA 风格训练的任务体系。 **
+**Goal 2: Establish a task system for LLaVA style training. **
 This project does not unify all samples into "pictures + Q&A", but splits them into different task types such as description, counting, OCR summary, document Q&A, chart reading, regional positioning and multi-image comparison.
 
 **Goal 3: Establish an auditable, rollable, and versionable QA mechanism. **
@@ -61,7 +61,7 @@ The final output includes not only intermediate processing files, but also train
 
 In order to ensure that the project has sufficient reproducibility, this project explicitly sets several boundaries.
 
-#### 1) Data source boundaries
+#### 1) Data source boundary
 
 The current data is mainly based on local COCO subsets and their annotations, and is further derived from document-like and chart-like images. It is suitable for method demonstration, process explanation and small factory verification, but it does not claim to cover the full picture of real business in the open world.
 
@@ -69,20 +69,20 @@ The current data is mainly based on local COCO subsets and their annotations, an
 
 This project currently focuses on covering the following types of tasks:
 
-* image description
-* Counting/visual QA
-* OCR summary/document QA
-* chart reading/chart comparison
-* Region grounding
+* Image description (image description)
+* Counting and visual QA (counting/visual QA)
+* OCR summary and document QA (OCR summary/document QA)
+* Chart reading/chart comparison
+*Region grounding
 * Multi-image comparison
 
 These tasks are sufficient to cover the main path of "whole graph understanding - local positioning - image and text union - cross-graph reasoning", but have not been fully extended to more complex tasks such as multi-page long documents, table structured extraction, web page level navigation, time-series video question and answer and so on.
 
-#### 3) Boundaries of supervision methods
+#### 3) Supervision method boundaries
 
 This project focuses on **templated generation + rule supplementation + heuristic review + manual sampling**, rather than relying on large-scale manual writing one by one. It is more like a prototype of a small data factory than a large-scale commercial annotation production line.
 
-#### 4) Boundary of online capabilities
+#### 4) Online capability boundary
 
 The current sample size is small and the quality pass rate is high, largely from a controlled data environment. It is suitable for showing how the multi-modal data factory is designed, and should not be exaggerated to support the production of complex open scenarios.
 
@@ -90,7 +90,7 @@ The current sample size is small and the quality pass rate is high, largely from
 
 In practical engineering cases, there are usually only two common ways of writing:
 
-* One is to write the project so that it “can do anything”;
+* One is to write the project so that "everything can be done";
 * The other is to write the project as "what can be done stably and under what conditions".
 
 The latter is obviously more credible and easier to reuse. This is especially true for multimodal projects, because once the visual task is taken out of bounds, it is easy to misrepresent the results of controlled experiments as general abilities.
@@ -109,7 +109,7 @@ In other words, this chapter is not a retelling of the principles of the LLaVA p
 * Why multi-modal task design must be split by image type and supervision granularity;
 * Why the quality control of visual samples is inseparable from visual review;
 * Why object-level coordinate alignment and multi-graph relationship construction are key points in engineering;
-* How to consider training interfaces, check scripts and version evolution at the beginning of the project.
+* How to consider training interfaces, check scripts and version evolution at the early stage of the project.
 
 In this sense, the most important thing about this chapter is not "the model can see the picture", but answering a larger question:
 
@@ -119,7 +119,7 @@ In this sense, the most important thing about this chapter is not "the model can
 
 ## 4. Overall architecture: data pipeline from multi-modal assets to training assets
 
-![图 1：LLaVA 多模态指令数据工厂总览](../../images/part10/10_3_fig01_llava_factory_overview.png)
+![Figure 1: LLaVA multi-modal instruction data factory overview](../../images/part10/10_3_fig01_llava_factory_overview.png)
 
 From an engineering perspective, this project can be broken down into three floors.
 
@@ -128,23 +128,23 @@ From an engineering perspective, this project can be broken down into three floo
 This layer solves the problem of "whether there are clean, controllable, and well-structured multi-modal input assets." Mainly include:
 
 * Original image collection
-* Image category equalization
+* Image category balancing
 * Derived document image construction
 * Derived chart image construction
 * Asset manifest record
 
 The goal of this step is not to directly generate training samples, but to convert scattered visual materials into a trackable and hierarchically sampled asset pool.
 
-### 4.2 The second layer: supervision structure layer
+### 4.2 The second layer: Supervisory construction layer
 
 This layer solves "how to convert different types of visual assets into different types of supervised samples." Mainly include:
 
 * Image description and re-description
-* OCR Summary and Document Q&A
-* Chart Reading and Comparison
+* OCR summary and document Q&A
+* Chart reading and comparison
 * bbox alignment and grounding
 * Multi-image interleaved sample generation
-* conversation template unification
+* Unification of conversation templates
 
 This step is the core of the entire project, because it determines whether the model learns "rough captioning capabilities" or "task-layered multi-modal understanding capabilities."
 
@@ -153,7 +153,7 @@ This step is the core of the entire project, because it determines whether the m
 What this layer solves is "whether these samples can really enter training." Mainly include:
 
 * Rule review
-* Manual inspection
+*Manual inspection
 * bbox visual verification
 * Low quality sample flag
 * train/val/smoke segmentation
@@ -164,7 +164,7 @@ At this point, the project has truly transformed from "generating sample experim
 
 ---
 
-## 5. Engineering pre-processing: key aspects of multi-modal data factory
+## 5. Project pre-production: key aspects of multi-modal data factory
 
 In a minimal experiment, asset preparation, sample generation, quality inspection and training packaging can often be completed by the same person; but when the project is about to enter the team reuse or subsequent expansion stage, a more stable approach is not to emphasize "who will do it", but to first clearly write down **which aspects of responsibility must be covered**.
 
@@ -193,12 +193,12 @@ Because when many teams do multimodal SFT for the first time, the real problem i
 * Asset source lacks boundaries;
 * Lack of planning for task coverage;
 * Coordinates and image versions lack verification;
-* The failed sample lacked precipitation;
+* Failure samples lack precipitation;
 * Version evolution lacks stable interfaces.
 
 Therefore, writing these responsibilities clearly is essentially explaining: **Multimodal SFT is more like an engineering assembly line with visual quality inspection capabilities, rather than a number of temporary sample assembly steps. **
 
-![图 2：多模态数据工厂职责协同图](../../images/part10/10_3_fig02_roles_and_responsibilities.png)
+![Figure 2: Multimodal Data Factory Responsibility Collaboration Diagram](../../images/part10/10_3_fig02_roles_and_responsibilities.png)
 
 ---
 
@@ -208,9 +208,9 @@ In general text SFT, many teams start directly from existing text library slices
 
 Therefore, this project first builds a relatively stable multi-modal asset pool and splits it into three categories:
 
-* general image asset
-* document image asset
-* chart image asset
+* General image assets (general image)
+* Document image asset (document image)
+* Chart image asset (chart image)
 
 The value of this design is not just to collect different samples, but to provide clear "input semantic boundaries" for subsequent task distribution.
 
@@ -218,9 +218,9 @@ The value of this design is not just to collect different samples, but to provid
 
 Because different images naturally support different tasks.
 
-* General-purpose images are better suited for description, counting, object recognition, and local localization;
+* General-purpose images are more suitable for description, counting, target recognition and local positioning;
 * Document images are more suitable for OCR summarization, document Q&A and partial reading;
-* Chart images are better suited for trend summary, numerical comparison and structural interpretation.
+* Chart images are more suitable for trend summary, numerical comparison and structural interpretation.
 
 If it is not disassembled first, a large number of unsuitable samples will be mixed into the same prompt pool: for example, OCR summary is required for ordinary cat and dog pictures, and natural scene comparison is required for ticket screenshots. This confusion will directly reduce the effective sample proportion.
 
@@ -228,17 +228,17 @@ If it is not disassembled first, a large number of unsuitable samples will be mi
 
 The project eventually formed **87 assets**, including **29 assets** for each of the three types of assets, which shows that the asset layer is not collected casually, but deliberately designed with a balance. The benefits of doing this are:
 
-* Subsequent task distribution is easier to control the distribution;
-* When analyzing the results, it is easier to determine which types of tasks are under-performed;
+* Subsequent task distribution is easier to control;
+* It is easier to determine which types of tasks are under-performed when analyzing the results;
 * Small-scale projects can also avoid a single image type dominating the training set.
 
-### 6.3 Why it is important to derive document images and diagram images
+### 6.3 Why derived document images and diagram images are important
 
 Many teams make the mistake of thinking “multimodality = natural images.” But in real business, document screenshots, reports, bills, dashboards, charts and web page screenshots are often more important. Their difficulty is not in object recognition, but in image-text mixing and local structure understanding.
 
 Therefore, this project does not stop at COCO natural images, but further derives document-based and diagram-based assets, using a small-scale project to spread out the multi-modal task spectrum.
 
-![图 3：多模态资产分层示意图](../../images/part10/10_3_fig03_asset_layers.png)
+![Figure 3: Schematic diagram of multi-modal asset layering](../../images/part10/10_3_fig03_asset_layers.png)
 
 **Table 1: Asset type and task mapping table**
 
@@ -246,76 +246,76 @@ Therefore, this project does not stop at COCO natural images, but further derive
 | --- | --- | --- | --- |
 | `general_image` | COCO natural images, general scene pictures | Image description, counting, visual question answering, local positioning | Illusion description, object omission, category confusion |
 | `document_image` | Document screenshots, bills, system pages, scanned copies | OCR summary, document Q&A, partial reading | Missing text, misjudgment of layout, misalignment of local areas |
-| `chart_image` | Bar charts, line charts, report screenshots, dashboards | Chart reading, trend summary, numerical comparison | Trend reverse reading, category relationship misjudgment, missing values ​​|
+| `chart_image` | Bar charts, line charts, report screenshots, dashboards | Chart reading, trend summary, numerical comparison | Trend reverse reading, category relationship misjudgment, missing values |
 | `interleaved_pair` | Multi-picture pairing, cross-page samples, comparison screenshots | Multi-picture comparison, summary of common points, summary of differences | Sequence confusion, cross-picture crosstalk, pairing imbalance |
 
 ---
 
-## 7. Data schema: structured approach to multimodal seeds
+## 7. Data schema: structured way of multi-modal seeds
 
 After completing the asset collection, the project will not directly send the images to generate the model, but first unify the assets, annotations and task fields into the schema.
 
-### 7.1 The importance of schema in multimodal scenarios
+### 7.1 The importance of schema in multi-modal scenarios
 
 In text data, in many cases, two columns, `instruction` and `output`, can run a basic experiment; but multi-modal scenarios are different, and at least additional processing is required:
 
-* Image file path
-* Picture type
-* Original width and height
-* Callout box
+* Picture file path
+* Image type
+*Original width and height
+* callout box
 * OCR text
-* Derived task types
+* Derived task type
 * Conversation template
-* Sample source and version
+*Sample source and version
 
 If the schema is not unified, the logic will have to be rewritten for each new type of task, and the project will soon become multiple sets of temporary formats coexisting.
 
-### 7.2 What should a more stable minimal schema contain?
+### 7.2 What should a more stable minimum schema contain?
 
 The seeds and training samples of this project should at least contain the following fields:
 
-* `id`: unique identifier of the sample
+* `id`: sample unique identifier
 * `image`: Image path or image list
-* `asset_type`: `general_image` / `document_image` / `chart_image` / `interleaved_pair`
-* `task_type`: Task type label
+* `asset_type`: `general_image`/`document_image`/`chart_image`/`interleaved_pair`
+* `task_type`: task type label
 * `source_id`: Source asset identifier
-* `bbox`: coordinates of the regional positioning task
+* `bbox`: coordinates of regional positioning task
 * `ocr_text`: OCR or readable text summary
 * `conversations`: LLaVA conversation format body
 * `split`：train/val/smoke
 * `meta`: Meta information such as version, generation method, review status, etc.
 
-### 7.3 Engineering value of schema
+### 7.3 The engineering value of schema
 
 The meaning of schema is not just a field list, but to align the three links:
 
-* The generation phase knows what to write;
-* QA knows what to look for;
-* Training session to know what to read.
+* The generation process knows what to write;
+* QA knows what to check;
+* Know what to read during the training session.
 
 This makes the project no longer "end with just one JSON", but an interface layer that can evolve over the long term.
 
 ---
 
-## 8. Image sampling and redescription: the necessity of supervised rewriting
+## 8. Image sampling and re-description: the necessity of supervised rewriting
 
 Many off-the-shelf image data sets have captions, but multi-modal SFT cannot be simply and directly trained for three reasons.
 
-First, original captions are often short and descriptive, and cannot cover tasks such as question and answer, counting, explanation, and comparison.
-Second, the style of the original caption is not uniform and does not necessarily conform to the LLaVA conversational data format.
+First, original captions are often short and descriptive, and cannot cover tasks such as question and answer, counting, explanation, and comparison.  
+Second, the style of the original caption is not uniform and does not necessarily conform to the LLaVA conversational data format.  
 Third, the original caption mostly only describes the entire image and cannot cover object-level or mixed image and text capabilities.
 
 Therefore, this project first "re-describes" the image and then converts it into task-based supervision.
 
-### 8.1 What problem does redescription solve here?
+### 8.1 What problem does re-description solve here?
 
 Re-description is not just about changing a caption to be longer, but also about organizing the explicit information in the image that may be used for training, for example:
 
 * What is the subject of the scene;
-* What salient objects exist;
+* What significant objects exist;
 * Whether there is readable text;
 * Whether it is suitable for counting;
-* Is it suitable for comparison or positioning?
+* Whether it is suitable for comparison or positioning.
 
 Re-description is the transition layer from "image material" to "task seed".
 
@@ -323,9 +323,9 @@ Re-description is the transition layer from "image material" to "task seed".
 
 Totally open generation is certainly more flexible, but it's also easier to get out of control in a small factory. Especially for multimodal scenes, the model is easy:
 
-* Write in things that are not in the picture;
+* Write things that do not exist in the picture;
 * Overstate uncertain information;
-* Generating style-inconsistent responses to similar images.
+* Answers to inconsistent generation styles for similar pictures.
 
 Therefore, this project places more emphasis on templated prompts and controlled generation, so that the samples are uniform first, and then gradually increase complexity in subsequent stages.
 
@@ -336,7 +336,7 @@ The same picture can be rewritten to derive multiple training samples, for examp
 * Description type: Please summarize the main scene of this picture;
 * Counting type: There are approximately several significant subjects in the picture;
 * Recognition category: What is the most obvious object on the left;
-* Inference class: Is this more of an indoor or outdoor scene, and why;
+* Inference class: Is this more like an indoor or outdoor scene, and why;
 * OCR category: Please read and summarize the text in the picture;
 * Comparison type: What are the main similarities and differences between the two pictures.
 
@@ -344,7 +344,7 @@ This is also the fundamental difference between multi-modal data factory and "si
 
 ---
 
-## 9. Document Image and OCR Task: Document Understanding Link
+## 9. Document image and OCR task: document understanding link
 
 Document images are one of the most underestimated assets in multimodal scenarios. Many models appear to be able to read words, but once they enter document Q&A or long summaries, obvious shortcomings are exposed.
 
@@ -363,8 +363,8 @@ Because OCR itself will also have noise, especially in complex layouts, local bl
 
 Therefore, a more reasonable approach for this project is:
 
-1. First, extract the text in the picture as middle layer information;
-2. Then use templates to control summarization and Q&A tasks;
+1. First extract the text in the picture as middle layer information;
+2. Use templates to control summaries and Q&A tasks;
 3. Finally, obvious errors are blocked through manual sampling and low-quality marking.
 
 ### 9.3 Why document images are a key step to real business
@@ -373,7 +373,7 @@ Because in real-world multi-modal tasks, many inputs are not natural photos, but
 
 Therefore, the significance of the document image task in this project is not only to expand the sample, but to advance the factory from "looking at pictures to speak" to "joint understanding of pictures and text".
 
-![图 4：文档图像任务分层图](../../images/part10/10_3_fig04_document_tasks.png)
+![Figure 4: Document image task hierarchical diagram](../../images/part10/10_3_fig04_document_tasks.png)
 
 ---
 
@@ -385,14 +385,14 @@ The biggest difference between chart images and natural pictures is that it is n
 
 The difficulty with chart reading is that it involves simultaneously:
 
-* Title and legend identification
+* Title and legend recognition
 * Axis label understanding
 * Summary of numerical relationships
 * Trend judgment and comparison
 
 If the chart image is used as a caption just as an ordinary picture, the model will most likely learn only "this is a histogram" or "there are several lines in the chart", but it will not learn truly useful chart understanding.
 
-### 10.2 Splitting of chart tasks in this project
+### 10.2 Split chart tasks in this project
 
 Projects should support at least the following two categories:
 
@@ -407,7 +407,7 @@ Because errors in charting tasks are usually easier to classify:
 
 * Reading wrong axis label
 * Ignore units
-* refer to relative changes as absolute changes
+* Talk about relative changes as absolute changes
 * The comparison is reversed
 * Make up trends that don’t exist
 
@@ -428,7 +428,7 @@ The original COCO annotation uses pixel absolute coordinates `[x, y, w, h]`. Man
 This means that the project must do two levels of conversion:
 
 * **Format Conversion**: Change from upper left corner width and height system to top, bottom, left and right border system;
-* **Scale Normalization**: Mapping from pixel values ​​to standard intervals.
+* **Scale Normalization**: Mapping from pixel values to standard intervals.
 
 ### 11.2 Why do we need to clamp?
 
@@ -442,11 +442,11 @@ A common misunderstanding is: since there are many bboxes, try to generate as ma
 
 Therefore, the project adopts a controlled strategy similar to `selected_anns = anns[:3]`, and only selects some objects to construct question and answer and positioning samples. The focus of this approach is not to save computing power, but to avoid the training set being dominated by high-density target images.
 
-### 11.4 Implementation of coordinate alignment
+### 11.4 Coordinate alignment implementation
 
 ```python
-# 核心代码摘自 alignment.py
-# 输入为 COCO 风格 bbox: [x, y, w, h]
+# The core code is taken from alignment.py
+# Input is COCO style bbox: [x, y, w, h]
 def convert_bbox(bbox, width, height):
     x, y, w, h = bbox
 
@@ -467,9 +467,9 @@ def convert_bbox(bbox, width, height):
 
 The importance of bbox alignment is not just about "being able to write a conversion function", but that it embodies a key principle:
 
-> In multimodal data engineering, any step that "seems like just changing the format" may determine whether the supervisory truth value still holds.
+> In multimodal data engineering, any step that “seems like just changing the format” may determine whether the supervisory truth value still holds.
 
-![图 5：bbox 坐标转换与归一化示意图](../../images/part10/10_3_fig05_bbox_alignment.png)
+![Figure 5: bbox coordinate conversion and normalization diagram](../../images/part10/10_3_fig05_bbox_alignment.png)
 
 ---
 
@@ -480,7 +480,7 @@ Single-image supervision can teach the model to speak through images, but many r
 * Compare the differences between the two pictures;
 * Determine which picture better meets certain conditions;
 * Combine multiple pictures to extract common points;
-* Complete comparative understanding across multiple pages of input.
+* Complete comparative understanding in multi-page input.
 
 Therefore, this project is dedicated to constructing multi-graph interleaved samples.
 
@@ -488,9 +488,9 @@ Therefore, this project is dedicated to constructing multi-graph interleaved sam
 
 The key to multi-picture samples is not just to put two pictures into the same prompt, but to train the model to learn:
 
-* Sequential awareness: knowing what the first and second pictures are;
-* Comparative awareness: able to find common points and differences;
-* Aggregation consciousness: Ability to form higher-level generalizations based on multiple graphs.
+* Sequence awareness: Know what the first and second pictures are;
+* Awareness of comparison: able to find common points and differences;
+* Aggregation awareness: Ability to form higher-level generalizations based on multiple images.
 
 This takes the model a key step from a "single graph descriptor" to a "cross-graph understandr".
 
@@ -498,10 +498,10 @@ This takes the model a key step from a "single graph descriptor" to a "cross-gra
 
 In multi-image dialogue generation, local images usually need to be encoded first and then organized into message lists according to the requirements of the target API. Frequently asked questions here include:
 
-* Pictures are in confusing order;
+* The order of pictures is confusing;
 * Base64 data format is inconsistent;
-* The interface logic of a single graph cannot be directly reused into multiple graphs;
-* The request body is too large causing the call to fail.
+* Single-graph interface logic cannot be directly reused into multiple graphs;
+* The request body is too large, causing the call to fail.
 
 Therefore, the Base64 encoding in `interleaved.py` and the list construction in `image_url`, although they seem like technical details, actually determine whether multi-image samples can be stably generated.
 
@@ -540,19 +540,19 @@ Multi-image samples are more expensive to generate, more difficult to inspect, a
 
 Many introductory projects will understand multi-modal samples as "image path + a piece of text". But for LLaVA style training, what really matters is:
 
-* how images are referenced;
+* How images are referenced;
 * How to organize user and assistant turns;
-* How task tags work with templates;
+* How to cooperate with task labels and templates;
 * Whether it is compatible with downstream training code.
 
 ### 13.1 What problems does the conversation template solve?
 
 The value of the conversation template is that it unifies different tasks into the same training interface. For example:
 
-* A user makes a request for a description;
-* The assistant gives a description;
+* The user makes a description request;
+* Assistant gives description;
 * The user makes a local positioning request;
-* The assistant returns the coordinates and explanation.
+* The assistant returns coordinates and explanations.
 
 This allows different task types to share the same training consumption method even though their semantics are different.
 
@@ -560,10 +560,10 @@ This allows different task types to share the same training consumption method e
 
 The more templates there are, the richer the samples appear to be. However, in small-scale projects, once there are too many templates, it is easy to cause:
 
-* tone drift
+* Tone drift
 * Output style is inconsistent
-* QA becomes more difficult
-* Some templates don't match image types
+* QA difficulty increased
+* Some templates do not match image types
 
 Therefore, a more reasonable approach is to establish a small number of stable templates first, and then gradually expand the style.
 
@@ -575,8 +575,8 @@ Therefore, a more reasonable approach is to establish a small number of stable t
   "image": "images/sample_128.jpg",
   "task_type": "region_grounding",
   "conversations": [
-    {"from": "human", "value": "<image> 请指出图中左侧那只狗的大致位置。"},
-    {"from": "gpt", "value": "它大致位于 [214, 103, 588, 472]。"}
+{"from": "human", "value": "<image> Please indicate the approximate location of the dog on the left in the picture."},
+{"from": "gpt", "value": "It is roughly located at [214, 103, 588, 472]."}
   ]
 }
 ```
@@ -597,8 +597,8 @@ Main checks:
 
 * Whether the image path exists;
 * Whether conversations are complete;
-* Is the bbox format correct?
-* Whether the multi-image sample actually contains multiple images;
+* Whether the bbox format is correct;
+* Whether the multi-image sample really contains multiple images;
 * Whether there are conflicts in training splits.
 
 This layer is more about engineering integrity.
@@ -608,10 +608,10 @@ This layer is more about engineering integrity.
 Main checks:
 
 * Whether the answer is consistent with the image content;
-* Describe whether significant hallucinations occur;
+* Describe whether there are obvious hallucinations;
 * Whether the OCR summary misses core text;
-* Chart Q&A whether the trend is misread;
-* Whether the comparison task confuses two images.
+* Chart Q&A whether the trend has been read incorrectly;
+* Check whether the comparison task confuses the two pictures.
 
 This layer is more focused on the authenticity of the content.
 
@@ -629,9 +629,9 @@ In multimodal projects, low-quality sample libraries have at least three values:
 
 * Reverse guidance prompt adjustment;
 * Help summarize common error types;
-* Provide an experience basis for subsequent training of security filtering.
+* Provide an experience basis for subsequent training on security filtering.
 
-![图 6：样本质检与回退闭环图](../../images/part10/10_3_fig06_quality_loop.png)
+![Figure 6: Sample quality inspection and rollback closed-loop diagram](../../images/part10/10_3_fig06_quality_loop.png)
 
 ---
 
@@ -649,10 +649,10 @@ Only by restoring the normalized coordinates back to the original pixel space an
 
 ### 15.2 What do typical errors include?
 
-* Write ymin/xmin in reverse order;
+* Reverse the order of ymin/xmin;
 * Width-to-height conversion boundary error;
-* Wrong objects were drawn in multiple boxes;
-* Image size read wrong;
+* Wrong objects were selected in multiple boxes;
+* Image size read incorrectly;
 * Images in different preprocessing stages are not the same version.
 
 These errors are often difficult to see on the surface JSON, but are immediately revealed once visualized.
@@ -692,12 +692,12 @@ The significance of the manifest is to transform the data set from "several JSON
 
 It should at least log:
 
-* Total number of samples
-* Number of each split
+*Total number of samples
+* The number of each split
 * Number of each task type
-* Quantity of each asset type
+*Quantity of each asset type
 * file path
-* build version
+* Generate version
 * overlap check results
 
 This will make subsequent training, evaluation, and version updates more stable.
@@ -717,14 +717,14 @@ Only when the answer is yes, can the project be called a data factory rather tha
 The current results show that P03 has several very critical sets of indicators:
 
 * Total assets: **87**
-* Three types of assets: **29** items each
-* Basic instructions: **174**
-* Alignment samples: **79**
-* Interleaved samples: **14**
+*Three types of assets: **29** items each
+*Basic command: **174**
+* Alignment sample: **79**
+*Interleaved samples: **14**
 * Final training records: **267**
-* QA visualization samples: **29**
+* QA visualization samples: **29** items
 * Quality pass rate: **100%**
-* Project Check: **11/11 PASS**
+* Item Check: **11/11 PASS**
 
 ### 17.1 Why "87 assets -> 267 training records" makes sense
 
@@ -742,8 +742,8 @@ The report shows that the asset type distribution of the final training set is n
 This means:
 
 * General images take on more basic description and positioning tasks;
-* Documents and chart images perform more specialized tasks;
-* Multi-image samples are deliberately controlled to a small size, in line with their high cost and high complexity characteristics.
+* Documents and chart images undertake more specialized tasks;
+*Multi-image samples are deliberately controlled to a smaller size in line with their high cost and high complexity characteristics.
 
 **Table 2: Sample type and coverage table**
 
@@ -751,9 +751,9 @@ This means:
 | --- | --- | --- | --- | --- |
 | `image_description` | General images | Scene description | Understanding the whole image | Establishing visual subject and scene expression capabilities |
 | `counting_visual_qa` | General images | Counting or question answering | Object recognition | Establishing salient subject recognition and quantity judgment |
-| `ocr_summary` | Document image | Text summary | Picture and text combination | Establish the transition ability from "seeing words" to "reading words" |
+| `ocr_summary` | Document image | Text summary | Image and text combination | Establish the transition ability from "seeing words" to "reading words" |
 | `document_qa` | Document image | Question answer | Partial reading | Establish regional understanding and condition extraction capabilities |
-| `chart_reading` | Chart images | Trend summary | Structural reading | Establishing numerical relationships and structural interpretation capabilities |
+| `chart_reading` | Charts and images | Trend summary | Structural reading | Establishing numerical relationships and structural interpretation capabilities |
 | `region_grounding` | Image + bbox | Coordinate answer | Object alignment | Establish regional-level supervision and positioning capabilities |
 | `multi_image_comparison` | Multi-graph input | Comparison and summary | Cross-graph reasoning | Establish sequence awareness, difference induction and information aggregation capabilities |
 
@@ -775,7 +775,7 @@ Passing the project inspection means that basic consistency has been established
 
 The current results show two representative pieces of cost information:
 
-* External caption Cost estimate is approximately **$1.30**
+*External caption Cost estimate is approximately **$1.30**
 * The cost of manual review is about **267 yuan**
 
 This set of figures is not large, but it can already reflect the cost structure of small factories.
@@ -808,26 +808,26 @@ When many teams make multimodal data budgets, they only count model API costs an
 
 This can lead to budget judgments that are heavily biased toward optimism. One of the meanings of P03 is to illustrate: **The bottleneck of the multi-modal data factory is often not the generation itself, but the review and loop. **
 
-### 18.3 What should be prioritized for cost optimization?
+### 18.3 What should be prioritized in cost optimization?
 
 At this stage, what is more worthy of optimization is often not a few cents less per call, but:
 
 * Which samples are worthy of manual review;
-* Which tasks can use rules to block obvious errors first?
-* Which complex tasks should control the quantity and increase the value of a single item;
+* Which tasks can first use rules to block obvious errors;
+* Which complex tasks should be controlled in quantity and increase the value of a single item;
 * Which intermediate products should be retained to avoid repeated generation.
 
 ---
 
-## 19. Failure samples and limitations: current factory risk points
+## 19. Failure samples and limitations: Risk points of the current factory
 
 Multimodal projects in particular need to separate limitations from failure modes, because smooth operation in the small-scale demonstration phase does not equate to project stability.
 
-### 19.1 The most obvious current limitation
+### 19.1 The most obvious limitation at present
 
-First, the asset scale of ** is still small**. The 87 assets are enough to explain the method clearly, but not enough to support broad generalization conclusions.
-Second, **documents and charts are still mainly derived assets**, and there is still a gap between real business documents, bills, and complex dashboards.
-Third, the **multi-image sample size is small**, which is more like functional verification than full training.
+First, the asset scale of ** is still small**. The 87 assets are enough to explain the method clearly, but not enough to support broad generalization conclusions.  
+Second, **documents and charts are still mainly derived assets**, and there is still a gap between real business documents, bills, and complex dashboards.  
+Third, the **multi-image sample size is small**, which is more like functional verification than full training.  
 Fourth, the **quality pass rate comes from a controlled environment** and cannot be mistakenly written as "open scenes are naturally stable".
 
 ### 19.2 How can typical failure samples be classified?
@@ -837,30 +837,30 @@ Such failure samples can at least be summarized into the following categories:
 * Visual hallucination: Objects that do not exist in the picture are described;
 * OCR missed reading: key text is not mentioned;
 * Chart misjudgment: Misreading of trends or category relationships;
-* Grounding offset frame: the coordinates are offset to the adjacent target;
-* Multi-picture confusion: string together information from the first and second pictures.
+* grounding offset frame: the coordinates are offset to the adjacent target;
+*Multi-picture confusion: string together the information of the first and second pictures.
 
-![图 7：失败样本归因示意图](../../images/part10/10_3_fig07_failure_attribution.png)
+![Figure 7: Diagram of failed sample attribution](../../images/part10/10_3_fig07_failure_attribution.png)
 
 **Table 4: Failure sample type table**
 
 | Failure type | Typical manifestations | Most likely source | Priority repair direction |
 | --- | --- | --- | --- |
-| 视觉幻觉 | 回答写出图中不存在的对象或关系 | 开放式生成过度发散、重描述过满 | 收紧 prompt、增加显著对象约束 |
-| OCR 漏读 | 文档摘要遗漏关键字段或条件 | OCR 中间层噪声、局部区域不清晰 | 加强中间层校验、提高抽检密度 |
-| 图表误判 | 趋势、类别、数值关系读反 | 图表任务模板不稳定、结构理解不足 | 收紧图表模板、增加结构型示例 |
-| grounding 偏框 | 坐标落在相邻目标或框体越界 | bbox 转换、归一化或图片版本不一致 | 反向画框核验、检查尺寸与 clamp |
-| 多图混淆 | 两张图的信息被串写到同一结论中 | 顺序控制不足、payload 组织不稳 | 加强顺序标识、控制多图样本复杂度 |
+| Visual hallucinations | Answer and write objects or relationships that do not exist in the picture | Open-ended generation is too divergent and redescription is too full | Tighten prompts and increase significant object constraints |
+| OCR missed reading | Document summary misses key fields or conditions | OCR middle layer noise, unclear local areas | Strengthen middle layer verification and increase sampling density |
+| Chart misjudgments | Trends, categories, and numerical relationships are read incorrectly | Chart task templates are unstable and structural understanding is insufficient | Tighten chart templates and add structural examples |
+| Grounding partial frame | Coordinates fall on adjacent targets or the frame crosses the boundary | bbox conversion, normalization or inconsistent image version | Reverse frame verification, size check and clamp |
+| Multi-picture confusion | Information from two pictures is strung together into the same conclusion | Insufficient sequence control and unstable payload organization | Strengthen sequence identification and control the complexity of multi-picture samples |
 
-把这类失败样本汇总成“失败归因表”后，就能直接支撑下一轮模板收缩、QA 改写和抽检策略调整。
+After summarizing such failure samples into a "failure attribution table", it can directly support the next round of template shrinkage, QA rewriting, and sampling strategy adjustments.
 
-### 19.3 为什么失败归因需要细化到错误类型
+### 19.3 Why failure attribution needs to be refined to error types
 
-因为“有噪声”太泛，无法指导下一轮迭代。只有写成错误类型，才能真正支持：
+Because "noisy" is too general, it cannot guide the next round of iteration. Only when written as an error type can it be truly supported:
 
-* prompt 调整
-* template shrink
-* QA rule improvements
+* prompt adjustment
+* Template shrink
+* QA rules improvements
 * Redrawing task boundaries
 
 ---
@@ -874,10 +874,10 @@ P03 currently has **11 inspections** and all passed.
 If a multimodal data project only has images and JSON files, and no checking mechanism, it's not clear whether it is correct. Because errors can come from many places:
 
 * The file exists but the fields are incorrect;
-* The multi-image sample is formatted correctly but contains only one image;
+* The multi-image sample format is correct but contains only one image;
 * bbox has a value but is outside the legal range;
-* train/val split leak;
-* Report numbers and training file numbers are inconsistent.
+* train/val segmentation leak;
+* Reported numbers are inconsistent with the number of training files.
 
 ### 20.2 What does this project inspection cover?
 
@@ -892,7 +892,7 @@ Because it means that the project is not "similar to the naked eye", but forms a
 
 From the perspective of engineering reuse, this type of closed-loop information is often more valuable for migration than a single example.
 
-![图 8：项目验证闭环图](../../images/part10/10_3_fig08_validation_loop.png)
+![Figure 8: Project verification closed loop diagram](../../images/part10/10_3_fig08_validation_loop.png)
 
 ---
 
@@ -900,7 +900,7 @@ From the perspective of engineering reuse, this type of closed-loop information 
 
 Although P02 is a legal text factory and P03 is a multimodal factory, the two have a strong echo in the data engineering method.
 
-### 21.1 Consistent point 1: Both emphasize the “seed layer”
+### 21.1 Consistent point 1: Both emphasize the "seed layer"
 
 P02 builds the regulatory seed text first, and P03 builds the multi-modal asset pool first. In essence, it does not directly generate supervision, but first builds a reliable input layer.
 
@@ -910,11 +910,11 @@ P02 splits legal tasks into legal QA, legal interpretation and case analysis; P0
 
 > The core of a good data factory is not to make more samples, but to separate and produce different capabilities.
 
-### 21.3 Consistent point 3: Both emphasize QA in the front
+### 21.3 Consistent point three: both emphasize QA front-end
 
 P02 focuses on review protocols and risk rejections, while P03 focuses on visual counter-checking and failure sample databases. Although the specific forms are different, they all emphasize that quality control must enter the production line and not be left until after training. **
 
-### 21.4 Consistent point 4: Both emphasize the training delivery layer
+### 21.4 Consistent Point 4: Both emphasize the training delivery layer
 
 The two chapters do not stop at the end of "sample generation is complete", but continue to delve into training segmentation, manifest, reports, inspection scripts and deliverables.
 
@@ -922,9 +922,9 @@ From the overall structure, P03 and P02 maintain a similar project deployment se
 
 * Let’s talk about why first;
 * Let’s talk about boundaries again;
-* Let’s talk about layered architecture;
+* Let’s talk about layered architecture again;
 * Let’s talk step-by-step again;
-* Finally, we talk about results, costs, limitations and migration.
+* Finally, let’s talk about results, costs, limitations and migration.
 
 ---
 
@@ -934,7 +934,7 @@ The value of P03 is not that it has made multi-modal data very large, but that i
 
 If we continue to expand in the next step, we can prioritize the following directions.
 
-### 22.1 From single images to multi-page documents
+### 22.1 From single image to multi-page document
 
 Extending document images from single-page screenshots to multi-page PDFs, long screenshots, and combinations of forms and notes can further test long-context image and text understanding capabilities.
 
@@ -974,7 +974,7 @@ As the sample size increases, purely manual sampling will quickly become a bottl
 * `data/training/smoke_test.jsonl`
 * `data/training/training_manifest.json`
 
-### 23.3 Reporting and inspection products
+### 23.3 Reporting and Inspecting Products
 
 * `data/reports/p3_metrics.json`
 * `data/reports/p3_report.md`
@@ -999,14 +999,14 @@ For multi-modal training, the really difficult thing is often not to "let the mo
 The value of this case P03 is not that the sample size is already very large, but that it condenses several of the most critical issues in multimodal data engineering into a small and reproducible pipeline:
 
 * Build the asset layer first instead of generating it directly;
-* Then split supervision according to task lineage, instead of just caption;
+* Split supervision by task lineage, instead of just caption;
 * Strictly align the grounding instead of randomly rotating the coordinates;
-* Conduct visual spot checks on samples, rather than just looking at the smoothness of the text;
-* Finally, a closed loop of training splits, manifests, reports, and inspections is delivered instead of just leaving a JSON file.
+* Perform visual spot checks on samples, instead of just looking at the text for smoothness;
+* Finally deliver training segmentation, manifest, reporting and inspection closed loop instead of just leaving a JSON file.
 
 The most important inspiration from this case is:
 
-> The multi-modal data factory does not mean that the more pictures the better, but that the four layers of "assets, tasks, quality, and delivery" must be designed together.
+> A multi-modal data factory does not mean that the more pictures the better, but that the four layers of "assets, tasks, quality, and delivery" must be designed together.
 
 Only when these layers are designed together and strung into a closed loop do multimodal projects truly move from demonstration examples to scalable engineering systems.
 
@@ -1021,9 +1021,9 @@ There is another very important, but often understated, part of the LLaVA data f
 Different from plain text data, the most worthy priority for multimodal samples is not whether the sentences are fluent, but whether the relationships are established. For example:
 
 * Whether the frame selection area really corresponds to the description object;
-* Does the question really rely on the image, rather than just common sense?
-* Whether the multi-image comparison task actually compares information in different images;
-* interleaved Whether the order of images and text in the sample supports the current task.
+* Whether the question and answer really relies on the image, rather than just common sense;
+* Whether the multi-image comparison task actually compares the information in different images;
+* interleaved Whether the order of pictures and texts in the sample supports the current task.
 
 Once these relationships are misaligned, even if the text itself is written smoothly, the sample will still become a low-value supervision signal.
 
@@ -1032,9 +1032,9 @@ Once these relationships are misaligned, even if the text itself is written smoo
 P03 This type of project is particularly suitable for settling high-frequency errors into replay sets. for example:
 
 * The box coordinate mapping is correct but the semantic object is wrong;
-* The chart reads the title but not the key trend;
-* In multi-image samples, the model is misled by similar backgrounds;
-* The relationship between text, comments, and tables in the document screenshot is broken up.
+* The chart reads the title but not the key trends;
+* The model in multi-image samples is misled by similar backgrounds;
+* The relationship between text, comments and tables in the document screenshot is broken up.
 
 After fixing these problems as replay samples, the team can quickly verify "whether such errors are really reduced" in each iteration. For multimodal data factories, replay sets often support long-term quality improvements better than one-time large-scale sampling.
 

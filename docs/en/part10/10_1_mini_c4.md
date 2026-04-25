@@ -1,6 +1,6 @@
 # Project 1: Building a distributed Mini-C4 data pipeline based on Ray
 
-## Chapter overview
+## Overview of this chapter
 
 P01 focuses on the engineering process of building the Mini-C4 training data set from the Common Crawl shard. The focus of this chapter is not on a single capture of results, but on organizing web page archiving, text extraction, deduplication and filtering, training packaging and result verification into a reproducible data production line.
 
@@ -8,8 +8,8 @@ This chapter can be understood according to four main lines:
 
 - Data collection and text extraction: Extract text from web archives that can be used for training.
 - Cleaning, deduplication and quality control: dealing with template noise, near-duplicate content, mixed languages ​​and low-quality pages.
-- Training encapsulation and data segmentation: Organize the processing results into standardized JSONL and training lists.
-- Evaluate validation and cost bounds: Evaluate pipeline status by inspecting scripts, statistical metrics, and resource consumption.
+- Training encapsulation and data segmentation: organize the processing results into standardized JSONL and training lists.
+- Evaluate validation and cost bounds: Evaluate pipeline status by checking scripts, statistical metrics, and resource consumption.
 
 If read in engineering order, this chapter corresponds to a complete link:
 
@@ -21,23 +21,23 @@ The core goal corresponding to this structure is to reproduce an interpretable a
 
 ## 1. Project background: Mini-C4’s engineering positioning
 
-In large model pre-training, web corpus has always been one of the most important data sources. The web page is large enough, has wide enough coverage, and is updated frequently, so it is naturally suitable for building a general pre-training corpus.
+In large model pre-training, web corpus has always been one of the most important data sources. The web page is large enough, has wide enough coverage, and is updated frequently, so it is naturally suitable for building a general pre-training corpus.  
 But web data also has three very typical problems:
 
-1. **Extremely low signal-to-noise ratio**: HTML pages contain a large number of non-text content such as navigation bars, advertising spaces, scripts, footers, copyright statements, cookie tips, comment areas, directory pages, etc.
-2. **Extremely high degree of repetition**: Reprints, mirror sites, aggregation pages, template pages, and partial copying of pages are very common.
+1. **Extremely low signal-to-noise ratio**: HTML pages contain a large number of non-text content such as navigation bars, advertising spaces, scripts, footers, copyright statements, cookie prompts, comment areas, directory pages, etc.
+2. **Extremely high degree of duplication**: Reprints, mirror sites, aggregation pages, template pages, and partial copying of pages are very common.
 3. **Distribution is difficult to control**: Different websites, different languages, and different text qualities are mixed together, which can easily pull the training corpus toward a noise distribution.
 
 Therefore, the core of pre-training data engineering is not to "get more text", but to establish an interpretable, reproducible, and verifiable data production pipeline to gradually converge the original web pages into text samples that can be handed over to the training system.
 
-That’s what the Mini-C4 is all about. It is not a replacement for the complete industrial-grade C4, but a **minimum reproducible, runnable, and clearly explained miniature version**.
+That’s what the Mini-C4 is all about. It is not a replacement for the complete industrial-grade C4, but a **minimum reproducible, runnable, and clearly explained miniature version**.  
 Through it, we can completely walk through the key issues in large-scale web page pre-training data processing under the conditions of a single shard and a single CPU, thus laying a method foundation for subsequent larger-scale data projects.
 
 ---
 
 ## 2. Project goals and boundaries
 
-### 2.1 Project goals
+### 2.1 Project Goals
 
 The goal of this project is not to simply download Common Crawl data, but to completely run through the following link within a controlled boundary:
 
@@ -59,25 +59,25 @@ In order to keep the project minimally reproducible and controllable, this proje
 
 - **Data scale boundary**: Only process one shard of Common Crawl, and do not pursue full industrial scale.
 - **Hardware Boundary**: By default, it runs in a single-machine CPU environment and does not rely on GPU.
-- **Parallel Boundary**: In the deduplication stage, Ray is used to perform single-machine multi-core parallelization.
+- **Parallel Boundary**: Use Ray to perform single-machine multi-core parallelization during the deduplication phase.
 - **Language Boundary**: Currently it mainly covers English and Chinese, the English quality filtering is more complete, and the Chinese quality gate is relatively weak.
-- **Target Positioning Boundary**: This is a case oriented towards engineering practice, not a research project pursuing SOTA indicators.
+- **Target positioning boundary**: This is a case oriented towards engineering practice, not a research project pursuing SOTA indicators.
 
 ### 2.3 The role of boundary setting
 
 This boundary setting has two benefits.
 
-First, it ensures that the project is still reproducible under limited resources.
+First, it ensures that the project is still reproducible under limited resources.  
 If multiple machines, massive sharding, and complex scheduling are the goals from the beginning, the project will quickly be dominated by infrastructure issues, which will instead obscure the key logic of the data engineering itself.
 
-Second, it allows the team to more clearly observe the effects of each filtering step.
+Second, it allows the team to more clearly observe the effects of each filtering step.  
 When the data is smaller, it's easier to do intermediate inspections, manual sampling, and threshold adjustments to truly understand why data is retained or deleted.
 
 ---
 
 ## 3. Overall project structure
 
-![图 1：Mini-C4 数据流水线总览](../../images/part10/10_1_fig01_mini_c4_pipeline_overview.png)
+![Figure 1: Mini-C4 data pipeline overview](../../images/part10/10_1_fig01_mini_c4_pipeline_overview.png)
 
 
 
@@ -111,18 +111,18 @@ This stage mainly solves the problem of "whether there is text". The core tasks 
 
 The focus of this step is to convert the complex content in the web archive into text as stably as possible.
 
-#### The second stage: from the text world to the corpus world
+#### The second stage: from text world to corpus world
 
 This stage solves the problem of "whether the text can be used as corpus", mainly including:
 
 - Basic cleaning
 - Remove duplicates
-- language split
+- Language split
 - Quality filtering
 
 That is, actively control noise, repetition and distribution to make the text closer to the shape of the training corpus.
 
-#### The third stage: from corpus world to training interface
+#### The third stage: from the corpus world to the training interface
 
 This stage solves the problem of "whether the corpus can be stably fed into the training system", including:
 
@@ -135,39 +135,39 @@ Only when this step is achieved can data engineering truly close the loop.
 
 ---
 
-## 4. Data Acquisition: Engineering Selection for Common Crawl
+## 4. Data acquisition: Project selection for Common Crawl
 
 Common Crawl is one of the most commonly used public sources for building web-based pre-training datasets. It stores web scraping results in WARC (Web ARCHive) format, preserving HTTP responses, header information, and original web content.
 
 There are three main reasons for choosing Common Crawl:
 
-1. **Large Scale**: Can cover a large number of real web page scenarios.
-2. **Format Standardization**: WARC is a mature web archiving format suitable for streaming processing.
+1. **Large Scale**: It can cover a large number of real web page scenarios.
+2. **Format Standardization**: WARC is a mature web page archiving format suitable for streaming processing.
 3. **Close to real industrial problems**: Problems such as web page noise, templates, duplication, mixed languages, etc. will all appear.
 
-But because of this, Common Crawl cannot be directly used for training.
+But because of this, Common Crawl cannot be directly used for training.  
 Without strict extraction and filtering, the model will learn a lot of HTML fragments, copyright pages, directory pages, and template junk text.
 
 Therefore, choosing Common Crawl actually selects a set of problems that are closer to the real industrial production environment.
 
 ---
 
-## 5. WARC analysis and text extraction
+## 5. WARC parsing and text extraction
 
 ### 5.1 Text extraction as the first key threshold
 
 Web pages are not naturally equal to natural language text. An HTML page usually contains a mix of:
 
 - Navigation bar
-- bread crumbs
+- Breadcrumbs
 - Recommended position
 - JavaScript
 - CSS
 - Footer link
-- advertise
+- Advertising
 - Copyright statement
 - Comment area
-- table layout fragments
+- Table layout fragments
 
 If you read the HTML directly and simply peel off the tags, the model will often see a bunch of structural fragments instead of a coherent semantic text.
 
@@ -175,7 +175,7 @@ Therefore, the goal of the text extraction stage is not to "get as many characte
 
 ### 5.2 Core component selection
 
-![图 2：WARC 到正文文本的解析路径](../../images/part10/10_1_fig02_warc_to_text.png)
+![Figure 2: Parsing path from WARC to body text](../../images/part10/10_1_fig02_warc_to_text.png)
 
 
 
@@ -187,10 +187,10 @@ Therefore, the goal of the text extraction stage is not to "get as many characte
 
 ### 5.3 Engineering Value of Streaming Processing
 
-WARC files are often large and contain a large number of unwanted responses.
+WARC files are often large and contain a large number of unwanted responses.  
 If the entire file is read into the memory at one time, it will waste resources and is not conducive to the stable operation of long processes.
 
-Therefore, this project uses **streaming traversal** to read WARC records one by one, and only continues to process HTML responses that meet the conditions.
+Therefore, this project uses **streaming traversal** to read WARC records one by one, and only continues to process HTML responses that meet the conditions.  
 This design not only reduces peak memory consumption, but also is more in line with engineering habits when expanding to multiple shards.
 
 ### 5.4 Core implementation
@@ -221,14 +221,14 @@ Several parameters here are intentional:
 
 - `include_comments=False`: Avoid including noisy areas like the comment area into the main text.
 - `include_tables=False`: Reduce structural noise caused by table layout.
-- `no_fallback=False`: Allows remedial extraction of extracted components when necessary to improve recall.
+- `no_fallback=False`: Allows extraction components to perform remedial extraction when necessary to improve recall.
 
-### 5.5 Meaning of results at this stage
+### 5.5 The meaning of the results at this stage
 
-In the single shard test, **3028** candidate texts were finally successfully extracted.
+In the single shard test, **3028** candidate texts were finally successfully extracted.  
 This number tells two things:
 
-First, not all web page responses can be converted into usable text.
+First, not all web page responses can be converted into usable text.  
 Second, text extraction is already an obvious data compression, because a large number of original responses will be blocked in "non-HTML", "empty content", "extraction failure" and other links.
 
 From an engineering perspective, the answer at this stage is:
@@ -239,21 +239,21 @@ From an engineering perspective, the answer at this stage is:
 
 ## 6. Heuristic cleaning: first round of noise screening
 
-![图 3：启发式清洗规则示意](../../images/part10/10_1_fig03_cleaning_rules.png)
+![Figure 3: Illustration of heuristic cleaning rules](../../images/part10/10_1_fig03_cleaning_rules.png)
 
 
 
 
 ### 6.1 The necessity of heuristic cleaning
 
-Even if the text extraction is successful, the resulting text is far from high-quality corpus.
+Even if the text extraction is successful, the resulting text is far from high-quality corpus.  
 A page may have extracted "text", but this text may still be:
 
-- very short text
+- Very short text
 - Contents page
 - tag cloud
-- SEO spliced ​​text
-- code snippet
+- SEO spliced text
+- code snippets
 - System error page
 - Privacy and Cookie Tips
 
@@ -265,7 +265,7 @@ Therefore, a layer of cheap, fast, interpretable heuristic cleaning is usually d
 
 #### 1) Length rules
 
-- Text that is too short is discarded, e.g. less than 100 characters
+- Discard text that is too short, e.g. less than 100 characters
 - Text that is too long is discarded, for example, more than 2M characters
 
 The reason is very straightforward:
@@ -277,8 +277,8 @@ If the average word length is significantly high, say more than 15 characters, t
 
 - Code compression results
 - URL string
-- Promiscuous identifier
-- style fragments
+- Mixed identifiers
+- Style fragments
 
 #### 3) Symbol density rules
 
@@ -302,7 +302,7 @@ These texts are either placeholders or system prompt pages and have no actual va
 
 ### 6.3 Characteristics of heuristic cleaning
 
-This layer of rules is not to pursue "ultimate accuracy", but to eliminate the most obvious problems at low cost.
+This layer of rules is not to pursue "ultimate accuracy", but to eliminate the most obvious problems at low cost.  
 Its advantages include:
 
 - fast
@@ -315,18 +315,18 @@ In other words, this stage is not responsible for solving all quality problems, 
 
 ### 6.4 Interpretation of results at this stage
 
-After heuristic cleaning, the number of samples dropped from **3028** to **2425**.
+After heuristic cleaning, the number of samples dropped from **3028** to **2425**.  
 This shows that about one-fifth of the candidate texts can be judged to be of low quality under the most basic text rules.
 
 The significance of this stage is:
 
-> Without relying on expensive model scoring, the coarsest noise is suppressed first to save resources for subsequent finer processing.
+> Without relying on expensive model scoring, suppress the coarsest noise first to save resources for subsequent finer processing.
 
 ---
 
 ## 7. Duplication removal: near-duplication processing in web corpus
 
-![图 4：MinHash + LSH 去重思路](../../images/part10/10_1_fig04_dedup_minhash_lsh.png)
+![Figure 4: MinHash + LSH deduplication idea](../../images/part10/10_1_fig04_dedup_minhash_lsh.png)
 
 
 
@@ -334,17 +334,17 @@ The significance of this stage is:
 
 There is a large amount of duplication in Internet text, including but not limited to:
 
-- Reprint article
+- Repost articles
 - Aggregation page
 - Mirror site
-- template page
+- Template page
 - Partial overlap of pages
 - Different layout versions of the same content
 
 If duplication is not removed, several problems will arise in the training corpus:
 
-1. Some content is overly repeated, resulting in an imbalanced distribution.
-2. The model may have a strong memory for a specific template or site.
+1. Certain content is excessively repeated, resulting in imbalanced distribution.
+2. The model may have too strong a memory for a specific template or site.
 3. Data leakage may occur during subsequent evaluations.
 4. Storage and training resources are consumed unnecessarily by duplicate content.
 
@@ -352,7 +352,7 @@ Therefore, deduplication is not the icing on the cake, but a necessary step in w
 
 ### 7.2 Reasons to avoid pairwise comparisons
 
-Assuming there are \(N\) pieces of text, if the pairwise similarity is directly compared, the complexity will be close to \(O(N^2)\).
+Assuming there are \(N\) pieces of text, if the pairwise similarity is directly compared, the complexity will be close to \(O(N^2)\).  
 At real data scale, this approach quickly becomes unacceptable.
 
 Therefore, this project adopts the idea of ​​**MinHash + LSH** to convert the problem of "finding similar texts" into "finding similar signatures", thus reducing the processing complexity to a more implementable range.
@@ -360,13 +360,13 @@ Therefore, this project adopts the idea of ​​**MinHash + LSH** to convert th
 ### 7.3 Engineering intuition of MinHash and LSH
 
 - **MinHash**: Maps a piece of text into a shorter signature. The signature approximately reflects the set similarity of the text.
-- **LSH (Local Sensitive Hash)**: Makes similar text more likely to fall into the same candidate bucket and reduce the number of global comparisons.
+- **LSH (Local Sensitive Hash)**: Make it easier for similar texts to fall into the same candidate bucket and reduce the number of global comparisons.
 
 The result of this is that we do not need to compare each text with all texts, but only make decisions among the candidate sets that are more likely to be similar.
 
 ### 7.4 Engineering considerations for using Ray
 
-Even with MinHash, generating the signature itself is still a computationally intensive operation.
+Even with MinHash, generating the signature itself is still a computationally intensive operation.  
 Especially when the number of text items increases, single-threaded processing will significantly slow down the entire pipeline.
 
 Ray's role here is very clear:
@@ -398,32 +398,32 @@ processed_batches = ray.get(futures)
 One of the biggest common misunderstandings about Ray parallel processing is:
 **Do not dispatch a single piece of text as an independent task. **
 
-This will bring a lot of small object serialization and inter-process communication overhead, which will ultimately worsen performance.
+This will bring a lot of small object serialization and inter-process communication overhead, which will ultimately worsen performance.  
 The correct way is:
 
 - First package the text into batch
-- Then press batch to dispatch to workers
+- Press batch again to distribute to workers
 
 For example, batching every 1,000 items is a safer engineering choice.
 
 ### 7.6 Interpretation of results at this stage
 
-After deduplication, the number of samples dropped from **2425** to **2305**.
+After deduplication, the number of samples dropped from **2425** to **2305**.  
 This shows that although the duplication problem exists, in this minimum experimental scale, the shrinkage caused by deduplication is not as severe as mass filtering.
 
-But this does not mean that deduplication is not important.
+But this does not mean that deduplication is not important.  
 On the contrary, the importance of deduplication is that it can significantly improve the health of the training distribution, not just reduce the number of items.
 
 ---
 
 ## 8. Language splitting: the necessity of processing by language
 
-![图 5：语种拆分与分支处理](../../images/part10/10_1_fig05_language_split.png)
+![Figure 5: Language splitting and branch processing](../../images/part10/10_1_fig05_language_split.png)
 
 ### 8.1 Different languages ​​cannot share the same set of quality gates
 
-The quality judgment of web page text is highly dependent on the language itself.
-For example, some confusion thresholds, word length statistics or grammatical naturalness rules in English do not apply to Chinese.
+The quality judgment of web page text is highly dependent on the language itself.  
+For example, some confusion thresholds, word length statistics or grammatical naturalness rules in English do not apply to Chinese.  
 Conversely, the common problems on Chinese web pages are not exactly the same as those on English web pages.
 
 Therefore, after deduplication, the project further split the text by language in order to make quality control more precise, rather than putting all languages ​​into the same filter.
@@ -443,8 +443,8 @@ After doing this, subsequent quality filtering can use different strategies depe
 The value of language splitting is mainly reflected in three aspects:
 
 1. **Avoid misjudgment**: The statistical characteristics of texts in different languages ​​vary greatly.
-2. **Ease of Analysis**: Retention rates and blocking reasons can be observed separately for each language.
-3. **Easy to Expand**: If more languages ​​are added in the future, you only need to add language branches to this layer without having to reinvent the wheel.
+2. **Easy for analysis**: The retention rate and interception reasons for each language can be observed separately.
+3. **Easy to expand**: If more languages ​​are added in the future, you only need to add language branches to this layer without having to reinvent the wheel.
 
 From the perspective of engineering organization, language splitting upgrades the pipeline from "unified processing" to "pluggable processing".
 
@@ -452,17 +452,17 @@ From the perspective of engineering organization, language splitting upgrades th
 
 ## 9. Quality filtering: from “looks like text” to “suitable for training”
 
-![图 6：质量过滤决策示意](../../images/part10/10_1_fig06_quality_filter.png)
+![Figure 6: Quality filtering decision-making diagram](../../images/part10/10_1_fig06_quality_filter.png)
 
 ### 9.1 Why quality filtering is the most critical door
 
-Heuristic cleaning and deduplication solve many explicit problems, but still cannot guarantee that the text is really suitable for training.
+Heuristic cleaning and deduplication solve many explicit problems, but still cannot guarantee that the text is really suitable for training.  
 Because many pages may appear to comply with text rules, but may actually still be:
 
 - Contents page
 - Low information density pages
-- Repeated Sentence Stacked Pages
-- language broken page
+- Repeating sentences stacked pages
+- Language broken page
 - Machine translation fragments
 - Web page noise with poor grammatical naturalness
 
@@ -470,16 +470,16 @@ At this time, a layer of filtering closer to "language quality" is needed.
 
 ### 9.2 English Quality Gate: KenLM Perplexity
 
-This project introduces the KenLM language model on the English side for quality filtering.
+This project introduces the KenLM language model on the English side for quality filtering.  
 The core idea is:
 
 - Use language models to score text
-- Measuring the naturalness of text using the score normalized by the number of words per unit
+- Use the score normalized by the number of words per unit to measure text naturalness
 - Filter out obviously unnatural text by thresholding
 
 This can be understood empirically:
 
-- `> -5.0`: Usually closer to high-quality text
+- `> -5.0`: usually closer to high-quality text
 - `< -6.0`: tends to be closer to broken sentences, gibberish, or low-quality output
 
 This does not mean that lower perplexity is better, but that language models can serve as a signal that is closer to "natural language quality" than pure rules.
@@ -501,11 +501,11 @@ The final result shows:
 - English candidate set **846**, **502** reserved
 - Chinese candidate set **201**, **24** reserved
 
-This difference is very representative.
+This difference is very representative.  
 It does not simply explain "poor Chinese data", but exposes two more realistic problems:
 
-1. The current quality filtering capabilities for Chinese are significantly weaker than those for English.
-2. The structure and noise patterns of Chinese web pages may be different from those of English web pages, and English rules cannot be directly applied.
+1. The current quality filtering capability of Chinese is significantly weaker than that of English.
+2. The structure and noise pattern of Chinese web pages may be different from English web pages, and English rules cannot be directly applied.
 
 This also means that in industrial-level multilingual data engineering, the language quality model must be designed with more fine-grained localization.
 
@@ -513,12 +513,12 @@ This also means that in industrial-level multilingual data engineering, the lang
 
 ## 10. Three rounds of experimental review: the iterative formation process of the assembly line
 
-![图 7：三轮实验迭代路径](../../images/part10/10_1_fig07_three_iterations.png)
+![Figure 7: Three rounds of experimental iteration paths](../../images/part10/10_1_fig07_three_iterations.png)
 
 If you only understand the project as a series of script calls, it is not easy to see clearly the trade-offs behind these designs.
 A way of writing that is closer to the real engineering process is to reduce it to several rounds of gradually tightening experiments.
 
-### 10.1 Experiment 1: Extract text only
+### 10.1 Experiment 1: Only extract text
 
 The goals of the first round of experiments were very simple:
 First verify whether the link "WARC -> HTML -> Body Text" can run stably.
@@ -526,7 +526,7 @@ First verify whether the link "WARC -> HTML -> Body Text" can run stably.
 What this stage solves is:
 
 - Can WARC be traversed correctly?
-- Is it possible to filter out obviously irrelevant responses?
+- Can obviously irrelevant responses be filtered out?
 - Can you extract the main text of the web page?
 
 This round usually produces a batch of candidate texts quickly, but the problem is also very obvious:
@@ -540,12 +540,12 @@ Starting from the second round, the project was upgraded from "extracting text" 
 
 This round has been supplemented with:
 
-- length filter
-- Symbol Density Filtering
+- Length filtering
+- Symbol density filtering
 - Blacklist phrase filtering
 - MinHash removes duplicates
 
-The result is that the crudest garbage samples and near-duplicate pages are significantly suppressed.
+The result is that the crudest garbage samples and near-duplicate pages are significantly suppressed.  
 However, during random inspection, we can still see many pages that look like text but are not actually very dense in information.
 
 Therefore, the second round changes the data from "visible" to "more corpus-like", but not to the extent that it can be directly trained.
@@ -556,20 +556,20 @@ The third round of introduction:
 
 - FastText language splitting
 - English KenLM quality score
-- More stringent filtering logic for directory pages, duplicate rows, short tokens, etc.
+- Stricter filtering logic for directory pages, duplicate rows, short tokens, etc.
 
 The direct effects of this round are:
 The number of samples further decreases significantly, but the training availability increases significantly.
 
-The final number of samples shrank from **3028** to **526**, which seems like a huge loss, but this exactly reflects the project's active tightening of quality.
+The final number of samples shrank from **3028** to **526**, which seems like a huge loss, but this exactly reflects the project's active tightening of quality.  
 It shows that what the project pursues is not "retaining as much as possible" but "retaining as much as possible is worthy of training."
 
 ### 10.4 Engineering significance of three rounds of experiments
 
 These three rounds of experiments actually correspond to a very typical way of promoting data engineering:
 
-1. **Run the link first**
-2. **Resuppress dominant noise**
+1. **Get through the link first**
+2. **Re-suppress dominant noise**
 3. **Finally do language perception and quality convergence**
 
 ---
@@ -578,24 +578,24 @@ These three rounds of experiments actually correspond to a very typical way of p
 
 ### 11.1 Data cleaning does not mean that training is available
 
-Even if the text that is finally retained is relatively clean, it still cannot be directly said to be "ready for training".
+Even if the text that is finally retained is relatively clean, it still cannot be directly said to be "ready for training".  
 Because training systems usually also require the following capabilities:
 
 - Stable train/val splitting
-- metadata index
-- token estimate
+- Metadata index
+- token estimation
 - Small sample smoke test
-- File level organization
+- File-level organization
 
 If this step is not done well, subsequent training and evaluation can easily lead to inconsistencies or leakage issues.
 
 ### 11.2 The Importance of Deterministic Segmentation
 
-The project is not randomly divided, but die-cut based on deterministic identifiers such as `text_sha1`.
+The project is not randomly divided, but die-cut based on deterministic identifiers such as `text_sha1`.  
 The benefits of doing this are:
 
-- When running repeatedly, the train/val set is stable and unchanged.
-- Facilitates troubleshooting differences in training results
+- When running repeatedly, the train/val set is stable and unchanged
+- Conveniently check for differences in training results
 - Convenient for data set version management
 - Conducive to project reproducibility
 
@@ -604,12 +604,12 @@ What needs to be emphasized here is:
 
 ### 11.3 Function of Smoke Test
 
-The project additionally builds `smoke_test.jsonl`.
+The project additionally builds `smoke_test.jsonl`.  
 It is not part of the formal training set, but a very small, fast-loading sample collection used to:
 
-- Run through training script
+- Run-through training script
 - Check whether the tokenizer and data interface are normal
-- Catch formatting errors, encoding issues or missing fields early
+- Identify formatting errors, encoding issues or missing fields in advance
 
 In actual projects, this smoke test set can often save a lot of debugging time.
 
@@ -629,7 +629,7 @@ Its significance is to make the data set no longer just a few scattered JSONL fi
 
 ## 12. Data Evaluation: Pipeline Value Judgment
 
-![图 8：数据留存漏斗](../../images/part10/10_1_fig08_funnel.png)
+![Figure 8: Data retention funnel](../../images/part10/10_1_fig08_funnel.png)
 
 ### 12.1 Data retention funnel
 
@@ -642,21 +642,21 @@ The final retention funnel obtained from this project is as follows:
 | Dedup | 2305 | 76.12% | Mirror site, template page, reprint |
 | Final | 526 | 17.37% | Contents page, high confusion, mixed language |
 
-### 12.2 What do these numbers really say?
+### 12.2 What These Numbers Really Say
 
-If you just look at the final results, 526 samples doesn’t seem like a lot.
+If you just look at the final results, 526 samples doesn’t seem like a lot.  
 But for data engineering, what is more important is not "how much is left", but **what was deleted at each layer, why it was deleted, and to what extent**.
 
 These numbers at least indicate:
 
 1. The original web page is very noisy.
-2. Heuristic cleaning quickly removes the coarsest noise.
+2. Heuristic cleaning can quickly remove the coarsest noise.
 3. Deduplication improves training distribution.
-4. Quality filtering is the critical stage that really determines the final data usability.
+4. Quality filtering is the critical stage that truly determines the final data usability.
 
 From the perspective of engineering interpretability, this is more illustrative than simply reporting "the final number of entries".
 
-### 12.3 Data profiling
+### 12.3 Data portrait
 
 The final result also includes:
 
@@ -673,19 +673,19 @@ This shows that the final data set is not just a batch of texts, but a standardi
 
 ## 13. Cost analysis: resource accounting and bottlenecks
 
-![图 9：资源与成本构成](../../images/part10/10_1_fig09_cost_breakdown.png)
+![Figure 9: Resource and cost composition](../../images/part10/10_1_fig09_cost_breakdown.png)
 
 In many beginner projects, everyone pays more attention to "whether it can be passed" and less concerned about "what is the cost".
 But in a real production environment, cost awareness and engineering awareness are bound together.
 
-### 13.1 Storage costs
+### 13.1 Storage Cost
 
 Project statistics show:
 
 - Total disk usage is approximately **5.31 GB**
 - Monthly storage cost estimate is approximately **$0.12 USD**
 
-For single-shard experiments, this cost is not high.
+For single-shard experiments, this cost is not high.  
 But it reminds us: when the process scales to more shards and more intermediate products, the storage cost will increase exponentially.
 
 ### 13.2 Computational bottleneck
@@ -697,18 +697,18 @@ The main computational bottlenecks of this project include:
 - KenLM loading and scoring
 - Signature calculation during deduplication stage
 
-In other words, even without the introduction of GPU, data engineering is still not a "light job".
+In other words, even without the introduction of GPU, data engineering is still not a "light job".  
 If the process is not designed properly, CPU and I/O can quickly become real bottlenecks.
 
 
 
 ## 14. Verification closed loop: project consistency check
 
-![图 10：项目验证闭环](../../images/part10/10_1_fig10_validation_loop.png)
+![Figure 10: Project verification closed loop](../../images/part10/10_1_fig10_validation_loop.png)
 
 ### 14.1 The role of project inspection
 
-If a data engineering project only has output files and no checking mechanism, it is actually difficult to say whether it is really correct.
+If a data engineering project only has output files and no checking mechanism, it is actually difficult to say whether it is really correct.  
 Because errors can come from many places:
 
 - The script runs but the product is missing
@@ -719,7 +719,7 @@ Because errors can come from many places:
 
 Therefore, the project specially designed a check script to verify consistency.
 
-### 14.2 Inspection results
+### 14.2 Check results
 
 The project inspection results are:
 
@@ -729,44 +729,44 @@ The project inspection results are:
 
 ### 14.3 Check coverage
 
-#### Command level checks
+#### Command level inspection
 
 - `py_compile`
 - `dedup_unit_check`
 - `training_smoke_test`
 - `dataset_evaluation`
 
-#### Data/product level inspection
+#### Data/Product Level Inspection
 
 - Required files exist
 - The final number of files is consistent with the language split result
-- The training manifest is consistent with the number of training files
+- The training manifest has the same number of training files
 - train/val no overlap
 - smoke test belongs to train
-- final dataset no exact duplicates
+- final dataset without exact duplicates
 - The report is consistent with the indicator file
 
 ### 14.4 Verify the engineering significance of closed loop
 
-This level of inspection is very critical.
+This level of inspection is very critical.  
 It means that the project does not "look the same to the naked eye", but establishes a closed loop between code, product, evaluation and reporting.
 
 
 ## 15. Main limitations and risks
 
-Any minimum reproducible project is never final.
+Any minimum reproducible project is never final.  
 The Mini-C4's value lies in illustrating the method, but it also has very clear limitations.
 
 ### 15.1 Low retention rate
 
-The final retention rate was only **17.37%**.
+The final retention rate was only **17.37%**.  
 This shows that the original noise of the web page is indeed very heavy, and it also shows that the current quality gate is relatively strict.
 
 This is not a bad thing, but it does mean that if the goal shifts to "maximizing scale", the rules and models must be further optimized to avoid deleting too much potentially valid data all together.
 
-### 15.2 The retention rate of Chinese is low
+### 15.2 Chinese retention rate is low
 
-In the end, only **24** items were retained in Chinese, which exposed the problem of insufficient Chinese quality scoring capabilities.
+In the end, only **24** items were retained in Chinese, which exposed the problem of insufficient Chinese quality scoring capabilities.  
 It cannot be completely solved simply by adjusting the threshold, but may require:
 
 - More adapted to the data quality rules of Chinese web pages
@@ -775,18 +775,18 @@ It cannot be completely solved simply by adjusting the threshold, but may requir
 
 ### 15.3 Deduplication has limited scalability
 
-Currently, memory indexing is still the main method for deduplication.
+Currently, memory indexing is still the main method for deduplication.  
 When the number of shards increases, you will first encounter:
 
-- memory pressure
-- Run time rises
-- Global index management is difficult
+- Memory pressure
+- Increased runtime
+- Difficulty in global index management
 
 Therefore, the current solution is more suitable for minimal experiments and small and medium-scale data processing, rather than directly moving to very large-scale production environments.
 
 ---
 
-## 16. Follow-up expansion direction
+## 16. Subsequent expansion direction
 
 ### 16.1 Deduplication backend upgrade
 
@@ -808,7 +808,7 @@ Introduce a more stable quality modeling method for Chinese web page data, such 
 
 ### 16.3 Prefix domain name filtering
 
-Performing domain-level whitelist/blacklist filtering before HTML parsing can significantly reduce subsequent invalid calculations.
+Performing domain-level whitelist/blacklist filtering before HTML parsing can significantly reduce subsequent invalid calculations.  
 This is a key step from "text side cleaning" to "crawling entry control".
 
 ### 16.4 Observability enhancement
@@ -816,7 +816,7 @@ This is a key step from "text side cleaning" to "crawling entry control".
 For each stage add:
 
 - Time-consuming log
-- Throughput statistics
+-Throughput statistics
 - Sample inspection panel
 - Threshold hit statistics
 
@@ -826,15 +826,15 @@ In this way, when adjusting parameters, developers not only know "the result has
 
 ## 17. Summary of engineering practice: the value of Mini-C4 method
 
-![图 11：Mini-C4 工程方法论总结](../../images/part10/10_1_fig11_methodology_summary.png)
+![Figure 11: Summary of Mini-C4 engineering methodology](../../images/part10/10_1_fig11_methodology_summary.png)
 
 What this project really wants to convey is not the usage of a certain library, but a more general data engineering methodology:
 
 1. **First run through the entire link within the controllable boundary**
 2. **Make each step into an explainable stage**
-3. **Priority is given to establishing a closed loop of result verification**
+3. **Prioritize establishing a closed loop of result verification**
 4. **Observe system behavior through funnels and intermediate metrics**
-5. **Make sure your approach holds up before you scale it up**
+5. **Make sure the approach is solid before scaling**
 
 The value of Mini-C4 is not that it only processes one shard, but that it condenses the core issues in web pre-training data engineering into a reproducible pipeline.
 
@@ -842,9 +842,9 @@ This assembly line also has several elements required for a complete engineering
 
 - Have clear goals
 - There is a complete process
-- There are real indicators
-- There is a middle ground to choose from
-- There are limitations and extensions
+- Has real indicators
+- There are trade-offs
+- With limitations and extensions
 - There is an engineering closed loop
 
 ---
@@ -870,7 +870,7 @@ This assembly line also has several elements required for a complete engineering
 - `data/training/smoke_test.jsonl`
 - `data/training/training_manifest.json`
 
-### 18.3 Reporting and inspection products
+### 18.3 Reporting and Inspection Products
 
 - `data/reports/p1_metrics.json`
 - `data/reports/p1_report.md`
@@ -880,7 +880,7 @@ This assembly line also has several elements required for a complete engineering
 
 ## 19. Conclusion
 
-For large model training, the data is often more difficult to "clean" than the model.
+For large model training, the data is often more difficult to "clean" than the model.  
 Because the model architecture can be reused and the training framework can be migrated, high-quality corpus production always relies on a solid set of data engineering capabilities.
 
 The case of Mini-C4 proves one thing:
@@ -890,18 +890,18 @@ This is also the core of the reusability of this type of engineering pipeline.
 
 ---
 
-## Special Topic: Acceptance Baseline of Mini-C4 Pipeline
+## Special topic: Acceptance baseline of Mini-C4 assembly line
 
 A project like the Mini-C4 could easily be misinterpreted as “a miniaturized version of Common Crawl.” But from an engineering perspective, what is really worth reusing is that the pre-training data processing is written into an acceptable stage chain. The so-called acceptance does not mean that it ends with the final output of `final_data.jsonl`, but that each layer must have a baseline that can determine whether "should continue going down."
 
-### 1. Capturing and parsing baselines
+### 1. Capturing and parsing baseline
 
 In the first crawling and parsing stage, the most critical thing is not how many more pages are captured, but whether the captured pages can be stably parsed. Here are at least some things to pay attention to:
 
 * Whether WARC samples can be expanded correctly;
 * Whether to retain the main content after HTML parsing instead of advertising and navigation noise;
-* Whether the parsing fields are complete, such as whether the URL, language, body length and meta-information are complete;
-* Whether parsing failed samples are logged instead of being quietly discarded.
+* Whether the parsing fields are complete, such as URL, language, text length and meta information;
+* Whether parsing failed samples are recorded instead of being discarded quietly.
 
 The value of this step is to expose the "raw material layer problem" as early as possible. Because if the raw material layer has been severely distorted, subsequent cleaning, deduplication and scoring are likely to just continue to perform more expensive calculations on noise.
 
@@ -911,11 +911,11 @@ The cleaning and deduplication stage is the easiest time for teams to fall into 
 
 The more critical baselines at this level include:
 
-* Is the text length distribution still reasonable after cleaning?
-* Whether the template pages, navigation pages, and script residual pages have dropped significantly;
-* Whether sufficient topic diversity is still retained after deduplication;
+* Whether the text length distribution is still reasonable after cleaning;
+* Whether template pages, navigation pages, and script residual pages have dropped significantly;
+* Whether sufficient theme diversity is still retained after deduplication;
 * Whether duplication between different shards is effectively handled;
-* Are high-value long texts not harmed too much by rules?
+* Whether high-value long texts are not harmed too much by rules.
 
 For pre-training corpus, the difficulty in removing duplicates is never just “whether there are repetitions”, but “what is left after the duplicates are removed”. If all you end up with are short pages with similar structures, then even if the retention rate looks good, the training value may not be high.
 
@@ -925,56 +925,56 @@ Mini-C4 currently processes English and Chinese separately. This step is very cr
 
 At this level, the more important baselines include:
 
-* Whether the language recognition is stable to avoid misclassification of mixed Chinese and English pages;
-* whether retention rates for each language are consistent with sample quality intuition;
+* Whether the language recognition is stable to avoid incorrect classification of mixed Chinese and English pages;
+* Whether the retention rate for each language is consistent with sample quality intuition;
 * After the quality threshold is changed, will the topic and length distribution of the retained corpus fluctuate drastically?
-* In the final retained corpus, are there still obvious clusters of low-value sites?
+* Whether there are still obvious clusters of low-value sites in the final retained corpus.
 
 These baselines together determine one thing: whether the remaining corpus is "cleaner" or just "less". The two are not the same thing in engineering.
 
 ---
 
-## Special Topic: From Teaching Prototypes to Large-Scale Pre-Training Factory
+## Special topic: From teaching prototype to large-scale pre-training factory
 
 The current form of P01 is more suitable as a teaching minimum closed loop, but it has clearly demonstrated several key paths to large-scale factories in the future. The most important thing to emphasize here is that scaling up cannot just be understood as "running the script on more machines", but also needs to simultaneously expand the control surface, observability and error handling capabilities.
 
-### 1. First expand the control surface, then expand the data volume
+### 1. Expand the control surface first, then expand the data volume
 
 Many teams want to expand the amount of data right from the start, but if the control surface is too weak, the larger the scale, the harder it will be to locate the problem. A more reasonable order is usually:
 
-* First complete the stage-level logs and statistics;
-* Then complete the sample sampling and rule hit distribution;
+* Complete stage-level logs and statistics first;
+* Complete sample sampling and rule hit distribution;
 * Then expand the shard number and parallelism;
-* Finally, we pursue higher throughput and greater coverage.
+* Finally, pursue higher throughput and greater coverage.
 
 Because only if the control surface is strong enough, the team can still know where the problem is, why it goes wrong, and which section should be repaired first when the scale increases.
 
-### 2. Pre-training corpus factory needs “entry management”
+### 2. The pre-training corpus factory requires "entry management"
 
 P01 We have already talked about prefixed domain name filtering, which is actually very important. Because a lot of the cost of pre-training data is not spent on high-value content, but on downloading, parsing, cleaning and deduplication of massive low-value pages. If we want to move towards a more realistic factory form in the future, entrance management will become increasingly important, including:
 
 * Domain name whitelist and blacklist;
 * Site quality portrait;
 * Update frequency and crawl priority;
-* Differentiation strategies for sites in different languages ​​and regions.
+* Differentiation strategies for sites in different languages and regions.
 
 As long as the inlet management is done well enough, the subsequent cleaning pressure and calculation costs will be significantly reduced.
 
-### 3. The final competition of the pre-training project is sustainable production capacity.
+### 3. The final competition of the pre-training project is sustainable production capacity
 
 In the long run, the real competition for pre-training corpus projects is not how beautifully the data is washed at a certain time, but whether the next version of the corpus can be produced continuously, stably, and reproducibly. To do this, you need at least:
 
 * There is a clear version;
-* There are stage baselines;
+* There is a staged baseline;
 * Abnormal samples are retained;
-* There are explanations for the causes of quality changes;
+* There are explanations for the reasons for quality changes;
 * There is a stable interface that can be consumed on the training side.
 
 This is where the Mini-C4 is most valuable as a project prototype. It does not pretend to be a complete industrial system, but it has laid out the most critical skeleton of the industrial system first. No matter how much the team expands, how many languages ​​are adopted, or how many new rules are added in the future, as long as this skeleton remains, the method will have room to continue to grow.
 
 ---
 
-## Special Topic: Preliminary Thoughts on Corpus Ratio and Training Mixing Strategy
+## Special Topic: Pre-Thinking about Corpus Ratio and Training Mixing Strategy
 
 Although this chapter of Mini-C4 focuses on data cleaning and quality control, from the complete perspective of the pre-training project, corpus ratio is also an issue worth thinking about in advance. Because "cleaning" only solves the problem of whether it can be used, and "how to mix" determines what kind of distribution impact these corpus will have after entering training.
 
@@ -982,11 +982,11 @@ Although this chapter of Mini-C4 focuses on data cleaning and quality control, f
 
 If the team intends to later mix the data stratified by language, source, length, or quality, then the relevant fields should be retained during the data preparation phase rather than second-guessing them before training. The most common information that can be retained includes:
 
-* language tag;
+* Language tag;
 * Source domain name or source type;
-* Text length interval;
-* mass fraction or mass bucket;
-* The state before and after deduplication.
+* Text length range;
+* Mass fraction or mass bucket;
+* Status before and after deduplication.
 
 These fields may seem like “to be discussed later” in the current minimal project, but once you enter the training proportions phase, they immediately become the most valuable control handles.
 
