@@ -5,6 +5,8 @@
 
 **[English](README_en.md) | 中文 | [日本語](README_ja.md)**
 
+> **版本说明**：中文版是当前 2026 新版主线，已扩展为 28 章 + 10 个实战项目。英文版和日文版仍在跟进翻译，站点中会保留翻译状态说明页。
+
 ## 简介
 
 > *"Data is the new oil, but only if you know how to refine it."*
@@ -159,6 +161,19 @@ mkdocs build
 ```
 
 生成的静态文件位于 `site/` 目录。
+
+### 验证发布与项目
+
+```bash
+# 严格构建站点，检查导航、断链和多语言配置
+mkdocs build --strict --clean
+
+# 检查站点图片体积预算
+python scripts/check_image_sizes.py
+
+# 运行 P01-P10 的统一 smoke test，并生成 smoke_reports/
+python scripts/run_all_project_smoke_tests.py
+```
 
 ## 项目结构
 

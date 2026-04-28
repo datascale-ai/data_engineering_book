@@ -5,6 +5,8 @@
 
 **English | [中文](README.md) | [日本語](README_ja.md)**
 
+> **Version note:** The Chinese edition is the current 2026 mainline and has expanded to 28 chapters and 10 hands-on projects. The English and Japanese editions are being updated; the documentation site includes translation status pages.
+
 ## Introduction
 
 > *"Data is the new oil, but only if you know how to refine it."*

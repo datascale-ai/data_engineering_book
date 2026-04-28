@@ -76,3 +76,14 @@ python src/run_p3_checks.py
 - `data/reports/p3_metrics.json`
 - `data/reports/p3_test_results.json`
 - `data/reports/p3_test_report.md`
+
+
+## Repository Smoke Test
+
+From the repository root, run this project's smoke check through the unified runner:
+
+```bash
+python scripts/run_all_project_smoke_tests.py --project P3
+```
+
+Expected output: a `P3: PASS` or `P3: FAIL` line plus a report in `smoke_reports/` with the failing command and stderr when a check cannot complete.
