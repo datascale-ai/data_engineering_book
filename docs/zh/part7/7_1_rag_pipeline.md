@@ -158,9 +158,11 @@ $$
 - 元数据缺失，使检索空间缺乏约束条件
 
 因此，实际系统往往退化为：
+
 $$
-\mathcal{K}*{retrieved} \approx \text{TopK}*{sim}(Q, \text{Embedding}(Chunk))
+\mathcal{K}_{retrieved} \approx \text{TopK}\left(\text{sim}(Q, \text{Embedding}(\text{Chunk}))\right)
 $$
+
 即仅基于向量相似度的近似匹配。这一退化过程，正是 RAG 系统“看起来合理但经常答错”的根源之一。
 
 
