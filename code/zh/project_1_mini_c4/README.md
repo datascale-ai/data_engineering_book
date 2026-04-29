@@ -82,3 +82,14 @@ python src/10_run_p1_checks.py
 - The current mini setup is intentionally small and suitable for local experimentation.
 - `src/6_quality_filter.py` now rejects many mixed-language, navigation-heavy, repetitive, and adult/spam pages that previously leaked into the final corpus.
 - `src/7_prepare_training_data.py` provides the training-facing packaging that was previously missing from P1.
+
+
+## Repository Smoke Test
+
+From the repository root, run this project's smoke check through the unified runner:
+
+```bash
+python scripts/run_all_project_smoke_tests.py --project P1
+```
+
+Expected output: a `P1: PASS` or `P1: FAIL` line plus a report in `smoke_reports/` with the failing command and stderr when a check cannot complete.

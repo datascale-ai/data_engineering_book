@@ -6,7 +6,7 @@
 
 With text RAG competition at its peak, multimodal has become the new battlefield. Enterprise documents often contain large amounts of **charts, flowcharts, screenshots**—traditional RAG typically chooses OCR to text or ignores images, causing key information loss. This chapter breaks through "pure text" limits to build systems that can "see" data. We start from basic CLIP/SigLIP cross-modal retrieval, delve into the disruptive **ColPali architecture**, and implement an end-to-end retrieval pipeline including **Binary Quantization (BQ)** and **Late Interaction scoring logic**.
 
-## 13.0 Learning Objectives
+## Learning Objectives
 
 * **Understand multimodal vector space**: Master CLIP and SigLIP contrastive loss principles; understand how text and images align in the same vector space.
 * **Master ColPali architecture**: Understand Late Interaction mechanism; learn to use `colpali-v1.2-merged` for complex PDF tables and charts.

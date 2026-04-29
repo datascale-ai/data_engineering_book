@@ -1,0 +1,47 @@
+name: validate
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-docs.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements-docs.txt
+
+      - name: Build site (strict)
+        run: mkdocs build --strict --clean
+
+      - name: Check image sizes
+        run: python scripts/check_image_sizes.py --root docs/images --limit-mb 5 --total-budget-mb 400
+
+      - name: Check tone
+        run: python scripts/check_tone.py
+
+      - name: Run project smoke tests
+        run: python scripts/run_all_project_smoke_tests.py
+
+      - name: Upload smoke reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke_reports
+          path: smoke_reports/
+          if-no-files-found: ignore

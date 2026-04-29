@@ -8,7 +8,7 @@
 
 Retrieval-Augmented Generation (RAG) has become the preferred architecture for enterprise LLM deployment. However, many RAG systems shine in demo but fail in production due to low retrieval accuracy. This chapter reveals RAG's core truth: **retrieval quality ceiling is determined by data parsing and chunking granularity**. We delve into the "last mile" of unstructured data—document parsing—exploring PDF table restoration and multi-column recognition challenges; comparing semantic chunking and parent-child indexing; and analyzing Embedding model fine-tuning and vector database optimization critical paths.
 
-## 12.0 Learning Objectives
+## Learning Objectives
 
 * **Master unstructured parsing strategies**: Learn to select correct parsing tools (Rule-based vs. Vision-based) for multi-column PDFs and complex tables.
 * **Implement advanced chunking algorithms**: Write Python code for "Parent-Child Indexing" strategy to solve context loss issues.

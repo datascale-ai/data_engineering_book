@@ -1,24 +1,29 @@
-# 大規模モデルのデータ エンジニアリング: アーキテクチャ、アルゴリズム、プロジェクト
+# 大規模モデルのデータエンジニアリング：アーキテクチャ・アルゴリズム・実践プロジェクト
 
 [![GitHub Pages](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://datascale-ai.github.io/data_engineering_book/ja/)
 [![ライセンス](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 **[English](README_en.md) | [中文](README.md) | 日本語**
 
+> **バージョン注記**：中国語版は現在の2026年版の主線で、28章と10個の実践プロジェクトに拡張されています。英語版と日本語版は更新中で、ドキュメントサイトには翻訳状況ページを用意しています。
+
 ## 導入
 
 > *「データは新しい石油ですが、それを精製する方法を知っている場合に限ります。」*
 
-大規模モデルの時代では、**データ品質がモデルのパフォーマンスの上限を決定します**。しかし、LLM データ エンジニアリングに関する体系的なリソースは依然として非常に不足しており、ほとんどのチームはまだ試行錯誤によって学習しています。
+大規模モデルの時代では、**データ品質がモデルのパフォーマンスの上限を決定します**。しかし、LLM データエンジニアリングに関する体系的なリソースは依然として非常に不足しており、ほとんどのチームはまだ試行錯誤によって学習しています。
 
-本書はそのギャップを埋めるために企画されました。 **トレーニング前データ クリーニング**から**マルチモーダル アライメント**、**RAG 取得拡張**から**合成データ生成**に至るまで、次のような完全な技術スタックを体系的にカバーしています。
+本書はそのギャップを埋めるために企画されました。**事前学習データのクリーニング**から**マルチモーダルアライメント**、**RAG 検索拡張**から**合成データ生成**、さらには **DataOps プラットフォーム構築**と**プライバシーコンプライアンス**まで、完全な技術スタックを体系的にカバーしています。
 
-- 🧹 **事前トレーニング データ エンジニアリング**: Common Crawl などの大規模なノイズの多いデータ ソースから高品質のコーパスを抽出する
-- 🖼️ **マルチモーダル データ処理**: 画像とテキストのペア、ビデオ、オーディオ データの収集、クリーニング、配置
-- 🎯 **アライメント データ構築**: SFT 命令データ、RLHF 優先データ、および CoT 推論データの自動生成
-- 🔍 **RAG データ パイプライン**: エンタープライズ グレードのドキュメント解析、セマンティック Chunking、マルチモーダル検索
+- 🧹 **事前学習データエンジニアリング**: Common Crawl などの大規模ノイズデータから高品質コーパスを抽出する
+- 🖼️ **マルチモーダルデータ処理**: 画像・テキストペア、動画、音声データの収集・クリーニング・アライメント
+- 🎯 **アライメントデータ構築**: SFT 指示データ、RLHF 選好データ、CoT 推論データの自動生成
+- 🤖 **推論と Agent データ**: 思考の連鎖、Tool-Use、多ターン対話・メモリデータエンジニアリング
+- 🔍 **RAG データパイプライン**: エンタープライズグレードのドキュメント解析、セマンティックチャンキング、マルチモーダル検索
+- ⚙️ **DataOps とプラットフォーム構築**: チーム組織、データバージョン管理、プラットフォーム可観測性
+- 🔒 **プライバシー・コンプライアンスとセキュリティ**: データガバナンスフレームワーク、連合学習、プライバシー強化技術
 
-この本には、詳細な理論的説明に加えて、実践的な学習のための実行可能なコードと詳細なアーキテクチャ設計を備えた **5 つのエンドツーエンドのキャップストーン プロジェクト**が含まれています。
+詳細な理論的説明に加えて、実行可能なコードと詳細なアーキテクチャ設計を備えた **10 のエンドツーエンドキャップストーンプロジェクト**が含まれています。
 
 **オンラインで読む**: [https://datascale-ai.github.io/data_engineering_book/ja/](https://datascale-ai.github.io/data_engineering_book/ja/)
 
@@ -26,95 +31,130 @@
 
 ![本のアーキテクチャ](images/structure_en.png)
 
-*生データからエンドツーエンドのアプリケーションまでの完全なデータ エンジニアリング パイプライン*
+*生データからエンドツーエンドのアプリケーションまでの完全なデータエンジニアリングパイプライン*
 
 ## 目次
 
 ```
-📖 6 Parts, 13 Chapters + 5 Capstone Projects
+📖 全10部、28章 + 10つの実践プロジェクト
 │
-├── Part 1: Infrastructure & Core Concepts
-│   ├── Chapter 1: Data Revolution in the LLM Era
-│   └── Chapter 2: Data Infrastructure Selection
+├── 第1部：総論とインフラ
+│   ├── 第1章：LLM時代のデータ変革
+│   ├── 第2章：LLMデータライフサイクルと品質評価フレームワーク
+│   └── 第3章：AIネイティブデータスタックとコストガバナンス
 │
-├── Part 2: Text Pre-training Data Engineering
-│   ├── Chapter 3: Data Acquisition
-│   ├── Chapter 4: Cleaning & Deduplication
-│   └── Chapter 5: Tokenization & Serialization
+├── 第2部：テキスト事前学習データエンジニアリング
+│   ├── 第4章：データソース・収集・著作権
+│   ├── 第5章：クリーニング・重複除去・汚染除去
+│   ├── 第6章：トークン化・シリアライズ・効率的ローディング
+│   └── 第7章：データ評価・品質クローズドループ・運用イテレーション
 │
-├── Part 3: Multimodal Data Engineering
-│   ├── Chapter 6: Image-Text Pair Processing
-│   ├── Chapter 7: Recaptioning
-│   └── Chapter 8: Video & Audio Data
+├── 第3部：マルチモーダルデータエンジニアリング
+│   ├── 第8章：画像テキストペアデータエンジニアリング
+│   ├── 第9章：再キャプション付けと文書理解
+│   ├── 第10章：動画と音声データエンジニアリング
+│   └── 第11章：クロスモーダルアライメントと融合
 │
-├── Part 4: Alignment & Synthetic Data Engineering
-│   ├── Chapter 9: Instruction Fine-tuning Data
-│   ├── Chapter 10: Synthetic Data
-│   └── Chapter 11: Human Preference Data
+├── 第4部：指示ファインチューニングと嗜好データ
+│   ├── 第12章：SFTデータ設計と指示体系
+│   ├── 第13章：嗜好データと報酬シグナル
+│   └── 第14章：アノテーションプラットフォーム・QA体系・データ運営
 │
-├── Part 5: Application-level Data Engineering
-│   ├── Chapter 12: RAG Data Pipeline
-│   └── Chapter 13: Multimodal RAG
+├── 第5部：合成データエンジニアリング
+│   ├── 第15章：合成データファクトリー：シードから検証まで
+│   ├── 第16章：知識蒸留とモデル協調
+│   └── 第17章：合成データ品質管理とモデル崩壊
 │
-└── Part 6: Capstone Projects
-    ├── Project 1: Building Mini-C4 Pre-training Set
-    ├── Project 2: Domain Expert SFT (Legal)
-    ├── Project 3: Building LLaVA Multimodal Instruction Set
-    ├── Project 4: Synthetic Math/Code Textbook
-    └── Project 5: Multimodal RAG Financial Report Assistant
+├── 第6部：推論とエージェントデータエンジニアリング
+│   ├── 第18章：思考の連鎖と推論データエンジニアリング
+│   ├── 第19章：ツール使用と関数呼び出しデータ
+│   └── 第20章：エージェントメモリとマルチターン対話データ
+│
+├── 第7部：アプリケーション級データエンジニアリング
+│   ├── 第21章：RAGデータパイプライン
+│   ├── 第22章：マルチモーダルRAGと視覚検索
+│   └── 第23章：オンラインフィードバッククローズドループと知識更新
+│
+├── 第8部：データ運営とプラットフォーム構築
+│   ├── 第24章：DataOpsフライホイールとチーム組織
+│   ├── 第25章：データバージョン管理と実験トラッキング
+│   └── 第26章：データプラットフォームのオブザーバビリティ
+│
+├── 第9部：プライバシーコンプライアンスとデータセキュリティ
+│   ├── 第27章：データコンプライアンスフレームワークとガバナンス
+│   └── 第28章：連合学習とプライバシー保護技術
+│
+└── 第10部：実践プロジェクト（P01–P10）
+    ├── プロジェクト1：RayによるミニC4分散データパイプライン構築
+    ├── プロジェクト2：垂直領域エキスパートSFT（法律）
+    ├── プロジェクト3：LLaVAマルチモーダル指示データファクトリー
+    ├── プロジェクト4：合成数学・コード教材ファクトリー
+    ├── プロジェクト5：マルチモーダルRAG企業財務レポートアシスタント
+    ├── プロジェクト6：CoT推論データセット構築とPRMトレーニング
+    ├── プロジェクト7：エージェントツール使用データファクトリー
+    ├── プロジェクト8：エンタープライズDataOpsプラットフォーム：データプロジェクトから組織ガバナンスへ
+    ├── プロジェクト9：プライバシー保護データパイプライン
+    └── プロジェクト10：エンドツーエンドLLMデータフライホイール
 ```
 
 ## 主要なハイライト
 
-### 総合理論
-- **データ中心の AI** 哲学全体
-- LLM データのライフサイクル全体をカバーします: 事前トレーニング → 微調整 → RLHF → RAG
-- スケーリングの法則、データ品質評価、マルチモーダル調整などを詳しくカバー
+### 総合的な理論体系
+- **データ中心の AI** 哲学が全体を貫く
+- LLM データライフサイクル全体をカバー：事前学習 → ファインチューニング → RLHF → RAG → DataOps
+- スケーリングの法則、データ品質評価、マルチモーダルアライメント、プライバシーコンプライアンスなどを詳しく解説
 
-### 最新の技術スタック
-|ドメイン |テクノロジー |
-|--------|-------------|
-|分散コンピューティング |レイデータ、スパーク |
-|データストレージ |寄木細工、WebDataset、ベクトル データベース |
-|テキスト処理 |トラフィラトゥーラ、KenLM、ミンハッシュ LSH |
-|マルチモーダル | CLIP、ColPali、img2dataset |
-|データのバージョン管理 | DVC、LakeFS |
+### モダンな技術スタック
+| ドメイン | テクノロジー |
+|---------|-------------|
+| 分散コンピューティング | Ray Data, Spark, Dask |
+| データストレージ | Parquet, WebDataset, ベクトルデータベース (Milvus/Qdrant) |
+| テキスト処理 | Trafilatura, KenLM, MinHash LSH, fastText 品質スコアリング |
+| マルチモーダル | CLIP, ColPali, img2dataset |
+| データバージョン管理 | DVC, LakeFS, MLflow |
+| プラットフォーム可観測性 | Great Expectations, Evidently AI, Apache Airflow |
+| プライバシーとセキュリティ | 連合学習, 差分プライバシー, セキュア MPC |
 
-### 豊富なキャップストーン プロジェクト
+### 豊富なキャップストーンプロジェクト
 
-|プロジェクト |コア技術 |出力 |
-|---------|-------------------|--------|
-| Mini-C4 プレトレーニングセット |トラフィラトゥーラ + レイ + ミンハッシュ |高品質のテキストコーパス |
-|法律専門家 SFT |自己指導 + CoT |ドメイン命令データセット |
-| LLaVA マルチモーダル | Bbox アライメント + マルチ画像インターリーブ |視覚的な指示データセット |
-|数学の教科書 | Evol-Instruct + サンドボックス検証 | PoT 推論データセット |
-|財務報告書 RAG |コルパリ + クウェン VL |マルチモーダル QA システム |
+| プロジェクト | コア技術 | 出力 |
+|------------|---------|------|
+| Mini-C4 事前学習セット | Trafilatura + Ray + MinHash | 高品質テキストコーパス |
+| 法律専門家 SFT | Self-Instruct + CoT | ドメイン指示データセット |
+| LLaVA マルチモーダル指示 | Bbox アライメント + マルチ画像インターリーブ | 視覚的指示データセット |
+| 合成数学教材 | Evol-Instruct + サンドボックス検証 | PoT 推論データセット |
+| 財務レポート RAG | ColPali + Qwen-VL | マルチモーダル QA システム |
+| CoT 推論 + PRM | プロセス報酬モデリング | 推論過程データセット |
+| Agent Tool-Use ファクトリー | ツール呼び出しチェーン + 軌跡アノテーション | Agent 訓練データセット |
+| DataOps プラットフォーム | Airflow + DVC + 品質監視 | エンタープライズデータ運用体系 |
+| プライバシー保護パイプライン | 連合学習 + 差分プライバシー | コンプライアント訓練パイプライン |
+| LLM データフライホイール | オンラインフィードバック + 継続的イテレーション | エンドツーエンドクローズドループシステム |
 
-## 地域開発
+## ローカル開発
 
 ### 要件
 
-- Python 3.8以降
-- MkDocs マテリアル
+- Python 3.8+
+- MkDocs Material
 - mkdocs-static-i18n (i18n サポート)
 
 ### インストールとプレビュー
 
 ```bash
-# Clone the repository
+# リポジトリをクローン
 git clone https://github.com/datascale-ai/data_engineering_book.git
 cd data_engineering_book
 
-# Install dependencies
+# 依存関係をインストール
 pip install mkdocs-material mkdocs-glightbox pymdown-extensions "mkdocs-static-i18n[material]"
 
-# Local preview
+# ローカルプレビュー
 mkdocs serve
 ```
 
-この書籍をプレビューするには、http://127.0.0.1:8000 にアクセスしてください (中国語/英語の言語スイッチャーを使用)。
+http://127.0.0.1:8000 にアクセスして書籍をプレビューしてください（中国語/英語/日本語の言語スイッチャー付き）。
 
-### 静的サイトを構築する
+### 静的サイトのビルド
 
 ```bash
 mkdocs build
@@ -122,36 +162,34 @@ mkdocs build
 
 生成された静的ファイルは `site/` ディレクトリにあります。
 
-## プロジェクトの構造
+## プロジェクト構造
 
 ```
 data_engineering_book/
 ├── docs/
-│   ├── zh/                  # Chinese content
-│   │   ├── index.md         # Chinese homepage
-│   │   └── part1/ ~ part6/  # All chapters
-│   ├── en/                  # English content
-│   │   ├── index.md         # English homepage
-│   │   └── part1/ ~ part6/  # All chapters
-│   ├── images/              # Image assets (shared)
-│   ├── stylesheets/         # Custom styles
-│   └── javascripts/         # JavaScript (MathJax etc.)
-├── .github/workflows/       # GitHub Actions CI/CD
-├── images/                  # Project image assets
-│   ├── structure_cn.png     # Book architecture diagram (Chinese)
-│   └── structure_en.png     # Book architecture diagram (English)
-├── mkdocs.yml               # MkDocs configuration
-├── LICENSE                  # License
-├── README.md                # 中文说明
-└── README_en.md             # English README (this file)
+│   ├── zh/                    # 中国語コンテンツ
+│   │   ├── index.md           # 中国語ホームページ
+│   │   └── part1/ ~ part10/   # 全章
+│   ├── en/                    # 英語コンテンツ
+│   ├── ja/                    # 日本語コンテンツ
+│   ├── images/                # 画像アセット（共有）
+│   ├── stylesheets/           # カスタムスタイル
+│   └── javascripts/           # JavaScript (MathJax など)
+├── .github/workflows/         # GitHub Actions CI/CD
+├── images/                    # プロジェクト画像アセット
+├── mkdocs.yml                 # MkDocs 設定
+├── LICENSE                    # ライセンス
+├── README.md                  # 中文说明
+├── README_en.md               # English README
+└── README_ja.md               # 日本語 README（本ファイル）
 ```
 
 ## 対象読者
 
 - LLM 研究開発エンジニア
-- データ エンジニア / MLOps エンジニア
-- AI プロダクト マネージャー (技術)
-- LLM データ パイプラインに興味のある研究者
+- データエンジニア / MLOps / DataOps エンジニア
+- AI プロダクトマネージャー（技術系）
+- LLM データパイプラインに興味のある研究者
 
 ## 主要著者
 
@@ -164,23 +202,23 @@ data_engineering_book/
 
 ## 貢献する
 
-貢献は大歓迎です！問題やプルリクエストを遠慮なく送信してください。
+貢献は大歓迎です！Issue やプルリクエストを遠慮なく送信してください。
 
 1. このリポジトリをフォークする
-2. 機能ブランチを作成します (`git checkout -b feature/AmazingFeature`)
-3. 変更をコミットします (`git commit -m 'Add some AmazingFeature'`)
-4. ブランチにプッシュします (`git push origin feature/AmazingFeature`)
+2. 機能ブランチを作成する (`git checkout -b feature/AmazingFeature`)
+3. 変更をコミットする (`git commit -m 'Add some AmazingFeature'`)
+4. ブランチにプッシュする (`git push origin feature/AmazingFeature`)
 5. プルリクエストを開く
 
 ## ライセンス
 
-このプロジェクトは MIT ライセンスに基づいてライセンスされています。詳細については、[LICENSE](LICENSE) ファイルを参照してください。
+このプロジェクトは MIT ライセンスに基づいてライセンスされています。詳細については [LICENSE](LICENSE) ファイルを参照してください。
 
-## 接触
+## 連絡先
 
-- GitHub の問題: [問題を送信する](https://github.com/datascale-ai/data_engineering_book/issues)
+- GitHub Issues: [問題を送信する](https://github.com/datascale-ai/data_engineering_book/issues)
 - オンラインで読む: [https://datascale-ai.github.io/data_engineering_book/ja/](https://datascale-ai.github.io/data_engineering_book/ja/)
 
 ---
 
-**この本が役に立ったと思われる場合は、スターを付けてください!** ⭐
+**この本が役に立ったと思われる場合は、ぜひ Star をつけてください！** ⭐

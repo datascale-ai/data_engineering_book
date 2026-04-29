@@ -49,6 +49,9 @@ theme:
 plugins:
   - search                           # 全文搜索 (内置)
   - glightbox                        # 图片点击放大 (书籍中架构图较多，必备)
+  # Old chapter slugs (e.g. part4/4_1_SFT) redirect to new (part4/ch12_sft) via
+  # a custom hook that writes <meta refresh> stub pages at old locations during build.
+  # See scripts/mkdocs_chapter_redirects.py.
   - i18n:
       reconfigure_material: true     # 自动适配 Material 主题
       docs_structure: folder         # 文件夹策略：zh/ 和 en/ 目录
@@ -61,41 +64,44 @@ plugins:
           nav:
             - 目录: index.md
             - 序言: preface.md
-            - 第一部分：基础设施与核心理念:
-                - 第1章：大模型时代的数据变革（从 Data Ops 到 AI Ops）: part1/1_1_data_change.md
-                - 第2章：AI 原生数据栈（向量库、对象存储、Ray/Spark 分布式计算）: part1/1_2_data_infra.md
+            - 第一部分：总论与基础设施:
+                - 第1章：大模型时代的数据变革: part1/ch01_data_change.md
+                - 第2章：LLM数据生命周期与质量评估框架: part1/ch02_quality_framework.md
+                - 第3章：AI原生数据栈与成本治理: part1/ch03_data_stack.md
             - 第二部分：文本预训练数据工程:
-                - 第3章：数据获取（CommonCrawl 解析与高并发爬虫）: part2/2_1_data_acquisition.md
-                - 第4章：清洗与质量控制（去重、PII 脱敏、防基准污染）: part2/2_2_cleaning_denoising.md
-                - 第5章：分词、序列化与高效加载（DataLoader 优化）: part2/2_3_tokenization_serialization.md
+                - 第4章：数据源、采集与版权: part2/ch04_data_sources.md
+                - 第5章：清洗、去重与去污染: part2/ch05_cleaning_dedup.md
+                - 第6章：分词、序列化与高效加载: part2/ch06_tokenization_loading.md
+                - 第7章：数据评估、质量闭环与运营迭代: part2/ch07_data_operations.md
             - 第三部分：多模态数据工程:
-                - 第6章：图文对数据处理: part3/3_1_image_text_pairs.md
-                - 第7章：数据重描述: part3/3_2_recaptioning.md
-                - 第8章：视频与音频数据: part3/3_3_video_audio.md
+                - 第8章：图文对数据工程: part3/ch08_multimodal_image.md
+                - 第9章：重标注与文档理解: part3/ch09_recaptioning_ocr.md
+                - 第10章：视频与音频数据工程: part3/ch10_video_audio.md
+                - 第11章：跨模态对齐与融合: part3/ch11_cross_modal_alignment.md
             - 第四部分：指令微调与偏好数据:
-                - 第9章：SFT数据设计与指令体系: part4/4_1_SFT.md
-                - 第10章：偏好数据与奖励信号: part4/4_2_preference.md
-                - 第11章：标注平台、QA体系与数据运营: part4/4_3_qa.md
+                - 第12章：SFT数据设计与指令体系: part4/ch12_sft.md
+                - 第13章：偏好数据与奖励信号: part4/ch13_preference.md
+                - 第14章：标注平台、QA体系与数据运营: part4/ch14_qa.md
             - 第五部分：合成数据工程:
-                - 第12章：合成数据工厂：从种子到验证: part5/5_1_data_synthesis.md
-                - 第13章：知识蒸馏与模型协作: part5/5_2_distillation.md
-                - 第14章：合成数据质量控制与模型坍缩: part5/5_3_quality.md
+                - 第15章：合成数据工厂：从种子到验证: part5/ch15_data_synthesis.md
+                - 第16章：知识蒸馏与模型协作: part5/ch16_distillation.md
+                - 第17章：合成数据质量控制与模型坍缩: part5/ch17_quality.md
             - 第六部分：推理与 Agent 数据工程:
-                - 第15章：思维链与推理数据工程: part6/6_1_COT.md
-                - 第16章：Tool-Use 与函数调用数据: part6/6_2_tool.md
-                - 第17章：Agent 记忆与多轮交互数据: part6/6_3_agent.md
+                - 第18章：思维链与推理数据工程: part6/ch18_cot.md
+                - 第19章：Tool-Use 与函数调用数据: part6/ch19_tool.md
+                - 第20章：Agent 记忆与多轮交互数据: part6/ch20_agent.md
             - 第七部分：应用级数据工程:
-                - 第21章：RAG 数据流水线: part7/7_1_rag_pipeline.md
-                - 第22章：多模态 RAG 与视觉检索: part7/7_2_multimodal_rag_visual_retrieval.md
-                - 第23章：在线反馈闭环与知识更新: part7/7_3_online_feedback_knowledge_update.md
+                - 第21章：RAG 数据流水线: part7/ch21_rag_pipeline.md
+                - 第22章：多模态 RAG 与视觉检索: part7/ch22_multimodal_rag_visual_retrieval.md
+                - 第23章：在线反馈闭环与知识更新: part7/ch23_online_feedback_knowledge_update.md
             - 第八部分：数据运营与平台建设:
-                - 第24章：DataOps 飞轮与团队组织: part8/8_1_dataops_flywheel_team.md
-                - 第25章：数据版本管理与实验追踪: part8/8_2_data_versioning_experiment_tracking.md
-                - 第26章：数据平台可观测性: part8/8_3_data_platform_observability.md
+                - 第24章：DataOps 飞轮与团队组织: part8/ch24_dataops_flywheel_team.md
+                - 第25章：数据版本管理与实验追踪: part8/ch25_data_versioning_experiment_tracking.md
+                - 第26章：数据平台可观测性: part8/ch26_data_platform_observability.md
             - 第九部分：隐私合规与数据安全:
-                - 第27章：数据合规框架与治理: part9/Ch27_compliance_framework_and_governance.md
-                - 第28章：联邦学习与隐私保护技术: part9/Ch28_federated_learning_and_privacy_preserving_technologies.md
-            - 第十部分：项目集（P01-P10）:
+                - 第27章：数据合规框架与治理: part9/ch27_compliance_framework_and_governance.md
+                - 第28章：联邦学习与隐私保护技术: part9/ch28_federated_learning_and_privacy_preserving_technologies.md
+            - 第十部分：项目实战:
                 - 项目一：基于 Ray 构建分布式 Mini-C4 数据流水线: part10/10_1_mini_c4.md
                 - 项目二：垂直领域专家 SFT（法律）: part10/10_2_legal_sft.md
                 - 项目三：LLaVA 多模态指令数据工厂: part10/10_3_llava_instruct.md
@@ -104,7 +110,7 @@ plugins:
                 - 项目六：CoT 推理数据集构建与 PRM 训练: part10/10_6_PRM.md
                 - 项目七：Agent Tool-Use 数据工厂: part10/10_7_Agent_Tooluse.md
                 - 项目八：企业级 DataOps 平台搭建：从数据项目到组织级治理能力: part10/10_8_dataops.md
-                - 项目九：隐私保护数据流水线: part10/10_9_privacy_pipline.md
+                - 项目九：隐私保护数据流水线: part10/10_9_privacy_pipeline.md
                 - 项目十：端到端 LLM 数据飞轮: part10/10_10_flywheel.md
         - locale: en
           name: English
@@ -126,33 +132,10 @@ plugins:
                 toggle:
                   icon: material/weather-night
                   name: Switch to light mode
-          nav_translations:
-            目录: Table of Contents
-            序言: Preface
-            第一部分：基础设施与核心理念: "Part 1: Infrastructure & Core Concepts"
-            第1章：大模型时代的数据变革: "Chapter 1: Data Revolution in the LLM Era"
-            第2章：数据基础设施选型: "Chapter 2: Data Infrastructure Selection"
-            第二部分：文本预训练数据工程: "Part 2: Text Pre-training Data Engineering"
-            第3章：数据获取与采集: "Chapter 3: Data Acquisition"
-            第4章：清洗与去噪: "Chapter 4: Cleaning & Deduplication"
-            第5章：分词与序列化: "Chapter 5: Tokenization & Serialization"
-            第三部分：多模态数据工程: "Part 3: Multimodal Data Engineering"
-            第6章：图文对数据处理: "Chapter 6: Image-Text Pair Processing"
-            第7章：数据重描述: "Chapter 7: Recaptioning"
-            第8章：视频与音频数据: "Chapter 8: Video & Audio Data"
-            第四部分：对齐与合成数据工程: "Part 4: Alignment & Synthetic Data Engineering"
-            第9章：指令微调数据: "Chapter 9: Instruction Fine-tuning Data"
-            第10章：合成数据: "Chapter 10: Synthetic Data"
-            第11章：人类偏好数据: "Chapter 11: Human Preference Data"
-            第五部分：应用级数据工程: "Part 5: Application-level Data Engineering"
-            第12章：RAG数据流水线: "Chapter 12: RAG Data Pipeline"
-            第13章：多模态RAG: "Chapter 13: Multimodal RAG"
-            第六部分：实战项目集: "Part 6: Capstone Projects"
-            项目一：构建Mini-C4预训练集: "Project 1: Building Mini-C4 Pre-training Set"
-            项目二：垂直领域专家SFT: "Project 2: Domain Expert SFT"
-            项目三：构建LLaVA多模态指令集: "Project 3: Building LLaVA Multimodal Instruction Set"
-            项目四：合成数学代码教科书: "Project 4: Synthetic Math/Code Textbook"
-            项目五：多模态RAG企业财报助手: "Project 5: Multimodal RAG Financial Report Assistant"
+          nav:
+            - Table of Contents: index.md
+            - Preface: preface.md
+            - Chinese 2026 Edition Status: translation-status.md
         - locale: ja
           name: 日本語
           build: true
@@ -173,33 +156,14 @@ plugins:
                 toggle:
                   icon: material/weather-night
                   name: ライトモードに切り替え
-          nav_translations:
-            目录: 目次
-            序言: 序文
-            第一部分：基础设施与核心理念: "第1部: インフラとコアコンセプト"
-            第1章：大模型时代的数据变革: "第1章: LLM時代のデータ革命"
-            第2章：数据基础设施选型: "第2章: データインフラ選定"
-            第二部分：文本预训练数据工程: "第2部: テキスト事前学習データエンジニアリング"
-            第3章：数据获取与采集: "第3章: データ取得と収集"
-            第4章：清洗与去噪: "第4章: クリーニングとノイズ除去"
-            第5章：分词与序列化: "第5章: Tokenizationとシリアライズ"
-            第三部分：多模态数据工程: "第3部: マルチモーダルデータエンジニアリング"
-            第6章：图文对数据处理: "第6章: 画像・テキストペア処理"
-            第7章：数据重描述: "第7章: Recaptioning"
-            第8章：视频与音频数据: "第8章: 動画と音声データ"
-            第四部分：对齐与合成数据工程: "第4部: アライメントと合成データエンジニアリング"
-            第9章：指令微调数据: "第9章: SFTデータ"
-            第10章：合成数据: "第10章: 合成データ"
-            第11章：人类偏好数据: "第11章: 人間嗜好データ"
-            第五部分：应用级数据工程: "第5部: アプリケーション級データエンジニアリング"
-            第12章：RAG数据流水线: "第12章: RAGデータパイプライン"
-            第13章：多模态RAG: "第13章: マルチモーダルRAG"
-            第六部分：实战项目集: "第6部: 実践プロジェクト集"
-            项目一：构建Mini-C4预训练集: "プロジェクト1: Mini-C4事前学習セット構築"
-            项目二：垂直领域专家SFT: "プロジェクト2: 垂直領域エキスパートSFT"
-            项目三：构建LLaVA多模态指令集: "プロジェクト3: LLaVAマルチモーダル指示セット構築"
-            项目四：合成数学代码教科书: "プロジェクト4: 数学/コード教科書合成"
-            项目五：多模态RAG企业财报助手: "プロジェクト5: マルチモーダルRAG企業財務レポートアシスタント"
+          nav:
+            - 目次: index.md
+            - 序文: preface.md
+            - 中国語2026年版の翻訳状況: translation-status.md
+
+# 构建钩子：旧章节路径生成跳转页（保护外链）
+hooks:
+  - scripts/mkdocs_chapter_redirects.py
 
 # 必选插件：增强书籍排版能力
 markdown_extensions:
@@ -224,31 +188,3 @@ extra_javascript:
   - javascripts/mathjax.js
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
-# 目录结构
-nav:
-  - 目录: index.md
-  - 序言: preface.md
-  - 第一部分：基础设施与核心理念:
-      - 第1章：大模型时代的数据变革: part1/1_1_data_change.md
-      - 第2章：数据基础设施选型: part1/1_2_data_infra.md
-  - 第二部分：文本预训练数据工程:
-      - 第3章：数据获取与采集: part2/2_1_data_acquisition.md
-      - 第4章：清洗与去噪: part2/2_2_cleaning_denoising.md
-      - 第5章：分词与序列化: part2/2_3_tokenization_serialization.md
-  - 第三部分：多模态数据工程:
-      - 第6章：图文对数据处理: part3/3_1_image_text_pairs.md
-      - 第7章：数据重描述: part3/3_2_recaptioning.md
-      - 第8章：视频与音频数据: part3/3_3_video_audio.md
-  - 第四部分：对齐与合成数据工程:
-      - 第9章：指令微调数据: part4/4_1_sft_data.md
-      - 第10章：合成数据: part4/4_2_synthetic_data.md
-      - 第11章：人类偏好数据: part4/4_3_preference_data.md
-  - 第五部分：应用级数据工程:
-      - 第12章：RAG数据流水线: part5/5_1_rag_pipeline.md
-      - 第13章：多模态RAG: part5/5_2_mm_rag.md
-  - 第六部分：实战项目集:
-      - 项目一：构建Mini-C4预训练集: part6/6_1_mini_c4.md
-      - 项目二：垂直领域专家SFT: part6/6_2_legal_sft.md
-      - 项目三：构建LLaVA多模态指令集: part6/6_3_llava_instruct.md
-      - 项目四：合成数学代码教科书: part6/6_4_synthetic_textbook.md
-      - 项目五：多模态RAG企业财报助手: part6/6_5_mm_rag.md

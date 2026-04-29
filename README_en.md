@@ -5,20 +5,25 @@
 
 **English | [中文](README.md) | [日本語](README_ja.md)**
 
+> **Version note:** The Chinese edition is the current 2026 mainline and has expanded to 28 chapters and 10 hands-on projects. The English and Japanese editions are being updated; the documentation site includes translation status pages.
+
 ## Introduction
 
 > *"Data is the new oil, but only if you know how to refine it."*
 
 In the era of large models, **data quality determines the upper bound of model performance**. Yet systematic resources on LLM data engineering remain extremely scarce — most teams are still learning by trial and error.
 
-This book is designed to fill that gap. We systematically cover the complete technical stack from **pre-training data cleaning** to **multimodal alignment**, from **RAG retrieval augmentation** to **synthetic data generation**, including:
+This book is designed to fill that gap. We systematically cover the complete technical stack from **pre-training data cleaning** to **multimodal alignment**, from **RAG retrieval augmentation** to **synthetic data generation**, all the way through **DataOps platform engineering** and **privacy-compliant data governance**, including:
 
 - 🧹 **Pre-training Data Engineering**: Extracting high-quality corpora from massive noisy data sources like Common Crawl
 - 🖼️ **Multimodal Data Processing**: Collection, cleaning, and alignment of image-text pairs, video, and audio data
 - 🎯 **Alignment Data Construction**: Automated generation of SFT instruction data, RLHF preference data, and CoT reasoning data
+- 🤖 **Reasoning & Agent Data**: Chain-of-thought, Tool-Use, multi-turn interaction, and memory data engineering
 - 🔍 **RAG Data Pipeline**: Enterprise-grade document parsing, semantic chunking, and multimodal retrieval
+- ⚙️ **DataOps & Platform Engineering**: Team organization, data versioning, and platform observability
+- 🔒 **Privacy, Compliance & Security**: Data governance frameworks, federated learning, and privacy-enhancing technologies
 
-Beyond in-depth theoretical explanations, the book includes **5 end-to-end capstone projects** with runnable code and detailed architecture designs for hands-on learning.
+Beyond in-depth theoretical explanations, the book includes **10 end-to-end capstone projects** with runnable code and detailed architecture designs for hands-on learning.
 
 **Read Online**: [https://datascale-ai.github.io/data_engineering_book/en/](https://datascale-ai.github.io/data_engineering_book/en/)
 
@@ -31,45 +36,73 @@ Beyond in-depth theoretical explanations, the book includes **5 end-to-end capst
 ## Table of Contents
 
 ```
-📖 6 Parts, 13 Chapters + 5 Capstone Projects
+📖 10 Parts, 28 Chapters + 10 Capstone Projects
 │
-├── Part 1: Infrastructure & Core Concepts
-│   ├── Chapter 1: Data Revolution in the LLM Era (From Data Ops to AI Ops)
-│   └── Chapter 2: AI-Native Data Stack
+├── Part 1: Overview & Infrastructure
+│   ├── Chapter 1: Data Revolution in the LLM Era
+│   ├── Chapter 2: LLM Data Lifecycle & Quality Assessment Framework
+│   └── Chapter 3: AI-Native Data Stack & Cost Governance
 │
-├── Part 2: Large-Scale Text Pre-training Engineering
-│   ├── Chapter 3: Data Acquisition
-│   ├── Chapter 4: Cleaning & Quality Control
-│   └── Chapter 5: Tokenization, Serialization & Efficient Loading
+├── Part 2: Text Pre-training Data Engineering
+│   ├── Chapter 4: Data Sources, Acquisition & Copyright
+│   ├── Chapter 5: Cleaning, Deduplication & Decontamination
+│   ├── Chapter 6: Tokenization, Serialization & Efficient Loading
+│   └── Chapter 7: Data Evaluation, Quality Loop & Operational Iteration
 │
 ├── Part 3: Multimodal Data Engineering
-│   ├── Chapter 6: Image-Text Pair Processing
-│   ├── Chapter 7: Recaptioning
-│   └── Chapter 8: Video & Audio Data
+│   ├── Chapter 8: Image-Text Pair Data Engineering
+│   ├── Chapter 9: Recaptioning & Document Understanding
+│   ├── Chapter 10: Video & Audio Data Engineering
+│   └── Chapter 11: Cross-Modal Alignment & Fusion
 │
-├── Part 4: Alignment & Synthetic Data Engineering
-│   ├── Chapter 9: Instruction Fine-tuning Data
-│   ├── Chapter 10: Synthetic Data
-│   └── Chapter 11: Human Preference Data
+├── Part 4: Instruction Fine-tuning & Preference Data
+│   ├── Chapter 12: SFT Data Design & Instruction Taxonomy
+│   ├── Chapter 13: Preference Data & Reward Signals
+│   └── Chapter 14: Annotation Platforms, QA Systems & Data Operations
 │
-├── Part 5: Application-level Data Engineering
-│   ├── Chapter 12: RAG Data Pipeline
-│   └── Chapter 13: Multimodal RAG
+├── Part 5: Synthetic Data Engineering
+│   ├── Chapter 15: Synthetic Data Factory: From Seeds to Validation
+│   ├── Chapter 16: Knowledge Distillation & Model Collaboration
+│   └── Chapter 17: Synthetic Data Quality Control & Model Collapse
 │
-└── Part 6: Capstone Projects
-    ├── Project 1: Building Mini-C4 Pre-training Set
+├── Part 6: Reasoning & Agent Data Engineering
+│   ├── Chapter 18: Chain-of-Thought & Reasoning Data Engineering
+│   ├── Chapter 19: Tool-Use & Function-Calling Data
+│   └── Chapter 20: Agent Memory & Multi-turn Interaction Data
+│
+├── Part 7: Application-Level Data Engineering
+│   ├── Chapter 21: RAG Data Pipeline
+│   ├── Chapter 22: Multimodal RAG & Visual Retrieval
+│   └── Chapter 23: Online Feedback Loop & Knowledge Update
+│
+├── Part 8: DataOps & Platform Engineering
+│   ├── Chapter 24: DataOps Flywheel & Team Organization
+│   ├── Chapter 25: Data Versioning & Experiment Tracking
+│   └── Chapter 26: Data Platform Observability
+│
+├── Part 9: Privacy, Compliance & Data Security
+│   ├── Chapter 27: Data Compliance Framework & Governance
+│   └── Chapter 28: Federated Learning & Privacy-Enhancing Technologies
+│
+└── Part 10: Capstone Projects (P01–P10)
+    ├── Project 1: Distributed Mini-C4 Pipeline with Ray
     ├── Project 2: Domain Expert SFT (Legal)
-    ├── Project 3: Building LLaVA Multimodal Instruction Set
-    ├── Project 4: Synthetic Math/Code Textbook
-    └── Project 5: Multimodal RAG Financial Report Assistant
+    ├── Project 3: LLaVA Multimodal Instruction Data Factory
+    ├── Project 4: Synthetic Math & Code Textbook Factory
+    ├── Project 5: Multimodal RAG Financial Report Assistant
+    ├── Project 6: CoT Reasoning Dataset & PRM Training
+    ├── Project 7: Agent Tool-Use Data Factory
+    ├── Project 8: Enterprise DataOps Platform: From Data Projects to Org-Level Governance
+    ├── Project 9: Privacy-Preserving Data Pipeline
+    └── Project 10: End-to-End LLM Data Flywheel
 ```
 
 ## Key Highlights
 
 ### Comprehensive Theory
 - **Data-Centric AI** philosophy throughout
-- Covers the full LLM data lifecycle: Pre-training → Fine-tuning → RLHF → RAG
-- In-depth coverage of Scaling Laws, data quality evaluation, multimodal alignment, and more
+- Covers the full LLM data lifecycle: Pre-training → Fine-tuning → RLHF → RAG → DataOps
+- In-depth coverage of Scaling Laws, data quality evaluation, multimodal alignment, privacy compliance, and more
 
 ### Modern Tech Stack
 | Domain | Technologies |
@@ -78,7 +111,9 @@ Beyond in-depth theoretical explanations, the book includes **5 end-to-end capst
 | Data Storage | Parquet, WebDataset, Vector Databases (Milvus/Qdrant) |
 | Text Processing | Trafilatura, KenLM, MinHash LSH, fastText Quality Scoring |
 | Multimodal | CLIP, ColPali, img2dataset |
-| Data Versioning | DVC, LakeFS, Pachyderm |
+| Data Versioning | DVC, LakeFS, MLflow |
+| Platform Observability | Great Expectations, Evidently AI, Apache Airflow |
+| Privacy & Security | Federated Learning, Differential Privacy, Secure MPC |
 
 ### Rich Capstone Projects
 
@@ -86,9 +121,14 @@ Beyond in-depth theoretical explanations, the book includes **5 end-to-end capst
 |---------|-------------------|--------|
 | Mini-C4 Pre-training Set | Trafilatura + Ray + MinHash | High-quality text corpus |
 | Legal Expert SFT | Self-Instruct + CoT | Domain instruction dataset |
-| LLaVA Multimodal | Bbox alignment + multi-image interleaving | Visual instruction dataset |
-| Math Textbook | Evol-Instruct + sandbox verification | PoT reasoning dataset |
+| LLaVA Multimodal Instruction | Bbox alignment + multi-image interleaving | Visual instruction dataset |
+| Synthetic Math Textbook | Evol-Instruct + sandbox verification | PoT reasoning dataset |
 | Financial Report RAG | ColPali + Qwen-VL | Multimodal QA system |
+| CoT Reasoning + PRM | Process Reward Modeling | Reasoning process dataset |
+| Agent Tool-Use Factory | Tool-call chains + trajectory annotation | Agent training dataset |
+| DataOps Platform | Airflow + DVC + quality monitoring | Enterprise data ops system |
+| Privacy Pipeline | Federated Learning + Differential Privacy | Compliant training pipeline |
+| LLM Data Flywheel | Online feedback + continuous iteration | End-to-end closed-loop system |
 
 ## Local Development
 
@@ -127,32 +167,27 @@ The generated static files are located in the `site/` directory.
 ```
 data_engineering_book/
 ├── docs/
-│   ├── zh/                  # Chinese content
-│   │   ├── index.md         # Chinese homepage
-│   │   └── part1/ ~ part6/  # All chapters
-│   ├── en/                  # English content
-│   │   ├── index.md         # English homepage
-│   │   └── part1/ ~ part6/  # All chapters
-│   ├── ja/                  # Japanese content
-│   │   ├── index.md         # Japanese homepage
-│   │   └── part1/ ~ part6/  # All chapters
-│   ├── images/              # Image assets (shared)
-│   ├── stylesheets/         # Custom styles
-│   └── javascripts/         # JavaScript (MathJax etc.)
-├── .github/workflows/       # GitHub Actions CI/CD
-├── images/                  # Project image assets
-│   ├── structure_cn.png     # Book architecture diagram (Chinese)
-│   └── structure_en.png     # Book architecture diagram (English)
-├── mkdocs.yml               # MkDocs configuration
-├── LICENSE                  # License
-├── README.md                # 中文说明
-└── README_en.md             # English README (this file)
+│   ├── zh/                    # Chinese content
+│   │   ├── index.md           # Chinese homepage
+│   │   └── part1/ ~ part10/   # All chapters
+│   ├── en/                    # English content
+│   ├── ja/                    # Japanese content
+│   ├── images/                # Image assets (shared)
+│   ├── stylesheets/           # Custom styles
+│   └── javascripts/           # JavaScript (MathJax etc.)
+├── .github/workflows/         # GitHub Actions CI/CD
+├── images/                    # Project image assets
+├── mkdocs.yml                 # MkDocs configuration
+├── LICENSE                    # License
+├── README.md                  # 中文说明
+├── README_en.md               # English README (this file)
+└── README_ja.md               # 日本語 README
 ```
 
 ## Target Audience
 
 - LLM R&D Engineers
-- Data Engineers / MLOps Engineers
+- Data Engineers / MLOps / DataOps Engineers
 - AI Product Managers (Technical)
 - Researchers interested in LLM data pipelines
 

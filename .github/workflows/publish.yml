@@ -1,25 +1,29 @@
 name: publish-site
 on:
-  push:
+  workflow_run:
+    workflows: ["validate"]
+    types:
+      - completed
     branches:
-      - main  # 确认为你的主分支名称
+      - main
 
 permissions:
   contents: write
 
 jobs:
   deploy:
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Configure Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.x
-          
+          python-version: "3.12"
+
       - name: Install dependencies
-        run: pip install mkdocs-material mkdocs-glightbox "mkdocs-static-i18n[material]"
+        run: pip install -r requirements-docs.txt
 
       - name: Deploy to GitHub Pages
         run: mkdocs gh-deploy --force
