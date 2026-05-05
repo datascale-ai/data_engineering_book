@@ -30,8 +30,6 @@ REDIRECTS: dict[str, str] = {
     "part8/8_1_dataops_flywheel_team": "part8/ch24_dataops_flywheel_team",
     "part8/8_2_data_versioning_experiment_tracking": "part8/ch25_data_versioning_experiment_tracking",
     "part8/8_3_data_platform_observability": "part8/ch26_data_platform_observability",
-    "part9/Ch27_compliance_framework_and_governance": "part9/ch27_compliance_framework_and_governance",
-    "part9/Ch28_federated_learning_and_privacy_preserving_technologies": "part9/ch28_federated_learning_and_privacy_preserving_technologies",
 }
 
 
