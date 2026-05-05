@@ -1,4 +1,4 @@
-# 第九篇：隐私合规与数据安全
+**第九篇：隐私合规与数据安全**
 
 **篇前导读**
 * **核心目标**：回答“数据能不能用、怎么用、用了是否可控”三大核心问题。
@@ -684,7 +684,7 @@ DPIA 的核心不是“写一篇长报告”，而是系统性回答以下问题
 在平台侧，要求每个数据应用上线前，在代码仓中提交类似如下的合规配置文件，由 CI/CD 管道自动拉取并校验：
 
 ```yaml
-# P09-User-Insight-Model RoPA Declaration
+## P09-User-Insight-Model RoPA Declaration
 project_id: "P09-001"
 project_name: "P09-User-Insight-Model"
 owner: "algo_team_a"
@@ -854,7 +854,7 @@ approval_rules:
 ### 27.5.4 DPIA 模板（Markdown 表单示例）
 
 ```md
-# DPIA Assessment Form
+## DPIA Assessment Form
 
 ## 1. 基本信息
 - 项目名称：
@@ -942,7 +942,7 @@ approval_rules:
 ### 27.5.7 事故响应与复盘模板
 
 ```md
-# Privacy Incident Postmortem
+## Privacy Incident Postmortem
 
 ## 1. 事件概述
 - 事件编号：
