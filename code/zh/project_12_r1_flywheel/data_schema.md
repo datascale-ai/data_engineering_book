@@ -1,0 +1,24 @@
+# Data Schema
+
+- `cold_start_*.jsonl`
+  - `record_id`
+  - `source_dataset`
+  - `domain`
+  - `prompt`
+  - `reference_reasoning`
+  - `reference_answer`
+  - `messages`
+- `sampled_traces/*.jsonl`
+  - `prompt_id`
+  - `sample_idx`
+  - `raw_trace`
+  - `parsed_answer`
+  - `generation_params`
+- `verified_candidates/*.jsonl`
+  - `verifier_pass`
+  - `verifier_type`
+  - `reward_score`
+  - `selected`
+- `merged_sft_data.jsonl`
+  - `source_stage`
+  - `messages`
