@@ -644,7 +644,7 @@ print(route_feedback(event))
 
 ------
 
-## 参考文献
+为了提升反馈处理效率，系统需要自动识别高价值反馈样本，并根据显式负反馈、用户纠错、追问行为、人工接管、风险等级、近期更新和问题频次等信号进行优先级排序。通过规则和模型结合，系统可以将大量线上反馈转化为可处理的审核队列、修复任务和评测样本。
 
 Amershi S, Begel A, Bird C, DeLine R, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice, pp 291–300.
 

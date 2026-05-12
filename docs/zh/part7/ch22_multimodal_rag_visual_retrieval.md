@@ -515,7 +515,7 @@ $$
 
 
 
-## 参考文献
+本节从案例与模式的角度，回看了多模态 RAG 的落地方法。金融报表助手强调文本解释、表格数值与图表趋势三类证据协同；版式复杂企业文档检索强调页面结构恢复、条款定位与可验证回答；而与 P05 的映射，则把第22章的方法论进一步翻译成项目交付模块。
 
 Xu Y, Li M, Cui L, Huang S, Wei F, Zhou M (2020) LayoutLM: Pre-training of Text and Layout for Document Image Understanding. In: Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining, pp 1192–1200.
 

@@ -8,7 +8,7 @@
 
 **代价：约 3 万元算力浪费，外加 18 小时的工程延误。** 而这个问题完全可以在训练启动前 1 天的 smoke test 阶段被发现。
 
-这个案例说明了本章的核心命题：**数据输入管道（Input Pipeline）的效率，是预训练中最容易被低估、一旦出问题代价最高的工程环节之一。** 它处于"清洗已完成，训练还没开始"的灰色地带——既不属于数据工程的关注重点，也不属于训练系统的调优范围，结果往往被双方忽视，直到真实的算力爆炸才被迫正视。
+这个案例说明了本章的核心命题：**数据输入管道（Input Pipeline）的效率，是预训练中最容易被低估、一旦出问题代价最高的工程环节之一。** 它处于"清洗已完成，训练还没开始"的灰色地带——既不属于数据工程的关注重点，也不属于训练系统的调优范围，结果往往被双方忽视，直到真实的算力浪费产生才被迫正视。
 
 ---
 
@@ -109,7 +109,7 @@ spm.SentencePieceTrainer.train(
 
 
 
-### 6.2.2 数据格式与序列化：性能决定性选择
+### 6.2.3 数据格式与序列化：性能决定性选择
 
 数据格式的选择对 DataLoader 的吞吐量有直接的数量级级别的影响。以下是主流格式的性能与工程权衡：
 
@@ -117,16 +117,16 @@ spm.SentencePieceTrainer.train(
 
 | 格式 | 类型 | 顺序读速度 | 随机访问 | 压缩支持 | 跨框架支持 | 适用场景 |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **JSONL (.jsonl)** | 文本行 | 慢（需 JSON 解析） | 不支持 | ❌（需 .gz 组合）| 极好 | 数据交换、调试 |
-| **Parquet** | 列式二进制 | 快（列裁剪） | 支持（行组级） | ✅ Snappy/Zstd | 很好（Spark/pandas）| 批处理分析、Ch05 输出 |
-| **Apache Arrow / Feather** | 行式二进制 | 极快（零拷贝） | 支持 | ✅ LZ4/Zstd | 好（PyArrow）| CPU→GPU 中间层 |
-| **MDS（Mosaic）** | Shard二进制 | 极快 | Shard级 | ✅ Zstd | 好（Streaming Datasets）| LLM 预训练首选 |
-| **WebDataset (.tar)** | Tar打包 | 快（流式）| Shard级 | ✅（内部文件压缩）| 好（Torchvision）| 多模态训练 |
-| **Raw .bin（Token IDs）** | 二进制整型 | 极快（内存映射）| 支持（byte offset）| ❌ | 需自实现 | 超大规模预训练 |
+| **JSONL (.jsonl)** | 文本行 | 慢（需 JSON 解析） | 不支持 | ✗（需 .gz 组合）| 极好 | 数据交换、调试 |
+| **Parquet** | 列式二进制 | 快（列裁剪） | 支持（行组级） | √ Snappy/Zstd | 很好（Spark/pandas）| 批处理分析、Ch05 输出 |
+| **Apache Arrow / Feather** | 行式二进制 | 极快（零拷贝） | 支持 | √ LZ4/Zstd | 好（PyArrow）| CPU→GPU 中间层 |
+| **MDS（Mosaic）** | Shard二进制 | 极快 | Shard级 | √ Zstd | 好（Streaming Datasets）| LLM 预训练首选 |
+| **WebDataset (.tar)** | Tar打包 | 快（流式）| Shard级 | √（内部文件压缩）| 好（Torchvision）| 多模态训练 |
+| **Raw .bin（Token IDs）** | 二进制整型 | 极快（内存映射）| 支持（byte offset）| ✗ | 需自实现 | 超大规模预训练 |
 
 对于 LLM 预训练场景，**MDS 格式**（由 MosaicML 开发，现为 Databricks 开源）是目前最推荐的选择——它专为流式多节点读取设计，支持多 GPU 节点并发无冲突读取同一数据集，内置 shuffle 缓冲区，并支持从 S3/GCS 等对象存储直接流式读取而无需完整下载。其次选择是 **Raw .bin 内存映射格式**（Megatron-LM 使用方案），将 token ID 数组直接写为二进制文件，读取时使用 `np.memmap` 进行内存映射，在本地 NVMe SSD 上读取速度接近内存速度。
 
-### 6.2.3 Shard 策略与全局 Shuffle
+### 6.2.4 Shard 策略与全局 Shuffle
 
 数据集应当被切分为大量等大小的 shard 文件，而不是存储为单个大文件。推荐的 shard 大小在 **256MB-1GB** 之间，这一区间的选择依据是：shard 过小会导致文件元数据（文件打开、seek）的开销占比过大；shard 过大会导致跨节点分配时的负载不均衡，且单 shard 损坏会导致更大量的数据不可用。
 
@@ -193,8 +193,8 @@ $$p_i = \frac{n_i^{1/T}}{\sum_j n_j^{1/T}}$$
 | :--- | :--- | :--- | :--- | :--- |
 | **等比例采样** (T=1) | 按原始数据量等比 | 最接近真实数据分布 | 小来源被大来源淹没，代码/论文等稀少 | 通用语料预训练初期 |
 | **均匀采样** (T→∞) | 每个来源等概率 | 充分覆盖所有来源 | 模型偏向少数来源风格，通用能力下降 | 特定覆盖率实验 |
-| **温度采样** (T=2) | 对数据量做幂次平滑 | 平衡大小来源，增强多样性 | 需要调参 | 多语言、多领域混合 ✅ 推荐 |
-| **固定比例混采** | 手动设定每源配比 | 完全可控，直接对应业务目标 | 需要人工设计，配比调错代价大 | 有明确业务目标的定制训练 ✅ 推荐 |
+| **温度采样** (T=2) | 对数据量做幂次平滑 | 平衡大小来源，增强多样性 | 需要调参 | 多语言、多领域混合（推荐）|
+| **固定比例混采** | 手动设定每源配比 | 完全可控，直接对应业务目标 | 需要人工设计，配比调错代价大 | 有明确业务目标的定制训练（推荐）|
 | **课程学习（Curriculum）** | 先用简单/通用数据，后引入复杂数据 | 收敛更稳，特定能力提升更高效 | 需设计难度度量，实现复杂 | 长期大规模训练 |
 
 ### 6.3.3 课程学习（Curriculum Learning）
@@ -242,7 +242,7 @@ dataloader = DataLoader(
 
 当 GPU 利用率不达预期时，按以下系统化步骤排查：
 
-![图6-2：吞吐瓶颈诊断流程图](../../images/part1/io_bottleneck_diagnosis_flow.png)
+![图6-2：吞吐瓶颈诊断流程图](../../images/part2/io_bottleneck_diagnosis_flow.png)
 
 *图6-2：吞吐瓶颈诊断流程图 —— 从 GPU 利用率异常出发，通过三级决策树定位磁盘 I/O 瓶颈、CPU 预处理瓶颈和 PCIe 传输瓶颈，并给出对应的修复方案。*
 
@@ -302,7 +302,7 @@ dataloader = DataLoader(
 )
 ```
 
-**避免重复读取**是多节点分布式 DataLoader 的一个常见坑：如果各节点的 DataLoader 没有进行适当的 rank-aware 划分，每个节点会独立读取完整数据集，导致所有节点看到相同的数据顺序，梯度更新实际上是在重复数据上进行的——等效于 batch size 没有随着节点数增加而正确扩展。对于非 `StreamingDataset` 的自定义数据集，需要使用 `DistributedSampler`，并在每个 epoch 开始时调用 `sampler.set_epoch(epoch)` 以确保不同 epoch 之间的 shuffle 随机性。
+**避免重复读取**是多节点分布式 DataLoader 的一个常见易错点：如果各节点的 DataLoader 没有进行适当的 rank-aware 划分，每个节点会独立读取完整数据集，导致所有节点看到相同的数据顺序，梯度更新实际上是在重复数据上进行的——等效于 batch size 没有随着节点数增加而正确扩展。对于非 `StreamingDataset` 的自定义数据集，需要使用 `DistributedSampler`，并在每个 epoch 开始时调用 `sampler.set_epoch(epoch)` 以确保不同 epoch 之间的 shuffle 随机性。
 
 **全局 Token 计数一致性检验**：在分布式训练中，每个 rank 实际处理的 token 数量应当几乎相同（允许 ±1 个 batch 的误差）。若各 rank 的 token 计数出现较大差异（超过 5%），说明数据分发或 DataLoader 配置存在问题，需要在 Smoke Test 阶段通过 `dist.all_reduce` 对各 rank 的 batch 计数进行汇总检验。
 
@@ -314,7 +314,7 @@ dataloader = DataLoader(
 
 ### 图与案例
 
-![图6-1：训练输入管道分层图](../../images/part1/training_input_pipeline_layers.png)
+![图6-1：训练输入管道分层图](../../images/part2/training_input_pipeline_layers.png)
 
 *图6-1：LLM 训练输入管道分层架构 —— 从分词、序列化、数据混采、Packing 到 DataLoader GPU 馈送的五阶段完整路径，底部标注了两个最高频的瓶颈风险点（磁盘 I/O 和 CPU↔GPU 传输）。*
 
@@ -370,7 +370,3 @@ dataloader = DataLoader(
 本章以一次真实 I/O 瓶颈导致 GPU 空转 62% 的训练事故开篇，系统建立了训练输入管道的完整技术认知。我们详细梳理了分词算法选型（BPE/SentencePiece 的工程权衡）、数据格式选择（从 JSONL 到 MDS/Arrow 的性能跃升）、Packing 策略（消除 Padding 带来的 40-80% 吞吐提升）、温度采样与课程学习的混采策略（表6-2），以及系统化的 I/O 瓶颈诊断三步法（图6-2）。附录中的"输入管道优化检查清单"可直接作为生产级预训练任务的启动前核验工具。
 
 本章与 Ch03（成本治理）的成本视角深度呼应——在 GPU 算力成本极高的预训练专案中，输入管道的工程质量差异可以直接决定数十乃至数百万人民币的算力成本节省。进入下一章，我们将视角从"如何把数据送进模型"转向"如何评价模型用这些数据学到了什么"：**第7章 数据评估、质量闭环与运营迭代**。
-
-## 参考文献
-
-<!-- 待补充：本章引用的论文、博客、工具与官方文档。补全策略见 publishing/citations_progress.md。 -->
