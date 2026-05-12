@@ -2,9 +2,9 @@
 
 ## 本章概览
 
-上一章讨论了后训练阶段的 SFT、偏好对齐、奖励模型和 RLVR 数据接口。本章继续向前推进，聚焦 2025 年以来开源社区最重要的一类变化：推理模型不再只依赖人工写好的长思维链样本，而是开始通过强化学习（Reinforcement Learning, RL）和可验证奖励，主动扩大自己的推理轨迹空间。
+上一章讨论了后训练阶段的 SFT、偏好对齐、奖励模型和 RLVR 数据接口。本章继续向前推进，聚焦 2025 年以来开源社区最重要的一类变化：推理模型不再只依赖人工写好的长思维链样本，而是开始通过强化学习（Reinforcement Learning, RL）和可验证奖励，主动扩大自己的推理轨迹空间（Guo et al. 2025; Team et al. 2025）。
 
-在传统后训练流程中，数据工程的核心问题通常是“如何构造更好的答案”。到了 R1 / QwQ / Kimi-1.5 这一类推理模型中，问题变成了“如何让模型在可验证任务上自己探索、自己试错、自己筛选，并把成功轨迹沉淀为下一轮监督数据”。这意味着数据工程不再只管理 instruction 和 response，而要管理任务池、采样轨迹、验证器、奖励信号、失败原因、拒绝采样结果和二轮 SFT 数据。
+在传统后训练流程中，数据工程的核心问题通常是“如何构造更好的答案”，这一路线在 Llama 2 等开放聊天模型中已经形成了 SFT、偏好标注与安全对齐的基本范式（Touvron et al. 2023）。到了 R1 / QwQ / Kimi-1.5 这一类推理模型中，问题变成了“如何让模型在可验证任务上自己探索、自己试错、自己筛选，并把成功轨迹沉淀为下一轮监督数据”。这意味着数据工程不再只管理 instruction 和 response，而要管理任务池、采样轨迹、验证器、奖励信号、失败原因、拒绝采样结果和二轮 SFT 数据。
 
 本章可以按四条主线理解：
 
@@ -27,9 +27,9 @@
 
 这个限制在复杂任务上很快会暴露出来。一个模型可以流畅地写出“首先、其次、因此”，但每一步可能并没有被验证；它也可以在训练集常见题型上表现很好，但遇到略微变化的数学条件、边界输入或代码测试用例时，推理链就会断裂。更重要的是，人工写 CoT 的成本很高，且难以覆盖大规模题型。团队可以写 1 万条、10 万条高质量 CoT，但很难人工写出足够多的失败轨迹、修正轨迹和边界轨迹。
 
-R1-Zero 这类实验给数据工程带来的启发是：在可验证任务上，模型并不一定需要先看大量人工 CoT，才能产生可用的推理行为。只要任务可以被程序化验证，模型就可以通过采样和奖励信号逐渐发现更有效的推理路径。数学题的最终答案、代码题的单元测试、结构化输出的 schema 检查、工具调用的返回状态，都可以成为训练信号的一部分。
+R1-Zero 这类实验给数据工程带来的启发是：在可验证任务上，模型并不一定需要先看大量人工 CoT，才能产生可用的推理行为。只要任务可以被程序化验证，模型就可以通过采样和奖励信号逐渐发现更有效的推理路径。数学题的最终答案、代码题的单元测试、结构化输出的 schema 检查、工具调用的返回状态，都可以成为训练信号的一部分（Guo et al. 2025; Cobbe et al. 2021; Chen et al. 2021）。
 
-这并不意味着 SFT 不重要。相反，R1 与 R1-Zero 的差异恰好说明：纯 RL 可以激发推理行为，但也可能产生可读性差、格式混乱、语言混杂、回答不稳定等问题；冷启动 SFT 则可以为模型提供基本格式、可读推理风格和输出边界。推理数据工程的关键，不是选择“只要 SFT”或“只要 RL”，而是把 SFT 与 RL 放在同一条数据飞轮中。
+这并不意味着 SFT 不重要。相反，R1 与 R1-Zero 的差异恰好说明：纯 RL 可以激发推理行为，但也可能产生可读性差、格式混乱、语言混杂、回答不稳定等问题；冷启动 SFT 则可以为模型提供基本格式、可读推理风格和输出边界。推理数据工程的关键，不是选择“只要 SFT”或“只要 RL”，而是把 SFT 与 RL 放在同一条数据飞轮中（Guo et al. 2025; Zhou et al. 2023）。
 
 从数据视角看，传统 CoT 数据和 RL 推理数据有三个区别。
 
@@ -72,7 +72,7 @@ R1 风格推理数据飞轮可以拆成四个阶段：冷启动 SFT、大规模 
 
 第四，语言与风格一致。如果模型需要面向中文用户，就应当避免在推理链中频繁混入英文模板；如果模型需要输出英文代码解释，也要避免中文提示残留破坏格式。
 
-冷启动 SFT 的规模不必很大。对于教学型或小团队项目，几千到几万条高质量 Long-CoT 往往比几十万条低质量 CoT 更有价值。Sky-T1 这类社区项目也说明，小规模精心构造的推理数据可以显著改善 32B 级开源模型的数学和代码表现 [D]。
+冷启动 SFT 的规模不必很大。对于教学型或小团队项目，几千到几万条高质量 Long-CoT 往往比几十万条低质量 CoT 更有价值。Sky-T1 这类社区项目也说明，小规模精心构造的推理数据可以显著改善 32B 级开源模型的数学和代码表现 [D]。类似地，LIMA 也提示高质量小规模对齐数据在行为塑造中具有重要价值（Zhou et al. 2023）。
 
 冷启动阶段最容易出现的误区，是把样本写得过于“完美”。真实 RL 后的推理轨迹通常包含试探、检查、回看条件和修正，而人工冷启动样本如果只呈现线性推导，模型会学到一种过分整齐的解释风格。这样的风格在简单题上可读性很好，但在复杂题上可能缺少自检能力。因此，冷启动数据可以保留适度的中间检查，例如“这里需要确认边界条件”“这个式子只在分母不为零时成立”“先用小样例验证一下”。这些表达不是为了制造冗长，而是为了给后续 RL 提供可延展的推理行为模板。
 
@@ -130,7 +130,7 @@ RL 阶段的训练日志需要和数据日志对齐。只记录 loss、reward �
 
 拒绝采样还要避免样本同质化。若每道题只保留最高分的一条轨迹，训练集可能过分偏向某种表达模板。更好的方式是按任务保留有限数量的多样化成功轨迹，同时对近似重复文本做去重。数学题可以保留不同解法，例如代数法、几何法和枚举法；代码题可以保留不同实现思路，但要保证可读性和复杂度不过度膨胀。多样性不是为了让答案花哨，而是为了让模型在相似任务中具备更强的迁移能力。
 
-失败轨迹在拒绝采样阶段同样有价值。完全错误的样本不应进入二轮 SFT，但可以进入错误分析表；接近正确的样本可以进入 hard case 池；格式错误但思路正确的样本可以进入格式修复集；由于 verifier 漏洞导致误判的样本则应触发验证器更新。一个成熟的数据飞轮不会把失败样本直接删除，而是把失败样本转化为下一轮工程任务。
+失败轨迹在拒绝采样阶段同样有价值。完全错误的样本不应进入二轮 SFT，但可以进入错误分析表；接近正确的样本可以进入 hard case 池；格式错误但思路正确的样本可以进入格式修复集；由于 verifier 漏洞导致误判的样本则应触发验证器更新。一个成熟的数据飞轮不会把失败样本直接删除，而是把失败样本转化为下一轮工程任务（Zelikman, Wu and Goodman 2022; Madaan et al. 2023）。
 
 ### 31.2.4 第四阶段：二轮 SFT
 
@@ -165,9 +165,9 @@ R1 范式的数据工程核心，是奖励信号与验证器设计。没有可�
 
 ### 31.3.1 Rule-based reward 与 model-based reward
 
-Rule-based reward 指由程序规则产生的奖励。数学题可以比较最终答案，代码题可以运行单元测试，JSON 输出可以做 schema 校验，SQL 可以执行并比较结果表。它的优势是稳定、便宜、可复现，缺点是覆盖范围有限。
+Rule-based reward 指由程序规则产生的奖励。数学题可以比较最终答案，代码题可以运行单元测试，JSON 输出可以做 schema 校验，SQL 可以执行并比较结果表。它的优势是稳定、便宜、可复现，缺点是覆盖范围有限（Cobbe et al. 2021; Chen et al. 2021; Lightman et al. 2024）。
 
-Model-based reward 指由奖励模型或 LLM-as-Judge 产生的奖励。它可以覆盖开放式问答、解释质量、风格和安全边界，适用范围更广，但也更容易受到偏见、长度偏差和 prompt 敏感性的影响。
+Model-based reward 指由奖励模型或 LLM-as-Judge 产生的奖励。它可以覆盖开放式问答、解释质量、风格和安全边界，适用范围更广，但也更容易受到偏见、长度偏差和 prompt 敏感性的影响（Zheng et al. 2023; Gao, Schulman and Hilton 2023）。
 
 两类 reward 不应该互相替代，而应该分层使用。对于答案可验证任务，优先使用 rule-based reward；对于开放式任务，可以使用 model-based reward，但要配合人工抽检和审计集；对于高风险领域，不能只依赖模型评审。
 
@@ -187,7 +187,7 @@ Model-based reward 的优势是覆盖更复杂的人类偏好，但它必须被�
 
 ### 31.3.2 Verifier 池
 
-Verifier 池是推理数据飞轮的基础设施。它不是一个单独脚本，而是一组可版本化、可测试、可回滚的验证器。
+Verifier 池是推理数据飞轮的基础设施。它不是一个单独脚本，而是一组可版本化、可测试、可回滚的验证器（Cobbe et al. 2021; Hosseini et al. 2024; Lightman et al. 2024）。
 
 数学 verifier 通常包括答案提取、单位归一化、符号化比较和容差判断。对于 `\frac{1}{2}`、`0.5`、`50%` 这类等价答案，不能只做字符串比较。更稳妥的方式是使用 `sympy` 等符号工具做表达式化简。
 
@@ -208,7 +208,7 @@ Long-CoT 轨迹的质量也可以从内部结构观察。常见的三类片段�
 
 ### 31.3.3 Long-CoT 中英文混合推理策略
 
-在处理 Long-CoT 数据时，开源社区常面临语言混杂（Language Mixing）问题。模型在推理过程中频繁中英文夹杂，可能导致最终输出格式不稳定。在 QwQ 与 Kimi-1.5 相关实践中，解决这一问题主要依赖混合推理数据的纯化策略。
+在处理 Long-CoT 数据时，开源社区常面临语言混杂（Language Mixing）问题。模型在推理过程中频繁中英文夹杂，可能导致最终输出格式不稳定。在 QwQ 与 Kimi-1.5 相关实践中，解决这一问题主要依赖混合推理数据的纯化策略。多语种 CoT 研究也表明，推理语言与任务语言之间的关系会影响模型表现和可读性（Shi et al. 2022）。
 
 首先，在冷启动阶段构造 Long-CoT 种子时，需要在 prompt 层面对语言一致性提出要求。例如中文任务要求 `<think>` 内部推导使用中文，英文任务要求全程英文。其次，在 RL 或拒绝采样阶段，可以针对语言混杂引入格式惩罚：如果模型在连续推理片段中频繁切换语言，降低该轨迹优先级。最后，在二轮 SFT 中，应当优先保留语言稳定、答案可解析的轨迹。
 
@@ -248,11 +248,11 @@ Long-CoT 轨迹的质量也可以从内部结构观察。常见的三类片段�
 
 ## 31.4 数据集曝光对比
 
-随着 DeepSeek-R1、QwQ-32B 与 Kimi-1.5 等推理模型出现，传统 SFT 指令数据集逐渐让位于以 RL 和 Long-CoT 轨迹为核心的数据形态。公开技术报告和数据集卡片披露的信息并不完全一致，因此本节只把明确来源标为 `[D]`，把基于公开描述的合理推断标为 `[I]`，把教学估算标为 `[E]`。
+随着 DeepSeek-R1、QwQ-32B 与 Kimi-1.5 等推理模型出现，传统 SFT 指令数据集逐渐让位于以 RL 和 Long-CoT 轨迹为核心的数据形态。公开技术报告和数据集卡片披露的信息并不完全一致，因此本节只把明确来源标为 `[D]`，把基于公开描述的合理推断标为 `[I]`，把教学估算标为 `[E]`（Guo et al. 2025; Team et al. 2025; Jaech et al. 2024）。
 
 ### DeepSeek-R1：冷启动、RL 与拒绝采样
 
-DeepSeek-R1 报告披露了 R1-Zero 与 R1 两条路径 [D]。R1-Zero 展示了大规模 RL 在没有传统 SFT 冷启动时也能激发推理行为，但输出可读性和稳定性存在问题。R1 则在 RL 前加入少量冷启动 Long-CoT 数据，再通过 RL、拒绝采样和二轮 SFT 形成更稳定的模型。
+DeepSeek-R1 报告披露了 R1-Zero 与 R1 两条路径 [D]。R1-Zero 展示了大规模 RL 在没有传统 SFT 冷启动时也能激发推理行为，但输出可读性和稳定性存在问题。R1 则在 RL 前加入少量冷启动 Long-CoT 数据，再通过 RL、拒绝采样和二轮 SFT 形成更稳定的模型（Guo et al. 2025）。
 
 DeepSeek-R1 路线有三个数据工程要点。
 
@@ -278,7 +278,7 @@ QwQ 对开源复现的另一个启发，是模型权重开放并不等于数据 
 
 ### Kimi-1.5：长上下文与 RL 扩展
 
-Kimi k1.5 报告强调长上下文扩展和改进的策略优化方法，并说明其 RL 框架不依赖更复杂的 MCTS、value function 或 PRM [D]。这一路线提醒我们，推理数据不只来自数学和代码，也可以来自长上下文任务。
+Kimi k1.5 报告强调长上下文扩展和改进的策略优化方法，并说明其 RL 框架不依赖更复杂的 MCTS、value function 或 PRM [D]。这一路线提醒我们，推理数据不只来自数学和代码，也可以来自长上下文任务（Team et al. 2025）。
 
 长上下文推理的难点在于证据管理。模型需要在长文档、多段材料或多轮上下文中定位证据，再把证据转化为推理链。数据侧必须记录引用位置、证据片段、答案依据和失败原因。如果只记录最终答案，无法判断模型是基于证据推理，还是凭语言先验猜测。
 
@@ -288,7 +288,7 @@ Kimi k1.5 这类路线把推理数据工程从“题目-答案”扩展到“上
 
 ### OpenThoughts 与 Sky-T1：社区复现路径
 
-OpenThoughts-114K 是开源社区中重要的推理数据集之一，Hugging Face 数据集卡显示其以 Apache-2.0 许可证发布，并提供 parquet 格式数据 [D]。它的价值在于提供了可下载、可检查、可用于训练的 Long-CoT 样本，使研究者能够复现实验并研究推理数据配方。
+OpenThoughts-114K 是开源社区中重要的推理数据集之一，Hugging Face 数据集卡显示其以 Apache-2.0 许可证发布，并提供 parquet 格式数据 [D]。它的价值在于提供了可下载、可检查、可用于训练的 Long-CoT 样本，使研究者能够复现实验并研究推理数据配方。更早的 ThoughtSource 也体现了集中组织推理数据、任务与推理链元信息的价值（Ott et al. 2023）。
 
 Sky-T1 则展示了另一种低成本路线。公开介绍显示，Sky-T1-32B-Preview 基于 Qwen2.5-32B-Instruct，并使用较小规模的高质量推理数据进行训练，团队同时释放了模型、数据和训练代码 [D]。它说明，推理能力的改进并不一定只能依赖大规模 RL；在某些场景下，结构良好的 Long-CoT SFT 也能带来明显收益。
 
@@ -444,7 +444,7 @@ Verifier 池的质量也要被评估。一个简单做法是维护黄金验证�
 ## 31.6 踩坑指南
 
 **第一，reward hacking。**
-如果 verifier 有漏洞，模型会学会利用漏洞。例如数学答案提取器只读取最后一个数字，模型可能在最后追加正确数字但前面推理完全错误。解决方式是同时检查答案、过程、格式和异常模式。
+如果 verifier 有漏洞，模型会学会利用漏洞。例如数学答案提取器只读取最后一个数字，模型可能在最后追加正确数字但前面推理完全错误。解决方式是同时检查答案、过程、格式和异常模式。奖励模型过度优化研究也说明，单一代理奖励被过度优化后可能偏离真实目标（Gao, Schulman and Hilton 2023）。
 
 **第二，长度爆炸。**
 RL 可能让模型倾向于生成更长推理链。长不等于好，过长推理会增加推理成本，也可能降低可读性。训练数据中应加入长度上限、冗余检测和简洁轨迹。
@@ -465,10 +465,10 @@ RL 可能让模型倾向于生成更长推理链。长不等于好，过长推�
 同一批样本在不同 verifier 版本下可能得到不同 reward。如果不记录版本，训练结果无法复盘。每次 verifier 更新都应跑回归测试。
 
 **第八，训练集与评估集泄漏。**
-推理数据常来自公开题库、社区合成数据和模型蒸馏，评估集也常来自相同来源。如果训练前不做相似度去重，模型分数可能被高估。泄漏不一定是完全相同的题目，也可能是改写后的题干、相同数值结构或同一代码题的变体。处理方式是对题目、答案和关键约束做多层去重，并保留隔离评估集。
+推理数据常来自公开题库、社区合成数据和模型蒸馏，评估集也常来自相同来源。如果训练前不做相似度去重，模型分数可能被高估。泄漏不一定是完全相同的题目，也可能是改写后的题干、相同数值结构或同一代码题的变体。处理方式是对题目、答案和关键约束做多层去重，并保留隔离评估集（Zhou et al. 2023）。
 
 **第九，把 teacher 的错误当成真理。**
-使用强模型生成 Long-CoT 时，容易相信输出天然高质量。实际上，teacher 也会产生错误推理、过长解释、答案泄漏和幻觉引用。所有 teacher 生成数据都应经过 verifier 或人工抽检，不能因为 teacher 强就跳过质量控制。
+使用强模型生成 Long-CoT 时，容易相信输出天然高质量。逐步蒸馏研究表明，teacher rationales 可以显著帮助小模型学习推理能力，但前提是这些中间解释被当作可审计监督信号，而不是无条件真理（Hsieh et al. 2023）。实际上，teacher 也会产生错误推理、过长解释、答案泄漏和幻觉引用。所有 teacher 生成数据都应经过 verifier 或人工抽检，不能因为 teacher 强就跳过质量控制。
 
 **第十，忽视负样本的组织。**
 很多团队只整理正样本，导致后续无法训练过程奖励模型，也无法分析模型失败边界。负样本不一定进入 SFT，但应按错误类型保存。结构化的负样本库可以帮助团队发现题型短板、验证器漏洞和采样配置问题。
@@ -512,7 +512,7 @@ RL 推理数据飞轮的成本主要来自三部分：多路采样、验证器�
 
 风险边界主要有四类。第一类是安全风险，模型可能在代码、工具调用或专业建议中生成有害内容。第二类是版权和许可证风险，开源推理数据并不都适合商用或再分发。第三类是隐私风险，自有业务日志进入任务池前必须脱敏，模型生成的 reasoning trace 也要纳入脱敏和访问控制。第四类是评估风险，训练集污染会让模型看起来更强，但上线后无法复现收益。
 
-在适用边界上，R1 风格飞轮最适合“可验证、可迭代、错误可分析”的任务。SQL 生成可以执行查询并比较结果，代码修复可以运行测试，表格推理可以校验数值，工具调用可以检查参数和返回状态。这些任务一旦建立 verifier，就能形成稳定闭环。相反，价值判断、策略咨询和专业建议类任务需要更复杂的评价体系，通常应先作为评估或人工审计对象，而不是直接作为 RL 主训练任务。
+在适用边界上，R1 风格飞轮最适合“可验证、可迭代、错误可分析”的任务。SQL 生成可以执行查询并比较结果，代码修复可以运行测试，表格推理可以校验数值，工具调用可以检查参数和返回状态。这些任务一旦建立 verifier，就能形成稳定闭环。相反，价值判断、策略咨询和专业建议类任务需要更复杂的评价体系，通常应先作为评估或人工审计对象，而不是直接作为 RL 主训练任务。对于工具调用和 API 编排任务，API 元数据、参数约束和调用结果本身也需要进入验证与轨迹记录（Patil et al. 2024）。
 
 从项目管理角度，一个最小可行推理数据飞轮可以这样落地：先选一个窄任务域，例如数学短题、SQL 生成或结构化抽取；准备几百条冷启动样本；实现 verifier；用当前模型做 4 路采样；保留轨迹和验证日志；筛选第一版 SFT 数据；训练小模型或 LoRA；最后用隔离评估集比较收益。只要闭环跑通，后续扩展规模才有意义。
 
@@ -533,3 +533,41 @@ RL 推理数据飞轮的成本主要来自三部分：多路采样、验证器�
 如果把本章落到项目实施，最小产物不是一个“推理模型”，而是一套数据资产：任务池、verifier 池、采样轨迹库、拒绝采样训练集、失败样本库和评估报告。模型只是这套资产的一次消费结果。只要这些资产持续更新，团队就可以在不同基座模型、不同训练算法和不同部署预算之间切换。
 
 下一章将转向多模态理解模型的数据工程。与文本推理不同，多模态模型还需要处理图像、页面、视频帧、OCR、空间位置和多图关系。Ch32 将讨论这些视觉输入如何进入预训练、多任务对齐和多模态 SFT 数据配方。
+
+---
+
+## 参考文献
+
+Guo D, Yang D, Zhang H, Song J, Wang P, Zhu Q, Xu R, Zhang R, Ma S, Bi X, others (2025) DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. arXiv preprint arXiv:2501.12948.
+
+Team Kimi, Du A, Gao B, Xing B, Jiang C, Chen C, Li C, Xiao C, Du C, Liao C, others (2025) Kimi k1.5: Scaling Reinforcement Learning with LLMs. arXiv preprint arXiv:2501.12599.
+
+Ott S, Hebenstreit K, Liévin V, others (2023) ThoughtSource: A Central Hub for Large Language Model Reasoning Data. Scientific Data 10(1):528.
+
+Jaech A, Kalai A, Lerer A, Richardson A, El-Kishky A, Low A, Helyar A, Madry A, Beutel A, Carney A, others (2024) OpenAI o1 System Card. arXiv preprint arXiv:2412.16720.
+
+Zelikman E, Wu Y, Mu J, Goodman N (2022) STaR: Bootstrapping Reasoning with Reasoning. Advances in Neural Information Processing Systems 35:15476-15488.
+
+Touvron H, Martin L, Stone K, Albert P, Almahairi A, Babaei Y, Bashlykov N, Batra S, Bhargava P, Bhosale S, others (2023) Llama 2: Open Foundation and Fine-Tuned Chat Models. arXiv preprint arXiv:2307.09288.
+
+Hosseini A, Yuan X, Malkin N, Courville A, Sordoni A, Agarwal R (2024) V-STaR: Training Verifiers for Self-Taught Reasoners. arXiv preprint arXiv:2402.06457.
+
+Madaan A, Tandon N, Gupta P, Hallinan S, Gao L, Wiegreffe S, Alon U, Dziri N, Prabhumoye S, Yang Y, Gupta S, Majumder B P, Hermann K, Welleck S, Yazdanbakhsh A, Clark P (2023) Self-Refine: Iterative Refinement with Self-Feedback. Advances in Neural Information Processing Systems 36:46534-46594.
+
+Lightman H, Kosaraju V, Burda Y, Edwards H, Baker B, Lee T, Leike J, Schulman J, Sutskever I, Cobbe K (2024) Let's Verify Step by Step. In: International Conference on Learning Representations.
+
+Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, others (2021) Training Verifiers to Solve Math Word Problems. arXiv preprint arXiv:2110.14168.
+
+Chen M, Tworek J, Jun H, Yuan Q, Pinto H P O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code. arXiv preprint arXiv:2107.03374.
+
+Zheng L, Chiang W-L, Sheng Y, Zhuang S, Wu Z, Zhuang Y, Lin Z, Li Z, Li D, Xing E, Zhang H, Gonzalez J, Stoica I (2023) Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. Advances in Neural Information Processing Systems 36:46595-46623.
+
+Gao L, Schulman J, Hilton J (2023) Scaling Laws for Reward Model Overoptimization. In: Proceedings of the 40th International Conference on Machine Learning, pp 10835-10866.
+
+Shi F, Suzgun M, Freitag M, Wang X, Srivats S, Vosoughi S, Chung H W, Tay Y, Ruder S, Zhou D, others (2022) Language Models Are Multilingual Chain-of-Thought Reasoners. arXiv preprint arXiv:2210.03057.
+
+Patil S G, Zhang T, Wang X, Gonzalez J E (2024) Gorilla: Large Language Model Connected with Massive APIs. In: Advances in Neural Information Processing Systems 38.
+
+Hsieh C-Y, Li C-L, Yeh C-K, Nakhost H, Fujii Y, Ratner A, Krishna R, Lee C-Y, Pfister T (2023) Distilling Step-by-Step! Outperforming Larger Language Models with Less Training Data and Smaller Model Sizes. In: Findings of the Association for Computational Linguistics: ACL 2023, pp 8003-8017.
+
+Zhou C, Liu P, Xu P, Iyer S, Sun J, Mao Y, Ma X, Efrat A, Yu P, Yu L, Zhang S, Ghosh G, Lewis M, Zettlemoyer L, Levy O (2023) LIMA: Less Is More for Alignment. Advances in Neural Information Processing Systems 36:55006-55021.
