@@ -47,7 +47,7 @@
 ### 11.2.2 片段级（Segment-level / Meso-alignment）：连续时间序列映射
 
 这是我们在 Ch10 里重点攻坚的层级。这个级别引入了**长度的跨模态不等量换算**。一段 3.5 秒钟的视频，包含 105 个连续运动的视网膜成像帧序列，同时伴随 3.5 秒的声带高能气流波段；而转换到的对应文本，可能仅仅是为了极其简短的一句 `“The white car drives down the street.”`。
-105 个视觉画面如何对应 7 个英文单词？数据工程师往往运用耗费算力的 DTW（Dynamic Time Warping，动态时间规整）或复杂的基于注意力图的软关联系统去切割它。需要注意的是，标准 DTW 的时间与空间复杂度均为 O(N×M)——对于长达 4500 帧 × 6200 词的片段，内存需求可超过 90GB，因此生产环境中通常配合 **FastDTW** 近似算法（线性复杂度）并将片段限制在 60 秒以内（详见 §11.6.4 的 OOM 案例）。在这一层对齐中，允许少量的前后滞后浮动时间容错（通常设置 Sakoe-Chiba 带宽为 ±0.3–1.0 秒），但绝不容忍"因果倒置"式的前后时序序列混乱。
+105 个视觉画面如何对应 7 个英文单词？数据工程师往往运用耗费算力的 DTW（Dynamic Time Warping，动态时间规整）或复杂的基于注意力图的软关联系统去切割它。需要注意的是，标准 DTW (Sakoe and Chiba 1978) 的时间与空间复杂度均为 O(N×M)——对于长达 4500 帧 × 6200 词的片段，内存需求可超过 90GB，因此生产环境中通常配合 **FastDTW** (Salvador and Chan 2007) 近似算法（线性复杂度）并将片段限制在 60 秒以内（详见 §11.6.4 的 OOM 案例）。在这一层对齐中，允许少量的前后滞后浮动时间容错（通常设置 Sakoe-Chiba 带宽为 ±0.3–1.0 秒），但绝不容忍"因果倒置"式的前后时序序列混乱。
 
 ### 11.2.3 文档级（Document-level / Macro-alignment）：超长交错的多体宇宙宏观对立融合
 
@@ -60,7 +60,7 @@
 | 颗粒度封层 | 对齐的手段与重度特征表达 | 数据依赖的构建开销 / 极度成本代价 | 为大语言模型（LLM）开启解锁的核心适用顶级特工任务 |
 | :--- | :--- | :--- | :--- |
 | **底层防线：对象级 (Object-level)** | 高昂的人工密集标注 BBox；或者通过先进大模型教师强制生成精细抠图区域与绝对对应单词坐标点。 | （高昂，重度依赖人工众包或者大量预处理小核芯推断算力的烧录） | **Region Grounding（区域级溯源）、极小区域病理图像诊断寻找病灶、无人机视觉锁定打击。** |
-| **中层壁垒：片段级 (Segment-level)** | 时间轴对齐算法；通过双塔打分（如 CLIP Score 或 CLAP Score）进行密集矩阵过滤。 | （算力烧损，大量消耗高速内存显存用于高频短段解压重排计算） | **Action Recognition（动作解析识别）、Video Captioning（短剧解读与摘要生成）、Voice Translation。** |
+| **中层壁垒：片段级 (Segment-level)** | 时间轴对齐算法；通过双塔打分（如 CLIP Score (Radford et al. 2021) 或 CLAP Score (Wu et al. 2023)）进行密集矩阵过滤。 | （算力烧损，大量消耗高速内存显存用于高频短段解压重排计算） | **Action Recognition（动作解析识别）、Video Captioning（短剧解读与摘要生成）、Voice Translation。** |
 | **顶层天宫：文档级 (Document-level)** | 高级排版提取引擎（如类似 Nougat 的解构网络）；采用含有极其多图文互相引用的超级超长交错排序流。 | （重在长文本调度编排，对上下文缓存 Context Cache 和 KV 大幅压榨挑战极大） | **超大长流程 Multi-modal QA（多页财报或研报的审读回答）、长时多线程事件因果超级推理（长连载动漫逻辑自洽分析）。** |
 
 
@@ -70,7 +70,7 @@
 
 ### 11.3.1 统一超维张量表示与精细的占位符工程（Placeholder Engineering）
 
-所有的大语言模型骨架天生只能吞吐离散化的 Token（如 1 代表 I，2 代表 love）。那图片和声波怎么变成离散 Token？这就是 **Placeholder Engineering** 和 Quantization 的力量源泉。当通过诸如 VQ-VAE 或者前沿的高阶离散 Auto-Encoder 抽取后，连续的色彩张量会被强行压成高度收敛的离散编号（如图像块转为 `<IMG_TK_451>`）。在合成训练流时，原本的 JSON 样本数据流中并不会真正在文本字符串中塞满庞大的矩阵浮点数序列。而是采用简洁优雅的占位符模式。比如：`<|image_start|> <IMG_TK_451> <IMG_TK_882> <|image_end|>` 这是一只可爱的猫。
+所有的大语言模型骨架天生只能吞吐离散化的 Token（如 1 代表 I，2 代表 love）。那图片和声波怎么变成离散 Token？这就是 **Placeholder Engineering** 和 Quantization 的力量源泉。当通过诸如 VQ-VAE (van den Oord et al. 2017) 或者前沿的高阶离散 Auto-Encoder 抽取后，连续的色彩张量会被强行压成高度收敛的离散编号（如图像块转为 `<IMG_TK_451>`）。在合成训练流时，原本的 JSON 样本数据流中并不会真正在文本字符串中塞满庞大的矩阵浮点数序列。而是采用简洁优雅的占位符模式。比如：`<|image_start|> <IMG_TK_451> <IMG_TK_882> <|image_end|>` 这是一只可爱的猫。
 
 ![图11-2：多模态融合与负样本挖掘管线](../../images/part3/fusion_training_sample_design.png)
 
@@ -83,9 +83,9 @@
 
 1. **极小微差替换法（Subtle Replacement Mining）**：将正样本图片"一只蓝色的杯子放在木桌上"原样保留，然后从海量句库中找出只改变了一个关键修饰词的文本——"一只**黑色**的杯子放在木桌上"——强行将其配作"负类样本"输入模型。这就逼迫 Vision Encoder 死死关注画面里的颜色细节，而不是只做大语义匹配。实践中可结合词性标注（POS Tagging）自动识别"高区分度词槽"，再从同义词库或 LLM 生成变体句批量产出难负样本对。
 
-2. **跨模态属性错位法（Cross-modal Attribute Swap）**：在图片级进行局部语义篡改。通过 Inpainting 模型（如 Stable Diffusion inpaint）将图片中的"红色苹果"改写为"绿色苹果"，同时保留原始正向文本；或者反向操作——保留原图，只把文本中的空间关系词"左边"改成"右边"。此类错位强迫 Cross-attention 层精确感知视觉区域与文字描述之间的细粒度绑定关系，而不是仅靠场景类别做大粒度匹配。
+2. **跨模态属性错位法（Cross-modal Attribute Swap）**：在图片级进行局部语义篡改。通过 Inpainting 模型（如 Stable Diffusion inpaint (Rombach et al. 2022)）将图片中的"红色苹果"改写为"绿色苹果"，同时保留原始正向文本；或者反向操作——保留原图，只把文本中的空间关系词"左边"改成"右边"。此类错位强迫 Cross-attention 层精确感知视觉区域与文字描述之间的细粒度绑定关系，而不是仅靠场景类别做大粒度匹配。
 
-3. **批内在线最难负样本挖掘法（In-Batch Online Hard Negative Mining, OHNM）**：在每个训练批次内部动态计算所有样本两两之间的跨模态相似度矩阵，挑选出相似度最高但语义确实不匹配的样本对作为当批负样本。OHNM 无需额外构建静态数据库，而是让模型当前能力边界实时决定"最有训练价值的困难样本"——随着模型能力增强，难负样本难度自动适应提升，形成自然的课程学习（Curriculum Learning）效果。
+3. **批内在线最难负样本挖掘法（In-Batch Online Hard Negative Mining, OHNM）** (Chen et al. 2020)：在每个训练批次内部动态计算所有样本两两之间的跨模态相似度矩阵，挑选出相似度最高但语义确实不匹配的样本对作为当批负样本。OHNM 无需额外构建静态数据库，而是让模型当前能力边界实时决定"最有训练价值的困难样本"——随着模型能力增强，难负样本难度自动适应提升，形成自然的课程学习（Curriculum Learning）效果。
 
 4. **时序扰动法（Temporal Perturbation，适用于视频-文本对）**：将视频字幕与相邻时间窗口（如前后 3 秒）内的另一段画面错位配对，制造"时序错位负样本"。例如正样本是「`<00:03-00:06>` 运动员起跑」配「起跑」文本，负样本则是该文本错配到「`<00:10-00:13>` 运动员冲线」画面。此类负样本迫使模型学会严格的时间因果关联，而不是仅匹配"运动员"等粗粒度语义标签。
 
@@ -245,3 +245,20 @@ Affected batch: 256 samples. Training step 28,441 aborted.
 | ERR_CROSS_MDL_TOKEN_FMT | Placeholder 解析失败 | Placeholder 被 HTML 转义 | ensure_ascii=False + 入库 Linter |
 | ERR_CROSS_MDL_TEMPORAL | 时序因果倒置 | 数据库最终一致性写入偏移 | 强一致性存储 + 全局时间戳约束 |
 | ERR_CROSS_MDL_MIRROR | 医疗影像镜像污染 | 扫描仪物理输出镜像未校正 | orientation 元数据校验 + 方向固定 |
+
+## 参考文献
+
+Chen T, Kornblith S, Norouzi M, Hinton G (2020) A Simple Framework for Contrastive Learning of Visual Representations (SimCLR). In: Proceedings of the 37th International Conference on Machine Learning, pp 1597-1607.
+
+Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: ICML 2021, pp 8748-8763.
+
+Rombach R, Blattmann A, Lorenz D, Esser P, Ommer B (2022) High-Resolution Image Synthesis with Latent Diffusion Models (Stable Diffusion). In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 10684-10695.
+
+Sakoe H, Chiba S (1978) Dynamic Programming Algorithm Optimization for Spoken Word Recognition (DTW). IEEE Transactions on Acoustics, Speech, and Signal Processing 26(1):43-49.
+
+Salvador S, Chan P (2007) Toward Accurate Dynamic Time Warping in Linear Time and Space (FastDTW). Intelligent Data Analysis 11(5):561-580.
+
+van den Oord A, Vinyals O, Kavukcuoglu K (2017) Neural Discrete Representation Learning (VQ-VAE). Advances in Neural Information Processing Systems 30.
+
+Wu Y, Chen K, Zhang T, Hui Y, Berg-Kirkpatrick T, Dubnov S (2023) Large-Scale Contrastive Language-Audio Pretraining with Feature Fusion and Keyword-to-Caption Augmentation (CLAP). In: IEEE International Conference on Acoustics, Speech and Signal Processing, pp 1-5.
+

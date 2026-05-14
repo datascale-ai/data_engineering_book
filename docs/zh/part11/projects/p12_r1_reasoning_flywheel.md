@@ -2,11 +2,11 @@
 
 ### 背景与目标
 
-R1 / QwQ 这类推理模型带来的启发，并不只是“模型可以输出更长的思维链”，而是推理能力可以被拆成一条可运行的数据工程流水线。传统 SFT 项目通常围绕一批固定的 `instruction-response` 样本展开，训练完成后数据本身很少继续变化。R1 风格的数据飞轮则不同：模型会围绕同一任务生成多条候选轨迹，系统用 verifier 判断哪些轨迹正确、哪些轨迹格式稳定、哪些轨迹值得回流，再把筛选出的成功样本重新组织成下一轮监督微调数据。这样一来，数据不再只是训练前准备好的静态资产，而成为模型能力迭代的一部分。
+R1 / QwQ (Guo et al. 2025; Qwen Team 2025) 这类推理模型带来的启发，并不只是“模型可以输出更长的思维链”，而是推理能力可以被拆成一条可运行的数据工程流水线。传统 SFT 项目通常围绕一批固定的 `instruction-response` 样本展开，训练完成后数据本身很少继续变化。R1 风格的数据飞轮则不同：模型会围绕同一任务生成多条候选轨迹，系统用 verifier 判断哪些轨迹正确、哪些轨迹格式稳定、哪些轨迹值得回流，再把筛选出的成功样本重新组织成下一轮监督微调数据。这样一来，数据不再只是训练前准备好的静态资产，而成为模型能力迭代的一部分。
 
 对中小团队来说，完整复现大规模 RL 训练往往不现实。大规模在线采样、奖励建模、多轮策略更新和长上下文推理都需要持续占用 GPU 资源，也需要复杂的训练框架治理。更可落地的方式，是先把“数据飞轮”本身搭起来：冷启动数据能生成，多路采样能运行，verifier 能自动打分，拒绝采样能筛出高质量轨迹，二轮 SFT 数据能合并，评估脚本能比较训练前后的变化。只要这条链路稳定，后续无论接入更大的模型、更复杂的奖励，还是迁移到行业任务，都有可复用的工程基础。
 
-本项目围绕 `code/zh/project_12_r1_flywheel` 中的代码展开，目标是实现一个最小可运行版 R1 风格推理数据飞轮。它不追求一次性复现 R1-Zero 的完整强化学习过程，也不把 benchmark 分数作为唯一目标，而是强调可运行、可替换、可复盘的数据生产流程。项目默认以 `Qwen2.5-7B-Instruct` 为基础模型，以 `OpenThoughts`、`GSM8K`、`MATH-500` 和 `HumanEval` 为主要数据源，构建从冷启动 SFT 到拒绝采样回流的闭环。
+本项目围绕 `code/zh/project_12_r1_flywheel` 中的代码展开，目标是实现一个最小可运行版 R1 风格推理数据飞轮。它不追求一次性复现 R1-Zero 的完整强化学习过程，也不把 benchmark 分数作为唯一目标，而是强调可运行、可替换、可复盘的数据生产流程。项目默认以 `Qwen2.5-7B-Instruct` (Hui et al. 2024) 为基础模型，以 `OpenThoughts` (Günther et al. 2025)、`GSM8K` (Cobbe et al. 2021)、`MATH-500` (Hendrycks et al. 2021) 和 `HumanEval` (Chen et al. 2021) 为主要数据源，构建从冷启动 SFT 到拒绝采样回流的闭环。
 
 整条链路可以概括为：
 
@@ -351,3 +351,21 @@ data/reports/eval_results_gsm8k_math.json
 | 回流样本不足 | 扩大候选采样，而不是盲目放宽 verifier |
 | LoRA 训练慢 | 先用 `--max-train-samples 1024` 做 smoke train |
 | 评估耗时长 | 先用 `--max-examples 100`，再扩大评估规模 |
+
+
+## 参考文献
+
+Chen M, Tworek J, Jun H, Yuan Q, Pinto H P O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
+
+Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.
+
+Guo D, Yang D, Zhang H, Song J, Zhang R, Xu R, Zhu Q, Ma S, Wang P, Bi X, others (2025) DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. arXiv preprint arXiv:2501.12948.
+
+Günther F, Bhatt U, Gupta D, Mukherjee S, others (2025) Open-Thoughts: Exploring Quality, Quantity, Diversity and Creativity in Reasoning Data. arXiv preprint arXiv:2506.04178.
+
+Hendrycks D, Burns C, Kadavath S, Arora A, Basart S, Tang E, Song D, Steinhardt J (2021) Measuring Mathematical Problem Solving with the MATH Dataset. In: Advances in Neural Information Processing Systems 34:24262-24273.
+
+Hui B, Yang J, Cui Z, Yang J, Liu D, Zhang L, Liu B, Yu B, Lu K, Chi K, others (2024) Qwen2.5: A Party of Foundation Models. arXiv preprint arXiv:2412.15115.
+
+Qwen Team (2025) QwQ-32B: Embracing the Power of Reinforcement Learning for Reasoning Models. Qwen Blog.
+

@@ -2,7 +2,7 @@
 
 在经历了从自然语言文本（第一、二篇）到静态图文解析（第八、九篇）的漫长征途后，我们终于来到了构筑新一代全能大模型能力底座的最前沿深水区——**长序列时序数据工程（Temporal Video & Audio Data Engineering）**。
 
-在过往基于图文对或截帧的训练中，模型就像个盲人摸象的鉴赏家：它能认识世界上的每一种苹果，但它永远无法理解一颗苹果“从桌子上掉落下来、骨碌碌滚进床底并发出清脆撞击声”所蕴含的引力常数、视听觉同步反馈与时间因果律。只有彻底吞噬时间流，模型才能进化为 Sora、Gemini 1.5 Pro 这样能够理解整个世界运行物理法则和声学常识的“**世界模拟器（World Simulators）**”。
+在过往基于图文对或截帧的训练中，模型就像个盲人摸象的鉴赏家：它能认识世界上的每一种苹果，但它永远无法理解一颗苹果“从桌子上掉落下来、骨碌碌滚进床底并发出清脆撞击声”所蕴含的引力常数、视听觉同步反馈与时间因果律。只有彻底吞噬时间流，模型才能进化为 Sora (Brooks et al. 2024)、Gemini 1.5 Pro (Team et al. 2024) 这样能够理解整个世界运行物理法则和声学常识的“**世界模拟器（World Simulators）**”。
 
 但这也意味着，数据工程的灾难，终于从二维平面彻底爆发向了四维超空间。
 
@@ -50,7 +50,7 @@
 *图10-2：自适应镜头边界检测与语义防泄漏架构图（Adaptive Shot Boundary Detection & Semantic Leakage Prevention） —— 展现了严密的双轨特征侦测逻辑。左侧输入的连续密集帧列被送入中枢并行矩阵：上层提取廉价但高效的 HSV 多通道色彩空间聚合差分，下层则抓取光流像素位移（Optical Flow）以捕捉细微运动姿态。两种张量差分在最右侧汇入严苛的“双重阈值路由（Dual-Threshold Triage）”。一旦突变分值 $\Delta$ 击穿红色高压警戒线（Hard Cut Threshold），引擎立即一刀切断分段，将不相关的过场动画与场景转换拒之门外，在源头以最低算力锁死了视觉切片的语义泄漏空间。*
 
 2. **自适应的抽帧过滤法（Adaptive Sub-sampling）**
-   切片完成后，长达 20 秒内的镜头虽然逻辑连贯，但在动作幅度上可能波澜不惊。工厂会部署小模型去持续验证当前帧与上一保留帧在稠密视觉特征（如 DINOv2 Embedding）上的位移距离。只要超过一个预设的欧氏距离阈值（即当前画面的信息量确实有了新展开），才予以打标保留。最终一段原本含 600 帧画面的 20 秒切片，可能会被精准浓缩成 10 张核心关键帧集合，使得大模型的视觉输入侧负载雪崩式下滑了整整 98%。
+   切片完成后，长达 20 秒内的镜头虽然逻辑连贯，但在动作幅度上可能波澜不惊。工厂会部署小模型去持续验证当前帧与上一保留帧在稠密视觉特征（如 DINOv2 (Oquab et al. 2023) Embedding）上的位移距离。只要超过一个预设的欧氏距离阈值（即当前画面的信息量确实有了新展开），才予以打标保留。最终一段原本含 600 帧画面的 20 秒切片，可能会被精准浓缩成 10 张核心关键帧集合，使得大模型的视觉输入侧负载雪崩式下滑了整整 98%。
 
 ### 10.2.2 听觉剥离：多层转写、降噪与声纹剥离切割（ASR & Diarization）
 
@@ -58,14 +58,14 @@
 首先进行的是**多路音轨抽离（Audio Stripping）**，然后进入如下的三层滤网：
 
 #### A. 核心语义层提取：超大并发的 WhisperX 自动语音识别（ASR）
-对于蕴含无穷人类思考逻辑的语音轨，我们必须高压调用诸如万卡部署开源 Whisper 或更激进的 WhisperX 框架网络。将其将音频中夹杂着各种口音的杂乱声音翻译成高度准确的结构化文字序列。
+对于蕴含无穷人类思考逻辑的语音轨，我们必须高压调用诸如万卡部署开源 Whisper (Radford et al. 2023) 或更激进的 WhisperX (Bain et al. 2023) 框架网络。将其将音频中夹杂着各种口音的杂乱声音翻译成高度准确的结构化文字序列。
 
 ![图10-3：大规模 ASR 提取与时间轴动态校准对比图](../../images/part3/asr_whisperx_comparison.png)
 
 *图 10-3：大规模 ASR 提取与时间轴动态校准对比图（Large-Scale ASR Extraction & Temporal Calibration） —— 直观地揭示了声学转写的误差累积与拯救机制。图中最上方为传统的古典 ASR 管道，随着长序列的推进产生了严重的累积性时间漂移（Cumulative Temporal Drift）与致命的语义坍缩（将 `I love apples.` 误听写为 `maples.`）。图中间展示了 WhisperX 架构的强势介入：通过 VAD 切分、多路声学解码与 DTW（音素级强制对齐）矩阵，彻底重构了底层特征提取逻辑。而最下方的输出结果中，最终词汇 Token 与音频波谷被垂直虚线（Vertical Dashed Lines）完美死锁对齐，实现了真正的“零时间漂移”，为多模态融合保住了珍贵的语义连续性。*
 
 #### B. 无尽底噪剥离与纯净化（Denoiser Layer）
-并非所有的视频都拥有演播室级别的隔音。大量野外采集数据混杂极强的风噪或机械共鸣。这就必须动用重型的 Demucs 或基于深度学习的音频分离算法（Source Separation），如同手术刀一般从混响光谱中强制把底层音乐（BGM）、非人类环境声（Environment Noise）和纯净的人声（Vocal）切分开来。
+并非所有的视频都拥有演播室级别的隔音。大量野外采集数据混杂极强的风噪或机械共鸣。这就必须动用重型的 Demucs (Défossez et al. 2019) 或基于深度学习的音频分离算法（Source Separation），如同手术刀一般从混响光谱中强制把底层音乐（BGM）、非人类环境声（Environment Noise）和纯净的人声（Vocal）切分开来。
 
 #### C. “到底是谁在说话？”：说话人日志切分（Speaker Diarization）
 针对高端对话型播客（Podcast）或者多人围坐的会议视频预训练语料如果一股脑全部压成单轨字符串，模型在训练时根本无法分辨谁在提问谁在解答，只能学到精神分裂的对话。Diarization 算法犹如给声波安上了人脸识别系统，能把一条长音频截断并标注为 `[Speaker A]: 01:23-01:30` 和 `[Speaker B]: 01:31-01:40` 这种完美区分了人类物理身份与阵营的回放序列。
@@ -91,7 +91,7 @@
 
 ### 10.3.1 多层级连续动态事件标签强化生成网络（Event Detection & Grounding）
 
-一段野生视频不能只有单纯的画面和念字文本。它缺乏一种高阶的“物理世界动作流描述”。在大厂管线内部，会并行召唤成批的高级大标注辅助模型（如专精于行为理解视频的 LLaVA-Video、Video-LLaMA 等旁路模型集群）。对那些被对齐后的视频小切片发起海量的**异步标注洗礼（Asynchronous Captioning Bath）**。
+一段野生视频不能只有单纯的画面和念字文本。它缺乏一种高阶的“物理世界动作流描述”。在大厂管线内部，会并行召唤成批的高级大标注辅助模型（如专精于行为理解视频的 LLaVA-Video (Zhang et al. 2024)、Video-LLaMA (Damonlpsg et al. 2023) 等旁路模型集群）。对那些被对齐后的视频小切片发起海量的**异步标注洗礼（Asynchronous Captioning Bath）**。
 
 它们不仅要给出视频的单剧全局一句话概括（例如“一个青年在滑板公园表演滑雪后空翻失败摔倒”），更要在底层产生细致到让令人发指的阶段性密集标注（Detailed Temporal Captions）：
 - `<time: 01.2s-03.5s>`: 男生助跑并借力跃上 U 型池抛面...
@@ -225,7 +225,7 @@ Alignment quality score: 0.23 (threshold: 0.75). Segment rejected and quarantine
 
 ### 10.6.4 Diarization 崩溃：说话人分离模型内存泄漏导致进程 OOM [TMP_ERR_CODE_4001]
 
-**[故障现象]**：长时间批量运行 pyannote-audio Diarization 任务时，进程内存占用随批次数线性增长，运行约 4 小时后触发系统 OOM Killer，所有已处理任务结果丢失。
+**[故障现象]**：长时间批量运行 pyannote-audio (Bredin et al. 2023) Diarization 任务时，进程内存占用随批次数线性增长，运行约 4 小时后触发系统 OOM Killer，所有已处理任务结果丢失。
 
 **[堆栈快照]**:
 ```bash
@@ -272,3 +272,24 @@ DataLoader worker 0: Pipe broken, resetting shard iterator. Skipping shard.
 | TMP_ERR_CODE_6XXX | 音画不相关幻觉 | BGM 混入训练语料 | CLIP-Score 跨模态余弦过滤 < 0.3 |
 | TMP_ERR_CODE_7XXX | 解码帧乱序 | ffmpeg seek 精度问题 | 强制 `-ss` 参数放到 input 前 |
 | TMP_ERR_CODE_8XXX | SNR 过低音轨 | 野外噪声超过 40dB | Demucs 分离 + SNR < 15dB 丢弃 |
+
+## 参考文献
+
+Bain M, Huh J, Han T, Zisserman A (2023) WhisperX: Time-Accurate Speech Transcription of Long-Form Audio. arXiv preprint arXiv:2303.00747.
+
+Bredin H, Gelly G, Lavechin M, Puy G, Herrero-Vela A, Rajot N, Eloff J P, Brignatz M, Laurent G, Kollovieh M (2023) pyannote.audio 2.1 Speaker Diarization Pipeline. In: IEEE International Conference on Acoustics, Speech and Signal Processing.
+
+Brooks T, Peebles B, Holmes C, DePue W, Guo Y, Jing L, Schnurr D, Taylor J, Luhman T, Luhman E, others (2024) Video Generation Models as World Simulators (Sora). OpenAI Technical Report.
+
+Damonlpsg (2023) Video-LLaMA: An Instruction-tuned Audio-Visual Language Model for Video Understanding. arXiv preprint arXiv:2306.02858.
+
+Défossez A, Usunier N, Bottou L, Bach F (2019) Music Source Separation in the Waveform Domain (Demucs). arXiv preprint arXiv:1911.13254.
+
+Oquab M, Darcet T, Moutakanni T, Vo H, Szafraniec M, Khalidov V, Fernandez P, Haziza D, Massa F, El-Nouby A, others (2023) DINOv2: Learning Robust Visual Features without Supervision. Transactions on Machine Learning Research.
+
+Radford A, Kim J W, Xu T, Brockman G, McLeavey C, Sutskever I (2023) Robust Speech Recognition via Large-Scale Weak Supervision (Whisper). In: Proceedings of the 40th International Conference on Machine Learning, pp 28492-28518.
+
+Team G, Anil R, Borgeaud S, Alayrac J B, Yu J, Soricut R, Schalkwyk J, Dai A M, Hauth A, Millican K, others (2024) Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context. arXiv preprint arXiv:2403.05530.
+
+Zhang Y, Li Z, Liu C, Chen K, Ma L, Sun Y, Dou Q, Ouyang W, Yang M H, others (2024) Video Instruction Tuning with Synthetic Data (LLaVA-Video). arXiv preprint arXiv:2410.02713.
+

@@ -40,7 +40,7 @@
 
 在纯语言建模时代，无论作者是写一篇长篇大论的主题报告，还是随口吟诵的一句几字短诗，送入大语言模型的代价仅仅与 Token 的长度呈线性增长（Linear Scaling）。但在多模态领域，**图像分辨率（Resolution）对于计算开销（FLOPs）的惩罚是极其严厉且呈指数级攀升的**。
 
-我们以最主流的基于 ViT（Vision Transformer）架构的视觉编码器为例。假设我们设定的切割模块（Patch Size）尺寸恒定为 $14 \times 14$ 像素：
+我们以最主流的基于 ViT（Vision Transformer）(Dosovitskiy et al. 2020) 架构的视觉编码器为例。假设我们设定的切割模块（Patch Size）尺寸恒定为 $14 \times 14$ 像素：
 - 当向网络输入一张极为克制的低清 $224 \times 224$ 分辨率图片时，它会被切成 $(224/14) \times (224/14) = 256$ 个 Patch Token。此时，自注意力机制（Self-Attention）的计算复杂度大约是 $256^2 = 65,536$ 级运算量。
 - 但如果你为了让模型能够看清楚一张扫描版发票上的数字，不得不拔高输入分辨率至 $1008 \times 1008$（以保留文档图像上的微小文字），那么图像 Token 序列的长度将剧增至 $(1008/14) \times (1008/14) = 5184$ 个。
 - 由于标准 Transformer 的 Attention 计算开销是与其产生的 Token 序列长度呈“二次方（Quadratic）复杂度”的，此时单层注意力的计算量飙升到了 $5184^2 \approx 26,873,856$ 级运算量！
@@ -55,19 +55,19 @@
 
 ## 8.2 图文样本的范式：从配对到交错
 
-大模型不同阶段的训练目标，决定了我们需要喂入极其不同格式的数据。根据近年来的前沿结构（如 Flamingo, LLaVA, GPT-4V），典型的多模态文本主要被塑造成三种范式：
+大模型不同阶段的训练目标，决定了我们需要喂入极其不同格式的数据。根据近年来的前沿结构（如 Flamingo (Alayrac et al. 2022), LLaVA (Liu et al. 2023), GPT-4V），典型的多模态文本主要被塑造成三种范式：
 
 ### 8.2.1 图文对 (Image-Caption Pairs)
 这是最古典、最“堆量”的范式。
 - **形式**：严格的一张图对应一段独立的强描绘文字 `{ "image": "dog.jpg", "text": "A golden retriever playing fetch in the park." }`。
-- **代表开源集**：LAION-5B, COYO-700M。
+- **代表开源集**：LAION-5B (Schuhmann et al. 2022), COYO-700M。
 - **适用场景**：主要用于冷启动阶段的**多模态对比学习（Contrastive Pre-training）**，比如训练 CLIP 的前置模型，或者给新接入的 Vision Encoder 建立基础的视觉感知基线。
 - **致命弱点**：无法教会模型推理，只能使其学会认物。
 
 ### 8.2.2 交错图文 (Interleaved Image-Text)
 为了赋予模型在复杂上下文中的“多图关联推理”能力，数据引擎必须从网页端提取还原“原生交错版面”。
 - **形式**：类似于我们在维基百科或微信公众号中看到的结构：一段起因 + `<img_1>` + 发展过程 + `<img_2>` + 结局总结。图像 Token 被视为一种特殊的词汇，散落在长文本序列之间。
-- **代表开源集**：OBELICS, MMC4。
+- **代表开源集**：OBELICS (Laurençon et al. 2023), MMC4 (Zhu et al. 2023)。
 - **适用场景**：这是当今**生成式 VLM 预训练**的最核心弹药。它教会模型如何根据“前文”和“图片 1”，去推断“后文”或“图片 2”应该是什么。
 - **采集挑战与 DOM 解析工程**：交错图文的工程难度庞大。传统的文本爬虫遇到 `<img>` 标签直接跳过，而为了组装交错格式，爬虫必须解析极为庞杂的 HTML DOM 树，并进行**“基于渲染坐标的相对距离计算”**。
   因为在很多现代网页的复杂级联样式（CSS）中，代码文档树的顺序往往并不是用户眼里的视觉排版顺序。如果仅按照 HTML 标签顺序提取，很可能把页面底部的免责声明强行与顶部的配图绑定。
@@ -121,7 +121,7 @@
 - 更致命的是，由于进程间通信（IPC）将庞大的非压缩 RGB 张量搬运到 GPU 显存中，PCIe 带宽也会被瞬间挤爆。从而导致 GPU 算力远未喂饱，处于高频的“饥饿等粮（GPU Starvation）”状态（MFU 跌破 20%）。
 
 **工程解法：基于 NVIDIA DALI 的端到端流水线**
-在大型企业的图文处理阵列中，通常会强制切入基于 **NVIDIA DALI（Data Loading Library）**的显存级加速流水线。
+在大型企业的图文处理阵列中，通常会强制切入基于 **NVIDIA DALI（Data Loading Library）** (NVIDIA 2023) 的显存级加速流水线。
 其核心思想是**“尽早将比特推入 GPU，并在显存内解压缩”**：
 1. **CPU 仅搬运二进制**：CPU 读取未经解码的 JPEG 字节流（Byte Stream），并不执行解码。
 2. **NVJPEG 硬件解码**：字节流通过 PCIe 极宽的车道送入 GPU 后，调用 GPU 集成的专属 JPEG 硬件解码器（NVJPEG）在显存内部瞬间完成解压。
@@ -151,7 +151,7 @@
 
 ### 8.4.1 CLIP Score 及其进阶者 SigLIP 的量化哲学
 
-在 OpenAI 放出 CLIP（Contrastive Language-Image Pre-training）模型之前，判断图文匹配几乎是一门玄学。CLIP 通过大规模对比学习，巧妙地将图像片段（Image Embedding）和文本片段（Text Embedding）拉入到了同一个高维特征向量空间。
+在 OpenAI 放出 CLIP（Contrastive Language-Image Pre-training）(Radford et al. 2021) 模型之前，判断图文匹配几乎是一门玄学。CLIP 通过大规模对比学习，巧妙地将图像片段（Image Embedding）和文本片段（Text Embedding）拉入到了同一个高维特征向量空间。
 
 **1. 基础过滤动作与 InfoNCE Loss 的遗产**：
 我们通常使用预训练的稳定版 CLIP（例如开源版的 `OpenCLIP ViT-L/14`）分别对图和对应的 Caption 进行向量化前向推理，并计算两个向量的**余弦相似度（Cosine Similarity，即 CLIP Score）**。
@@ -162,7 +162,7 @@
 > **[注意]**：以上阈值（0.22 / 0.30）基于 `OpenCLIP ViT-L/14` 模型；若改用 `ViT-B/32` 或 `SigLIP`，同一批数据的得分分布会有显著差异，阈值需在目标数据上重新校准，切勿直接复用。
 
 **2. 从 CLIP 到 SigLIP：摒弃全局 Softmax 的新方向**
-在大型企业数据管线中，传统的 CLIP 模型正逐渐被一种名叫 **SigLIP（Sigmoid Loss for Language Image Pre-Training）** 的新架构所取代。
+在大型企业数据管线中，传统的 CLIP 模型正逐渐被一种名叫 **SigLIP（Sigmoid Loss for Language Image Pre-Training）** (Zhai et al. 2023) 的新架构所取代。
 在传统 CLIP 训练时，模型计算的是整个 Batch 内图像和文本的全局 Softmax 概率。这就带来一个致命工程问题：如果你的分布式 Batch Size 巨大（例如 $32768$），那么强迫模型区分如此多对（Pair）的微小差异，会导致模型对某些“难负样本（Hard Negatives）”过于敏感，进而在推理 CLIP Score 时产生震荡。
 SigLIP 则将这个全局多分类问题，优雅地转化为了**逐对（Pairwise）的二分类 Sigmoid 预测问题**。这使得 SigLIP 对“部分匹配”或“复杂背景图文”拥有更高的宽容度和稳定的 Score 打分。工程团队可以设定更加精准一致的截断阈值，而不用担心因为领域漂移导致阈值突然失效。
 
@@ -193,7 +193,7 @@ def filter_by_semantic_score(image, text_caption, threshold=0.25):
 
 ### 8.4.2 挽救优质图像：多粒度合成重标注 (Synthetic Re-captioning)
 
-当一张图像拥有极高的分辨率、绝佳的构图和罕见的实体，但其附带的原始网页文本却全都是废话（例如“IMG_20230401.jpg”）时，直接抛弃它是对数据资产的极大浪费。在算力充裕的今天，使用庞大强悍的专家级视觉大模型（如拥有巨量预训练积累的 LLaVA-1.5、Qwen-VL-Max 或 GPT-4V）来**反客为主、重新生成描述**，是目前头部 AI 企业构建超越开源版 LAION 数据质量的杀手锏。
+当一张图像拥有极高的分辨率、绝佳的构图和罕见的实体，但其附带的原始网页文本却全都是废话（例如“IMG_20230401.jpg”）时，直接抛弃它是对数据资产的极大浪费。在算力充裕的今天，使用庞大强悍的专家级视觉大模型（如 LLaVA-1.5 (Liu et al. 2024)、Qwen-VL-Max (Bai et al. 2023) 或 GPT-4V）来**反客为主、重新生成描述**，是目前头部 AI 企业构建超越开源版 LAION 数据质量的杀手锏。
 
 在最新的大模型工程实践中，为了兼顾“冷启动对齐”与“后期长文本生成”的双重要求，数据团队会对这批图像实施流水线维度的“**多粒度（Multi-granularity）重标注阵列**”：
 
@@ -234,7 +234,7 @@ def filter_by_semantic_score(image, text_caption, threshold=0.25):
 ### 8.5.2 三足鼎立的配比调参 (Data Mixing)
 
 正如人类的大脑需要不同知识成分的刺激，一个平衡的 MLLM 预训练面糊（Data Mix）需要精确分配抓取源的比重：
-1. **通用自然图像（Web Images）占比约 50-60%**：提供基础的世界物体常识（猫狗、汽车、风景色准、人物神态）。这部分通常由极其严酷 CLIP Score 筛选后的开源数据集（如 DataComp-1B 的核心过滤提纯集）承担。
+1. **通用自然图像（Web Images）占比约 50-60%**：提供基础的世界物体常识（猫狗、汽车、风景色准、人物神态）。这部分通常由极其严酷 CLIP Score 筛选后的开源数据集（如 DataComp-1B (Gadre et al. 2023) 的核心过滤提纯集）承担。
 2. **图表与代码图纸（Charts/Plots/Math）占比约 15-20%**：提供顶尖的抽象数理推理能力。如果缺失此部分，大模型看折线图、股票 K 线图或是复杂的思维导图时，将会完全胡编乱造。
 3. **高密度 OCR 文档截图（Documents）占比约 20-30%**：大量的扫描版白皮书、PDF 单页、收据发票影印件。这对于未来模型去充当“合同审查专员”或者“财务发票小助手”至关重要，它训练了模型克服自然图像中极少出现的“超高细粒度文本焦点”（Fine-Grained Text Focus）能力。
 
@@ -275,3 +275,30 @@ def filter_by_semantic_score(image, text_caption, threshold=0.25):
 针对错综复杂的语义对齐，我们以图解的形式剖析了以“CLIP Score 过筛”结合“高维 VLM 重标注”的雷霆手腕，将垃圾数据点石成金（流程式详见图8-2）。最后，本章通过配比调参和惨痛的开源踩坑案例，为企业级视觉大语言模型指明了可落地的质量守恒方向。
 
 虽然图文交织占据了现今多模态的半壁江山，但在复杂的 B 端工业应用场景（财报剖析、复杂发票查验、手书医疗单识别）中，单单依靠自然景物图依旧无法应对高密度的字符考验。下一章，我们将镜头对焦极其硬核的进阶领域：“**第 9 章：重标注与文档理解（OCR）**”，深度解密大模型如何通过特殊文本引擎练就一双堪比速读大师的火眼金睛。
+
+## 参考文献
+
+Alayrac J B, Donahue J, Luc P, Miech A, Barr I, Hasson Y, Lenc K, Mensch A, Millican K, Reynolds M, others (2022) Flamingo: A Visual Language Model for Few-Shot Learning. Advances in Neural Information Processing Systems 35:23716-23736.
+
+Bai J, Bai S, Yang S, Wang S, Tan S, Wang P, Lin J, Zhou C, Zhou J (2023) Qwen-VL: A Versatile Vision-Language Model's Understanding, Localization, Text Reading, and Beyond. arXiv preprint arXiv:2308.12966.
+
+Dosovitskiy A, Beyer L, Kolesnikov A, Weissenborn D, Zhai X, Unterthiner T, Dehghani M, Minderer M, Heigold G, Gelly S, Uszkoreit J, Houlsby N (2020) An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale (ViT). In: International Conference on Learning Representations 2021.
+
+Gadre S Y, Ilharco G, Fang A, Hayase J, Smyrnis G, Nguyen T, Marten R, Wortsman M, Ghosh S, Zhang G, others (2023) DataComp: In Search of the Next Generation of Multimodal Datasets. Advances in Neural Information Processing Systems 36.
+
+Laurençon H, Saulnier L, Tronchon L, Bekman S, Singh A, Lozhkov A, Wang T, Karamcheti S, Rush A M, Kiela D, Cord M, Wolf T (2023) OBELICS: An Open Web-Scale Filtered Dataset of Interleaved Image-Text Documents. Advances in Neural Information Processing Systems 36.
+
+Liu H, Li C, Wu Q, Lee Y J (2023) Visual Instruction Tuning (LLaVA). Advances in Neural Information Processing Systems 36:34892-34916.
+
+Liu H, Li C, Li Y, Lee Y J (2024) Improved Baselines with Visual Instruction Tuning (LLaVA-1.5). In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 26296-26306.
+
+NVIDIA (2023) NVIDIA Data Loading Library (DALI). https://github.com/NVIDIA/DALI.
+
+Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: Proceedings of the 38th International Conference on Machine Learning, pp 8748-8763.
+
+Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, others (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. Advances in Neural Information Processing Systems 35:25278-25294.
+
+Zhai X, Mustafa B, Kolesnikov A, Beyer L (2023) Sigmoid Loss for Language Image Pre-Training (SigLIP). In: Proceedings of the IEEE/CVF International Conference on Computer Vision, pp 11975-11986.
+
+Zhu D, Chen J, Shen X, Li X, Elhoseiny M (2023) MiniGPT-4: Enhancing Vision-Language Understanding with Advanced Large Language Models. arXiv preprint arXiv:2304.10592.
+

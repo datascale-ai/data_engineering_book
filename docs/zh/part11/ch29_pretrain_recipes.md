@@ -14,7 +14,7 @@
 
 这次失败给出的教训很直接：模型训练中的“配方”不能理解为静态比例表。比例只回答“有哪些数据、各占多少”，却没有回答“什么时候喂、以什么质量喂、按什么难度喂、用什么方式重复或降权”。真正影响训练效果的，是一条阶段化的数据流水线：从原始语料进入候选池，到质量过滤、去重聚类、领域划分、难度评估，再到不同训练阶段的采样调度。对于想要复现 Llama-3 这类模型的团队来说，缩小 token 预算并不意味着把所有设置等比例缩小。小规模复现更需要清楚地设计训练节奏，因为每一个 token 都会更早、更直接地影响模型能力的形成。
 
-与“简单缩放导致模型崩溃”的盲目试错不同，DeepSeek-V3 与 Qwen2.5 在研发初期展现出了极强的数据阶段化意识。他们并没有试图用一套固定配比的超大混合数据集从头跑到尾，而是在预训练早期大量灌入泛领域基础知识与代码，在训练中后期才精准引入高质量合成的长文本与数学语料。这种“按模型认知发展阶段动态配比数据”的工程直觉，不仅极大降低了因为分布震荡导致的梯度爆炸风险，也成为了它们在等比例扩展（Scaling Law）时能保持推理能力稳步破局的核心秘密。
+与“简单缩放导致模型崩溃”的盲目试错不同，DeepSeek-V3 (Liu et al. 2024) 与 Qwen2.5 (Hui et al. 2024) 在研发初期展现出了极强的数据阶段化意识。他们并没有试图用一套固定配比的超大混合数据集从头跑到尾，而是在预训练早期大量灌入泛领域基础知识与代码，在训练中后期才精准引入高质量合成的长文本与数学语料。这种“按模型认知发展阶段动态配比数据”的工程直觉，不仅极大降低了因为分布震荡导致的梯度爆炸风险，也成为了它们在等比例扩展（Scaling Law）时能保持推理能力稳步破局的核心秘密。
 
 ---
 
@@ -28,7 +28,7 @@
 如图 29-1 所示，数据配方的漏斗从上到下衰减极为严重。技术报告中披露的宏观数字（如 14.8T Tokens）仅仅是表层；能够推断出各领域的精确配比已经深入了一层；而真正能够落地到工程动作的，是那些极其晦涩的启发式过滤阈值与清洗脚本。
 
 1. **白盒（White-box）全透明**：
-   这类模型不仅公开了论文，甚至将从爬虫到最终打包的整个数据工厂完全开源。其数据来源精确到每一个 CommonCrawl dump，配比精确到小数点，清洗脚本（包括去重、过滤、分类器权重）完全公开，并且提供直接的 HuggingFace 下载链接。OLMo 系列和部分早期的 Amber 模型是典型代表，这是对开源社区价值最高的数据资产。
+   这类模型不仅公开了论文，甚至将从爬虫到最终打包的整个数据工厂完全开源。其数据来源精确到每一个 CommonCrawl dump，配比精确到小数点，清洗脚本（包括去重、过滤、分类器权重）完全公开，并且提供直接的 HuggingFace 下载链接。OLMo 系列 (Groeneveld et al. 2024) 和部分早期的 Amber 模型是典型代表，这是对开源社区价值最高的数据资产。
 2. **灰盒（Grey-box）部分透明**：
    这是当今大多数头部开源模型（如 DeepSeek-V3、Qwen2.5、Llama-3）所处的象限。他们在技术报告中会详细罗列训练所用的宏观数据分类（如 Web、Code、Math），甚至披露了相对比例和总量。但他们**绝不开源具体的清洗流水线代码**，也不会提供最终清洗完毕的高质量语料包。读者只能通过“看配方，自己买菜做饭”的方式去复现。
 3. **黑盒（Black-box）闭源**：
@@ -77,7 +77,7 @@
 1. **代码与数学数据的“膨胀”是智能涌现的基石**：
    在早期的 LLM（如 GPT-3 或 LLaMA-1）时代，代码和数学数据只占总体语料的 5% 左右，主要被视作特定垂直领域的能力补充。但在 DeepSeek-V3 与 Qwen2.5 中，代码与数学数据的总占比合计已经逼近甚至超过了 20-30% [E]。工程师们发现，高密度的逻辑与结构化代码数据，是提升模型通用逻辑推理能力（不仅限于写代码本身）的终极燃料。代码数据的严格语法树特性，能隐式地强迫语言模型学会因果关联。
 2. **泛网络文本（General Web Text）的有效配比在逐代下降**：
-   尽管总 Token 数量在激增（飙升至 14.8T+），但泛网络闲聊与无结构文档的实际相对配比正在下降。模型团队宁愿用算力去重和极度严苛的启发式规则过滤掉 80% 的 Web 数据，也要为高质量学术和合成数据腾出宝贵的训练窗口。这表明规模法则（Scaling Law）正在从单纯的“规模”转向“有效信息密度规模”。
+   尽管总 Token 数量在激增（飙升至 14.8T+），但泛网络闲聊与无结构文档的实际相对配比正在下降。模型团队宁愿用算力去重和极度严苛的启发式规则过滤掉 80% 的 Web 数据，也要为高质量学术和合成数据腾出宝贵的训练窗口。这表明规模法则（Scaling Law）(Kaplan et al. 2020) 正在从单纯的“规模”转向“有效信息密度规模”。
 3. **合成数据（Synthetic Data）悄然接管预训练中后期**：
    纯靠自然人类产生的高质量数据（尤其是数学步骤和推理链）已经接近枯竭。无论是 DeepSeek 还是 Qwen 团队，都在预训练的中后期大量引入了用上一代强模型生成的合成问答和数学推导数据。这些数据填补了自然语料中逻辑跳跃过大的空白。
 
@@ -90,7 +90,7 @@
 ### Qwen2.5 的“泛多语言”战略
 Qwen2.5 的目标从一开始就并非单纯的双语模型，而是试图覆盖全球主要语种（支持多达 29 种以上语言）。在数据工程上，这带来了一个极大的挑战：**长尾小语种的高质量数据极其稀缺，且容易导致语言间的负迁移（Negative Transfer）**，即“对齐税”（Alignment Tax）。
 为解决此问题，Qwen 团队采用了复杂的语种采样权重调整策略。
-* 对于英语等超高资源语言，采取极其激进的 MinHash LSH 去重后下采样（Down-sampling），以防止世界知识的同质化过拟合；
+* 对于英语等超高资源语言，采取极其激进的 MinHash LSH (Broder 1997) 去重后下采样（Down-sampling），以防止世界知识的同质化过拟合；
 * 对于低资源高质量的语种数据（如高质量阿拉伯语百科），则通过文档级别的上采样（Up-sampling）提高模型暴露率。
 更为关键的是，Qwen 广泛利用了多语言对齐语料（平行机器翻译语料与多语言维基百科），在词表中大幅丰富了多语言 Token 的压缩效率，这极大降低了小语种的推理成本，并使得跨语言的知识迁移更为顺畅。
 
@@ -145,12 +145,12 @@ OLMo-2 在代码数据处理上注重多语言覆盖和项目结构保留：每�
 在预训练阶段注入强大的数学基因，是解决大模型“幻觉”与“逻辑紊乱”的重头戏。由于自然存在的标准格式数学解题过程极为稀少，合成（Synthesis）与清洗便成了主要手段。
 
 ### DeepSeekMath 的验证器（Verifier）流水线
-DeepSeek 的数学能力突飞猛进，离不开他们早期构建的 DeepSeekMath 语料库的沉淀。传统爬虫在抓取数学网页时，常常会将 LaTeX 公式破坏成乱码。DeepSeek 团队不仅针对 HTML 中的 MathJax 与 LaTeX 标签重写了特化的 DOM 解析器，更关键的是引入了基于强化学习与形式化证明器的规则验证（Rule-based Verification）。
+DeepSeek 的数学能力突飞猛进，离不开他们早期构建的 DeepSeekMath 语料库 (Shao et al. 2024) 的沉淀。传统爬虫在抓取数学网页时，常常会将 LaTeX 公式破坏成乱码。DeepSeek 团队不仅针对 HTML 中的 MathJax 与 LaTeX 标签重写了特化的 DOM 解析器，更关键的是引入了基于强化学习与形式化证明器的规则验证（Rule-based Verification）。
 他们通过从海量互联网文本中召回潜在的数学文本，再利用较小规模的打分模型过滤出含有完整推导逻辑的“黄金样本”。随后，他们通过让前代模型不断解答开源题库，把那些能在 SymPy 沙盒或 Lean 证明器中通过绝对验证的解答过程，回灌到预训练语料中，大幅提升了模型对长链条数学证明的敏感度。
 
 ### Qwen2-Math 的合成策略
 Qwen 团队在数学数据的工程处理上更进一步，极大地依赖了**合成数据回灌**。在 Qwen2.5-Math 的公开披露中可以看出，他们大量使用了 Qwen-Max（或早期的强力版本）来作为教师模型，对基础数学题目进行多步思维链（CoT）解答的生成。
-为了防止合成数据带来分布坍塌，工程团队引入了答案一致性校验（Self-consistency）：如果一个题目生成的几个推导过程最终都能在沙盒（Sandbox）中匹配出相同且正确的唯一解，这条合成的推导路径才会被允许合入预训练或后训练数据流。这意味着，数学数据的规模增长，已经彻底脱离了互联网的人工产生速度，转而由算力直接驱动。
+为了防止合成数据带来分布坍塌，工程团队引入了答案一致性校验（Self-consistency）(Wang et al. 2023)：如果一个题目生成的几个推导过程最终都能在沙盒（Sandbox）中匹配出相同且正确的唯一解，这条合成的推导路径才会被允许合入预训练或后训练数据流。这意味着，数学数据的规模增长，已经彻底脱离了互联网的人工产生速度，转而由算力直接驱动。
 
 ---
 
@@ -188,12 +188,12 @@ Qwen 团队在数学数据的工程处理上更进一步，极大地依赖了**�
 
 | 模型系 | 最大窗口支持 | 长文数据来源 | 短文拼接策略 (Packing) | RoPE 缩放与微调阶段 | 性能惩罚控制 |
 |---|---:|---|---|---|---|
-| DeepSeek-V3 | 128K [D] | 长篇书籍 / Repo级代码 | 跨文档 Packing 隔离 | 预训练末期退火拉升 [D] | YaRN 极低精度损失 |
+| DeepSeek-V3 | 128K [D] | 长篇书籍 / Repo级代码 | 跨文档 Packing 隔离 | 预训练末期退火拉升 [D] | YaRN (Peng et al. 2023) 极低精度损失 |
 | Qwen2.5 | 128K [D] | 长报告 / 合成长文 | EOD Token 严格隔离 | 渐进式窗口扩展 [I] | YARN/动态基频调整 |
 | Llama-3.1 / Llama-3 Herd | 128K [D] | 多语网页 / 代码 / 数学 / 长上下文继续预训练数据 | 基础阶段以 8K 序列训练，长上下文阶段逐步提高序列长度；短文拼接需保留文档边界 [I] | RoPE base frequency 提高到 500K；从 8K 分 6 个阶段扩展到 128K，并使用约 800B tokens 长上下文继续预训练 [D] | 每个窗口阶段检查短上下文能力恢复与 Needle-in-a-Haystack 通过率；末期 40M tokens 退火、高质量数据上采样与 checkpoint averaging [D] |
 | OLMo-2 | 4K [D] | DCLM 网页 / StarCoder 代码 / 学术论文 / arXiv STEM / Wikipedia & Wikibooks / StackExchange / 合成数学数据 | 4096 定长序列训练；短文 Packing 细节未在报告中展开，可按文档边界 + EOS 隔离实现 [I] | 使用 RoPE，θ 提高到 500K；没有公开的 128K 长窗扩展阶段，重点是 Dolmino Mix 1124 中期训练与退火 [D] | RMSNorm、QK-Norm、Z-loss 提升训练稳定性；过滤重复 n-gram；Dolmino 高质量中期训练与 checkpoint soup 控制能力退化 [D] |
 
-值得注意的是，超长上下文并不是一开始就在预训练中全量引入的。在 DeepSeek-V3 的训练末期，为了支持高达 128K 的上下文窗口（Context Window），团队采用了动态的长文本数据延长策略。他们专门从语料库中筛选出了结构完整的长篇书籍、长篇技术手册以及合并后的超长代码仓库（Repo-level code 拼接），并修改了 RoPE（旋转位置编码）的基频。通过在训练的最后阶段，将序列长度从 4K 逐步扩充并微调，模型在极度节省总体算力的同时，完美地将局部短依赖逻辑推广到了超长语境中。
+值得注意的是，超长上下文并不是一开始就在预训练中全量引入的。在 DeepSeek-V3 的训练末期，为了支持高达 128K 的上下文窗口（Context Window），团队采用了动态的长文本数据延长策略。他们专门从语料库中筛选出了结构完整的长篇书籍、长篇技术手册以及合并后的超长代码仓库（Repo-level code 拼接），并修改了 RoPE（旋转位置编码）(Su et al. 2024) 的基频。通过在训练的最后阶段，将序列长度从 4K 逐步扩充并微调，模型在极度节省总体算力的同时，完美地将局部短依赖逻辑推广到了超长语境中。
 
 ---
 
@@ -207,11 +207,11 @@ Llama-3 系列中更值得观察的是 Llama-3.1 的训练节奏。基础预训�
 
 因此，Llama-3.1 在预训练后段才进入长上下文继续训练。其公开报告中说明，模型从原始 8K 上下文开始，分六个阶段逐步扩展到 128K。每一次扩展并不是简单把最大长度调大，而是先训练到模型适应该长度，再进入下一阶段。适应标准主要看两类信号：短上下文评测是否恢复，以及 needle-in-a-haystack 这类长上下文检索任务是否能在对应长度上稳定通过。这个设计体现了 curriculum 的一个原则：窗口长度本身也是课程难度的一部分，需要逐步拉升。
 
-Llama-3.1 的另一个重要环节是退火。公开报告中提到，在最后 40M tokens 训练中，学习率线性退火到 0，同时保持 128K 上下文窗口，并上采样高质量数据源，最后对退火过程中的 checkpoint 做平均。这个阶段不再追求大规模覆盖，而是让模型在较干净的数据分布上收束。可以把它理解为预训练末尾的“定型阶段”：前面的大规模语料负责广度，长上下文继续训练负责窗口能力，退火阶段负责把能力稳定到最终 checkpoint 上。
+Llama-3.1 (Dubey et al. 2024) 的另一个重要环节是退火。公开报告中提到，在最后 40M tokens 训练中，学习率线性退火到 0，同时保持 128K 上下文窗口，并上采样高质量数据源，最后对退火过程中的 checkpoint 做平均。这个阶段不再追求大规模覆盖，而是让模型在较干净的数据分布上收束。可以把它理解为预训练末尾的“定型阶段”：前面的大规模语料负责广度，长上下文继续训练负责窗口能力，退火阶段负责把能力稳定到最终 checkpoint 上。
 
 ### OLMo-2：可复现的两阶段课程
 
-OLMo-2 的价值在于它把训练过程公开得更细，尤其适合作为工程复现的参照。它的预训练采用两阶段设计。第一阶段使用大规模、以网页为主的数据混合，1B 和 7B 规模训练约 4T tokens，13B 规模训练约 5T tokens。这个阶段承担语言基础、常识知识和广覆盖语料建模任务，相当于先让模型在足够大的文本空间中形成通用能力。
+OLMo-2 (Groeneveld et al. 2024) 的价值在于它把训练过程公开得更细，尤其适合作为工程复现的参照。它的预训练采用两阶段设计。第一阶段使用大规模、以网页为主的数据混合，1B 和 7B 规模训练约 4T tokens，13B 规模训练约 5T tokens。这个阶段承担语言基础、常识知识和广覆盖语料建模任务，相当于先让模型在足够大的文本空间中形成通用能力。
 
 第二阶段转向更小但更高质量的数据，也就是 Dolmino Mix 1124。OLMo-2 仓库说明中给出了更具体的规模：1B 模型使用约 50B 高质量 tokens 训练多次；7B 模型也使用约 50B 高质量 tokens 进行多种数据顺序训练，并对模型做 soup；13B 模型则包含多个 100B 高质量 token 训练分支，以及一个 300B 高质量 token 分支，最后进行权重平均。这里的重点不是“多训练几次”，而是用不同数据顺序和高质量后段数据减少偶然性，再通过 checkpoint 或权重平均提高最终模型的稳健性。
 
@@ -234,7 +234,7 @@ Qwen2.5 的 schedule 可以从三个层次理解。第一层是基础预训练�
 ![图 29-4：Llama-3 退火期数据组成时间轴 (Curriculum Learning Schedule)](../../images/part11/29_4_llama3_annealing_schedule_en.png)
 <div align="center"><b>图 29-4：Llama-3 退火期数据组成时间轴 (Curriculum Learning Schedule)</b></div>
 
-Qwen2.5 在数据投喂策略上也体现了经典的 Curriculum Learning（课程学习）思想。第一阶段（基础奠基），模型被海量泛网页数据与基础语料包裹，重点学习语言的统计学分布与常识；第二阶段（高质量提纯），语料的质量过滤阈值被大幅拉高，泛文本比例锐减，代码、数学及严谨学术文档的密度骤增，这是能力爬坡的关键期；第三阶段（退火与超长上下文），学习率下降（退火），开始引入极高比例的合成数据、特定领域的高精人工指令数据以及超长序列数据，实现从预训练到对齐（Alignment）的无缝过渡。
+Qwen2.5 在数据投喂策略上也体现了经典的 Curriculum Learning（课程学习）(Bengio et al. 2009) 思想。第一阶段（基础奠基），模型被海量泛网页数据与基础语料包裹，重点学习语言的统计学分布与常识；第二阶段（高质量提纯），语料的质量过滤阈值被大幅拉高，泛文本比例锐减，代码、数学及严谨学术文档的密度骤增，这是能力爬坡的关键期；第三阶段（退火与超长上下文），学习率下降（退火），开始引入极高比例的合成数据、特定领域的高精人工指令数据以及超长序列数据，实现从预训练到对齐（Alignment）的无缝过渡。
 
 ---
 
@@ -252,5 +252,36 @@ Case C 涉及 OLMo-2 全开源对照。其预训练采用两阶段 curriculum：
 
 这些问题的适用边界如下。对于小规模复现（≤1B tokens），必须严格控制阶段化数据流，优先保证语言基础和短上下文稳定；长上下文任务应分阶段进行 RoPE 扩展和长文训练，以避免短序列任务退化；多源数据混合需要与 Packing 和权重调整配合，否则会出现 hallucination 或梯度稀释；高质量样本应集中在后期阶段使用，过早采样会降低训练稳定性。
 
-延伸阅读方面，Llama-3 Herd 技术报告提供了阶段化训练、长上下文扩展和退火 checkpoint averaging 的细节。OLMo-2 开源日志展示了 Dolmino Mix 数据阶段划分、两阶段 curriculum 与权重平均策略。Qwen2.5 系列论文和模型卡说明了高质量多源语料采样、词表扩展和长上下文训练 schedule。通过这些案例、训练陷阱和边界分析，可以更清楚地理解大模型训练中“配方”的复杂性。单看数据比例远不足以指导训练，必须结合阶段化 schedule、短文拼接策略、上下文窗口扩展和高质量样本采样，才能在有限 token 预算下获得稳定、可复现的能力。
+延伸阅读方面，Llama-3 Herd (Dubey et al. 2024) 技术报告提供了阶段化训练、长上下文扩展和退火 checkpoint averaging 的细节。OLMo-2 开源日志展示了 Dolmino Mix 数据阶段划分、两阶段 curriculum 与权重平均策略。Qwen2.5 系列论文和模型卡说明了高质量多源语料采样、词表扩展和长上下文训练 schedule。通过这些案例、训练陷阱和边界分析，可以更清楚地理解大模型训练中“配方”的复杂性。单看数据比例远不足以指导训练，必须结合阶段化 schedule、短文拼接策略、上下文窗口扩展和高质量样本采样，才能在有限 token 预算下获得稳定、可复现的能力。
+
+
+## 参考文献
+
+Bavarian M, Jun H, Tezak N, Schulman J, McLeavey C, Tworek J, Chen M (2022) Efficient Training of Language Models to Fill in the Middle (FIM). arXiv preprint arXiv:2207.14255.
+
+Bengio Y, Louradour J, Collobert R, Weston J (2009) Curriculum Learning. In: Proceedings of the 26th Annual International Conference on Machine Learning, pp 41-48.
+
+Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.
+
+Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Yang A, Fan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
+
+Groeneveld D, Magnusson I, Bhagia A, Schwenk D, Soldaini L, Tafjord O, Sherborne M, Kinney R, Authur C, Atkinson D, others (2024) OLMo: Accelerating the Science of Language Models. In: Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics, pp 15789-15809.
+
+Hoffmann J, Borgeaud S, Mensch A, Buchatskaya E, Cai T, Rutherford E, de Las Casas D, Hendricks L A, Welbl J, Clark A, others (2022) Training Compute-Optimal Large Language Models (Chinchilla). arXiv preprint arXiv:2203.15556.
+
+Hui B, Yang J, Cui Z, Yang J, Liu D, Zhang L, Liu B, Yu B, Lu K, Chi K, others (2024) Qwen2.5: A Party of Foundation Models. arXiv preprint arXiv:2412.15115.
+
+Kaplan J, McCandlish S, Henighan T, Brown T B, Chess B, Child R, Gray S, Radford A, Wu J, Amodei D (2020) Scaling Laws for Neural Language Models. arXiv preprint arXiv:2001.08361.
+
+Liu A, Feng B, Xue B, Wang B, Wu B, Lu C, Zhao C, Deng C, Zhang C, Ruan C, others (2024) DeepSeek-V3 Technical Report. arXiv preprint arXiv:2412.19437.
+
+Peng B, Quesnelle J, Fan H, Shippole E (2023) YaRN: Efficient Context Window Extension of Large Language Models. arXiv preprint arXiv:2309.00071.
+
+Sennrich R, Haddow B, Birch A (2016) Neural Machine Translation of Rare Words with Subword Units (BPE). In: Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics, pp 1715-1725.
+
+Shao Z, Wang P, Zhu Q, Xu R, Song J, Zhang M, Li Y, Wu Y, Guo D (2024) DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv preprint arXiv:2402.03300.
+
+Su J, Lu Y, Pan S, Murtadha A, Wen B, Liu Y (2024) RoFormer: Enhanced Transformer with Rotary Position Embedding (RoPE). Neurocomputing 568:127063.
+
+Wang X, Wei J, Schuurmans D, Le Q, Chi E, Narang S, Chowdhery A, Zhou D (2023) Self-Consistency Improves Chain of Thought Reasoning in Language Models. In: International Conference on Learning Representations.
 
