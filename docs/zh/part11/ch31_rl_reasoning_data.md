@@ -189,7 +189,7 @@ Model-based reward 的优势是覆盖更复杂的人类偏好，但它必须被�
 
 Verifier 池是推理数据飞轮的基础设施。它不是一个单独脚本，而是一组可版本化、可测试、可回滚的验证器。
 
-数学 verifier 通常包括答案提取、单位归一化、符号化比较和容差判断。对于 `\frac{1}{2}`、`0.5`、`50%` 这类等价答案，不能只做字符串比较。更稳妥的方式是使用 `sympy` (Meurer et al. 2017) 等符号工具做表达式化简。
+数学 verifier 通常包括答案提取、单位归一化、符号化比较和容差判断。对于 `\frac{1}{2}`、`0.5`、`50%` 这类等价答案，不能只做字符串比较。更稳妥的方式是使用 `sympy` 等符号工具做表达式化简。
 
 代码 verifier 通常包括沙箱执行、超时控制、内存限制、单元测试和安全拦截。代码任务的奖励不能只看是否运行成功，还要记录失败类型，例如编译错误、运行时错误、超时、答案错误或格式错误。
 
@@ -225,7 +225,7 @@ Long-CoT 轨迹的质量也可以从内部结构观察。常见的三类片段�
 | 字段 | 含义 |
 | --- | --- |
 | `task_id` | 原始题目 ID |
-| `source` | 数据来源，如 GSM8K (Cobbe et al. 2021)、MATH (Hendrycks et al. 2021)、HumanEval (Chen et al. 2021)、自有题库 |
+| `source` | 数据来源，如 GSM8K、MATH、HumanEval、自有题库 |
 | `policy_model` | 生成轨迹的模型版本 |
 | `sampling_config` | temperature、top_p、max_tokens、seed |
 | `reasoning_trace` | 推理过程 |
@@ -252,7 +252,7 @@ Long-CoT 轨迹的质量也可以从内部结构观察。常见的三类片段�
 
 ### DeepSeek-R1：冷启动、RL 与拒绝采样
 
-DeepSeek-R1 报告 (Guo et al. 2025) 披露了 R1-Zero 与 R1 两条路径 [D]。R1-Zero 展示了大规模 RL 在没有传统 SFT 冷启动时也能激发推理行为，但输出可读性和稳定性存在问题。R1 则在 RL 前加入少量冷启动 Long-CoT 数据，再通过 RL、拒绝采样和二轮 SFT 形成更稳定的模型。
+DeepSeek-R1 报告披露了 R1-Zero 与 R1 两条路径 [D]。R1-Zero 展示了大规模 RL 在没有传统 SFT 冷启动时也能激发推理行为，但输出可读性和稳定性存在问题。R1 则在 RL 前加入少量冷启动 Long-CoT 数据，再通过 RL、拒绝采样和二轮 SFT 形成更稳定的模型。
 
 DeepSeek-R1 路线有三个数据工程要点。
 
@@ -268,7 +268,7 @@ DeepSeek-R1 披露的数据规模还提示了一个比例问题：推理能力�
 
 ### QwQ-32B：开权重推理模型与 RL 后训练
 
-QwQ-32B (Qwen Team 2025) 的公开卡片说明其训练包含预训练和后训练，后训练包含 SFT 与 RL [D]。相比 DeepSeek-R1，QwQ 的完整数据配方披露较少，因此本章不补猜具体数据比例。
+QwQ-32B 的公开卡片说明其训练包含预训练和后训练，后训练包含 SFT 与 RL [D]。相比 DeepSeek-R1，QwQ 的完整数据配方披露较少，因此本章不补猜具体数据比例。
 
 从数据形态上看，QwQ 类模型的重要启发在于：推理轨迹中常出现等待、检查、反思和回溯等模式。这类模式可能来自模型自身采样，也可能来自训练数据和 RL 目标共同作用 [I]。对数据工程师来说，重点不是把“Wait”这类词硬编码进样本，而是保留模型尝试、验证、修正的完整轨迹。
 
@@ -278,7 +278,7 @@ QwQ 对开源复现的另一个启发，是模型权重开放并不等于数据 
 
 ### Kimi-1.5：长上下文与 RL 扩展
 
-Kimi k1.5 (Kimi Team 2025) 报告强调长上下文扩展和改进的策略优化方法，并说明其 RL 框架不依赖更复杂的 MCTS、value function 或 PRM [D]。这一路线提醒我们，推理数据不只来自数学和代码，也可以来自长上下文任务。
+Kimi k1.5 报告强调长上下文扩展和改进的策略优化方法，并说明其 RL 框架不依赖更复杂的 MCTS、value function 或 PRM [D]。这一路线提醒我们，推理数据不只来自数学和代码，也可以来自长上下文任务。
 
 长上下文推理的难点在于证据管理。模型需要在长文档、多段材料或多轮上下文中定位证据，再把证据转化为推理链。数据侧必须记录引用位置、证据片段、答案依据和失败原因。如果只记录最终答案，无法判断模型是基于证据推理，还是凭语言先验猜测。
 
@@ -288,9 +288,9 @@ Kimi k1.5 这类路线把推理数据工程从“题目-答案”扩展到“上
 
 ### OpenThoughts 与 Sky-T1：社区复现路径
 
-OpenThoughts-114K (Günther et al. 2025) 是开源社区中重要的推理数据集之一，Hugging Face 数据集卡显示其以 Apache-2.0 许可证发布，并提供 parquet 格式数据 [D]。它的价值在于提供了可下载、可检查、可用于训练的 Long-CoT 样本，使研究者能够复现实验并研究推理数据配方。
+OpenThoughts-114K 是开源社区中重要的推理数据集之一，Hugging Face 数据集卡显示其以 Apache-2.0 许可证发布，并提供 parquet 格式数据 [D]。它的价值在于提供了可下载、可检查、可用于训练的 Long-CoT 样本，使研究者能够复现实验并研究推理数据配方。
 
-Sky-T1 (NovaSky-Berkeley 2025) 则展示了另一种低成本路线。公开介绍显示，Sky-T1-32B-Preview 基于 Qwen2.5-32B-Instruct，并使用较小规模的高质量推理数据进行训练，团队同时释放了模型、数据和训练代码 [D]。它说明，推理能力的改进并不一定只能依赖大规模 RL；在某些场景下，结构良好的 Long-CoT SFT 也能带来明显收益。
+Sky-T1 则展示了另一种低成本路线。公开介绍显示，Sky-T1-32B-Preview 基于 Qwen2.5-32B-Instruct，并使用较小规模的高质量推理数据进行训练，团队同时释放了模型、数据和训练代码 [D]。它说明，推理能力的改进并不一定只能依赖大规模 RL；在某些场景下，结构良好的 Long-CoT SFT 也能带来明显收益。
 
 OpenThoughts 和 Sky-T1 的共同价值，是把推理数据从“只能由大厂内部生产”变成了可被社区检查和复现实验的对象。对本书读者来说，这类项目适合作为实验起点：先下载开放数据，检查字段和许可证，抽样阅读轨迹质量，再把其中可验证任务接入本地 verifier。完成这一流程后，团队就能从“使用数据集”进入“维护数据生产线”。
 
@@ -533,25 +533,3 @@ RL 推理数据飞轮的成本主要来自三部分：多路采样、验证器�
 如果把本章落到项目实施，最小产物不是一个“推理模型”，而是一套数据资产：任务池、verifier 池、采样轨迹库、拒绝采样训练集、失败样本库和评估报告。模型只是这套资产的一次消费结果。只要这些资产持续更新，团队就可以在不同基座模型、不同训练算法和不同部署预算之间切换。
 
 下一章将转向多模态理解模型的数据工程。与文本推理不同，多模态模型还需要处理图像、页面、视频帧、OCR、空间位置和多图关系。Ch32 将讨论这些视觉输入如何进入预训练、多任务对齐和多模态 SFT 数据配方。
-
-
-## 参考文献
-
-Chen M, Tworek J, Jun H, Yuan Q, Pinto H P O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
-
-Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.
-
-Guo D, Yang D, Zhang H, Song J, Zhang R, Xu R, Zhu Q, Ma S, Wang P, Bi X, others (2025) DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. arXiv preprint arXiv:2501.12948.
-
-Günther F, Bhatt U, Gupta D, Mukherjee S, others (2025) Open-Thoughts: Exploring Quality, Quantity, Diversity and Creativity in Reasoning Data. arXiv preprint arXiv:2506.04178.
-
-Hendrycks D, Burns C, Kadavath S, Arora A, Basart S, Tang E, Song D, Steinhardt J (2021) Measuring Mathematical Problem Solving with the MATH Dataset. In: Advances in Neural Information Processing Systems 34:24262-24273.
-
-Kimi Team (2025) Kimi k1.5: Scaling Reinforcement Learning with LLMs. arXiv preprint arXiv:2501.12599.
-
-Meurer A, Smith C P, Paprocki M, Čertík O, Kirpichev S B, Rocklin M, Kumar A, Ivanov S, Moore J K, Singh S, others (2017) SymPy: Symbolic Mathematics in Python. PeerJ Computer Science 3:e103.
-
-NovaSky-Berkeley (2025) Sky-T1: Train Your Own O1 Preview Model Within $450. Technical Blog. NovaSky-Berkeley.
-
-Qwen Team (2025) QwQ-32B: Embracing the Power of Reinforcement Learning for Reasoning Models. Qwen Blog.
-

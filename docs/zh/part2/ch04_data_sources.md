@@ -32,7 +32,7 @@
 
 "数据越多越好"是预训练数据工程中流传最广的误区之一。这个观念在宏观层面是有一定道理的——在数据质量一定的情况下，规模确实带来能力提升（Scaling Law 的核心结论）。但它在微观执行层面极易被滥用，演变为用体积代替质量的决策依据。
 
-FineWeb 的论文（Penedo et al. 2024）提供了一个振聋发聩的数据点：在相同的 Token 数量约束下，从 CommonCrawl 中精心筛选的高质量子集（约 15T Token）训练出的 LLM，在多项基准评测上**全面超越**了用原始 CommonCrawl 全量数据训练的模型——尽管后者的原始 Token 数远多于前者。换言之，"少而精"在预训练数据领域完全可以击败"多而杂"。
+FineWeb 的论文（Hugging Face，2024）提供了一个振聋发聩的数据点：在相同的 Token 数量约束下，从 CommonCrawl 中精心筛选的高质量子集（约 15T Token）训练出的 LLM，在多项基准评测上**全面超越**了用原始 CommonCrawl 全量数据训练的模型——尽管后者的原始 Token 数远多于前者。换言之，"少而精"在预训练数据领域完全可以击败"多而杂"。
 
 这一结论为整章的数据源选择策略奠定了基础：**数据配方（Data Recipe）的制定，应优先关注每个来源的知识密度和信息多样性，而非原始体积。**
 
@@ -48,7 +48,7 @@ FineWeb 的论文（Penedo et al. 2024）提供了一个振聋发聩的数据点
 
 ### 4.2.1 八类核心数据源全景
 
-**开放网页（Open Web）** 是体量最大、也最难驾驭的一类来源，以 Common Crawl 为代表。Common Crawl 从 2008 年起持续抓取互联网，每月发布数十亿网页的快照，累计数据量超过 PB 级，是目前几乎所有大规模预训练数据集的上游来源，无论是 GPT 系列、LLaMA 还是国内的主流大模型，都或多或少地依赖它。然而，开放网页的原始数据质量极差——据 FineWeb 项目的统计 (Penedo et al. 2024)，Common Crawl 原始内容中，真正具备知识密度的正文内容占比不超过 10%，剩余 90% 是广告、导航栏、SEO 垃圾、JavaScript 代码等噪声。这意味着网页数据必须经过极为严苛的清洗才能使用（详见 Ch05）。
+**开放网页（Open Web）** 是体量最大、也最难驾驭的一类来源，以 Common Crawl 为代表。Common Crawl 从 2008 年起持续抓取互联网，每月发布数十亿网页的快照，累计数据量超过 PB 级，是目前几乎所有大规模预训练数据集的上游来源，无论是 GPT 系列、LLaMA 还是国内的主流大模型，都或多或少地依赖它。然而，开放网页的原始数据质量极差——据 Hugging Face FineWeb 项目的统计，Common Crawl 原始内容中，真正具备知识密度的正文内容占比不超过 10%，剩余 90% 是广告、导航栏、SEO 垃圾、JavaScript 代码等噪声。这意味着网页数据必须经过极为严苛的清洗才能使用（详见 Ch05）。
 
 **论坛与问答（Forums & Q&A）** 以 Reddit、StackOverflow、知乎、Quora 等平台为代表。这类数据的独特价值在于：它是真实用户针对真实问题产生的自然语言交互，包含了大量的问题追问、答案修正和社区讨论，这对提升大模型的对话能力和"追问理解能力"有很高价值。StackOverflow 在技术领域的采用极为普遍，是 LLM 代码理解能力的重要来源之一。需要注意的是，这类数据在 2023-2024 年纷纷修改 API 条款（Reddit、Twitter/X 均关闭或收费化 API），获取难度大幅上升。
 
@@ -95,7 +95,7 @@ FineWeb 的论文（Penedo et al. 2024）提供了一个振聋发聩的数据点
 | **垂直行业模型（如金融/医疗）** | 25-30% | 8-12% | 15-20% | 10-15% | 30-40% | 领域数据占比显著提升，通用语料保底维持通用能力 |
 | **多语言base模型** | 55-60% | 15-18% | 8-10% | 8-12% | 按语言目标分配 | 网页数据中需控制各语言分布与目标语言能力需求一致 |
 
-配比策略还需要考量**动态调整机制**：不同阶段的训练（预训练初期 vs Cooldown 阶段）应当采用不同的配比权重。越接近训练后期，越应当提高高质量精选数据（书籍、学术论文、企业数据）的比例，同时降低低质量海量数据（原始网页）的权重——这与 LLaMA-3 (Dubey et al. 2024) 和 Gemma 等顶级模型在预训练后期将高质量数据权重提升至 2-3 倍的工程实践一致。
+配比策略还需要考量**动态调整机制**：不同阶段的训练（预训练初期 vs Cooldown 阶段）应当采用不同的配比权重。越接近训练后期，越应当提高高质量精选数据（书籍、学术论文、企业数据）的比例，同时降低低质量海量数据（原始网页）的权重——这与 LLaMA-3 和 Gemma 等顶级模型在预训练后期将高质量数据权重提升至 2-3 倍的工程实践一致。
 
 ---
 
@@ -107,7 +107,7 @@ FineWeb 的论文（Penedo et al. 2024）提供了一个振聋发聩的数据点
 
 不同类型的数据源需要截然不同的解析技术路线，使用错误的解析工具会导致严重的内容损失或噪声引入：
 
-**网页（HTML/WARC）** 是最常见、也最需要专业工具处理的格式。Common Crawl 提供了三种数据格式——WARC（原始 HTTP 响应+完整 HTML）、WAT（元数据）和 WET（预提取纯文本）。许多团队在早期会直接使用 WET 文件，因为它看起来最省事——已经是纯文本了，直接用就好。这是一个非常危险的陷阱：Common Crawl 的 WET 提取使用的是通用算法，解析质量相当低劣，会保留大量导航栏、页脚、广告文字和 JavaScript 代码片段。正确的做法是从 WARC 文件出发，用高质量的正文提取库（如 Trafilatura (Barbaresi 2021)）重新解析，尽管这耗时更长，但能带来显著的质量提升（通常可使后续过滤后的有效内容保留率提升 30-50%）。
+**网页（HTML/WARC）** 是最常见、也最需要专业工具处理的格式。Common Crawl 提供了三种数据格式——WARC（原始 HTTP 响应+完整 HTML）、WAT（元数据）和 WET（预提取纯文本）。许多团队在早期会直接使用 WET 文件，因为它看起来最省事——已经是纯文本了，直接用就好。这是一个非常危险的陷阱：Common Crawl 的 WET 提取使用的是通用算法，解析质量相当低劣，会保留大量导航栏、页脚、广告文字和 JavaScript 代码片段。正确的做法是从 WARC 文件出发，用高质量的正文提取库（如 Trafilatura）重新解析，尽管这耗时更长，但能带来显著的质量提升（通常可使后续过滤后的有效内容保留率提升 30-50%）。
 
 ```python
 import trafilatura
@@ -152,7 +152,7 @@ def parse_warc_to_clean_text(warc_path: str) -> list[dict]:
     return records
 ```
 
-**PDF（学术论文/书籍/企业文档）** 的解析是另一个技术难点。PDF 格式并非为文本提取设计——它本质上是一套页面排版描述语言，字符、行和段落的位置由坐标决定，而非语义结构。简单的 `pdfplumber` 或 `PyMuPDF` 在处理双栏学术论文时，常常把两栏文字混排在一起，严重降低内容可用性。对于学术论文，推荐使用专门针对科学文献优化的工具（如 GROBID (Lopez 2009)、Nougat (Blecher et al. 2023)、或 Mathpix）；对于企业 PDF 文档，建议在解析后进行人工抽检，确认段落结构的提取质量。
+**PDF（学术论文/书籍/企业文档）** 的解析是另一个技术难点。PDF 格式并非为文本提取设计——它本质上是一套页面排版描述语言，字符、行和段落的位置由坐标决定，而非语义结构。简单的 `pdfplumber` 或 `PyMuPDF` 在处理双栏学术论文时，常常把两栏文字混排在一起，严重降低内容可用性。对于学术论文，推荐使用专门针对科学文献优化的工具（如 GROBID、Nougat、或 Mathpix）；对于企业 PDF 文档，建议在解析后进行人工抽检，确认段落结构的提取质量。
 
 **代码仓库（Git Repos）** 应通过克隆仓库而非 API 拉取的方式获取，确保完整性。解析时需要根据文件扩展名识别编程语言，并基于文件大小（过长的文件可能是自动生成的）、语法合法性（对 Python 可用 AST 解析验证）和许可证文件内容（MIT、Apache 2.0 等宽松许可证白名单）进行质量筛选。
 
@@ -306,18 +306,4 @@ def classify_license(license_text: str) -> dict:
 本章从"为什么先输在源头"出发，系统建立了预训练数据源体系的完整认知框架。我们构建了涵盖八类核心数据源的分层地图，并通过风险矩阵（表4-1）和配比策略矩阵（表4-2）为工程决策提供了可操作的量化工具。在采集流水线部分，我们揭示了 WET 直接使用的陷阱，给出了基于 Trafilatura 的高质量 WARC 解析实现，并建立了"每条数据都有出生证明"的元数据存证标准。版权治理部分引入了白/灰/黑名单的三级管理机制，配合许可证自动分类代码，为商业化 LLM 团队提供了可落地的合规工程方案。两个案例——Common Crawl 中文语料接入的质量教训和金融企业内部知识库的合规风险——分别从技术和法律两个维度，印证了"源头治理"的核心价值。
 
 进入下一章，我们将在本章采集到的"毛坯数据"基础上，展开预训练数据工程最重要的旗舰章节：**第5章 清洗、去重与去污染**——探讨如何将有缺陷的原始语料转化为可以直接送入训练的高质量数据集。源头治理决定了可以送入清洗管线的语料的上限，而清洗管线决定的则是从上限中最终能榨取多少真正有价值的训练 Token——两章共同构成预训练数据工程最核心的质量守门体系。
-
-## 参考文献
-
-Barbaresi A (2021) Trafilatura: A Web Scraping Library and Command-Line Tool for Text Discovery and Extraction. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics, pp 122-131.
-
-Blecher N, Cresci G, Ballas N, Bautista M (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.
-
-Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Yang A, Fan A, others (2024) The LLaMA 3 Herd of Models. arXiv preprint arXiv:2407.21783.
-
-Joulin A, Grave E, Bojanowski P, Douze M, Jegou H, Mikolov T (2017) FastText.zip: Compressing Text Classification Models. arXiv preprint arXiv:1612.03651.
-
-Lopez P (2009) GROBID: Combining Automatic Bibliographic Data Recognition and Term Extraction for Scholarship Publications. In: Proceedings of the 13th European Conference on Digital Libraries, pp 473-474.
-
-Penedo G, Kydlíček H, allal L B, Lozhkov A, Mitchell M, Raffel C, Von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.
 

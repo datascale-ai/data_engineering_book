@@ -76,9 +76,9 @@ SFT 的核心任务是“格式化”。它负责把基座模型从一个无意�
 表 30-1 中的 `[D]` 表示公开材料直接披露的信息，`[I]` 表示依据公开流程或上下文做出的合理推断。无法直接追溯的数字不应写成确定规模，而应保留为“未披露”或“需按来源核验”。
 
 * **Tülu-3** 是本章最适合作为复现基线的项目之一。它不仅开源了模型权重，还公开了后训练数据混合、训练代码与评估方法，便于团队将论文中的 recipe 转化为可检查的工程流程。
-* **Llama-3** (Dubey et al. 2024) 代表了重资产工业路线。其报告披露了多轮后训练、偏好标注、奖励模型重训和拒绝采样等关键机制，但很多数据细节并未完整开放，因此更适合作为理解工业闭环的参照，而不是直接复刻的对象。
-* **Qwen2.5** 对中文、多语、多任务和合成数据路线有重要参考价值。这里需要谨慎区分：Qwen2.5 报告中的合成数据路线与 Magpie (Xu et al. 2024) 这类无种子合成方法可以并列讨论，但不应在缺少明确来源时写成“官方采用 Magpie”。
-* **Nemotron-4** 和 HelpSteer2 的价值在于偏好标注颗粒度。HelpSteer2 (Wang et al. 2024b) 不只记录总体偏好，还围绕有用性、正确性、连贯性、复杂度和冗余度等维度建立打分信号，为奖励模型数据设计提供了可参考样例。
+* **Llama-3** 代表了重资产工业路线。其报告披露了多轮后训练、偏好标注、奖励模型重训和拒绝采样等关键机制，但很多数据细节并未完整开放，因此更适合作为理解工业闭环的参照，而不是直接复刻的对象。
+* **Qwen2.5** 对中文、多语、多任务和合成数据路线有重要参考价值。这里需要谨慎区分：Qwen2.5 报告中的合成数据路线与 Magpie 这类无种子合成方法可以并列讨论，但不应在缺少明确来源时写成“官方采用 Magpie”。
+* **Nemotron-4** 和 HelpSteer2 的价值在于偏好标注颗粒度。HelpSteer2 不只记录总体偏好，还围绕有用性、正确性、连贯性、复杂度和冗余度等维度建立打分信号，为奖励模型数据设计提供了可参考样例。
 
 ---
 
@@ -89,14 +89,14 @@ SFT 的核心任务是“格式化”。它负责把基座模型从一个无意�
 ### 30.3.1 Self-Instruct：从种子任务扩展指令空间
 
 **要点解析：**
-Self-Instruct (Wang et al. 2022) 是指令合成的代表性方法之一。它依赖少量人工编写的种子任务（Seed Tasks）作为启动点，通常是数百个样例。流程中，强模型会参考这些种子，泛化生成新的 instruction、input 和 output，也就是指令、输入上下文和预期输出。
+Self-Instruct 是指令合成的代表性方法之一。它依赖少量人工编写的种子任务（Seed Tasks）作为启动点，通常是数百个样例。流程中，强模型会参考这些种子，泛化生成新的 instruction、input 和 output，也就是指令、输入上下文和预期输出。
 **工程优势：** 非常适合在项目初期快速扩展任务领域的覆盖面，解决基座模型“不知如何开启对话”的问题。
 **主要风险：** 较强依赖 prompt 模板，生成的数据容易出现模板化、语言同质化，且任务难度分布往往集中在常见区间，难以覆盖复杂边缘场景。
 
 ### 30.3.2 Evol-Instruct：通过进化规则提升复杂度
 
 **要点解析：**
-为了解决 Self-Instruct 难度不足的问题，WizardLM (Xu et al. 2023) 提出了 Evol-Instruct 路线。该路线的核心是将简单的指令通过特定的“进化规则”强制变难。常见的进化操作包括：加约束条件、增加推理深度、引入多条件分支、要求多步骤解答等。
+为了解决 Self-Instruct 难度不足的问题，WizardLM 提出了 Evol-Instruct 路线。该路线的核心是将简单的指令通过特定的“进化规则”强制变难。常见的进化操作包括：加约束条件、增加推理深度、引入多条件分支、要求多步骤解答等。
 **工程优势：** 能够极为有效地生成高复杂度的 instruction-following 数据，逼迫模型学习深层次的逻辑服从，而不是简单的表面应答。
 **主要风险：** 难度提升并不等同于质量提升。多次进化容易引发题意漂移（Intent Drift），即复杂的约束相互矛盾，或者生成的指令变成意义不清的文字堆叠。因此，难度校准和答案验证是该流派的质检重点。
 
@@ -134,21 +134,21 @@ SFT 数据还需要分层配比，而不是简单混合。建议至少拆成六�
 
 ### 30.4.1 RLHF：偏好对与奖励模型
 
-基于人类反馈的强化学习（Reinforcement Learning from Human Feedback, RLHF）(Ouyang et al. 2022) 是经典的对齐路线。其核心数据形态是多候选排序或偏好对。
+基于人类反馈的强化学习（Reinforcement Learning from Human Feedback, RLHF）是经典的对齐路线。其核心数据形态是多候选排序或偏好对。
 
 * **数据形状：** prompt + chosen + rejected，或同一 prompt 下针对 $N$ 个候选的相对排序评分。
 * **工程重点：** 如何高效生成高区分度的候选回答？如何保障人类标注团队在复杂价值观判断上的高一致性？训练 Reward Model 时，如何确保训练集的分布覆盖了线上真实的 prompt 分布？
 
 ### 30.4.2 DPO：直接偏好优化的数据要求
 
-直接偏好优化（Direct Preference Optimization, DPO）(Rafailov et al. 2023) 通过将强化学习目标重构为二元交叉熵损失，绕过了显式训练 RM 的复杂性。
+直接偏好优化（Direct Preference Optimization, DPO）通过将强化学习目标重构为二元交叉熵损失，绕过了显式训练 RM 的复杂性。
 
 * **数据形状：** 严格的 Prompt + Chosen + Rejected 三元组。
 * **工程重点：** 高度依赖偏好对的质量。DPO 对 Chosen 和 Rejected 之间的差异信号非常敏感。如果 Rejected 样本质量过低（例如乱码），DPO 很难学到有用的偏好边界；如果两者差异主要体现在表面词汇（如 Rejected 语气强硬但逻辑正确，Chosen 语气更柔和但事实错误），模型也可能被误导。
 
 ### 30.4.3 GRPO：组内相对比较与采样分组
 
-GRPO (Shao et al. 2024) 常用于处理长推理任务，它不再依赖全局的绝对 Reward 基线，而是强调同一 prompt 下的组内相对质量。
+GRPO 常用于处理长推理任务，它不再依赖全局的绝对 Reward 基线，而是强调同一 prompt 下的组内相对质量。
 
 * **数据形状：** prompt + candidate group + 相对奖励信号。候选组通常包含 4 到 8 个回答，具体数量取决于采样成本和任务难度。
 * **工程重点：** 数据侧需要保留候选组结构、生成时的采样参数（如 Temperature）、验证信号和分组元信息。数据管道的重点变成了如何高效地进行批量多路采样。
@@ -190,7 +190,7 @@ GRPO (Shao et al. 2024) 常用于处理长推理任务，它不再依赖全局�
 
 ### 30.5.2 SFT-Mix：行为模板层
 
-Tülu-3 (Lambert et al. 2024) 的 SFT 阶段并不追求无边界扩张的样本量。其 SFT-Mix 规模约 939K [D]，这一数字来自公开材料中披露的训练数据规模，使用时应与对应数据集卡或论文表格保持一致。
+Tülu-3 的 SFT 阶段并不追求无边界扩张的样本量。其 SFT-Mix 规模约 939K [D]，这一数字来自公开材料中披露的训练数据规模，使用时应与对应数据集卡或论文表格保持一致。
 **数据来源结构与组合：** 其 SFT-Mix 体现了明确的人工调配思路。它将基础对话、多任务遵循、多轮交互、API 工具使用、代码生成、数学推理以及核心安全任务按阶段目标进行混合。
 **为什么不能只追求条数？** 如果在代码任务中盲目堆砌数百万条简单函数的续写，模型会发生“灾难性遗忘”，遗忘如何用自然语言正常聊天。Tülu-3 的经验表明，通过对高质量来源进行降采样和平衡，例如特定领域的精标集，能够在几万步的微调内迅速固化模型的全面行为模式。
 
@@ -198,7 +198,7 @@ Tülu-3 (Lambert et al. 2024) 的 SFT 阶段并不追求无边界扩张的样本
 
 在 SFT 赋予模型基础行为模式后，Tülu-3 引入 DPO mix 进行偏好打磨。DPO mix 的具体规模与组成需要在终稿中回到论文和数据集卡逐项核验，避免把不同阶段或不同 split 的统计混在一起。
 **连接 SFT 与 DPO：** DPO 数据不仅要包含外部数据集，也应覆盖基座模型在 SFT 后实际输出行为中的典型问题。
-**差异偏好的体现：** chosen 和 rejected 的设计不应随机选取。Tülu-3 在构建数据时，强调避免一种危险倾向：不要把“表面更礼貌但事实更差”的回答选为 chosen。如果数据管线使用未经校准的 LLM-as-a-Judge，模型容易受到此类偏好误导（Length Bias & Sycophancy (Zheng et al. 2023)）。因此，高质量的 DPO 对需要在“事实正确性”上具有明确差异。
+**差异偏好的体现：** chosen 和 rejected 的设计不应随机选取。Tülu-3 在构建数据时，强调避免一种危险倾向：不要把“表面更礼貌但事实更差”的回答选为 chosen。如果数据管线使用未经校准的 LLM-as-a-Judge，模型容易受到此类偏好误导（Length Bias & Sycophancy）。因此，高质量的 DPO 对需要在“事实正确性”上具有明确差异。
 
 ### 30.5.4 RLVR：可验证任务层
 
@@ -221,7 +221,7 @@ Tülu-3 的另一个启发是，开放 recipe 并不意味着复现者可以忽�
 
 ## 30.6 案例 B：Llama-3 RLHF 多轮迭代解读
 
-Llama-3 (Dubey et al. 2024) 的后训练代表了一类高投入工业路线。与 Tülu-3 更强调公开 recipe 的可复现性不同，Llama-3 报告强调多轮 RLHF 迭代。其关键不在于单个数据集，而在于偏好采集、奖励模型更新、拒绝采样和失败样本回流之间的工程流转机制。
+Llama-3 的后训练代表了一类高投入工业路线。与 Tülu-3 更强调公开 recipe 的可复现性不同，Llama-3 报告强调多轮 RLHF 迭代。其关键不在于单个数据集，而在于偏好采集、奖励模型更新、拒绝采样和失败样本回流之间的工程流转机制。
 
 **为什么强调多轮迭代与 RM 重训？**
 在首次 SFT 后，使用初始 RM 进行 RLHF，模型策略会迅速向 RM 的高分区域移动。然而，RM 本身存在分布外盲区（Out-of-Distribution, OOD）。随着模型能力提升，它生成的回答会逐渐偏离初代 RM 见过的样本分布。如果不更新 RM，模型就可能学会利用奖励模型漏洞（Reward Hacking）。因此，Llama-3 路线中的每轮迭代都会利用当前模型针对 hard prompt 生成新回答，送交人工标注，并将新数据加入 RM 训练集中进行重训。具体每轮新增数据规模需要以报告披露为准，无法确认的地方应标为 `[I]` 或写作“未披露”。
@@ -345,27 +345,3 @@ Ch05 已经探讨了 Benchmark 污染检测的通用方法，这里我们仅聚�
 **承上启下：** 当系统依赖的奖励信号从主观的“人类偏好打分”，进一步扩展到基于规则或程序的可验证信号时，后训练系统就会进入推理数据飞轮的范畴。在这个飞轮中，冷启动 SFT 提供基础行为，多路采样产生候选轨迹，Rule-based Reward 提供验证信号，拒绝采样提取高质量轨迹，再回流形成二轮 SFT 数据。关于这一飞轮的数据工程实现，我们将在 Ch31 详细展开。
 
 ---
-
-
-## 参考文献
-
-Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Yang A, Fan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
-
-Lambert N, Morrison C, Pyatkin V, Huang S, Ivison H, Brahman F, Miranda L J, Pyatkin V, Chandu K, Meza-Ruiz R I, others (2024) Tülu 3: Pushing Frontiers in Open Language Model Post-Training. arXiv preprint arXiv:2411.15124.
-
-Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C L, Mishkin P, Zhang C, Agarwal S, Slama K, Ray A, others (2022) Training Language Models to Follow Instructions with Human Feedback (RLHF). In: Advances in Neural Information Processing Systems 35:27730-27744.
-
-Rafailov R, Sharma A, Mitchell E, Ermon S, Manning C D, Finn C (2023) Direct Preference Optimization: Your Language Model Is Secretly a Reward Model (DPO). In: Advances in Neural Information Processing Systems 36.
-
-Shao Z, Wang P, Zhu Q, Xu R, Song J, Zhang M, Li Y, Wu Y, Guo D (2024) DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models (GRPO). arXiv preprint arXiv:2402.03300.
-
-Wang G, Cheng S, Zhan X, Li B, Song S, Liu Y (2022) Self-Instruct: Aligning Language Models with Self-Generated Instructions. arXiv preprint arXiv:2212.10560.
-
-Wang Z, Dong Y, Zeng J, Adams V, Sreedhar M N, Egert D, Sharir O, Jhunjhunwala P D, Kuchaiev O, Bakhturina E, others (2024b) HelpSteer2: Open-Source Dataset for Training Top-Performing Reward Models. arXiv preprint arXiv:2406.08673.
-
-Xu C, Sun Q, Zheng K, Geng X, Zhao P, Feng J, Tao C, Jiang D (2023) WizardLM: Empowering Large Language Models to Follow Complex Instructions (Evol-Instruct). arXiv preprint arXiv:2304.12244.
-
-Xu S, Zhong M, Cheng W, Lu J, Huang X, Sun S, Gao L, Ruan J, Yang A, Zhao S, others (2024) Magpie: Alignment Data Synthesis from Scratch by Prompting Aligned LLMs with Nothing. arXiv preprint arXiv:2406.08464.
-
-Zheng L, Chiang W L, Sheng Y, Zhuang S, Wu Z, Zhuang Y, Lin Z, Li Z, Li D, Xing E P, Zhang H, Gonzalez J E, Stoica I (2023) Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. In: Advances in Neural Information Processing Systems 36.
-

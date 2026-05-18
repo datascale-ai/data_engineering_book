@@ -40,7 +40,7 @@ LLM 数据栈的工作负载有着截然不同的特征结构：
 
 首先是**算力成本**（GPU/TPU 训练集群）。一块 H100 GPU 的租用价格约为每小时 3-4 美元，8 卡 DGX 节点约 25-30 美元/小时，一次 7B 模型的预训练往往需要持续数百小时，总算力成本轻松突破百万人民币量级。这意味着任何由于数据问题造成的训练中断或重启，代价都是昂贵的——这是 LLM 数据栈必须以"不允许训练失败"为最高设计准则的根本原因。
 
-其次是**数据处理成本**。PB 级的语料清洗任务在 CPU 集群上运行，每次完整的预处理管线可能需要数十万核心小时的计算，这在公有云上的费用可达数万至数十万美元。如何通过精细调度（如使用 Spot 实例）和算法优化（如 MinHash (Broder 1997) 近似去重替代精确去重）来降低单次处理成本，是工程化必须考量的核心命题。
+其次是**数据处理成本**。PB 级的语料清洗任务在 CPU 集群上运行，每次完整的预处理管线可能需要数十万核心小时的计算，这在公有云上的费用可达数万至数十万美元。如何通过精细调度（如使用 Spot 实例）和算法优化（如 MinHash 近似去重替代精确去重）来降低单次处理成本，是工程化必须考量的核心命题。
 
 第三是**标注与人工成本**。高质量的 SFT 样本需要具备专业背景的标注员手工撰写，月人均产能仅约 500-2000 条高质量样本，而一个中等规模的 SFT 项目往往需要数十万条样本，这意味着标注成本很容易成为整个数据工程预算中占比最高的单项。
 
@@ -100,7 +100,7 @@ def register_ingestion(record: DataIngestionRecord, metadata_db_path: str):
 
 处理编排层要解决的核心工程问题是：如何让这些步骤在数千个并行计算节点上高效执行，同时保证整个流水线的可观测性、可恢复性和可复现性。
 
-目前工业界最主流的两种选择是 **Apache Spark** (Zaharia et al. 2016) 和 **Ray Data** (Moritz et al. 2018)，两者在设计哲学和适用场景上存在根本性的差异：
+目前工业界最主流的两种选择是 **Apache Spark** 和 **Ray Data**，两者在设计哲学和适用场景上存在根本性的差异：
 
 **表 3-1：Apache Spark vs Ray Data 核心特性对比**
 
@@ -170,11 +170,11 @@ LLM 数据栈要同时管理三种性质截然不同的数据，每种数据对�
 | **Schema 演进** | 支持（列添加/重命名/删除） | 支持 | 支持 |
 | **推荐使用场景** | 多引擎混用、追求厂商中立的团队 | 深度使用 Databricks 生态的团队 | 有高频 upsert 需求（如实时知识库更新）的团队 |
 
-对于大多数 LLM 数据工程场景，**Apache Iceberg** (Kinley and Li 2020) **+ S3**的组合是最推荐的方案，原因是其引擎中立性——它允许你同时用 Spark 做海量清洗处理、用 DuckDB 做轻量的数据探查分析，而无需迁移数据，也不担心被任何一家商业厂商锁定。
+对于大多数 LLM 数据工程场景，**Apache Iceberg + S3**的组合是最推荐的方案，原因是其引擎中立性——它允许你同时用 Spark 做海量清洗处理、用 DuckDB 做轻量的数据探查分析，而无需迁移数据，也不担心被任何一家商业厂商锁定。
 
-**向量数据（Embeddings）**是第二类存储需求，主要服务于 RAG（检索增强生成）场景。向量数据库的核心职责是将海量文本 Chunk 转化为高维稠密向量并建立索引，支持高效的近似最近邻（ANN）检索 (Malkov and Yashunin 2020)。目前主流的向量数据库有 Milvus（开源，支持大规模分布式部署）、Qdrant（Rust 实现，性能极高，轻量部署友好）和 Weaviate（内置多模态向量支持，Schema 友好）等。选型时的核心决策因素是：向量数量规模（100万以下 vs 亿级）、是否需要 Hybrid Search（稠密向量 + BM25 (Robertson and Zaragoza 2009) 稀疏检索的混合）、以及运维团队对分布式系统的运维能力。
+**向量数据（Embeddings）**是第二类存储需求，主要服务于 RAG（检索增强生成）场景。向量数据库的核心职责是将海量文本 Chunk 转化为高维稠密向量并建立索引，支持高效的近似最近邻（ANN）检索。目前主流的向量数据库有 Milvus（开源，支持大规模分布式部署）、Qdrant（Rust 实现，性能极高，轻量部署友好）和 Weaviate（内置多模态向量支持，Schema 友好）等。选型时的核心决策因素是：向量数量规模（100万以下 vs 亿级）、是否需要 Hybrid Search（稠密向量 + BM25 稀疏检索的混合）、以及运维团队对分布式系统的运维能力。
 
-**模型 Checkpoint 与实验产物**是第三类，包括训练过程中保存的模型权重文件（动辄数百 GB）、TensorBoard 或 W&B 的训练日志、以及 Tokenizer 配置等。这类数据量大、访问频率不均匀（训练中频繁写入，训练后几乎只读），适合以对象存储为主存储，配合 DVC（Data Version Control）(Ruslan et al. 2021) 或 MLflow Artifacts 做版本追踪。
+**模型 Checkpoint 与实验产物**是第三类，包括训练过程中保存的模型权重文件（动辄数百 GB）、TensorBoard 或 W&B 的训练日志、以及 Tokenizer 配置等。这类数据量大、访问频率不均匀（训练中频繁写入，训练后几乎只读），适合以对象存储为主存储，配合 DVC（Data Version Control）或 MLflow Artifacts 做版本追踪。
 
 ```bash
 # 使用 DVC 为数据集建立版本追踪
@@ -310,22 +310,3 @@ $$\text{数据工程 ROI} = \frac{\Delta\text{模型性能} \times \text{模型�
 本章系统性地建立了 AI 原生数据栈的完整架构蓝图。我们首先从目标差异、工作负载特征和成本约束三个维度，剖析了为什么面向 BI 分析设计的传统数仓技术栈无法直接移植到 LLM 数据工程场景。在此基础上，我们将数据栈拆解为采集接入、处理编排、存储索引、评测运营和治理安全五个功能层，每一层给出了工业界验证过的主流选型方案和具体的技术比较依据。成本模型章节揭示了五大成本维度的构成和分阶段核算方法，并给出了量化的 ROI 决策框架。最后，针对初创、中型和大型三类不同规模的团队，分别给出了与其阶段相匹配的差异化架构方案，避免了"用小公司的资源搭大厂的架构"的常见陷阱。
 
 带着这套基础设施蓝图，从下一章开始，我们将正式进入第二篇——文本预训练数据工程的主战场，探讨在这套数据栈之上，如何从浩如烟海的公开语料中挖掘出构建顶尖大模型所需的黄金预训练数据。
-
-## 参考文献
-
-Zaharia M, Xin R S, Wendell P, Das T, Armbrust M, Dave A, Meng X, Rosen J, Venkataraman S, Franklin M J, Ghodsi A, Gonzalez J, Shenker S, Stoica I (2016) Apache Spark: A Unified Engine for Big Data Processing. Communications of the ACM 59(11):56-65.
-
-Moritz P, Nishihara R, Wang S, Tumanov A, Liaw R, Liang E, Elibol M, Yang Z, Paul W, Jordan M I, Stoica I (2018) Ray: A Distributed Framework for Emerging AI Applications. In: Proceedings of the 13th USENIX Symposium on Operating Systems Design and Implementation, pp 561-577.
-
-Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.
-
-Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.
-
-Robertson S, Zaragoza H (2009) The Probabilistic Relevance Framework: BM25 and Beyond. Foundations and Trends in Information Retrieval 3(4):333-389.
-
-Malkov Y A, Yashunin D A (2020) Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs (HNSW). IEEE Transactions on Pattern Analysis and Machine Intelligence 42(4):824-836.
-
-Kinley J, Li R (2020) Iceberg: A Modern Table Format for Huge Analytic Datasets. In: Proceedings of the 2020 ACM SIGMOD International Conference on Management of Data, pp 2955-2962.
-
-Ruslan K, Barrak M, Shcherbatyi I, others (2021) DVC: Data Version Control - Git for Data and Models. In: Proceedings of the Workshop on MLOps Systems at MLSys 2021.
-

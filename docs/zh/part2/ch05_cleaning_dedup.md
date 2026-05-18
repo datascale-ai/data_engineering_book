@@ -14,7 +14,7 @@
 
 ### 5.1.1 清洗投入与训练收益的非线性关系
 
-FineWeb 项目（Penedo et al. 2024）给出了一个量化答案：针对同样规模的 Common Crawl 数据，不同的清洗策略会带来相差数倍的训练效果差异。使用精细多阶段清洗管线处理的数据，在下游基准评测上的表现，比使用简单规则清洗的数据高出 5-12 个百分点——而这种差距，无法仅靠增加训练算力弥补。
+FineWeb 项目（Hugging Face，2024）给出了一个量化答案：针对同样规模的 Common Crawl 数据，不同的清洗策略会带来相差数倍的训练效果差异。使用精细多阶段清洗管线处理的数据，在下游基准评测上的表现，比使用简单规则清洗的数据高出 5-12 个百分点——而这种差距，无法仅靠增加训练算力弥补。
 
 这一发现颠覆了早期"数据量足够大，质量不那么重要"的粗放思维。在算力资源有限的情况下（几乎所有团队都面临这一约束），**把有限算力用在高质量数据上，永远优于把同等算力用在垃圾数据上**。从这个视角来看，数据清洗工程投资的 ROI，是整个 LLM 研发链路中最高的环节之一。
 
@@ -42,7 +42,7 @@ FineWeb 项目（Penedo et al. 2024）给出了一个量化答案：针对同样
 
 规则过滤（Rule-Based Filtering）是清洗流水线的第一道防线，也是性价比最高的一关。它基于一系列可量化的启发式规则，在不需要运行任何模型的前提下，快速剔除 40-60% 的明显低质量文档。
 
-**语言识别**是多语言语料库清洗的必要起点。FastText (Joulin et al. 2017) 的多语言识别模型（`lid.176.bin`，支持 176 种语言）是目前最推荐的工具，在中文识别上的准确率超过 99%，处理速度可以达到每秒数十万文档。实践中需要注意的是，置信度阈值应设置在 0.8 以上，低于阈值的混合语言文档（如中英夹杂的技术博客）可以保留并单独处理，而非直接丢弃。
+**语言识别**是多语言语料库清洗的必要起点。FastText 的多语言识别模型（`lid.176.bin`，支持 176 种语言）是目前最推荐的工具，在中文识别上的准确率超过 99%，处理速度可以达到每秒数十万文档。实践中需要注意的是，置信度阈值应设置在 0.8 以上，低于阈值的混合语言文档（如中英夹杂的技术博客）可以保留并单独处理，而非直接丢弃。
 
 **长度与字符比例过滤**是最基础的规则集。典型阈值设定：文档最小长度 200 字符（过短的内容通常是导航栏或标签文字），最大长度 100,000 字符（超长文档可能是被合并的多页内容，需要分段处理）；特殊字符（非字母数字字符）占比不超过 30%；数字字符占比不超过 30%（日志、数据表格类内容的判断依据）。
 
@@ -86,9 +86,9 @@ class HeuristicQualityFilter:
 
 规则过滤能快速过滤"明显"的低质量内容，但面对一段语法完全正确、格式也没有问题、但实质上是无意义的广告堆砌或 SEO 软文，规则过滤往往无能为力。这时需要**模型过滤（Model-Based Filtering）**——利用训练好的评分模型，对文档的语言质量进行更细粒度的判断。
 
-**困惑度过滤（Perplexity Filter）**是目前最广泛采用的模型过滤方法。使用 **KenLM (Heafield 2011) n-gram 语言模型**（而非神经网络模型）计算困惑度时，可以将文本质量量化：高质量的新闻和百科文本困惑度通常在 100-300 之间；普通通顺网页文本在 200-500 之间；乱码、机器翻译、广告堆砌等低质量内容往往超过 500。值得注意的是，困惑度并非越低越好——困惑度极低（低于 50）的文本可能是高度同质化的样板文本（如格式几乎固定的法律条文或商品说明），也需要额外关注。（注：若改用神经网络参照模型如 LLaMA-7B 计算，相同文本的 PPL 数值会显著缩小至 20–150 区间，详见 Ch07 §7.3.1，两者不可混用阈值。）
+**困惑度过滤（Perplexity Filter）**是目前最广泛采用的模型过滤方法。使用 **KenLM n-gram 语言模型**（而非神经网络模型）计算困惑度时，可以将文本质量量化：高质量的新闻和百科文本困惑度通常在 100-300 之间；普通通顺网页文本在 200-500 之间；乱码、机器翻译、广告堆砌等低质量内容往往超过 500。值得注意的是，困惑度并非越低越好——困惑度极低（低于 50）的文本可能是高度同质化的样板文本（如格式几乎固定的法律条文或商品说明），也需要额外关注。（注：若改用神经网络参照模型如 LLaMA-7B 计算，相同文本的 PPL 数值会显著缩小至 20–150 区间，详见 Ch07 §7.3.1，两者不可混用阈值。）
 
-**质量分类器（Quality Classifier）**是 RefinedWeb (Penedo et al. 2023)、Dolma (Soldaini et al. 2024) 等顶级数据集采用的进阶手段：用一个经过人工标注的高质量文档 vs 低质量文档数据集，微调一个 fastText 或轻量级 BERT 分类器，将质量打分做成强监督的二分类或五分类问题。这种方法在覆盖"规则和困惑度都无法发现但人类能判断"的质量问题上有显著优势，代价是需要一定量的人工标注成本来构建训练集。
+**质量分类器（Quality Classifier）**是 RefinedWeb、Dolma 等顶级数据集采用的进阶手段：用一个经过人工标注的高质量文档 vs 低质量文档数据集，微调一个 fastText 或轻量级 BERT 分类器，将质量打分做成强监督的二分类或五分类问题。这种方法在覆盖"规则和困惑度都无法发现但人类能判断"的质量问题上有显著优势，代价是需要一定量的人工标注成本来构建训练集。
 
 ### 5.2.3 三阶段协同：规则、模型、人工的合理分工
 
@@ -165,7 +165,7 @@ def normalize_text(text: str, to_simplified: bool = False) -> str:
 
 ### 5.3.3 模糊去重：MinHash LSH 的三步原理与工程实现
 
-模糊去重（Fuzzy Deduplication）的目标是识别"相似度超过阈值（如 Jaccard 相似度 > 0.8）"的文档对，并从中只保留一个版本。MinHash LSH (Broder 1997; Indyk and Motwani 1998) 是目前处理 TB 级数据规模下模糊去重的工业标准算法，其核心思想是在极大降低计算量的前提下，以高概率识别出真正相似的文档对。
+模糊去重（Fuzzy Deduplication）的目标是识别"相似度超过阈值（如 Jaccard 相似度 > 0.8）"的文档对，并从中只保留一个版本。MinHash LSH（Locality-Sensitive Hashing）是目前处理 TB 级数据规模下模糊去重的工业标准算法，其核心思想是在极大降低计算量的前提下，以高概率识别出真正相似的文档对。
 
 **第一步：N-gram 分解**。将文档转化为字符级或词级 n-gram 的集合（通常使用 5-gram）。两个文档的 Jaccard 相似度定义为它们 n-gram 集合的交集与并集之比。
 
@@ -259,7 +259,7 @@ def detect_and_redact_pii(text: str) -> tuple[str, list]:
     return text, found
 ```
 
-**命名实体识别（NER）模型**则覆盖规则难以枚举的 PII 类型，如真实人名、地址和机构名。推荐使用 spaCy (Honnibal et al. 2020) 的中文模型（`zh_core_web_trf`）或 HuggingFace 上开源的中文 NER 模型，对人名（PER）、地点（LOC）、机构（ORG）等命名实体进行识别，再根据上下文判断是否需要脱敏。
+**命名实体识别（NER）模型**则覆盖规则难以枚举的 PII 类型，如真实人名、地址和机构名。推荐使用 spaCy 的中文模型（`zh_core_web_trf`）或 HuggingFace 上开源的中文 NER 模型，对人名（PER）、地点（LOC）、机构（ORG）等命名实体进行识别，再根据上下文判断是否需要脱敏。
 
 ---
 
@@ -273,7 +273,7 @@ Benchmark Contamination（基准污染），是指训练数据中意外混入了
 
 ### 5.5.2 检测与隔离方案
 
-目前最常用的去污染方案是 **N-gram 重叠检测**：将所有评测集（MMLU (Hendrycks et al. 2021)、GSM8K (Cobbe et al. 2021)、HumanEval (Chen et al. 2021)、CEVAL 等）的题目和答案预先计算 13-gram 指纹集合，然后对训练数据中的每个文档进行扫描，只要与任何评测集的 13-gram 匹配率超过 50%，就将该文档标记为"污染风险"并移入隔离区（不是直接删除，而是先隔离，以便后续审查）：
+目前最常用的去污染方案是 **N-gram 重叠检测**：将所有评测集（MMLU、GSM8K、HumanEval、CEVAL 等）的题目和答案预先计算 13-gram 指纹集合，然后对训练数据中的每个文档进行扫描，只要与任何评测集的 13-gram 匹配率超过 50%，就将该文档标记为"污染风险"并移入隔离区（不是直接删除，而是先隔离，以便后续审查）：
 
 ```python
 from collections import Counter
@@ -441,30 +441,3 @@ class DocumentQualityScore:
 本章作为全书工程密度最高的旗舰章节，从"清洗为何构成训练数据质量上限"出发，按照清洗生命周期的顺序，系统介绍了规则过滤、模型评分、精确去重、MinHash 模糊去重、PII 脱敏与基准去污染的完整技术体系。两张表格（表5-1 缺陷-检测-代价矩阵、表5-2 清洗动作效果对照）为工程师提供了可直接参考的决策工具。两个案例复盘——"清洗过度导致知识损失"和"PII 遗漏引发安全事故"——从正反两个方向印证了清洗体系的精细化配置要求。
 
 携带这套完整的清洗技术体系，我们已经具备了将原始语料精炼为高质量训练数据的完整能力。下一章将在清洗完成的数据上，继续探讨预训练数据工程的最后一公里：**第6章 分词、序列化与高效加载**——把干净的文本转化为 GPU 可以高效消费的 Token 序列。
-
-## 参考文献
-
-Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.
-
-Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.
-
-Honnibal M, Montani I, Van Landeghem S, Boyd A (2020) spaCy: Industrial-strength Natural Language Processing in Python. Zenodo. https://doi.org/10.5281/zenodo.1212303.
-
-Indyk P, Motwani R (1998) Approximate Nearest Neighbors: Towards Removing the Curse of Dimensionality. In: Proceedings of the 30th Annual ACM Symposium on Theory of Computing, pp 604-613.
-
-Joulin A, Grave E, Bojanowski P, Douze M, Jegou H, Mikolov T (2017) FastText.zip: Compressing Text Classification Models. arXiv preprint arXiv:1612.03651.
-
-Penedo G, Kydlíček H, allal L B, Lozhkov A, Mitchell M, Raffel C, Von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.
-
-Penedo G, Malartic Q, Hesslow D, Cojocaru R, Cappelli A, Alobeidli H, Pannier B, Almazrouei E, Launay J (2023) The RefinedWeb Dataset for Falcon LLM: Outperforming Curated Corpora with Web Data Only. In: Advances in Neural Information Processing Systems 36.
-
-Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur C, Bogin B, Chandu K, Dumas L, Elazar Y, others (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.
-
-Lees A, Tran V Q, Tay Y, Sorensen J, Gupta J, Metzler D, Vasserman L (2022) A New Generation of Perspective API. In: Proceedings of KDD 2022, pp 3197-3207.
-
-Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.
-
-Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Measuring Massive Multitask Language Understanding (MMLU). In: International Conference on Learning Representations.
-
-Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
-
