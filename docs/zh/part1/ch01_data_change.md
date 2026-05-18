@@ -31,7 +31,7 @@
     * **真实根因**：这种“复读机”的病根几乎无一例外指向**未经过大基数严格去重（Deduplication）的训练集**。互联网上存在海量的模板代码、导航栏文本和被机器大量转载的 SEO 文章。当大模型在预训练时，连续几个 Epoch 千百次地暴露于这些高度雷同的文本段落时，它的概率分布预测（Logits）就会强迫性地向这些低价值模式发生偏移，形成极深的“概率沟壑”。在推理时，只要碰到类似的上下文前缀，模型就会滑入死循环无法自拔。
 
 3. **“幻觉（Hallucination）”严重 vs. 世界知识构建失败**
-    * **排查误区**：对于模型在特定实体领域内的“一本正经胡说八道”，很多团队将其视为大模型固有的基因缺陷，并寄希望于在预训练结束后，通过堆砌大量的领域指令微调（SFT）补丁或者外接 RAG（检索增强生成）系统来外挂式修复。
+    * **排查误区**：对于模型在特定实体领域内的“一本正经胡说八道”，很多团队将其视为大模型固有的基因缺陷，并寄希望于在预训练结束后，通过堆砌大量的领域指令微调（SFT）补丁或者外接 RAG（检索增强生成）(Lewis et al. 2020) 系统来外挂式修复。
     * **真实根因**：“基座不牢，地动山摇”。如果基础清洗管线未能有效过滤低信噪比的网络噪声——如大量重复无意义的灌水内容、事实性错误严重的伪科普文章，或内部逻辑自相矛盾的劣质语料——，“基座模型”的世界模型（World Model）从一开始就被严重扭曲。此时的模型并没有学习到事物之间的普遍逻辑法则，而是变成了错误相关性的记忆体。后期在对齐阶段试图通过少量微调去掩盖这巨大的基础缺陷，无异于杯水车薪。
 
 ### 1.1.3 训练指标、评测指标与业务目标为何背离
@@ -39,18 +39,18 @@
 这种指标脱轨直接揭示了低水平数据工程带来的掩耳盗铃效应。
 
 *   **训练指标（Loss）的欺骗性陷阱**：在缺乏正确数据分离机制的情况下，如果用来计算 Validation Loss 的保留测试语料，最初与训练语料是从同一个未经去重和去污染的池子中按比例拆分的，那么这会导致严重的**数据分布同质性重叠**。模型在测试集上表现出的低 Loss，根本不意味着它掌握了泛化推理能力，它仅仅只是在证明：它强大地记忆了那些充斥两边的低质量数据或高频重复样本。
-*   **深水炸弹：基准测试污染（Benchmark Contamination）**：这是预训练工程中最隐蔽也最具破坏性的数据质量问题之一。业界不乏这样的案例：团队在公开基准测试（如逻辑推理评测 GSM8K、通用知识评测 MMLU）上取得了令人振奋的高分，但在真实业务场景的人工盲测中却表现平平。事后的数据溔源审计往往指向同一根因：爬虫管线曾不加区分地抓取了包含这些公开评测题库及其解答的代码仓库或网页，由于缺乏 N-Gram 级别的去污染检测，相关题目畅通无阻地混入了预训练语料。此时模型展示的并非真正的推理泛化能力，而是对已见题目的强记忆匹配——一旦遇到分布之外的新问题，能力断崖便立刻暴露无遗。
+*   **深水炸弹：基准测试污染（Benchmark Contamination）**：这是预训练工程中最隐蔽也最具破坏性的数据质量问题之一。业界不乏这样的案例：团队在公开基准测试（如逻辑推理评测 GSM8K (Cobbe et al. 2021)、通用知识评测 MMLU (Hendrycks et al. 2021)）上取得了令人振奋的高分，但在真实业务场景的人工盲测中却表现平平。事后的数据溔源审计往往指向同一根因：爬虫管线曾不加区分地抓取了包含这些公开评测题库及其解答的代码仓库或网页，由于缺乏 N-Gram 级别的去污染检测，相关题目畅通无阻地混入了预训练语料。此时模型展示的并非真正的推理泛化能力，而是对已见题目的强记忆匹配——一旦遇到分布之外的新问题，能力断崖便立刻暴露无遗。
 
 这次事故的教训不仅是几百万云账单的付诸东流，更是在产品侧延误了长达数月的市场关键冲刺期。它以极为高昂的代价，向大航海时代的 AI 从业者证明了一条今天已被奉为圭臬的铁律：**在模型底层算子与 Transformer 变体架构高度同质化、趋于收敛的今天，优质且极具壁垒的数据工艺流水线，才是拉开巨头之间模型智商差距的核心优势。**
 
 
 ## 1.2 从模型中心到数据中心的范式迁移
 
-回顾前深度学习时代，在古典机器学习（如推荐系统或早期 CV 任务）的时期中，“特征工程 + 结构各异的复杂算法（SVM/决策树组/胶囊网络等）”曾是绝对的王道。在 2012 年至 2020 年这快速发展的黄金十年里，研究者们坚信“复杂庞大的架构创新创造跨时代奇迹”（从 AlexNet, ResNet 到 Transformer 框架各异变体）。
-然而，当 GPT-3 的雷霆之光划破长空并以单一自回归语言模型（Autoregressive LM）“一统江山”之后，天平彻底倾覆。“数据中心主义（Data-centric AI）”以其不可逆转之势，正式取代了“模型中心主义”。这是一场基于算力重塑和规律发现的全面范式迁移。
+回顾前深度学习时代，在古典机器学习（如推荐系统或早期 CV 任务）的时期中，“特征工程 + 结构各异的复杂算法（SVM/决策树组/胶囊网络等）”曾是绝对的王道。在 2012 年至 2020 年这快速发展的黄金十年里，研究者们坚信“复杂庞大的架构创新创造跨时代奇迹”（从 AlexNet (Krizhevsky et al. 2012), ResNet (He et al. 2016) 到 Transformer 框架各异变体 (Vaswani et al. 2017)）。
+然而，当 GPT-3 (Brown et al. 2020) 的雷霆之光划破长空并以单一自回归语言模型（Autoregressive LM）“一统江山”之后，天平彻底倾覆。“数据中心主义（Data-centric AI）”以其不可逆转之势，正式取代了“模型中心主义”。这是一场基于算力重塑和规律发现的全面范式迁移。
 
 ### 1.2.1 定量规律：Scaling Laws 的起源与 Chinchilla 对数据配比的重塑
-如何让大语言模型拥有比肩人类的智力？2020 年，OpenAI 的研究员们给出了一个剥去神秘主义色彩的硬核回答。在里程碑式的论文《Scaling Laws for Neural Language Models》中，他们详细揭示了由惊人数据得出的一个核心规律：大型语言模型的最终性能（以交叉熵损失表征的 Loss）与三个关键要素构成稳固的幂律（Power Law）制约关系——
+如何让大语言模型拥有比肩人类的智力？2020 年，OpenAI 的研究员们给出了一个剥去神秘主义色彩的硬核回答。在里程碑式的论文《Scaling Laws for Neural Language Models》(Kaplan et al. 2020) 中，他们详细揭示了由惊人数据得出的一个核心规律：大型语言模型的最终性能（以交叉熵损失表征的 Loss）与三个关键要素构成稳固的幂律（Power Law）制约关系——
 模型参数量 $N$、投入训练的高质量数据集规模 $D$、以及消耗的总算力 $C$。
 
 其核心等价描述可以简化为：
@@ -62,29 +62,29 @@ $$
 这个公式宣告了一个事实：只要给定充分燃烧的硅基算力，同时同向且以适当比例扩大模型神经元容量和喂入的优质数据，模型的智慧水平就会呈现**高度可预测的线性演进与能力跃迁**。从这天起，凭直觉试错的研发方式被终结，大模型训练变成了一门如同造桥铺路般的精密系统工程。
 
 **Chinchilla 法则：对数据规模渴求的重估**
-然而，在 Scaling Laws 发布初期的浪潮中，存在一个巨大认知盲点。很多公司一味追求扩大参数量（譬如争相发布千亿、甚至万亿参数规模的超大模型，如早期的 175B 的 GPT-3 以及各家追随者），认为模型大就是性能好。
-但到了 2022 年，DeepMind 的一篇名为《Training Compute-Optimal Large Language Models》（即著名的 Chinchilla 论文）的研究打破了这一幻觉。
+然而，在 Scaling Laws 发布初期的浪潮中，存在一个巨大认知盲点。很多公司一味追求扩大参数量（譬如争相发布千亿、甚至万亿参数规模的超大模型，如早期的 175B 的 GPT-3 (Brown et al. 2020) 以及各家追随者），认为模型大就是性能好。
+但到了 2022 年，DeepMind 的一篇名为《Training Compute-Optimal Large Language Models》（即著名的 Chinchilla 论文）(Hoffmann et al. 2022) 的研究打破了这一幻觉。
 
-DeepMind 研究团队进行了严格控制变量的计算最优（Compute-Optimal）实验。他们的结果令整个学术界震惊：参数量仅有 70B（700 亿）的 Chinchilla 模型，由于吃透了深度清洗过的 1.4T（1.4万亿）Tokens 的优质数据，其各项评测得分竟然全面超越了公司自己此前训练的体积大它 4 倍的 280B 的大模型 Gopher。
+DeepMind 研究团队进行了严格控制变量的计算最优（Compute-Optimal）实验。他们的结果令整个学术界震惊：参数量仅有 70B（700 亿）的 Chinchilla 模型，由于吃透了深度清洗过的 1.4T（1.4万亿）Tokens 的优质数据，其各项评测得分竟然全面超越了公司自己此前训练的体积大它 4 倍的 280B 的大模型 Gopher (Rae et al. 2021)。
 
 **表 1-1：DeepMind 旧范式模型与新范式模型数据资源对比**
 
 | 模型代号（发布方） | 参数量 $N$ | 投入训练数据的 Token 数 $D$ | 训练算力消耗占比估计 | 推理侧表现特征 |
 | :--- | :--- | :--- | :--- | :--- |
-| **Gopher** (老的经验路线) | 280B | 300B Tokens (约 0.3T)| 同等控制变量 | 内存占用庞大不利于部署落地产出 |
-| **Chinchilla** (新定律基准线) | **70B** | **1.4T Tokens** | 同等控制变量 | **低推理成本，且综合评测全面碾压超越** |
+| **Gopher** (Rae et al. 2021) | 280B | 300B Tokens (约 0.3T)| 同等控制变量 | 内存占用庞大不利于部署落地产出 |
+| **Chinchilla** (Hoffmann et al. 2022) | **70B** | **1.4T Tokens** | 同等控制变量 | **低推理成本，且综合评测全面碾压超越** |
 
 Chinchilla 法则指出：过去行业内的模型普遍**“体型胖导致超重，但肚子空空营养不良（Under-trained）”**。若想获取计算预算下的最大收益，模型参数量和训练数据所需的 Token 数，应当以大致相同的比例同步增加。这条黄金法则是：
 > **模型每增加 1 个参数，需要起码为其配套投入约 20 个高质量 Token 的训练数据才能使其吃饱。**
 
-这意味着，今天如果某团队想立项研发一个仅仅 7B 级别的主流开源基座模型基准线，他们准备的高质量、无损语料保底规模必须达到惊人的 140B（即 1400 亿）Tokens 以上。若放眼追求极致性能的小体量旗舰（如 LLaMA-3 8B 版本），其最终所吞噬的精炼数据竟直逼 15T（15万亿）Tokens——値得注意的是，这已远超 Chinchilla 最优点（约 160B Token），这是 Meta 刻意采用的「过训练（Over-training）」策略：用更多数据换取更低的推理部署成本，使小模型在同等算力下获得更强的长期性能，而非 Chinchilla 法则本身的要求。这种指数级增大的饭量，让所有公司的目光从“寻找模型新结构”被迫转向到了“拿什么填饱算力巨兽的大嘴”上。
+这意味着，今天如果某团队想立项研发一个仅仅 7B 级别的主流开源基座模型基准线，他们准备的高质量、无损语料保底规模必须达到惊人的 140B（即 1400 亿）Tokens 以上。若放眼追求极致性能的小体量旗舰（如 LLaMA-3 8B 版本），其最终所吞噬的精炼数据竟直逼 15T（15万亿）Tokens (Dubey et al. 2024)——値得注意的是，这已远超 Chinchilla 最优点（约 160B Token），这是 Meta 刻意采用的「过训练（Over-training）」策略：用更多数据换取更低的推理部署成本，使小模型在同等算力下获得更强的长期性能，而非 Chinchilla 法则本身的要求。这种指数级增大的饭量，让所有公司的目光从“寻找模型新结构”被迫转向到了“拿什么填饱算力巨兽的大嘴”上。
 
 ### 1.2.2 质量的逆袭：Phi 系列极端实验与合成数据的曙光
 就在所有头部企业纷纷大秀爬虫肌肉，比拼谁能搂来超大量级的互联网底库时，微软研究院却出人意料地通过名为”Phi”的系列论文彻底颠覆了关于“大就一定好”的路径依赖，给全行业结结实实地上了一堂关于**纯净极限质量（Extreme Data Quality）**的教学课。
 
-微软发布的 Phi-1 模型是一个异类。它在训练开始前就被限定在了一个近乎“侏儒”级别的架构上（仅有 1.3B 的微小参数量），不仅如此，训练消耗的数据仅有可怜的 7B Token。但是，就是在这种硬件和规模的全面劣势下，当它被放在 HumanEval 代码评测榜等硬核逻辑图谱上时，小小的 Phi-1 却将不少百亿体量的开源界大哥斩落马下。
+微软发布的 Phi-1 模型是一个异类。它在训练开始前就被限定在了一个近乎“侏儒”级别的架构上（仅有 1.3B 的微小参数量），不仅如此，训练消耗的数据仅有可怜的 7B Token。但是，就是在这种硬件和规模的全面劣势下，当它被放在 HumanEval (Chen et al. 2021) 代码评测榜等硬核逻辑图谱上时，小小的 Phi-1 却将不少百亿体量的开源界大哥斩落马下。
 
-Phi-1 何以四两拨千斤？论文名字揭示了核心方法——《Textbooks Are All You Need》（教科书就是你需要的全部）。研究团队舍弃了公网上随处可见的充斥着评论对骂、错别字与烂尾代码的 StackOverflow 类似帖子截留，转而动用强大的 GPT-3.5/GPT-4 充当“专家级教师”，依靠严谨规划的 Prompt，让强模型源源不断地自动生成结构丝滑、循序渐进、从零解释算法基础的高质量编程解说教程。
+Phi-1 何以四两拨千斤？论文名字揭示了核心方法——《Textbooks Are All You Need》(Gunasekar et al. 2023)（教科书就是你需要的全部）。研究团队舍弃了公网上随处可见的充斥着评论对骂、错别字与烂尾代码的 StackOverflow 类似帖子截留，转而动用强大的 GPT-3.5/GPT-4 充当“专家级教师”，依靠严谨规划的 Prompt，让强模型源源不断地自动生成结构丝滑、循序渐进、从零解释算法基础的高质量编程解说教程 (Li et al. 2023)。
 
 当模型吸收的全部都是高纯度、高密度的信息“精酿”，没有被迫在理解充满矛盾的、不符合逻辑的、带口音的噪音上浪费哪怕一点参数量时，“涌现”的阈值被极大地提前了。这直接揭示了数据工程中不应被遮蔽的真理：以超高质量和极速提纯的人工合成数据（Synthetic Data）或精炼专家知识来“浓缩干预”，依然可以实现对“大力出奇迹”大规模扩展策略的弯道超车。
 
@@ -123,7 +123,7 @@ Phi-1 何以四两拨千斤？论文名字揭示了核心方法——《Textbook
 
 在 LLM 研发体系中，角色的融合与接口定义的清晰变得前所未有的重要。此时不再是单向移交数据的流水线，而是必须构建首尾相连的"**数据飞轮（Data Flywheel）**"。
 
-所谓数据飞轮，指的是一个持续自我强化的数据闭环：模型上线后，前端用户的真实交互行为（如对回答的赞/踩、修改建议、放弃率等）会实时被采集记录；这些在线负反馈数据经过数据工程师的清洗、标注和结构化处理，转化为下一轮 RLHF 的偏好对比集；新的偏好数据喂入对齐阶段训练出更好的模型；更好的模型再次部署，产生更高质量的在线反馈数据——飞轮就此转动，且越转越快。
+所谓数据飞轮，指的是一个持续自我强化的数据闭环：模型上线后，前端用户的真实交互行为（如对回答的赞/踩、修改建议、放弃率等）会实时被采集记录；这些在线负反馈数据经过数据工程师的清洗、标注和结构化处理，转化为下一轮 RLHF (Ouyang et al. 2022) 的偏好对比集；新的偏好数据喂入对齐阶段训练出更好的模型；更好的模型再次部署，产生更高质量的在线反馈数据——飞轮就此转动，且越转越快。
 
 ![图：大模型时代数据工程职责重构图](../../images/part1/data_engineering_roles_1775830393574.png)
 
@@ -157,7 +157,7 @@ Phi-1 何以四两拨千斤？论文名字揭示了核心方法——《Textbook
               ↓
 [T+2  周] 数据工程师将 800 条成对的（rejected, chosen）数据打包，追加写入偏好对比数据库
               ↓
-[T+3  周] 算法团队使用新增的 800 条偏好数据进行 DPO 微调（3 × A100，约 12 小时）
+[T+3  周] 算法团队使用新增的 800 条偏好数据进行 DPO (Rafailov et al. 2023) 微调（3 × A100，约 12 小时）
               ↓
 [T+4  周] 新模型版本在法律问答基准上提升 +8.3%，上线灰度 10% 流量
               ↓
@@ -170,10 +170,10 @@ Phi-1 何以四两拨千斤？论文名字揭示了核心方法——《Textbook
 
 现代的"**大模型数据工程师（LLM Data Engineer）**"是一个在 2023 年前几乎不存在、却在 2024 年突然成为 AI 独角兽企业争抢的新物种。他们不再仅仅是坐在数据仓库旁边编写 SQL 提取报表的"管道工"，也不再是执行逐条规范标注任务的"流水线工人"。这个角色高度融合，处于模型研发链条的核心枢纽地带，必须在以下四个维度上同时具备能力：
 
-1. **大规模分布式计算能力**：熟练掌握 Ray Data、Apache Spark、Dask 等大规模并行计算框架，能够在数千个 CPU 核心上设计并调优由 MinHash LSH + Bloom Filter 驱动的高效去重作业。要能感知 I/O 瓶颈与计算瓶颈的差异，懂得如何调整分区策略（Partitioning）来避免整个作业被几个超大 Shard 文件拖垮。
-2. **算法感知度（ML-Awareness）**：需要深刻理解 Tokenization 的底层原理（BPE、Unigram LM），懂得如何解读 Perplexity（困惑度）曲线来判断数据质量好坏，知道如何利用 KenLM 这样的 N-gram 语言模型为候选数据打出"信息密度评分"，从而在算力成本和语料质量之间做出精确权衡。他们有时需要与算法研究员一起设计"消融实验"（Ablation Study），通过"数据集 A vs 数据集 B"的对照组，探明某类语料对某项基准测试提升的真实贡献率。
+1. **大规模分布式计算能力**：熟练掌握 Ray Data、Apache Spark、Dask 等大规模并行计算框架，能够在数千个 CPU 核心上设计并调优由 MinHash LSH (Broder 1997) + Bloom Filter (Bloom 1970) 驱动的高效去重作业。要能感知 I/O 瓶颈与计算瓶颈的差异，懂得如何调整分区策略（Partitioning）来避免整个作业被几个超大 Shard 文件拖垮。
+2. **算法感知度（ML-Awareness）**：需要深刻理解 Tokenization 的底层原理（BPE、Unigram LM），懂得如何解读 Perplexity（困惑度）曲线来判断数据质量好坏，知道如何利用 KenLM (Heafield 2011) 这样的 N-gram 语言模型为候选数据打出"信息密度评分"，从而在算力成本和语料质量之间做出精确权衡。他们有时需要与算法研究员一起设计"消融实验"（Ablation Study），通过"数据集 A vs 数据集 B"的对照组，探明某类语料对某项基准测试提升的真实贡献率。
 3. **数据治理与版本控制工程**：像 Git 控制代码版本一样，用 LakeFS 或 DVC 管理 TB 乃至 PB 级别的数据集版本。每一次数据过滤规则的修改、每一次领域配比权重的调整，都应当形成一个可追溯的数据版本提交（commit）。这是数据工程区别于"数据搬运"的根本体现——当模型训练出问题时，必须能够"git bisect"般地将脏数据的源头精确定位到某次配比调整或某一批爬取数据。
-4. **大语言模型生态嗅觉与工具链整合**：熟悉各类主流开源数据集（如 The Pile、RefinedWeb、FineWeb-Edu、Dolma、DCLM-Baseline），了解各数据集的内容偏向与局限；同时能熟练使用 Data-Juicer、datatrove、dolma-toolkit 等专为 LLM 逻辑设计的数据处理工具框架，而非用通用 ETL 工具生搬硬套。
+4. **大语言模型生态嗅觉与工具链整合**：熟悉各类主流开源数据集（如 The Pile (Gao et al. 2020)、RefinedWeb (Penedo et al. 2023)、FineWeb-Edu (Lozhkov et al. 2024)、Dolma (Soldaini et al. 2024)、DCLM-Baseline (Li et al. 2024)），了解各数据集的内容偏向与局限；同时能熟练使用 Data-Juicer (Chen et al. 2024)、datatrove (Penedo et al. 2024)、dolma-toolkit 等专为 LLM 逻辑设计的数据处理工具框架，而非用通用 ETL 工具生搬硬套。
 
 **表 1-5：LLM 数据工程师 vs 传统 ML 数据工程师能力边界对照表**
 
@@ -304,3 +304,60 @@ Phi-1 何以四两拨千斤？论文名字揭示了核心方法——《Textbook
 本章以一个由于数据劣质导致模型崩溃的真实工程灾难开篇，论证了在 Scaling Laws 与 Chinchilla 法则的双重数学约束下，"**数据质量即模型智力的终极上限**"这一核心论断的严肃工程意义。我们完整解析了规模、质量、多样性三角之间的博弈与成本转移机制，用六行对比表格揭示了传统 AI 数据链路与大模型原生数据体系之间的认知断层，并深入剖解了为什么数据飞轮胜于单向数据传递。通过定义六大核心角色的精确职责边界与 SLA（含完整时序图），以及 LLM 数据工程师 90 天能力成长路线图，我们让这个看似宏大抽象的组织课题落地为了可操作的团队协议。最后，通过三条差异化的读者路线图与章节优先级权重表，确保了这本厚达千页的著作对不同经验层次的读者都具有平等的实用价值。
 
 **数据工程不是简单的数据搬运，它已经是主导大模型智力演进轨迹的核心引擎。** 带着这一认知，让我们进入第2章，开始为整个体系建立统一的质量标准与治理语言。
+
+---
+
+## 参考文献
+
+Kaplan J, McCandlish S, Henighan T, Brown T B, Chess B, Child R, Gray S, Radford A, Wu J, Amodei D (2020) Scaling Laws for Neural Language Models. arXiv preprint arXiv:2001.08361.
+
+Hoffmann J, Borgeaud S, Mensch A, Buchatskaya E, Cai T, Rutherford E, de Las Casas D, Hendricks L A, Welbl J, Clark A, Hennigan T, Noland E, Millican K, van den Driessche G, Damoc B, Guy A, Osindero S, Simonyan K, Elsen E, Rae J W, Vinyals O, Sifre L (2022) Training Compute-Optimal Large Language Models. arXiv preprint arXiv:2203.15556.
+
+Rae J W, Borgeaud S, Cai T, Millican K, Hoffmann J, Song F, Aslanides J, Henderson S, Ring R, Young S, Rutherford E, Hennigan T, Menick J, Cassirer A, Powell R, van den Driessche G, Hendricks L A, Rauh M, Huang P S, Glaese A, Welbl J, Dathathri S, Huang S, Uesato J, Mellor J, Higgins I, Creswell A, McAleese N, Wu A, Elsen E, Jayakumar S, Buchatskaya E, Budden D, Sutherland E, Simonyan K, Paganini M, Sifre L, Martens L, Li X L, Kuncoro A, Nematzadeh A, Gribovskaya E, Donato D, Lazaridou A, Mensch A, Lespiau J B, Tsimpoukelli M, Grigorev N, Fritz D, Sottiaux T, Pajarskas M, Pohlen T, Gong Z, Toyama D, de Masson d'Autume C, Li Y, Terzi T, Mikulik V, Babuschkin I, Clark A, de Las Casas D, Guy A, Jones C, Bradbury J, Johnson M, Hechtman B, Weidinger L, Gabriel I, Isaac W, Lockhart W, Osindero S, Rimell L, Dyer C, Vinyals O, Ayoub K, Stanway J, Bennett L, Hassabis D, Kavukcuoglu K, Irving G (2021) Scaling Language Models: Methods, Analysis & Insights from Training Gopher. arXiv preprint arXiv:2112.11446.
+
+Brown T B, Mann B, Ryder N, Subbiah M, Kaplan J D, Dhariwal P, Neelakantan A, Shyam P, Sastry G, Askell A, Agarwal S, Herbert-Voss A, Krueger G, Henighan T, Child R, Ramesh A, Ziegler D, Wu J, Winter C, Hesse C, Chen M, Sigler E, Litwin M, Gray S, Chess B, Clark J, Berner C, McCandlish S, Radford A, Sutskever I, Amodei D (2020) Language Models are Few-Shot Learners. Advances in Neural Information Processing Systems 33:1877-1901.
+
+Dubey A, Jauhri A, Pandey A, Khandelwal A, Al-Dahle A, Letman A, Mathur A, Schelten A, Yang A, Fan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
+
+Gunasekar S, Zhang Y, Aneja J, Mendes C C T, Del Giorno A, Gopi S, Javaheripi M, Kauffmann P, de Rosa G, Saarikivi O, Salim A, Shah S, Behl H S, Wang X, Bubeck S, Eldan R, Kalai A T, Lee Y T, Li Y (2023) Textbooks Are All You Need. arXiv preprint arXiv:2306.11644.
+
+Li Y, Bubeck S, Eldan R, Del Giorno A, Gunasekar S, Lee Y T (2023) Textbooks Are All You Need II: phi-1.5 technical report. arXiv preprint arXiv:2309.05463.
+
+Gao L, Biderman S, Black S, Golding L, Hoppe T, Foster C, Phang J, He H, Thite A, Nabeshima N, Presser S, Leahy C (2020) The Pile: An 800GB Dataset of Diverse Text for Language Modeling. arXiv preprint arXiv:2101.00027.
+
+Penedo G, Malartic Q, Hesslow D, Cojocaru R, Cappelli A, Beguier A, Allal L B, Pannier B, Launay J (2023) The RefinedWeb Dataset for Falcon LLM: Outperforming Curated Corpora with Web Data, and Web Data Only. arXiv preprint arXiv:2306.01116.
+
+Lozhkov A, Ben Allal L, von Werra L, Wolf T (2024) FineWeb-Edu: the finest collection of educational content the web has to offer. Hugging Face Blog. https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu.
+
+Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur A, Bogin B, Chen X, Dumas G, Elazar Y, Hofmann V, Jha A H, Kumar S, Lucy L, Lyu X, Lambert N, Magnusson I, Morrison J, Muennighoff N, Naik A, Nam G, Peters M E, Ravichander A, Richardson L, Shen Z, Strubell E, Subramani N, Tafjord O, Walsh N, Zettlemoyer L, Smith N A, Hajishirzi H, Beltagy I, Groeneveld D, Dodge J, Lo K (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.
+
+Li J, Zhang Y, Yu H, Ma X, Chen Y, Jiang H, Dang K, Goyal T, Keh S, Sherborn M, others (2024) DataComp-LM: In search of the next generation of training sets for language models. arXiv preprint arXiv:2406.11794.
+
+Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.
+
+Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.
+
+Chen J, Yan X, Lin D, Qu X, Wang Y, Huang X, Zhao Z, Yu T, Zhang Z, Li H, Zheng Y, Xu R, Zhu J, Qiu X (2024) Data-Juicer: A One-Stop Data Processing System for Large Language Models. In: Proceedings of the ACM SIGMOD International Conference on Management of Data, pp 4436-4449.
+
+Penedo G, Kydlíček H, Anthony L, Hajos M, Sutawika L, Fourmague H, Nguyen H, de Werra L, Wolf T (2024) datatrove: large scale data processing. Hugging Face Open Source Library. https://github.com/huggingface/datatrove.
+
+Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S, Slama K, Ray A, Schulman J, Hilton J, Kelton F, Miller L, Simens M, Askell A, Welinder P, Christiano P F, Leike J, Lowe R (2022) Training Language Models to Follow Instructions with Human Feedback. Advances in Neural Information Processing Systems 35:27730-27744.
+
+Rafailov R, Sharma A, Mitchell E, Manning C D, Ermon S, Finn C (2023) Direct Preference Optimization: Your Language Model Is Secretly a Reward Model. Advances in Neural Information Processing Systems 36:53728-53741.
+
+Lewis P, Perez E, Piktus A, Petroni F, Karpukhin V, Goyal N, Küttler H, Lewis M, Yih W T, Rocktäschel T, Riedel S, Kiela D (2020) Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. Advances in Neural Information Processing Systems 33:9459-9474.
+
+Vaswani A, Shazeer N, Parmar N, Uszkoreit J, Jones L, Gomez A N, Kaiser L, Polosukhin I (2017) Attention Is All You Need. Advances in Neural Information Processing Systems 30.
+
+Krizhevsky A, Sutskever I, Hinton G E (2012) ImageNet Classification with Deep Convolutional Neural Networks. Advances in Neural Information Processing Systems 25:1097-1105.
+
+He K, Zhang X, Ren S, Sun J (2016) Deep Residual Learning for Image Recognition. In: Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition, pp 770-778.
+
+Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.
+
+Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Measuring Massive Multitask Language Understanding (MMLU). In: International Conference on Learning Representations.
+
+Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
+
+Bloom B H (1970) Space/time Trade-offs in Hash Coding with Allowable Errors. Communications of the ACM 13(7):422-426.
+

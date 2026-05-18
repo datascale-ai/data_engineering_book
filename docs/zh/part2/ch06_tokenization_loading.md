@@ -44,9 +44,9 @@
 
 目前主流大模型采用的分词算法以三种为主：
 
-**BPE（Byte Pair Encoding）** 是最广泛使用的算法，GPT 系列（包括 ChatGPT、GPT-4）均基于此。其核心思想是从字符级别出发，反复合并出现频率最高的相邻 token 对，直到词表达到目标大小。BPE 的字节级变体（Byte-level BPE，如 GPT-2 的 tiktoken）通过将原始字节而非 Unicode 字符作为起始单元，彻底解决了 OOV 问题，被 LLaMA 2/3、Mistral 等模型广泛采用。
+**BPE（Byte Pair Encoding）** (Sennrich et al. 2016) 是最广泛使用的算法，GPT 系列（包括 ChatGPT、GPT-4）均基于此。其核心思想是从字符级别出发，反复合并出现频率最高的相邻 token 对，直到词表达到目标大小。BPE 的字节级变体（Byte-level BPE，如 GPT-2 的 tiktoken）通过将原始字节而非 Unicode 字符作为起始单元，彻底解决了 OOV 问题，被 LLaMA 2/3、Mistral 等模型广泛采用。
 
-**SentencePiece（Unigram）** 是 Google 推广的方法，T5、XLNet、mT5 等模型使用此方案。Unigram 语言模型从大词表出发，逐步删除最不重要的 token，直到达到目标词表大小，通常能取得更高的压缩率和更平滑的 token 概率分布。SentencePiece 库还原生支持无预分词（无空格依赖）的方式，对中文、日文等无显式词边界的语言更为友好。
+**SentencePiece（Unigram）** (Kudo and Richardson 2018) 是 Google 推广的方法，T5、XLNet、mT5 等模型使用此方案。Unigram 语言模型从大词表出发，逐步删除最不重要的 token，直到达到目标词表大小，通常能取得更高的压缩率和更平滑的 token 概率分布。SentencePiece 库还原生支持无预分词（无空格依赖）的方式，对中文、日文等无显式词边界的语言更为友好。
 
 **WordPiece** 是 BERT 的分词方案，与 BPE 类似，但以最大似然为合并标准而非频率。目前较少在新的 LLM 预训练中使用，但仍在大量 BERT 系微调场景中作为历史遗产延续。
 
@@ -79,7 +79,7 @@ def tokenize_document(doc: dict, max_length: int = 4096) -> dict | None:
 
 词表（Vocabulary）是分词器的核心产出，也是大模型整体架构中唯一在训练开始后几乎无法更改的组件。一旦词表确定，后续所有的数据处理、模型嵌入矩阵、输出 logit 层都与之强绑定——更换词表意味着重新分词所有训练数据、重新初始化嵌入矩阵（丢失预训练权重的嵌入部分），代价极高。因此，词表设计决策必须在整个工程启动之前完成，而不是在训练中途发现问题再回来修正。
 
-**词表大小的权衡**是首要决策。较大的词表（100K-150K）能够将更多高频词和领域专业术语保留为单个 token，减少序列长度，降低 Transformer 的计算量（因为 attention 复杂度是序列长度的平方）；但更大的嵌入矩阵会增加参数量（词表从 32K 增至 100K，嵌入矩阵增加约 3× 参数），且稀有 token 在训练中见到的样本更少，嵌入质量较低。LLaMA-3 将词表从 LLaMA-2 的 32K 大幅扩展至 128K，并被证明在多语言理解和代码任务上有显著收益，代价是嵌入层参数约增加 12GB（对于 7B 模型而言这已是不可忽视的额外开销）。
+**词表大小的权衡**是首要决策。较大的词表（100K-150K）能够将更多高频词和领域专业术语保留为单个 token，减少序列长度，降低 Transformer 的计算量（因为 attention 复杂度是序列长度的平方）；但更大的嵌入矩阵会增加参数量（词表从 32K 增至 100K，嵌入矩阵增加约 3× 参数），且稀有 token 在训练中见到的样本更少，嵌入质量较低。LLaMA-3 (Dubey et al. 2024) 将词表从 LLaMA-2 的 32K 大幅扩展至 128K，并被证明在多语言理解和代码任务上有显著收益，代价是嵌入层参数约增加 12GB（对于 7B 模型而言这已是不可忽视的额外开销）。
 
 **领域词表扩充（Domain Vocabulary Extension）** 是垂直领域大模型的常见需求。当基础词表对特定领域的专业术语覆盖不足时（如医学术语的分子式、法律术语的专有名称、代码语言的关键字组合），这些词会被切分为多个子 token，导致：一是序列长度增长，模型上下文窗口中能容纳的领域信息减少；二是模型需要从碎片化的 token 中重建语义，学习成本更高。
 
@@ -124,7 +124,7 @@ spm.SentencePieceTrainer.train(
 | **WebDataset (.tar)** | Tar打包 | 快（流式）| Shard级 | √（内部文件压缩）| 好（Torchvision）| 多模态训练 |
 | **Raw .bin（Token IDs）** | 二进制整型 | 极快（内存映射）| 支持（byte offset）| ✗ | 需自实现 | 超大规模预训练 |
 
-对于 LLM 预训练场景，**MDS 格式**（由 MosaicML 开发，现为 Databricks 开源）是目前最推荐的选择——它专为流式多节点读取设计，支持多 GPU 节点并发无冲突读取同一数据集，内置 shuffle 缓冲区，并支持从 S3/GCS 等对象存储直接流式读取而无需完整下载。其次选择是 **Raw .bin 内存映射格式**（Megatron-LM 使用方案），将 token ID 数组直接写为二进制文件，读取时使用 `np.memmap` 进行内存映射，在本地 NVMe SSD 上读取速度接近内存速度。
+对于 LLM 预训练场景，**MDS 格式** (Mosaic AI Research 2022) 是目前最推荐的选择——它专为流式多节点读取设计，支持多 GPU 节点并发无冲突读取同一数据集，内置 shuffle 缓冲区，并支持从 S3/GCS 等对象存储直接流式读取而无需完整下载。其次选择是 **Raw .bin 内存映射格式**（Megatron-LM 使用方案），将 token ID 数组直接写为二进制文件，读取时使用 `np.memmap` 进行内存映射，在本地 NVMe SSD 上读取速度接近内存速度。
 
 ### 6.2.4 Shard 策略与全局 Shuffle
 
@@ -185,7 +185,7 @@ def greedy_pack_sequences(
 
 $$p_i = \frac{n_i^{1/T}}{\sum_j n_j^{1/T}}$$
 
-当 $T = 1$ 时，权重与数据量等比，大来源完全主导；当 $T \to \infty$ 时，所有来源权重趋于均匀。实践中常用 $T = 2$（mT5 的多语言采样设置），在上采样小来源的同时避免过度偏离原始数据分布。
+当 $T = 1$ 时，权重与数据量等比，大来源完全主导；当 $T \to \infty$ 时，所有来源权重趋于均匀。实践中常用 $T = 2$（mT5 (Xue et al. 2021) 的多语言采样设置），在上采样小来源的同时避免过度偏离原始数据分布。
 
 **表6-2：采样与混采策略收益对照表**
 
@@ -201,7 +201,7 @@ $$p_i = \frac{n_i^{1/T}}{\sum_j n_j^{1/T}}$$
 
 课程学习（Curriculum Learning）是一种在训练过程中**动态调整数据配方**的策略：模型训练的早期阶段使用更"简单"（句子更短、语言更通顺、领域更通用）的数据，随着训练进行逐步引入更长、更复杂的样本。这模拟了人类学习"先易后难"的认知规律。
 
-在工程实现上，课程学习的难度度量可以来自多个维度：token 序列长度（短→长）、困惑度分数（低困惑度→高困惑度）、质量层级（High→Medium→Low）。LLaMA-3 的技术报告明确提到，在预训练的 Cooldown 阶段大幅提升高质量精选数据（代码、数学推理、书籍）的权重，这本质上正是一种**数据质量课程**——先用海量通用数据建立广泛的世界知识，再用高质量精选数据在最后阶段强化特定能力。
+在工程实现上，课程学习的难度度量可以来自多个维度：token 序列长度（短→长）、困惑度分数（低困惑度→高困惑度）、质量层级（High→Medium→Low）。LLaMA-3 (Dubey et al. 2024) 的技术报告明确提到，在预训练的 Cooldown 阶段大幅提升高质量精选数据（代码、数学推理、书籍）的权重，这本质上正是一种**数据质量课程**——先用海量通用数据建立广泛的世界知识，再用高质量精选数据在最后阶段强化特定能力。
 
 ---
 
@@ -370,3 +370,20 @@ dataloader = DataLoader(
 本章以一次真实 I/O 瓶颈导致 GPU 空转 62% 的训练事故开篇，系统建立了训练输入管道的完整技术认知。我们详细梳理了分词算法选型（BPE/SentencePiece 的工程权衡）、数据格式选择（从 JSONL 到 MDS/Arrow 的性能跃升）、Packing 策略（消除 Padding 带来的 40-80% 吞吐提升）、温度采样与课程学习的混采策略（表6-2），以及系统化的 I/O 瓶颈诊断三步法（图6-2）。附录中的"输入管道优化检查清单"可直接作为生产级预训练任务的启动前核验工具。
 
 本章与 Ch03（成本治理）的成本视角深度呼应——在 GPU 算力成本极高的预训练专案中，输入管道的工程质量差异可以直接决定数十乃至数百万人民币的算力成本节省。进入下一章，我们将视角从"如何把数据送进模型"转向"如何评价模型用这些数据学到了什么"：**第7章 数据评估、质量闭环与运营迭代**。
+
+## 参考文献
+
+Bengio Y, Louradour J, Collobert R, Weston J (2009) Curriculum Learning. In: Proceedings of the 26th Annual International Conference on Machine Learning, pp 41-48.
+
+Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Yang A, Fan A, others (2024) The LLaMA 3 Herd of Models. arXiv preprint arXiv:2407.21783.
+
+Kudo T, Richardson J (2018) SentencePiece: A simple and language independent subword tokenizer and detokenizer for Neural Text Processing. In: Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing: System Demonstrations, pp 66-71.
+
+Mosaic AI Research (2022) MosaicML Streaming. GitHub repository. https://github.com/mosaicml/streaming.
+
+Sennrich R, Haddow B, Birch A (2016) Neural Machine Translation of Rare Words with Subword Units (BPE). In: Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics, pp 1715-1725.
+
+Xue L, Constant N, Roberts A, Kale M, Al-Rfou R, Siddhant A, Barua A, Raffel C (2021) mT5: A Massively Multilingual Pre-trained Text-to-Text Transformer. In: Proceedings of the 2021 Conference of the North American Chapter of the Association for Computational Linguistics, pp 483-498.
+
+Brown T B, Mann B, Ryder N, Subbiah M, Kaplan J, Dhariwal P, Neelakantan A, Shyam P, Sastry G, Askell A, others (2020) Language Models are Few-Shot Learners (GPT-3). Advances in Neural Information Processing Systems 33:1877-1901.
+

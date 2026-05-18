@@ -98,20 +98,20 @@ def calculate_perplexity_batch(texts, cache_model_path="llama-1b-ref"):
 
 #### 2. 多样性稀疏度（Type-Token Ratio, TTR & 词汇覆盖率）
 - **检测目标**：确认清洗管线是否由于阈值设定过度（或者是去重（MinHash）过于严酷），而导致小众知识或特定长尾词汇的永久流失。
-- **验证手段**：统计前述文档集内不同独特词汇（Type，如词表内单独的词根）和总文本序列长度（Token）的比值。大跨度段落的 TTR 通常较低，故须用特定算法作窗口平均化（如 MATTR）。
+- **验证手段**：统计前述文档集内不同独特词汇（Type，如词表内单独的词根）和总文本序列长度（Token）的比值。大跨度段落的 TTR 通常较低，故须用特定算法作窗口平均化（如 MATTR (Covington and McFall 2010)）。
 - **解读逻辑**：如果你的文档沙箱在 1 个亿 Token 下算出的全体未重复词数少于 5 万个，说明这批数据集存在极严重的“词穷”现象（可能源于大量的电商灌水或者机翻死循环）。长此以往，模型将陷入机械式的平庸作答。
 - **进阶验证 - 词汇覆盖（Coverage）**：团队需要专门编纂一套“暗语词库”（例如各类罕见病种、最新的冷门代码框架、或特定文学的人名全集）。如果在沙箱中，这类靶向词汇覆盖率不足 5%，应立刻给对应域名上游抓取添加白名单权重。
 
 #### 3. 有毒性与负向泄露率（Toxicity & PII Density）
 - **检测目标**：直接关系到商业落地的风控合规死线。检查有害内容（仇恨、恐怖、辱骂、软色情）以及 PII（个人身份、电话、密码信标）的清洗残留比率的稳定性。
-- **验证手段**：这是整个指标链中计算最密集的部分。通常需要调用一个专门为安全微调（Safety Tuning）的轻量化判别器（如 Perspective API 的离线开源化变体，或者是用 RoBERTa 专门训练的 5 分类判别器），对抽样文章进行打分。
+- **验证手段**：这是整个指标链中计算最密集的部分。通常需要调用一个专门为安全微调（Safety Tuning）的轻量化判别器（如 Perspective API (Lees et al. 2022) 的离线开源化变体，或者是用 RoBERTa 专门训练的 5 分类判别器），对抽样文章进行打分。
 - **解读逻辑**：
   - 毒性分数不是均值游戏，而是**千分位异常捕猎**（P99 或 P99.9 指标）。
   - 如果抽样中发现 P99 分位数得分越界（>0.8），必须立刻熔断（Circuit Break）。
   - 此外，还需要对包含类似于 `sk-****` (API Token)、`13[0-9]*` (手机号码特征) 的文本触发率进行正则监控，确认 PII 屏蔽层没有在更新时意外抛错。
 
 #### 4. 领域分类与掺杂重叠（Subpopulation Overlap）
-- **检测目标**：这是数据领域近年来最“高危”的一项指标，又名防止基准污染（Benchmark Contamination Prevention）。我们必须确认日常抓取的随机数据中，没有混入那些用于年终大考的高分基准试题（如 GSM8K 的标准答案、MMLU 的英文原本）。一旦混入，将引发严重的科研诚信危机。
+- **检测目标**：这是数据领域近年来最“高危”的一项指标，又名防止基准污染（Benchmark Contamination Prevention）。我们必须确认日常抓取的随机数据中，没有混入那些用于年终大考的高分基准试题（如 GSM8K (Cobbe et al. 2021) 的标准答案、MMLU (Hendrycks et al. 2021) 的英文原本）。一旦混入，将引发严重的科研诚信危机。
 - **验证手段**：将所有主流 Benchmark 的测试集数据进行 N-gram（通常是 13-gram 或 15-gram）全量散列哈希；随后对待入库的抽样数据做一次交集测算。
 - **解读逻辑**：重叠率（Overlap Ratio）必须无限趋近于零。若某批次维基扩展包触发了 1% 的 13-gram 撞车，通常说明某个开源库或者个人的 Github 仓库已经被完全打包进了本次流水线，必须执行定点摘除。
 
@@ -145,7 +145,7 @@ def calculate_perplexity_batch(texts, cache_model_path="llama-1b-ref"):
 
 ### 7.3.1 DVC视角下的数据集版本化与 A/B 对比
 
-与代码的 Git 托管类似，对于多达 TB 级别的数据湖我们必须引入 DVC（Data Version Control）或者相似的基于 SHA 挂载的不可变对象管控策略。在大规模实验中，切不可原位覆盖并覆盖原始数据，任何处理节点的修改都应产生全新的增量版本或通过 Delta Lake 切割 Snapshot。
+与代码的 Git 托管类似，对于多达 TB 级别的数据湖我们必须引入 DVC (Ruslan et al. 2021)（Data Version Control）或者相似的基于 SHA 挂载的不可变对象管控策略。在大规模实验中，切不可原位覆盖并覆盖原始数据，任何处理节点的修改都应产生全新的增量版本或通过 Delta Lake 切割 Snapshot。
 
 **A/B 测试原则**：每次调整新管线（例如：新加入了由 Reddit 高质量节点解析的 20GB 数据，并增强了针对该网站特定的评论树过滤逻辑），在全面上线前，应抽取等价算力（比如以 1B Token 为规模启动一组 1B 小微模型的平行对撞训练）。只有在两只实验对照组模型完成核心评测集后，证实“数学能力或对话情感能力显著提升且没有拉挂通用世界常识指标”时，此套策略方可全量铺设进入生产版本（例如 v2.1 升级至 v2.2）。
 
@@ -257,7 +257,7 @@ def calculate_perplexity_batch(texts, cache_model_path="llama-1b-ref"):
 **核心参与者**：数据工程师、数据产品经理、测试评价负责人。
 **主要动线**：
 1. **周末预训练巡检**：查看刚刚过去的周末内，主预训练分支持续喂入的总 Token 数。核对 `nvidia-smi` 监控面板是否因 DataLoader 卡顿或存储 I/O 阻塞出现 GPU 空转现象（MFU 低于警戒线）。如果存在，需要立刻在当天的第一顺位记录 I/O 缺陷日志。
-2. **离线检测报告开箱**：针对周日晚间最新完成清洗的 T-1 批次数据（通常是两三个抽样后的 10GB 测试沙箱），提取 KenLM 困惑度（PPL）、类型/令牌比率（TTR）、文本长度分布直方图。
+2. **离线检测报告开箱**：针对周日晚间最新完成清洗的 T-1 批次数据（通常是两三个抽样后的 10GB 测试沙箱），提取 KenLM (Heafield 2011) 困惑度（PPL）、类型/令牌比率（TTR）、文本长度分布直方图。
 3. **指标异常警报排查**：如果 PPL 均线突然飙升至 500 以上，通常意味着最新接入的数据源包含了未被解析干净的 HTML 杂质。如果安全阻截率（Toxicity Alert）翻倍，那是因为近期加量抓取了社群讨论源（例如某开源技术论坛的风控板块）。在会议上不纠结论，只定下需要深度钻取的“异常点”。
 
 ### 7.5.2 周二与周三：异常追溯与小股试错验证 (Root Cause Defecting)
@@ -272,7 +272,7 @@ def calculate_perplexity_batch(texts, cache_model_path="llama-1b-ref"):
 
 **核心参与者**：预训练模型工程师、数据工程师、核心构架师。
 **主要动线**：
-1. **A/B 效果对照**：周四早晨，微型实验跑出结果。模型工程师将公布两组数据版本的验证集 Loss 曲线是否发生交叉，以及其在特定的下游测试基准（例如 MMLU-Code 分项或 GSM8K）上的通过率偏差。
+1. **A/B 效果对照**：周四早晨，微型实验跑出结果。模型工程师将公布两组数据版本的验证集 Loss 曲线是否发生交叉，以及其在特定的下游测试基准（例如 MMLU (Hendrycks et al. 2021) Code 分项或 GSM8K (Cobbe et al. 2021)）上的通过率偏差。
 2. **定性分析**：如果新数据（`v1.2_CodePatch`）让代码能力提升了 5%，且没有拉垮通用的指令遵从度，那么这个清洗补丁（Patch）宣告胜利，代码将合入主预训练清洗仓库。
 3. **数据重配子集比重**：在本步骤，也是决定下一周正式推入大型集群“混合面糊（Data Mix）”的时刻。架构师会下达指令：由于近期评测表明基础推理能力疲软，从周五开始的下一个百万步（Step），要求提升 arXiv 论文和高分书籍的占比至 30%，相对降低开放百科的占比至 15%。数据引擎将随之改变抽样概率（Temperature Sampling）。
 
@@ -321,3 +321,20 @@ def calculate_perplexity_batch(texts, cache_model_path="llama-1b-ref"):
 为此，本章全面解构了建立“离线代理指标（PPL/TTR等）”的必要性，并借由此指标引申出了严谨的 DVC 版本比对、问题样本库留底、A/B Testing 实验，最终汇总沉淀为包含四大运营动作周期的敏捷工作流。这使得大语言模型的数据研发不再是一个孤立的黑盒车间，而是一条兼顾质量红绿灯、能够通过不断发现的“效果缺失”反推上游数据挖掘采集的高速飞轮。
 
 从最初的原始万维网网页，经过质量把控、排雷洗净、混分配比、最后高效流入GPU，整个浩繁的大模型文本数据流已经跑完了属于它的半路旅程。然而智能的形态远不止于抽象的文字。下一章，随着大模型感官边界的扩张，我们将跨入全书的第三篇，探讨结构复杂但在认知突破上至关重要的前沿领域：“**第 8 章 图文对数据工程**”，见证多模态工程下更为波澜壮阔的数据交响篇章。
+
+## 参考文献
+
+Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
+
+Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.
+
+Covington M A, McFall J D (2010) Cutting the Gordian Knot: The Moving-Average Type–Token Ratio (MATTR). Journal of Quantitative Linguistics 17(2):94-100.
+
+Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.
+
+Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Measuring Massive Multitask Language Understanding (MMLU). In: International Conference on Learning Representations.
+
+Lees A, Tran V Q, Tay Y, Sorensen J, Gupta J, Metzler D, Vasserman L (2022) A New Generation of Perspective API. In: Proceedings of KDD 2022, pp 3197-3207.
+
+Ruslan K, Barrak M, Shcherbatyi I, others (2021) DVC: Data Version Control - Git for Data and Models. In: Proceedings of the Workshop on MLOps Systems at MLSys 2021.
+
