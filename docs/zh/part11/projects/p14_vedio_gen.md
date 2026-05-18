@@ -14,13 +14,13 @@
 
 整条流水线可以拆成六个组件。第一是**视频源加载**。它读取 Pexels manifest 或本地视频文件名，重新探测视频时长、fps、分辨率、帧数和文件大小，并将作者、页面链接、许可字段写入统一清单。该组件为后续来源回溯、分辨率统计、时长统计和授权状态检查提供基础信息。
 
-第二是**镜头切分**。T2V 模型通常不直接使用原始长视频训练，因为长视频内部可能包含多个镜头、场景跳转和语义断裂。流水线使用 PySceneDetect 的 ContentDetector 检测镜头边界，再用 ffmpeg 将视频切成 single-shot clips。每个片段被赋予 `shot_id`，并记录起止时间、所属视频、片段序号和本地路径。此后，所有过滤、caption 和镜头标签都以 `shot_id` 为主键展开。
+第二是**镜头切分**。T2V 模型通常不直接使用原始长视频训练，因为长视频内部可能包含多个镜头、场景跳转和语义断裂。流水线使用 PySceneDetect (Castellano 2012) 的 ContentDetector 检测镜头边界，再用 ffmpeg 将视频切成 single-shot clips。每个片段被赋予 `shot_id`，并记录起止时间、所属视频、片段序号和本地路径。此后，所有过滤、caption 和镜头标签都以 `shot_id` 为主键展开。
 
-第三是**运动过滤**。视频生成模型需要学习时间变化，因此训练集中不能混入过多静态片段。该组件在代理分辨率上计算 Farneback 光流均值，用 `motion_strength` 衡量片段内部的运动强度，再通过阈值生成 `pass_motion`。该步骤暂不判断动作语义，主要用于区分“有训练价值的动态片段”和“近似静止的图片式片段”。
+第三是**运动过滤**。视频生成模型需要学习时间变化，因此训练集中不能混入过多静态片段。该组件在代理分辨率上计算 Farneback (Farnebäck 2003) 光流均值，用 `motion_strength` 衡量片段内部的运动强度，再通过阈值生成 `pass_motion`。该步骤暂不判断动作语义，主要用于区分“有训练价值的动态片段”和“近似静止的图片式片段”。
 
-第四是**质量过滤**。通过运动过滤并不意味着片段一定适合训练。模糊、压缩、曝光异常和构图较差的视频会污染生成模型的视觉分布。本项目采用 CLIP ViT-L/14 提取多帧视觉特征，再送入 LAION-Aesthetic MLP 预测审美分。片段级分数由多帧平均得到，既避免单帧偶然性，也保留了视频整体观感。
+第四是**质量过滤**。通过运动过滤并不意味着片段一定适合训练。模糊、压缩、曝光异常和构图较差的视频会污染生成模型的视觉分布。本项目采用 CLIP ViT-L/14 (Radford et al. 2021) 提取多帧视觉特征，再送入 LAION-Aesthetic MLP (Schuhmann et al. 2022) 预测审美分。片段级分数由多帧平均得到，既避免单帧偶然性，也保留了视频整体观感。
 
-第五是**多帧 caption**。T2V caption 通常需要覆盖主体、场景、动作、镜头构图、光线和氛围。单帧描述只能说明“画面里有什么”，很难说明“动作如何展开”。因此，流水线按时间顺序采样多帧，交给 Qwen2.5-VL 或 InternVL3 生成一段视频级 caption，并设置最小词数与重试机制，减少过短描述。
+第五是**多帧 caption**。T2V caption 通常需要覆盖主体、场景、动作、镜头构图、光线和氛围。单帧描述只能说明“画面里有什么”，很难说明“动作如何展开”。因此，流水线按时间顺序采样多帧，交给 Qwen2.5-VL (Wang et al. 2024) 或 InternVL3 (Chen et al. 2024) 生成一段视频级 caption，并设置最小词数与重试机制，减少过短描述。
 
 第六是**镜头语言标注**。普通 caption 描述内容，镜头语言标签描述拍摄方式。该组件一方面使用受控词表标注景别、机位、构图、光照、色彩和风格；另一方面利用光流估计相机运动，如 static、pan、tilt、zoom、jitter 和 complex。最终样本同时保留“视频中发生了什么”和“它是怎样被拍摄出来的”两类信息。
 
@@ -30,7 +30,7 @@
 
 ### Step 1：从 Pexels 开源子集加载 1000+ 视频
 
-视频加载阶段先建立一份可靠的源数据清单，暂不进入训练或过滤环节。Pexels 视频文件通常已经下载到本地目录，同时配有 `pexels_manifest.jsonl`。manifest 中保存视频 ID、页面链接、作者信息和本地保存路径；如果 manifest 缺失，也可以从 `pexels_*.mp4` 文件名中恢复最小记录。为了避免依赖下载阶段的旧元数据，脚本会对每个 mp4 重新执行 `ffprobe`，补齐 duration、fps、width、height、nb_frames 和 file_size。由此生成的 `source_videos.jsonl` 可以作为后续流水线的稳定入口。
+视频加载阶段先建立一份可靠的源数据清单，暂不进入训练或过滤环节。Pexels (Pexels 2014) 视频文件通常已经下载到本地目录，同时配有 `pexels_manifest.jsonl`。manifest 中保存视频 ID、页面链接、作者信息和本地保存路径；如果 manifest 缺失，也可以从 `pexels_*.mp4` 文件名中恢复最小记录。为了避免依赖下载阶段的旧元数据，脚本会对每个 mp4 重新执行 `ffprobe`，补齐 duration、fps、width、height、nb_frames 和 file_size。由此生成的 `source_videos.jsonl` 可以作为后续流水线的稳定入口。
 
 ```python
 from pathlib import Path
@@ -95,7 +95,7 @@ def normalize_video_record(raw: dict, src_dir: Path) -> dict | None:
 
 ### Step 2：PySceneDetect 切分镜头
 
-T2V 训练样本通常按镜头组织，不直接沿用原始视频边界。一个 Pexels 视频可能只有一个长镜头，也可能包含多个剪辑点。若不做切分，caption 很容易把多个场景揉在一起，训练时文本和画面之间会出现错配。这里使用 PySceneDetect 的 ContentDetector 做镜头检测，并在检测不到边界时把整段视频作为一个 shot。切分阶段还要过滤过短片段，例如小于 1 秒的镜头通常不保留。
+T2V 训练样本通常按镜头组织，不直接沿用原始视频边界。一个 Pexels 视频可能只有一个长镜头，也可能包含多个剪辑点。若不做切分，caption 很容易把多个场景揉在一起，训练时文本和画面之间会出现错配。这里使用 PySceneDetect (Castellano 2012) 的 ContentDetector 做镜头检测，并在检测不到边界时把整段视频作为一个 shot。切分阶段还要过滤过短片段，例如小于 1 秒的镜头通常不保留。
 
 ```python
 from scenedetect import open_video, SceneManager, ContentDetector
@@ -499,4 +499,20 @@ final_sample = {
 
 图中展示了产出数据中的两帧采样结果。该片段展示了一段从高空视角拍摄的海岸线画面：深蓝色海水不断冲击崎岖礁石，浪花在暗色岩壁边缘形成明显的白色泡沫，岩石间分布着少量绿色植被，使画面在粗粝的自然环境中保留了一定的层次感。多帧 caption 覆盖了该片段的主体、场景、光照和氛围，描述了自然光照、冷色调海面、清晰的岩石纹理，以及海浪运动带来的动态感。从镜头语言标注结果看，该 shot 被识别为 `extreme_wide` 景别、`high_angle` 高角度视角，构图方式为 `rule_of_thirds`，光照类型为 `natural`，整体色彩倾向为 `cool`，风格标签为 `cinematic`。相机运动模块将其判定为 `zoom_in`，说明画面存在较明显的推进或尺度变化；`motion_strength=0.8974` 表明该片段具有稳定的运动信号，可用于 T2V 训练中学习自然场景运动、航拍视角和海岸镜头语言。
 
+
+## 参考文献
+
+Castellano B (2012) PySceneDetect: Python and OpenCV-based Scene Cut/Transition Detection Program. Available at: https://www.brettcastellano.com/post/pyscenedetect.
+
+Chen Z, Wang W, Tian H, Ye S, Gao Z, Cui E, Tong X, Hu J, Luo J, Ma S, others (2024) InternVL3: Exploring Advanced Training and Test-Time Scaling for Vision-Language Models. arXiv preprint arXiv:2504.10479.
+
+Farnebäck G (2003) Two-Frame Motion Estimation Based on Polynomial Expansion. In: Proceedings of the 13th Scandinavian Conference on Image Analysis, pp 363-370.
+
+Pexels (2014) Pexels: Free Stock Photos, Royalty Free Images & Videos. Available at: https://www.pexels.com.
+
+Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models from Natural Language Supervision (CLIP). In: Proceedings of the 38th International Conference on Machine Learning, pp 8748-8763.
+
+Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, others (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. In: Advances in Neural Information Processing Systems 35:25278-25294.
+
+Wang P, Bai S, Tan S, Wang S, Fan Z, Bai J, Chen K, Liu X, Wang J, Ge W, others (2024) Qwen2-VL: Enhancing Vision-Language Model's Perception of the World at Any Resolution. arXiv preprint arXiv:2409.12191.
 

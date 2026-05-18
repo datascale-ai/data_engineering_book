@@ -49,7 +49,7 @@
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **预训练 (Pre-training)** | 数百 B ~ 数十 T Tokens | 高多样性、低重复率、广泛知识覆盖 | N-gram 重复率、PPL 分布、领域比例、语言分布 | 文本去重不彻底（"复读机"）；基准题库混入（评测分数虚高）；垃圾 SEO 占比过高 | MinHash / SimHash；fastText 语言识别；KenLM；Quality Classifier |
 | **指令微调 (SFT)** | 数万 ~ 数百万条指令对 | 指令多样性、格式合规性、逻辑链条完整 | 指令困难度分布、格式合规率、事实准确率 | 指令语义近似重复（"近似克隆"）；答案格式混乱；答案事实错误 | Rouge-L 去重；GPT-4 事实审计；格式正则校验 |
-| **偏好对齐 (RLHF/DPO)** | 数万 ~ 数十万条偏好对 | 偏好差异显著性、价值观贴合度、无害性 | 标注一致性 Cohen's κ；chosen/rejected 质量差距；毒性评分 | 标注员偏好不一致（κ < 0.6）；chosen/rejected 差距不够大（信号弱）；存在文化偏见 | 多轮 calibration；Reward Model 预筛；Perspective API |
+| **偏好对齐 (RLHF/DPO)** | 数万 ~ 数十万条偏好对 | 偏好差异显著性、价值观贴合度、无害性 | 标注一致性 Cohen's κ (Cohen 1960)；chosen/rejected 质量差距；毒性评分 | 标注员偏好不一致（κ < 0.6）；chosen/rejected 差距不够大（信号弱）；存在文化偏见 | 多轮 calibration；Reward Model 预筛；Perspective API (Lees et al. 2022) |
 | **RAG 应用落地** | 数千 ~ 数万篇文档 | 时效性、业务覆盖率、检索召回精度 | 知识截止时间分布；场景覆盖召回率；Faithfulness 评分 | 知识库陈旧（6个月未更新）；切片粒度太大导致召回噪声过高；PDF 解析乱码 | LlamaIndex / LangChain；RAGAs 评估框架；Embedding 质量评估 |
 
 从表格中可以清晰地看到：同样是"质量评估"，从预训练阶段的"去重率与 PPL 分布"到 RLHF 阶段的"标注一致性与偏好差距"，主要指标已经发生了根本性的切换。一个在预训练阶段的"合格"数据（流畅、无重复），放到 SFT 阶段可能因为不够精确而"不合格"。这种阶段性的质量目标迁移，要求数据工程团队必须建立**分阶段的质量合同（Phase-Specific Quality Contract）**，而不是一套打天下的万能通用标准。
@@ -96,7 +96,7 @@
 
 **指令微调（SFT）阶段**是第二棒，跑的是精准的短跑冲刺。这里的质量目标从"广度"骤然收窄至"精度"：指令的多样性、回复格式的合规性以及推理链条的完整性，缺一不可。一个关键的行业共识是，哪怕在整个 SFT 数据集中混入 100 条格式混乱或逻辑错误的样本，都足以在可观测层面损害一个 7B 模型在对应任务上的表现——SFT 阶段对污染的敏感度远高于预训练阶段，因为此时模型在"学动作"，而不是"见世面"。
 
-**偏好对齐（RLHF/DPO）阶段**是第三棒，拼的是毫米级精度。这一阶段的核心质量目标是对比数据的有效性与价值观贴合度：chosen 答案必须和 rejected 答案之间有足够可分辨的质量差距，否则奖励信号将过于微弱，如同在嘈杂的环境中发出极轻的指令，模型根本无从学习人类真正的偏好方向。
+**偏好对齐（RLHF/DPO）阶段**是第三棒，拼的是毫米级精度。这一阶段的核心质量目标是对比数据的有效性与价值观贴合度：chosen 答案必须和 rejected 答案之间有足够可分辨的质量差距 (Ouyang et al. 2022; Rafailov et al. 2023)，否则奖励信号将过于微弱，如同在嘈杂的环境中发出极轻的指令，模型根本无从学习人类真正的偏好方向。
 
 **RAG 应用落地阶段**是第四棒，也是最贴近用户的那一棒。这里的质量指标完全转向了时效性与检索精度：知识库中超过 6 个月未更新的文档比例、检索到的 Chunk 是否准确覆盖用户问题的真实意图，以及 PDF 与表格的解析是否存在字段错位——这些问题在前三个阶段根本不会出现，但在 RAG 落地阶段却是决定最终用户体感的核心变量。
 
@@ -198,7 +198,7 @@ def ngram_overlap(text: str, benchmark_ngrams: set, n: int = 13) -> float:
 
 定义：由于数据抓取站点地域、语言或话题侧重，导致数据存在国别、性别、种族、意识形态等系统性知识偏见，模型在特定群体相关任务上表现失衡。
 
-检测方案：使用 [StereoSet](https://stereoset.mit.edu/) 或 [WinoBias](https://uclanlp.github.io/corefBias/) 评估集评测模型的偏见程度；同时统计训练集中涉及敏感群体（性别/民族/宗教）的词频分布，检查是否存在严重的词频失衡（某群体出现频率超过另一群体 10 倍以上）。
+检测方案：使用 StereoSet (Nadeem et al. 2021) 或 WinoBias (Zhao et al. 2018) 评估集评测模型的偏见程度；同时统计训练集中涉及敏感群体（性别/民族/宗教）的词频分布，检查是否存在严重的词频失衡（某群体出现频率超过另一群体 10 倍以上）。
 
 **5. 结构缺失 (Incompleteness)**
 
@@ -457,3 +457,29 @@ def detect_tab_drift(prev_texts, curr_texts, z_threshold=2.0):
 数据发布评分卡（含完整 JSON 示例）和 GitHub Actions CI/CD 集成方案，将质量评估从人工感性判断升级为可自动触发阻断的工程闸门。两个深度复盘案例（语法漂移与自引用评估）则通过真实的 T+N 天时间线，揭示了数据问题在管线中指数放大的蝴蝶效应，以及独立金标准评估集的不可替代价值。
 
 带着这套质量度量体系，我们已经为整本书的工程内容奠定了坚实的治理基础。
+
+## 参考文献
+
+Cohen J (1960) A Coefficient of Agreement for Nominal Scales. Educational and Psychological Measurement 20(1):37-46.
+
+Lees A, Tran V Q, Tay Y, Sorensen J, Gupta J, Metzler D, Vasserman L (2022) A New Generation of Perspective API: Efficient Multilingual Character-level Transformers. In: Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 3197-3207.
+
+Nadeem M, Bethke A, Reddy S (2021) StereoSet: Measuring Stereotypical Bias in Pretrained Language Models. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics, pp 5356-5371.
+
+Zhao J, Wang T, Yatskar M, Ordonez V, Chang K W (2018) Gender Bias in Coreference Resolution: Evaluation and Debiasing Methods (WinoBias). In: Proceedings of the 2018 Conference of the North American Chapter of the Association for Computational Linguistics, pp 15-20.
+
+Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S, Slama K, Ray A, Schulman J, Hilton J, Kelton F, Miller L, Simens M, Askell A, Welinder P, Christiano P F, Leike J, Lowe R (2022) Training Language Models to Follow Instructions with Human Feedback. Advances in Neural Information Processing Systems 35:27730-27744.
+
+Rafailov R, Sharma A, Mitchell E, Manning C D, Ermon S, Finn C (2023) Direct Preference Optimization: Your Language Model Is Secretly a Reward Model. Advances in Neural Information Processing Systems 36:53728-53741.
+
+
+Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
+
+Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.
+
+Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Measuring Massive Multitask Language Understanding (MMLU). In: International Conference on Learning Representations.
+
+Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.
+
+Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.
+
