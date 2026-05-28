@@ -1,13 +1,9 @@
+# 第九篇：隐私合规与数据安全
+
 **篇前导读**
-
-在大模型系统从实验走向生产的过程中，绕不开一个越来越核心的问题：数据究竟能不能用、怎么用、用了是否可控？这三个问题看似是法务或合规部门的职责，但在真实工程实践中，它们最终都会落到系统架构、数据流水线和研发流程的设计上。一旦数据治理缺位，系统往往不是"出了问题才发现"，而是"出了问题才意识到根本没有追溯、修正和解释的基础能力"。
-
-**核心目标**：回答"数据能不能用、怎么用、用了是否可控"三大核心问题。这不是一次性的法务审查，而是贯穿需求定义、数据接入、模型训练、系统上线到数据下线全生命周期的持续性约束。本篇的目标是帮助团队建立一套工程化的治理能力：知道手里有哪些数据、每份数据的合法使用边界在哪、谁对哪个环节负责、出了问题如何快速响应和追溯。
-
-**设计理念**：坚持合规与隐私保护"左移"，将其前置到系统架构与流程设计中（Privacy by Design）。合规后置的代价随项目生命周期推进而快速上升：在需求阶段纠正一个不合适的数据字段，可能只需改一份文档；在上线后纠正，则可能涉及底层重构、数据回收、历史重跑与对外沟通。左移不是增加审批层级，而是把治理决策嵌入研发节拍——让它在系统架构还没形成惯性之前，就成为设计约束的一部分。
-
-**落地支撑**：以治理模板、门禁清单与最小治理链路为支撑，将制度规范、流程管控、自动化审计与工程实现打通，形成从需求到下线的合规治理闭环。本篇不停留在法规条文层面，而是聚焦工程可落地性：如何在元数据系统中标注数据等级，如何通过策略文件约束数据进入分析域，如何在 CI/CD 流水线中自动阻断高风险变更，如何通过日志与血缘支持审计回溯。这些能力共同构成一条"最小可运行的治理链路"，使团队在资源有限的情况下也能建立真正可执行的合规底座。
-
+* **核心目标**：回答“数据能不能用、怎么用、用了是否可控”三大核心问题。
+* **设计理念**：坚持合规与隐私保护“左移”，将其前置到系统架构与流程设计中（Privacy by Design）。
+* **落地支撑**：以治理模板、门禁清单与最小治理链路为支撑，将制度规范、流程管控、自动化审计与工程实现打通，形成从需求到下线的合规治理闭环。
 
 ---
 
@@ -27,7 +23,7 @@
 
 ---
 
-## 学习目标（Learning Objectives）
+## 27.0 学习目标（Learning Objectives）
 
 通过本章学习，读者应能够：
 
@@ -64,7 +60,7 @@
 
 ### 案例三：模型删除请求无法闭环
 
-某风控模型接到用户删除请求后，只删除了源表中的用户信息，却没有同步处理特征仓、训练样本集、离线快照、模型缓存和下游画像标签。对外看似完成了删除，对内却仍有历史副本残留。这个案例说明，**数据删除不只是表级删除，更是全链路删除能力的考验**。
+某风控模型接到用户删除请求后，只删除了源表中的用户信息，却没有同步处理特征仓、训练样本集、离线快照、模型缓存和下游画像标签。对外看似完成了删除，对内却仍有历史副本残留。这个案例说明，**数据删除不只是表级删除，更是全链路删除能力的考验**(Garg et al. 2020)。
 
 ### 场景背后的核心工程痛点（Core Engineering Pain Points）
 
@@ -81,7 +77,7 @@
 
 传统研发流程把合规审查放在接近上线的尾部位置。需求立项时先谈功能目标，开发时先做效果验证，上线前再请法务或合规团队做检查。这种模式在功能简单、数据敏感度低的系统里或许还能勉强工作，但在今天的数据驱动系统中已经越来越危险。
 
-现代数据治理强调 **Privacy by Design（隐私保护设计）**。它的核心不是多做一轮审批，而是承认隐私与合规本身就是系统架构的一部分。数据库如何分层、日志打到哪里、特征是否可回溯、训练集如何清理、第三方 API 是否带出敏感字段，这些都不是“上线前补一个审批单”能解决的问题，而是必须在架构阶段就考虑的基础约束。
+现代数据治理强调 **Privacy by Design（隐私保护设计）**。它的核心不是多做一轮审批，而是承认隐私与合规本身就是系统架构的一部分(Cavoukian et al. 2009; Gürses et al. 2011)。数据库如何分层、日志打到哪里、特征是否可回溯、训练集如何清理、第三方 API 是否带出敏感字段，这些都不是“上线前补一个审批单”能解决的问题，而是必须在架构阶段就考虑的基础约束(Spiekermann and Cranor 2009; ENISA 2022)。
 
 ### 27.1.1 合规后置的代价
 
@@ -108,7 +104,7 @@
 
 对于跨地区业务而言，合规要求并不是完全一致的。中国的 PIPL 强调“告知—同意”、敏感个人信息的单独同意以及数据出境的控制要求；欧洲 GDPR 强调数据最小化、删除权、可携权以及自动化决策的透明性。企业在不同区域运行同一业务时，不能假设“一套采集逻辑走天下”，而要在技术层具备差异化落地能力。
 
-这意味着，系统设计不能只围绕“功能是否能跑通”，还必须围绕“地区规则差异如何映射到产品、数据和模型链路”。例如，同样是用户画像，在不同法域下可能对应不同的法律依据、保留期限、用户权利响应机制和共享限制。真正成熟的治理体系，不是让开发者去背诵所有法规条文，而是把这些差异沉淀到模板、策略、审批规则和默认行为中。
+这意味着，系统设计不能只围绕“功能是否能跑通”，还必须围绕“地区规则差异如何映射到产品、数据和模型链路”。例如，同样是用户画像，在不同法域下可能对应不同的法律依据、保留期限、用户权利响应机制和共享限制。真正成熟的治理体系，不是让开发者去背诵所有法规条文，而是把这些差异沉淀到模板、策略、审批规则和默认行为中(Zieni et al. 2021; Kosenkov et al. 2026)。
 
 ### 27.1.3 治理交汇点：数据、模型与业务的协同
 
@@ -139,7 +135,7 @@
 
 ### 27.1.5 工程治理视角下的“默认安全”
 
-从架构角度看，成熟的合规治理不是依赖所有人都自觉，而是建立“默认安全”的系统行为：
+从架构角度看，成熟的合规治理不是依赖所有人都自觉，而是建立“默认安全”的系统行为。隐私设计策略研究也强调，应通过最小化、隔离、聚合、告知与控制等策略，把隐私保护转化为系统默认机制(Hoepman 2014)：
 
 * 新接入数据集，默认无权限，必须显式申请。
 * 敏感字段默认掩码展示，而不是“先明文，必要时再隐藏”。
@@ -162,7 +158,7 @@
 
 ### 27.2.1 数据分类分级架构
 
-并不是所有数据都值得用同样的强度治理。如果把所有数据都当作最高等级保护，系统会过度僵化，性能和迭代效率都会受到影响；但如果把所有数据都用统一的宽松标准处理，就会导致敏感数据暴露。因此，企业必须建立差异化的数据分类分级体系。
+并不是所有数据都值得用同样的强度治理。如果把所有数据都当作最高等级保护，系统会过度僵化，性能和迭代效率都会受到影响；但如果把所有数据都用统一的宽松标准处理，就会导致敏感数据暴露。因此，企业必须建立差异化的数据分类分级体系(Perera et al. 2016; ENISA 2022)。
 
 本章采用三层分级作为基础框架：
 
@@ -172,7 +168,7 @@
 | **L2 中敏感（C2）** | 一般个人信息（姓名、手机号、设备 ID）、内部业务数据 | 纳入隐私政策；仅限授权人员与项目访问 | 传输加密；存储加密或哈希去标识化；部分掩码展示 |
 | **L1 低敏感（C1）** | 公开数据、完全匿名化数据、聚合统计结果 | 常规访问控制；可用于广泛 BI 分析和模型训练 | 无特殊要求，按需存储 |
 
-这个分级体系的价值，不只是帮助团队贴标签，而是为后续的权限策略、脱敏规则、审批流程、日志要求和保留期限提供统一依据。
+这个分级体系的价值，不只是帮助团队贴标签，而是为后续的权限策略、脱敏规则、审批流程、日志要求和保留期限提供统一依据。对于高敏感分析场景，还可以进一步引入差分隐私、隐私保护机器学习等技术，以降低单个用户记录被推断或泄露的风险(Dwork 2008; Shokri and Shmatikov 2015)。
 
 ### 27.2.2 从字段级、表级到场景级的多维分级
 
@@ -188,7 +184,7 @@
 **表级分级**：例如用户主档、交易流水、行为日志、风控标签、客服录音等数据集应有整体等级基线。  
 **场景级分级**：例如“用于模型训练”“用于客服检索”“用于 BI 报表”“用于对外接口”这些使用场景本身也会影响风险等级。
 
-只有把这三个维度同时纳入，系统才能避免“同表不同字段、同字段不同用途”的判断混乱。
+只有把这三个维度同时纳入，系统才能避免“同表不同字段、同字段不同用途”的判断混乱。这类判断本质上属于隐私需求工程问题，需要把法律、业务和系统规格共同转化为可执行的需求与约束(Anthonysamy et al. 2017)。
 
 ### 27.2.3 各等级数据的典型治理要求
 
@@ -347,7 +343,7 @@ RoPA 的价值在于：没有它，团队永远说不清“哪些数据是因为
 
 ### 27.3.2 执行 DPIA（数据保护影响评估）
 
-当项目涉及中高敏感数据、新的处理方式、自动化决策或高影响场景时，仅有 RoPA 还不够，需要进一步进行 **DPIA（Data Protection Impact Assessment）**。
+当项目涉及中高敏感数据、新的处理方式、自动化决策或高影响场景时，仅有 RoPA 还不够，需要进一步进行 **DPIA（Data Protection Impact Assessment）**。系统化 DPIA 方法通常要求把处理活动、风险识别、必要性评估和控制措施串联起来，而不是只形成静态合规模板(Oetzel and Spiekermann 2014; Notario et al. 2015)。
 
 DPIA 的核心不是“写一篇长报告”，而是系统性回答以下问题：
 
@@ -415,7 +411,7 @@ DPIA 的核心不是“写一篇长报告”，而是系统性回答以下问题
 * 不能把“改进体验”笼统覆盖到所有业务场景
 * 对敏感数据、高风险画像、自动化决策要有更高等级的授权与说明机制
 
-从系统角度看，同意管理至少应保留：用户 ID、授权版本、授权时间、用途范围、撤回状态、适用产品线与有效期。
+从系统角度看，同意管理至少应保留：用户 ID、授权版本、授权时间、用途范围、撤回状态、适用产品线与有效期。敏捷开发场景下的 GDPR 合规实践也表明，隐私要求需要随着迭代持续进入用户故事、验收标准和系统规格，而不是在发布前一次性补齐(Miri et al. 2018; Zieni et al. 2021)。
 
 ### 27.3.5 审计准备与合规留痕
 
@@ -450,7 +446,7 @@ DPIA 的核心不是“写一篇长报告”，而是系统性回答以下问题
 
 ### 27.3.6 上线前检查：把合规嵌入 CI/CD
 
-很多团队真正的分水岭，不在于是否写了制度，而在于是否把制度变成上线前的自动化门槛。
+很多团队真正的分水岭，不在于是否写了制度，而在于是否把制度变成上线前的自动化门槛。类似 Compliance-as-Code 的思路强调将控制要求转化为机器可执行规则，使合规检查能够持续嵌入云环境和交付流水线(Agarwal et al. 2022)。
 
 典型的 CI/CD 合规预检应包括：
 
@@ -654,7 +650,7 @@ DPIA 的核心不是“写一篇长报告”，而是系统性回答以下问题
 ### 27.4.6 大模型时代的新风险：Prompt 合规
 
 在生成式 AI 应用中，新的风险边界来自 Prompt、上下文拼接与外部知识调用。
-很多团队在实现智能客服、检索增强生成、摘要与洞察时，会不经意间把明文手机号、身份证号、病历详情、内部票据或完整交易信息带入模型上下文。
+很多团队在实现智能客服、检索增强生成、摘要与洞察时，会不经意间把明文手机号、身份证号、病历详情、内部票据或完整交易信息带入模型上下文。已有研究表明，大语言模型可能泄露或记忆训练数据中的个人可识别信息，因此生成式 AI 场景中的输入治理、日志治理和训练数据治理需要被单独强化(Carlini et al. 2021; Lukas et al. 2023)。
 
 治理重点包括：
 
@@ -664,6 +660,8 @@ DPIA 的核心不是“写一篇长报告”，而是系统性回答以下问题
 * 模型日志与会话记录的留存控制
 * 对可复现输出进行审计与抽检
 * 对含个人信息的知识库建立更高等级访问控制
+
+在技术路径上，研究者也提出了面向提示调优、文本生成和统一 LLM 服务框架的隐私保护方法，包括输入扰动、隐私保持提示学习、敏感内容过滤和服务端隔离等方向(Plant et al. 2022; Li et al. 2023; Kalodanis et al. 2025)。
 
 ### 27.4.7 高风险场景治理总表
 
@@ -688,7 +686,7 @@ DPIA 的核心不是“写一篇长报告”，而是系统性回答以下问题
 在平台侧，要求每个数据应用上线前，在代码仓中提交类似如下的合规配置文件，由 CI/CD 管道自动拉取并校验：
 
 ```yaml
-## P09-User-Insight-Model RoPA Declaration
+# P09-User-Insight-Model RoPA Declaration
 project_id: "P09-001"
 project_name: "P09-User-Insight-Model"
 owner: "algo_team_a"
@@ -858,7 +856,7 @@ approval_rules:
 ### 27.5.4 DPIA 模板（Markdown 表单示例）
 
 ```md
-## DPIA Assessment Form
+# DPIA Assessment Form
 
 ## 1. 基本信息
 - 项目名称：
@@ -946,7 +944,7 @@ approval_rules:
 ### 27.5.7 事故响应与复盘模板
 
 ```md
-## Privacy Incident Postmortem
+# Privacy Incident Postmortem
 
 ## 1. 事件概述
 - 事件编号：
@@ -1165,6 +1163,48 @@ approval_rules:
 4. 当业务目标和合规要求冲突时，怎样通过“最小必要”和“替代字段”思路找到折中方案？
 5. 对跨境、多地区、多产品线业务而言，治理体系如何既保持统一，又允许规则差异化落地？
 
+---
+
 ## 参考文献
 
-<!-- 待补充：本章引用的论文、博客、工具与官方文档。补全策略见 publishing/citations_progress.md。 -->
+Garg S, Goldwasser S, Vasudevan P N (2020) Formalizing Data Deletion in the Context of the Right to Be Forgotten. In Advances in Cryptology - EUROCRYPT 2020, Springer International Publishing, pp 373-402.
+
+Cavoukian A, others (2009) Privacy by Design: The 7 Foundational Principles. Information and Privacy Commissioner of Ontario, Canada, 5(2009), 12.
+
+Gürses S F, Troncoso C, Díaz C (2011) Engineering Privacy by Design. Technical report.
+
+Spiekermann S, Cranor L F (2009) Engineering Privacy. IEEE Transactions on Software Engineering, 35(1), 67-82.
+
+European Union Agency for Cybersecurity (ENISA) (2022) Data Protection Engineering. ENISA Report.
+
+Zieni B, Spagnuelo D, Heckel R (2021) Transparency by Default: GDPR Patterns for Agile Development. In Electronic Government and the Information Systems Perspective, Springer International Publishing, pp 89-102.
+
+Kosenkov O, Zabardast E, Fucci D, Mendez D, Unterkalmsteiner M (2026) Privacy by Design: Aligning GDPR and Software Engineering Specifications with a Requirements Engineering Approach. Information and Software Technology, 190, 107946.
+
+Hoepman J-H (2014) Privacy Design Strategies. In IFIP International Information Security Conference, pp 446-459.
+
+Perera C, Liu C, Ranjan R, Wang L, Zomaya A Y (2016) Privacy-Knowledge Modeling for the Internet of Things: A Look Back. Computer, 49(12), 60-68.
+
+Dwork C (2008) Differential Privacy: A Survey of Results. In Theory and Applications of Models of Computation, Springer Berlin Heidelberg, pp 1-19.
+
+Shokri R, Shmatikov V (2015) Privacy-Preserving Deep Learning. In 2015 53rd Annual Allerton Conference on Communication, Control, and Computing (Allerton), pp 909-910.
+
+Anthonysamy P, Rashid A, Chitchyan R (2017) Privacy Requirements: Present & Future. In 2017 IEEE/ACM 39th International Conference on Software Engineering: Software Engineering in Society Track (ICSE-SEIS), pp 13-22.
+
+Oetzel M C, Spiekermann S (2014) A Systematic Methodology for Privacy Impact Assessments: A Design Science Approach. European Journal of Information Systems, 23(2), 126-150.
+
+Notario N, Crespo A, Martín Y-S, del Alamo J M, Le Métayer D, Antignac T, Kung A, Kroener I, Wright D (2015) PRIPARE: Integrating Privacy Best Practices into a Privacy Engineering Methodology. In 2015 IEEE Security and Privacy Workshops, pp 151-158.
+
+Miri M, Foomany F H, Mohammed N (2018) Complying with GDPR: An Agile Case Study. ISACA Journal, 2, 1-7.
+
+Agarwal V, Butler C, Degenaro L, Kumar A, Sailer A, Steinder G (2022) Compliance-as-Code for Cybersecurity Automation in Hybrid Cloud. In 2022 IEEE 15th International Conference on Cloud Computing (CLOUD), pp 427-437.
+
+Carlini N, Tramèr F, Wallace E, Jagielski M, Herbert-Voss A, Lee K, Roberts A, Brown T, Song D, Erlingsson Ú, Oprea A, Raffel C (2021) Extracting Training Data from Large Language Models. In 30th USENIX Security Symposium (USENIX Security 21), pp 2633-2650.
+
+Lukas N, Salem A, Sim R, Tople S, Wutschitz L, Zanella-Béguelin S (2023) Analyzing Leakage of Personally Identifiable Information in Language Models. In 2023 IEEE Symposium on Security and Privacy (SP), pp 346-363.
+
+Plant R, Giuffrida V, Gkatzia D (2022) You Are What You Write: Preserving Privacy in the Era of Large Language Models. arXiv preprint arXiv:2204.09391.
+
+Li Y, Tan Z, Liu Y (2023) Privacy-Preserving Prompt Tuning for Large Language Model Services. arXiv preprint arXiv:2305.06212.
+
+Kalodanis K, Papadopoulos S, Feretzakis G, Rizomiliotis P, Anagnostopoulos D (2025) SecureLLM: A Unified Framework for Privacy-Focused Large Language Models. Applied Sciences, 15(8), 4180.
