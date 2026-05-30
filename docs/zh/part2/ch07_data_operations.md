@@ -21,7 +21,7 @@
 
 在传统的深度学习（如图像分类或序列标注）时代，数据集往往被视为静态资产：收集、标注、发布，然后长年冻结。基于这种范式，工程师习惯了“一次性交付”思维。
 
-然而在大型语言模型的预训练中，数据（Data）与模型（Model）的边界变得模糊。模型的不同成长阶段需要截然不同的数据配方。比如：在冷启动初期（0 - 100B Token），模型迫切需要大规模的广度信息来学习通用语法和基础世界观；而在收敛后期或退火阶段（Cooldown），模型则需要高度稠密的高质量知识材料（数理化推理、代码结构）来拔高质量上限。**一套从头用到尾的静态数据，绝不可能训出 SOTA 模型。**
+然而在大语言模型（Large Language Model，LLM）的预训练中，数据（Data）与模型（Model）的边界变得模糊。模型的不同成长阶段需要截然不同的数据配方。比如：在冷启动初期（0 - 100B Token），模型迫切需要大规模的广度信息来学习通用语法和基础世界观；而在收敛后期或退火阶段（Cooldown），模型则需要高度稠密的高质量知识材料（数理化推理、代码结构）来拔高质量上限。**一套从头用到尾的静态数据，绝不可能训出 SOTA 模型。**
 
 这使得数据工程师的角色从“矿工（一次性挖掘）”转变为“营养师（持续调节摄入）”，这就要求建立一套完整的数据运营（Data Operations，简称 DataOps）体系。
 
@@ -48,7 +48,7 @@
 
 ## 7.2 离线评估与在线代理指标设计
 
-解决评测滞后的唯一手段是设计能够脱离耗时主训练的代理指标（Proxy Metrics）。这涉及一套系统的检测动作，确保每一个版本的抽样数据在交给 GPU 之前，都经过了彻底的基因测序。
+解决评测滞后的唯一手段是设计能够脱离耗时主训练的代理指标（Proxy Metrics）。这涉及一套系统的检测动作，确保每一个版本的抽样数据在交给图形处理器（Graphics Processing Unit，GPU）之前，都经过了彻底的基因测序。
 
 ### 7.2.1 统计分层与代表性评估
 
@@ -337,4 +337,3 @@ Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Me
 Lees A, Tran V Q, Tay Y, Sorensen J, Gupta J, Metzler D, Vasserman L (2022) A New Generation of Perspective API. In: Proceedings of KDD 2022, pp 3197-3207.
 
 Ruslan K, Barrak M, Shcherbatyi I, others (2021) DVC: Data Version Control - Git for Data and Models. In: Proceedings of the Workshop on MLOps Systems at MLSys 2021.
-
