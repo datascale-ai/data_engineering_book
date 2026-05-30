@@ -1,4 +1,4 @@
-# 项目三：Large Language and Vision Assistant（LLaVA）多模态指令数据工厂
+# 项目三：LLaVA 多模态指令数据工厂
 
 ## 本章概览
 
@@ -15,7 +15,7 @@ P03 聚焦把图像、区域标注、光学字符识别（Optical Character Reco
 
 **原始图像资产 -> 派生文档/图表资产 -> 指令合成 -> 区域对齐 -> 多图交错 -> 质检抽检 -> 训练封装 -> 报告与验证**
 
-这一结构对应的核心目标，是构建一条能够支撑 Large Language and Vision Assistant（LLaVA）类模型训练的多模态数据流水线。
+这一结构对应的核心目标，是构建一条能够支撑 LLaVA 类模型训练的多模态数据流水线。
 
 ---
 
@@ -31,7 +31,7 @@ P03 聚焦把图像、区域标注、光学字符识别（Optical Character Reco
 
 第三类是**接口失真**。多模态数据的字段更多、依赖更强：图像路径、图像类型、任务标签、OCR 文本、bbox、conversation 模板、训练切分、可视化抽检结果，都必须能被下游训练和评估共同消费。只要 schema 失控，数据工厂就会退化成一堆临时脚本。
 
-因此，P03 的目标不是简单“生成一些 Large Language and Vision Assistant（LLaVA）格式 JavaScript Object Notation（JSON）”，而是搭建一个**Large Language and Vision Assistant（LLaVA）多模态指令数据工厂**，把图像资产管理、任务构造、对象级对齐、质量审核和训练交付组织成一条可复用的工程生产线。
+因此，P03 的目标不是简单“生成一些 LLaVA 格式 JSON”，而是搭建一个**LLaVA 多模态指令数据工厂**，把图像资产管理、任务构造、对象级对齐、质量审核和训练交付组织成一条可复用的工程生产线。
 
 这条生产线服务的不是一次性演示，而是一种方法论：
 
@@ -48,7 +48,7 @@ P03 聚焦把图像、区域标注、光学字符识别（Optical Character Reco
 **目标一：建立多模态资产到监督样本的转化链路。**  
 即把原始图像、标注框和派生视觉资产，转成可直接用于视觉指令微调的结构化样本。
 
-**目标二：建立面向 Large Language and Vision Assistant（LLaVA）风格训练的任务体系。**  
+**目标二：建立面向 LLaVA 风格训练的任务体系。**  
 本项目不把所有样本都统一成“图片 + 问答”，而是拆分为描述、计数、OCR 摘要、文档问答、图表阅读、区域定位与多图比较等不同任务类型。
 
 **目标三：建立可审核、可回退、可版本化的质量保障（Quality Assurance，QA）机制。**  
