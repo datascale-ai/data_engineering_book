@@ -1,4 +1,4 @@
-# 项目二：垂直领域专家监督微调（Supervised Fine-Tuning，SFT）（法律）
+# 项目二：垂直领域专家 SFT（法律）
 
 
 ## 本章概览

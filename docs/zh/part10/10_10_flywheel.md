@@ -1,4 +1,4 @@
-﻿# 项目十：端到端大语言模型（Large Language Model，LLM）数据飞轮
+﻿# 项目十：端到端 LLM 数据飞轮
 
 ## 本章概览
 
