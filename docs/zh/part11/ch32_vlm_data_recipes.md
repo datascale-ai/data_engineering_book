@@ -2,7 +2,7 @@
 
 “同样的 ViT 视觉编码器，同样的大语言模型（Large Language Model，LLM）基座架构，为什么我们完全复刻 LLaVA-1.5 的训练管线，在 MMMU 和 DocVQA 这种困难榜单上，得分却比 Qwen2.5-VL 和 InternVL 差了整整 10 到 15 分？”
 
-2025 年春，某国内头部人工智能（Artificial Intelligence，AI）实验室的多模态团队经历了一次令全组沮丧的"配方翻车事故"。他们的出发点看起来无懈可击：使用与 Qwen2.5-VL 相同规格的视觉编码器（InternViT-6B），接入同等参数规模的中文基座大语言模型（Large Language Model，LLM），并严格按照 LLaVA-1.5 (Liu et al. 2024b) 的经典两阶段训练方案执行——Stage-1 用 LAION-CC-SBU 的 558K 图文对做视觉对齐预训练，Stage-2 用 LLaVA-Instruct-150K 做全参数微调。训练耗时三周，图形处理器（Graphics Processing Unit，GPU）账单高达六位数，团队内部的早期测试结果也看起来相当不错：对话流畅，拒绝率合理，指令遵循中规中矩。
+2025 年春，某国内头部人工智能（Artificial Intelligence，AI）实验室的多模态团队经历了一次令全组沮丧的"配方翻车事故"。他们的出发点看起来无懈可击：使用与 Qwen2.5-VL 相同规格的视觉编码器（InternViT-6B），接入同等参数规模的中文基座大语言模型（Large Language Model，LLM），并严格按照 LLaVA-1.5 (Liu et al. 2024b) 的经典两阶段训练方案执行——Stage-1 用 LAION-CC-SBU 的 558K 图文对做视觉对齐预训练，Stage-2 用 LLaVA-Instruct-150K 做全参数微调。训练耗时三周，GPU 账单高达六位数，团队内部的早期测试结果也看起来相当不错：对话流畅，拒绝率合理，指令遵循中规中矩。
 
 然而，当他们将模型提交到 MMMU (Yue et al. 2024) 与 DocVQA (Mathew et al. 2021) 的公开评测排行榜时，迎头撞上了一盆彻骨的冷水——整体得分与 Qwen2.5-VL-7B 和 InternVL3-8B 相比，差距赫然超过了 12 个百分点。而他们使用的视觉编码器参数量明明更大，基座 LLM 的中文能力也经过了专项强化。
 
