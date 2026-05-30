@@ -1,4 +1,4 @@
-# 第2章 大语言模型（Large Language Model，LLM）数据生命周期与质量评估框架
+# 第2章 大语言模型（LLM）数据生命周期与质量评估框架
 
 ## 2.1 为什么需要统一质量语言
 
@@ -49,7 +49,7 @@
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **预训练 (Pre-training)** | 数百 B ~ 数十 T Tokens | 高多样性、低重复率、广泛知识覆盖 | N-gram 重复率、PPL 分布、领域比例、语言分布 | 文本去重不彻底（"复读机"）；基准题库混入（评测分数虚高）；垃圾 SEO 占比过高 | MinHash / SimHash；fastText 语言识别；KenLM；Quality Classifier |
 | **指令微调 (SFT)** | 数万 ~ 数百万条指令对 | 指令多样性、格式合规性、逻辑链条完整 | 指令困难度分布、格式合规率、事实准确率 | 指令语义近似重复（"近似克隆"）；答案格式混乱；答案事实错误 | Rouge-L 去重；GPT-4 事实审计；格式正则校验 |
-| **偏好对齐 (RLHF/DPO)** | 数万 ~ 数十万条偏好对 | 偏好差异显著性、价值观贴合度、无害性 | 标注一致性 Cohen's κ (Cohen 1960)；chosen/rejected 质量差距；毒性评分 | 标注员偏好不一致（κ < 0.6）；chosen/rejected 差距不够大（信号弱）；存在文化偏见 | 多轮 calibration；Reward Model 预筛；Perspective Application Programming Interface（Perspective API）(Lees et al. 2022) |
+| **偏好对齐 (RLHF/DPO)** | 数万 ~ 数十万条偏好对 | 偏好差异显著性、价值观贴合度、无害性 | 标注一致性 Cohen's κ (Cohen 1960)；chosen/rejected 质量差距；毒性评分 | 标注员偏好不一致（κ < 0.6）；chosen/rejected 差距不够大（信号弱）；存在文化偏见 | 多轮 calibration；Reward Model 预筛；Perspective API (Lees et al. 2022) |
 | **RAG 应用落地** | 数千 ~ 数万篇文档 | 时效性、业务覆盖率、检索召回精度 | 知识截止时间分布；场景覆盖召回率；Faithfulness 评分 | 知识库陈旧（6个月未更新）；切片粒度太大导致召回噪声过高；PDF 解析乱码 | LlamaIndex / LangChain；RAGAs 评估框架；Embedding 质量评估 |
 
 从表格中可以清晰地看到：同样是"质量评估"，从预训练阶段的"去重率与 PPL 分布"到 RLHF 阶段的"标注一致性与偏好差距"，主要指标已经发生了根本性的切换。一个在预训练阶段的"合格"数据（流畅、无重复），放到 SFT 阶段可能因为不够精确而"不合格"。这种阶段性的质量目标迁移，要求数据工程团队必须建立**分阶段的质量合同（Phase-Specific Quality Contract）**，而不是一套打天下的万能通用标准。
