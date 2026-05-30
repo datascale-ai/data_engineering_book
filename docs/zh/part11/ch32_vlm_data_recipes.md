@@ -9,7 +9,7 @@
 排查了整整一周之后，团队得出了令所有人震惊的结论：**问题不在模型架构，而在数据配方**。具体而言，差距来自四个被完全忽视的数据工程维度：
 
 - **数据质量**：原始 LAION alt-text 的图文相关性中位数仅为 0.26（对比式图文预训练（Contrastive Language-Image Pre-training，CLIP）(Radford et al. 2021) 余弦相似度），而 InternVL 使用的 GPT-4V 重标注数据中位数高达 0.61 [I]。低质量文字描述相当于给模型喂了一堆"图片标签写错的教科书"；
-- **分辨率策略**：固定 Resize 到 336×336 的预处理，彻底抹去了财报便携式文档格式（Portable Document Format，PDF）、教科书插图中密密麻麻的细粒度文字信息；
+- **分辨率策略**：固定 Resize 到 336×336 的预处理，彻底抹去了财报 PDF、教科书插图中密密麻麻的细粒度文字信息；
 - **数据类型覆盖**：LLaVA-Instruct-150K 缺乏富含光学字符识别信息（OCR-Rich）、ChartQA、Grounding（带边界框坐标）类型指令，模型在文档理解和精确定位上几乎无能为力；
 - **Curriculum 调度**：所有数据在两个阶段中均匀混合投喂，未对高信息密度数据（如视觉数学推理）做后期上采样，也未在预训练末期引入退火式高质量数据窗口。
 
@@ -40,7 +40,7 @@
 
 **阶段二：多任务与高分辨率对齐（Multi-task & Hi-Res Alignment）**
 
-这是新一代 VLM 能够读懂发票、财报和复杂论文图表的秘密武器。数据规模通常在数千万样本量级，但对类型多样性与格式正确性的要求成倍增加。此阶段引入的关键数据类型包括：高分辨率光学字符识别（Optical Character Recognition，OCR）数据（便携式文档格式（Portable Document Format，PDF）截图 + 文字坐标标注）、文档视觉问答（Document Visual Question Answering，DocVQA）、InfoVQA、TextVQA、视觉定位数据（Grounding，含 BBox 坐标）、交错图文网页（Interleaved Web Data），以及图表问答（Chart Question Answering，ChartQA）、PlotQA、FigureQA。
+这是新一代 VLM 能够读懂发票、财报和复杂论文图表的秘密武器。数据规模通常在数千万样本量级，但对类型多样性与格式正确性的要求成倍增加。此阶段引入的关键数据类型包括：高分辨率光学字符识别（Optical Character Recognition，OCR）数据（PDF 截图 + 文字坐标标注）、文档视觉问答（Document Visual Question Answering，DocVQA）、InfoVQA、TextVQA、视觉定位数据（Grounding，含 BBox 坐标）、交错图文网页（Interleaved Web Data），以及图表问答（Chart Question Answering，ChartQA）、PlotQA、FigureQA。
 
 此阶段的核心工程挑战是**分辨率适配与 Token 长度管控**。当 OCR 图像分辨率从 336×336 提升至 1344×1344 时，单张图像产生的 Vision Token 数量从约 256 个暴涨至约 4096 个，导致 Batch Size 必须相应缩减至原来的 1/16 才能维持显存不溢出。InternVL3 (Chen et al. 2024) 采用了动态分辨率分桶（Dynamic Resolution Bucketing）策略，将所有训练图像按照宽高比和面积聚类到约 40 个预定义分辨率桶中，每个 Batch 只混合同桶内的样本，有效减少了 Padding 浪费，整体 GPU 利用率提升约 23% [D]。模型在此阶段开始解冻（Unfreeze），但多数团队仍会保留 LLM 部分层的冻结，以防止在极端 OCR 数据分布下引发基础语言能力退化（Regression）。
 
