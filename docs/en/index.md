@@ -111,7 +111,7 @@ Ten runnable projects that string together acquisition, cleaning, synthesis, RAG
 - [Chapter 29: LLM Pre-training Data Recipes](part11/ch29_pretrain_recipes.md)
 - [Chapter 30: LLM Post-training Data Engineering: SFT and Preference Alignment](part11/ch30_posttrain_recipes.md)
 - [Chapter 31: Reasoning Models and RL Data Engineering: R1 / QwQ Paradigm](part11/ch31_rl_reasoning_data.md)
-- [Chapter 32: Multimodal Understanding VLM](part11/ch32_multimodel.md)
+- [Chapter 32: Multimodal Understanding VLM](part11/ch32_vlm_data_recipes.md)
 - [Chapter 33: Multimodal Generative Model Data Engineering — T2I and T2V Data Pipelines](part11/ch33_t21_t2v.md)
 - [Project 11: Mini-DeepSeek Pre-training Reproduction](part11/projects/p11_mini_deepseek.md)
 - [Project 12: R1 Reasoning Flywheel](part11/projects/p12_r1_reasoning_flywheel.md)

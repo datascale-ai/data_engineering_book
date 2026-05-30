@@ -111,7 +111,7 @@
 - [第29章：LLM 预训练数据配⽅](part11/ch29_pretrain_recipes.md)
 - [第30章：LLM 后训练数据工程实战：SFT 与偏好对齐](part11/ch30_posttrain_recipes.md)
 - [第31章：推理模型与 RL 数据工程：R1 / QwQ 范式](part11/ch31_rl_reasoning_data.md)
-- [第32章：多模态理解 VLM](part11/ch32_multimodel.md)
+- [第32章：多模态大模型(VLM)数据配方：从预训练到视觉对齐](part11/ch32_vlm_data_recipes.md)
 - [第33章：多模态生成模型数据工程——T2I 与 T2V 数据流水线](part11/ch33_t21_t2v.md)
 - [项目十一：Mini-DeepSeek 预训练复现](part11/projects/p11_mini_deepseek.md)
 - [项目十二：R1 推理飞轮](part11/projects/p12_r1_reasoning_flywheel.md)
