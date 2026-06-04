@@ -103,7 +103,68 @@ FineWeb 的论文（Penedo et al. 2024）提供了一个振聋发聩的数据点
 
 数据源策略确定之后，工程团队面临的下一个核心问题是：如何将这些分散在互联网上的数据，以高效、可靠、合规的方式纳入数据管线，并建立起每一条数据的完整权属证明链？
 
-### 4.3.1 异构数据源的解析策略
+### 4.3.1 分布式异步采集与 robots.txt 合规
+
+在面对千万级 URL 的增量数据源（如特定垂直领域网站群）时，单线程同步爬虫的效率无法满足工程需求。工业级实践通常采用基于 `aiohttp` 或 `Scrapy` 的分布式异步采集架构。同时，为了避免引发法律纠纷和保障站点的可用性，**必须在核心调度器中强制集成 robots.txt 检查机制**。
+
+以下是一个基于 `aiohttp` 的轻量级异步并发采集框架，它利用 `urllib.robotparser` 在发送请求前自动校验合规性：
+
+```python
+import asyncio, aiohttp
+from urllib.robotparser import RobotFileParser
+from urllib.parse import urlparse
+
+class AsyncEthicalCrawler:
+    def __init__(self, user_agent="LLMDataBot/1.0"):
+        self.user_agent = user_agent
+        self.rp_cache = {}  # 缓存不同域名的 robot parser
+
+    async def fetch_robots(self, session, domain):
+        """异步获取并解析 robots.txt"""
+        robots_url = f"https://{domain}/robots.txt"
+        rp = RobotFileParser()
+        try:
+            async with session.get(robots_url, timeout=5) as response:
+                if response.status == 200:
+                    text = await response.text()
+                    rp.parse(text.splitlines())
+        except Exception:
+            pass  # 获取失败则默认允许爬取，但生产中需谨慎
+        self.rp_cache[domain] = rp
+
+    async def fetch_url(self, session, url):
+        domain = urlparse(url).netloc
+        if domain not in self.rp_cache:
+            await self.fetch_robots(session, domain)
+        
+        # 强制合规检查
+        if not self.rp_cache[domain].can_fetch(self.user_agent, url):
+            print(f"Skipping {url} (disallowed by robots.txt)")
+            return None
+
+        try:
+            async with session.get(url, timeout=10) as response:
+                if response.status == 200:
+                    return await response.text()
+        except Exception as e:
+            print(f"Failed to fetch {url}: {str(e)}")
+        return None
+
+    async def crawl_batch(self, urls, concurrency=50):
+        """基于信号量的并发控制，避免压垮源站"""
+        sem = asyncio.Semaphore(concurrency)
+        async with aiohttp.ClientSession(headers={"User-Agent": self.user_agent}) as session:
+            async def bounded_fetch(url):
+                async with sem:
+                    return await self.fetch_url(session, url)
+            
+            tasks = [bounded_fetch(url) for url in urls]
+            return await asyncio.gather(*tasks)
+```
+
+这种架构能够轻松将单机爬取吞吐量提升至数百 QPS，同时从根本上杜绝了对 `Disallow` 路径的违规访问。
+
+### 4.3.2 异构数据源的解析策略
 
 不同类型的数据源需要截然不同的解析技术路线，使用错误的解析工具会导致严重的内容损失或噪声引入：
 
@@ -156,7 +217,7 @@ def parse_warc_to_clean_text(warc_path: str) -> list[dict]:
 
 **代码仓库（Git Repos）** 应通过克隆仓库而非 API 拉取的方式获取，确保完整性。解析时需要根据文件扩展名识别编程语言，并基于文件大小（过长的文件可能是自动生成的）、语法合法性（对 Python 可用 AST 解析验证）和许可证文件内容（MIT、Apache 2.0 等宽松许可证白名单）进行质量筛选。
 
-### 4.3.2 元数据存证：每条数据的"出生证明"
+### 4.3.3 元数据存证：每条数据的"出生证明"
 
 在数据采集的同时建立可追溯的元数据档案，是整个数据治理体系的奠基石。一条数据如果没有完整的元数据，在日后的合规审计中就无法证明其来源合法——这与财务账目一样，"我记得是合法的"不能替代"我有凭证证明是合法的"。
 
@@ -184,7 +245,7 @@ def parse_warc_to_clean_text(warc_path: str) -> list[dict]:
 
 *图4-2：数据采集与权属存证流程——从数据源触达到最终归档，每个处理阶段均向"Provenance Ledger（权属账本）"追加元数据记录，形成完整的可审计数据血缘链路。*
 
-### 4.3.3 断点续传与任务可靠性
+### 4.3.4 断点续传与任务可靠性
 
 大规模数据采集任务的运行周期往往长达数天，在此期间发生节点故障、网络中断或云存储访问令牌过期是大概率事件。没有断点续传机制的采集任务，一旦中断就必须从头重跑，既浪费时间又浪费算力预算。
 

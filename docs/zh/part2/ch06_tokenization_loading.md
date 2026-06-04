@@ -44,11 +44,25 @@
 
 目前主流大模型采用的分词算法以三种为主：
 
-**BPE（Byte Pair Encoding）** (Sennrich et al. 2016) 是最广泛使用的算法，GPT 系列（包括 ChatGPT、GPT-4）均基于此。其核心思想是从字符级别出发，反复合并出现频率最高的相邻 token 对，直到词表达到目标大小。BPE 的字节级变体（Byte-level BPE，如 GPT-2 的 tiktoken）通过将原始字节而非 Unicode 字符作为起始单元，彻底解决了 OOV 问题，被 LLaMA 2/3、Mistral 等模型广泛采用。
+**BPE（Byte Pair Encoding）** (Sennrich et al. 2016) 是最广泛使用的算法，GPT 系列（包括 ChatGPT、GPT-4）均基于此。其核心思想是从字符（或字节）级别出发，反复合并出现频率最高的相邻 token 对。
+```python
+# BPE 合并原理伪代码
+def bpe_train(corpus, num_merges):
+    vocab = get_initial_characters(corpus)
+    for _ in range(num_merges):
+        pairs = get_stats(vocab)  # 统计所有相邻 token 对的频率
+        best = max(pairs, key=pairs.get) # 选出频率最高的一对
+        vocab = merge_vocab(best, vocab) # 将其合并为一个新的 token
+    return vocab
+```
+BPE 的字节级变体（Byte-level BPE，如 GPT-2 的 tiktoken）通过将原始字节而非 Unicode 字符作为起始单元，彻底解决了 OOV 问题，被 LLaMA 2/3、Mistral 等模型广泛采用。
 
-**SentencePiece（Unigram）** (Kudo and Richardson 2018) 是 Google 推广的方法，T5、XLNet、mT5 等模型使用此方案。Unigram 语言模型从大词表出发，逐步删除最不重要的 token，直到达到目标词表大小，通常能取得更高的压缩率和更平滑的 token 概率分布。SentencePiece 库还原生支持无预分词（无空格依赖）的方式，对中文、日文等无显式词边界的语言更为友好。
+**WordPiece** 是 BERT 的分词方案，与 BPE 极其相似，但合并标准并非绝对频率，而是**基于语言模型的最大似然估计（Likelihood）**。WordPiece 在合并 $A$ 和 $B$ 时，考察的是 $\frac{P(AB)}{P(A)P(B)}$ 的得分（类似互信息）。这意味着如果 $A$ 和 $B$ 各自单独出现的概率极低，但它们凑在一起出现的概率极高，WordPiece 也会果断将它们合并。
 
-**WordPiece** 是 BERT 的分词方案，与 BPE 类似，但以最大似然为合并标准而非频率。目前较少在新的 LLM 预训练中使用，但仍在大量 BERT 系微调场景中作为历史遗产延续。
+**OOV（Out-of-Vocabulary）危机与未登录词问题**：
+在传统的基于词级（Word-level）的旧时代分词器中，如果遇到未被记录在词表中的生僻字或罕见词，模型通常会抛出一个代表未知的 `<UNK>`（Out-of-Vocabulary）占位符。这在医学、法律等专业领域是灾难性的：一段含有复杂化学式的文本会变成满屏的 `<UNK>`。而 BPE 和 WordPiece 这种基于 Subword 的方案，在遇到未见过的单词时，会一直向下拆分为更基础的子词甚至单字母/单字节。虽然增加了序列长度，但永远不会出现真正的 OOV 截断，保证了信息的无损传入。
+
+**SentencePiece（Unigram）** (Kudo and Richardson 2018) 则是 Google 推广的方案，它不走“从小到大合并”的路线，而是“从大到小裁剪”。Unigram 从超大基础词表出发，逐步计算并删除对整体语料似然度下降最小的 token。它对中文、日文等无显式词边界的语言更为友好。
 
 对于中文大模型，推荐以 **Byte-level BPE**（tiktoken 实现）为基础方案，词表大小建议在 **64K-100K** 之间——这一区间在中文字符覆盖率（中文汉字约 5 万字，基础常用字约 3500 字）和嵌入矩阵参数量之间取得了合理平衡。词表过小（32K）会导致大量中文汉字被切分为字节级别的多个 token，严重增加序列长度；词表过大（200K+）则会使嵌入矩阵参数量过于庞大，影响训练效率。
 
@@ -236,6 +250,28 @@ dataloader = DataLoader(
     prefetch_factor=4,     # 每 worker 预取 4 个 batch
     persistent_workers=True,  # 避免 epoch 间 worker 重启的开销
 )
+```
+
+```python
+# 应对千万级小文件 IO 优化的 Memmap 二进制加载器伪代码
+import numpy as np
+class MemmapDataset(torch.utils.data.Dataset):
+    def __init__(self, bin_path, seq_len=4096):
+        # 使用 np.memmap 映射巨大的二进制 .bin 文件 (Raw Token IDs)
+        # 完全避免了将整个数据集加载进内存，依靠 OS 的 Page Cache 极速随机读取
+        self.seq_len = seq_len
+        self.data = np.memmap(bin_path, dtype=np.uint16, mode='r')
+        self.total_tokens = len(self.data)
+        self.num_samples = self.total_tokens // self.seq_len
+
+    def __len__(self):
+        return self.num_samples
+
+    def __getitem__(self, idx):
+        start_idx = idx * self.seq_len
+        # 切片操作极其轻量，由底层 C 代码和 OS 内存分页完成，吞吐极高
+        chunk = self.data[start_idx : start_idx + self.seq_len]
+        return torch.from_numpy(chunk.astype(np.int64))
 ```
 
 ### 6.4.2 吞吐瓶颈诊断：三步系统化排查

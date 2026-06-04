@@ -141,6 +141,12 @@
 2. **水印鉴别器 (Watermark Detector)**：由于大量网络图片来自图库（Getty Images、Shutterstock），一旦模型吸收了这些图，模型不仅会频繁在生成回答中“幻想”出那些水印字样，还会不可避免地遭到商用风险反噬。我们必须过滤掉所有带密集斜纹或高光中心水印的样本。
 3. **模糊度判定阈值 (Blur/Aesthetic Score)**：利用类似 LAION 团队训练的 AES（Aesthetic Predictor）美学评分模型，抛弃那些重度失焦、光照极度昏暗或充斥单纯彩色噪点的垃圾片源。
 
+**多模态敏感数据过滤 Checklist（工业界标准）：**
+- [ ] 是否在文本侧集成了禁止词库（Blocklist），对 `<alt>` 标签中的暴恐、色情文字进行了强硬剔除？
+- [ ] 视觉 NSFW 分类器是否针对二次元/插画模型（Anime NSFW）进行了补充训练以防漏网之鱼？
+- [ ] 肖像权隐私：是否调用了人脸模糊（Face Blurring）算法将高清晰度的素人人脸（非公众人物）打码？
+- [ ] 商业水印拦截库是否处于周度更新（Weekly Update）状态，防止新涌现图床的污染？
+
 完成了这三大基础清洗关卡，你的 100 亿庞大抓取库可能已经急剧锐减到了不到 40 亿规模。这些幸存的坚挺图像干净脱俗，但别高兴太早——**此时它们依然没有与文字发生过有效的“核心交流”**。在接下来的下篇，我们将祭出大杀器：CLIP Score。
 
 ---
@@ -226,8 +232,14 @@ def filter_by_semantic_score(image, text_caption, threshold=0.25):
 
 早期 VLM（如 CLIP 及其时代的诸多模型）通常对输入图像采取固定尺寸缩放（Resize）：无论是横版风景图还是纵向长文档，一律强制压缩至 $224 \times 224$ 的正方形，导致内容比例严重失真。为解决这一问题，现代数据工厂在预处理阶段普遍引入了 **AnyRes（动态高分辨率保持）** 策略：
 
-1. **补零（Zero-padding）策略**：对于不想失去原始横纵比的小图，在周围补全黑色边框凑成正方块，使得模型能学到相对几何形状。
-2. **多重补丁（Multi-Patch Splitting）策略**：将一张 $336 \times 1008$ 的竖版图片，切割成 3 张 $336 \times 336$ 的正方形子图（Sub-patches），外加一张经过大幅度下采样（Down-sampled）的全局缩略图。这意味着这 1 张原图将被输入为 4 份 576 Token 的巨大矩阵块（合计消耗 2304 个 Token）。
+![图8-3：AnyRes 动态多分辨率切割算法原理图](../../images/part3/anyres_dynamic_patching.png)
+
+*图8-3：AnyRes 动态多分辨率切割算法原理图 —— 展示了 AnyRes 的核心思想：左侧的超长全景图（High-Res Input）不再被暴戾压缩。而是被自适应网格（Adaptive Grid）划分为 $1 \times 3$ 个原生分辨率的局部图像块（Local Patches），同时结合右上方全局缩略图（Global Thumbnail）一同送入 Vision Encoder。这极大地保留了高频局部特征与宏观语义。*
+
+**AnyRes 原理与核心策略详解：**
+1. **基础补零（Zero-padding / Letterboxing）策略**：对于不想失去原始横纵比，且分辨率未溢出的图，在周围补全黑色或均值边框凑成正方块，使得模型能学到相对的无失真几何形状。
+2. **多重补丁切割（Multi-Patch Splitting / Grid Cropping）**：将一张 $336 \times 1008$ 的超清竖版图片，动态匹配到 $1 \times 3$ 的切割网格（Grid），切割成 3 张 $336 \times 336$ 的正方形子图（Local Sub-patches）。同时，为了不失去全图视野，还会外加一张经过大幅下采样（Down-sampled）的**全局缩略图（Global Context Patch）**。这意味着这 1 张原图将被输入为 4 份 576 Token 的巨大矩阵块（合计消耗 2304 个 Token）。
+3. **坐标编码注入（Positional Embedding Injection）**：被切开的子图不能随便丢进模型。在 DataLoader 组装阶段，必须为每个子图块打上类似 `[<row_1>, <col_1>]` 的二维相对位置编码，让模型知道哪块图在左、哪块在右。
 
 若不对这种交错图文做严格拼接控制，GPU 显存中将被庞大的无声像素挤满，文本逻辑学得极其缓慢。为此我们需要使用**基于长宽比分组（Aspect-Ratio Grouping）的 Sequence Packing** 技术：像贪吃蛇一样，把多长条同类的图文对塞入同一个 4096 的 Sequence 窗口，并在图像和图像块之间插入特殊的界限标识符 `<image>` 与 `</image>`，利用 Attention Mask 阻断跨文档的计算污染，从而节约显存边界带来的极大浪费。
 
