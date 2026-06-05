@@ -1,4 +1,4 @@
-# 第2章 LLM数据生命周期与质量评估框架
+# 第2章：LLM数据生命周期与质量评估框架
 
 ## 2.1 为什么需要统一质量语言
 
@@ -482,4 +482,3 @@ Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Me
 Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.
 
 Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.
-

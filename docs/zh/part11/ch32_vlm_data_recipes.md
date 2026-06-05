@@ -1,19 +1,19 @@
-# 第 32 章 多模态大模型(VLM)数据配方：从预训练到视觉对齐
+# 第32章：多模态大模型（VLM）数据配方：从预训练到视觉对齐
 
-“同样的 ViT 视觉编码器，同样的 LLM 基座架构，为什么我们完全复刻 LLaVA-1.5 的训练管线，在 MMMU 和 DocVQA 这种困难榜单上，得分却比 Qwen2.5-VL 和 InternVL 差了整整 10 到 15 分？”
+“同样的 ViT 视觉编码器，同样的大语言模型（LLM）基座架构，为什么我们完全复刻 LLaVA-1.5 的训练管线，在 MMMU 和 DocVQA 这种困难榜单上，得分却比 Qwen2.5-VL 和 InternVL 差了整整 10 到 15 分？”
 
-2025 年春，某国内头部 AI 实验室的多模态团队经历了一次令全组沮丧的"配方翻车事故"。他们的出发点看起来无懈可击：使用与 Qwen2.5-VL 相同规格的视觉编码器（InternViT-6B），接入同等参数规模的中文基座 LLM，并严格按照 LLaVA-1.5 (Liu et al. 2024b) 的经典两阶段训练方案执行——Stage-1 用 LAION-CC-SBU 的 558K 图文对做视觉对齐预训练，Stage-2 用 LLaVA-Instruct-150K 做全参数微调。训练耗时三周，GPU 账单高达六位数，团队内部的早期测试结果也看起来相当不错：对话流畅，拒绝率合理，指令遵循中规中矩。
+2025 年春，某国内头部人工智能（AI）实验室的多模态团队经历了一次令全组沮丧的"配方翻车事故"。他们的出发点看起来无懈可击：使用与 Qwen2.5-VL 相同规格的视觉编码器（InternViT-6B），接入同等参数规模的中文基座大语言模型（LLM），并严格按照 LLaVA-1.5 (Liu et al. 2024b) 的经典两阶段训练方案执行——Stage-1 用 LAION-CC-SBU 的 558K 图文对做视觉对齐预训练，Stage-2 用 LLaVA-Instruct-150K 做全参数微调。训练耗时三周，GPU 账单高达六位数，团队内部的早期测试结果也看起来相当不错：对话流畅，拒绝率合理，指令遵循中规中矩。
 
 然而，当他们将模型提交到 MMMU (Yue et al. 2024) 与 DocVQA (Mathew et al. 2021) 的公开评测排行榜时，迎头撞上了一盆彻骨的冷水——整体得分与 Qwen2.5-VL-7B 和 InternVL3-8B 相比，差距赫然超过了 12 个百分点。而他们使用的视觉编码器参数量明明更大，基座 LLM 的中文能力也经过了专项强化。
 
 排查了整整一周之后，团队得出了令所有人震惊的结论：**问题不在模型架构，而在数据配方**。具体而言，差距来自四个被完全忽视的数据工程维度：
 
-- **数据质量**：原始 LAION alt-text 的图文相关性中位数仅为 0.26（CLIP (Radford et al. 2021) 余弦相似度），而 InternVL 使用的 GPT-4V 重标注数据中位数高达 0.61 [I]。低质量文字描述相当于给模型喂了一堆"图片标签写错的教科书"；
+- **数据质量**：原始 LAION alt-text 的图文相关性中位数仅为 0.26（对比式图文预训练（CLIP）(Radford et al. 2021) 余弦相似度），而 InternVL 使用的 GPT-4V 重标注数据中位数高达 0.61 [I]。低质量文字描述相当于给模型喂了一堆"图片标签写错的教科书"；
 - **分辨率策略**：固定 Resize 到 336×336 的预处理，彻底抹去了财报 PDF、教科书插图中密密麻麻的细粒度文字信息；
-- **数据类型覆盖**：LLaVA-Instruct-150K 缺乏 OCR-Rich、ChartQA、Grounding（带边界框坐标）类型指令，模型在文档理解和精确定位上几乎无能为力；
+- **数据类型覆盖**：LLaVA-Instruct-150K 缺乏富含光学字符识别信息（OCR-Rich）、ChartQA、Grounding（带边界框坐标）类型指令，模型在文档理解和精确定位上几乎无能为力；
 - **Curriculum 调度**：所有数据在两个阶段中均匀混合投喂，未对高信息密度数据（如视觉数学推理）做后期上采样，也未在预训练末期引入退火式高质量数据窗口。
 
-这个故事并不罕见，它几乎是过去三年里每一个认真组建多模态团队的必经之痛。它揭示了当今 VLM 工程的核心命题：**数据配方的精密程度，决定了模型智力的上限**。架构层面的创新已经趋于收敛，数据工程层面的差距，才是今天头部实验室与跟随者之间真正难以逾越的护城河。在 2024 到 2025 年的多模态大爆发周期中，真正拉开现代头部 VLM（Vision-Language Model）差距的，早已不是模型架构的细微调整，而是**极度精细、甚至苛刻的多模态数据工程配方**。
+这个故事并不罕见，它几乎是过去三年里每一个认真组建多模态团队的必经之痛。它揭示了当今 VLM 工程的核心命题：**数据配方的精密程度，决定了模型智力的上限**。架构层面的创新已经趋于收敛，数据工程层面的差距，才是今天头部实验室与跟随者之间真正难以逾越的护城河。在 2024 到 2025 年的多模态大爆发周期中，真正拉开现代头部 VLM 差距的，早已不是模型架构的细微调整，而是**极度精细、甚至苛刻的多模态数据工程配方**。
 
 > **前置知识与合规边界提示**：
 > 本章专注于探讨针对具体 VLM 特化的“数据配方”与 Curriculum 调度差异。关于基础的图文对抓取、MinHash 去重流水线、基础 OCR 抽取，以及跨模态对齐的通用预处理（如 Resize/CenterCrop 等图像处理流），已经在 **Ch08（图文对）**、**Ch09（重标注与文档理解）**、**Ch10（视频与音频）** 与 **Ch11（跨模态对齐）** 中做了详尽铺垫。对于底层通用流水线，建议复习图 8-1 的多模态数据全景。此外，任何涉及图像爬虫版权的溯源风险，请直接参阅 **Ch04 §4.4** 与 **Ch27（数据合规）**。本章只讲“配方”，不重复“造轮子”。
@@ -34,17 +34,17 @@
 
 **阶段一：预训练（Pre-training / Feature Alignment）**
 
-此阶段的核心目标是**视觉概念与文本词汇的粗粒度对齐**。数据规模通常在数亿至数十亿图文对（Image-Text Pairs）量级，主要来源包括经过 CLIP 强过滤的 LAION 子集 (Schuhmann et al. 2022)、DataComp-1B (Gadre et al. 2023)、COYO-700M，以及近两年兴起的 Re-captioning 数据（如 ShareGPT4V-1.2M、LLaVA-Recap-558K）。
+此阶段的核心目标是**视觉概念与文本词汇的粗粒度对齐**。数据规模通常在数亿至数十亿图文对（Image-Text Pairs）量级，主要来源包括经过对比式图文预训练（CLIP）强过滤的 LAION 子集 (Schuhmann et al. 2022)、DataComp-1B (Gadre et al. 2023)、COYO-700M，以及近两年兴起的 Re-captioning 数据（如 ShareGPT4V-1.2M、LLaVA-Recap-558K）。
 
 在这一阶段，头部模型的工程要点有三：其一，**冻结 LLM，只训练视觉编码器和投影层（Projector）**，以防止 LLM 在低质量图文噪声下发生灾难性遗忘（Catastrophic Forgetting）；其二，**引入 CLIP-Score 过滤阈值**（通常 ≥ 0.28），剔除图文相关性极低的噪声图文对——这一步可去除原始 LAION-5B 中高达 70% 的低质样本；其三，**Re-captioning 优先于原始 alt-text**——InternVL3 的消融实验表明，将 558K 原始 LAION 数据的 alt-text 替换为强 VLM 重写的详细描述后，Stage-1 的视觉对齐精度提升了约 7 个 MMMU 百分点 [D] (Chen et al. 2023)。
 
 **阶段二：多任务与高分辨率对齐（Multi-task & Hi-Res Alignment）**
 
-这是新一代 VLM 能够读懂发票、财报和复杂论文图表的秘密武器。数据规模通常在数千万样本量级，但对类型多样性与格式正确性的要求成倍增加。此阶段引入的关键数据类型包括：高分辨率 OCR 数据（PDF 截图 + 文字坐标标注）、文档理解数据（DocVQA、InfoVQA、TextVQA）、视觉定位数据（Grounding，含 BBox 坐标）、交错图文网页（Interleaved Web Data），以及图表理解数据（ChartQA、PlotQA、FigureQA）。
+这是新一代 VLM 能够读懂发票、财报和复杂论文图表的秘密武器。数据规模通常在数千万样本量级，但对类型多样性与格式正确性的要求成倍增加。此阶段引入的关键数据类型包括：高分辨率 OCR 数据（PDF 截图 + 文字坐标标注）、文档视觉问答（DocVQA）、InfoVQA、TextVQA、视觉定位数据（Grounding，含 BBox 坐标）、交错图文网页（Interleaved Web Data），以及图表问答（ChartQA）、PlotQA、FigureQA。
 
 此阶段的核心工程挑战是**分辨率适配与 Token 长度管控**。当 OCR 图像分辨率从 336×336 提升至 1344×1344 时，单张图像产生的 Vision Token 数量从约 256 个暴涨至约 4096 个，导致 Batch Size 必须相应缩减至原来的 1/16 才能维持显存不溢出。InternVL3 (Chen et al. 2024) 采用了动态分辨率分桶（Dynamic Resolution Bucketing）策略，将所有训练图像按照宽高比和面积聚类到约 40 个预定义分辨率桶中，每个 Batch 只混合同桶内的样本，有效减少了 Padding 浪费，整体 GPU 利用率提升约 23% [D]。模型在此阶段开始解冻（Unfreeze），但多数团队仍会保留 LLM 部分层的冻结，以防止在极端 OCR 数据分布下引发基础语言能力退化（Regression）。
 
-**阶段三：监督微调与对齐（Supervised Fine-Tuning, SFT）**
+**阶段三：监督微调与对齐（SFT）**
 
 这一阶段数据量剧减至百万甚至十万级别，核心目标是让模型学会"人类对话的调性"。数据来源包括：复杂逻辑推理题（Visual CoT）、视觉数学题解析（MathVista (Lu et al. 2023)、GeoQA、MathV360K）、GPT-4V 合成对话蒸馏、多轮交互对话，以及人类偏好反馈（RLHF/DPO）。
 
@@ -335,4 +335,3 @@ Wang P, Bai S, Tan S, Wang S, Fan Z, Bai J, Chen K, Liu X, Wang J, Ge W, others 
 Yue X, Ni Y, Zhang K, Zheng T, Liu R, Zhang S, Stevens J, Jiang C, Zheng N, Sun T, others (2024) MMMU: A Massive Multi-discipline Multimodal Understanding and Reasoning Benchmark for Expert AGI. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 9556-9567.
 
 Zhu D, Chen J, Shen X, Li X, Elhoseiny M (2023) MiniGPT-4 / MMC4: An Open Large-Scale Dataset of Interleaved Image-Text Data. arXiv preprint arXiv:2306.04764.
-
