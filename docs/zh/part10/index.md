@@ -2,7 +2,7 @@
 
 ## 本篇定位
 
-第十篇讨论 Agentic Data Engineering，聚焦数据工程 Agent 如何参与采集、解析、清洗、标注、合成、评测、DataOps 与安全协同。
+第十篇讨论 Agentic Data Engineering，聚焦数据工程 Agent 如何参与采集、解析、清洗、标注、合成、评测、DataOps 与安全协同。本篇会以 DataAgent 作为贯穿式工程参照：第31章先把它放进架构与边界框架，后续章节再分别讨论采集清洗、评测、DataOps 和安全协同如何接入这种 Agent 数据工程底座。
 
 ## 本篇目录
 

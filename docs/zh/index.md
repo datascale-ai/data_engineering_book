@@ -110,7 +110,7 @@
 
 ## 第十篇：智能化数据工程与 Data Engineering Agent
 
-第十篇讨论 Agentic Data Engineering，聚焦数据工程 Agent 如何参与采集、解析、清洗、标注、合成、评测、DataOps 与安全协同。
+第十篇讨论 Agentic Data Engineering，聚焦数据工程 Agent 如何参与采集、解析、清洗、标注、合成、评测、DataOps 与安全协同，并以 DataAgent 作为贯穿式工程参照，将抽象架构连接到可运行的数据工程 Agent 系统。
 
 - [本篇目录](part10/index.md)
 - [第31章：数据工程 Agent 的架构与任务边界](part10/ch31_agent_architecture.md)
