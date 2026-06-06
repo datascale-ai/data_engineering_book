@@ -339,6 +339,14 @@ Affected batch: 256 samples. Training step 28,441 aborted.
 | ERR_CROSS_MDL_TEMPORAL | 时序因果倒置 | 数据库最终一致性写入偏移 | 强一致性存储 + 全局时间戳约束 |
 | ERR_CROSS_MDL_MIRROR | 医疗影像镜像污染 | 扫描仪物理输出镜像未校正 | orientation 元数据校验 + 方向固定 |
 
+## 本章小结
+
+本章围绕“跨模态对齐与融合”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
+
+本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
+
+在全书结构中，本章位于多模态数据工程层，承担承接前文基础概念并导向SFT、偏好和跨模态对齐的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
+
 ## 参考文献
 
 Chen T, Kornblith S, Norouzi M, Hinton G (2020) A Simple Framework for Contrastive Learning of Visual Representations (SimCLR). In: Proceedings of the 37th International Conference on Machine Learning, pp 1597-1607.

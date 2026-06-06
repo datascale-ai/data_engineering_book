@@ -1,5 +1,10 @@
 # 第22章：多模态 RAG 与视觉检索
 
+## 摘要
+
+本章围绕“多模态 RAG 与视觉检索”展开，聚焦大模型数据工程中的关键设计问题。章节从场景约束、数据对象、流水线设计、质量评估和工程治理等维度展开，说明如何把零散的数据处理动作收敛为可复盘、可验证、可交付的系统方法，并为后续章节和项目实战建立统一分析框架。
+
+
 随着 RAG 系统从企业知识问答、制度检索和文档助手等文本场景，逐步扩展到财报分析、合同审阅、产品手册理解、票据处理、医学影像报告和复杂版式文档问答，一个新的问题开始凸显：真实世界中的知识并不总是以纯文本形式存在。大量关键信息隐藏在图像、表格、图表、截图、流程图、版面结构和视觉区域之中。如果系统仍然只采用文本 RAG 的思路，将文档简单解析为字符串，再进行切分、向量化和检索，就很容易在复杂知识场景中出现系统性失效。
 
 传统文本 RAG 的基本假设是：知识可以被转化为文本，并通过文本检索与生成完成问答。但在多模态场景中，这一假设并不总是成立。例如，一份财务报告中的关键趋势可能体现在折线图中，一份产品说明书的操作步骤可能依赖截图中的按钮位置，一份合同扫描件中的签章和批注可能以图像形式存在，一份医疗检查报告中的判断依据可能来自图像区域与文字描述的共同关系。此时，OCR 只能提取部分文字，却无法完整表达视觉结构、空间关系和图文对齐信息。
@@ -556,3 +561,19 @@ Es S, James J, Espinosa-Anke L, Schockaert S (2024) RAGAS: Automated Evaluation 
 Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503–2511.
 
 Huyen C (2022) Designing Machine Learning Systems: An Iterative Process for Production-Ready Applications. O’Reilly Media.
+
+## 本章小结
+
+本章围绕“多模态 RAG 与视觉检索”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
+
+本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
+
+在全书结构中，本章位于应用级数据工程层，承担承接前文基础概念并导向DataOps、版本治理和数据资产化的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
+
+## 参考文献
+
+1. Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W.-t., Rocktäschel, T., Riedel, S., & Kiela, D. (2020). Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. arXiv:2005.11401.
+2. Karpukhin, V., Oguz, B., Min, S., Lewis, P., Wu, L., Edunov, S., Chen, D., & Yih, W.-t. (2020). Dense Passage Retrieval for Open-Domain Question Answering. EMNLP 2020.
+3. Radford, A., Kim, J. W., Hallacy, C., Ramesh, A., Goh, G., et al. (2021). Learning Transferable Visual Models From Natural Language Supervision. ICML 2021.
+4. Liu, H., Li, C., Wu, Q., & Lee, Y. J. (2023). Visual Instruction Tuning. NeurIPS 2023.
+5. Mathew, M., Karatzas, D., & Jawahar, C. V. (2021). DocVQA: A Dataset for VQA on Document Images. WACV 2021.

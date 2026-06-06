@@ -1,5 +1,55 @@
 # 项目十一：Mini-DeepSeek 预训练复现
 
+## 摘要
+
+本项目围绕“Mini-DeepSeek 预训练复现”构建可复现的数据工程案例，重点说明业务目标、数据边界、架构决策、核心实现、验收指标与风险控制。章节将安装命令和脚本细节收敛到工程复盘视角，突出样本 schema、数据流、失败模式和可交付物之间的关系，帮助读者把前文方法转化为可审计、可扩展的项目资产。
+
+## 关键词
+
+Mini-DeepSeek；项目实战；可复现数据工程；数据流水线；验收指标
+
+## 项目目标与读者收获
+
+本项目以“Mini-DeepSeek 预训练复现”为核心案例，目标是以小规模资源复现开源 LLM 预训练数据配方的关键工程环节。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。
+
+## 场景约束与数据边界
+
+定位为缩小版配方验证，不追求完整大模型规模和公开 SOTA 指标。这些边界使案例能够被复现和审计；当数据规模、数据来源、权限范围或部署环境变化时，需要重新评估采样策略、质量阈值、运行成本和合规要求。
+
+## 架构决策
+
+本项目采用“语料配比、tokenization、训练样本打包、训练烟测、指标记录和成本分析”的架构路径。该决策优先保证输入输出契约、版本可追踪、异常可定位和结果可复核，而不是把全部逻辑压缩为一次性脚本运行。
+
+## 样本 schema / 数据流
+
+核心数据流可概括为：
+
+```text
+候选语料 -> 配方采样 -> tokenizer 处理 -> packed dataset -> 训练烟测 -> loss 与样本质量报告
+```
+
+样本 schema 至少应保留 `id`、`source`、`content_or_payload`、`metadata`、`quality_signals`、`split_or_stage` 与 `audit_trace` 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。
+
+## 核心实现片段
+
+正文只保留能够说明设计取舍的关键实现片段。完整脚本、长配置、运行日志和大文件应放入配套仓库或附录说明；代码展示重点放在输入输出契约、质量阈值、异常处理和验收接口上。
+
+## 实验或验收指标
+
+验收指标包括token 分布、语料配比偏差、packing 效率、训练 loss 趋势、吞吐、显存/成本和失败样本复查。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。
+
+## 成本、风险与合规边界
+
+成本主要来自训练算力和数据处理；风险集中在配方误读、样本污染、tokenizer 不一致和小规模结论外推。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。
+
+## 常见失败模式
+
+常见失败包括输入分布偏离、schema 字段缺失、质量阈值过松或过紧、评测样本覆盖不足、模型调用不稳定、结果无法回溯等。排查时应优先定位数据边界和中间产物，再检查模型、工具链与部署环境。
+
+## 可复现资源说明
+
+复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。
+
 ## 背景与目标
 
 在预训练数据工程中，“按比例缩放（Scaling Laws）”(Kaplan et al. 2020) 不仅适用于模型参数，同样适用于数据配方的实验与验证。我们在前作 项目 1（Mini-C4）中，已经走通了单源语料的清洗流水线；但真实的工业级大模型（如 DeepSeek-V3 (Liu et al. 2024)）从来不是在单一语料上训练出来的，而是由网页、代码、数学、学术论文等多种数据源精确混合而成。
@@ -38,54 +88,27 @@
 我们编写 `mix_sampler.py` 脚本，按设定比例进行抽样。
 
 ```python
-import datasets
 from datasets import load_dataset, concatenate_datasets
-import random
 
-# 定义采样配比 (模拟 DeepSeek-V3 比例)
 RECIPE = {
-    "HuggingFaceFW/fineweb-edu": {"split": "train", "weight": 0.40},
-    "bigcode/the-stack-v2": {"split": "train", "weight": 0.25},
-    "open-web-math/open-web-math": {"split": "train", "weight": 0.15},
-    "togethercomputer/RedPajama-Data-1T": {"split": "train", "weight": 0.10, "name": "arxiv"},
-    "m-a-p/WanJuan-1.0-Text": {"split": "train", "weight": 0.10} # 模拟中文
+    "HuggingFaceFW/fineweb-edu": {"weight": 0.40},
+    "bigcode/the-stack-v2": {"weight": 0.25},
+    "open-web-math/open-web-math": {"weight": 0.15},
+    "togethercomputer/RedPajama-Data-1T": {"name": "arxiv", "weight": 0.10},
+    "m-a-p/WanJuan-1.0-Text": {"weight": 0.10},
 }
 
-TARGET_TOTAL_DOCS = 500000 # 预估能产生 1B tokens 的文档总数
-
 def sample_multi_source(recipe, target_docs):
-    sampled_datasets = []
-    for repo_id, config in recipe.items():
-        weight = config["weight"]
-        num_docs = int(target_docs * weight)
-        print(f"Sampling {num_docs} docs from {repo_id}...")
-        
-        # 考虑到性能，使用 streaming=True 抽取
-        ds = load_dataset(repo_id, config.get("name", "default"), split=config["split"], streaming=True)
-        ds_iter = iter(ds)
-        
-        docs = []
-        for _ in range(num_docs):
-            try:
-                item = next(ds_iter)
-                # 统一字段名: 均保留 'text' 字段，丢弃其他无关字段
-                text_content = item.get('text') or item.get('content')
-                if text_content:
-                    docs.append({"text": text_content, "source": repo_id})
-            except StopIteration:
-                break
-                
-        # 转换为本地 Dataset
-        sampled_datasets.append(datasets.Dataset.from_list(docs))
-        
-    # 合并为单一 Dataset
-    mixed_dataset = concatenate_datasets(sampled_datasets)
-    return mixed_dataset
+    shards = []
+    for repo_id, cfg in recipe.items():
+        n = int(target_docs * cfg["weight"])
+        stream = load_dataset(repo_id, cfg.get("name"), split="train", streaming=True)
+        rows = [normalize_text(item, source=repo_id) for item in take(stream, n)]
+        shards.append(rows_to_dataset(rows))
+    return concatenate_datasets(shards)
 
-if __name__ == "__main__":
-    mixed_data = sample_multi_source(RECIPE, TARGET_TOTAL_DOCS)
-    mixed_data.save_to_disk("./data/mixed_1b_raw")
-    print("Multi-source sampling complete.")
+mixed = sample_multi_source(RECIPE, target_docs=500_000)
+mixed.save_to_disk("./data/mixed_1b_raw")
 ```
 
 ### Step 2: 跨源 MinHash LSH 去重
@@ -93,47 +116,29 @@ if __name__ == "__main__":
 多源混合后，最大的隐患是不同来源间存在重复（例如 The Stack v2 中的代码片段，与 arXiv 论文中的代码段重复）。在 项目 1（Mini-C4）中，我们仅在单源内进行了 MinHash 去重；在此，我们需要全局去重。
 
 ```python
-import hashlib
-import re
 from datasketch import MinHash, MinHashLSH
-from datasets import load_from_disk
 
 def get_minhash(text, num_perm=128):
-    m = MinHash(num_perm=num_perm)
-    # 简单的 5-gram 分词
-    tokens = [text[i:i+5] for i in range(max(1, len(text)-4))]
-    for token in tokens:
-        m.update(token.encode('utf8'))
-    return m
+    sig = MinHash(num_perm=num_perm)
+    for token in char_ngrams(text, n=5):
+        sig.update(token.encode("utf-8"))
+    return sig
 
-def cross_source_dedup(dataset_path, threshold=0.8, num_perm=128):
-    print("Loading dataset for global deduplication...")
-    ds = load_from_disk(dataset_path)
-    
-    lsh = MinHashLSH(threshold=threshold, num_perm=num_perm)
-    unique_indices = set()
-    duplicates = 0
-    
+def cross_source_dedup(dataset, threshold=0.8):
+    lsh = MinHashLSH(threshold=threshold, num_perm=128)
+    keep, duplicates = [], 0
     with lsh.insertion_session() as session:
-        for idx, item in enumerate(ds):
-            m = get_minhash(item['text'], num_perm)
-            result = lsh.query(m)
-            if not result:
-                # 不重复，插入 LSH 并记录索引
-                session.insert(str(idx), m)
-                unique_indices.add(idx)
-            else:
+        for idx, row in enumerate(dataset):
+            sig = get_minhash(row["text"])
+            if lsh.query(sig):
                 duplicates += 1
-                
-    print(f"Deduplication complete. Found {duplicates} duplicates.")
-    
-    # 过滤出唯一文档
-    ds_unique = ds.select(list(unique_indices))
-    return ds_unique
+                continue
+            session.insert(str(idx), sig)
+            keep.append(idx)
+    return dataset.select(keep), duplicates
 
-if __name__ == "__main__":
-    ds_unique = cross_source_dedup("./data/mixed_1b_raw")
-    ds_unique.save_to_disk("./data/mixed_1b_dedup")
+unique, dup_count = cross_source_dedup(load_stage("mixed_1b_raw"))
+unique.save_to_disk("./data/mixed_1b_dedup")
 ```
 
 ### Step 3: 训练 150K 超大 Tokenizer
@@ -141,40 +146,23 @@ if __name__ == "__main__":
 DeepSeek-V3 (Liu et al. 2024) 采用了一个规模为 150K 左右的超大词表（相较于 Llama-2 的 32K 提升巨大），这使其在处理中文与代码时效率极高。在此步骤，我们将以混合且去重后的数据训练 BPE Tokenizer。
 
 ```python
-from datasets import load_from_disk
 from tokenizers import Tokenizer, models, trainers, pre_tokenizers, normalizers
 
-def train_large_tokenizer(dataset_path, vocab_size=150000):
-    print("Loading dataset for tokenizer training...")
-    ds = load_from_disk(dataset_path)
-    
-    # 抽取 10% 作为词表训练语料，防止内存溢出
-    train_ds = ds.select(range(0, len(ds), 10))
-    
+def train_large_tokenizer(dataset, vocab_size=150_000):
     tokenizer = Tokenizer(models.BPE())
-    tokenizer.normalizer = normalizers.Sequence([
-        normalizers.Replace(" ", " "), 
-        normalizers.NFKC()
-    ])
+    tokenizer.normalizer = normalizers.Sequence([normalizers.NFKC()])
     tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
-    
     trainer = trainers.BpeTrainer(
         vocab_size=vocab_size,
         special_tokens=["<|endoftext|>", "<|pad|>", "<|unk|>"],
-        initial_alphabet=pre_tokenizers.ByteLevel.alphabet()
+        initial_alphabet=pre_tokenizers.ByteLevel.alphabet(),
     )
-    
-    def batch_iterator(batch_size=1000):
-        for i in range(0, len(train_ds), batch_size):
-            yield train_ds[i : i + batch_size]["text"]
-            
-    print(f"Training tokenizer with {vocab_size} vocab size...")
-    tokenizer.train_from_iterator(batch_iterator(), trainer=trainer)
+    sample = dataset.select(range(0, len(dataset), 10))
+    tokenizer.train_from_iterator(batch_text(sample), trainer=trainer)
     tokenizer.save("./data/mini_deepseek_tokenizer.json")
-    print("Tokenizer saved.")
+    return tokenizer
 
-if __name__ == "__main__":
-    train_large_tokenizer("./data/mixed_1b_dedup")
+train_large_tokenizer(load_stage("mixed_1b_dedup"))
 ```
 
 ### Step 4: Pack & Shuffle 与 .arrow 分片产出
@@ -183,55 +171,26 @@ if __name__ == "__main__":
 
 ```python
 from tokenizers import Tokenizer
-from datasets import load_from_disk
-import numpy as np
 
 SEQ_LEN = 4096
 
-def pack_and_shuffle(dataset_path, tokenizer_path):
-    print("Loading tokenizer and deduped dataset...")
+def pack_and_shuffle(dataset, tokenizer_path):
     tokenizer = Tokenizer.from_file(tokenizer_path)
-    ds = load_from_disk(dataset_path)
-    
-    eot_id = tokenizer.token_to_id("<|endoftext|>")
-    
-    def tokenize_and_pack(examples):
-        # 批量 tokenize
-        encoded = [tokenizer.encode(t).ids for t in examples['text']]
-        
-        # 拼接所有 token 并加入 EOT
-        all_tokens = []
-        for ids in encoded:
-            all_tokens.extend(ids)
-            all_tokens.append(eot_id)
-            
-        # 切分成定长块
-        total_length = len(all_tokens)
-        total_length = (total_length // SEQ_LEN) * SEQ_LEN
-        
-        result = []
-        for i in range(0, total_length, SEQ_LEN):
-            result.append(all_tokens[i : i + SEQ_LEN])
-            
-        return {"input_ids": result}
+    eot = tokenizer.token_to_id("<|endoftext|>")
 
-    print("Tokenizing and packing into uniform lengths...")
-    packed_ds = ds.map(
-        tokenize_and_pack,
-        batched=True,
-        batch_size=1000,
-        remove_columns=ds.column_names,
-        num_proc=8
-    )
-    
-    print("Shuffling dataset globally...")
-    packed_ds = packed_ds.shuffle(seed=42)
-    
-    print("Saving to .arrow shards...")
-    packed_ds.save_to_disk("./data/mixed_1b_final_packed")
+    def encode_batch(batch):
+        stream = []
+        for text in batch["text"]:
+            stream.extend(tokenizer.encode(text).ids + [eot])
+        usable = (len(stream) // SEQ_LEN) * SEQ_LEN
+        blocks = [stream[i:i + SEQ_LEN] for i in range(0, usable, SEQ_LEN)]
+        return {"input_ids": blocks}
 
-if __name__ == "__main__":
-    pack_and_shuffle("./data/mixed_1b_dedup", "./data/mini_deepseek_tokenizer.json")
+    packed = dataset.map(encode_batch, batched=True, remove_columns=dataset.column_names)
+    return packed.shuffle(seed=42)
+
+packed = pack_and_shuffle(load_stage("mixed_1b_dedup"), "./data/mini_deepseek_tokenizer.json")
+packed.save_to_disk("./data/mixed_1b_final_packed")
 ```
 
 ## 结果展示与分析
@@ -256,8 +215,8 @@ if __name__ == "__main__":
 ## 扩展思考
 
 将 Mini-DeepSeek 项目的配方扩展到百亿级 Tokens，有两点需要格外关注：
-1. **配比的动态衰减（Curriculum）**：在初期训练，基础知识（网页与学术论文）应当占据主导；在中后期，需要拉高代码与数学（OpenWebMath）的采样权重。你可以改造 `mix_sampler.py` 成为一个支持 Epoch 级别动态加载的流式模块。
-2. **与前作的升级对比**：相比于本书 第一篇的项目 1（Mini-C4），本项目不再依赖单一质量阈值的简单过滤，而是用跨源融合与超大词表的设计，展示了现代工业级模型（如 DeepSeek-V3）面向多任务的基础奠基方式。
+1. **配比的动态衰减（Curriculum）**：在初期训练，基础知识（网页与学术论文）应当占据主导；在中后期，需要拉高代码与数学（OpenWebMath）的采样权重。可将 `mix_sampler.py` 改造为支持 Epoch 级动态加载的流式模块。
+2. **与前作的升级对比**：相比于第十四篇 P01（Mini-C4），本项目不再依赖单一质量阈值的简单过滤，而是用跨源融合与超大词表的设计，展示了现代工业级模型（如 DeepSeek-V3）面向多任务的基础奠基方式。
 
 ### 数据合规与开源许可说明
 在进行多源混合时，必须严格遵守原始数据的开源许可（License）：
@@ -268,6 +227,13 @@ if __name__ == "__main__":
 - **Project Gutenberg**：公有领域（Public Domain）。
 *(注：完整的 1B 数据样本已合规处理，可上传至 HuggingFace Datasets 仓库 `dataforge-mini-deepseek-1b` 供后续微调直接使用。)*
 
+## 本章小结
+
+本章以“Mini-DeepSeek 预训练复现”为案例，展示了以小规模资源复现开源 LLM 预训练数据配方的关键工程环节的工程组织方式。案例的主要价值在于把任务定义、数据边界、架构决策、样本 schema、指标验收和复现资源放在同一条链路中，使项目不再只是操作步骤，而成为可复核的案例研究。
+
+该案例的边界同样需要被清楚保留。定位为缩小版配方验证，不追求完整大模型规模和公开 SOTA 指标。在更大规模、更高风险或更强合规约束的场景中，应重新评估数据来源、权限状态、人工复核比例、运行成本和失败回滚方案。
+
+作为第十四篇的一部分，本章对应前文方法在项目层面的落地验证。读者可将本案例与第十三篇的数据配方、前文的平台治理章节以及附录中的检查清单合并使用，形成从方法理解到工程交付的闭环。
 
 ## 参考文献
 
