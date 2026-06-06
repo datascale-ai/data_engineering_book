@@ -19,8 +19,8 @@
 - [第十篇：智能化数据工程与 Data Engineering Agent](part10/index.md)
 - [第十一篇：隐私合规与数据安全](part11/index.md)
 - [第十二篇：专项数据集与数据工程实践](part12/index.md)
-- [第十三篇：项目实战](part13/index.md)
-- [第十四篇：开源大模型数据工程实战](part14/index.md)
+- [第十三篇：开源大模型数据工程配方与范式](part13/index.md)
+- [第十四篇：项目实战](part14/index.md)
 
 ## 分篇目录
 
@@ -110,7 +110,7 @@
 
 ## 第十篇：智能化数据工程与 Data Engineering Agent
 
-第十篇讨论 Agentic Data Engineering，聚焦数据工程 Agent 如何参与采集、解析、清洗、标注、合成、评测、DataOps 与安全协同。
+第十篇讨论 Agentic Data Engineering，聚焦数据工程 Agent 如何参与采集、解析、清洗、标注、合成、评测、DataOps 与安全协同，并以 DataAgent 作为贯穿式工程参照，将抽象架构连接到可运行的数据工程 Agent 系统。
 
 - [本篇目录](part10/index.md)
 - [第31章：数据工程 Agent 的架构与任务边界](part10/ch31_agent_architecture.md)
@@ -135,37 +135,37 @@
 - [第38章：StructBill-CN 票据文档理解数据工程](part12/ch38_structbill_cn_dataset.md)
 - [第39章：SparseTable-Bench 表格结构鲁棒性数据工程](part12/ch39_sparse_table_bench_dataset.md)
 - [第40章：多图表信息图推理数据工程](part12/ch40_multi_chart_infographic_reasoning_dataset.md)
-- [第41章：Ophiuchus 工具集成医学 VQA 数据工程](part12/ch41_ophiuchus_tool_integrated_vqa_dataset.md)
+- [第41章：MedImage-ToolVQA 医学图像工具调用数据工程](part12/ch41_medimage_tool_vqa_dataset.md)
 - [第42章：VoiceStyleControl 可控语音交互数据工程](part12/ch42_voice_style_control_dataset.md)
 - [第43章：Latent-Switch-69K 隐式/显式推理数据工程](part12/ch43_latent_switch_69k.md)
 
-## 第十三篇：项目实战
+## 第十三篇：开源大模型数据工程配方与范式
 
-通过 10 个可运行项目，把采集、清洗、合成、RAG、Agent、DataOps、隐私保护和数据飞轮串成端到端实践。
+第十三篇聚焦开源大模型的数据配方、训练范式与工程化组织方式，覆盖预训练、后训练、推理强化学习、VLM、T2I/T2V 等关键方向。
 
 - [本篇目录](part13/index.md)
-- [项目一：基于 Ray 构建分布式 Mini-C4 数据流水线](part13/p01_mini_c4.md)
-- [项目二：垂直领域专家 SFT（法律）](part13/p02_legal_sft.md)
-- [项目三：LLaVA 多模态指令数据工厂](part13/p03_llava_instruct.md)
-- [项目四：合成数学与代码教材工厂](part13/p04_synthetic_textbook.md)
-- [项目五：多模态 RAG 企业财报助手](part13/p05_mm_rag.md)
-- [项目六：CoT 推理数据集构建与 PRM 训练](part13/p06_prm.md)
-- [项目七：Agent Tool-Use 数据工厂](part13/p07_agent_tooluse.md)
-- [项目八：企业级 DataOps 平台搭建：从数据项目到组织级治理能力](part13/p08_dataops.md)
-- [项目九：隐私保护数据流水线](part13/p09_privacy_pipeline.md)
-- [项目十：端到端 LLM 数据飞轮](part13/p10_flywheel.md)
+- [第44章：LLM 预训练数据工程实战：从配方到落地](part13/ch44_pretrain_recipes.md)
+- [第45章：LLM 后训练数据工程实战：SFT 与偏好对齐](part13/ch45_posttrain_recipes.md)
+- [第46章：推理模型与 RL 数据工程：R1 / QwQ 范式](part13/ch46_rl_reasoning_data.md)
+- [第47章：多模态大模型（VLM）数据配方：从预训练到视觉对齐](part13/ch47_vlm_data_recipes.md)
+- [第48章：多模态生成模型数据工程：T2I 与 T2V 数据流水线](part13/ch48_t2i_t2v.md)
 
-## 第十四篇：开源大模型数据工程实战
+## 第十四篇：项目实战
 
-第十四篇聚焦开源大模型最新数据配方与工程实战，覆盖预训练、后训练、推理强化学习、VLM、T2I/T2V 以及四个开源项目复现。
+通过 14 个可运行项目，把采集、清洗、合成、RAG、Agent、DataOps、隐私保护、数据飞轮、开源模型复现和视频生成数据流水线串成端到端实践。
 
 - [本篇目录](part14/index.md)
-- [第44章：LLM 预训练数据工程实战：从配方到落地](part14/ch44_pretrain_recipes.md)
-- [第45章：LLM 后训练数据工程实战：SFT 与偏好对齐](part14/ch45_posttrain_recipes.md)
-- [第46章：推理模型与 RL 数据工程：R1 / QwQ 范式](part14/ch46_rl_reasoning_data.md)
-- [第47章：多模态大模型（VLM）数据配方：从预训练到视觉对齐](part14/ch47_vlm_data_recipes.md)
-- [第48章：多模态生成模型数据工程：T2I 与 T2V 数据流水线](part14/ch48_t2i_t2v.md)
-- [项目十一：Mini-DeepSeek 预训练复现](part14/projects/p11_mini_deepseek.md)
-- [项目十二：R1 推理飞轮](part14/projects/p12_r1_reasoning_flywheel.md)
-- [项目十三：多模态指令工厂](part14/projects/p13_multimodal_instruction_factory.md)
-- [项目十四：视频生成数据集：从视频源到可用于 T2V 训练的数据流水线](part14/projects/p14_video_generation.md)
+- [项目一：基于 Ray 构建分布式 Mini-C4 数据流水线](part14/p01_mini_c4.md)
+- [项目二：垂直领域专家 SFT（法律）](part14/p02_legal_sft.md)
+- [项目三：LLaVA 多模态指令数据工厂](part14/p03_llava_instruct.md)
+- [项目四：合成数学与代码教材工厂](part14/p04_synthetic_textbook.md)
+- [项目五：多模态 RAG 企业财报助手](part14/p05_mm_rag.md)
+- [项目六：CoT 推理数据集构建与 PRM 训练](part14/p06_prm.md)
+- [项目七：Agent Tool-Use 数据工厂](part14/p07_agent_tooluse.md)
+- [项目八：企业级 DataOps 平台搭建：从数据项目到组织级治理能力](part14/p08_dataops.md)
+- [项目九：隐私保护数据流水线](part14/p09_privacy_pipeline.md)
+- [项目十：端到端 LLM 数据飞轮](part14/p10_flywheel.md)
+- [项目十一：Mini-DeepSeek 预训练复现](part14/p11_mini_deepseek.md)
+- [项目十二：R1 推理飞轮](part14/p12_r1_reasoning_flywheel.md)
+- [项目十三：多模态指令工厂](part14/p13_multimodal_instruction_factory.md)
+- [项目十四：视频生成数据集：从视频源到可用于 T2V 训练的数据流水线](part14/p14_video_generation.md)
