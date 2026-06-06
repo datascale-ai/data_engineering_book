@@ -1,5 +1,10 @@
 # 第23章：在线反馈闭环与知识更新
 
+## 摘要
+
+本章围绕“在线反馈闭环与知识更新”展开，聚焦大模型数据工程中的关键设计问题。章节从场景约束、数据对象、流水线设计、质量评估和工程治理等维度展开，说明如何把零散的数据处理动作收敛为可复盘、可验证、可交付的系统方法，并为后续章节和项目实战建立统一分析框架。
+
+
 当 RAG 系统完成上线，真正的数据工程并没有结束，而是进入了一个新的阶段。上线前，系统主要面对的是可控的测试集、整理过的知识库和相对标准的问题；上线后，它开始面对真实用户、真实业务流程和持续变化的知识环境。用户会用非标准表达提问，会带着省略条件进入对话，也会在制度、产品、流程不断更新的情况下提出新的问题。此时，系统是否可靠，不再只取决于初始知识库构建得是否完整，而取决于它能否从真实使用中持续发现问题、修复问题并更新自身。
 
 因此，本章聚焦系统上线之后的数据闭环问题，讨论如何将日志、点击、评分、纠错、工单和人工接管等在线信号转化为可治理的数据资产。它所关注的不是单次回答是否正确，而是系统能否建立稳定的反馈分流、错误归因、知识更新、版本回滚和运营节奏，使每一次失败都能成为后续改进的输入。
@@ -682,3 +687,18 @@ Settles B (2009) Active Learning Literature Survey. University of Wisconsin–Ma
 
 Yu H, Gan A, Zhang K, Tong S, Liu Q, Liu Z (2024) Evaluation of Retrieval-Augmented Generation: A Survey. arXiv preprint arXiv:2405.07437.
 
+## 本章小结
+
+本章围绕“在线反馈闭环与知识更新”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
+
+本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
+
+在全书结构中，本章位于应用级数据工程层，承担承接前文基础概念并导向DataOps、版本治理和数据资产化的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
+
+## 参考文献
+
+1. Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W.-t., Rocktäschel, T., Riedel, S., & Kiela, D. (2020). Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. arXiv:2005.11401.
+2. Karpukhin, V., Oguz, B., Min, S., Lewis, P., Wu, L., Edunov, S., Chen, D., & Yih, W.-t. (2020). Dense Passage Retrieval for Open-Domain Question Answering. EMNLP 2020.
+3. Radford, A., Kim, J. W., Hallacy, C., Ramesh, A., Goh, G., et al. (2021). Learning Transferable Visual Models From Natural Language Supervision. ICML 2021.
+4. Liu, H., Li, C., Wu, Q., & Lee, Y. J. (2023). Visual Instruction Tuning. NeurIPS 2023.
+5. Mathew, M., Karatzas, D., & Jawahar, C. V. (2021). DocVQA: A Dataset for VQA on Document Images. WACV 2021.
