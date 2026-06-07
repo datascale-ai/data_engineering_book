@@ -327,7 +327,7 @@ Lineage supports three query views:
 
 Lineage graphs must be generated or updated by systems whenever possible. Hand-drawn diagrams are useful for communication, but they cannot be the sole audit source.
 
-![Figure 25-1: Data lineage and experiment tracking graph](../../images/part8/图25_1_数据谱系与实验追踪图.png)
+![Figure 25-1: Data lineage and experiment tracking graph](../../images/part8/图25_2.png)
 
 *Figure 25-1: Full lineage from sources to model release, with forward and backward tracing paths*
 
@@ -508,7 +508,7 @@ At the governance level, we introduced lineage graphs, change-audit workflows, l
 
 Finally, a failed customer-service experiment showed how version management can reduce a root-cause replay from days to roughly 85 minutes.
 
-![Figure 25-2: Full view of the version-management system](../../images/part8/图25_2_版本管理体系全景图.png)
+![Figure 25-2: Full view of the version-management system](../../images/part8/图25_1.png)
 
 *Figure 25-2: Data versioning and experiment tracking across five granularity levels and bidirectional links*
 

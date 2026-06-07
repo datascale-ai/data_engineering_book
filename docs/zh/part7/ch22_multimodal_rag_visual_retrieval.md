@@ -288,6 +288,8 @@ $$
 
 这个公式的意义不是给系统打一个总分就结束，而是提醒我们：任何一个高层指标的上升，都不应以牺牲底层可验证性为代价。例如，某些生成优化可能会让答案表面上更流畅，但如果证据一致性下降，系统在高风险场景中的可用性其实是在退步。
 
+需要注意的是，$R_k$、$L$、$A$、$E$ 分别来自不同评测层级，其原始数值并不天然具备同一量纲，也不一定具备跨数据集可比性。例如，定位准确率可能依赖 bbox 标注粒度，证据一致性可能依赖人工评审标准，答案正确率则可能受问题难度分布影响。因此，在使用上述加权和之前，必须先对各指标进行标定和归一化，明确统计口径、样本分布、人工校准标准和置信区间。权重和指标必须按业务风险、数据集分布和人工校准确定，未经归一化不能横向比较。该公式更适合用于同一评测集、同一口径下的版本对比和瓶颈分析，而不应被理解为可以跨场景直接比较的绝对评分。
+
 *表 22-3：多模态 RAG 评测的分层视角*
 
 | 评测层级 | 关注对象                     | 典型问题                       | 代表指标                                   |
@@ -467,7 +469,7 @@ $$
 
 ### 22.5.4 与 P05 项目的一一映射
 
-在本书的项目体系中，第22章的方法论并不是孤立存在的，它直接为后续项目实践提供数据与链路设计基础。若将其映射到 P05 类型的多模态知识助手项目，可以大致拆成六个可交付模块：文档接入与解析、视觉 chunk 构建、跨模态索引、检索编排、证据生成与引用、评测回补闭环。
+在本书的项目体系中，第22章的方法论并不是孤立存在的，它直接为后续项目实践提供数据与链路设计基础。若将其映射到类似本书第14部分的P05 多模态知识助手项目，可以大致拆成六个可交付模块：文档接入与解析、视觉 chunk 构建、跨模态索引、检索编排、证据生成与引用、评测回补闭环。读者可以先在本章理解多模态 RAG 的数据对象、索引与评测方法，再在对应章节查看P05项目的端到端项目结构、实现步骤和交付物组织方式。
 
 这种映射关系的意义在于：项目团队不必从零开始理解“多模态”意味着什么，而是可以把第22章的方法直接翻译成工程待办。比如，22.2 对应的是数据层 schema 设计；22.3 对应的是在线检索编排；22.4 对应的是评测与运营闭环；22.5 则负责把这些模块抽象成项目模板。这样做能显著减少“看起来技术都懂，但项目始终拼不起来”的情况。
 
@@ -522,9 +524,15 @@ $$
 
 ------
 
+## 本章小结
 
+本章围绕“多模态 RAG 与视觉检索”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
 
-本节从案例与模式的角度，回看了多模态 RAG 的落地方法。金融报表助手强调文本解释、表格数值与图表趋势三类证据协同；版式复杂企业文档检索强调页面结构恢复、条款定位与可验证回答；而与 P05 的映射，则把第22章的方法论进一步翻译成项目交付模块。
+本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
+
+在全书结构中，本章位于应用级数据工程层，承担承接前文基础概念并导向DataOps、版本治理和数据资产化的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
+
+## 参考文献
 
 Xu Y, Li M, Cui L, Huang S, Wei F, Zhou M (2020) LayoutLM: Pre-training of Text and Layout for Document Image Understanding. In: Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining, pp 1192–1200.
 
@@ -565,19 +573,3 @@ Es S, James J, Espinosa-Anke L, Schockaert S (2024) RAGAS: Automated Evaluation 
 Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503–2511.
 
 Huyen C (2022) Designing Machine Learning Systems: An Iterative Process for Production-Ready Applications. O’Reilly Media.
-
-## 本章小结
-
-本章围绕“多模态 RAG 与视觉检索”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
-
-本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
-
-在全书结构中，本章位于应用级数据工程层，承担承接前文基础概念并导向DataOps、版本治理和数据资产化的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
-
-## 参考文献
-
-1. Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W.-t., Rocktäschel, T., Riedel, S., & Kiela, D. (2020). Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. arXiv:2005.11401.
-2. Karpukhin, V., Oguz, B., Min, S., Lewis, P., Wu, L., Edunov, S., Chen, D., & Yih, W.-t. (2020). Dense Passage Retrieval for Open-Domain Question Answering. EMNLP 2020.
-3. Radford, A., Kim, J. W., Hallacy, C., Ramesh, A., Goh, G., et al. (2021). Learning Transferable Visual Models From Natural Language Supervision. ICML 2021.
-4. Liu, H., Li, C., Wu, Q., & Lee, Y. J. (2023). Visual Instruction Tuning. NeurIPS 2023.
-5. Mathew, M., Karatzas, D., & Jawahar, C. V. (2021). DocVQA: A Dataset for VQA on Document Images. WACV 2021.

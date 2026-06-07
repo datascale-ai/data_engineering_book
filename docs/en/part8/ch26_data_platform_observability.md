@@ -266,7 +266,7 @@ The tree is not a substitute for engineering judgment. It provides a stable orde
 
 During incidents, follow "contain first, then diagnose precisely." If bad data is flowing into formal training, pause the pipeline or isolate the batch before waiting for full root cause. Data incidents spread through experiments and versions; late containment is expensive.
 
-![Figure 26-1: Anomaly attribution decision tree](../../images/part8/图26_1_异常归因决策树.png)
+![Figure 26-1: Anomaly attribution decision tree](../../images/part8/图26_1.png)
 
 *Figure 26-1: Four-level diagnosis path from alert trigger to root-cause localization*
 
@@ -375,7 +375,7 @@ Dashboards need drill-down paths. High-level red/yellow/green status should open
 
 Dashboards also need metric definitions: name, formula, data source, update time, threshold, owner, and known limits. Most dashboard failures are definition failures, not chart-style failures.
 
-![Figure 26-2: Platform observability overview](../../images/part8/图26_2_平台可观测性全景图.png)
+![Figure 26-2: Platform observability overview](../../images/part8/图26_2.png)
 
 *Figure 26-2: LLM data-platform observability across metric layers and operating dashboards*
 

@@ -111,7 +111,7 @@
 
 第三类退化来自错误累积。RAG 和多模态系统通常由多个环节组成：采集、解析、切分、索引、检索、重排序、上下文组装、生成和引用。任何一个环节的小错误都可能在后续阶段放大。如果系统没有失败样本回流和错误归因机制，这些问题会长期存在，并在更多用户问题中重复出现。
 
-第四类退化来自组织责任断裂。上线之后，系统可能进入无人维护的·状态：算法团队认为项目已交付，业务团队认为问题属于模型能力，平台团队只关注服务可用性，内容维护人员只负责上传文档。没有统一的反馈闭环，用户问题就会在多个团队之间流转，但无法形成明确修复动作。久而久之，系统表面在线，实际质量却不断下降。
+第四类退化来自组织责任断裂。上线之后，系统可能进入无人维护的状态：算法团队认为项目已交付，业务团队认为问题属于模型能力，平台团队只关注服务可用性，内容维护人员只负责上传文档。没有统一的反馈闭环，用户问题就会在多个团队之间流转，但无法形成明确修复动作。久而久之，系统表面在线，实际质量却不断下降。
 
 
 
@@ -653,7 +653,15 @@ print(route_feedback(event))
 
 ------
 
-为了提升反馈处理效率，系统需要自动识别高价值反馈样本，并根据显式负反馈、用户纠错、追问行为、人工接管、风险等级、近期更新和问题频次等信号进行优先级排序。通过规则和模型结合，系统可以将大量线上反馈转化为可处理的审核队列、修复任务和评测样本。
+## 本章小结
+
+本章围绕“在线反馈闭环与知识更新”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
+
+本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
+
+在全书结构中，本章位于应用级数据工程层，承担承接前文基础概念并导向DataOps、版本治理和数据资产化的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
+
+## 参考文献
 
 Amershi S, Begel A, Bird C, DeLine R, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice, pp 291–300.
 
@@ -690,19 +698,3 @@ Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young
 Settles B (2009) Active Learning Literature Survey. University of Wisconsin–Madison Computer Sciences Technical Report 1648.
 
 Yu H, Gan A, Zhang K, Tong S, Liu Q, Liu Z (2024) Evaluation of Retrieval-Augmented Generation: A Survey. arXiv preprint arXiv:2405.07437.
-
-## 本章小结
-
-本章围绕“在线反馈闭环与知识更新”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
-
-本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
-
-在全书结构中，本章位于应用级数据工程层，承担承接前文基础概念并导向DataOps、版本治理和数据资产化的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
-
-## 参考文献
-
-1. Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W.-t., Rocktäschel, T., Riedel, S., & Kiela, D. (2020). Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. arXiv:2005.11401.
-2. Karpukhin, V., Oguz, B., Min, S., Lewis, P., Wu, L., Edunov, S., Chen, D., & Yih, W.-t. (2020). Dense Passage Retrieval for Open-Domain Question Answering. EMNLP 2020.
-3. Radford, A., Kim, J. W., Hallacy, C., Ramesh, A., Goh, G., et al. (2021). Learning Transferable Visual Models From Natural Language Supervision. ICML 2021.
-4. Liu, H., Li, C., Wu, Q., & Lee, Y. J. (2023). Visual Instruction Tuning. NeurIPS 2023.
-5. Mathew, M., Karatzas, D., & Jawahar, C. V. (2021). DocVQA: A Dataset for VQA on Document Images. WACV 2021.

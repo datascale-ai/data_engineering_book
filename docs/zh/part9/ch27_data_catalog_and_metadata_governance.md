@@ -10,7 +10,7 @@
 
 ------
 
-## 数据运营与平台建设导读
+## 数据资产、数据产品与数据契约导读
 
 随着大模型应用的深入，数据的价值在企业中不断凸显。然而，很多组织仍然停留在将数据视为"文件堆积"的阶段——数据科学家需要某个数据集时，常常通过四处询问、手动搜索或翻阅过期文档来定位数据源。这种粗放的数据管理方式，不仅导致数据利用率低下，也埋下了合规风险、质量隐患和重复建设的隐患。在真实的企业环境中，这类问题会随着数据规模增长而指数级恶化。当系统同时存在多份数据集（可能来自不同部门，采集于不同时间，应用于不同场景），而没有统一的目录、版本管理、血缘追踪和权限控制时，问题就会逐步显现：数据使用者无法准确判断哪份数据是最新的，哪份数据适用于自己的业务场景，数据在哪里产生，经历了什么处理，可以用于什么目的，不能用于什么目的，谁对数据的质量负责，数据何时会被下线。
 
@@ -78,11 +78,29 @@
 asset_id: user_interaction_feedback_v3      # 全局唯一标识
 owner: 数据治理团队 (data-governance@company.com)
 schema:                                      # 字段、类型与约束
-  - user_id (string, required)
-  - interaction_type (enum: like/dislike/share/collect)
-  - has_invalid_flag (boolean)              # 是否被标记为无效
-quality_metrics: {completeness: 0.98, validity: 0.97, freshness: daily}
-permissions: {read: [ux_team, ml_team], write: [data_governance_team]}
+  - name: user_id
+    type: string
+    required: true
+  - name: interaction_type
+    type: enum
+    allowed_values:
+      - like
+      - dislike
+      - share
+      - collect
+  - name: has_invalid_flag
+    type: boolean
+    description: 是否被标记为无效
+quality_metrics:
+  completeness: 0.98
+  validity: 0.97
+  freshness: daily
+permissions:
+  read:
+    - ux_team
+    - ml_team
+  write:
+    - data_governance_team
 restrictions:                               # 使用限制
   - 不可用于跨国数据分享（含中国地区数据，受PIPL管制）
   - 不可用于用户画像建模（可能导致歧视）
@@ -216,19 +234,37 @@ end_of_life: 2025-12-31                      # 计划下线时间
 ```yaml
 dataset: user_preference_features_v2
 sources:
-  - user_click_logs (Kafka topic)        # 原始用户点击事件，全量采集
+  - name: user_click_logs
+    type: Kafka topic
+    description: 原始用户点击事件，全量采集
 transformations:                         # 每步记录操作、产出量与负责人
-  - bot_filter:        过滤机器人账户        (98% 保留, data_quality_team)
-  - dedup:             按(user,item,ts)去重  (95% 保留, data_quality_team)
-  - feature_eng:       聚合生成特征向量        (依赖 user_profile_table)
-  - privacy_masking:   脱敏 user_id->hash     (GDPR 5.1.2, privacy_team)
+  - step: bot_filter
+    description: 过滤机器人账户
+    retained_ratio: 0.98
+    owner: data_quality_team
+  - step: dedup
+    description: 按 user、item、ts 去重
+    retained_ratio: 0.95
+    owner: data_quality_team
+  - step: feature_eng
+    description: 聚合生成特征向量
+    depends_on:
+      - user_profile_table
+  - step: privacy_masking
+    description: 脱敏 user_id -> hash
+    policy: GDPR 5.1.2
+    owner: privacy_team
 downstream_assets:
   - preference_model_training              # SFT 训练数据
   - rag_knowledge_embeddings               # RAG 知识库
   - model_evaluation_dataset               # 评测基准
 impact_analysis:
-  - 上游 user_profile_table 变更 -> 需重跑 feature_eng (severity: high)
-  - 本数据集质量问题 -> 中断依赖此版本的训练任务 (severity: high)
+  - condition: 上游 user_profile_table 变更
+    action: 需重跑 feature_eng
+    severity: high
+  - condition: 本数据集质量问题
+    action: 中断依赖此版本的训练任务
+    severity: high
 ```
 
 上例为节省篇幅做了高度压缩，但保留了血缘记录的关键骨架。在生产环境中，每个变换步骤还会记录更细的处理逻辑、执行时间、数据量比例和字段变更等信息。其中 **impact_analysis（影响分析）**字段尤为关键——它把"上游变更会影响谁"、"本数据集出问题会波及哪些下游"这两类问题显式记录下来，并附上严重等级与缓解措施。正是这一字段，使血缘从静态的"数据流向图"变为可驱动故障排查与变更评估的治理工具。
@@ -264,10 +300,20 @@ impact_analysis:
 ```yaml
 dataset: user_interaction_feedback
 permissions:
-  ml_training_team:      full_raw_data        # 训练需完整数据，审计采样100%
-  rag_engineering_team:  deidentified_features # 仅脱敏特征，user_id->hash
-  business_analytics_team: aggregated_stats    # 仅GROUP BY聚合，单组>=1000行
-  data_governance_team:  full_admin            # 含审计日志的完全权限
+  ml_training_team:
+    access_level: full_raw_data
+    reason: 训练需完整数据
+    audit_sampling_rate: 1.0
+  rag_engineering_team:
+    access_level: deidentified_features
+    pii_handling: user_id 已哈希
+  business_analytics_team:
+    access_level: aggregated_stats
+    aggregation_rule: 仅允许 GROUP BY 聚合
+    min_group_size: 1000
+  data_governance_team:
+    access_level: full_admin
+    includes_audit_logs: true
 ```
 
 上例只列出了各团队对应的访问级别，完整配置中每条权限还会附带授予理由、可访问字段、行级条件、审批要求和审计采样率等属性。其设计逻辑是：训练团队为获得最佳效果需访问完整原始数据，但代价是全量访问审计；RAG 团队只用脱敏后的文本与特征；业务分析团队只能做聚合查询，以防通过聚合反推个体；治理团队则拥有含审计日志的管理权限。通过这种按用途裁剪的字段级、行级与查询级控制，组织在满足各方数据需求的同时，把敏感信息的暴露面降到最低。
@@ -372,19 +418,47 @@ owner_id: ml_training_team@company.com   # 另有 steward / business_owner
 # 存储与结构（schema 共7个字段，此处摘录2个）
 storage: s3://.../user_preference_sft/v2/ (parquet, 45GB, 128M rows)
 schema:
-  - user_id:          string(hashed), 用户唯一标识（已哈希）
-  - preference_score: float[0,1], 偏好评分（越高越喜欢）
+  - name: user_id
+    type: string
+    pii_handling: hashed
+    description: 用户唯一标识（已哈希）
+  - name: preference_score
+    type: float
+    range:
+      min: 0
+      max: 1
+    description: 偏好评分（越高越喜欢）
 
 # 版本、血缘、质量（均为摘录）
 version: 2.1.0                            # 见 version_history
-lineage: raw_user_click -> bot过滤 -> 特征工程 -> [偏好排序模型, 冷启动模型]
-quality_metrics: {overall: 0.98, completeness: 0.99, validity: 0.97}
-known_issues: 0.3% 评分越界(修复中); 冷启动用户评分不稳定
+lineage:
+  source: raw_user_click
+  transformations:
+    - bot过滤
+    - 特征工程
+  downstream_assets:
+    - 偏好排序模型
+    - 冷启动模型
+quality_metrics:
+  overall: 0.98
+  completeness: 0.99
+  validity: 0.97
+known_issues:
+  - description: 0.3% 评分越界
+    status: 修复中
+  - description: 冷启动用户评分不稳定
 
 # 权限、合规、生命周期
-access_level: internal,  pii_handling: user_id 已哈希
-compliance: [GDPR, CCPA],  data_residency: US
-status: ACTIVE,  retention: 3y,  expected_active_until: 2026-12-31
+access_level: internal
+pii_handling:
+  user_id: 已哈希
+compliance:
+  - GDPR
+  - CCPA
+data_residency: US
+status: ACTIVE
+retention: 3y
+expected_active_until: 2026-12-31
 ```
 
 结构定义逐字段说明类型与取值范围，版本历史记录每次变更及兼容性，质量指标对各维度逐项给出数值与已知问题，权限、使用记录与生命周期模块则分别细化到团队、下游应用和各时间节点。
@@ -431,7 +505,7 @@ status: ACTIVE,  retention: 3y,  expected_active_until: 2026-12-31
 
 一个常见的误区，是把数据治理当成"一次性建好目录系统"的项目。事实上，治理能力的建设更接近一个持续演进的过程，可以粗略划分为四个阶段。
 
-**阶段一：自发（Ad-hoc）。** 没有统一目录，数据散落在各团队的库表、文档和个人存储中。数据发现完全依赖口头询问，元数据存在于个别人的记忆里。这一阶段的典型症状，正是 A.1 节描述的两个失败案例：数据"可见但不可达"，复用成本极高，合规风险隐蔽。
+**阶段一：自发（Ad-hoc）。** 没有统一目录，数据散落在各团队的库表、文档和个人存储中。数据发现完全依赖口头询问，元数据存在于个别人的记忆里。这一阶段的典型症状，正是 27.1 节描述的两个失败案例：数据"可见但不可达"，复用成本极高，合规风险隐蔽。
 
 **阶段二：可管理（Managed）。** 组织开始建立集中式数据目录，要求核心数据资产登记基本元数据（所有者、schema、描述）。数据可被搜索，但元数据多为人工维护，覆盖率有限，血缘与质量信息往往缺失或滞后。
 
@@ -453,7 +527,7 @@ status: ACTIVE,  retention: 3y,  expected_active_until: 2026-12-31
 
 **数据消费者（Data Consumer）** - 包括数据科学家、算法工程师、分析师等，通过目录发现和使用数据。消费者的反馈（如标注数据问题、提出复用需求）是治理持续改进的重要输入。
 
-这些角色之间的协作，本质上是把"关于数据的知识与责任"显式分配到人。A.1 节的失败案例之所以发生，一个深层原因正是缺乏明确的所有者与管家——当没有人对"这份数据能不能用于训练""它的限制是什么"负责时，这些关键信息自然不会被记录和维护。
+这些角色之间的协作，本质上是把"关于数据的知识与责任"显式分配到人。27.1 节的失败案例之所以发生，一个深层原因正是缺乏明确的所有者与管家——当没有人对"这份数据能不能用于训练""它的限制是什么"负责时，这些关键信息自然不会被记录和维护。
 
 ### 27.5.3 数据资产治理落地 Checklist
 
@@ -478,9 +552,9 @@ status: ACTIVE,  retention: 3y,  expected_active_until: 2026-12-31
 
 本篇反复强调，大模型时代对数据治理提出了超越传统数据仓库的新诉求。这里集中讨论三类特别需要警惕的挑战。
 
-**训练数据的来源与授权追踪。** 当一份数据被用于模型训练后，它的影响会被"固化"进模型参数，难以事后剥离。因此，训练数据的血缘、授权状态和合规标记必须在数据进入训练流程之前就准确就位。一份没有明确训练授权记录的数据（如 A.1 节中那份退休员工网盘里的反馈数据），一旦被用于训练，可能带来难以挽回的合规风险。为每个训练数据集附带类似 datasheet 的规范文档，已成为负责任 AI 实践的重要一环（Gebru et al. 2021）。
+**训练数据的来源与授权追踪。** 当一份数据被用于模型训练后，它的影响会被"固化"进模型参数，难以事后剥离。因此，训练数据的血缘、授权状态和合规标记必须在数据进入训练流程之前就准确就位。一份没有明确训练授权记录的数据（如 27.1 节中那份退休员工网盘里的反馈数据），一旦被用于训练，可能带来难以挽回的合规风险。为每个训练数据集附带类似 datasheet 的规范文档，已成为负责任 AI 实践的重要一环（Gebru et al. 2021）。
 
-**RAG 知识源的时效与版本治理。** 在 RAG 系统中，知识库会被持续更新，旧版本文档需要被及时下线或归档，否则模型会基于过期知识生成错误答案。这要求知识资产具备清晰的版本与生命周期管理——这与第 21 章讨论的知识更新与版本治理直接呼应。数据资产目录中的生命周期状态机，正是支撑这种"知识可控演进"的底层机制。
+**RAG 知识源的时效与版本治理。** 在 RAG 系统中，知识库会被持续更新，旧版本文档需要被及时下线或归档，否则模型会基于过期知识生成错误答案。这要求知识资产具备清晰的版本与生命周期管理——这与第 23 章讨论的知识更新与版本治理直接呼应。数据资产目录中的生命周期状态机，正是支撑这种"知识可控演进"的底层机制。
 
 **评估数据的隔离与泄露防护。** 评估集一旦泄露进训练数据，评测结果就会失真。因此评估数据资产需要严格的权限隔离和血缘追踪，确保它不会在任何环节被无意中混入训练管线。这类风险往往隐蔽，只有依靠完整的血缘记录才能在事后审计中被发现。
 
@@ -488,30 +562,7 @@ status: ACTIVE,  retention: 3y,  expected_active_until: 2026-12-31
 
 ### 27.5.5 本节小结
 
-本节从成熟度演进、组织角色和落地 Checklist 三个角度，讨论了数据资产治理如何在真实组织中落地。治理能力的建设是一个分阶段演进的过程，需要数据所有者、管家、治理团队和消费者的明确分工，并以可验收的 Checklist 约束每一步。在大模型场景下，训练数据授权、RAG 知识时效与评估数据隔离，是尤其需要警惕的治理挑战。归根结底，治理的目标不是建成一套系统，而是让"关于数据的知识与责任"在组织中持续、可靠地流转。
-
-## 本章总结
-
-本章从数据资产的本质定义入手，阐述了"数据资产"与"文件清单"的关键区别。数据资产不仅仅是存储中的数据，而是包含身份、所有权、结构、血缘、权限、质量和生命周期等多个维度的企业资源。
-
-通过构建**数据集注册表**，企业可以将散落的数据转化为可被发现、可被信任的资产。结构化的元数据模型（涵盖身份、所有权、结构、血缘、版本、质量、使用、权限、生命周期与合规等多个分类）为数据的可管理性和可用性提供了基础。
-
-**血缘追踪**使组织能够理解数据流动，支持影响分析和故障排查。**权限治理**确保敏感数据得到适当保护。**生命周期管理**防止数据资产的无限堆积或突然消失。
-
-在大模型应用时代，这套治理体系尤为关键。一份数据可能被同时用于预训练、SFT微调、RAG知识源、模型评估等多个场景，每个场景对数据的要求不同。有效的数据资产治理使得这种复杂的跨应用数据复用成为可能，而不仅仅依赖于人工沟通和手工管理。
-
-从工程角度，成熟的数据组织应该建立以下能力：
-
-1. **自动元数据采集** - 通过扫描 schema、解析作业 DAG、统计审计日志等方式自动采集结构、血缘与使用信息，并借助质量校验框架持续刷新质量指标，从而减少人工维护成本、提高准确性，避免目录与真实数据状态脱节。
-2. **完整的血缘追踪** - 记录从源系统到下游应用的端到端血缘，支持沿图正向追踪去向、反向定位源头，使影响分析与故障排查从"凭经验猜测"变为"可遍历的确定性操作"。
-3. **灵活的权限模型** - 以 RBAC 为基础，叠加属性与上下文维度，支持数据集级、字段级、行级与按用途裁剪的差异化访问，并辅以访问审计与异常告警形成动态安全防护。
-4. **健康度监控** - 通过治理仪表板把"治理做得好不好"转化为可量化、可告警的运营指标，让数据治理从一次性项目变为可持续的日常运营。
-5. **使用反馈回路** - 把数据消费者的问题上报与复用需求纳入治理流程，基于实际使用情况持续优化数据资产与元数据模型。
-6. **清晰的角色与流程** - 明确数据所有者、管家、治理团队与消费者的分工，并以注册流程、生命周期状态机和落地 Checklist 把责任与标准固化下来。
-
-当这些能力齐全时，数据就不再是孤立的存储对象，而是一个可管理、可追踪、可复用的企业资产。这是从"数据充足"到"数据有效"的关键转变。
-
-归根结底，数据资产目录与元数据治理所服务的，是一个更宏观的趋势：人工智能的竞争正在从"以模型为中心"转向"以数据为中心"。当模型架构日趋同质化、算力逐渐成为可购买的商品时，组织之间的真正差距越来越多地体现在数据资产的质量、可治理性与可复用性上。一个能够清楚回答"我们有哪些数据、它们从哪来、质量如何、谁能用、用到何时"的组织，才能把数据这一战略资产持续转化为产品能力，并避免在重复发现、合规暴露与隐性技术债上反复付出代价（Sambasivan et al. 2021; Polyzotis et al. 2018）。这正是本篇反复强调的核心命题：从"数据充足"走向"数据有效"，从被动的文件堆积走向主动的资产治理。
+本节从成熟度演进、组织角色和落地 Checklist 三个角度，讨论了数据资产治理如何在真实组织中落地。治理能力的建设是一个分阶段演进的过程，需要数据所有者、管家、治理团队和消费者的明确分工，并以可验收的 Checklist 约束每一步。一个能够清楚回答"我们有哪些数据、它们从哪来、质量如何、谁能用、用到何时"的组织，才能把数据这一战略资产持续转化为产品能力，并避免在重复发现、合规暴露与隐性技术债上反复付出代价（Sambasivan et al. 2021; Polyzotis et al. 2018）。在大模型场景下，训练数据授权、RAG 知识时效与评估数据隔离，是尤其需要警惕的治理挑战。归根结底，治理的目标不是建成一套系统，而是让"关于数据的知识与责任"在组织中持续、可靠地流转。
 
 ---
 
