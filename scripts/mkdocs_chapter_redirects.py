@@ -13,6 +13,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from mkdocs.structure.files import Files
+
 
 REDIRECTS: dict[str, str] = {
     "part4/4_1_SFT": "part4/ch12_sft",
@@ -48,6 +50,16 @@ _STUB = """<!doctype html>
 </body>
 </html>
 """
+
+
+def on_files(files: Files, config: Any, **_: Any) -> Files:
+    """Remove internal planning files before mkdocs-static-i18n sees them."""
+    kept = Files([])
+    for file in files:
+        if "superpowers" in Path(file.src_uri).parts:
+            continue
+        kept.append(file)
+    return kept
 
 
 def on_post_build(config: Any, **_: Any) -> None:

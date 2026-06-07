@@ -1,14 +1,17 @@
-﻿# 第31章：数据工程 Agent 的架构与任务边界
+# 第31章：数据工程 Agent 的架构与任务边界
 
 ---
 
-## 本章摘要
-
+## 摘要
 传统数据工程流水线大多依赖工程师手动编写 DAG、配置调度规则、监控任务状态、排查数据质量异常。随着数据源数量膨胀、清洗规则复杂化、标注需求指数增长，人工维护的边际成本急剧上升。数据工程 Agent 的出现试图改变这一局面：将数据工程中重复性、规则密集型、多步骤决策的环节交给 Agent 系统自动完成。然而，当 Agent 被赋予越来越多自主权时，一个底层问题迅速浮现——**任务边界不清**。Agent 应该自主到什么程度？哪些决策必须过 human gate？工具调用的审计链如何保证可追溯？多个 Agent 之间的职责如何划分而不产生冲突？
 
 本章围绕数据工程 Agent 的**系统分层架构**展开，从 Planner、Tool Executor、Verifier、Human Gate、Memory 与 Lineage 六个核心组件出发，定义每一层的职责边界、通信协议与故障隔离策略。我们继承 Ch18-Ch20 的推理、Tool-use 与 Agent 记忆机制，承接 Ch24-Ch26 的平台、版本管理与可观测性基础，在此基础上构建一套面向数据工程场景的 Agentic 架构规范。为了避免架构讨论停留在抽象层，本章会把 DataAgent 作为贯穿案例：它的 YAML 编排、FlexAgent、NL2SQL 子 Agent、Semantic Service、workspace 与 A2A/SDK/CLI 入口，正好对应数据工程 Agent 从"会调用工具"走向"可配置、可审计、可服务化"的工程路径。我们不讨论某一个 Agent 如何"更智能"，而是讨论一组 Agent 如何"更有序"地协作完成数据工程任务。
 
 ---
+
+## 关键词
+
+数据工程；Data Engineering Agent；自动化数据工程；权限治理；人机协同
 
 ## 31.0 学习目标
 
@@ -121,17 +124,7 @@ DataAgent 适合作为本篇的工程锚点，原因不在于它覆盖了所有�
 
 数据工程 Agent 的任务边界必须通过分层来约束。每一层只承担一个维度的职责，层与层之间通过结构化协议通信，不共享内部状态。下图展示六层架构的核心关系：
 
-```mermaid
-flowchart LR
-    U["用户意图 / 数据事件"] --> P["Planner<br/>任务拆解与风险预估"]
-    P --> E["Tool Executor<br/>工具注册与安全调用"]
-    E --> V["Verifier<br/>格式、统计、语义校验"]
-    V -->|低风险通过| L["Lineage<br/>操作审计与血缘记录"]
-    V -->|中高风险或阻断| H["Human Gate<br/>审批、升级、回滚决策"]
-    H --> E
-    L --> M["Memory<br/>状态、经验、偏好沉淀"]
-    M --> P
-```
+![数据工程 Agent 六层架构图](../../images/part10/ai_agent_decision_workflow_ch31_01.png)
 
 **图31-1：数据工程 Agent 六层架构图**
 
@@ -358,18 +351,7 @@ DataAgent 可以被理解为一个面向企业数据任务的 Agentic Data Engin
 
 ### 31.3.3 人机协同的核心流程
 
-```mermaid
-flowchart LR
-    T["Agent 生成操作计划"] --> R{"风险等级"}
-    R -->|L1 只读建议| S["输出建议<br/>人工决策"]
-    R -->|L2 低风险写入| D["生成差异报告<br/>单人确认"]
-    R -->|L3 高风险变更| A["沙箱验证<br/>多人审批"]
-    R -->|L4 限定自治| X["自动执行<br/>事后抽检"]
-    D --> L["写入 Lineage"]
-    A --> L
-    X --> L
-    L --> O["审计、回滚、复盘"]
-```
+![人机协同流程图——按风险等级分流](../../images/part10/ai_agent_decision_workflow_ch31_02.png)
 
 **图31-2：人机协同流程图——按风险等级分流**
 
@@ -556,7 +538,6 @@ MVP 阶段必须清醒认识以下局限性，避免过早将 MVP 当作生产�
 - **Ch33**：标注、合成与评测 Agent——本章 Human Gate 设计在标注场景中的扩展。
 - **Ch34**：DataOps Agent 与平台自治——本章 Lineage 和 Memory 在运维自治中的延伸。
 - **Ch35**：安全、权限与人机协同——本章权限模型和 Human Gate 的深化讨论。
-- **[第十四篇项目十五](../part14/p15_dataagent_semantic_nl2sql_agent.md)**：基于 DataAgent 构建企业级语义问数助手，展示本章架构在 NL2SQL、语义层、workspace 和服务化接口中的完整实战。
 
 ---
 
@@ -582,10 +563,32 @@ MVP 阶段必须清醒认识以下局限性，避免过早将 MVP 当作生产�
 4. **渐进扩展**：按数据分级（L0 → L1 → L2 → L3）逐步扩展 Agent 的操作范围。
 5. **全平台部署**：在所有符合条件的数据表上启用 Agent，保持 Human Gate 作为最后防线。
 
+## 本章小结
 
-## 本章参考文献
+本章围绕“数据工程 Agent 的架构与任务边界”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
 
-- Lilian Weng. "LLM Powered Autonomous Agents." Lil`Log, 2023.
-- Andrew Ng. "Agentic Design Patterns." DeepLearning.AI, 2024.
-- OpenLineage Specification. https://openlineage.io/
-- Great Expectations Documentation. https://docs.greatexpectations.io/
+本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
+
+在全书结构中，本章位于Agent 自动化层，承担承接前文基础概念并导向隐私、合规和专项数据集案例的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
+
+## 参考文献
+
+Breck E, Cai S, Nielsen E, Salib M, Sculley D (2017) The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction. In: IEEE International Conference on Big Data, pp 1123-1132.
+
+Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for Machine Learning. In: Proceedings of Machine Learning and Systems 1, pp 334-347.
+
+Kreuzberger D, Kühl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879.
+
+NIST. (2023). Artificial Intelligence Risk Management Framework (AI RMF 1.0). National Institute of Standards and Technology.
+
+OpenTelemetry Authors (2024) OpenTelemetry Specification. Available at: https://opentelemetry.io/docs/specs/
+
+Schick, T., Dwivedi-Yu, J., Dessì, R., Raileanu, R., Lomeli, M., Hambro, E., Zettlemoyer, L., Cancedda, N., & Scialom, T. (2023). Toolformer: Language Models Can Teach Themselves to Use Tools. arXiv:2302.04761.
+
+Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503-2511.
+
+Vartak M, Subramanyam H, Lee W-E, Viswanathan S, Husnoo S, Madden S, Zaharia M (2016) ModelDB: A System for Machine Learning Model Management. In: Proceedings of the Workshop on Human-In-the-Loop Data Analytics (HILDA), Article 14.
+
+Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., & Cao, Y. (2023). ReAct: Synergizing Reasoning and Acting in Language Models. arXiv:2210.03629.
+
+Zaharia M, Chen A, Davidson A, Ghodsi A, Hong S A, Konwinski A, Murching S, Nykodym T, Ogilvie P, Parkhe M, Xie F (2018) Accelerating the Machine Learning Lifecycle with MLflow. IEEE Data Engineering Bulletin 41(4):39-45.

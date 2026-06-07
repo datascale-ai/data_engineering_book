@@ -11,16 +11,104 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROJECTS = [
-    ("P1", ROOT / "code/zh/project_1_mini_c4", "src/run_p1_checks.py"),
-    ("P2", ROOT / "code/zh/project_2_sft_data", "src/run_p2_checks.py"),
-    ("P3", ROOT / "code/zh/project_3_llava_data", "src/run_p3_checks.py"),
-    ("P4", ROOT / "code/zh/project_4_synth", "src/run_p4_checks.py"),
-    ("P5", ROOT / "code/zh/project_5_rag", "src/run_p5_checks.py"),
-    ("P6", ROOT / "code/zh/project_6_prm_data", "src/run_p6_checks.py"),
-    ("P7", ROOT / "code/zh/project_7_agent_tooluse", "src/run_p7_checks.py"),
-    ("P8", ROOT / "code/zh/project_8_dataops_platform", "src/run_p8_checks.py"),
-    ("P9", ROOT / "code/zh/project_9_privacy_pipeline", "src/run_p9_checks.py"),
-    ("P10", ROOT / "code/zh/project_10_llm_flywheel", "src/run_p10_checks.py"),
+    {
+        "id": "P1",
+        "root": ROOT / "code/zh/project_1_mini_c4",
+        "script": "src/run_p1_checks.py",
+        "source_globs": ["src/*.py"],
+        "required": ["README.md", "environment.yml"],
+    },
+    {
+        "id": "P2",
+        "root": ROOT / "code/zh/project_2_sft_data",
+        "script": "src/run_p2_checks.py",
+        "source_globs": ["src/*.py"],
+        "required": ["README.md", "environment.yml"],
+    },
+    {
+        "id": "P3",
+        "root": ROOT / "code/zh/project_3_llava_data",
+        "script": "src/run_p3_checks.py",
+        "source_globs": ["src/*.py"],
+        "required": ["README.md", "environment.yml"],
+    },
+    {
+        "id": "P4",
+        "root": ROOT / "code/zh/project_4_synth",
+        "script": "src/run_p4_checks.py",
+        "source_globs": ["src/*.py"],
+        "required": ["README.md", "environment.yml"],
+    },
+    {
+        "id": "P5",
+        "root": ROOT / "code/zh/project_5_rag",
+        "script": "src/run_p5_checks.py",
+        "source_globs": ["src/*.py"],
+        "required": ["README.md", "environment.yml"],
+    },
+    {
+        "id": "P6",
+        "root": ROOT / "code/zh/project_6_prm_data",
+        "script": "src/run_p6_checks.py",
+        "source_globs": ["src/*.py"],
+        "required": ["README.md", "environment.yml"],
+    },
+    {
+        "id": "P7",
+        "root": ROOT / "code/zh/project_7_agent_tooluse",
+        "script": "src/run_p7_checks.py",
+        "source_globs": ["src/*.py"],
+        "required": ["README.md", "environment.yml"],
+    },
+    {
+        "id": "P8",
+        "root": ROOT / "code/zh/project_8_dataops_platform",
+        "script": "src/run_p8_checks.py",
+        "source_globs": ["src/*.py"],
+        "required": ["README.md", "environment.yml"],
+    },
+    {
+        "id": "P9",
+        "root": ROOT / "code/zh/project_9_privacy_pipeline",
+        "script": "src/run_p9_checks.py",
+        "source_globs": ["src/*.py"],
+        "required": ["README.md", "environment.yml"],
+    },
+    {
+        "id": "P10",
+        "root": ROOT / "code/zh/project_10_llm_flywheel",
+        "script": "src/run_p10_checks.py",
+        "source_globs": ["src/*.py"],
+        "required": ["README.md", "environment.yml"],
+    },
+    {
+        "id": "P11",
+        "root": ROOT / "code/zh/project_11_mini_deepseek",
+        "script": None,
+        "source_globs": ["*.py", "tests/*.py"],
+        "required": ["README.md"],
+    },
+    {
+        "id": "P12",
+        "root": ROOT / "code/zh/project_12_r1_flywheel",
+        "script": None,
+        "source_globs": ["*.py", "tests/*.py"],
+        "required": ["README.md", "environment.yml"],
+    },
+    {
+        "id": "P13",
+        "root": ROOT / "code/zh/project_13_mm_instruction_factory",
+        "script": None,
+        "source_globs": ["*.py", "tests/*.py"],
+        "required": ["README.md"],
+    },
+    {
+        "id": "P14",
+        "root": ROOT / "code/zh/project_14_video_generation_data",
+        "script": None,
+        "source_globs": ["*.py"],
+        "required": [],
+    },
 ]
 
 
@@ -33,22 +121,30 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def run_project(project_id: str, project_root: Path, script: str, timeout: int, full: bool) -> dict:
-    script_path = project_root / script
-    src_files = sorted((project_root / "src").glob("*.py"))
+def run_project(project: dict, timeout: int, full: bool) -> dict:
+    project_id = project["id"]
+    project_root = project["root"]
+    script = project["script"]
+    script_path = project_root / script if script else None
+    src_files = sorted(
+        {
+            path
+            for pattern in project["source_globs"]
+            for path in project_root.glob(pattern)
+            if path.is_file()
+        }
+    )
     missing = [
         path
-        for path in [
-            project_root / "README.md",
-            project_root / "environment.yml",
-            script_path,
-        ]
+        for path in [project_root / item for item in project["required"]]
         if not path.exists()
     ]
+    if script_path is not None and full and not script_path.exists():
+        missing.append(script_path)
     if missing:
         return {
             "project": project_id,
-            "script": str(script_path.relative_to(ROOT)),
+            "script": str(script_path.relative_to(ROOT)) if script_path else "py_compile source files",
             "passed": False,
             "returncode": None,
             "stdout": "",
@@ -58,14 +154,14 @@ def run_project(project_id: str, project_root: Path, script: str, timeout: int, 
     if not src_files:
         return {
             "project": project_id,
-            "script": str(script_path.relative_to(ROOT)),
+            "script": str(script_path.relative_to(ROOT)) if script_path else "py_compile source files",
             "passed": False,
             "returncode": None,
             "stdout": "",
-            "stderr": "No Python files found under src/.",
+            "stderr": "No Python files found for configured source globs.",
         }
 
-    if not full:
+    if not full or script_path is None:
         completed = subprocess.run(
             [sys.executable, "-m", "py_compile", *[str(path) for path in src_files]],
             cwd=str(project_root),
@@ -76,21 +172,11 @@ def run_project(project_id: str, project_root: Path, script: str, timeout: int, 
         )
         return {
             "project": project_id,
-            "script": "py_compile src/*.py",
+            "script": "py_compile " + ", ".join(project["source_globs"]),
             "passed": completed.returncode == 0,
             "returncode": completed.returncode,
             "stdout": completed.stdout.strip(),
             "stderr": completed.stderr.strip(),
-        }
-
-    if not script_path.exists():
-        return {
-            "project": project_id,
-            "script": str(script_path.relative_to(ROOT)),
-            "passed": False,
-            "returncode": None,
-            "stdout": "",
-            "stderr": "Smoke check script is missing.",
         }
 
     try:
@@ -159,11 +245,11 @@ def render_markdown(results: list[dict], timestamp: str) -> str:
 def main() -> int:
     args = parse_args()
     selected = {item.upper() for item in args.project} if args.project else None
-    projects = [item for item in PROJECTS if selected is None or item[0] in selected]
+    projects = [item for item in PROJECTS if selected is None or item["id"] in selected]
     timestamp = datetime.now(timezone.utc).isoformat()
 
     args.report_dir.mkdir(parents=True, exist_ok=True)
-    results = [run_project(project_id, root, script, args.timeout, args.full) for project_id, root, script in projects]
+    results = [run_project(project, args.timeout, args.full) for project in projects]
 
     payload = {
         "timestamp_utc": timestamp,

@@ -1,12 +1,15 @@
-﻿# 第32章：自动化采集、解析与清洗 Agent
+# 第32章：自动化采集、解析与清洗 Agent
 
 ---
 
-## 本章摘要
-
+## 摘要
 数据工程中最琐碎、最耗时的工作往往不在建模阶段，而在数据进门的那一刻——采集用什么方式、解析遇到异常格式如何处理、清洗规则谁来维护、数据质量谁来判断。当数据源从几十个膨胀到几百个，人工制定采集策略和清洗规则的模式迅速崩溃：要么规则维护 backlog 无限积压，要么质量门禁形同虚设。自动化采集与清洗 Agent 的核心任务不是"替代数据工程师"，而是将工程师从重复的规则适配中解放出来，让他们专注于异常处理、规则优化和架构设计。
 
 本章从网页/PDF/API/代码仓库四种典型数据源的自动化采集出发，讨论 Agent 如何自动识别源结构、处理解析异常、生成清洗规则、执行质量过滤，并在必要时触发人工复核。重点落在 Agent 在不确定情况下该如何决策——解析失败时是跳过、修复还是上报？清洗规则冲突时以哪个为准？质量过滤阈值谁来定？本章承接 Ch04 数据采集、Ch05 清洗去重、Ch06 输入管道、Ch02 质量框架，将传统的数据工程实践升级为 Agent 驱动的自适应流水线。
+
+## 关键词
+
+自动化采集；数据解析 Agent；清洗规则生成；质量过滤；人工复核；源结构漂移
 
 ---
 
@@ -51,7 +54,7 @@
 
 所有数据源采集都可以抽象为三层结构：**连接层 → 提取层 → 结构化层**。Agent 在不同层扮演不同角色。
 
-![AI Agent决策工作流程图生成 (2)](C:\Users\admin\Desktop\AI Agent决策工作流程图生成 (2).png)
+![四源采集 Agent 统一架构](../../images/part10/ai_agent_decision_workflow_ch32_01.png)
 
 **图32-1：四源采集 Agent 统一架构**
 
@@ -148,7 +151,7 @@ Agent 的调度策略应支持三种模式：
 
 Agent 的异常处理决策树：
 
-![AI Agent决策工作流程图生成 (3)](C:\Users\admin\Desktop\AI Agent决策工作流程图生成 (3).png)
+![解析异常处理决策流程](../../images/part10/ai_agent_decision_workflow_ch32_02.png)
 
 **图32-2：解析异常处理决策流程**
 
@@ -270,7 +273,7 @@ Agent 在判断数据质量时，面临的最大挑战不是"判断对错"，而
 
 质量过滤 Agent 的流水线设计应遵循"宽进严出、分级过滤"的原则。每一级过滤解决一个维度的质量问题，不合格的数据被分流到对应的处理管道，而非简单丢弃。
 
-![AI Agent决策工作流程图生成 (4)](C:\Users\admin\Desktop\AI Agent决策工作流程图生成 (4).png)
+![质量过滤分级流水线](../../images/part10/ai_agent_decision_workflow_ch32_03.png)
 
 **图32-3：质量过滤分级流水线**
 
@@ -364,8 +367,8 @@ Agent 在判断数据质量时，面临的最大挑战不是"判断对错"，而
 - **Ch04**：数据采集——本章在其基础上引入 Agent 驱动的自适应采集。
 - **Ch05**：数据清洗与去重——本章将清洗规则维护升级为 Agent 自动生成。
 - **Ch06**：输入管道与特征工程——本章采集管道是其上游。
-- **Ch34**：Agent 架构与任务边界——本章是六层架构在采集清洗场景的具体实现。
-- **Ch36**：标注、合成与评测 Agent——本章输出的清洗数据是其输入。
+- **Ch31**：Agent 架构与任务边界——本章是六层架构在采集清洗场景的具体实现。
+- **Ch33**：标注、合成与评测 Agent——本章输出的清洗数据是其输入。
 
 
 ---
@@ -399,10 +402,32 @@ Agent 自动生成的清洗规则需要版本管理——当规则出现问题�
 - 规则的每次修改都保留完整的变更记录——修改人、修改时间、修改内容、修改原因。
 - 规则回滚时，不仅回滚规则本身，还标记所有受该规则影响的数据批次为"需重新处理"。
 
+## 本章小结
 
-## 本章参考文献
+本章围绕“自动化采集、解析与清洗 Agent”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
 
-- Apache Nutch Documentation. https://nutch.apache.org/
-- PyMuPDF (fitz) Documentation. https://pymupdf.readthedocs.io/
-- Great Expectations: Data Quality Framework. https://greatexpectations.io/
-- crawlee: Web scraping and browser automation. https://crawlee.dev/
+本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
+
+在全书结构中，本章位于Agent 自动化层，承担承接前文基础概念并导向隐私、合规和专项数据集案例的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
+
+## 参考文献
+
+Barbaresi A (2021) Trafilatura: A Web Scraping Library and Command-Line Tool for Text Discovery and Extraction. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics, pp 122-131.
+
+Blecher N, Cresci G, Ballas N, Bautista M (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.
+
+Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.
+
+Chen J, Yan X, Lin D, Qu X, Wang Y, Huang X, Zhao Z, Yu T, Zhang Z, Li H, Zheng Y, Xu R, Zhu J, Qiu X (2024) Data-Juicer: A One-Stop Data Processing System for Large Language Models. In: Proceedings of the ACM SIGMOD International Conference on Management of Data, pp 4436-4449.
+
+Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.
+
+Lopez P (2009) GROBID: Combining Automatic Bibliographic Data Recognition and Term Extraction for Scholarship Publications. In: Proceedings of the 13th European Conference on Digital Libraries, pp 473-474.
+
+Penedo G, Kydlíček H, Anthony L, Hajos M, Sutawika L, Fourmague H, Nguyen H, de Werra L, Wolf T (2024) datatrove: large scale data processing. Hugging Face Open Source Library. https://github.com/huggingface/datatrove.
+
+Penedo G, Kydlíček H, allal L B, Lozhkov A, Mitchell M, Raffel C, Von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.
+
+Penedo G, Malartic Q, Hesslow D, Cojocaru R, Cappelli A, Alobeidli H, Pannier B, Almazrouei E, Launay J (2023) The RefinedWeb Dataset for Falcon LLM: Outperforming Curated Corpora with Web Data Only. In: Advances in Neural Information Processing Systems 36.
+
+Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur A, Bogin B, Chen X, Dumas G, Elazar Y, Hofmann V, Jha A H, Kumar S, Lucy L, Lyu X, Lambert N, Magnusson I, Morrison J, Muennighoff N, Naik A, Nam G, Peters M E, Ravichander A, Richardson L, Shen Z, Strubell E, Subramani N, Tafjord O, Walsh N, Zettlemoyer L, Smith N A, Hajishirzi H, Beltagy I, Groeneveld D, Dodge J, Lo K (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.

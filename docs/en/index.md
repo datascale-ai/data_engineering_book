@@ -2,7 +2,7 @@
 
 ## Full Table of Contents Overview
 
-The Chinese 2026 edition is the mainline of this book, covering 33 chapters and 14 end-to-end project chapters. The English and Japanese editions are being translated incrementally. Chapters not yet translated will display a notice; please use the language switcher at the top to view the Chinese edition.
+The Chinese 2026 Springer edition is the mainline of this book, covering 14 parts, 48 chapters, 15 project case studies, and 3 appendices. The English and Japanese editions are being translated incrementally. Pages below are the current English translation snapshot; please use the language switcher at the top to view the canonical Chinese edition.
 
 - [Preface](preface.md)
 - [Chinese 2026 Edition Translation Status](translation-status.md)
@@ -14,9 +14,16 @@ The Chinese 2026 edition is the mainline of this book, covering 33 chapters and 
 - Part 6: Reasoning and Agent Data Engineering
 - Part 7: Application-Level Data Engineering
 - Part 8: Data Operations and Platform Development
-- Part 9: Privacy Compliance and Data Security
-- Part 10: Practical Projects
-- Part 11: Open-Source LLM Data Engineering in Practice
+- Part 9: Data Assets, Data Products, and Data Contracts
+- Part 10: Agentic Data Engineering
+- Part 11: Privacy Compliance and Data Security
+- Part 12: Specialized Dataset Case Studies
+- Part 13: Open-Source Model Data Recipes
+- Part 14: Project Case Studies
+
+## Current English Translation Snapshot
+
+The sections below list pages currently present in English. Some labels still follow the older translation snapshot and will be realigned as translation work catches up with the Chinese Springer mainline.
 
 ## Part 1: Overview and Infrastructure
 

@@ -1,12 +1,15 @@
-﻿# 第34章：DataOps Agent 与平台自治
+# 第34章：DataOps Agent 与平台自治
 
 ---
 
-## 本章摘要
-
+## 摘要
 数据平台的运维工作长期以来被视为"必要但低价值"的劳动——监控告警、排查故障、版本回滚、成本分析，每一项都需要工程师投入大量时间，但每一项都不直接产生业务价值。当数据平台规模扩大（数百条流水线、PB 级数据、数千张表），传统的人工运维模式到达极限：告警疲劳导致漏判，根因定位依赖个人经验，版本回滚犹豫不决，成本黑洞无人关注。
 
 DataOps Agent 的目标是将数据平台从"被运维"升级为"自运维"——Agent 自动执行监控告警的聚合与根因定位，自动生成数据回滚与修复计划供审批，自动分析成本异常并提出优化建议，自动生成工单与复盘草稿。但自治不等于无人值守——高风险操作（如数据回滚、索引重建、流水线重启）必须经过审批闸门。本章承接 Ch24-Ch26 的 DataOps 飞轮、版本管理、实验追踪和平台可观测性，将人工运维流程升级为 Agent 驱动的自治回路。
+
+## 关键词
+
+DataOps Agent；平台自治；根因定位；数据回滚；成本治理；运维自动化
 
 ---
 
@@ -49,7 +52,7 @@ DataOps Agent 的目标是将数据平台从"被运维"升级为"自运维"—�
 
 DataOps Agent 的第一项能力是告警的智能聚合。Agent 需要从四个维度读取信息，将分散的告警聚合为根因候选：
 
-![AI Agent决策工作流程图生成 (7)](C:\Users\admin\Desktop\AI Agent决策工作流程图生成 (7).png)
+![告警到根因定位 Agent 流程](../../images/part10/ai_agent_decision_workflow_ch34_01.png)
 
 **图34-1：告警到根因定位 Agent 流程**
 
@@ -143,7 +146,7 @@ Agent 生成的根因候选附带置信度评分，但这个评分本身需要�
 
 回滚操作属于高风险操作，必须经过多人审批：
 
-![AI Agent决策工作流程图生成 (8)](C:\Users\admin\Desktop\AI Agent决策工作流程图生成 (8).png)
+![回滚审批流程](../../images/part10/ai_agent_decision_workflow_ch34_02.png)
 
 **图34-2：回滚审批流程**
 
@@ -180,7 +183,7 @@ Agent 生成的根因候选附带置信度评分，但这个评分本身需要�
 
 **自愈的决策逻辑：**
 
-![AI Agent决策工作流程图生成 (9)](C:\Users\admin\Desktop\AI Agent决策工作流程图生成 (9).png)
+![流水线自愈决策流程](../../images/part10/ai_agent_decision_workflow_ch34_03.png)
 
 **图34-3：流水线自愈决策流程**
 
@@ -395,9 +398,9 @@ DataOps Agent 的长期价值不仅在于解决当前问题，还在于将解决
 - **Ch24**：DataOps 飞轮与团队组织——本章在其基础上引入 Agent 驱动的运维自治。
 - **Ch25**：数据版本管理与实验追踪——本章回滚机制依赖版本管理基础设施。
 - **Ch26**：数据平台可观测性——本章告警 Agent 依赖于可观测性体系。
-- **Ch34**：Agent 架构与任务边界——本章 DataOps Agent 遵循六层架构，特别依赖 Human Gate 和 Lineage。
-- **Ch35**：采集清洗 Agent——本章监控的流水线包含 Ch35 的采集和清洗任务。
-- **Ch38**：安全权限与人机协同——本章回滚审批与 Ch38 的权限模型衔接。
+- **Ch31**：Agent 架构与任务边界——本章 DataOps Agent 遵循六层架构，特别依赖 Human Gate 和 Lineage。
+- **Ch32**：采集清洗 Agent——本章监控的流水线包含 Ch32 的采集和清洗任务。
+- **Ch35**：安全权限与人机协同——本章回滚审批与 Ch35 的权限模型衔接。
 
 
 ---
@@ -448,10 +451,32 @@ DataOps Agent 的长期价值不仅在于解决当前问题，还在于将解决
 
 AgentOps 不是取代 DataOps，而是在其之上增加一层——Agent 管理数据管道，AgentOps 管理 Agent。这要求运维体系同时追踪数据质量指标和 Agent 行为指标，将两个维度的可观测性融合为一套统一的运维仪表盘。
 
+## 本章小结
 
-## 本章参考文献
+本章围绕“DataOps Agent 与平台自治”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
 
-- Google SRE. "Site Reliability Engineering: How Google Runs Production Systems." O`Reilly, 2016.
-- Forsgren, N., et al. "Accelerate: The Science of Lean Software and DevOps." IT Revolution, 2018.
-- OpenLineage Specification. https://openlineage.io/
-- Prometheus Alertmanager Documentation. https://prometheus.io/docs/alerting/
+本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
+
+在全书结构中，本章位于Agent 自动化层，承担承接前文基础概念并导向隐私、合规和专项数据集案例的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
+
+## 参考文献
+
+Breck E, Cai S, Nielsen E, Salib M, Sculley D (2017) The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction. In: IEEE International Conference on Big Data, pp 1123-1132.
+
+Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for Machine Learning. In: Proceedings of Machine Learning and Systems 1, pp 334-347.
+
+DataOps Manifesto (2024) The DataOps Manifesto: 18 DataOps Principles. Available at: https://dataopsmanifesto.org/en/
+
+DVC Documentation (2024) Data Version Control Documentation. Available at: https://dvc.org/doc
+
+Kreuzberger D, Kühl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879.
+
+OpenTelemetry Authors (2024) OpenTelemetry Specification. Available at: https://opentelemetry.io/docs/specs/
+
+Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1-15.
+
+Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503-2511.
+
+Vartak M, Subramanyam H, Lee W-E, Viswanathan S, Husnoo S, Madden S, Zaharia M (2016) ModelDB: A System for Machine Learning Model Management. In: Proceedings of the Workshop on Human-In-the-Loop Data Analytics (HILDA), Article 14.
+
+Zaharia M, Chen A, Davidson A, Ghodsi A, Hong S A, Konwinski A, Murching S, Nykodym T, Ogilvie P, Parkhe M, Xie F (2018) Accelerating the Machine Learning Lifecycle with MLflow. IEEE Data Engineering Bulletin 41(4):39-45.

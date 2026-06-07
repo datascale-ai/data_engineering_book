@@ -1,12 +1,15 @@
-﻿# 第33章：标注、合成与评测 Agent
+# 第33章：标注、合成与评测 Agent
 
 ---
 
-## 本章摘要
-
+## 摘要
 标注和评测是 LLM 数据工程中人力密度最高的两个环节。标注需要大量人工判断，评测需要精心设计的测试用例和一致性校准。当模型迭代加速、数据需求多样化时，纯人工的标注和评测体系迅速成为瓶颈。标注、合成与评测 Agent 的目标不是"取代人类标注员和评测员"，而是在三个维度上放大人类的能力：通过标注辅助降低单条标注的认知负荷，通过合成数据扩充覆盖长尾场景，通过自动评测加速反馈闭环。
 
 本章从标注辅助 Agent 出发，讨论 Agent 如何提供任务解释、样例推荐、灰区判定和冲突仲裁；然后进入合成数据 Agent，讨论种子扩展、prompt 生成、难度控制和验证器调用；接着讨论评测与红队 Agent，如何自动生成 challenge set 和红队样本；最后讨论一致性校准——如何避免"Agent 评 Agent 生成的数据"的自嗨循环。本章承接 Ch12-Ch17 的 SFT、偏好、标注、合成数据和坍缩治理，将这些环节升级为 Agent 驱动的工作流。
+
+## 关键词
+
+标注辅助 Agent；合成数据；自动评测；红队样本；一致性校准；LLM-as-Judge
 
 ---
 
@@ -47,7 +50,7 @@
 
 标注辅助 Agent 的核心定位是"标注员的智能副驾"——不是取代标注员做判断，而是在标注流程的每个环节降低认知负荷、提升判断一致性。
 
-![AI Agent决策工作流程图生成 (5)](C:\Users\admin\Desktop\AI Agent决策工作流程图生成 (5).png)
+![标注辅助 Agent 的四个维度](../../images/part10/ai_agent_decision_workflow_ch33_01.png)
 
 **图33-1：标注辅助 Agent 的四个维度**
 
@@ -127,7 +130,7 @@ Agent 还应为每个标注批次设定校准样本——这些样本已有标�
 
 合成数据 Agent 的核心闭环是一个受控的生成-验证-筛选流水线：
 
-![AI Agent决策工作流程图生成 (6.1)](C:\Users\admin\Desktop\AI Agent决策工作流程图生成 (6.1).png)
+![合成数据 Agent 闭环流水线](../../images/part10/ai_agent_decision_workflow_ch33_02.png)
 
 **图33-2：合成数据 Agent 闭环流水线**
 
@@ -373,9 +376,9 @@ Challenge set 的生成策略：
 - **Ch12-Ch13**：SFT 数据与偏好对齐——本章的标注和合成数据是其上游输入。
 - **Ch14-Ch15**：标注体系设计与质量管控——本章在其基础上引入 Agent 辅助标注。
 - **Ch16-Ch17**：合成数据生成与坍缩治理——本章的合成数据 Agent 和坍缩控制是其工程化实现。
-- **Ch34**：Agent 架构与任务边界——本章标注和评测 Agent 遵循六层架构设计。
-- **Ch35**：采集清洗 Agent——本章的标注数据依赖于 Ch35 的清洗输出。
-- **Ch38**：安全权限与人机协同——本章红队 Agent 的安全测试与 Ch38 的权限模型衔接。
+- **Ch31**：Agent 架构与任务边界——本章标注和评测 Agent 遵循六层架构设计。
+- **Ch32**：采集清洗 Agent——本章的标注数据依赖于 Ch32 的清洗输出。
+- **Ch35**：安全权限与人机协同——本章红队 Agent 的安全测试与 Ch35 的权限模型衔接。
 
 ------
 
@@ -414,10 +417,32 @@ Agent 辅助标注的关键能力不是"理解标准"，而是"将标准拆解�
 3. **能力维度多元化**：不依赖单一的评测分数，而是按能力维度、难度层级、领域进行切片评估。
 4. **上线后的真实反馈闭环**：将模型上线后的用户反馈（点赞、投诉、修正）作为评测集的重要补充，弥补离线评测的不足。
 
+## 本章小结
 
-## 本章参考文献
+本章围绕“标注、合成与评测 Agent”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
 
-- Bowman, S. R., et al. "Measuring Agreement on Disagreeable Annotations." ACL 2023.
-- Perez, E., et al. "Red Teaming Language Models with Language Models." EMNLP 2022.
-- Zheng, L., et al. "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena." NeurIPS 2023.
-- Shumailov, I., et al. "The Curse of Recursion: Training on Generated Data Makes Models Forget." 2023.
+本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
+
+在全书结构中，本章位于Agent 自动化层，承担承接前文基础概念并导向隐私、合规和专项数据集案例的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
+
+## 参考文献
+
+Alemohammad, S., Casco-Rodriguez, J., Luzi, L., et al. (2024). Self-Consuming Generative Models Go MAD. International Conference on Learning Representations.
+
+Bai, Y., Kadavath, S., Kundu, S., et al. (2022). Constitutional AI: Harmlessness from AI Feedback. arXiv:2212.08073.
+
+Gerstgrasser, M., Schaeffer, R., Dey, A., et al. (2024). Is Model Collapse Inevitable? Breaking the Curse of Recursion by Accumulating Real and Synthetic Data. arXiv:2404.01413.
+
+Koh, P. W., Sagawa, S., Marklund, H., et al. (2021). WILDS: A Benchmark of in-the-Wild Distribution Shifts. Proceedings of the 38th International Conference on Machine Learning, 5637–5664.
+
+Liu, Y., Iter, D., Xu, Y., et al. (2023). G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment. Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing, 2511–2522.
+
+Ribeiro, M. T., Wu, T., Guestrin, C., et al. (2020). Beyond Accuracy: Behavioral Testing of NLP Models with CheckList. Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics, 4902–4912.
+
+Shumailov, I., Shumaylov, Z., Zhao, Y., et al. (2024). AI models collapse when trained on recursively generated data. Nature, 631, 755–759.
+
+Wang, Y., Kordi, Y., Mishra, S., et al. (2023). Self-Instruct: Aligning Language Models with Self-Generated Instructions. Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics, 13484–13508.
+
+Zheng, L., Chiang, W.-L., Sheng, Y., et al. (2023). Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. Advances in Neural Information Processing Systems, 36. arXiv:2306.05685.
+
+Zhou, C., Liu, P., Xu, P., et al. (2023). LIMA: Less Is More for Alignment. Advances in Neural Information Processing Systems, 36. arXiv:2305.11206.
