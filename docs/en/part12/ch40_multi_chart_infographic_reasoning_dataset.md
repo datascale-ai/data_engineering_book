@@ -47,7 +47,7 @@ The dataset samples across 28 vertical fields covering public life, industry, re
 
 Multi-domain design reduces overfitting to a single theme. Chart conventions, legends, and domain abbreviations differ across fields, raising the difficulty of visual-context reasoning.
 
-![Figure 40-1: Domain distribution in the multi-chart infographic reasoning dataset](../../images/part12/ch40_domain.png)
+![Figure 40-1: Domain distribution in the multi-chart infographic reasoning dataset](../../images/part12/ch40_domain_en.png)
 
 ### 40.2.3 Chart Types and Layout Features
 
@@ -55,7 +55,7 @@ The dataset contains more than 20 common visualization styles, including donut c
 
 Each infographic uses whatever mixed layout the original creator used, such as “map + table + stacked bar + pictogram” or “pie chart + ranking card + line trend.” Different chart types store data differently: tables use rows and columns, maps use geographic regions, pictograms use icon counts, and line charts use temporal sequences. The model must adapt reading rules across formats and then aggregate across them.
 
-![Figure 40-2: Chart type distribution](../../images/part12/ch40_chart.png)
+![Figure 40-2: Chart type distribution](../../images/part12/ch40_chart_en.png)
 
 ### 40.2.4 Question Types
 
@@ -63,7 +63,7 @@ The subquestions cover 13 reasoning types: value extraction, category recognitio
 
 Questions within one infographic are randomly mixed across types, creating chains such as “maximum lookup + difference calculation + conditional reasoning” or “counting + ratio calculation + visual reasoning.” Extraction questions focus on reading; calculation questions combine multiple values; conditional questions use legends and filters; visual questions use symbols and visual context.
 
-![Figure 40-3: Question type distribution](../../images/part12/ch40_question.png)
+![Figure 40-3: Question type distribution](../../images/part12/ch40_question_en.png)
 
 ### 40.2.5 Standardized Core Tasks
 
@@ -119,7 +119,7 @@ Each infographic includes one question that cannot be answered from the image. T
 
 The dataset construction process has four core stages: collecting and filtering real compound infographics, manually partitioning subchart regions, designing layered question chains, and cross-checking answers. No synthetic charts are generated. Large models can help propose questions, but humans verify and revise them.
 
-![Figure 40-5: Multi-chart infographic dataset construction pipeline](../../images/part12/ch40_pipeline.png)
+![Figure 40-5: Multi-chart infographic dataset construction pipeline](../../images/part12/ch40_pipeline_en.png)
 
 ### 40.4.1 Collecting and Filtering Real Infographics
 
