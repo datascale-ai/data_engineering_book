@@ -5,7 +5,7 @@
 
 **English | [中文](README.md) | [日本語](README_ja.md)**
 
-> **Version note:** The Chinese edition is the current 2026 Springer mainline, frozen at 14 parts, 48 chapters, 15 project case studies, and 3 appendices. The English and Japanese editions are partial translations and external communication views; the documentation site includes translation status pages.
+> **Version note:** The Chinese edition is the current 2026 Springer mainline, frozen at 14 parts, 48 chapters, 15 project case studies, and 3 appendices, with front matter and an afterword in the site edition. The English edition is being synchronized with a quality-first translation workflow; the documentation site includes an English edition status page.
 
 ## Introduction
 
@@ -23,7 +23,7 @@ This book is designed to fill that gap. We systematically cover the complete tec
 - ⚙️ **DataOps & Platform Engineering**: Team organization, data versioning, and platform observability
 - 🔒 **Privacy, Compliance & Security**: Data governance frameworks, federated learning, and privacy-enhancing technologies
 
-Beyond in-depth theoretical explanations, the Chinese mainline includes **15 end-to-end project case studies** with runnable code where available, architecture designs, and engineering retrospectives for hands-on learning.
+Beyond in-depth theoretical explanations, the Chinese mainline includes **15 end-to-end hands-on project case studies** with runnable code where available, architecture designs, and engineering retrospectives for hands-on learning.
 
 **Read Online**: [https://datascale-ai.github.io/data_engineering_book/en/](https://datascale-ai.github.io/data_engineering_book/en/)
 
