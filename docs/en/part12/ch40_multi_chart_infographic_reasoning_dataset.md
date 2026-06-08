@@ -192,3 +192,15 @@ The project currently has annotations but no released baseline algorithm or trai
 ## Conclusion
 
 The multi-chart infographic reasoning dataset starts from real compound infographics and breaks away from the single-chart QA paradigm. It reconstructs chart VQA evaluation around cross-chart aggregation, serial calculation, and visual-context reasoning. The structure of 354 multi-subchart images and 1,917 chained subquestions reflects how people actually read compound data visualizations. The shark-attack example shows that real infographic reasoning requires region-specific evidence retrieval, stepwise calculation, and symbol interpretation. Although the dataset currently lacks companion baselines, it fills an important benchmark gap and can support future cross-modal chart reasoning research.
+
+## References
+
+1. Masry, A., Long, D. X., Tan, J. Q., Joty, S., & Hoque, E. (2022). ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. ACL 2022.
+2. Methani, N., Ganguly, P., Khapra, M. M., & Kumar, P. (2020). PlotQA: Reasoning over Scientific Plots. WACV 2020.
+3. Kahou, S. E., Michalski, V., Atkinson, A., Kádár, Á., Trischler, A., & Bengio, Y. (2017). FigureQA: An Annotated Figure Dataset for Visual Reasoning. arXiv:1710.07300.
+4. Kafle, K., Price, B., Cohen, S., & Kanan, C. (2018). DVQA: Understanding Data Visualizations via Question Answering. CVPR 2018.
+5. Mathew, M., Karatzas, D., & Jawahar, C. V. (2021). DocVQA: A Dataset for VQA on Document Images. WACV 2021.
+6. Masry, A., Islam, M. S., Ahmed, M., Bajaj, A., Kabir, F., Kartha, A., ... & Joty, S. (2025, July). Chartqapro: A more diverse and challenging benchmark for chart question answering. In Findings of the Association for Computational Linguistics: ACL 2025 (pp. 19123-19151).
+7. Xie, T., Lin, M., Liu, M., Ye, Y., Chen, C., & Liu, S. (2026). Infochartqa: A benchmark for multimodal question answering on infographic charts. Advances in Neural Information Processing Systems, 38.
+8. Foroutan, N., Romanou, A., Ansaripour, M., Eisenschlos, J. M., Aberer, K., & Lebret, R. (2025, July). Wikimixqa: a multimodal benchmark for question answering over tables and charts. In Findings of the Association for Computational Linguistics: ACL 2025 (pp. 24941-24958).
+9. Zhu, Z., Jia, M., Zhang, Z., Li, L., & Jiang, M. (2025, April). MultiChartQA: Benchmarking vision-language models on multi-chart problems. In Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) (pp. 11341-11359).
