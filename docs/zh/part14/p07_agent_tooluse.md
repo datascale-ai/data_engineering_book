@@ -24,7 +24,7 @@ Agent Tool-Use；工具调用；执行轨迹；恢复建模；安全阻断
 
 ## 项目目标与读者收获
 
-本项目以“Agent Tool-Use 数据工厂”为核心案例，目标是把工具 schema、任务环境和交互轨迹组织成 Agent 工具使用训练数据。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。
+本项目以“Agent Tool-Use 数据工厂”为核心案例，目标是把工具 schema、任务环境和交互轨迹组织成 Agent 工具使用训练数据。轨迹组织参考 ReAct 的推理-行动协同范式 (Yao et al. 2023)，工具调用样本构造参考 Toolformer 中让语言模型学习使用工具的思路 (Schick et al. 2023)。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。
 
 ## 场景约束与数据边界
 
@@ -38,9 +38,12 @@ Agent Tool-Use；工具调用；执行轨迹；恢复建模；安全阻断
 
 核心数据流可概括为：
 
+Listing P07-1 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```text
 工具 schema -> 任务规格 -> 模拟环境 -> success/recovery/block 轨迹 -> 质量检查 -> Agent 数据集
 ```
+
+该片段的作用是把上述流程转化为可检查的结构化表示。
 
 样本 schema 至少应保留 `id`、`source`、`content_or_payload`、`metadata`、`quality_signals`、`split_or_stage` 与 `audit_trace` 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。
 
@@ -52,17 +55,17 @@ Agent Tool-Use；工具调用；执行轨迹；恢复建模；安全阻断
 
 验收指标包括工具调用合法率、参数完整性、轨迹成功率、恢复路径覆盖、block 场景比例和格式合格率。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。
 
-*表 P07-1：Agent Tool-Use 出版验收表*
-
 | 验收维度 | 指标/证据 | 出版复核口径 |
 | --- | --- | --- |
 | 工具契约 | schema 字段完整率、参数合法率和环境执行记录 | 每类工具调用都应具备输入、输出、错误和权限边界 |
 | 行为轨迹 | success、recovery、block 轨迹比例与任务成功率 | 不只展示成功路径，需保留失败恢复和安全阻断样本 |
 | 安全边界 | unsafe block 覆盖、权限拒绝记录和人工抽检结论 | 公开样例不得诱导真实高风险工具执行 |
 
+*表 P07-1：Agent Tool-Use 出版验收表*
+
 ## 成本、风险与合规边界
 
-成本主要来自轨迹生成、执行模拟和人工抽查；风险集中在工具权限误设、不可执行轨迹和训练后误用。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。
+成本主要来自轨迹生成、执行模拟和人工抽查；风险集中在工具权限误设、不可执行轨迹和训练后误用。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。风险识别可参考 NIST AI RMF (NIST 2023) 与 OWASP LLM 应用风险清单 (OWASP Foundation 2025)，运行轨迹与调用日志的可观测性可参考 OpenTelemetry 的记录方式 (OpenTelemetry Authors 2026)。
 
 ## 常见失败模式
 
@@ -90,7 +93,8 @@ Agent Tool-Use；工具调用；执行轨迹；恢复建模；安全阻断
 
 > 当团队未来需要从简单单工具问答迁移到复杂多工具 Agent、企业 Copilot、工作流助手和具身任务代理时，真正可以复用的不是某个函数调用 prompt，而是这套“从工具规范到监督轨迹”的工程方法。
 
-![图 1：Agent Tool-Use 数据工厂总览](../../images/part10/10_7_fig01_agent_tooluse_factory_overview.png)
+![图 P07-1](../../images/part10/10_7_fig01_agent_tooluse_factory_overview.png)
+*图 P07-1：Agent Tool-Use 数据工厂总览*
 
 ---
 
@@ -205,7 +209,8 @@ Agent 不只是工具调用器，它还涉及多轮上下文和持久状态管�
 
 到这一步，项目才从“调用示例收集”变成“工程闭环”。
 
-![图 2：Agent Tool-Use 三层架构图](../../images/part10/10_7_fig02_three_layer_architecture.png)
+![图 P07-2](../../images/part10/10_7_fig02_three_layer_architecture.png)
+*图 P07-2：Agent Tool-Use 三层架构图*
 
 ---
 
@@ -243,7 +248,8 @@ Agent Tool-Use 数据工厂的难点，并不只是“把工具调用样本做�
 
 因此，需要被显式写清的不是岗位分工，而是工程约束本身。**Agent Tool-Use 更像系统行为数据工程，而不是提示词技巧展示。**
 
-![图 3：Agent 数据工厂关键工程面示意图](../../images/part10/10_7_fig03_roles_and_responsibilities.png)
+![图 P07-3](../../images/part10/10_7_fig03_roles_and_responsibilities.png)
+*图 P07-3：Agent 数据工厂关键工程面示意图*
 
 ---
 
@@ -276,6 +282,7 @@ Agent Tool-Use 数据工厂的难点，并不只是“把工具调用样本做�
 
 一个高度概括的代码形态如下：
 
+Listing P07-2 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 # src/build_tooling.py
 
@@ -298,6 +305,8 @@ def build_tool_schemas() -> list[dict]:
     ]
 ```
 
+该片段的作用是把上述流程转化为可检查的结构化表示。
+
 这段结构说明，项目并没有把工具看成“给模型的一段自然语言说明”，而是看成一组**可以驱动后续数据构造的结构化对象**。这也解释了为什么当前项目虽然只有 `6` 个工具 schema，但已经能够覆盖 search、db、calendar、code、memory、unsafe 等多类行为边界。
 
 ### 6.3 为什么 schema 不只是字段列表
@@ -313,7 +322,8 @@ def build_tool_schemas() -> list[dict]:
 
 schema 不是为了好看，而是为了让“工具定义—轨迹生成—环境执行—训练封装—评估检查”这几层之间能对齐。没有这层对齐，Agent 项目很容易变成一堆互相孤立的脚本。
 
-![图 4：工具 schema 结构示意图](../../images/part10/10_7_fig04_tool_schema_structure.png)
+![图 P07-4](../../images/part10/10_7_fig04_tool_schema_structure.png)
+*图 P07-4：工具 schema 结构示意图*
 
 ---
 
@@ -345,6 +355,7 @@ schema 不是为了好看，而是为了让“工具定义—轨迹生成—环�
 
 `src/build_tooling.py` 并没有把模板写成抽象配置，而是直接把模板形状显式编码成 `shape`。例如：
 
+Listing P07-3 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 # src/build_tooling.py
 
@@ -367,6 +378,8 @@ def build_templates() -> list[dict]:
     ]
 ```
 
+该片段的作用是把上述流程转化为可检查的结构化表示。
+
 这样的写法把“轨迹模板”从抽象概念变成了**可直接落盘、可直接检查、可直接被下游读取的结构**。后面 `run_p7_checks.py` 之所以能检查 `templates_cover_single_multi_and_safety`，就是因为模板层已经被显式结构化了。
 
 同样，`build_task_specs()` 里并不只保存用户问题，还保存 `category`、`session_id`、`objective`、`query`、`domain`、`answer_text`、`recovery_mode` 等字段。也就是说，这一层定义的不是普通 prompt，而是“带执行意图的任务对象”。
@@ -384,7 +397,8 @@ def build_templates() -> list[dict]:
 
 当前项目包含 `5` 个轨迹模板，并围绕这些模板生成 `22` 条原始轨迹。这说明项目并不是靠海量数据取胜，而是靠轨迹类型的代表性来搭建方法样板。
 
-![图 5：任务规格与轨迹模板关系图](../../images/part10/10_7_fig05_task_specs_and_templates.png)
+![图 P07-5](../../images/part10/10_7_fig05_task_specs_and_templates.png)
+*图 P07-5：任务规格与轨迹模板关系图*
 
 ---
 
@@ -423,6 +437,7 @@ P07 最值得写进书稿的一点，是它并没有把 recovery 当成运行时
 
 例如 `build_search_recovery()` 的结构，先故意构造一个坏参数，再显式加入修复计划和第二次调用：
 
+Listing P07-4 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 # src/generate_trajectories.py
 
@@ -438,10 +453,13 @@ def build_search_recovery(task: dict) -> list[dict]:
     ]
 ```
 
+该片段的作用是把上述流程转化为可检查的结构化表示。
+
 这段实现把“失败—分析—重试”的中间决策显式写了出来。对训练来说，这比只保留两次工具调用结果更有价值。
 
 而 `build_blocked(task, reason)` 更进一步，它直接生成不触发工具调用的阻断轨迹：
 
+Listing P07-5 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 # src/generate_trajectories.py
 
@@ -452,6 +470,8 @@ def build_blocked(task: dict, reason: str) -> list[dict]:
         final_event(..., status="blocked", blocked=True),
     ]
 ```
+
+该片段的作用是把上述流程转化为可检查的结构化表示。
 
 这说明 block 并不是“工具调用失败”的副产物，而是一个独立的正当行为分支。
 
@@ -467,7 +487,8 @@ def build_blocked(task: dict, reason: str) -> list[dict]:
 
 当前项目的变体分布为：`success = 10`、`recovery = 9`、`block = 3`。这组比例很有代表性，因为它说明项目并没有把 recovery 当成边角料，而是把它放到了几乎与 success 并重的位置。
 
-![图 6：success / recovery / block 轨迹分层图](../../images/part10/10_7_fig06_trajectory_taxonomy.png)
+![图 P07-6](../../images/part10/10_7_fig06_trajectory_taxonomy.png)
+*图 P07-6：success / recovery / block 轨迹分层图*
 
 ---
 
@@ -501,6 +522,7 @@ def build_blocked(task: dict, reason: str) -> list[dict]:
 
 一个高度概括的执行框架如下：
 
+Listing P07-6 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 # src/simulate_tool_env.py
 
@@ -524,6 +546,8 @@ def execute_trajectory(trajectory: dict, task_specs: dict[str, dict]) -> tuple[d
                 ...
 ```
 
+该片段的作用是把上述流程转化为可检查的结构化表示。
+
 这段逻辑的关键价值在于：项目把轨迹、环境、工具日志和最终指标真正连在了一起。这样一来，“恢复成功率”和“unsafe block rate”这些指标才不是纸面统计，而是执行后的真实结果。
 
 ### 9.3 Python 执行工具为什么值得单独写
@@ -534,7 +558,8 @@ def execute_trajectory(trajectory: dict, task_specs: dict[str, dict]) -> tuple[d
 
 模拟环境不是终点，但它是很好的起点。它让团队先把“轨迹是否合理、字段是否对齐、恢复逻辑是否成立、指标是否可评估”这些基础问题解决，再决定如何迁移到真实环境。项目整体报告也明确说明当前环境以模拟执行为主，而不是直接连接真实生产工具。
 
-![图 7：模拟工具环境执行闭环图](../../images/part10/10_7_fig07_simulated_env_loop.png)
+![图 P07-7](../../images/part10/10_7_fig07_simulated_env_loop.png)
+*图 P07-7：模拟工具环境执行闭环图*
 
 ---
 
@@ -567,7 +592,8 @@ def execute_trajectory(trajectory: dict, task_specs: dict[str, dict]) -> tuple[d
 
 评估并不等于检查。评估回答的是“表现如何”，检查回答的是“代码、数据和报告是否一致”。把两者分开，是工程成熟度的一个明显信号。
 
-![图 8：P07 六步流水线图](../../images/part10/10_7_fig08_pipeline_steps.png)
+![图 P07-8](../../images/part10/10_7_fig08_pipeline_steps.png)
+*图 P07-8：P07 六步流水线图*
 
 ---
 
@@ -596,7 +622,8 @@ recovery 训练的本质，不是教模型“犯错”，而是教模型“如�
 
 当前项目中，`recovery = 9`，几乎与 `success = 10` 同量级。这说明数据工厂把恢复行为当成主体能力，而不是“补几条失败案例意思一下”。
 
-![图 9：参数修复与重试流程图](../../images/part10/10_7_fig09_recovery_flow.png)
+![图 P07-9](../../images/part10/10_7_fig09_recovery_flow.png)
+*图 P07-9：参数修复与重试流程图*
 
 ---
 
@@ -633,7 +660,8 @@ memory 解决的是状态问题。它让系统能够：
 
 因为 memory 的正确行为通常非常依赖规范。如果把它完全交给线上自然生成，很难得到高质量、可解释的训练信号。相反，早期通过受控模板显式构造，反而更容易建立稳定基础。
 
-![图 10：Memory 读写轨迹示意图](../../images/part10/10_7_fig10_memory_trajectory.png)
+![图 P07-10](../../images/part10/10_7_fig10_memory_trajectory.png)
+*图 P07-10：Memory 读写轨迹示意图*
 
 ---
 
@@ -667,7 +695,8 @@ block 样本的价值，不只是让模型学会说“不行”，而是让它�
 
 因为安全边界如果只在推理侧用规则补，很容易出现“模型想做，规则在拦”的对抗状态。更好的方式是让模型在训练时就学会哪些事情不该做。
 
-![图 11：Unsafe block 决策分流图](../../images/part10/10_7_fig11_unsafe_block.png)
+![图 P07-11](../../images/part10/10_7_fig11_unsafe_block.png)
+*图 P07-11：Unsafe block 决策分流图*
 
 ---
 
@@ -694,6 +723,7 @@ block 样本的价值，不只是让模型学会说“不行”，而是让它�
 
 例如 `render_context()` 会把不同事件统一改写成可读的文本形式：
 
+Listing P07-7 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 # src/prepare_agent_dataset.py
 
@@ -709,9 +739,11 @@ def render_context(events: list[dict]) -> list[str]:
     return rendered
 ```
 
+该片段的作用是把上述流程转化为可检查的结构化表示。
+
 这一步很像把“系统日志”翻译成“训练可消费语境”。
 
-而 `build_records()` 更进一步，它并不是一条轨迹只产出一条样本，而是沿着步骤不断产出带 `record_id`、`trajectory_id`、`task_id`、`category`、`variant` 等字段的监督记录。这也是为什么最终训练集虽然只有 `22` 条原始轨迹，却能形成 `103` 条训练记录。
+而 `build_records()` 更进一步，它并不是一条轨迹只产出一条样本，而是沿着步骤不断产出带 `record_id`、`trajectory_id`、`task_id`、`category`、`variant` 等字段的监督记录。在本章示例中，`22` 条原始轨迹可扩展为 `103` 条训练记录；正式复现实验应同步保留轨迹清单和构建日志。
 
 ### 14.3 训练接口层产物
 
@@ -725,7 +757,8 @@ def render_context(events: list[dict]) -> list[str]:
 
 这说明项目的输出已经不是“几份运行结果”，而是一组可直接被训练侧消费的资产。
 
-![图 12：事件日志到训练样本重组图](../../images/part10/10_7_fig12_dataset_repacking.png)
+![图 P07-12](../../images/part10/10_7_fig12_dataset_repacking.png)
+*图 P07-12：事件日志到训练样本重组图*
 
 ---
 
@@ -845,7 +878,8 @@ def render_context(events: list[dict]) -> list[str]:
 
 这一步非常重要，因为它让本章不只是“有一份 notebook 讲故事”，而是“有一条代码可验证、产物可核查、报告可回溯的工程闭环”。
 
-![图 13：评估与检查双闭环图](../../images/part10/10_7_fig13_eval_and_checks.png)
+![图 P07-13](../../images/part10/10_7_fig13_eval_and_checks.png)
+*图 P07-13：评估与检查双闭环图*
 
 ---
 
@@ -895,7 +929,8 @@ def render_context(events: list[dict]) -> list[str]:
 
 除了当前指标外，还可以增加更细粒度的工具选择准确率、参数正确率、重试效率、最终回答质量和多轮一致性指标。
 
-![图 14：P07 后续演进路线图](../../images/part10/10_7_fig14_roadmap.png)
+![图 P07-14](../../images/part10/10_7_fig14_roadmap.png)
+*图 P07-14：P07 后续演进路线图*
 
 ---
 

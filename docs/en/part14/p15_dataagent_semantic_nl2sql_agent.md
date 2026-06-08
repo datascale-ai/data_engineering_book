@@ -147,9 +147,13 @@ The project architecture has six layers. The following figure organizes entry, o
 
 ![Layered architecture for a DataAgent enterprise semantic BI assistant](../../images/part14/p15_dataagent_semantic_bi_layered_architecture_en.png)
 
+*Figure P15-1: Layered architecture for the DataAgent enterprise semantic BI assistant*
+
 The overall architecture diagram from the DataAgent repository is:
 
 ![DataAgent overall architecture](../../images/part14/p15_dataagent_agent_excalidraw_en.png)
+
+*Figure P15-2: Overall architecture of the DataAgent repository*
 
 ### 4.1 Interface Layer
 
@@ -222,20 +226,55 @@ DataAgent runtime state, message traces, tool outputs, and workspace files provi
 
 ## 5. Engineering Prerequisites: Database, Semantic Layer, and Runtime Environment
 
+This chapter depends on DataAgent, Semantic Service, a value-match service, and optional A2A service exposure. To make the case executable rather than only descriptive, the published version should explicitly freeze versions, installation steps, environment variables, and the minimal local run path. If the actual repository changes, use the companion code repository's `requirements`, `pyproject.toml`, example YAML files, and release notes as the source of truth, and record the corresponding tag or commit in this section.
+
+### 5.0 Version and Minimal Environment Matrix
+
+| Component | Minimal Reproduction Requirement | Version Record |
+| --- | --- | --- |
+| DataAgent | Install from the same Git tag, commit, or package version. | Record `DATAAGENT_VERSION` or `DATAAGENT_COMMIT` in the report. |
+| Python/uv | Use an isolated virtual environment, preferably installed through `uv sync`. | Record Python version, uv version, and lockfile hash. |
+| Business database | Use SQLite for minimal reproduction; replace with MySQL, PostgreSQL, or Hive in production. | Record connection type, read-only permissions, and sample database path. |
+| Semantic Service | Provide tables, fields, joins, metric definitions, and vector retrieval. | Record service URL, index version, and schema snapshot. |
+| value match | Provide field-value matching and literal-value validation. | Record service URL, value-index version, and refresh time. |
+| A2A service | Enable only when external agents need to call this assistant. | Record host, port, token source, and exposure scope. |
+
+*Table P15-1: Minimal environment matrix for the DataAgent semantic BI assistant*
+
 ### 5.1 Install the Project
 
 DataAgent is an open-source agent data engineering framework: [https://github.com/datagallery-ai/DataAgent](https://github.com/datagallery-ai/DataAgent).
 
-Install dependencies from the repository root:
+First pin the version, then install dependencies from the repository root:
+
+```bash
+git clone https://github.com/datagallery-ai/DataAgent.git
+cd DataAgent
+git checkout <release-tag-or-commit>
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -U pip uv
+```
+
+Install with `uv`:
 
 ```bash
 uv sync
 ```
 
-Or with pip:
+Or install with pip:
 
 ```bash
 pip install -e .
+```
+
+After installation, record at least:
+
+```bash
+python --version
+uv --version
+python -c "import dataagent; print(getattr(dataagent, '__version__', 'unknown'))"
+git rev-parse --short HEAD
 ```
 
 ### 5.2 Configure Model Environment Variables
@@ -245,6 +284,25 @@ DataAgent model configuration comes from the `MODEL` section of YAML. Put keys i
 ```bash
 export LLM_BASE_URL="https://your-compatible-endpoint/v1"
 export LLM_API_KEY="your-api-key"
+export LLM_MODEL_NAME="your-chat-model"
+export DATAAGENT_WORKSPACE="/tmp/dataagent-semantic-bi-demo"
+export DATAAGENT_CONFIG="dataagent/core/flex/examples/nl2sql_flex_e2e_subagent.yaml"
+export SEMANTIC_SERVICE_URL="http://127.0.0.1:32000"
+export VALUE_MATCH_URL="http://127.0.0.1:8000"
+export A2A_AUTH_TOKEN="replace-with-local-dev-token"
+```
+
+On Windows PowerShell, use:
+
+```powershell
+$env:LLM_BASE_URL="https://your-compatible-endpoint/v1"
+$env:LLM_API_KEY="your-api-key"
+$env:LLM_MODEL_NAME="your-chat-model"
+$env:DATAAGENT_WORKSPACE="D:\tmp\dataagent-semantic-bi-demo"
+$env:DATAAGENT_CONFIG="dataagent/core/flex/examples/nl2sql_flex_e2e_subagent.yaml"
+$env:SEMANTIC_SERVICE_URL="http://127.0.0.1:32000"
+$env:VALUE_MATCH_URL="http://127.0.0.1:8000"
+$env:A2A_AUTH_TOKEN="replace-with-local-dev-token"
 ```
 
 ### 5.3 Prepare the Business Database
@@ -270,6 +328,8 @@ Semantic Service should carry:
 
 A vector database can act as the primary vector retrieval backend for improving candidate schema recall.
 
+For the minimal local path, use "SQLite + local Semantic Service + local value match" as the recommended combination. Preparation should complete three tasks: place the SQLite sample database at a stable path; import table descriptions, field descriptions, join relations, and metric definitions into Semantic Service; and build a value-match index for high-frequency filter fields such as enums, customer tiers, regions, and product categories. If a production-grade service is not available, provide a mock or minimal index file in the companion resources and state its coverage in the report.
+
 ### 5.5 Prepare the Workspace
 
 The workspace is where project assets are persisted. After the main agent calls the NL2SQL sub-agent, the workspace stores:
@@ -284,6 +344,28 @@ Use an isolated workspace for each task or user session:
 ```text
 /tmp/dataagent-semantic-bi-demo/session-001
 ```
+
+### 5.6 Minimal Local Run Path
+
+The minimal local run does not require A2A service exposure or production database access. The recommended path is:
+
+1. Pin a DataAgent tag or commit and complete `uv sync`.
+2. Prepare a read-only SQLite sample database, for example `/tmp/dataagent-demo/demo.sqlite`.
+3. Start or configure local Semantic Service and confirm that `SEMANTIC_SERVICE_URL` is reachable.
+4. Start or configure local value match and confirm that `VALUE_MATCH_URL` is reachable.
+5. Update `DATABASE`, `SEMANTIC_SERVICE`, and `workspace` in `nl2sql_flex_e2e_subagent.yaml`.
+6. Launch one read-only query through the SDK or CLI and check whether `.sql` and `.csv` files are persisted.
+7. Save runtime logs, SQL, CSV, config snapshots, and service versions as acceptance evidence.
+
+Listing P15-1 gives a command-line example for the minimal local run path.
+
+```bash
+uv run -m dataagent \
+  --config "$DATAAGENT_CONFIG" \
+  --workspace "$DATAAGENT_WORKSPACE"
+```
+
+This snippet connects installation, configuration, semantic services, and workspace into a reviewable minimal runtime entry point.
 
 ## 6. Configure the Main Agent: YAML as Application
 
@@ -388,6 +470,8 @@ Each node has a distinct responsibility.
 | Executor | Executes SQL and returns columns, rows, and rows preview. |
 | Selector | Chooses final SQL, result, and confidence. |
 
+*Table P15-2: Core nodes and responsibilities of the NL2SQL sub-agent*
+
 Minimal config:
 
 ```yaml
@@ -449,6 +533,8 @@ Semantic Service provides this structured context before SQL generation.
 | Value match | Checks whether literals exist in data. |
 | Vector database index | Turns business descriptions, metric definitions, and field semantics into retrievable assets. |
 
+*Table P15-3: Key Semantic Service capabilities and engineering value*
+
 Semantic Service should not be treated as "extra documentation." It is the upstream data engineering layer of NL2SQL. Without it, the model guesses from table and field names; with it, the model can generate SQL from business semantics, field descriptions, and join relations.
 
 ## 9. Tool Invocation: How the Main Agent Delegates to the NL2SQL Sub-agent
@@ -460,6 +546,8 @@ Semantic Service should not be treated as "extra documentation." It is the upstr
 | `query` | Natural-language query for the NL2SQL sub-agent. It should include business goal, metric definition, filters, grouping, and output fields. |
 | `sql_filename` | Filename for saved SQL. |
 | `csv_filename` | Filename for saved query result CSV. |
+
+*Table P15-4: Input parameters of `nl2sql_sub_agent_tool`*
 
 At runtime the tool:
 
@@ -491,30 +579,9 @@ Before running, confirm:
 
 A complete BI task can be described as:
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant M as Main Agent
-    participant T as nl2sql_sub_agent_tool
-    participant S as NL2SQL Sub-agent
-    participant V as Semantic Service
-    participant D as Business Database
-    participant W as Workspace
+![Runtime flow of the DataAgent enterprise semantic BI assistant](../../images/part14/p15_dataagent_semantic_bi_sequence_en.svg)
 
-    U->>M: Ask a business data question
-    M->>M: Parse goal, metrics, and filters
-    M->>T: Call tool with query, sql_filename, csv_filename
-    T->>S: Create temporary NL2SQL config and start sub-agent
-    S->>V: Retrieve candidate tables, fields, joins, and value matches
-    V-->>S: Return schema semantic context
-    S->>S: Generate, validate, reflect, and select SQL
-    S->>D: Execute final SQL
-    D-->>S: Return columns and rows
-    S-->>T: Return SQL and query result
-    T->>W: Save SQL file and CSV file
-    T-->>M: Return file paths and execution summary
-    M-->>U: Return business explanation, SQL/CSV paths, and risk notes
-```
+*Figure P15-3: Runtime flow of the DataAgent enterprise semantic BI assistant*
 
 ### 10.2 Run with SDK
 
@@ -618,6 +685,8 @@ Semantic BI assistant evaluation should cover SQL, data, answer, and engineering
 | Trace completeness | Whether tool calls, inputs, outputs, errors, and file paths are traceable. |
 | Safety violation rate | Whether unauthorized paths, sensitive fields, or disallowed SQL operations appear. |
 
+*Table P15-5: Evaluation metrics for the enterprise semantic BI assistant*
+
 SQL execution success is only the baseline. A real BI assistant must also choose the right schema, explain metric definitions, produce reviewable results, and make failures diagnosable.
 
 ## 13. Testing and Acceptance: From E2E to Business Regression Set
@@ -646,6 +715,8 @@ Enterprise deployment also needs a business regression set:
 | TopN ranking | Top 10 customers by sales amount. |
 | Metric-definition sensitivity | New customers, repeat purchase rate, conversion rate, average order value. |
 | Abnormal input | Nonexistent field, ambiguous metric definition, unauthorized query. |
+
+*Table P15-6: Business regression question types for enterprise BI*
 
 Each test sample should include:
 
@@ -833,6 +904,8 @@ Check at least these gates before launch:
 | Faithfulness gate | Final answers do not invent numbers outside query results. |
 | Safety gate | Paths, databases, sensitive fields, SQL types, and A2A authentication all have boundaries. |
 | Review gate | Tool calls, errors, file paths, and final answers are traceable. |
+
+*Table P15-7: Pre-launch gate checklist for the DataAgent semantic BI assistant*
 
 ## Topic: Why This Case Is Better Than Plain NL2SQL for a Project Chapter
 

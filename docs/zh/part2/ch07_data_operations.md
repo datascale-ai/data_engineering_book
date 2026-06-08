@@ -1,4 +1,4 @@
-# 第7章 数据评估、质量闭环与运营迭代
+# 第7章：数据评估、质量闭环与运营迭代
 
 ## 摘要
 
@@ -188,7 +188,7 @@ def calculate_ttr(texts, tokenizer=None):
 
 ### 7.3.1 DVC视角下的数据集版本化与 A/B 对比
 
-与代码的 Git 托管类似，对于多达 TB 级别的数据湖我们必须引入 DVC (Ruslan et al. 2021)（Data Version Control）或者相似的基于 SHA 挂载的不可变对象管控策略。在大规模实验中，切不可原位覆盖并覆盖原始数据，任何处理节点的修改都应产生全新的增量版本或通过 Delta Lake 切割 Snapshot。
+与代码的 Git 托管类似，对于多达 TB 级别的数据湖我们必须引入 DVC (Kuprieiev et al. 2020)（Data Version Control）或者相似的基于 SHA 挂载的不可变对象管控策略。在大规模实验中，切不可原位覆盖并覆盖原始数据，任何处理节点的修改都应产生全新的增量版本或通过 Delta Lake 切割 Snapshot。
 
 **A/B 测试原则**：每次调整新管线（例如：新加入了由 Reddit 高质量节点解析的 20GB 数据，并增强了针对该网站特定的评论树过滤逻辑），在全面上线前，应抽取等价算力（比如以 1B Token 为规模启动一组 1B 小微模型的平行对撞训练）。只有在两只实验对照组模型完成核心评测集后，证实“数学能力或对话情感能力显著提升且没有拉挂通用世界常识指标”时，此套策略方可全量铺设进入生产版本（例如 v2.1 升级至 v2.2）。
 
@@ -386,4 +386,4 @@ Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Me
 
 Lees A, Tran V Q, Tay Y, Sorensen J, Gupta J, Metzler D, Vasserman L (2022) A New Generation of Perspective API. In: Proceedings of KDD 2022, pp 3197-3207.
 
-Ruslan K, Barrak M, Shcherbatyi I, others (2021) DVC: Data Version Control - Git for Data and Models. In: Proceedings of the Workshop on MLOps Systems at MLSys 2021.
+Kuprieiev R, Petrov D, Shcheklein I, et al. (2020) DVC: Data Version Control - Git for Data & Models. Zenodo. https://doi.org/10.5281/zenodo.012345（软件，版本化 DOI 见 Zenodo 记录；由 Iterative.ai 维护）

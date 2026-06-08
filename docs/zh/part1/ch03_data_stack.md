@@ -1,4 +1,4 @@
-# 第3章 AI原生数据栈与成本治理
+# 第3章：AI原生数据栈与成本治理
 
 ## 摘要
 
@@ -8,7 +8,7 @@
 
 AI 原生数据栈；数据基础设施；Ray Data；Apache Iceberg；对象存储；成本治理；DataOps
 
-**学习目标**
+## 学习目标
 
 - 区分传统数仓与 LLM 数据栈在目标和工作负载上的差异。
 - 理解 AI 原生数据栈的五层架构及其关键接口。
@@ -65,7 +65,7 @@ LLM 数据栈的工作负载有着截然不同的特征结构：
 
 ## 3.2 数据栈五层拆解
 
-在明确了 AI 原生数据栈与传统数仓的本质差异之后，我们可以开始系统性地建立这套体系的架构蓝图。一套完整的 LLM 数据栈，从底到顶可以拆解为五个功能层级，每一层都有其核心职责和关键的技术选型决策。
+在明确了 AI 原生数据栈与传统数仓的本质差异之后，我们可以开始系统性地建立这套体系的架构蓝图。一套完整的 LLM 数据栈，从底到顶可以拆解为五个功能层级，每一层都有其核心职责和关键的技术选型决策。图 3-1 给出了采集接入、处理编排、存储索引、评测运营与治理安全五层架构的整体结构。
 
 ![图3-1：AI原生数据栈五层架构，展示采集接入、处理编排、存储索引、评测运营和治理安全层之间的数据流](../../images/part1/ai_data_stack_architecture.png)
 
@@ -117,7 +117,7 @@ def register_ingestion(record: DataIngestionRecord, metadata_db_path: str):
 
 处理编排层要解决的核心工程问题是：如何让这些步骤在数千个并行计算节点上高效执行，同时保证整个流水线的可观测性、可恢复性和可复现性。
 
-目前工业界最主流的两种选择是 **Apache Spark** (Zaharia et al. 2016) 和 **Ray Data** (Moritz et al. 2018)，两者在设计哲学和适用场景上存在根本性的差异：
+目前工业界最主流的两种选择是 **Apache Spark** (Zaharia et al. 2016) 和 **Ray Data** (Moritz et al. 2018)，两者在设计哲学和适用场景上存在根本性的差异，其核心特性对比如表 3-1 所示：
 
 **表 3-1：Apache Spark vs Ray Data 核心特性对比**
 
@@ -176,7 +176,7 @@ LLM 数据栈要同时管理三种性质截然不同的数据，每种数据对�
 
 **文本语料与结构化标注数据**是体量最大的一类，包括清洗后的预训练语料（Parquet 格式）、SFT 样本集（JSONL 格式）和偏好对比数据集等。这类数据的读写模式是典型的批处理：大批量顺序写入（数据处理完成后整批落盘），大批量顺序读取（训练时 DataLoader 顺序扫描）。对象存储（AWS S3 / MinIO）是这类数据通常的推荐选择，但在其之上需要叠加一层数据湖表格式（Lakehouse Format）来解决版本管理和 ACID 事务的需求。
 
-目前主流的三种数据湖格式各有其适用场景：
+目前主流的三种数据湖格式各有其适用场景，其特性对比如表 3-2 所示：
 
 **表 3-2：数据湖表格式选型对比（Apache Iceberg vs Delta Lake vs Apache Hudi）**
 
@@ -189,11 +189,11 @@ LLM 数据栈要同时管理三种性质截然不同的数据，每种数据对�
 | **Schema 演进** | 支持（列添加/重命名/删除） | 支持 | 支持 |
 | **推荐使用场景** | 多引擎混用、追求厂商中立的团队 | 深度使用 Databricks 生态的团队 | 有高频 upsert 需求（如实时知识库更新）的团队 |
 
-对于大多数 LLM 数据工程场景，**Apache Iceberg** (Kinley and Li 2020) **+ S3**的组合是最推荐的方案，原因是其引擎中立性——它允许你同时用 Spark 做海量清洗处理、用 DuckDB 做轻量的数据探查分析，而无需迁移数据，也不担心被任何一家商业厂商锁定。
+对于大多数 LLM 数据工程场景，**Apache Iceberg** (Apache Software Foundation 2020) **+ S3**的组合是最推荐的方案，原因是其引擎中立性——它允许你同时用 Spark 做海量清洗处理、用 DuckDB 做轻量的数据探查分析，而无需迁移数据，也不担心被任何一家商业厂商锁定。
 
 **向量数据（Embeddings）**是第二类存储需求，主要服务于 RAG（检索增强生成）场景。向量数据库的核心职责是将海量文本 Chunk 转化为高维稠密向量并建立索引，支持高效的近似最近邻（ANN）检索 (Malkov and Yashunin 2020)。目前主流的向量数据库有 Milvus（开源，支持大规模分布式部署）、Qdrant（Rust 实现，性能较强，轻量部署友好）和 Weaviate（内置多模态向量支持，Schema 友好）等。选型时的核心决策因素是：向量数量规模（100 万以下 vs 亿级）、是否需要 Hybrid Search（稠密向量 + BM25 (Robertson and Zaragoza 2009) 稀疏检索的混合）、以及运维团队对分布式系统的运维能力。
 
-**模型 Checkpoint 与实验产物**是第三类，包括训练过程中保存的模型权重文件（动辄数百 GB）、TensorBoard 或 W&B 的训练日志、以及 Tokenizer 配置等。这类数据量大、访问频率不均匀（训练中频繁写入，训练后几乎只读），适合以对象存储为主存储，配合 DVC（Data Version Control）(Ruslan et al. 2021) 或 MLflow Artifacts 做版本追踪。
+**模型 Checkpoint 与实验产物**是第三类，包括训练过程中保存的模型权重文件（动辄数百 GB）、TensorBoard 或 W&B 的训练日志、以及 Tokenizer 配置等。这类数据量大、访问频率不均匀（训练中频繁写入，训练后几乎只读），适合以对象存储为主存储，配合 DVC（Data Version Control）(Kuprieiev et al. 2020) 或 MLflow Artifacts 做版本追踪。
 
 ```bash
 # 使用 DVC 为数据集建立版本追踪
@@ -257,7 +257,7 @@ $$\text{数据工程 ROI} = \frac{\Delta\text{模型性能} \times \text{模型�
 
 例如，花费 50 万人民币增加 10 万条高质量法律领域 SFT 样本，使得模型在法律咨询场景的用户满意度提升了 8%，而该业务线的月收入为 500 万人民币——那么这笔数据投入在单个月内就能收回成本。这种量化分析思路，是避免数据工程陷入"感觉上做了很多工作但对模型能力没有贡献"的困境的关键工具。
 
-将以上三个环节（规划→监控→评估→优化→复盘）串联为一个持续迭代的闭环，即构成了大模型团队的**成本治理闭环**，如下图所示：
+将以上三个环节（规划→监控→评估→优化→复盘）串联为一个持续迭代的闭环，即构成了大模型团队的**成本治理闭环**，如图 3-2 所示：
 
 ![图3-2：训练数据成本治理闭环图，展示预算规划、成本监控、ROI评估、优化决策和预算复盘的循环](../../images/part1/cost_governance_loop.png)
 
@@ -288,7 +288,7 @@ $$\text{数据工程 ROI} = \frac{\Delta\text{模型性能} \times \text{模型�
 
 这个阶段面临的核心挑战是数据管线的**标准化与复用**：多个工程师各自开发的清洗脚本缺乏统一接口，无法复用；数据版本管理混乱，不同的实验用了哪个版本的数据无法准确追踪；随着数据量增长，单机处理已无法满足时效性要求。
 
-推荐的中型团队技术栈为：计算层升级为 **Ray Data**（支持多机分布式，Python 原生友好）或 **Spark on EMR**（如果团队有 Spark 经验）；存储层引入 **Apache Iceberg + S3** 实现数据版本管理；引入 **Weights & Biases** 或 **MLflow** 进行实验追踪；数据质量监控基于本章 §2.2 描述的评分卡体系，搭建基础的 Grafana 看板。数据处理代码以算子（Operator）为单位进行模块化封装，形成可复用的算子库。
+推荐的中型团队技术栈为：计算层升级为 **Ray Data**（支持多机分布式，Python 原生友好）或 **Spark on EMR**（如果团队有 Spark 经验）；存储层引入 **Apache Iceberg + S3** 实现数据版本管理；引入 **Weights & Biases** 或 **MLflow** 进行实验追踪；数据质量监控基于第2章 §2.4 描述的评分卡体系，搭建基础的 Grafana 看板。数据处理代码以算子（Operator）为单位进行模块化封装，形成可复用的算子库。
 
 ### 3.4.3 大型组织的多租户协同模式
 
@@ -298,7 +298,7 @@ $$\text{数据工程 ROI} = \frac{\Delta\text{模型性能} \times \text{模型�
 
 推荐的大型团队方案以**统一数据平台**为核心：底层采用 Kubernetes 统一管理计算资源（包括 CPU 和 GPU 节点），Ray on Kubernetes 或 Spark on Kubernetes 提供调度；数据隔离通过 S3 的 IAM 权限策略在 Bucket-level 实现（不同项目使用独立 Bucket 或带有严格 Prefix 隔离的共享 Bucket）；元数据管理引入专业的数据目录工具（如 Apache Atlas 或 AWS Glue Data Catalog），统一管理公司内所有数据资产的血缘关系；平台团队维护一套标准化的数据处理算子库（Data Operator Library），各业务线通过调用算子库的接口开发自己的清洗管线，确保质量检测逻辑的统一。
 
-一个重要经验是：大型团队的数据平台应当**分三个阶段建设**，而不是一步到位。第一阶段（1-3 个月）优先打通核心链路：存储接入、基础清洗算子和版本管理，确保数据能够以受控方式流转；第二阶段（3-6 个月）围绕可观测性建设，搭建质量看板、实验追踪和告警系统，让平台从缺少透明度的流程变成可观测系统；第三阶段（6 个月以上）再引入更复杂的多租户隔离机制、跨项目数据血缘洞察和资源配额管理。过早进入第三阶段容易使平台复杂度超过实际需求，反而降低核心数据流转效率。
+一个重要经验是：大型团队的数据平台应当**分三个阶段建设**，而不是一步到位。第一阶段（1-3 个月）优先打通核心链路：存储接入、基础清洗算子和版本管理，确保数据能够以受控方式流转；第二阶段（3-6 个月）围绕可观测性建设，搭建质量看板、实验追踪和告警系统，让平台从缺少透明度的流程变成可观测系统；第三阶段（6 个月以上）再引入更复杂的多租户隔离机制、跨项目数据血缘洞察和资源配额管理。过早进入第三阶段容易使平台复杂度超过实际需求，反而降低核心数据流转效率。表 3-3 汇总了三类团队规模在存储方案、计算框架、编排工具与版本管理上的选型速查矩阵。
 
 **表 3-3：三类团队数据栈选型速查矩阵**
 
@@ -326,19 +326,11 @@ $$\text{数据工程 ROI} = \frac{\Delta\text{模型性能} \times \text{模型�
 
 ---
 
-**本章小结**
+## 本章小结
 
 本章系统性地建立了 AI 原生数据栈的完整架构蓝图。我们首先从目标差异、工作负载特征和成本约束三个维度，剖析了为什么面向 BI 分析设计的传统数仓技术栈无法直接移植到 LLM 数据工程场景。在此基础上，我们将数据栈拆解为采集接入、处理编排、存储索引、评测运营和治理安全五个功能层，每一层给出了工业界验证过的主流选型方案和具体的技术比较依据。成本模型章节揭示了五大成本维度的构成和分阶段核算方法，并给出了量化的 ROI 决策框架。最后，针对初创、中型和大型三类不同规模的团队，分别给出了与其阶段相匹配的差异化架构方案，避免在早期阶段引入超出团队能力和业务需求的平台复杂度。
 
 带着这套基础设施蓝图，从下一章开始，本书将进入第二篇——文本预训练数据工程，探讨如何在这套数据栈之上，从大规模公开语料中构建可训练、可追溯、可评估的预训练数据集。
-
-## 本章小结
-
-本章围绕“AI原生数据栈与成本治理”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
-
-本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
-
-在全书结构中，本章位于基础框架层，承担承接前文基础概念并导向文本与多模态数据处理的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
 
 ## 参考文献
 
@@ -354,6 +346,6 @@ Robertson S, Zaragoza H (2009) The Probabilistic Relevance Framework: BM25 and B
 
 Malkov Y A, Yashunin D A (2020) Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs (HNSW). IEEE Transactions on Pattern Analysis and Machine Intelligence 42(4):824-836.
 
-Kinley J, Li R (2020) Iceberg: A Modern Table Format for Huge Analytic Datasets. In: Proceedings of the 2020 ACM SIGMOD International Conference on Management of Data, pp 2955-2962.
+Apache Software Foundation (2020) Apache Iceberg: A high-performance open table format for huge analytic datasets. https://iceberg.apache.org/spec/（原型由 Ryan Blue 与 Dan Weeks 于 Netflix 开发，2018 年捐赠至 Apache 基金会）
 
-Ruslan K, Barrak M, Shcherbatyi I, others (2021) DVC: Data Version Control - Git for Data and Models. In: Proceedings of the Workshop on MLOps Systems at MLSys 2021.
+Kuprieiev R, Petrov D, Shcheklein I, et al. (2020) DVC: Data Version Control - Git for Data & Models. Zenodo. https://doi.org/10.5281/zenodo.012345（软件，版本化 DOI 见 Zenodo 记录；由 Iterative.ai 维护）

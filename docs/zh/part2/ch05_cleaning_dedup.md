@@ -1,4 +1,4 @@
-# 第5章 清洗、去重与去污染
+# 第5章：清洗、去重与去污染
 
 ## 摘要
 
@@ -222,7 +222,11 @@ class MinHashLSH:
 
     def ngrams(self, text: str) -> Set[int]:
         t = text.lower().replace(' ', '')
-        return {hash(t[i:i+self.ngram]) % self.p for i in range(len(t)-self.ngram+1)}
+        # 注意：使用 hashlib 而非内建 hash()，后者受 PYTHONHASHSEED 影响，
+        # 跨进程不可复现，会导致分布式去重的签名不一致。
+        def stable_hash(s: str) -> int:
+            return int.from_bytes(hashlib.md5(s.encode('utf-8')).digest()[:8], 'big')
+        return {stable_hash(t[i:i+self.ngram]) % self.p for i in range(len(t)-self.ngram+1)}
 
     def signature(self, shingles: Set[int]) -> np.ndarray:
         sig = np.full(self.num_hashes, np.inf)
@@ -512,8 +516,6 @@ Penedo G, Kydlíček H, allal L B, Lozhkov A, Mitchell M, Raffel C, Von Werra L,
 Penedo G, Malartic Q, Hesslow D, Cojocaru R, Cappelli A, Alobeidli H, Pannier B, Almazrouei E, Launay J (2023) The RefinedWeb Dataset for Falcon LLM: Outperforming Curated Corpora with Web Data Only. In: Advances in Neural Information Processing Systems 36.
 
 Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur C, Bogin B, Chandu K, Dumas L, Elazar Y, others (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.
-
-Lees A, Tran V Q, Tay Y, Sorensen J, Gupta J, Metzler D, Vasserman L (2022) A New Generation of Perspective API. In: Proceedings of KDD 2022, pp 3197-3207.
 
 Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.
 

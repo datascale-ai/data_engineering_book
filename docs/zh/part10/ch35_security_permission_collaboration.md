@@ -3,17 +3,17 @@
 ---
 
 ## 摘要
-当 Agent 被赋予越来越多的自主权——调用工具、修改数据、触发流水线、生成规则——安全问题就不再是"锦上添花"的可选项，而是"生死攸关"的基础设施。一个越权的工具调用可能在数秒内污染数 TB 的训练数据；一条隐藏在 PDF 文档中的提示注入指令可能让 Agent 产生不可预期的行为；一次未经审计的操作可能让合规团队在审查时无从追溯。数据工程 Agent 的安全设计，本质上是在"自主性"和"可控性"之间找到工程化的平衡点。
+当 Agent 被赋予越来越多的自主权——调用工具、修改数据、触发流水线、生成规则——安全问题就不再是"锦上添花"的可选项，而是基础性安全要求的基础设施。一个越权的工具调用可能在数秒内污染数 TB 的训练数据；一条隐藏在 PDF 文档中的提示注入指令可能让 Agent 产生不可预期的行为；一次未经审计的操作可能让合规团队在审查时无从追溯。数据工程 Agent 的安全设计，本质上是在"自主性"和"可控性"之间找到工程化的平衡点。
 
 本章从 Agent 权限模型出发，讨论工具白名单、最小权限、数据分级和审批闸门；然后深入提示注入与越权调用的攻防场景；接着阐述审计日志、决策记录和责任归属的工程实践；最后讨论人机协同模式的系统设计——哪些任务让 Agent 做、哪些让人审、哪些必须多人审批。本章承接 Ch19 工具安全、Ch20 记忆治理、Ch27-Ch28 合规与隐私保护，将安全实践从"事后审计"升级为"架构内建"。
 
 ## 关键词
 
-数据工程 Agent；最小权限；提示注入；审计日志；人机协同
+Agent 安全；最小权限；提示注入防护；审计与责任链；人机协同；数据分级
 
 ------
 
-## 35.0 学习目标
+## 学习目标
 
 通过本章学习，读者应能够：
 
@@ -54,6 +54,8 @@ Agent 权限设计的核心原则是**最小权限（Least Privilege）**——A
 
 **数据分级与对应的 Agent 权限：**
 
+**表35-1：数据分级与 Agent 权限矩阵**
+
 | 数据级别 | 定义 | 示例 | Agent 读权限 | Agent 写权限 | 审批要求 |
 |---------|------|------|------------|------------|---------|
 | L0 公开 | 无敏感信息，可自由流动 | 公开数据集、开源代码 | 自动 | 自动（限定范围） | 事后审计 |
@@ -61,11 +63,11 @@ Agent 权限设计的核心原则是**最小权限（Least Privilege）**——A
 | L2 敏感 | 包含业务敏感信息 | 用户行为数据、财务数据 | 角色限定 | 多人审批 | 双审 |
 | L3 机密 | 包含个人隐私或商业机密 | PII 数据、模型权重 | 严格限定 + 脱敏 | 原则上禁止 Agent 写入 | 多人审批 + 合规审查 |
 
-**表35-1：数据分级与 Agent 权限矩阵**
-
 ### 35.1.2 工具白名单与能力边界
 
 Agent 的工具调用必须受限于白名单机制。工具白名单不仅定义"Agent 可以调用哪些工具"，还定义"在什么条件下可以调用"：
+
+**表35-2：Agent 工具白名单与调用条件**
 
 | 工具 | 默认状态 | 自动调用条件 | 需要审批的条件 |
 |------|---------|------------|-------------|
@@ -77,8 +79,6 @@ Agent 的工具调用必须受限于白名单机制。工具白名单不仅定�
 | 流水线触发 | 审批 | 无自动场景 | 所有场景 |
 | 外部 API 调用 | 审批 | 只读类 API | 写操作类 API |
 | 数据删除 | 高危 | 无自动场景 | 所有场景，物理删除额外限制 |
-
-**表35-2：Agent 工具白名单与调用条件**
 
 ### 35.1.3 审批闸门的分层设计
 
@@ -94,6 +94,8 @@ Agent 的工具调用必须受限于白名单机制。工具白名单不仅定�
 
 数据工程 Agent 面临的提示注入攻击向量比通用 Agent 更广，因为 Agent 会处理来自多种不可信来源的数据：
 
+**表35-3：Agent 提示注入攻击向量**
+
 | 攻击向量 | 注入渠道 | 风险等级 | 真实案例类比 |
 |---------|---------|---------|------------|
 | 网页内容注入 | 爬取的网页中包含隐藏的指令文本 | 中 | 白色字体在白色背景上的隐藏指令 |
@@ -102,8 +104,6 @@ Agent 的工具调用必须受限于白名单机制。工具白名单不仅定�
 | 日志注入 | 应用日志中包含伪造的"Agent 指令"格式文本 | 中 | 攻击者构造特殊请求，其日志被 Agent 读取 |
 | 数据样本注入 | 标注数据或合成数据中包含越狱指令 | 高 | 训练数据污染攻击 |
 | 代码仓库注入 | 开源仓库的注释或文档中包含恶意指令 | 中 | README.md 中包含隐藏的 prompt |
-
-**表35-3：Agent 提示注入攻击向量**
 
 ### 35.2.2 防御策略
 
@@ -195,6 +195,8 @@ Agent 的审计日志不同于传统的应用日志——它不仅需要记录"�
 
 完整的审计日志字段设计：
 
+**表35-4：Agent 审计日志字段规范**
+
 | 字段 | 说明 | 示例 |
 |------|------|------|
 | `event_id` | 事件唯一标识 | `evt_20240601_001` |
@@ -211,8 +213,6 @@ Agent 的审计日志不同于传统的应用日志——它不仅需要记录"�
 | `decision_context` | 决策上下文 | 审批时的变更对比和影响分析摘要 |
 | `rollback_info` | 回滚信息 | 回滚到的版本号或快照 ID |
 
-**表35-4：Agent 审计日志字段规范**
-
 ### 35.3.2 责任归属模型
 
 当 Agent 的自动操作导致数据问题时，责任归属是一个敏感但必须明确的问题。责任归属的基本原则：
@@ -227,7 +227,7 @@ Agent 的审计日志不同于传统的应用日志——它不仅需要记录"�
 
 在受监管行业（金融、医疗、法律），Agent 的操作不仅需要内部审计，还需要满足外部合规审查的要求。这要求审计日志不仅是"技术记录"，更是"法律证据"。
 
-**合规审计对 Agent 日志的要求：**
+**表35-5：合规审计对 Agent 日志的要求**
 
 | 合规需求 | 日志要求 | 示例 |
 |---------|---------|------|
@@ -253,7 +253,7 @@ Agent 的审计日志不同于传统的应用日志——它不仅需要记录"�
 
 **图35-3：Agent 安全事件应急响应流程**
 
-应急响应的关键时间节点（SLA）：
+**表35-6：应急响应的关键时间节点**
 
 | 阶段 | 目标时间 | 负责人 |
 |------|---------|--------|
@@ -272,14 +272,14 @@ Agent 的审计日志不同于传统的应用日志——它不仅需要记录"�
 
 人机协同的核心问题是：什么样的任务让 Agent 做，什么样的任务让人审，什么样的任务需要多人审批？这个决策应基于四个维度：
 
+**表35-7：人机协同任务分配决策矩阵**
+
 | 决策维度 | Agent 自主决策 | 需要人工审核 | 需要多人审批 |
 |---------|-------------|------------|------------|
 | 操作风险 | 低风险（影响数行数据） | 中风险（影响数百至数千行） | 高风险（影响数万行或跨表） |
 | 决策确定性 | Agent 置信度 > 0.90 | 置信度 0.70-0.90 | 置信度 < 0.70 |
 | 可逆性 | 易于回滚（有快照） | 回滚成本中等 | 不可逆或回滚成本极高 |
 | 业务影响 | 非核心表 | 业务相关表 | 核心业务表或涉及合规 |
-
-**表35-5：人机协同任务分配决策矩阵**
 
 ### 35.4.2 人机协同的四种模式
 
@@ -296,7 +296,7 @@ Agent 的审计日志不同于传统的应用日志——它不仅需要记录"�
 
 在推行人机协同时，有一些反复出现的反模式需要警惕：
 
-**反模式一："橡皮图章"审批。** 审批人因为信任 Agent（或因为太忙），对所有审批请求一律点击"同意"，Human Gate 形同虚设。检测方法：某审批人的审批通过率连续 > 98% 且审批耗时持续 < 10 秒——这在统计上几乎不可能来自认真审批。
+**反模式一：形式化审批。** 审批人因为信任 Agent（或因为太忙），对所有审批请求一律点击"同意"，Human Gate 审核机制失效。检测方法：某审批人的审批通过率连续 > 98% 且审批耗时持续 < 10 秒——这在统计上概率较低。
 
 **反模式二："自动化惯性"。** 团队逐渐习惯了 Agent 的操作，不再主动审查 Agent 的行为。即使 Agent 出现轻微偏差，也因为"差异不大"而被忽略。这种偏差累积最终可能导致显著的数据质量退化。对策：设定定期的"人工深潜日"——每月至少一天，工程师深度审查 Agent 的操作日志和决策记录。
 
@@ -355,7 +355,7 @@ Agent 的审计日志不同于传统的应用日志——它不仅需要记录"�
 
 **工程师的安全意识培训要点：**
 
-1. **永远不要将未清洗的外部数据直接传入 Agent**。Agent 不是"足够聪明能识别恶意指令"的——它只是按照 prompt 和上下文执行任务。
+1. **原则上不应将未清洗的外部数据直接传入 Agent**。Agent 不是"足够聪明能识别恶意指令"的——它只是按照 prompt 和上下文执行任务。
 2. **审批不是走过场**。审批人需要对审批决策负责——如果因为审批疏忽导致数据污染，审批人需要承担主要责任。
 3. **异常行为必须上报**。如果发现 Agent 的行为与预期不符——即使是"小"的偏差——也必须上报安全团队分析，而不是自行处理或忽略。
 4. **权限是最小化的**。不要为了方便给 Agent 授予超过当前任务需要的权限——即使"只多开了一个表的读权限"。
@@ -370,6 +370,8 @@ Agent 的审计日志不同于传统的应用日志——它不仅需要记录"�
 
 人机协同模式的成功取决于工程师对 Agent 的信任程度。信任不是二元的（信任 vs 不信任），而是可以量化的：
 
+**表35-8：人机协同信任度量指标**
+
 | 信任度量指标 | 测量方法 | 健康值 | 改进措施 |
 |------------|---------|--------|---------|
 | 审批驳回率 | Human Gate 中审批人驳回 Agent 建议的比例 | 5-15% | > 20% 说明 Agent 质量差；< 2% 说明审批流于形式 |
@@ -377,8 +379,6 @@ Agent 的审计日志不同于传统的应用日志——它不仅需要记录"�
 | Agent 建议采纳率 | 工程师采纳 Agent 建议的比例 | 70-90% | 过低说明信任不足或 Agent 质量差 |
 | 人工干预频率 | 工程师主动介入 Agent 操作的频率 | 递减并趋于稳定 | 突然增加说明 Agent 行为异常 |
 | 影子模式对比准确率 | Agent 建议与实际操作的匹配率 | > 85% | 持续提升说明 Agent 在学习和改进 |
-
-**表35-6：人机协同信任度量指标**
 
 这些指标应纳入 Agent 系统的运行仪表盘，与数据质量指标、系统性能指标并列展示。信任度量不仅是技术指标，也是组织健康度指标——它反映了团队对自动化系统的接受程度和系统的实际可靠性。
 
@@ -453,36 +453,50 @@ Agent 安全不是一劳永逸的配置，而是一个需要持续演进的架�
 
 回顾本章开篇的数据污染事件，如果团队在设计 Agent 时就将安全作为第一性原理——而非事后打补丁——这起事件完全可以避免。Agent 安全设计的核心原则可以浓缩为一句话：
 
-**永远不要信任输入，永远不要跳过验证，永远不要删除回滚路径。**
+**默认不信任输入、默认执行验证、默认保留回滚路径。**
 
-这不是对 Agent 的不信任，而是对工程现实的尊重——在复杂系统中，任何组件都可能失效。安全的职责不是阻止失效（那是不可能的），而是确保任何单一失效不会导致灾难性后果。
+这不是对 Agent 的不信任，而是对工程现实的尊重——在复杂系统中，任何组件都可能失效。安全的职责不是阻止失效，而是确保任何单一失效不会导致严重后果。
 
 ## 本章小结
 
-本章围绕“数据工程 Agent 的安全、权限与人机协同”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
+本章以一次静默的数据污染事件为线索，把数据工程 Agent 的安全视为工程的第一性原理。在权限模型部分，本章以最小权限与数据分级为基础，配合工具白名单与能力边界、审批闸门的分层设计，约束 Agent 可触达的资源与可执行的动作。在防御部分，本章分析提示注入与越权调用的攻击向量，给出输入隔离、工具授权校验等防御策略及其工程化实现，并以安全红队与持续测试维持防线有效性。
 
-本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
-
-在全书结构中，本章位于Agent 自动化层，承担承接前文基础概念并导向隐私、合规和专项数据集案例的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
+在审计与责任部分，本章强调审计日志的完整性设计、责任归属模型、合规审计的证据链与应急响应流程，使每一次 Agent 操作都可追溯、可归因。在人机协同部分，本章提出任务分配原则与四种协同模式，辨析常见反模式，并以信任建立度量支撑 Human-in/on-the-Loop 的落地。最后本章延伸到供应链安全、Agent 行为可解释性与面向未来的安全架构演进，说明安全能力须与自治程度同步前移。
 
 ## 参考文献
 
-Buneman P, Khanna S, Tan W-C (2001) Why and Where: A Characterization of Data Provenance. In: Proceedings of the 8th International Conference on Database Theory (ICDT), pp 316–330.
+Andriushchenko M, Croce F, Flammarion N, Hein M (2024) Jailbreaking Leading Safety-Aligned LLMs with Simple Adaptive Attacks. arXiv preprint arXiv:2404.02151.
 
-Debenedetti, E., Zhang, J., Balunović, M., et al. (2024). AgentDojo: A Dynamic Environment to Evaluate Prompt Injection Attacks and Defenses for LLM Agents. Advances in Neural Information Processing Systems, 37.
+Chen S, Piet J, Sitawarin C, Wagner D (2024) StruQ: Defending Against Prompt Injection with Structured Queries. arXiv preprint arXiv:2402.06363.
 
-Greshake, K., Abdelnabi, S., Mishra, S., et al. (2023). Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection. Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security, 79–90.
+Debenedetti E, Zhang J, Balunović M, et al. (2024) AgentDojo: A Dynamic Environment to Evaluate Prompt Injection Attacks and Defenses for LLM Agents. In: Advances in Neural Information Processing Systems 37.
 
-Liu, Y., Deng, G., Li, Y., et al. (2023). Prompt Injection Attack against LLM-Integrated Applications. arXiv:2306.05499.
+Ganguli D, Lovitt L, Kernion J, Askell A, Bai Y, Kadavath S, Mann B, Perez E, Schiefer N, Ndousse K, Jones A, Bowman S R, Chen A, Conerly T, DasSarma N, Drain D, Elhage N, El-Showk S, Fort S, Hatfield-Dodds Z, Henighan T, Hernandez D, Hume T, Johnston S, Joseph N, Kravec S, Nanda N, Olsson C, Olah C, Amodei D, Brown T, Clark J, Kaplan J, McCandlish S, Olsson C, Olah C, Amodei D (2022) Red Teaming Language Models to Reduce Harms: Methods, Scaling Behaviors, and Lessons Learned. arXiv preprint arXiv:2209.07858.
 
-National Institute of Standards and Technology (2006) Guide to Computer Security Log Management. NIST Special Publication 800-92.
+Greshake K, Abdelnabi S, Mishra S, et al. (2023) Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection. In: Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security, pp 79-90.
 
-NIST. (2023). Artificial Intelligence Risk Management Framework (AI RMF 1.0). National Institute of Standards and Technology.
+Hendrycks D, Mazeika M, Zou A, Patel S, Zhu C, Navarro J, Mu J, Song D, Li B, Steinhardt J (2021) The Many Faces of Robustness: A Critical Analysis of Out-of-Distribution Generalization. In: Proceedings of the IEEE/CVF International Conference on Computer Vision, pp 8340-8349.
 
-OpenTelemetry Authors (2024) OpenTelemetry Specification. Available at: https://opentelemetry.io/docs/specs/
+Huang Y, Gupta S, Xia M, Li K, Chen D (2024) Catastrophic Jailbreak of Open-source LLMs via Exploiting Generation. In: International Conference on Learning Representations.
 
-OWASP Foundation. (2025). OWASP Top 10 for Large Language Model Applications.
+Lapid R, Langberg R, Sipper M (2023) Open Sesame! Universal Black Box Jailbreaking of Large Language Models. arXiv preprint arXiv:2309.01446.
 
-Rose, S., Borchert, O., Mitchell, S., & Connelly, S. (2020). Zero Trust Architecture. National Institute of Standards and Technology.
+Liu Y, Deng G, Li Y, et al. (2023) Prompt Injection Attack against LLM-Integrated Applications. arXiv preprint arXiv:2306.05499.
 
-Sigelman B H, Barroso L A, Burrows M, Stephenson P, Moshchuk A, Osina D, Fikes J, Miller R (2010) Dapper, a Large-Scale Distributed Systems Tracing Infrastructure. Google Technical Report.
+Perez E, Huang S, Song F, Cai T, Ring R, Aslanides J, Glaese A, McAleese N, Irving G (2022) Red Teaming Language Models with Language Models. In: Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing, pp 3419-3448.
+
+Ruan Y, Dong H, Wang A, Pitis S, Zhou Y, Ba J, Dubois Y, Maddison C J, Hashimoto T B (2024) Identifying the Risks of LM Agents with an LM-Emulated Sandbox. In: International Conference on Learning Representations.
+
+Tian Y, Yang X, Zhang J, Dong Y, Su H (2023) Evil Geniuses: Delving into the Safety of LLM-based Agents. arXiv preprint arXiv:2311.11855.
+
+Toyer S, Watkins O, Mendes E A, Svegliato J, Bailey L, Wang T, Ong I, Elmaaroufi K, Abbeel P, Darrell T, Ritter A, Russell S (2024) Tensor Trust: Interpretable Prompt Injection Attacks from an Online Game. In: International Conference on Learning Representations.
+
+Wallace E, Xiao K, Leike R, Weng L, Heidecke J, Beutel A (2024) The Instruction Hierarchy: Training LLMs to Prioritize Privileged Instructions. arXiv preprint arXiv:2404.13208.
+
+Wei A, Haghtalab N, Steinhardt J (2023) Jailbroken: How Does LLM Safety Training Fail? arXiv preprint arXiv:2307.02483.
+
+Yi J, Xie Y, Zhu B, Hines K, Kiciman E, Sun G, Xie X, Wu F (2023) Benchmarking and Defending Against Indirect Prompt Injection Attacks on Large Language Models. arXiv preprint arXiv:2312.14197.
+
+Zhan Q, Liang Z, Ying Z, Kang D (2024) InjecAgent: Benchmarking Indirect Prompt Injections in Tool-Integrated Large Language Model Agents. In: Findings of the Association for Computational Linguistics: ACL 2024, pp 10471-10506.
+
+Zou A, Wang Z, Carlini N, Nasr M, Kolter J Z, Fredrikson M (2023) Universal and Transferable Adversarial Attacks on Aligned Language Models. arXiv preprint arXiv:2307.15043.

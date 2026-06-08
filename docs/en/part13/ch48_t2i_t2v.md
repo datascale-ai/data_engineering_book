@@ -117,7 +117,7 @@ Sources include licensed stock video, CC0 or Creative Commons platforms, interna
 
 ### 48.4.2 Shot Segmentation
 
-Long videos should be split into single-shot clips before generative training. PySceneDetect-style tools can detect transitions, but training data needs further filtering: extremely short clips provide little motion, while very long clips are expensive and hard to caption. Chapter 10 covers general segmentation; here the focus is whether a clip is worth training.
+Long videos should be split into single-shot clips before generative training. PySceneDetect-style tools can detect transitions, but training data needs further filtering: extremely short clips provide little motion, while very long clips are expensive and hard to caption. Interface, detector, and parameter details should follow the official PySceneDetect documentation (PySceneDetect Contributors 2026). Chapter 10 covers general segmentation; here the focus is whether a clip is worth training.
 
 ### 48.4.3 Motion Detection
 
@@ -245,7 +245,7 @@ This chapter closes Part 13. The preceding chapters discussed multimodal data co
 
 Betker J, Goh G, Jing L, Brooks T, Wang J, Li L, Ouyang L, Zhuang J, Lee J, Guo Y, others (2023) Improving Image Generation with Better Captions (DALL-E 3). OpenAI Technical Report.
 
-Castellano B (2012) PySceneDetect: Python and OpenCV-based Scene Cut/Transition Detection Program. Available at: https://www.brettcastellano.com/post/pyscenedetect.
+PySceneDetect Contributors (2026) PySceneDetect Documentation. Available at: https://www.scenedetect.com/docs/latest/.
 
 Esser P, Kulal S, Blattmann A, Entezari R, Muller J, Saini H, Levi Y, Lorenz D, Sauer A, Boesel F, others (2024) Scaling Rectified Flow Transformers for High-Resolution Image Synthesis (Stable Diffusion 3). arXiv preprint arXiv:2403.03206.
 

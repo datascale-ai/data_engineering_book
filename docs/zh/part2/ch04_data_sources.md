@@ -1,4 +1,4 @@
-# 第4章 数据源、采集与版权
+# 第4章：数据源、采集与版权
 
 ## 摘要
 
@@ -255,7 +255,7 @@ def parse_warc_to_clean_text(warc_path: str) -> list[dict]:
   "ingestion_time":  "2024-10-15T08:23:41+08:00",
   "license_type":    "cc-crawl-mixed",           // 采集时判定的许可类型
   "license_risk":    "medium",                   // low / medium / high
-  "language":        "zh",                       // fastText 识别结果
+  "language":        "zh",                       // fastText 识别结果 (Joulin et al. 2017)
   "raw_doc_count":   4280350,
   "raw_size_bytes":  18432000000,
   "parser_version":  "trafilatura==1.6.3",
