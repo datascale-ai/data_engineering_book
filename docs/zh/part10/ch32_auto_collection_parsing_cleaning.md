@@ -3,9 +3,13 @@
 ---
 
 ## 摘要
-数据工程中最琐碎、最耗时的工作往往不在建模阶段，而在数据进门的那一刻——采集用什么方式、解析遇到异常格式如何处理、清洗规则谁来维护、数据质量谁来判断。当数据源从几十个膨胀到几百个，人工制定采集策略和清洗规则的模式迅速崩溃：要么规则维护 backlog 无限积压，要么质量门禁形同虚设。自动化采集与清洗 Agent 的核心任务不是"替代数据工程师"，而是将工程师从重复的规则适配中解放出来，让他们专注于异常处理、规则优化和架构设计。
+数据工程中最琐碎、最耗时的工作往往不在建模阶段，而在数据进门的那一刻——采集用什么方式、解析遇到异常格式如何处理、清洗规则谁来维护、数据质量谁来判断。当数据源从几十个膨胀到几百个，人工制定采集策略和清洗规则的模式迅速崩溃：要么规则维护 backlog 持续积压，要么质量门禁失效。自动化采集与清洗 Agent 的核心任务不是"替代数据工程师"，而是将工程师从重复的规则适配中解放出来，让他们专注于异常处理、规则优化和架构设计。
 
 本章从网页/PDF/API/代码仓库四种典型数据源的自动化采集出发，讨论 Agent 如何自动识别源结构、处理解析异常、生成清洗规则、执行质量过滤，并在必要时触发人工复核。重点落在 Agent 在不确定情况下该如何决策——解析失败时是跳过、修复还是上报？清洗规则冲突时以哪个为准？质量过滤阈值谁来定？本章承接 Ch04 数据采集、Ch05 清洗去重、Ch06 输入管道、Ch02 质量框架，将传统的数据工程实践升级为 Agent 驱动的自适应流水线。
+
+## 关键词
+
+自动化采集；数据解析 Agent；清洗规则生成；质量过滤；人工复核；源结构漂移
 
 ---
 
@@ -21,9 +25,9 @@
 
 ---
 
-## 场景引入：数据源漂移的噩梦
+## 场景引入：数据源漂移风险
 
-某 AI 团队需要为法律大模型构建训练数据集，数据源包括裁判文书网（网页）、法律法规 PDF 文件、司法 API 接口以及开源法律知识仓库。团队最初安排了 5 名工程师全职处理采集和清洗工作。三个月后，情况如下：
+以下为匿名化复合案例，用于说明源结构漂移的典型量级，不代表某个公开项目的实测统计。某 AI 团队需要为法律大模型构建训练数据集，数据源包括裁判文书网（网页）、法律法规 PDF 文件、司法 API 接口以及开源法律知识仓库。团队最初安排了 5 名工程师全职处理采集和清洗工作。三个月后，情况如下：
 
 **网页采集线**：目标网站改版 3 次，每次改版都导致 70% 以上的爬虫规则失效。工程师平均每次需要 2 天修复规则，期间数据流水线空转。
 
@@ -50,7 +54,7 @@
 
 所有数据源采集都可以抽象为三层结构：**连接层 → 提取层 → 结构化层**。Agent 在不同层扮演不同角色。
 
-![四源采集 Agent 统一架构](../../images/part10/ch32_agent_collection_architecture.png)
+![四源采集 Agent 统一架构](../../images/part10/ai_agent_decision_workflow_ch32_01.png)
 
 **图32-1：四源采集 Agent 统一架构**
 
@@ -80,15 +84,15 @@
 
 失败重试策略的设计尤为关键：
 
+**表32-1：采集失败分类与重试策略**
+
 | 失败类型 | 检测方式 | 重试策略 | 最大重试次数 | 超过上限后 |
 |---------|---------|---------|------------|----------|
 | 网络超时 | HTTP 状态码 / 异常 | 指数退避（1s, 2s, 4s, 8s） | 5 | 标记为临时不可用，1h 后重试 |
-| 反爬拦截 | 403 / 验证码页面 | 切换 User-Agent / IP 池 | 3 | 上报人工处理 |
+| 反爬拦截 | 403 / 验证码页面 | 降低速率，暂停采集并人工审批；必要时切换授权 API / 数据合作通道 | 3 | 暂停采集并人工审批 |
 | 结构变化 | 解析结果字段缺失率 > 50% | 触发结构重新探测 | 2 | 生成结构变更告警 |
 | 编码错误 | 乱码检测 | 自动编码检测 + 转码 | 3 | 保留原始字节，标记需人工处理 |
 | 数据量异常 | 采集量偏离历史均值 > 3σ | 暂停采集，生成报告 | 1 | 人工确认后恢复 |
-
-**表32-1：采集失败分类与重试策略**
 
 
 ### 32.1.3 大规模采集的调度与限流策略
@@ -97,6 +101,8 @@
 
 **调度约束条件：**
 
+**表32-2：采集调度约束条件**
+
 | 约束类型 | 说明 | 示例 |
 |---------|------|------|
 | 频率限制 | 目标网站/API 的请求频率上限 | 每秒最多 10 个请求 |
@@ -104,8 +110,6 @@
 | 时间窗口 | 目标源的可访问时间窗口 | 仅工作日 8:00-20:00 开放 |
 | 数据量预估 | 每次采集的预估数据量和耗时 | 全量采集约 2 小时，增量采集约 10 分钟 |
 | 优先级 | 不同数据源对下游的重要性 | 训练数据源 > 评测数据源 > 实验数据源 |
-
-**表32-2：采集调度约束条件**
 
 Agent 的调度策略应支持三种模式：
 
@@ -147,7 +151,7 @@ Agent 的调度策略应支持三种模式：
 
 Agent 的异常处理决策树：
 
-![解析异常处理决策流程](../../images/part10/ch32_parse_exception_decision.png)
+![解析异常处理决策流程](../../images/part10/ai_agent_decision_workflow_ch32_02.png)
 
 **图32-2：解析异常处理决策流程**
 
@@ -224,14 +228,14 @@ Agent 还需对 OCR 结果进行质量评估——将 OCR 输出的文本与已�
 - **全量验证**：规则在沙箱中应对全量匹配数据（而不只是抽检样本）执行，以发现边缘 case。
 - **差异可视化**：差异报告以 Before/After 对照形式展示，突出显示被修改的字段和修改量。
 
+**表32-3：沙箱验证维度与通过条件**
+
 | 验证维度 | 检查内容 | 通过条件 | 不通过时的动作 |
 |---------|---------|---------|-------------|
 | 规则匹配范围 | 规则影响了多少行数据 | 影响行数在预期范围内（偏差 < 20%） | 调整规则适用范围 |
 | 修改正确性 | 修改后的字段值是否合法 | 格式校验 100% 通过，语义校验 > 95% 通过 | 修正规则逻辑 |
 | 副作用检测 | 是否影响了非目标字段 | 非目标字段修改率为 0% | 收紧规则条件 |
 | 性能评估 | 规则在大数据集上的执行时间 | 执行时间 < 预估时间的 150% | 优化规则实现或分批执行 |
-
-**表32-3：沙箱验证维度与通过条件**
 
 ---
 
@@ -243,6 +247,8 @@ Agent 在判断数据质量时，面临的最大挑战不是"判断对错"，而
 
 质量不确定性分流表：
 
+**表32-4：质量不确定性分流表**
+
 | 质量维度 | 高确定性（自动通过） | 中确定性（标记 + 采样审核） | 低确定性（人工复核） |
 |---------|-------------------|------------------------|-------------------|
 | 格式正确性 | 正则/约束 100% 匹配 | 匹配率 80%-99% | 匹配率 < 80% |
@@ -250,8 +256,6 @@ Agent 在判断数据质量时，面临的最大挑战不是"判断对错"，而
 | 语义合理性 | 业务规则全部通过 | 1-2 条业务规则告警 | 3+ 条业务规则告警或多条阻断 |
 | 跨源一致性 | 多源同字段值一致 | 存在轻微差异（格式差异） | 存在实质性差异 |
 | 分布稳定性 | 与历史分布偏差 < 2σ | 偏差 2-3σ | 偏差 > 3σ |
-
-**表32-4：质量不确定性分流表**
 
 ### 32.4.2 人工复核触发条件
 
@@ -265,11 +269,11 @@ Agent 在判断数据质量时，面临的最大挑战不是"判断对错"，而
 6. **Agent 连续修复失败**：同一批次数据 Agent 连续修复 3 次未通过 Verifier。
 
 
-## 32.4.3 质量过滤的自动化流水线设计
+### 32.4.3 质量过滤的自动化流水线设计
 
 质量过滤 Agent 的流水线设计应遵循"宽进严出、分级过滤"的原则。每一级过滤解决一个维度的质量问题，不合格的数据被分流到对应的处理管道，而非简单丢弃。
 
-![质量过滤分级流水线](../../images/part10/ch32_quality_filter_pipeline.png)
+![质量过滤分级流水线](../../images/part10/ai_agent_decision_workflow_ch32_03.png)
 
 **图32-3：质量过滤分级流水线**
 
@@ -283,14 +287,14 @@ Agent 在判断数据质量时，面临的最大挑战不是"判断对错"，而
 
 人工复核队列需要优先级管理，确保高风险和时效性强的样本优先处理：
 
+**表32-5：人工复核优先级与时效管理**
+
 | 优先级 | 触发条件 | 处理时效 | 超时动作 |
 |-------|---------|---------|---------|
 | P0 | 影响下游关键流水线（如模型训练数据出口） | 1 小时内 | 升级通知 + 暂停相关流水线 |
 | P1 | 低确定性质量判断 + 高风险字段 | 4 小时内 | 升级通知 |
 | P2 | 首次处理的新数据源类型 | 24 小时内 | 标记为"待确认"放行 + 后续追溯 |
 | P3 | 质量指标轻微波动 | 72 小时内 | 自动加入下周质量回顾议程 |
-
-**表32-5：人工复核优先级与时效管理**
 
 ------
 
@@ -363,8 +367,8 @@ Agent 在判断数据质量时，面临的最大挑战不是"判断对错"，而
 - **Ch04**：数据采集——本章在其基础上引入 Agent 驱动的自适应采集。
 - **Ch05**：数据清洗与去重——本章将清洗规则维护升级为 Agent 自动生成。
 - **Ch06**：输入管道与特征工程——本章采集管道是其上游。
-- **Ch34**：Agent 架构与任务边界——本章是六层架构在采集清洗场景的具体实现。
-- **Ch36**：标注、合成与评测 Agent——本章输出的清洗数据是其输入。
+- **Ch31**：Agent 架构与任务边界——本章是六层架构在采集清洗场景的具体实现。
+- **Ch33**：标注、合成与评测 Agent——本章输出的清洗数据是其输入。
 
 
 ---
@@ -375,11 +379,11 @@ Agent 在判断数据质量时，面临的最大挑战不是"判断对错"，而
 
 Agent 驱动的自动化采集带来了传统手动采集没有的伦理和合规挑战——当采集速率提升 10 倍、覆盖数据源扩大 10 倍时，原本"微不足道"的问题可能被放大。
 
-**robots.txt 的自动遵守。** Agent 在采集网页数据前，必须自动检查目标网站的 robots.txt 文件，遵守其爬取规则。对于禁止爬取的路径，Agent 应自动跳过并记录。工程师可以为特定数据源配置例外（如与数据源有合作协议），但必须有审批记录。
+**robots.txt 的自动遵守。** Agent 在采集网页数据前，必须自动检查目标网站的 robots.txt 文件，遵守其爬取规则。对于禁止爬取的路径，Agent 应自动跳过并记录。对于已获得明确授权的数据源，Agent 只能在授权范围内采集，并保留授权记录。
 
-**版权与数据使用权的自动检测。** Agent 在采集数据时，应自动检测数据的使用许可——网页的 Terms of Service、API 的使用条款、开源仓库的 License。Agent 不应只采集数据，还应采集"我能用这些数据做什么"的信息。对于使用许可不明确的数据源，标记为"待法律审核"。
+**版权与数据使用权的自动检测。** Agent 在采集数据时，应自动检测数据的使用许可——网页的 Terms of Service、API 的使用条款、开源仓库的 License。Agent 不应只采集数据，还应采集"我能用这些数据做什么"的信息。对于使用许可不明确或存在冲突的数据源，Agent 应暂停采集并提交人工审批，必要时切换到授权 API 或数据合作通道。
 
-**对目标服务器的负载控制。** Agent 的采集速率不应影响目标服务器的正常运行。Agent 应监控目标服务器的响应时间——如果响应时间因采集行为而显著增加，Agent 应自动降低采集速率。
+**对目标服务器的负载控制。** Agent 的采集速率不应影响目标服务器的正常运行。Agent 应监控目标服务器的响应时间——如果响应时间因采集行为而显著增加，Agent 应自动降低采集速率；如果异常持续，应暂停采集并进入人工审批流程，而不是通过切换 User-Agent 或 IP 池规避限制。
 
 ### 数据溯源与可复现性
 
@@ -398,14 +402,6 @@ Agent 自动生成的清洗规则需要版本管理——当规则出现问题�
 - 规则的每次修改都保留完整的变更记录——修改人、修改时间、修改内容、修改原因。
 - 规则回滚时，不仅回滚规则本身，还标记所有受该规则影响的数据批次为"需重新处理"。
 
-
-## 本章参考文献
-
-- Apache Nutch Documentation. https://nutch.apache.org/
-- PyMuPDF (fitz) Documentation. https://pymupdf.readthedocs.io/
-- Great Expectations: Data Quality Framework. https://greatexpectations.io/
-- crawlee: Web scraping and browser automation. https://crawlee.dev/
-
 ## 本章小结
 
 本章围绕“自动化采集、解析与清洗 Agent”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
@@ -416,8 +412,42 @@ Agent 自动生成的清洗规则需要版本管理——当规则出现问题�
 
 ## 参考文献
 
-1. Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., & Cao, Y. (2023). ReAct: Synergizing Reasoning and Acting in Language Models. arXiv:2210.03629.
-2. Schick, T., Dwivedi-Yu, J., Dessì, R., Raileanu, R., Lomeli, M., Hambro, E., Zettlemoyer, L., Cancedda, N., & Scialom, T. (2023). Toolformer: Language Models Can Teach Themselves to Use Tools. arXiv:2302.04761.
-3. NIST. (2023). Artificial Intelligence Risk Management Framework (AI RMF 1.0). National Institute of Standards and Technology.
-4. OWASP Foundation. (2025). OWASP Top 10 for Large Language Model Applications.
-5. OpenTelemetry Authors. (2026). OpenTelemetry Documentation. https://opentelemetry.io/docs/
+Barbaresi A (2021) Trafilatura: A Web Scraping Library and Command-Line Tool for Text Discovery and Extraction. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics, pp 122-131.
+
+Blecher N, Cresci G, Ballas N, Bautista M (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.
+
+Carlini N, Tramer F, Wallace E, Jagielski M, Herbert-Voss A, Lee K, Roberts A, Brown T, Song D, Erlingsson U, Oprea A, Raffel C (2021) Extracting Training Data from Large Language Models. In: Proceedings of the 30th USENIX Security Symposium, pp 2633-2650.
+
+Chen J, Yan X, Lin D, Qu X, Wang Y, Huang X, Zhao Z, Yu T, Zhang Z, Li H, Zheng Y, Xu R, Zhu J, Qiu X (2024) Data-Juicer: A One-Stop Data Processing System for Large Language Models. In: Proceedings of the ACM SIGMOD International Conference on Management of Data, pp 4436-4449.
+
+Chowdhery A, Narang S, Devlin J, Bosma M, Mishra G, Roberts A, Barham P, Chung H W, Sutton C, Gehrmann S, Schuh P, Shi K, Tsvyashchenko S, Maynez J, Rao A, Barnes P, Tay Y, Shazeer N, Prabhakaran V, Reif E, Du N, Hutchinson B, Pope R, Bradbury J, Austin J, Isard M, Gur-Ari G, Yin P, Duke T, Levskaya A, Ghemawat S, Dev S, Michalewski H, Garcia X, Misra V, Robinson K, Fedus L, Zhou D, Ippolito D, Luan D, Lim H, Zoph B, Spiridonov A, Sepassi R, Dohan D, Agrawal S, Omernick M, Dai A M, Pillai T S, Pellat M, Lewkowycz A, Moreira E, Child R, Polozov O, Lee K, Zhou Z, Wang X, Saeta B, Diaz M, Firat O, Catasta M, Wei J, Meier-Hellstern K, Eck D, Dean J, Petrov S, Fiedel N (2022) PaLM: Scaling Language Modeling with Pathways. Journal of Machine Learning Research 24(240):1-113.
+
+Dodge J, Sap M, Marasović A, Agnew W, Ilharco G, Groeneveld D, Mitchell M, Gardner M (2021) Documenting Large Webtext Corpora: A Case Study on the Colossal Clean Crawled Corpus. In: Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing, pp 1286-1305.
+
+Gao L, Biderman S, Black S, Golding L, Hoppe T, Foster C, Phang J, He H, Thite A, Nabeshima N, Presser S, Leahy C (2020) The Pile: An 800GB Dataset of Diverse Text for Language Modeling. arXiv preprint arXiv:2101.00027.
+
+Huang Y, Lv T, Cui L, Lu Y, Wei F (2022) LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. In: Proceedings of the 30th ACM International Conference on Multimedia, pp 4083-4091.
+
+Kim G, Hong T, Yim M, Nam J, Park J, Yim J, Hwang W, Yun S, Han D, Park S (2022) OCR-free Document Understanding Transformer. In: European Conference on Computer Vision, pp 498-517.
+
+Laurençon H, Saulnier L, Wang T, Akiki C, del Moral A V, Le Scao T, Von Werra L, Mou C, González Ponferrada E, Nguyen H, Frohberg J, Šaško M, Lhoest Q, McMillan-Major A, Dupont G, Biderman S, Rogers A, Allal L B, De Toni F, Pistilli G, Nguyen O, Nikpoor S, Masoud M, Labbé S, Vial T, Reusch A, Yogatama D, Raffel C, Wolf T, BigScience Workshop (2022) The BigScience ROOTS Corpus: A 1.6TB Composite Multilingual Dataset. In: Advances in Neural Information Processing Systems 35, Datasets and Benchmarks Track.
+
+Lee K, Ippolito D, Nystrom A, Zhang C, Eck D, Callison-Burch C, Carlini N (2022) Deduplicating Training Data Makes Language Models Better. In: Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics, pp 8424-8445.
+
+Longpre S, Mahari R, Lee A, et al. (2023) The Data Provenance Initiative: A Large Scale Audit of Dataset Licensing and Attribution in AI. arXiv preprint arXiv:2310.16787.
+
+Nguyen T, et al. (2024) CulturaX: A Cleaned, Enormous, and Multilingual Dataset for Large Language Models in 167 Languages. In: Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation.
+
+Ortiz Suárez P J, Sagot B, Romary L (2020) A Monolingual Approach to Contextualized Word Embeddings for Mid-Resource Languages. In: Proceedings of the 12th Language Resources and Evaluation Conference, pp 1703-1714.
+
+Pfitzmann B, Auer C, Dolfi M, Nassar A S, Staar P (2022) DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis. In: Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 3743-3751.
+
+Penedo G, Kydlíček H, Allal L B, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. In: Advances in Neural Information Processing Systems 37, Datasets and Benchmarks Track.
+
+Penedo G, Malartic Q, Hesslow D, Cojocaru R, Cappelli A, Alobeidli H, Pannier B, Almazrouei E, Launay J (2023) The RefinedWeb Dataset for Falcon LLM: Outperforming Curated Corpora with Web Data Only. In: Advances in Neural Information Processing Systems 36.
+
+Raffel C, Shazeer N, Roberts A, Lee K, Narang S, Matena M, Zhou Y, Li W, Liu P J (2020) Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. Journal of Machine Learning Research 21(140):1-67.
+
+Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur A, Bogin B, Chen X, Dumas G, Elazar Y, Hofmann V, Jha A H, Kumar S, Lucy L, Lyu X, Lambert N, Magnusson I, Morrison J, Muennighoff N, Naik A, Nam G, Peters M E, Ravichander A, Richardson L, Shen Z, Strubell E, Subramani N, Tafjord O, Walsh N, Zettlemoyer L, Smith N A, Hajishirzi H, Beltagy I, Groeneveld D, Dodge J, Lo K (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.
+
+Wenzek G, Lachaux M-A, Conneau A, Chaudhary V, Guzmán F, Joulin A, Grave E (2020) CCNet: Extracting High Quality Monolingual Datasets from Web Crawl Data. In: Proceedings of the 12th Language Resources and Evaluation Conference, pp 4003-4012.

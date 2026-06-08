@@ -378,21 +378,13 @@ NSFW、版权和水印过滤不能压成一个总分来处理。总分看起来�
 
 ---
 
-## 48.8 本章小结
+## 本章小结
 
 T2I 与 T2V 的数据工程，已经从早期的“采集—清洗”升级为“采集—过滤—重写—路由—审计”。DALL·E 3 和 SD3 说明，caption 质量会直接影响 prompt following；HunyuanVideo 和 Open-Sora 说明，视频生成需要把运动、镜头、光照、风格和时空关系写进监督文本；Wan2.2 提醒我们，电影感和美学标签正在成为视频生成数据的新重点；FLUX 则代表另一种现实：模型能力可以公开展示，完整数据链却未必会被披露。
 
 对于工程实践，最重要的不是记住某个固定阈值，而是建立一套可迁移的数据判断标准：原始媒体是否安全、是否合规、是否清晰、是否有学习价值、是否被准确描述、是否能按训练阶段进入正确的数据桶。只有当这些问题被系统解决，模型架构的上限才有机会真正发挥出来。
 
 本章也是第十一篇的收尾。前面几章讨论了多模态数据的采集、组织、理解与评估，本章把视角落到生成模型的数据流水线上。生成式 AI 的数据工程并不只是“准备更多素材”，它正在变成一种更精细的数据编排能力：把世界写成模型能学习的语言，把风险留在训练集之外，把质量和风格变成可控制的训练变量。
-
-## 本章小结
-
-本章围绕“多模态生成模型数据工程：T2I 与 T2V 数据流水线”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
-
-本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
-
-在全书结构中，本章位于开源模型数据配方层，承担承接前文基础概念并导向第十四篇的可复现项目案例的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
 
 ## 参考文献
 
@@ -419,4 +411,3 @@ Wan Team (2025) Wan: Open and Advanced Large-Scale Video Generative Models. arXi
 Wang W, Lv Q, Yu W, Hong W, Qi J, Wang Y, Ji J, Yang Z, Zhao L, Song X, others (2023) CogVLM: Visual Expert for Pretrained Language Models. In: Advances in Neural Information Processing Systems 36.
 
 Wu X, Sun K, Zhu F, Zhao R, Li H (2023) Human Preference Score v2: A Solid Benchmark for Evaluating Human Preferences of Text-to-Image Synthesis (HPSv2). arXiv preprint arXiv:2306.09341.
-

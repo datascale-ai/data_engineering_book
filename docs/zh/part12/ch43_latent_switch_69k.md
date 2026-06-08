@@ -2,15 +2,22 @@
 
 ## 摘要
 
-本章以“Latent-Switch-69K 隐式/显式推理数据工程”为专项数据集案例，分析任务定义、样本结构、标注流程、质量控制和评测协议。章节强调该数据集如何验证前文的数据工程方法，并说明其在模型训练、基准评测和产业落地中的适用边界、复现条件与风险控制要求。
+本章以 Latent-Switch-69K 为案例，讨论面向 latent-then-explicit reasoning 的推理数据工程。长 CoT 数据在可解释性和过程监督上有价值，但也会带来 token 成本高、冗余轨迹多、显式验证与隐藏规划边界不清等问题。章节首先说明 Long-CoT 为什么需要被压缩，随后梳理 Latent-Switch-69K 的规模、难度分布、领域构成和核心字段。本章重点分析从 teacher trace 到 solution intuition、压缩 CoT、latent budget、student sequence 和 supervision masks 的数据构建过程，并讨论 mask 不变量、质量控制、偏置风险和复用边界。通过该案例可以看到，推理数据压缩并不是简单删减文本，而是重新定义隐藏规划、显式验证和答案监督之间的关系。
 
 ## 关键词
 
-隐式推理；显式推理；Long-CoT；监督掩码；推理压缩
+Latent-Switch-69K；隐式推理；显式 CoT；latent budget；supervision mask；推理数据压缩
+
+**学习目标**
+- 理解 Long-CoT 在训练成本、显式监督和推理效率上的工程约束。
+- 掌握 solution intuition、compressed CoT、latent placeholder 和 answer mask 的样本角色。
+- 设计 latent budget、student sequence 和 supervision masks 的一致性检查。
+- 评估推理数据压缩中的答案一致性、验证充分性和领域偏置风险。
+- 将 latent-switch 数据思想迁移到数学、代码和复杂指令等自有数据场景。
 
 ## 43.0 开篇问题场景：Long-CoT 为什么还需要被压缩
 
-在第18章到第20章中，我们已经讨论过 Chain-of-Thought、工具调用轨迹和 Agent 交互数据的基本形态。对推理模型而言，长思维链有一个很直观的吸引力：模型把中间步骤写出来，训练者就能检查它是否在按某种可解释的路径解题，推理时也更容易通过自洽采样、验证器或过程奖励模型发现错误。然而，当 Long-CoT 从研究样例变成训练语料时，问题会立刻变得工程化。
+第18章到第20章已经讨论 Chain-of-Thought、工具调用轨迹和 Agent 交互数据的基本形态。对推理模型而言，长思维链具有明确吸引力：模型把中间步骤写出来，训练者就能检查它是否在按某种可解释的路径解题，推理时也更容易通过自洽采样、验证器或过程奖励模型发现错误。然而，当 Long-CoT 从研究样例变成训练语料时，问题会立刻变得工程化。
 
 第一，长 CoT 的 token 成本很高。数学、代码和科学问题中的推导往往占据输出的大部分长度，真正的最终答案只占很小一段。如果所有中间推理都以可见文本形式进入训练和推理，模型需要在大量重复、展开、试探和自我修正的文字上消耗上下文窗口、训练显存和推理时间。第二，长 CoT 并不天然等于高质量推理。有些轨迹只是把简单结论拆得很细，有些轨迹包含错误分支，有些轨迹会在最终答案正确的情况下写出冗余甚至不一致的中间解释。第三，普通 SFT 很难区分“应该被模型内化的高层解题意图”和“必须显式写给用户看的验证过程”。如果把全部 CoT 当作普通目标 token，模型学到的往往是长篇展开的写作习惯，而不是更有效的推理调度方式。
 
@@ -96,7 +103,7 @@ $$
 
 第五阶段是 sequence rendering。系统把 problem、latent placeholder、compressed CoT 和 answer 渲染为 chat-style student sequence。这个阶段需要 tokenizer contract：`<latent_think>`、`</latent_think>`、`<think>`、`</think>` 必须被稳定识别，不能在不同 tokenizer 或不同 special-token 注册方式下被拆成不可预测片段。否则，span 检查和 mask 构造都会不可靠。
 
-第六阶段是 mask materialization。数据加载器根据 token ids 重新定位边界，构造 labels、loss weights 和各种 mask。这个阶段最好不要只依赖原始字符串中的字符偏移，因为 tokenizer 改变会让字符偏移失效。更稳妥的方式是基于 token id 中的 special token 位置构造 span，并在每条样本上校验边界出现次数、顺序、答案区间和 teacher-reference 区间是否有效。
+第六阶段是 mask materialization。数据加载器根据 token ids 重新定位边界，构造 labels、loss weights 和各种 mask。这个阶段不宜只依赖原始字符串中的字符偏移，因为 tokenizer 改变会让字符偏移失效。更稳妥的方式是基于 token id 中的 special token 位置构造 span，并在每条样本上校验边界出现次数、顺序、答案区间和 teacher-reference 区间是否有效。
 
 ## 43.3 Latent budget 与 student sequence：样本如何被渲染
 
@@ -194,7 +201,7 @@ $$
 
 对于数据工程师来说，最实用的检查不是重新推导损失函数，而是确认每条样本的 mask 是否满足几条不变量。第一，prompt 区间所有 labels 都应为 `-100`。第二，latent interior 区间所有 labels 都应为 `-100`，但 latent boundary token 不应被当作普通 prompt mask。第三，`cot_mask` 应覆盖 `<think>` 到 `</think>` 相关位置，且 answer_start 必须在 think_end 之后。第四，`answer_mask` 不应包含 `<|im_end|>`，因为结束 token 可以单独监督。第五，teacher KL mask 不应覆盖 latent interior，因为 teacher reference 本身不含这些 placeholder。
 
-这些不变量最好在数据构造和训练加载两个阶段都检查一次。构造阶段检查可以阻止坏样本入库；训练加载阶段检查可以发现 tokenizer、max_length、截断策略或配置变更带来的新问题。尤其是 max_length 截断，一旦截掉 answer 区间，样本就会只剩结构和推理，没有最终答案监督。代码中因此会在截断后重新构造 spans，并检查 answer_start 是否仍小于 im_end。
+这些不变量应在数据构造和训练加载两个阶段都检查一次。构造阶段检查可以阻止坏样本入库；训练加载阶段检查可以发现 tokenizer、max_length、截断策略或配置变更带来的新问题。尤其是 max_length 截断，一旦截掉 answer 区间，样本就会只剩结构和推理，没有最终答案监督。代码中因此会在截断后重新构造 spans，并检查 answer_start 是否仍小于 im_end。
 
 还有一个细节是显式 CoT 的权重。Latent-Switch-69K 不是要删除显式推理，而是要降低对完整长 CoT 的依赖。若 CoT 权重过高，模型会更倾向于把能力用在复现可见推理文字上；若 CoT 权重过低，模型可能只学会结构和答案，显式验证链变弱。数据侧至少要保留可配置的 `cot_loss_weight` 或等价字段，使训练者能够在不同任务上调整“可见验证”与“最终答案”的平衡。
 
@@ -226,7 +233,7 @@ Latent-Switch-69K 的质量控制不只是过滤脏文本。由于它同时包�
 
 为了让这些报告真正可用，可以为 Latent-Switch-69K 建立一套发布前验收清单。长度层面，检查 source CoT、distilled CoT、intuition、answer 和 total sequence 的分布，重点关注过短和过长样本。过短样本可能没有足够监督，过长样本可能在训练时频繁截断。压缩层面，检查压缩率的均值、中位数、分位数和极端值，确认不是某个来源数据集导致异常。
 
-结构层面，逐条检查四个边界 token 的出现次数和顺序。任何缺失、重复、嵌套或顺序错误都应直接隔离。mask 层面，抽样渲染 token 区间，把 prompt、latent internal、latent boundary、CoT、answer 和 im_end 用不同颜色展示，确认人眼理解与程序 mask 一致。对于一类新数据源，最好至少人工查看几十条样本，尤其是长数学证明、代码函数、选择题和开放问答。
+结构层面，逐条检查四个边界 token 的出现次数和顺序。任何缺失、重复、嵌套或顺序错误都应直接隔离。mask 层面，抽样渲染 token 区间，把 prompt、latent internal、latent boundary、CoT、answer 和 im_end 用不同颜色展示，确认人工理解与程序 mask 一致。对于一类新数据源，建议至少人工查看几十条样本，尤其是长数学证明、代码函数、选择题和开放问答。
 
 语义层面，检查 intuition 是否含有最终答案，compressed CoT 是否能支持答案，answer 是否与 ground truth 或 verifier 一致。对于代码任务，应尽量区分“解释中的思路正确”和“最终代码可运行”两个层面；对于数学任务，应区分“最终数值正确”和“推导链可验证”两个层面。latent-switch 数据的目标是高层规划加显式验证，因此这两个层面都不能完全放弃。
 

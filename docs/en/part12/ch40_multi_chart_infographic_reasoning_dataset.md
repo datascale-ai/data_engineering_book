@@ -12,7 +12,7 @@ The dataset is currently an annotation-stage benchmark without a companion produ
 
 ### 40.1.1 Boundary of Traditional Single-Chart VQA
 
-Mainstream chart VQA datasets such as ChartQA, FigureQA, and PlotQA usually follow a one-image, one-question, single-chart paradigm. One sample image contains one independent chart, and all data, legends, labels, and values needed for answering are contained in that view. The model mainly needs to locate coordinates, read annotated numbers, and perform a one-step arithmetic or classification operation.
+Mainstream chart VQA datasets such as ChartQA, FigureQA, and PlotQA usually follow a one-image, one-question, single-chart paradigm. One sample image contains one independent chart, and all data, legends, labels, and values needed for answering are contained in that single chart. The model mainly needs to locate coordinates, read annotated numbers, and perform a one-step arithmetic or classification operation.
 
 At the task level, single-chart VQA mostly stops at single-step extraction: maximum lookup, category sum, or one ratio calculation. It lacks cross-view data linkage. In standardized lab datasets, chart styles are usually cleaned up: legends are neat, axes are unambiguous, partitions are clear, and there are few surrounding notes. This differs fundamentally from native infographics in the open web and commercial publications.
 
@@ -47,15 +47,19 @@ The dataset samples across 28 vertical fields covering public life, industry, re
 
 Multi-domain design reduces overfitting to a single theme. Chart conventions, legends, and domain abbreviations differ across fields, raising the difficulty of visual-context reasoning.
 
-![Figure 40-1: Domain distribution in the multi-chart infographic reasoning dataset](../../images/part12/ch40_domain.png)
+![Figure 40-1: Domain distribution in the multi-chart infographic reasoning dataset](../../images/part12/ch40_domain_en.png)
+
+*Figure 40-1. Distribution of domain coverage in the Multi-Chart Infographic Reasoning Dataset, spanning 28 fine-grained domains.*
 
 ### 40.2.3 Chart Types and Layout Features
 
-The dataset contains more than 20 common visualization styles, including donut charts, pie charts, radial charts, radial bars, bubble charts, tables, color-block charts, metric cards, ranking cards, leaderboards, map heatmaps, trees, treemaps, bar charts, 3D bars, stacked bars, grouped bars, Gantt charts, line charts, timelines, scatter plots, pictogram charts, and chord diagrams.
+The dataset contains more than 20 common visualization styles, including bar charts, map charts, table charts, card charts, donut charts, pie charts, bubble charts, ranking charts, stacked bar charts, line charts, grouped bar charts, pictograms, treemaps, ranking card charts, chord diagrams, tree diagrams, area charts, radar charts, sankey diagrams, gantt charts, scatter plots, 3d bar charts, and timelines.
 
-Each infographic uses whatever mixed layout the original creator used, such as “map + table + stacked bar + pictogram” or “pie chart + ranking card + line trend.” Different chart types store data differently: tables use rows and columns, maps use geographic regions, pictograms use icon counts, and line charts use temporal sequences. The model must adapt reading rules across formats and then aggregate across them.
+Each infographic uses whatever mixed layout the original creator used, such as “map + table + stacked bar + pictogram” or “pie + ranking card + line.” Different chart types store data differently: tables use rows and columns, maps use geographic regions, pictograms use icon counts, and line charts use temporal sequences. The model must adapt reading rules across formats and then aggregate across them.
 
-![Figure 40-2: Chart type distribution](../../images/part12/ch40_chart.png)
+![Figure 40-2: Chart type distribution](../../images/part12/ch40_chart_en.png)
+
+*Figure 40-2. Distribution of sub-chart types in the Multi-Chart Infographic Reasoning Dataset, covering 23 distinct chart categories.*
 
 ### 40.2.4 Question Types
 
@@ -63,7 +67,9 @@ The subquestions cover 13 reasoning types: value extraction, category recognitio
 
 Questions within one infographic are randomly mixed across types, creating chains such as “maximum lookup + difference calculation + conditional reasoning” or “counting + ratio calculation + visual reasoning.” Extraction questions focus on reading; calculation questions combine multiple values; conditional questions use legends and filters; visual questions use symbols and visual context.
 
-![Figure 40-3: Question type distribution](../../images/part12/ch40_question.png)
+![Figure 40-3: Question type distribution](../../images/part12/ch40_question_en.png)
+
+*Figure 40-3. Distribution of sub-question types in the Multi-Chart Infographic Reasoning Dataset, comprising 13 question categories.*
 
 ### 40.2.5 Standardized Core Tasks
 
@@ -75,17 +81,19 @@ Questions within one infographic are randomly mixed across types, creating chain
 
 ## 40.3 Sample Structure: Shark-Attack Example
 
-The dataset's shark-attack example illustrates infographic layout, subchart partitioning, question chain, evidence locations, and reasoning path.
+The dataset's shark-attack example illustrates subchart partitioning, question chain, evidence locations, and reasoning path.
 
 ### 40.3.1 Physical Layers of One Compound Infographic
 
 ![Figure 40-4: Shark-attack compound infographic example](../../images/part12/ch40_where_the_most_shark_attacks_occur_in_the_united_states_1.jpg)
 
+*Figure 40-4. Example of a multi-chart infographic sample from the dataset (Shark Attacks).*
+
 The example is one integrated science infographic with several subchart regions:
 
 - **Subchart A: Radial chart.** Historical shark-attack county ranking in the United States. Key value: Volusia, Florida has 343 attacks, the county maximum. It supports Q1.
 - **Subchart B: Map chart.** State-level shark attacks in the last ten years. Key values: Florida 242, Hawaii 71. It supports Q2 and Q3.
-- **Subchart C: Tabular chart / side annotation.** Fatal shark-attack species in Massachusetts in 2018. Key answer: Presumed Great White. It supports Q4.
+- **Subchart C: Table chart / side annotation.** Fatal shark-attack species in Massachusetts in 2018. Key answer: Presumed Great White. It supports Q4.
 - **Subchart D: Bar chart.** Average annual accidental deaths in the United States. Key values: falling from bed 450, cats none. It supports Q5 and Q6.
 
 ### 40.3.2 Full Question Chain
@@ -119,7 +127,9 @@ Each infographic includes one question that cannot be answered from the image. T
 
 The dataset construction process has four core stages: collecting and filtering real compound infographics, manually partitioning subchart regions, designing layered question chains, and cross-checking answers. No synthetic charts are generated. Large models can help propose questions, but humans verify and revise them.
 
-![Figure 40-5: Multi-chart infographic dataset construction pipeline](../../images/part12/ch40_pipeline.png)
+![Figure 40-5: Multi-chart infographic dataset construction pipeline](../../images/part12/ch40_pipeline_en.png)
+
+*Figure 40-5. Overview of the four-stage data construction pipeline for the Multi-Chart Infographic Reasoning Dataset.*
 
 ### 40.4.1 Collecting and Filtering Real Infographics
 
@@ -192,3 +202,15 @@ The project currently has annotations but no released baseline algorithm or trai
 ## Conclusion
 
 The multi-chart infographic reasoning dataset starts from real compound infographics and breaks away from the single-chart QA paradigm. It reconstructs chart VQA evaluation around cross-chart aggregation, serial calculation, and visual-context reasoning. The structure of 354 multi-subchart images and 1,917 chained subquestions reflects how people actually read compound data visualizations. The shark-attack example shows that real infographic reasoning requires region-specific evidence retrieval, stepwise calculation, and symbol interpretation. Although the dataset currently lacks companion baselines, it fills an important benchmark gap and can support future cross-modal chart reasoning research.
+
+## References
+
+1. Masry, A., Long, D. X., Tan, J. Q., Joty, S., & Hoque, E. (2022). ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. ACL 2022.
+2. Methani, N., Ganguly, P., Khapra, M. M., & Kumar, P. (2020). PlotQA: Reasoning over Scientific Plots. WACV 2020.
+3. Kahou, S. E., Michalski, V., Atkinson, A., Kádár, Á., Trischler, A., & Bengio, Y. (2017). FigureQA: An Annotated Figure Dataset for Visual Reasoning. arXiv:1710.07300.
+4. Kafle, K., Price, B., Cohen, S., & Kanan, C. (2018). DVQA: Understanding Data Visualizations via Question Answering. CVPR 2018.
+5. Mathew, M., Karatzas, D., & Jawahar, C. V. (2021). DocVQA: A Dataset for VQA on Document Images. WACV 2021.
+6. Masry, A., Islam, M. S., Ahmed, M., Bajaj, A., Kabir, F., Kartha, A., ... & Joty, S. (2025, July). Chartqapro: A more diverse and challenging benchmark for chart question answering. In Findings of the Association for Computational Linguistics: ACL 2025 (pp. 19123-19151).
+7. Xie, T., Lin, M., Liu, M., Ye, Y., Chen, C., & Liu, S. (2026). Infochartqa: A benchmark for multimodal question answering on infographic charts. Advances in Neural Information Processing Systems, 38.
+8. Foroutan, N., Romanou, A., Ansaripour, M., Eisenschlos, J. M., Aberer, K., & Lebret, R. (2025, July). Wikimixqa: a multimodal benchmark for question answering over tables and charts. In Findings of the Association for Computational Linguistics: ACL 2025 (pp. 24941-24958).
+9. Zhu, Z., Jia, M., Zhang, Z., Li, L., & Jiang, M. (2025, April). MultiChartQA: Benchmarking vision-language models on multi-chart problems. In Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) (pp. 11341-11359).
