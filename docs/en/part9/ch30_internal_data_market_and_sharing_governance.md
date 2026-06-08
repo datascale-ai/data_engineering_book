@@ -69,7 +69,7 @@ An internal data market has four basic value propositions:
 
 This is what distinguishes a market from an ordinary catalog. A catalog answers what data exists. A market further answers who can use it, how it can be used, how well it is used, and whether it deserves continued supply.
 
-![Internal data market architecture](../../images/part9/ch30_fig01_zh.png)
+![Internal data market architecture](../../images/part9/ch30_fig01.png)
 
 *Figure 30-1: Internal data market architecture*
 
@@ -135,7 +135,7 @@ A standard process has seven stages:
 6. **Permission provisioning.** The platform writes the approval into permission systems and records scope, expiration, purpose limits, and responsible parties.
 7. **Usage audit and feedback.** The platform records logs, frequency, abnormal behavior, expiration, and feedback, then feeds results into product operations.
 
-![Authorization approval workflow](../../images/part9/ch30_fig02_zh.png)
+![Authorization approval workflow](../../images/part9/ch30_fig02.png)
 
 *Figure 30-2: Authorization approval workflow*
 
