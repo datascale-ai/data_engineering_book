@@ -12,7 +12,7 @@ The dataset is currently an annotation-stage benchmark without a companion produ
 
 ### 40.1.1 Boundary of Traditional Single-Chart VQA
 
-Mainstream chart VQA datasets such as ChartQA, FigureQA, and PlotQA usually follow a one-image, one-question, single-chart paradigm. One sample image contains one independent chart, and all data, legends, labels, and values needed for answering are contained in that view. The model mainly needs to locate coordinates, read annotated numbers, and perform a one-step arithmetic or classification operation.
+Mainstream chart VQA datasets such as ChartQA, FigureQA, and PlotQA usually follow a one-image, one-question, single-chart paradigm. One sample image contains one independent chart, and all data, legends, labels, and values needed for answering are contained in that single chart. The model mainly needs to locate coordinates, read annotated numbers, and perform a one-step arithmetic or classification operation.
 
 At the task level, single-chart VQA mostly stops at single-step extraction: maximum lookup, category sum, or one ratio calculation. It lacks cross-view data linkage. In standardized lab datasets, chart styles are usually cleaned up: legends are neat, axes are unambiguous, partitions are clear, and there are few surrounding notes. This differs fundamentally from native infographics in the open web and commercial publications.
 
