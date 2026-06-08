@@ -62,9 +62,13 @@ This project turns raw videos into training samples with structured captions, te
 
 This section organizes a rerunnable, auditable, and scalable T2V data production pipeline on public videos. The input is a batch of Pexels videos. The output is shot-level samples for video generation training. Each sample contains the clip, source metadata, motion strength, aesthetic score, multi-frame caption, shot-language tags, and camera-motion information. This structure is more detailed than ordinary video classification data because a T2V model learns joint correspondences among text, visuals, actions, and shots rather than a single class label.
 
+![P14 Video Generation Data Pipeline](../../images/part14/p14_video_generation_pipeline_en.png)
+
+*Figure P14-1: English architecture diagram of the video generation data pipeline*
+
 The pipeline consists of six components. The first is **video source loading**. It reads a Pexels manifest or local filenames, reprobes duration, fps, resolution, frame count, and file size, and writes author, page link, and license fields into a unified manifest. This creates a base record for source tracing, resolution statistics, duration statistics, and license checks.
 
-The second is **scene splitting**. T2V models usually do not train directly on raw long videos, because a long video may contain multiple shots, scene transitions, and semantic breaks. The pipeline uses PySceneDetect's ContentDetector (Castellano 2012) to detect scene boundaries and ffmpeg to cut videos into single-shot clips. Each clip receives a `shot_id` and records its start time, end time, source video, segment index, and local path.
+The second is **scene splitting**. T2V models usually do not train directly on raw long videos, because a long video may contain multiple shots, scene transitions, and semantic breaks. The pipeline uses PySceneDetect's ContentDetector to detect scene boundaries and ffmpeg to cut videos into single-shot clips; interface and parameter details should follow the official PySceneDetect documentation (PySceneDetect Contributors 2026). Each clip receives a `shot_id` and records its start time, end time, source video, segment index, and local path.
 
 The third is **motion filtering**. Video generation models need temporal change, so the training set should not contain too many static clips. The component computes Farneback optical-flow magnitude (Farneback 2003) at proxy resolution and uses `motion_strength` to decide `pass_motion`. It does not classify action semantics; it separates dynamic clips from nearly static image-like clips.
 
@@ -146,7 +150,7 @@ Two details matter. First, all source videos are normalized into consistent JSON
 
 ### Step 2: Split Shots with PySceneDetect
 
-T2V training samples are normally organized by shot, not by raw video boundary. A Pexels video may be one long shot or may contain multiple cuts. Without splitting, captions can merge multiple scenes and create text-video mismatch. We use PySceneDetect's ContentDetector (Castellano 2012) and keep the whole video as one shot if no boundary is found. Segments shorter than one second are usually discarded.
+T2V training samples are normally organized by shot, not by raw video boundary. A Pexels video may be one long shot or may contain multiple cuts. Without splitting, captions can merge multiple scenes and create text-video mismatch. We use PySceneDetect's ContentDetector (PySceneDetect Contributors 2026) and keep the whole video as one shot if no boundary is found. Segments shorter than one second are usually discarded.
 
 ```python
 from scenedetect import open_video, SceneManager, ContentDetector
@@ -541,7 +545,7 @@ The sampled frames show a coastline captured from a high aerial view. Deep blue 
 
 ## References
 
-Castellano B (2012) PySceneDetect: Python and OpenCV-based Scene Cut/Transition Detection Program. Available at: https://www.brettcastellano.com/post/pyscenedetect.
+PySceneDetect Contributors (2026) PySceneDetect Documentation. Available at: https://www.scenedetect.com/docs/latest/.
 
 Chen Z, Wang W, Tian H, Ye S, Gao Z, Cui E, Tong X, Hu J, Luo J, Ma S, others (2024) InternVL3: Exploring Advanced Training and Test-Time Scaling for Vision-Language Models. arXiv preprint arXiv:2504.10479.
 

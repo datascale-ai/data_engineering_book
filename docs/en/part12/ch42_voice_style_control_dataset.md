@@ -342,14 +342,6 @@ The key data engineering work is to separate semantic and style channels; preser
 
 As voice interaction moves from "can speak" to "can speak in a controlled way," the dataset boundary changes as well. Every sample must answer four questions: is the content correct, does the voice condition match the target, does the emotion match the control condition, and is the generation process compliant and traceable? Only when all four hold can controllable voice interaction data become a reliable training asset.
 
-## Chapter Summary
-
-This chapter uses VoiceStyleControl controllable voice interaction data engineering to organize the core issues, processing workflow, and acceptance criteria for this specialized dataset case. Its contribution is to place concepts, data objects, quality signals, and engineering deliverables into one narrative, helping readers judge which stages need explicit records and which results need to be verified through sampling, evaluation, or audit.
-
-The applicability of this chapter's methods should be judged together with data sources, business goals, model capabilities, cost budgets, and compliance requirements. For scenarios involving sensitive information, cross-system calls, automated decision-making, or public release, teams should preserve human review, frozen versions, permission controls, and abnormal rollback mechanisms, rather than extending the example workflow directly into production promises.
-
-Within the structure of the book, this chapter sits in the specialized dataset validation layer. It connects the foundational concepts introduced earlier with open-source model data recipes and project case studies. Readers can use the chapter's framework together with its figures, tables, references, and appendix checklists to turn the methods into reproducible, inspectable, and deliverable engineering workflows.
-
 ## References
 
 An K, Chen Q, Deng C, Du Z, Gao C, Gao Z, Gu Y, He T, Hu H, Hu K, others (2024) FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs. arXiv preprint arXiv:2407.04051.

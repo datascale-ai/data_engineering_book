@@ -1,4 +1,4 @@
-# 第6章 分词、序列化与高效加载
+# 第6章：分词、序列化与高效加载
 
 ## 摘要
 
@@ -60,7 +60,7 @@
 
 目前主流大模型采用的分词算法以三种为主：
 
-**BPE（Byte Pair Encoding）** (Sennrich et al. 2016) 是最广泛使用的算法，GPT 系列（包括 ChatGPT、GPT-4）均基于此。其核心思想是从字符（或字节）级别出发，反复合并出现频率最高的相邻 token 对。
+**BPE（Byte Pair Encoding）** (Sennrich et al. 2016) 是最广泛使用的算法，GPT 系列（包括 GPT-3 (Brown et al. 2020)、ChatGPT、GPT-4）均基于此。其核心思想是从字符（或字节）级别出发，反复合并出现频率最高的相邻 token 对。
 
 代码清单6-1展示了 BPE 合并过程的简化伪代码。
 

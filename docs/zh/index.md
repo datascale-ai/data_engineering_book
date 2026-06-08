@@ -2,7 +2,7 @@
 
 ## 全书目录概览
 
-本书当前中文主线采用 2026 Springer 尺寸版结构，正文覆盖 48 章、15 个端到端项目与 3 个附录。为降低跨篇阅读门槛，本版在前置部分新增统一的缩写表，并为每一篇补充了分册目录页。
+本书当前中文主线采用 2026 Springer 尺寸版结构，正文覆盖 48 章、15 个端到端项目与 7 个附录（A–G）。为降低跨篇阅读门槛，本版在前置部分新增统一的缩写表，并为每一篇补充了分册目录页。
 
 - [缩写表](abbreviations.md)
 - [序言](preface.md)
@@ -170,3 +170,13 @@
 - [项目十三：多模态指令工厂](part14/p13_multimodal_instruction_factory.md)
 - [项目十四：视频生成数据集：从视频源到可用于 T2V 训练的数据流水线](part14/p14_video_generation.md)
 - [项目十五：基于 DataAgent 构建企业级语义问数助手](part14/p15_dataagent_semantic_nl2sql_agent.md)
+
+## 附录
+
+- [附录A：工具与框架速查表](appendix_a_tools_and_frameworks_quick_reference.md)
+- [附录B：合规与上线检查清单](appendix_b_compliance_and_release_checklist.md)
+- [附录C：成本估算与资源模板](appendix_c_cost_estimation_and_resource_templates.md)
+- [附录D：论文到工程化转换指南](appendix_d_paper_to_implementation_guide.md)
+- [附录E：常见数据工程 Bug 调试手册](appendix_e_common_bug_debugging_manual.md)
+- [附录F：术语表与中英文对照](appendix_f_terminology_and_chinese_english_mapping.md)
+- [附录G：MindSpore 简介与致谢](appendix_g_mindspore_note.md)

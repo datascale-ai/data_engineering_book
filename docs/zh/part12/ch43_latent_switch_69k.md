@@ -4,14 +4,19 @@
 
 本章以 Latent-Switch-69K 为案例，讨论面向 latent-then-explicit reasoning 的推理数据工程。长 CoT 数据在可解释性和过程监督上有价值，但也会带来 token 成本高、冗余轨迹多、显式验证与隐藏规划边界不清等问题。章节首先说明 Long-CoT 为什么需要被压缩，随后梳理 Latent-Switch-69K 的规模、难度分布、领域构成和核心字段。本章重点分析从 teacher trace 到 solution intuition、压缩 CoT、latent budget、student sequence 和 supervision masks 的数据构建过程，并讨论 mask 不变量、质量控制、偏置风险和复用边界。通过该案例可以看到，推理数据压缩并不是简单删减文本，而是重新定义隐藏规划、显式验证和答案监督之间的关系。
 
-**关键词**：Latent-Switch-69K；隐式推理；显式 CoT；latent budget；supervision mask；推理数据压缩
+## 关键词
 
-**学习目标**
-- 理解 Long-CoT 在训练成本、显式监督和推理效率上的工程约束。
-- 掌握 solution intuition、compressed CoT、latent placeholder 和 answer mask 的样本角色。
-- 设计 latent budget、student sequence 和 supervision masks 的一致性检查。
-- 评估推理数据压缩中的答案一致性、验证充分性和领域偏置风险。
-- 将 latent-switch 数据思想迁移到数学、代码和复杂指令等自有数据场景。
+Latent-Switch-69K；隐式推理；显式 CoT；latent budget；supervision mask；推理数据压缩
+
+## 学习目标
+
+通过本章学习，读者应能够：
+
+- 理解 Long-CoT 在 token 成本、显式过程监督与推理效率上的工程约束，以及为何需要被压缩。
+- 掌握 solution intuition、compressed CoT、latent placeholder 与 answer mask 在 latent-then-explicit 样本中的角色。
+- 设计 latent budget、student sequence 与 supervision masks 之间的 mask 不变量与一致性检查。
+- 评估推理数据压缩中的答案一致性、验证充分性、压缩边界与领域偏置等风险。
+- 将 latent-switch 的隐藏规划与显式验证分离思想迁移到数学、代码与复杂指令等自有数据场景。
 
 ## 43.0 开篇问题场景：Long-CoT 为什么还需要被压缩
 

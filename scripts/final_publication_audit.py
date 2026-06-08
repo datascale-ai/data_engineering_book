@@ -27,7 +27,7 @@ STYLE_PATTERNS: list[tuple[str, str]] = [
     ("weak-booster", r"真正|很容易|显然|毫无疑问"),
     ("blog-transition", r"换句话说|简单来说|说白了|最怕"),
     ("rhetorical-not-but", r"不是.{0,18}而是"),
-    ("slang", r"踩坑|搞定|一把梭|玄学|爽点|杀手锏"),
+    ("slang", r"踩坑|搞定|一把梭|玄学|爽点|杀手锏|混合面糊|面糊|数据食谱|一锅烩|深水炸弹|翻车|拉垮|拉挂|裸用|词穷|冰冷的账本题|魔咒|毁灭性|无所遁形|骨子里|联姻|极其壮烈|翻天覆地|甘于|开箱即用|小股试错|对撞实验|宣告胜利|无感热切|滚雪球式"),
 ]
 
 REVIEW_TARGETS: list[tuple[str, str, str]] = [
@@ -419,6 +419,9 @@ def main() -> int:
                 "- `style_report.md`：逐章统稿与风格候选表达。",
                 "- `figure_rights_report.md`：图表权属、AI 声明与高清源文件确认清单。",
                 "- `reference_audit_report.md`：参考文献 DOI / URL / 年份 / 样式候选问题。",
+                "- `reference_integrity_audit.md`：正文引用、章末参考文献与外部元数据核验报告。",
+                "- `quantitative_data_audit.md`：全文量化数据、样本规模、比例、成本、性能数值的来源风险清单。",
+                "- `quantitative_source_spotcheck.md`：量化数据外部来源抽样核验记录。",
                 "- `manual_review_checklist.md`：指定抽检章节与高风险篇章人工签核清单。",
                 "- `final_publication_audit.json`：完整机器可读明细。",
                 "",
