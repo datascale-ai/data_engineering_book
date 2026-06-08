@@ -50,7 +50,7 @@ DataOps Agent；平台自治；根因定位；数据回滚；成本治理；运�
 
 ### 34.1.1 告警聚合与优先级排序
 
-DataOps Agent 的第一项能力是告警的智能聚合。Agent 需要从四个维度读取信息，将分散的告警聚合为根因候选。AIOps 与自动化日志分析研究表明，告警聚合、日志解析和事件关联是降低 MTTR 的基础能力，不能只依赖人工值班经验（Dang et al. 2019; He et al. 2021; Zhu et al. 2019）：
+DataOps Agent 的第一项能力是告警的智能聚合。Agent 需从四个维度读取信息，将分散的告警聚合为根因候选。AIOps 与自动化日志分析研究表明，告警聚合、日志解析和事件关联是降低 MTTR 的基础能力，不能只依赖人工值班经验（Dang et al. 2019; He et al. 2021; Zhu et al. 2019）：
 
 ![告警到根因定位 Agent 流程](../../images/part10/ai_agent_decision_workflow_ch34_01.png)
 
