@@ -83,7 +83,7 @@
 
 整条流水线可以拆成六个组件。第一是**视频源加载**。它读取 Pexels manifest 或本地视频文件名，重新探测视频时长、fps、分辨率、帧数和文件大小，并将作者、页面链接、许可字段写入统一清单。该组件为后续来源回溯、分辨率统计、时长统计和授权状态检查提供基础信息。
 
-第二是**镜头切分**。T2V 模型通常不直接使用原始长视频训练，因为长视频内部可能包含多个镜头、场景跳转和语义断裂。流水线使用 PySceneDetect (Castellano 2012) 的 ContentDetector 检测镜头边界，再用 ffmpeg 将视频切成 single-shot clips。每个片段被赋予 `shot_id`，并记录起止时间、所属视频、片段序号和本地路径。此后，所有过滤、caption 和镜头标签都以 `shot_id` 为主键展开。
+第二是**镜头切分**。T2V 模型通常不直接使用原始长视频训练，因为长视频内部可能包含多个镜头、场景跳转和语义断裂。流水线使用 PySceneDetect 的 ContentDetector 检测镜头边界，再用 ffmpeg 将视频切成 single-shot clips；接口与参数细节应以 PySceneDetect 官方文档为准（PySceneDetect Contributors 2026）。每个片段被赋予 `shot_id`，并记录起止时间、所属视频、片段序号和本地路径。此后，所有过滤、caption 和镜头标签都以 `shot_id` 为主键展开。
 
 第三是**运动过滤**。视频生成模型需要学习时间变化，因此训练集中不能混入过多静态片段。该组件在代理分辨率上计算 Farneback (Farnebäck 2003) 光流均值，用 `motion_strength` 衡量片段内部的运动强度，再通过阈值生成 `pass_motion`。该步骤暂不判断动作语义，主要用于区分“有训练价值的动态片段”和“近似静止的图片式片段”。
 
@@ -142,7 +142,7 @@ def load_source_videos(src_dir: Path) -> list[dict]:
 
 ### Step 2：PySceneDetect 切分镜头
 
-T2V 训练样本通常按镜头组织，不直接沿用原始视频边界。一个 Pexels 视频可能只有一个长镜头，也可能包含多个剪辑点。若不做切分，caption 很容易把多个场景揉在一起，训练时文本和画面之间会出现错配。这里使用 PySceneDetect (Castellano 2012) 的 ContentDetector 做镜头检测，并在检测不到边界时把整段视频作为一个 shot。切分阶段还要过滤过短片段，例如小于 1 秒的镜头通常不保留。
+T2V 训练样本通常按镜头组织，不直接沿用原始视频边界。一个 Pexels 视频可能只有一个长镜头，也可能包含多个剪辑点。若不做切分，caption 很容易把多个场景揉在一起，训练时文本和画面之间会出现错配。这里使用 PySceneDetect 的 ContentDetector 做镜头检测（PySceneDetect Contributors 2026），并在检测不到边界时把整段视频作为一个 shot。切分阶段还要过滤过短片段，例如小于 1 秒的镜头通常不保留。
 
 ```python
 from scenedetect import open_video, SceneManager, ContentDetector
@@ -532,7 +532,7 @@ P14 生成的是高质量 video shots 和结构化视频元数据，P13 生成�
 
 ## 参考文献
 
-Castellano B (2012) PySceneDetect: Python and OpenCV-based Scene Cut/Transition Detection Program. Available at: https://www.brettcastellano.com/post/pyscenedetect.
+PySceneDetect Contributors (2026) PySceneDetect Documentation. Available at: https://www.scenedetect.com/docs/latest/.
 
 Bai S, Chen K, Liu X, Wang J, Ge W, Song S, Dang K, Wang P, Wang S, Tang J, others (2025) Qwen2.5-VL Technical Report. arXiv preprint arXiv:2502.13923.
 
