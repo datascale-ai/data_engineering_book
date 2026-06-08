@@ -153,7 +153,7 @@ SD3 的 50/50 混合策略尤其值得借鉴。全量替换成 VLM 生成 captio
 
 和 T2I 相比，T2V 的数据工程更像一条真正的生产线。图像数据只要解决“这张图能不能学”“这段文本配不配得上这张图”两个核心问题；视频数据则要继续处理镜头边界、运动强弱、帧采样方式、时序描述、镜头语言和训练分层。也正因为如此，T2V pipeline 不能简单照搬 T2I 的思路。它的关键不只是把视频转成 caption，而是要把一段连续画面变成“可被模型学习的时空监督”。
 
-这一节遵循一条清晰的主线展开：**视频源 → 镜头切分（PySceneDetect (Castellano 2012)）→ 运动检测 → 多帧采样 caption → 时空对齐 → 镜头语言标注**。其中，镜头切分、关键帧与统一时间轴的底层原理，在第十章已经讨论过；本节不再重复这些通用处理细节，而是强调生成模型如何接管这些中间结果，并把它们组织成可训练的 T2V 数据。
+这一节遵循一条清晰的主线展开：**视频源 → 镜头切分（PySceneDetect）→ 运动检测 → 多帧采样 caption → 时空对齐 → 镜头语言标注**。其中，镜头切分、关键帧与统一时间轴的底层原理，在第十章已经讨论过；本节不再重复这些通用处理细节，而是强调生成模型如何接管这些中间结果，并把它们组织成可训练的 T2V 数据。PySceneDetect 的接口、检测器和参数说明应以官方文档为准（PySceneDetect Contributors 2026）。
 
 从工程角度看，这条流水线的目标很明确：第一，剔除没有学习价值的片段；第二，把保留下来的视频片段转成足够细致、足够可信的文本监督；第三，把动作、镜头和时序这些视频独有的信息显式写入数据。只有这样，视频生成模型学到的才不只是“画面里有什么”，还包括“画面怎么动”“镜头怎么拍”“动作如何发生”。
 
@@ -169,7 +169,7 @@ T2V 数据流水线的起点，通常不是已经清洗好的 clip，而是来�
 
 视频生成训练通常以 **single-shot clip** 为基本单位，而不是整段长视频。原因很简单：一个训练样本如果跨越多个镜头，画面风格、视角、景别和动作逻辑会突然改变，caption 很难写准，模型也会学到混乱的时空对应关系。生成模型尤其怕这种“一个样本里有多个镜头语言”的情况，因为它会削弱 prompt 与输出之间的稳定映射。
 
-因此，在 T2V 数据流水线里，长视频进入系统后，首先要做镜头切分。工程上常见的选择是 **PySceneDetect**。它不是为了生成模型专门设计的工具，但非常适合承担前端切分任务：通过内容差异、亮度变化、边缘变化等信号检测镜头边界，把一段视频拆成相对稳定的 shot-level clips。对于书中这一章来说，PySceneDetect 的意义不在于算法本身多么复杂，而在于它把“原始视频”转换成了“生成模型可消费的最小训练单元”。
+因此，在 T2V 数据流水线里，长视频进入系统后，首先要做镜头切分。工程上常见的选择是 **PySceneDetect**。它不是为了生成模型专门设计的工具，但非常适合承担前端切分任务：通过内容差异、亮度变化、边缘变化等信号检测镜头边界，把一段视频拆成相对稳定的 shot-level clips（PySceneDetect Contributors 2026）。对于书中这一章来说，PySceneDetect 的意义不在于算法本身多么复杂，而在于它把“原始视频”转换成了“生成模型可消费的最小训练单元”。
 
 这里有一个边界需要交代清楚。第十章已经讲过通用镜头切分与关键帧选择，本章不重复算法原理，只强调生成场景下的取舍：  
 第一，**切得过粗不行**。如果一个 clip 同时包含推镜、切镜、人物转场和场景切换，caption 就会变得含混。  
@@ -390,7 +390,7 @@ T2I 与 T2V 的数据工程，已经从早期的“采集—清洗”升级为�
 
 Betker J, Goh G, Jing L, Brooks T, Wang J, Li L, Ouyang L, Zhuang J, Lee J, Guo Y, others (2023) Improving Image Generation with Better Captions (DALL·E 3). OpenAI Technical Report.
 
-Castellano B (2012) PySceneDetect: Python and OpenCV-based Scene Cut/Transition Detection Program. Available at: https://www.brettcastellano.com/post/pyscenedetect.
+PySceneDetect Contributors (2026) PySceneDetect Documentation. Available at: https://www.scenedetect.com/docs/latest/.
 
 Esser P, Kulal S, Blattmann A, Entezari R, Müller J, Saini H, Levi Y, Lorenz D, Sauer A, Boesel F, others (2024) Scaling Rectified Flow Transformers for High-Resolution Image Synthesis (Stable Diffusion 3). arXiv preprint arXiv:2403.03206.
 
