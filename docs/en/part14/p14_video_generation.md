@@ -62,6 +62,10 @@ This project turns raw videos into training samples with structured captions, te
 
 This section organizes a rerunnable, auditable, and scalable T2V data production pipeline on public videos. The input is a batch of Pexels videos. The output is shot-level samples for video generation training. Each sample contains the clip, source metadata, motion strength, aesthetic score, multi-frame caption, shot-language tags, and camera-motion information. This structure is more detailed than ordinary video classification data because a T2V model learns joint correspondences among text, visuals, actions, and shots rather than a single class label.
 
+![P14 Video Generation Data Pipeline](../../images/part14/p14_video_generation_pipeline_en.png)
+
+*Figure P14-1: English architecture diagram of the video generation data pipeline*
+
 The pipeline consists of six components. The first is **video source loading**. It reads a Pexels manifest or local filenames, reprobes duration, fps, resolution, frame count, and file size, and writes author, page link, and license fields into a unified manifest. This creates a base record for source tracing, resolution statistics, duration statistics, and license checks.
 
 The second is **scene splitting**. T2V models usually do not train directly on raw long videos, because a long video may contain multiple shots, scene transitions, and semantic breaks. The pipeline uses PySceneDetect's ContentDetector (Castellano 2012) to detect scene boundaries and ffmpeg to cut videos into single-shot clips. Each clip receives a `shot_id` and records its start time, end time, source video, segment index, and local path.

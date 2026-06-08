@@ -4,7 +4,7 @@
 
 本附录面向“把论文写成工程、把工程写成可复现材料、把材料写成可交付文档”的中间地带。它关心的不是某一篇论文是否足够漂亮，而是**一篇论文、一段方法或一个实验原型，怎样被翻译成团队可执行的实现路径、验证路径和发布路径**。
 
-在真实项目里，很多论文复现失败并不是因为方法本身不可行，而是因为从论文文本到工程实现之间缺少一层结构化翻译。论文常写的是“我们做了什么、效果如何、和谁相比”，工程则必须回答“输入是什么、数据怎么来、边界在哪里、失败时怎么退回、版本如何冻结”。如果没有这层转换，团队往往会在“读懂了论文”与“真的跑通了系统”之间卡住很久。
+在真实项目里，很多论文复现失败并不是因为方法本身不可行，而是因为从论文文本到工程实现之间缺少一层结构化翻译。论文常写的是“我们做了什么、效果如何、和谁相比”，工程则必须回答“输入是什么、数据怎么来、边界在哪里、失败时怎么退回、版本如何冻结”。如果没有这层转换，团队往往会在“读懂了论文”与“真的跑通了系统”之间卡住很久。机器学习系统中的技术债研究已经指出，训练代码、数据依赖、配置和评估链路会共同形成长期维护成本，因此论文复现必须从一开始就关注工程边界（Sculley et al. 2015）。
 
 因此，本附录提供一套面向数据工程与模型复现的转换模板。它更适合以下场景：论文复现、方法落地、课程项目、实验室共建、开源配方整理、案例研究写作和技术评审。
 
@@ -74,6 +74,8 @@
 - 成功标准是什么。
 - 哪些结果要进入复核。
 
+对于准备进入持续维护或发布的复现项目，验收标准不宜只写“指标达到论文水平”。ML Test Score 提供了一种将生产就绪度拆成数据、模型、基础设施和监控等维度的思路，可作为设计验收表时的参考（Breck et al. 2017）。
+
 ### D.4.5 风险与复现模板
 
 建议明确：
@@ -125,7 +127,7 @@
 | 风险说明 | 告诉别人哪里不能乱用 | 适用边界、失效条件、注意事项 |
 | 复盘记录 | 记录为何这样做 | 变更历史、失败样本、经验教训 |
 
-这张表的重要性在于，它把“论文复现”从一次性的实现任务，变成了一个可以被别人接手的工程包。没有这七类材料，很多所谓的“可复现”其实只是“作者本人可以再跑一遍”。
+这张表的重要性在于，它把“论文复现”从一次性的实现任务，变成了一个可以被别人接手的工程包。没有这七类材料，很多所谓的“可复现”其实只是“作者本人可以再跑一遍”。其中的数据说明、模型说明和数据卡片可以分别参考 Datasheets for Datasets、Model Cards 和 Data Cards 中对来源、用途、限制与评测信息的组织方式（Gebru et al. 2021; Mitchell et al. 2019; Pushkarna et al. 2022）。
 
 ## D.9 两个常见落地案例
 
@@ -396,8 +398,8 @@ Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young
 
 Breck E, Cai S, Nielsen E, Salib M, Sculley D (2017) The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction. In: Proceedings of the IEEE International Conference on Big Data, pp 1123-1132.
 
-Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daum茅 III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12): 86-92.
+Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12): 86-92.
 
 Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229.
 
-Pushkarna M, Zaldivar A, Kjartansson O, Cicconi J, Chen V, Efrat A, Zou Y, Mueller J, Taly A, Ehyaei A, Karkkainen K, Marathe A, Han X, Mittal A, Schuster T, Yarmand M, Sohn H, Dwarakanath N C, McCann B (2022) Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 1776-1826.
+Pushkarna M, Zaldivar A, Kjartansson O (2022) Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 1776-1826.
