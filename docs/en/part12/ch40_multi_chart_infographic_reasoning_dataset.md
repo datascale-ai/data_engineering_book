@@ -75,7 +75,7 @@ Questions within one infographic are randomly mixed across types, creating chain
 
 ## 40.3 Sample Structure: Shark-Attack Example
 
-The dataset's shark-attack example illustrates infographic layout, subchart partitioning, question chain, evidence locations, and reasoning path.
+The dataset's shark-attack example illustrates subchart partitioning, question chain, evidence locations, and reasoning path.
 
 ### 40.3.1 Physical Layers of One Compound Infographic
 
