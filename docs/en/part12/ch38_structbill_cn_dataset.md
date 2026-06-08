@@ -8,8 +8,6 @@ This chapter uses the StructBill-CN dataset to explain how to build a trainable,
 
 As the first case in Part 12, this chapter connects document understanding and OCR from Part 3, RAG and document evidence organization from Part 7, data versioning and experiment tracking from Part 8, data assets and contract governance from Part 9, and compliance boundaries from Part 11. It also prepares a Chinese vertical-document engineering example for the VLM data recipes in Part 13 and the multimodal RAG / privacy-pipeline projects in Part 14.
 
-**Source provenance note.** All data scale, business schema, sample JSON, field definitions, evaluation metrics, and SRPO design relationships in this chapter are based on the original material `StructBill-CN_Dataset.docx`. Facts drawn from the full paper or the authors' rebuttal are marked as "**supplementary research**" with their source clearly distinguished from original-material information. This chapter is a data-engineering case study, not a model-paper survey: the focus is on data objects, data flows, quality control, and reproducible evaluation rather than leaderboard results.
-
 ## 38.0 Learning Objectives
 
 After studying this chapter, you should be able to:
@@ -298,8 +296,6 @@ This dataset should not be used:
 Two directions are important. First, **multi-task negative transfer**: mixing arithmetic extraction and semantic classification may create conflicting gradients and degrade numeric fields. Data mixtures, sampling temperature, and curriculum order must be tracked as hyperparameters. Second, **from deterministic constraints to adaptive reward**: current logic reward depends on hand-written arithmetic rules, but future systems may use data-driven adaptive rewards. The schema should therefore include a rule-version dimension so constraints can evolve while evaluation remains reproducible.
 
 StructBill-CN should be treated as an evolvable data contract. Its schema, constraints, and splits are versioned and can grow with downstream VLM and RAG needs.
-
-It is worth noting that the core idea behind StructBill-CN / SRPO — converting discrete schema rules into verifiable RL rewards — has been rapidly extended by multiple independent teams in 2025. MonkeyOCR v1.5 (Zhang et al., 2025) and HunyuanOCR (Hunyuan Vision Team, 2025) use GRPO with render-and-compare mechanisms or hard-constraint rewards to improve visual fidelity and format precision; olmOCR 2 (Poznanski et al., 2025) further abstracts the reward signal into runnable unit tests, implementing binarized verifiable rewards; and DeepSeek-R1 (Guo et al., 2025) demonstrates from the text-only side that RL with verifiable rewards can induce reasoning capabilities without distillation. Meanwhile, next-generation multimodal backbones such as Qwen3-VL (Bai et al., 2025a) and InternVL3.5 (Wang et al., 2025) continue to push perceptual accuracy, while PaddleOCR-VL (Cui et al., 2025) compresses end-to-end document parsing into a 0.9B-parameter model. These advances indicate that the "schema constraint → logic reward → RL alignment" data-consumption pathway introduced in this chapter is evolving from a single-dataset methodology into a general document data-engineering paradigm.
 
 ## Chapter Summary
 

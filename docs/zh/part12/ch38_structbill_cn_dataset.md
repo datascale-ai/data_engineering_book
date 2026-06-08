@@ -123,7 +123,7 @@ StructBill-CN 的每个样本，把一张票据图像与一份预定义 schema �
 
 schema 的三个部分 $\{K, T, C\}$ 与最终的层级 JSON 一一对应：$K$ 落到全局 `key_information` 对象，$T$ 落到 `Fee_List` 数组及其行内字段，$C$ 则不直接成为字段，而是作为「校验关系」贴附在数值字段之上。结构关系如图 38-1。
 
-![Figure 38-1](C:\Users\images\part12\ch38_Figure_38-1.png)
+![Figure 38-1](../../images/part12/ch38_Figure_38-1.png)
 
 *图 38-1：Schema 到层级 JSON 的结构示意 —— 键字段与表结构构成可见的 JSON 节点；约束规则不是节点，而是贴附在金额、总额等数值字段上的可验证关系。*
 
@@ -183,7 +183,7 @@ schema 的三个部分 $\{K, T, C\}$ 与最终的层级 JSON 一一对应：$K$ 
 
 StructBill-CN 通过一条多阶段流水线构建，核心诉求是**同时保留语义内容与业务逻辑拓扑**，并在每一步设置可回溯的质量门禁。整体数据流如图 38-2。
 
-![Figure 38-2](C:\Users\images\part12\ch38_Figure_38-2.png)
+![Figure 38-2](../../images/part12/ch38_Figure_38-2.png)
 
 *图 38-2：StructBill-CN 数据构建流水线 —— 关键设计是第 ⑥ 步与质检门禁：未通过逻辑一致性校验的样本会回流到标注阶段重做，而不是直接进入训练集。*
 
@@ -201,7 +201,7 @@ StructBill-CN 通过一条多阶段流水线构建，核心诉求是**同时保�
 
 **⑥ 逻辑一致性校验。** 这是 StructBill-CN 区别于普通抽取数据集的核心步骤——**对标注本身做算术自洽性检查**：逐行验证「单价 × 数量 ≈ 金额」，并验证「明细金额之和 ≈ 总额」（均带容差 $\varepsilon$ 以吸收 OCR 浮点误差）。校验流程见图 38-3。只有当标注本身算术自洽时，它才能作为可靠的逻辑监督信号；否则后续基于该数据训练的奖励信号就是"脏"的。
 
-![Figure 38-3](C:\Users\images\part12\ch38_Figure_38-3.png)
+![Figure 38-3](../../images/part12/ch38_Figure_38-3.png)
 
 *图 38-3：逻辑一致性校验流程 —— 同一套门禁逻辑在两处复用：构建期用于拦截不自洽的标注，评测/训练期用于给模型输出打一致性分（即 §38.6 的 SCL-Reward 中的结构门禁 $I_{gate}$ 与逻辑奖励 $R_{logic}$）。这种"构建即评测"的复用，是保证训练目标与评测口径一致的关键工程手段。*
 
@@ -329,8 +329,6 @@ SCVR 是本章为工程监控目的给出的派生指标定义（不引入任何
 
 这两点共同说明：StructBill-CN 不是一个一次性产物，而是一个**可演进的数据契约**——schema、约束、切分都带版本，能随下游 VLM 与 RAG 项目的需求持续生长。
 
-值得指出的是，StructBill-CN / SRPO 提出的"把离散 schema 规则转化为 RL 可验证奖励"的思路，在 2025 年已被多个独立团队沿不同方向快速推进。MonkeyOCR v1.5(Zhang et al., 2025) 与 HunyuanOCR(Hunyuan Vision Team, 2025) 分别利用 GRPO 结合渲染-比对机制或硬约束奖励来提升视觉保真与格式精度；olmOCR 2(Poznanski et al., 2025) 进一步把奖励信号抽象为可运行的单元测试，实现二值化可验证奖励；DeepSeek-R1(Guo et al., 2025) 则从纯文本侧证明了 RL + 可验证奖励可以诱导出无需蒸馏的推理能力。与此同时，新一代多模态主干如 Qwen3-VL(Bai et al., 2025a) 和 InternVL3.5(Wang et al., 2025) 的感知精度持续提升，PaddleOCR-VL(Cui et al., 2025) 则把端到端文档解析压缩到 0.9B 参数级别。这些进展意味着本章介绍的"schema 约束 → 逻辑奖励 → RL 对齐"这条数据消费路径，正在从单个数据集的方法论，演变为一种通用的文档数据工程范式。
-
 ## 本章小结
 
 StructBill-CN 不只是"又一个数据集"，它解决的数据工程问题是：**如何把高风险中文票据/医疗费用文档，从图像 + schema + 层级 JSON + 表格字段 + 逻辑约束出发，构建成一份可训练、可评测、可复查的数据资产**。
@@ -400,7 +398,6 @@ Smock, B., Faucon-Morin, V., Sokolov, M., et al. (2025). PubTables-v2: A New Lar
 Wang, W., Gao, Z., Gu, L., et al. (2025). InternVL3.5: Advancing Open-Source Multimodal Models in Versatility, Reasoning, and Efficiency. *arXiv preprint arXiv:2508.18265*.
 
 Zhang, J., Liu, Y., Wu, Z., et al. (2025). MonkeyOCR v1.5 Technical Report: Unlocking Robust Document Parsing for Complex Patterns. *arXiv preprint*.
-
 
 
 
