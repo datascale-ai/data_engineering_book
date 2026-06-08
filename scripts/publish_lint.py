@@ -7,9 +7,12 @@ publish_lint.py — Springer 出版就绪度校验
   1. 断链图        : 引用的本地图片在磁盘上不存在，或为本机绝对路径
   2. 图号-章号一致 : 正文图号 图X-Y / 图X_Y 的前缀 X 与所在章号不一致
   3. 缺失 Abstract : 章节正文未出现 摘要 / Abstract
-  4. 缺失 关键词    : 章节正文未出现 关键词 / Keywords
+  4. 缺失 关键词    : 章节正文未出现 ## 关键词 / ## Keywords
   5. 缺失 参考文献  : 章节未出现 ## 参考文献 / References 节
-  6. 疑似未成稿     : 含写作任务书标记（写作目标/篇幅要求/建议结构…）或正文过短
+  6. 缺失本章小结   : 章节正文未出现 ## 本章小结
+  7. 项目章结构     : 项目章缺少案例研究关键模块
+  8. 项目章图表     : P04-P13 至少包含 1 张图和 1 张出版验收表
+  9. 疑似未成稿     : 含写作任务书标记（写作目标/篇幅要求/建议结构…）或正文过短
 
 用法:
   python scripts/publish_lint.py                # 控制台彩色摘要 + 详表
@@ -46,8 +49,21 @@ FIG_RE = re.compile(r"图\s*(\d+)\s*[-_]\s*(\d+)")
 IMG_RE = re.compile(r"!\[[^\]]*\]\(([^)]+)\)")
 REF_HEADER_RE = re.compile(r"^#{1,4}\s*(参考文献|References)\s*$", re.M)
 ABSTRACT_RE = re.compile(r"(##\s*摘\s*要|^\s*\*\*摘\s*要\*\*|Abstract)", re.M)
-KEYWORDS_RE = re.compile(r"(关键词|Keywords)")
+KEYWORDS_RE = re.compile(r"^#{1,4}\s*(关键词|Keywords)\s*$", re.M)
+SUMMARY_RE = re.compile(r"^##\s*本章小结\s*$", re.M)
 WINPATH_RE = re.compile(r"^[A-Za-z]:[\\/]")
+TABLE_CAPTION_RE = re.compile(r"^\*表\s+P?\d{1,2}-\d+：", re.M)
+PROJECT_CASE_TERMS = [
+    ("project-goal", r"项目目标"),
+    ("scenario-boundary", r"场景约束|数据边界"),
+    ("architecture", r"架构决策"),
+    ("schema-flow", r"样本\s*schema|数据流"),
+    ("implementation", r"核心实现"),
+    ("metrics", r"验收指标|实验指标"),
+    ("risk-compliance", r"成本|风险|合规边界"),
+    ("failure-mode", r"常见失败模式"),
+    ("reproducibility", r"可复现资源"),
+]
 
 
 @dataclass
@@ -98,6 +114,11 @@ def classify(path: Path) -> str:
     return "other"
 
 
+def detect_project_no(path: Path) -> int | None:
+    m = re.match(r"p(\d+)", path.name)
+    return int(m.group(1)) if m else None
+
+
 def lint_file(path: Path) -> ChapterReport:
     text = path.read_text(encoding="utf-8", errors="replace")
     rel = str(path.relative_to(ROOT))
@@ -145,7 +166,10 @@ def lint_file(path: Path) -> ChapterReport:
                 "缺少章首 摘要/Abstract（SpringerLink 索引必需）"))
         if not KEYWORDS_RE.search(text):
             rep.issues.append(Issue(rel, "WARN", "no-keywords",
-                "缺少 关键词/Keywords"))
+                "缺少 ## 关键词 / ## Keywords 标题"))
+        if not SUMMARY_RE.search(text):
+            rep.issues.append(Issue(rel, "WARN", "no-summary",
+                "缺少 ## 本章小结"))
 
     # --- 5. 参考文献 ---
     if kind in ("chapter", "project"):
@@ -153,7 +177,38 @@ def lint_file(path: Path) -> ChapterReport:
             rep.issues.append(Issue(rel, "WARN", "no-references",
                 "缺少 ## 参考文献 / References 节"))
 
-    # --- 6. 疑似未成稿 ---
+    # --- 6. 项目章案例研究结构 / 代码块长度 ---
+    if kind == "project":
+        project_no = detect_project_no(path)
+        for issue_kind, pattern in PROJECT_CASE_TERMS:
+            if not re.search(pattern, text, re.I):
+                rep.issues.append(Issue(rel, "WARN", issue_kind,
+                    f"项目章缺少案例研究模块: {issue_kind}"))
+        if project_no is not None and 4 <= project_no <= 13:
+            if not IMG_RE.search(text):
+                rep.issues.append(Issue(rel, "WARN", "project-figure",
+                    "P04-P13 项目章应至少包含 1 张流程/架构图"))
+            if not TABLE_CAPTION_RE.search(text):
+                rep.issues.append(Issue(rel, "WARN", "project-table",
+                    "P04-P13 项目章应至少包含 1 张出版验收表"))
+        in_code = False
+        code_start = 0
+        code_lines = 0
+        for i, line in enumerate(lines, 1):
+            if line.startswith("```"):
+                if not in_code:
+                    in_code = True
+                    code_start = i
+                    code_lines = 0
+                else:
+                    if code_lines > 25:
+                        rep.issues.append(Issue(rel, "WARN", "long-code-block",
+                            f"项目章代码块 {code_lines} 行 > 25 行，建议外置到配套资源", code_start))
+                    in_code = False
+            elif in_code:
+                code_lines += 1
+
+    # --- 7. 疑似未成稿 ---
     if kind in ("chapter", "project"):
         marker_hits = [k for k in STUB_MARKERS if k in text]
         if len(marker_hits) >= 2:

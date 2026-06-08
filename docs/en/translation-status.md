@@ -1,107 +1,38 @@
-# Chinese 2026 Edition Translation Status
+# English Edition Status
 
-The Chinese edition is the primary 2026 version of this book. It contains 28 chapters and 10 hands-on projects covering the full large-model data-engineering lifecycle.
+The Chinese edition is the canonical 2026 Springer mainline for this book. Its frozen publication scope is **14 parts, 48 chapters, 15 project case studies, and 4 appendices**, with front matter and an afterword in the site edition.
 
-The English edition is being updated from the earlier public edition. Until the full translation is ready, browse the Chinese site for the latest chapter structure and project scope.
+The English edition is synchronized against that structure with a quality-first policy. Reader-facing navigation follows the Chinese mainline, existing complete English chapters are preserved when their quality and structure are usable, and stale or missing pages are replaced with edited English chapters rather than filled with raw machine translation.
 
 ## Current Policy
 
-- Chinese: latest complete edition (28 chapters + 10 projects).
-- English: legacy edition plus this status page; new chapters land here as they are translated.
-- Japanese: same legacy + status policy as English.
+- Chinese: latest complete 2026 Springer mainline.
+- English: structure synchronized; content translated and under final editorial review.
+- Japanese: separate incremental edition and external communication view.
 
-## Translation Progress
+## Canonical Chinese Scope
 
-Each row shows whether the chapter is available in the legacy edition and whether the 2026 edition has been merged. "Pending" means readers should consult the Chinese site.
+| Part | Chinese mainline scope | English status |
+| --- | --- | --- |
+| Part 1 | Overview and Infrastructure, Ch01-Ch03 | Translated; release-audited |
+| Part 2 | Text Pre-training Data Engineering, Ch04-Ch07 | Translated; release-audited |
+| Part 3 | Multimodal Data Engineering, Ch08-Ch11 | Translated; release-audited |
+| Part 4 | Instruction Fine-tuning and Preference Data, Ch12-Ch14 | Translated; release-audited |
+| Part 5 | Synthetic Data Engineering, Ch15-Ch17 | Translated; release-audited |
+| Part 6 | Reasoning and Agent Data Engineering, Ch18-Ch20 | Translated; release-audited |
+| Part 7 | Application-Level Data Engineering, Ch21-Ch23 | Translated; release-audited |
+| Part 8 | DataOps and Platform Engineering, Ch24-Ch26 | Translated; release-audited |
+| Part 9 | Data Assets, Data Products, and Data Contracts, Ch27-Ch30 | Translated; release-audited |
+| Part 10 | Agentic Data Engineering, Ch31-Ch35 | Translated; release-audited |
+| Part 11 | Privacy, Compliance, and Data Security, Ch36-Ch37 | Translated; release-audited |
+| Part 12 | Specialized Dataset Case Studies, Ch38-Ch43 | Translated; release-audited |
+| Part 13 | Open-source Model Data Recipes, Ch44-Ch48 | Translated; release-audited |
+| Part 14 | Project Case Studies, P01-P15 | Translated; release-audited |
 
-### Part 1 — Overview and Infrastructure
+## Quality Gates
 
-| 2026 ID | Chapter | English | Japanese |
-| --- | --- | --- | --- |
-| ch01 | The data shift in the large-model era | Legacy only | Legacy only |
-| ch02 | LLM data lifecycle and quality framework | Pending | Pending |
-| ch03 | AI-native data stack and cost governance | Pending | Pending |
+Each English translation batch is checked for missing English counterparts, translation placeholders, residual Chinese text outside code/link targets, broken Markdown links, MkDocs build failures, and representative browser rendering issues.
 
-### Part 2 — Text Pre-training Data Engineering
+## Reading Guidance
 
-| 2026 ID | Chapter | English | Japanese |
-| --- | --- | --- | --- |
-| ch04 | Sources, acquisition, copyright | Legacy only | Legacy only |
-| ch05 | Cleaning, deduplication, decontamination | Legacy only | Legacy only |
-| ch06 | Tokenization, serialization, efficient loading | Legacy only | Legacy only |
-| ch07 | Evaluation, feedback loop, ops iteration | Pending | Pending |
-
-### Part 3 — Multimodal Data Engineering
-
-| 2026 ID | Chapter | English | Japanese |
-| --- | --- | --- | --- |
-| ch08 | Image-text pair data engineering | Legacy only | Legacy only |
-| ch09 | Recaptioning and document understanding | Legacy only | Legacy only |
-| ch10 | Video and audio data engineering | Legacy only | Legacy only |
-| ch11 | Cross-modal alignment and fusion | Pending | Pending |
-
-### Part 4 — Instruction Fine-tuning and Preference Data
-
-| 2026 ID | Chapter | English | Japanese |
-| --- | --- | --- | --- |
-| ch12 | SFT data design and instruction system | Legacy only | Legacy only |
-| ch13 | Preference data and reward signals | Legacy only | Legacy only |
-| ch14 | Annotation platform, QA, data ops | Pending | Pending |
-
-### Part 5 — Synthetic Data Engineering
-
-| 2026 ID | Chapter | English | Japanese |
-| --- | --- | --- | --- |
-| ch15 | Synthetic data factory: from seed to verification | Pending | Pending |
-| ch16 | Knowledge distillation and model collaboration | Pending | Pending |
-| ch17 | Synthetic-data quality control and model collapse | Pending | Pending |
-
-### Part 6 — Reasoning and Agent Data Engineering
-
-| 2026 ID | Chapter | English | Japanese |
-| --- | --- | --- | --- |
-| ch18 | Chain-of-thought and reasoning data engineering | Pending | Pending |
-| ch19 | Tool-use and function-calling data | Pending | Pending |
-| ch20 | Agent memory and multi-turn interaction data | Pending | Pending |
-
-### Part 7 — Application-level Data Engineering
-
-| 2026 ID | Chapter | English | Japanese |
-| --- | --- | --- | --- |
-| ch21 | RAG data pipeline | Legacy only | Legacy only |
-| ch22 | Multimodal RAG and visual retrieval | Legacy only | Legacy only |
-| ch23 | Online feedback loop and knowledge updates | Pending | Pending |
-
-### Part 8 — DataOps and Platform Building
-
-| 2026 ID | Chapter | English | Japanese |
-| --- | --- | --- | --- |
-| ch24 | DataOps flywheel and team organization | Pending | Pending |
-| ch25 | Data versioning and experiment tracking | Pending | Pending |
-| ch26 | Data platform observability | Pending | Pending |
-
-### Part 9 — Privacy, Compliance, and Data Security
-
-| 2026 ID | Chapter | English | Japanese |
-| --- | --- | --- | --- |
-| ch27 | Compliance framework and governance | Pending | Pending |
-| ch28 | Federated learning and privacy-preserving tech | Pending | Pending |
-
-### Part 10 — Hands-on Projects
-
-| Project | Title | English | Japanese |
-| --- | --- | --- | --- |
-| P01 | Distributed Mini-C4 with Ray | Legacy only | Legacy only |
-| P02 | Vertical-domain SFT (legal) | Legacy only | Legacy only |
-| P03 | LLaVA multimodal instruction factory | Legacy only | Legacy only |
-| P04 | Synthetic math + code textbook factory | Legacy only | Legacy only |
-| P05 | Multimodal RAG (financial reports) | Legacy only | Legacy only |
-| P06 | CoT dataset + PRM training | Pending | Pending |
-| P07 | Agent tool-use data factory | Pending | Pending |
-| P08 | Enterprise DataOps platform | Pending | Pending |
-| P09 | Privacy-preserving data pipeline | Pending | Pending |
-| P10 | End-to-end LLM data flywheel | Pending | Pending |
-
-## Reading Order
-
-Until the English chapters catch up, read the Chinese 2026 edition for the canonical structure. Code examples under `code/zh/` cover all 10 projects; `code/en/` currently mirrors only P01–P05.
+Use the English edition as the current translated web edition. The Chinese edition remains the canonical 2026 source text, and future English changes should continue to be reviewed against it for terminology, figure integrity, and release quality.

@@ -38,6 +38,8 @@
 
 - [ ] 术语写法统一，缩写首次出现有中英文全称
 - [ ] 没有明显网页教程式、课程讲义式或口语化残留表达
+- [ ] `publishing/final_review/chapter_style_checklist.md` 已逐章签核
+- [ ] `publishing/final_review/style_report.md` 中候选表达已完成保留/改写判断
 - [ ] 大段代码已外置，正文代码只保留关键片段
 - [ ] 章首问题意识、章末小结和适用边界完整
 - [ ] 常见误区、风险边界和合规提示未缺失
@@ -60,7 +62,10 @@
 
 - [ ] 正文终稿
 - [ ] 图表终稿与高清源文件
+- [ ] `publishing/final_review/figure_rights_report.md` 中每张图的版权、AI 生成/辅助声明和高清源文件已签核
 - [ ] 参考文献清单
+- [ ] `publishing/final_review/reference_audit_report.md` 中每条参考文献 DOI / URL / 年份 / Springer 样式 / 真实性已终审
+- [ ] `publishing/final_review/manual_review_checklist.md` 中第 12、16、21、24、29、40 章，P11、P12、P13、P15，以及 Part 10/12/14 高风险内容已签核
 - [ ] 作者信息清单
 - [ ] 配套资源说明
 - [ ] alt text 表
@@ -71,4 +76,4 @@
 
 - 所有复选项必须由主编最终确认。
 - 有任何一项未完成，不建议直接交出版社。
-- 交付前必须通过 `mkdocs build --strict --clean`、`scripts/publish_lint.py` 和 `scripts/xref_scan.py`。
+- 交付前必须通过 `mkdocs build --strict --clean`、`python3 scripts/publish_lint.py`、`python3 scripts/xref_scan.py` 和 `python3 scripts/final_publication_audit.py --report-dir publishing/final_review --fail-on-blocker`。
