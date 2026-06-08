@@ -6,7 +6,7 @@
 
 对于一本文档跨度很大的工程书来说，术语不统一本身就是一种成本。它会导致同一个东西在不同章节被叫成不同名字，读者、编辑、讲师和项目组在对齐时需要额外翻译，最终增加理解摩擦。所以本附录的任务不是“词典化”，而是**为全书建立一个稳定的工程词汇底座**。
 
-术语表的作用也不只是“翻译”。在数据工程、治理、评测、Agent 和隐私技术这些主题里，很多词看起来像同义词，实际上却有明确边界。比如“脱敏”“匿名化”“可用”“可发布”并不是一回事；“联邦学习”“隐私增强技术”“安全多方计算”也不是随便互换的。词用错了，读者就会把工程约束误读成法律结论，或者把研究原型误读成生产方案。
+术语表的作用也不只是“翻译”。在数据工程、治理、评测、Agent 和隐私技术这些主题里，很多词看起来像同义词，实际上却有明确边界。比如“脱敏”“匿名化”“可用”“可发布”并不是一回事；“联邦学习”“隐私增强技术”“安全多方计算”也不是随便互换的。词用错了，读者就会把工程约束误读成法律结论，或者把研究原型误读成生产方案。围绕基础模型透明度、语言模型风险和可信评测的近年研究都强调，概念边界不清会直接影响风险识别、责任分配和结果解释（Bommasani et al. 2023; Weidinger et al. 2022; Liang et al. 2023）。
 
 ## F.2 术语使用原则
 
@@ -52,7 +52,7 @@
 
 ### F.4.1 “脱敏”与“匿名化”
 
-脱敏是降低识别风险的一组工程处理，匿名化则更强调不可逆识别。二者在实践中都很常见，但不能互相替代。对于本书内容，建议优先用“脱敏”描述工程处理，用“匿名化”描述更强的身份不可识别目标，并在必要时说明所依据的法域与业务要求。
+脱敏是降低识别风险的一组工程处理，匿名化则更强调不可逆识别。二者在实践中都很常见，但不能互相替代。对于本书内容，建议优先用“脱敏”描述工程处理，用“匿名化”描述更强的身份不可识别目标，并在必要时说明所依据的法域与业务要求。涉及个人信息或跨域共享时，术语应服务于风险评估和控制说明，而不能替代具体合规判断；语言模型风险分类研究也把隐私泄露、滥用和信息安全风险区分为不同风险族，不能混作一个词处理（Weidinger et al. 2022）。
 
 ### F.4.2 “可用”与“可发布”
 
@@ -227,7 +227,7 @@ PETs 是一组方法的总称，联邦学习、差分隐私、MPC、TEE 和同�
 
 ### F.13.3 “安全”与“合规”
 
-安全更偏技术防护，合规更偏制度约束。二者相关，但不能互相替代。写作时如果把安全控制直接等同于合规满足，会让读者误判边界。
+安全更偏技术防护，合规更偏制度约束。二者相关，但不能互相替代。写作时如果把安全控制直接等同于合规满足，会让读者误判边界。DecodingTrust 对可信大模型的评估把隐私、鲁棒性、安全性、偏见和伦理等维度分开考察，也说明“安全”“合规”“可信”不能在正文中随意互换（Wang et al. 2023）。
 
 ### F.13.4 “隐私”与“保密”
 
@@ -235,7 +235,7 @@ PETs 是一组方法的总称，联邦学习、差分隐私、MPC、TEE 和同�
 
 ## F.14 译法选择原则
 
-同一个英文术语可能有多个中文译法。选择时建议遵循以下顺序：
+同一个英文术语可能有多个中文译法。选择时建议遵循以下顺序。对于已经在评测、透明度或风险研究中形成稳定用法的术语，应优先保持全书一致；对于带有治理或法律含义的术语，应保留使用边界说明（Liang et al. 2023; Bommasani et al. 2023）：
 
 1. 以全书一致性优先。
 2. 以行业惯例为其次。
@@ -260,7 +260,7 @@ PETs 是一组方法的总称，联邦学习、差分隐私、MPC、TEE 和同�
 
 ## F.16 合规相关术语提醒
 
-本书里涉及合规与隐私的词尤其要谨慎，因为这些词常常同时具有工程含义和法律含义。
+本书里涉及合规与隐私的词尤其要谨慎，因为这些词常常同时具有工程含义和法律含义。风险分类和透明度研究通常先界定系统能力、利益相关方、使用场景和披露范围，再讨论控制措施；因此术语表中的“合法”“授权”“可共享”等词都应被理解为需要上下文确认的判断项，而不是默认状态（Weidinger et al. 2022; Bommasani et al. 2023）。
 
 ### F.16.1 “合法”
 
@@ -344,7 +344,7 @@ PETs 是一组方法的总称，联邦学习、差分隐私、MPC、TEE 和同�
 
 ## F.23 术语表维护流程
 
-术语表也需要版本管理。建议每次修订时做四步：
+术语表也需要版本管理。基础模型透明度和整体评测框架都提示，模型、数据、风险与评测口径会随着系统版本变化而变化，因此术语表也应像其他治理材料一样保留修订记录、影响范围和最终裁决机制（Bommasani et al. 2023; Liang et al. 2023）。建议每次修订时做四步：
 
 1. 扫描新增术语。
 2. 检查旧术语是否出现新译法。
@@ -398,10 +398,10 @@ PETs 是一组方法的总称，联邦学习、差分隐私、MPC、TEE 和同�
 
 ## 参考文献
 
-Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229.
+Bommasani R, Klyman K, Zhang D, Liang P (2023) The Foundation Model Transparency Index. arXiv preprint arXiv:2310.12941.
 
-Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daum茅 III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12): 86-92.
+Liang P, Bommasani R, Lee T, et al. (2023) Holistic Evaluation of Language Models. Transactions on Machine Learning Research.
 
-Pushkarna M, Zaldivar A, Kjartansson O, Cicconi J, Chen V, Efrat A, Zou Y, Mueller J, Taly A, Ehyaei A, Karkkainen K, Marathe A, Han X, Mittal A, Schuster T, Yarmand M, Sohn H, Dwarakanath N C, McCann B (2022) Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 1776-1826.
+Wang B, Chen W, Pei H, et al. (2023) DecodingTrust: A Comprehensive Assessment of Trustworthiness in GPT Models. In: Advances in Neural Information Processing Systems 36.
 
-ISO/IEC 22989:2022 Information technology - Artificial intelligence - Artificial intelligence concepts and terminology.
+Weidinger L, Uesato J, Rauh M, Griffin C, Huang P-S, Mellor J, Glaese A, Cheng M, Balle B, Kasirzadeh A, Kenton Z, Brown S, Hawkins W, Stepleton T, Birhane A, Haas J, Rimell L, Hendricks L A, Isaac W, Legassick S, Irving G, Gabriel I (2022) Taxonomy of Risks posed by Language Models. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 214-229.

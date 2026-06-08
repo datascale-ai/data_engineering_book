@@ -53,11 +53,11 @@
 
 在 LLM 数据工程中，有四类高频任务天然适合 Agent 化：
 
-**解析异常修复。** 当数据源从几十个膨胀到几百个时，PDF 排版异常、HTML 结构漂移、API Schema 变更、编码混用等问题呈指数增长。人工编写解析规则的边际成本是非线性的——每新增一个数据源，不是增加一个规则，而是增加一组规则及与其他规则的协调逻辑。Agent 可以在解析失败时自动检测异常类型、选择备选 parser 或生成临时修复规则，并在修复后提交验证报告。
+**解析异常修复。** 当数据源从几十个膨胀到几百个时，PDF 排版异常、HTML 结构漂移、API Schema 变更、编码混用等问题呈指数增长。人工编写解析规则的边际成本是非线性的——每新增一个数据源，不是增加一个规则，而是增加一组规则及与其他规则的协调逻辑。Agent 可以在解析失败时自动检测异常类型、选择备选 parser 或生成临时修复规则，并在修复后提交验证报告（Mialon et al. 2023; Wang et al. 2023; Xi et al. 2023）。
 
 **清洗规则迭代。** 数据清洗不是一次性的——业务需求变化、模型训练反馈、质量阈值调整都会触发规则更新。传统模式下，清洗规则 backlog 的积压速度远超工程师的处理能力。Agent 可以从抽检缺陷中自动生成规则候选，在沙箱中验证后提交差异报告，经人工批准后上线。
 
-**评测回写。** 当模型评测发现某类数据质量问题时（如某领域样本准确率偏低），需要回写到数据生产环节进行调整。这个闭环目前大多靠"群消息通知 + 手动排查"完成，周期长达数天。Agent 可以自动读取评测报告，定位对应的数据批次和生产环节，生成修复建议并提交给相应团队。
+**评测回写。** 当模型评测发现某类数据质量问题时（如某领域样本准确率偏低），需要回写到数据生产环节进行调整。这个闭环目前大多靠"群消息通知 + 手动排查"完成，周期长达数天。Agent 可以自动读取评测报告，定位对应的数据批次和生产环节，生成修复建议并提交给相应团队（Nakano et al. 2021; Park et al. 2023）。
 
 **告警归因。** 数据平台每天产生大量告警——任务延迟、数据量异常、质量指标下滑。人工排查每条告警的根因需要理解日志、血缘、变更记录和业务上下文，平均耗时 30 分钟以上。Agent 可以自动聚合多维信息，生成根因候选并按置信度排序，大幅缩短平均修复时间（Mean Time to Resolve，MTTR）。
 
@@ -81,7 +81,7 @@
 
 在决定是否将某个数据工程任务 Agent 化时，团队需要一个系统化的评估框架，而非凭直觉决策。我们提出一个包含五个维度的评估框架：
 
-**维度一：任务的可结构化程度。** Agent 擅长的不是"创造性工作"，而是"结构化推理"——将复杂任务分解为明确的步骤序列。如果一个任务的核心挑战在于"找到正确的步骤序列"，它适合 Agent 化；如果核心挑战在于"做出主观判断"（如判断一段文本的文学价值），Agent 化效果有限。
+**维度一：任务的可结构化程度。** Agent 擅长的不是"创造性工作"，而是"结构化推理"——将复杂任务分解为明确的步骤序列。如果一个任务的核心挑战在于"找到正确的步骤序列"，它适合 Agent 化；如果核心挑战在于"做出主观判断"（如判断一段文本的文学价值），Agent 化效果有限。ReAct、Tree of Thoughts、Graph of Thoughts、PAL、Self-Refine 与 Reflexion 等工作说明，结构化推理通常需要把思考、行动、程序化中间表示和自我反馈显式化，而不是只依赖一次性生成（Yao, Zhao et al. 2023; Yao, Yu et al. 2023; Besta et al. 2024; Gao et al. 2023; Madaan et al. 2023; Shinn et al. 2023）。
 
 **维度二：异常处理频率。** 如果任务中异常情况的占比超过一定比例，Agent 化可能得不偿失——Agent 生成一个处理方案后被人工驳回，再生成再驳回，循环效率可能低于直接人工处理。经验法则：异常率 < 30% 的任务适合 Agent 化，异常率 > 70% 的任务应保持人工主导。
 
@@ -103,7 +103,7 @@
 
 ### 31.1.5 从抽象能力到工程锚点：为什么引入 DataAgent
 
-如果只从概念上讨论 Agentic Data Engineering，读者很容易把它理解成"让大模型多调用几个工具"。这会低估数据工程 Agent 的核心难度：真正难的不是工具调用本身，而是让工具调用处在可配置、可验证、可回放、可交付的系统边界内。
+如果只从概念上讨论 Agentic Data Engineering，读者很容易把它理解成"让大模型多调用几个工具"。这会低估数据工程 Agent 的核心难度：真正难的不是工具调用本身，而是让工具调用处在可配置、可验证、可回放、可交付的系统边界内；MRKL、Toolformer、Gorilla 与 ToolLLM 的研究也表明，工具能力只有被注册、选择、参数化和验证之后，才真正具备工程可用性（Karpas et al. 2022; Schick et al. 2023; Patil et al. 2023; Qin et al. 2024）。
 
 DataAgent 适合作为本篇的工程锚点，原因不在于它覆盖了所有数据工程场景，而在于它把几个关键问题放在了同一个可运行框架中：
 
@@ -122,7 +122,7 @@ DataAgent 适合作为本篇的工程锚点，原因不在于它覆盖了所有�
 
 ### 31.2.1 架构总览
 
-数据工程 Agent 的任务边界必须通过分层来约束。每一层只承担一个维度的职责，层与层之间通过结构化协议通信，不共享内部状态。下图展示六层架构的核心关系：
+数据工程 Agent 的任务边界必须通过分层来约束。每一层只承担一个维度的职责，层与层之间通过结构化协议通信，不共享内部状态。多 Agent 会话框架和自治 Agent 综述都强调，复杂 Agent 系统要通过角色划分、消息协议和状态隔离来降低失控风险（Wu et al. 2023; Wang et al. 2023; Xi et al. 2023）。下图展示六层架构的核心关系：
 
 ![数据工程 Agent 六层架构图](../../images/part10/ai_agent_decision_workflow_ch31_01.png)
 
@@ -567,7 +567,7 @@ MVP 阶段必须清醒认识以下局限性，避免过早将 MVP 当作生产�
 
 本章围绕“数据工程 Agent 的架构与任务边界”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
 
-本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
+本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺；这也与生产级 MLOps 架构和 AI 风险治理框架对可追溯性、风险分级与人为监督的要求一致（Kreuzberger et al. 2023）。
 
 在全书结构中，本章位于Agent 自动化层，承担承接前文基础概念并导向隐私、合规和专项数据集案例的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
 
@@ -586,10 +586,6 @@ Madaan A, Tandon N, Gupta P, Hallinan S, Gao L, Wiegreffe S, Alon U, Dziri N, Pr
 Mialon G, Dessì R, Lomeli M, Nalmpantis C, Pasunuru R, Raileanu R, Rozière B, Schick T, Dwivedi-Yu J, Celikyilmaz A, Grave E, LeCun Y, Scialom T (2023) Augmented Language Models: A Survey. Transactions on Machine Learning Research.
 
 Nakano R, Hilton J, Balaji S, Wu J, Ouyang L, Kim C, Hesse C, Jain S, Kosaraju V, Saunders W, Jiang X, Cobbe K, Eloundou T, Krueger G, Button K, Knight M, Chess B, Schulman J (2021) WebGPT: Browser-assisted question-answering with human feedback. arXiv preprint arXiv:2112.09332.
-
-NIST (2023) Artificial Intelligence Risk Management Framework (AI RMF 1.0). National Institute of Standards and Technology.
-
-NIST (2024) Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile. NIST AI 600-1.
 
 Park J S, O'Brien J C, Cai C J, Morris M R, Liang P, Bernstein M S (2023) Generative Agents: Interactive Simulacra of Human Behavior. In: Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology, Article 2.
 

@@ -4,7 +4,7 @@
 
 本附录面向数据工程里最常见、也最消耗时间的一类问题：数据管线“看起来都对”，但结果就是不对。它不是一份通用故障库，而是一份更接近本书语境的调试手册，帮助读者把常见问题从“玄学”变成“可定位、可归类、可回归测试”的对象。
 
-在大模型数据工程里，Bug 往往不会只出现在代码层。它可能出现在数据源、切分、去重、脱敏、解析、标注、评测、缓存、权限、回写或版本引用的任何一层。更麻烦的是，这些 Bug 还经常相互叠加，表现为“指标没变化但样本错了”“样本没错但版本错了”“版本没错但发布错了”。
+在大模型数据工程里，Bug 往往不会只出现在代码层。它可能出现在数据源、切分、去重、脱敏、解析、标注、评测、缓存、权限、回写或版本引用的任何一层。更麻烦的是，这些 Bug 还经常相互叠加，表现为“指标没变化但样本错了”“样本没错但版本错了”“版本没错但发布错了”。近年的数据处理系统和数据泄漏研究都表明，数据链路中的小错会被训练、评测和发布流程放大，因此排障必须把数据、代码、配置和评测协议一起看（Chen et al. 2024; Kapoor and Narayanan 2023）。
 
 因此，本附录强调的不是“修复技巧”，而是**调试顺序**。先定位层级，再归类症状，最后才谈修复。
 
@@ -72,7 +72,7 @@
 - 切换解析器做 A/B 对照。
 - 保留页级截图和中间产物。
 
-如果解析结果中出现大量“标题断裂”“表格合并”“列表顺序错乱”，不要急着改后处理，先看版面层是否已经把阅读顺序弄乱。很多时候，后处理只是给错误排序做修饰，真正的问题在更前面。
+如果解析结果中出现大量“标题断裂”“表格合并”“列表顺序错乱”，不要急着改后处理，先看版面层是否已经把阅读顺序弄乱。很多时候，后处理只是给错误排序做修饰，真正的问题在更前面。DocLayNet 和 Nougat 等文档理解工作也说明，PDF/OCR 问题常常来自版面、阅读顺序、公式和表格结构，而不是单纯的文本清洗问题（Pfitzmann et al. 2022; Blecher et al. 2023）。
 
 ## E.5 清洗与切分 Bug
 
@@ -84,7 +84,7 @@
 - 是否把模板样本误删成脏样本。
 - 是否把不同来源的同类样本当成重复。
 
-更进一步，要区分“字面重复”和“语义重复”。字面重复适合规则去重，语义重复则需要看任务目标。对于训练集，适度重复未必是坏事；对于评测集，重复常常意味着污染。两者不能用同一把尺子。
+更进一步，要区分“字面重复”和“语义重复”。字面重复适合规则去重，语义重复则需要看任务目标。对于训练集，适度重复未必是坏事；对于评测集，重复常常意味着污染。两者不能用同一把尺子。机器学习复现危机中的数据泄漏案例提醒我们，切分、近重复样本和评测污染会让指标看起来更好，却削弱真实泛化能力（Kapoor and Narayanan 2023）。
 
 ### E.5.2 训练效果突然变差
 
@@ -147,7 +147,7 @@
 - 权限是否过宽。
 - 失败重试是否改变了状态。
 
-对 Agent 系统来说，很多 Bug 不是“不会做”，而是“做错了还继续做”。因此一定要把工具调用记录成结构化事件，并区分“计划”“执行”“重试”“回滚”四种状态。否则排查时只看见最终输出，看不见中间过程。
+对 Agent 系统来说，很多 Bug 不是“不会做”，而是“做错了还继续做”。因此一定要把工具调用记录成结构化事件，并区分“计划”“执行”“重试”“回滚”四种状态。否则排查时只看见最终输出，看不见中间过程。AIOpsLab 等面向自治运维 Agent 的评测框架也把故障注入、遥测数据、交互接口和任务轨迹作为评估 Agent 排障能力的核心条件（Chen, Shetty et al. 2025）。
 
 ### E.7.2 回滚后问题复发
 
@@ -225,7 +225,7 @@ Agent 在自动回写时没有检查版本，导致新结果覆盖了旧结果�
 
 ## E.13 观察点与埋点
 
-调试难，很多时候不是系统复杂，而是系统没有足够的观察点。对于本书涉及的数据工程链路，建议至少保留以下埋点：
+调试难，很多时候不是系统复杂，而是系统没有足够的观察点。对于本书涉及的数据工程链路，建议至少保留以下埋点；这些观察点也对应了现代数据处理系统和自治运维评测中对中间产物、遥测信号和回归样本的要求（Chen et al. 2024; Chen, Shetty et al. 2025）：
 
 - 原始输入快照。
 - 中间结构化结果。
@@ -444,10 +444,10 @@ Agent 在自动回写时没有检查版本，导致新结果覆盖了旧结果�
 
 ## 参考文献
 
-Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28.
+Blecher L, Cucurull G, Scialom T, Stojnic R (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.
 
-Breck E, Cai S, Nielsen E, Salib M, Sculley D (2017) The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction. In: Proceedings of the IEEE International Conference on Big Data, pp 1123-1132.
+Chen D, Huang Y, Ma Z, Chen H, Pan X, Ge C, Gao D, Xie Y, Liu Z, Gao J, Li Y, Ding B, Zhou J (2024) Data-Juicer: A One-Stop Data Processing System for Large Language Models. In: Companion of the 2024 International Conference on Management of Data, pp 120-134.
 
-Amershi S, Begel A, Bird C, Devanbu P, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice, pp 291-300.
+Chen Y, Shetty M, Somashekar G, Ma M, Simmhan Y, Mace J, Bansal C, Wang R, Rajmohan S (2025) AIOpsLab: A Holistic Framework to Evaluate AI Agents for Enabling Autonomous Clouds. arXiv preprint arXiv:2501.06706.
 
-Google SRE (2016) Site Reliability Engineering: How Google Runs Production Systems. O'Reilly Media.
+Kapoor S, Narayanan A (2023) Leakage and the reproducibility crisis in machine-learning-based science. Patterns 4(9):100804.

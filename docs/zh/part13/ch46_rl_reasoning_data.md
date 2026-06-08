@@ -253,6 +253,8 @@ Long-CoT 轨迹的质量也可以从内部结构观察。常见的三类片段�
 
 随着 DeepSeek-R1、QwQ-32B 与 Kimi-1.5 等推理模型出现，传统 SFT 指令数据集逐渐让位于以 RL 和 Long-CoT 轨迹为核心的数据形态。公开技术报告和数据集卡片披露的信息并不完全一致，因此本节只把明确来源标为 `[D]`，把基于公开描述的合理推断标为 `[I]`，把教学估算标为 `[E]`。
 
+同时对于 QwQ、Kimi、OpenThoughts、Sky-T1 以及类似社区路线，凡是原始材料没有明确披露的训练配方、采样比例、过滤阈值和回流细节，本文一律只按工程推断处理，不写成确定事实。
+
 ### DeepSeek-R1：冷启动、RL 与拒绝采样
 
 DeepSeek-R1 报告 (Guo et al. 2025) 披露了 R1-Zero 与 R1 两条路径 [D]。R1-Zero 展示了大规模 RL 在没有传统 SFT 冷启动时也能激发推理行为，但输出可读性和稳定性存在问题。R1 则在 RL 前加入少量冷启动 Long-CoT 数据，再通过 RL、拒绝采样和二轮 SFT 形成更稳定的模型。
@@ -441,6 +443,21 @@ Verifier 池的质量也要被评估。一个简单做法是维护黄金验证�
 ```
 
 这种显式决策记录能让团队在后续调整阈值时复用旧轨迹。例如第一次只选择 `quality_score >= 0.85` 的样本，第二次想扩充数据时，可以重新选择 0.75 到 0.85 的样本，而不必重新采样所有任务。
+
+### 46.5.1 与第十四篇 P12 的接口映射
+
+第46章负责给出理论与范式，第十四篇 P12 负责把这套范式做成可运行项目。为了避免两者被混写，这里把核心对象一一对应。
+
+| 本章对象 | P12 对应资产 | 接口含义 |
+| --- | --- | --- |
+| 冷启动 SFT | `data/processed/cold_start_5k.jsonl`、`cold_start_summary.json` | 把 Long-CoT 种子整理成首轮可训练样本 |
+| 采样轨迹 | `data/sampled_traces/*.jsonl` | 保存 `prompt_id`、`sample_idx`、`raw_trace`、`generation_params` |
+| verifier | `verifier_pool.py`、`data/verified_candidates/*.jsonl` | 执行数学、代码和格式验证，并落盘每条候选结果 |
+| rejection sampling | `rejection_sampling.py`、`data/processed/rejection_selected_10k_30k.jsonl` | 从候选轨迹中筛出可回流高分样本 |
+| 回流接口 | `merge_sft_data.py`、`merged_sft_data.jsonl`、`training_manifest.json` | 把冷启动样本与回流样本合并为二轮 SFT 输入 |
+| 评估回路 | `eval_gsm8k_math.py`、`data/reports/eval_results_gsm8k_math.json` | 验证训练前后变化，并支持回滚定位 |
+
+这张映射表的意思很简单：本章讲的是“对象、关系和契约”，P12 讲的是“脚本、文件和产物”。只要对象映射清楚，后面无论换模型、换 verifier 还是换任务池，项目都还能沿着同一条接口跑下去。
 
 ---
 

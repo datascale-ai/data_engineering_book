@@ -4,7 +4,7 @@
 
 本附录面向“把论文写成工程、把工程写成可复现材料、把材料写成可交付文档”的中间地带。它关心的不是某一篇论文是否足够漂亮，而是**一篇论文、一段方法或一个实验原型，怎样被翻译成团队可执行的实现路径、验证路径和发布路径**。
 
-在真实项目里，很多论文复现失败并不是因为方法本身不可行，而是因为从论文文本到工程实现之间缺少一层结构化翻译。论文常写的是“我们做了什么、效果如何、和谁相比”，工程则必须回答“输入是什么、数据怎么来、边界在哪里、失败时怎么退回、版本如何冻结”。如果没有这层转换，团队往往会在“读懂了论文”与“真的跑通了系统”之间卡住很久。
+在真实项目里，很多论文复现失败并不是因为方法本身不可行，而是因为从论文文本到工程实现之间缺少一层结构化翻译。论文常写的是“我们做了什么、效果如何、和谁相比”，工程则必须回答“输入是什么、数据怎么来、边界在哪里、失败时怎么退回、版本如何冻结”。如果没有这层转换，团队往往会在“读懂了论文”与“真的跑通了系统”之间卡住很久；机器学习研究中的数据泄漏和生产化落地经验也说明，复现问题往往来自数据边界、实验协议和运维流程，而不只是模型代码本身（Kapoor and Narayanan 2023; Kreuzberger et al. 2023）。
 
 因此，本附录提供一套面向数据工程与模型复现的转换模板。它更适合以下场景：论文复现、方法落地、课程项目、实验室共建、开源配方整理、案例研究写作和技术评审。
 
@@ -33,7 +33,7 @@
 | 讨论部分 | 风险与适用边界 | 适用法域、数据约束、资源限制 |
 | 限制说明 | 失效条件 | 何时不能复用、何时必须重做 |
 
-这个表的用途很直接：它帮助团队避免把论文中的“研究叙述”原样搬进工程文档。工程文档需要的是可操作性，不是学术修辞。
+这个表的用途很直接：它帮助团队避免把论文中的“研究叙述”原样搬进工程文档。工程文档需要的是可操作性，不是学术修辞。DataPerf 和数据中心 AI 综述都强调，数据集、过滤策略、评测协议和维护流程本身就是需要被评估的工程对象，而不是论文结果背后的附属材料（Mazumder et al. 2023; Zha et al. 2023）。
 
 ## D.4 工程化转换的标准模板
 
@@ -54,6 +54,8 @@
 - 版本冻结方式。
 - 脱敏与授权状态。
 - 训练、验证、测试或评估的划分策略。
+
+对于依赖外部语料、公开网页或第三方数据的论文复现，数据与输入模板还应显式记录来源许可、归属信息和可追溯凭证；大规模数据溯源审计已经表明，缺少这些字段会让后续复用、发布和合规判断变得非常脆弱（Longpre et al. 2023）。
 
 ### D.4.3 架构与实现模板
 
@@ -214,7 +216,7 @@
 - 失败是否可回滚。
 - 日志是否可审计。
 
-这时论文中的指标只是参考，工程里更重要的是延迟、稳定性、缓存命中、监控覆盖和异常恢复时间。
+这时论文中的指标只是参考，工程里更重要的是延迟、稳定性、缓存命中、监控覆盖和异常恢复时间。对于工程试验型项目，MLOps 的持续集成、版本管理、监控和反馈回路比单次实验分数更能决定方法是否值得继续推进（Kreuzberger et al. 2023）。
 
 ### D.14.3 交付上线型
 
@@ -376,7 +378,7 @@
 | 复用收益 | 能否沉淀成可复用模块、流程或教材 |
 | 迁移收益 | 是否能迁移到别的任务、课程或项目 |
 
-如果 ROI 只在论文分数上成立，但在工程成本上不成立，那么它更适合停留在研究原型层，而不是硬推到产品层。
+如果 ROI 只在论文分数上成立，但在工程成本上不成立，那么它更适合停留在研究原型层，而不是硬推到产品层。数据中心 AI 的近年基准和综述也提醒团队，很多收益并不来自“换一个更大的模型”，而来自更可控的数据选择、质量改进、溯源和持续维护（Mazumder et al. 2023; Zha et al. 2023; Longpre et al. 2023）。
 
 ## D.26 适合附录中保留的证据材料
 
@@ -392,12 +394,12 @@
 
 ## 参考文献
 
-Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28.
+Kapoor S, Narayanan A (2023) Leakage and the reproducibility crisis in machine-learning-based science. Patterns 4(9):100804.
 
-Breck E, Cai S, Nielsen E, Salib M, Sculley D (2017) The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction. In: Proceedings of the IEEE International Conference on Big Data, pp 1123-1132.
+Kreuzberger D, Kühl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879.
 
-Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daum茅 III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12): 86-92.
+Longpre S, Mahari R, Lee A, et al. (2023) The Data Provenance Initiative: A Large Scale Audit of Dataset Licensing and Attribution in AI. arXiv preprint arXiv:2310.16787.
 
-Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229.
+Mazumder M, Banbury C, Yao X, et al. (2023) DataPerf: Benchmarks for Data-Centric AI Development. In: Advances in Neural Information Processing Systems 36, Datasets and Benchmarks Track.
 
-Pushkarna M, Zaldivar A, Kjartansson O, Cicconi J, Chen V, Efrat A, Zou Y, Mueller J, Taly A, Ehyaei A, Karkkainen K, Marathe A, Han X, Mittal A, Schuster T, Yarmand M, Sohn H, Dwarakanath N C, McCann B (2022) Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 1776-1826.
+Zha D, Bhat Z P, Lai K-H, Yang F, Jiang Z, Zhong S, Hu X (2023) Data-centric Artificial Intelligence: A Survey. arXiv preprint arXiv:2303.10158.
