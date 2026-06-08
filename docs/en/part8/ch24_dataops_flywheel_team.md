@@ -91,7 +91,7 @@ These principles mature in stages.
 
 Most companies should balance centralized and embedded models. Central teams standardize platforms, data rules, quality checks, and compliance boundaries. Embedded data roles stay close to algorithm and product needs. A practical structure is "central platform plus project embedding." The data owner becomes the key connector between data strategy, model goals, and organizational resources.
 
-![Figure 24-1: Organizational evolution path for LLM data teams](../../images/part8/图24_1_LLM数据团队组织演进路径.png)
+![Figure 24-1: Organizational evolution path for LLM data teams](../../images/part8/图24_1.png)
 
 *Figure 24-1: Four-stage evolution from single-person scripts to platformized DataOps*
 
@@ -249,7 +249,7 @@ The loop works as follows: the demand pool generates tasks; tasks produce or upd
 
 Feedback must be short and precise. Each iteration should provide task-level feedback, quality-level feedback, and effect-level feedback. Otherwise the team may optimize delivery speed while losing sight of data value.
 
-![Figure 24-2: Four-pool collaboration in the DataOps flywheel](../../images/part8/图24_2_DataOps飞轮四池协同示意图.png)
+![Figure 24-2: Four-pool collaboration in the DataOps flywheel](../../images/part8/图24_3.png)
 
 *Figure 24-2: The DataOps flywheel connecting demand, data, experiment, and issue pools*
 
@@ -560,7 +560,7 @@ Finally, the Company E case showed how a five-person team evolved into a platfor
 
 DataOps is not a toolset. It is an upgraded way of working. Its value is not that it runs perfectly on day one, but that fixed cadence and clear interfaces allow a team to improve quality and efficiency through repeated iterations.
 
-![Figure 24-3: Full DataOps organization map](../../images/part8/图24_3_DataOps团队组织全景图.png)
+![Figure 24-3: Full DataOps organization map](../../images/part8/图24_2.png)
 
 *Figure 24-3: Integrated view of roles, interfaces, flywheel, and governance in an LLM DataOps team*
 

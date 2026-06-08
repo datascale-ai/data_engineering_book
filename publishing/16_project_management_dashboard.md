@@ -16,6 +16,7 @@
 - `mkdocs build --strict --clean` 必须通过。
 - `python3 scripts/publish_lint.py` 目标为 `ERROR=0`、`WARN=0`。
 - `python3 scripts/xref_scan.py` 目标为 `ERROR=0`；体例类 warning 已清零。
+- `python3 scripts/final_publication_audit.py --report-dir publishing/final_review --fail-on-blocker` 必须通过，且报告包进入人工签核流程。
 
 ## 三、章节 / 项目状态总表
 
@@ -99,7 +100,8 @@
 
 ## 五、最终交付动作
 
-1. 再跑三项机器校验：MkDocs、publish lint、xref scan。
-2. 抽检第 12、16、21、24、29、40 章与 P11、P12、P13、P15。
-3. 将图表高清源文件、AI 使用声明、alt text 表和参考文献清单打包给出版社。
-4. 确认 `outputs/`、PPT 产物、内部规划材料不进入出版构建。
+1. 再跑四项机器校验：MkDocs、publish lint、xref scan、final publication audit。
+2. 生成并复核 `publishing/final_review/` 报告包。
+3. 抽检第 12、16、21、24、29、40 章与 P11、P12、P13、P15。
+4. 将图表高清源文件、AI 使用声明、alt text 表和参考文献清单打包给出版社。
+5. 确认 `outputs/`、PPT 产物、内部规划材料不进入出版构建。

@@ -60,18 +60,18 @@
 
 ## 背景与目标
 
-在多模态大型语言模型（VLM）的数据工程中，模型的能力瓶颈往往不仅在于图文对的数量，更在于高质量、多类型指令数据集的构建。在本书前作 **项目 3 (LLaVA 入门版)** 中，我们演示了如何基于单图生成简单的描述与问答指令。然而，在以 Qwen2.5-VL (Wang et al. 2024)、InternVL (Chen et al. 2024) 为代表的现代多模态架构下，这种入门版的数据早已无法满足需求。
+在多模态大型语言模型（VLM）的数据工程中，模型的能力瓶颈往往不仅在于图文对数量，更在于高质量、多类型指令数据集的构建。项目三已经给出基于单图生成简单描述与问答指令的入门流程；在以 Qwen2.5-VL (Wang et al. 2024)、InternVL (Chen et al. 2024) 为代表的现代多模态架构下，数据集还需要覆盖复杂推理、OCR 阅读、细粒度定位、多图交错和视频理解等任务类型。
 
 现代工业化多模态指令合成需要解决以下挑战：
 1. **指令多样性**：除了基础描述，还需要复杂的推理、细粒度定位（Grounding）、图表与 OCR 阅读。
 2. **多源多形态**：不仅支持单图，还要支持多图（Interleaved Images）与视频。
 3. **质量卡控**：纯靠生成会产生严重幻觉（Hallucination），必须引入多路采样与 LLM-as-Judge (Zheng et al. 2023) 进行严格打分过滤。
 
-本项目旨在构建一个完整的**多模态指令数据工厂**，演示从 Image-only 图像池（如 LAION 子集）开始，利用强大的基础模型（Qwen2.5-VL-7B 与 Qwen2.5-72B），自动化、工业化地生产高质量的复杂指令。读者完成本项目后，能够把这套自动化生产线套用到医疗、法律、电商等私有图像库中，产出垂直领域的高分 SFT 数据集。
+本项目旨在构建一个完整的**多模态指令数据工厂**，从 Image-only 图像池（如 LAION 子集）开始，利用基础模型（Qwen2.5-VL-7B 与 Qwen2.5-72B）生产复杂指令样本。项目交付物是一套可复现流水线，而不是一次性生成结果；它应当能够迁移到医疗、法律、电商等私有图像库，并产出可进入垂直领域 SFT 的候选数据集。
 
 ## 架构设计
 
-为了实现流水线作业，我们将工厂划分为五个核心组件。整体架构如图 13-1 所示。
+为了实现流水线作业，工厂被划分为五个核心组件。整体架构如图 13-1 所示。
 
 ![Multimodal Instruction Factory](../../images/part11/p13_mm_instruction_factory_arch_en.png)
 *图 13-1 Qwen-VL 风格多模态指令合成流水线架构*
@@ -107,7 +107,7 @@ def select_seeds(dataset_name="laion/laion2B-en", num_samples=5000):
 
 ### Step 2: 指令模板设计
 
-不同于固定问题的 LLaVA 数据，我们需要给大模型定义多样化的人设与任务模板。
+不同于固定问题的 LLaVA 数据，本项目需要为大模型定义多样化任务模板，并控制生成目标、输出格式和风险边界。
 
 ```python
 # code/zh/project_13_mm_instruction_factory/instruction_templates.py
@@ -133,7 +133,7 @@ def get_random_prompt(task_type):
 
 ### Step 3: 使用 vLLM 高速生成指令
 
-借助于 `vllm` 极高的并发吞吐能力，我们可以把筛选出的图片与指令模板送入基础多模态模型进行大规模生成。
+借助 `vllm` 的并发吞吐能力，可以将筛选出的图片与指令模板送入基础多模态模型进行批量生成。
 
 ```python
 from vllm import LLM, SamplingParams
@@ -155,7 +155,7 @@ def generate_instructions(seeds, model_path="Qwen/Qwen2.5-VL-7B-Instruct"):
 
 ### Step 4: LLM-as-Judge 质量过滤
 
-生成出来的响应往往伴随幻觉。我们需要引入一个强大的判别器，例如 Qwen2.5-72B-Instruct。由于我们无法把图片传给纯文本的 72B 模型，我们采用 **Text-only Evaluation**：让 72B 评判大模型生成的“长描述”内部逻辑是否自洽、结构是否严密。
+生成响应往往伴随幻觉，因此需要引入判别器，例如 Qwen2.5-72B-Instruct。由于纯文本 72B 模型无法直接接收图片，本项目采用 **Text-only Evaluation**：让 72B 评判多模态模型生成的“长描述”内部逻辑是否自洽、结构是否严密。
 
 ```python
 # code/zh/project_13_mm_instruction_factory/llm_judge.py
@@ -163,7 +163,7 @@ import json
 
 def score_with_llm_judge(generated_data):
     """
-    演示用逻辑：在真实流水线中，此处调用 vLLM 部署的 72B 模型 API。
+    原型验证逻辑：在真实流水线中，此处调用 vLLM 部署的 72B 模型 API。
     输入为 `Instruction` 和 `Response`，输出为 1-5 分。
     """
     scored_data = []
@@ -198,32 +198,32 @@ def pack_to_qwen_format(scored_data, output_path="./data/mm_sft_final.jsonl"):
                 "type": "image",
                 "image": item["url"],
                 "conversations": [
-                    {"from": "user", "value": f"<image>
-{item['instruction']}"},
+                    {"from": "user", "value": f"<image>\n{item['instruction']}"},
                     {"from": "assistant", "value": item["response"]},
                 ],
                 "quality": {"judge_score": item["judge_score"]},
             }
-            f.write(json.dumps(record, ensure_ascii=False) + "
-")
+            f.write(json.dumps(record, ensure_ascii=False) + "\n")
 ```
 
-## 结果展示与分析
+## 结果展示与验收
 
-我们最终使用上述 Pipeline，在单节点 4 卡 4090 环境下，部署 Qwen2.5-VL-7B（vLLM 推理）以及通过 API 调用 72B 模型，成功产出了 50K 条多模态指令。
+使用上述流水线，在单节点 4 卡 4090 环境下部署 Qwen2.5-VL-7B（vLLM 推理），并通过 API 调用 72B 模型作为判别器，可以产出 50K 条多模态指令候选样本。
 - **任务分布**：涵盖了详细描述（40%）、复杂推理（30%）、OCR与表格（20%）以及细粒度定位（10%）。没有出现类型偏斜过高（单一分类 > 40%）。
 - **质量分布**：通过 LLM-as-Judge 过滤的样本，平均得分为 **4.3 / 5.0**，显著滤除了诸如“图片中可能有一辆车”这样模棱两可或过度简化的幻觉回答。
 
+正式验收时，应同时检查四类指标：第一，样本是否能被下游训练脚本稳定读取；第二，任务类型分布是否符合预设配比；第三，图像、指令和回答之间是否存在明显错配；第四，来源许可、模型许可和生成产物再分发规则是否已登记。只有通过这些检查，生成数据才能从候选池进入训练集。
+
 ## 成本与优化
 
-整个工业级数据合成厂的运转效率与成本表现如下：
+整个数据合成工厂的运转效率与成本表现如下：
 - **合成成本**：在私有算力上，7B 模型生成一条带图像处理的长回复约需 1-2 秒。如果使用商业 API，每千条高质量数据的成本约为 $5-$10。
-- **扩展性**：vLLM 的张量并行能够完美承载多模态模型的生成压力。当算力不足时，可以通过“调低 `max_num_seqs`”与“降低采样温度（temperature）以防无意义发散”来平稳降级。
+- **扩展性**：vLLM 的张量并行能够承载一定规模的多模态生成压力。当算力不足时，可以通过调低 `max_num_seqs`、降低采样温度（temperature）和分批调度任务平稳降级。
 
 ## 扩展思考
 
-相比于 第一篇中单纯依赖人工或是 GPT-4V 昂贵蒸馏的 LLaVA 数据体系，通过 Qwen-VL + LLM-as-Judge (Zheng et al. 2023) 的自我蒸馏（Self-Distillation）极大拉低了微调成本。
-未来，这套流水线中可以轻松插入视频片段——只需要在打包器（Packer）中把连续采样的帧用多个 `<image>` 标签或者 `<video>` 统一封装，就可以实现面向 T2V 或是 Video-QA 模型的数据合成。
+相比单纯依赖人工标注或高成本闭源模型蒸馏的 LLaVA 数据体系，通过 Qwen-VL + LLM-as-Judge (Zheng et al. 2023) 的自我蒸馏（Self-Distillation）可以降低微调数据构建成本，但仍需要人工抽检和许可审查兜底。
+后续可以在这套流水线中插入视频片段：在打包器（Packer）中将连续采样帧用多个 `<image>` 标签或 `<video>` 统一封装，即可扩展到面向 T2V 或 Video-QA 模型的数据合成。
 
 ### 数据合规与开源许可说明
 在构建和发布指令数据集时，需遵守以下协议：

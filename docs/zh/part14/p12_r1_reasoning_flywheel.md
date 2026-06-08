@@ -80,7 +80,7 @@ OpenThoughts / GSM8K / MATH-500 / HumanEval
   -> LoRA training and evaluation
 ```
 
-完成本项目后，读者应能理解三件事。第一，R1 风格系统中的关键工程对象不是单个模型权重，而是任务池、采样轨迹、verifier、拒绝采样结果和训练数据 manifest。第二，推理数据飞轮可以先用规则奖励和监督回流跑通，不必一开始就进入完整 RL。第三，只要目标任务能够构造自动 verifier，这套结构就可以迁移到 SQL 生成、代码修复、结构化抽取、工具调用或企业内部题库。
+完成本项目后，读者应能理解三件事。第一，R1 风格系统中的关键工程对象不是单个模型权重，而是任务池、采样轨迹、verifier、拒绝采样结果和训练数据 manifest。第二，推理数据飞轮可以先用规则奖励和监督回流验证，不必一开始就进入完整 RL。第三，只要目标任务能够构造自动 verifier，这套结构就可以迁移到 SQL 生成、代码修复、结构化抽取、工具调用或企业内部题库。
 
 ## 2. 架构设计：六组件 R1 推理数据飞轮
 
@@ -89,7 +89,7 @@ OpenThoughts / GSM8K / MATH-500 / HumanEval
 ![图 P12-1：R1 风格自我推理飞轮架构](../../images/part11/p12_r1_reasoning_flywheel_architecture.png)
 *图 P12-1：从冷启动数据抽取、多路推理采样、verifier 池、拒绝采样到二轮 SFT 合并与训练评估的闭环结构。*
 
-第一个组件是 **冷启动数据抽取**。对应脚本为 `cold_start_data.py`。它负责从已有数据源中抽取适合 SFT 的样本，并统一为 `messages` 格式。数学样本会组织成 `Reasoning:` 和 `Final Answer:`，代码样本会组织成 `Reasoning:` 和 fenced Python code block。冷启动数据的作用不是直接训练出最强模型，而是让模型具备基本的推理输出结构、语言风格和可解析格式。
+第一个组件是 **冷启动数据抽取**。对应脚本为 `cold_start_data.py`。它负责从已有数据源中抽取适合 SFT 的样本，并统一为 `messages` 格式。数学样本会组织成 `Reasoning:` 和 `Final Answer:`，代码样本会组织成 `Reasoning:` 和 fenced Python code block。冷启动数据的作用不是直接训练出最高性能模型，而是让模型具备基本的推理输出结构、语言风格和可解析格式。
 
 第二个组件是 **多路推理采样**。对应脚本为 `sample_traces.py`。它让同一个 prompt 生成多条候选推理轨迹，并记录 `prompt_id`、`sample_idx`、`raw_trace`、`parsed_answer` 和 `generation_params`。项目同时支持 mock、本地 vLLM Python API 和外部 OpenAI 兼容 API 三种后端。在生产环境中，推理服务和数据处理脚本可以拆开部署，减少 CUDA、torch、vLLM 依赖互相牵制。
 
@@ -380,7 +380,7 @@ python eval_gsm8k_math.py \
 data/reports/eval_results_gsm8k_math.json
 ```
 
-需要强调的是，LoRA 与评估脚本在本项目中主要用于验证数据闭环，而不是保证一次训练就获得稳定涨分。最终收益高度依赖样本规模、采样质量、verifier 严格程度、训练比例、学习率和评估集隔离情况。工程闭环跑通和模型效果提升是两件相关但不等价的事。
+需要强调的是，LoRA 与评估脚本在本项目中主要用于验证数据闭环，而不是保证一次训练就获得稳定涨分。最终收益高度依赖样本规模、采样质量、verifier 严格程度、训练比例、学习率和评估集隔离情况。工程闭环验证和模型效果提升是两件相关但不等价的事。
 
 ---
 

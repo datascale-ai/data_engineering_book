@@ -2,7 +2,7 @@
 
 ## Full Table of Contents
 
-The Chinese 2026 Springer edition is the canonical mainline of this book, covering 14 parts, 48 chapters, 15 project case studies, and 3 appendices, with front matter and an afterword in the site edition. The English edition follows the same structure and is being brought into release quality in batches: existing complete English chapters are preserved, missing chapters are translated against the Chinese mainline, and the website navigation is checked with each batch.
+The Chinese 2026 Springer edition is the canonical mainline of this book, covering 14 parts, 48 chapters, 15 project case studies, and 4 appendices, with front matter and an afterword in the site edition. The English edition follows the same structure and is being brought into release quality in batches: existing complete English chapters are preserved, missing chapters are translated against the Chinese mainline, and the website navigation is checked with each batch.
 
 - [Abbreviations](abbreviations.md)
 - [Preface](preface.md)
@@ -25,6 +25,7 @@ The Chinese 2026 Springer edition is the canonical mainline of this book, coveri
 - [Appendix A: Tools and Frameworks Quick Reference](appendix_a_tools_and_frameworks_quick_reference.md)
 - [Appendix B: Compliance and Release Checklist](appendix_b_compliance_and_release_checklist.md)
 - [Appendix C: Cost Estimation and Resource Templates](appendix_c_cost_estimation_and_resource_templates.md)
+- [Appendix G: MindSpore Overview and Acknowledgments](appendix_g_mindspore_note.md)
 - [Afterword](afterword.md)
 
 ## Part 1: Overview and Infrastructure

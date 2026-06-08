@@ -32,7 +32,7 @@ The core of a data product is therefore not only the amount or richness of data.
 
 To build a data product, the team must answer structured questions: what upstream inputs does it consume, what outputs does it provide, what service quality does it promise, who owns it, and how will it evolve? These questions can be summarized in a **Data Product Canvas**.
 
-![Data product canvas](../../images/part9/ch28_fig01_zh.png)
+![Data product canvas](../../images/part9/ch28_fig01.png)
 
 *Figure 28-1: Data product canvas*
 
@@ -89,7 +89,7 @@ Contracts are also bidirectional. They constrain what producers must provide and
 
 ### 28.2.3 Data Contract Template
 
-![Data contract template with five clause groups](../../images/part9/ch28_fig02_zh.png)
+![Data contract template with five clause groups](../../images/part9/ch28_fig02.png)
 
 *Figure 28-2: Data contract template*
 
@@ -161,7 +161,7 @@ Change governance turns change from a silent-failure risk into a controlled, pre
 
 The most dangerous category is **potentially breaking changes**. They may look compatible at the schema level but change semantics or distributions. Adding an enum value, changing a computation definition, or changing upstream sampling can break filters, features, and retrieval weights without type errors.
 
-![Change compatibility decision tree](../../images/part9/ch28_fig03_zh.png)
+![Change compatibility decision tree](../../images/part9/ch28_fig03.png)
 
 *Figure 28-3: Change compatibility decision tree*
 
@@ -214,7 +214,7 @@ The key field is `interaction_type`, originally an enum with values `{click, lik
 
 This table turns vague concern into a row-level analysis: who is affected, how, how badly, and what to do.
 
-![Consumer impact analysis](../../images/part9/ch28_fig04_zh.png)
+![Consumer impact analysis](../../images/part9/ch28_fig04.png)
 
 *Figure 28-4: Consumer impact analysis*
 

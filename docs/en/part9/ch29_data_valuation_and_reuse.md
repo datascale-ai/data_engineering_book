@@ -140,7 +140,7 @@ Many organizations fail to capture this value. Data is collected for one task, u
 
 This section follows five typical large-model reuse paths: pre-training, post-training, RAG, evaluation, and compliance.
 
-![Multi-scenario data asset reuse paths](../../images/part9/ch29_fig01_zh.png)
+![Multi-scenario data asset reuse paths](../../images/part9/ch29_fig01.png)
 
 *Figure 29-1: Data asset reuse paths*
 
@@ -270,7 +270,7 @@ Real organizations manage hundreds or thousands of data assets. Precise valuatio
 
 The value axis combines benefit-side and usage-side metrics: how much benefit the asset creates and how widely it is reused. The cost/risk axis combines maintenance cost and inherent risk. The result is a cost-benefit matrix.
 
-![Data asset cost-benefit matrix](../../images/part9/ch29_fig02_zh.png)
+![Data asset cost-benefit matrix](../../images/part9/ch29_fig02.png)
 
 *Figure 29-2: Cost-benefit matrix*
 
@@ -304,7 +304,7 @@ Data value is not static. Financial regulations become outdated, customer-servic
 
 The lightweight mechanism proposed here is an **asset review card**: a one-page periodic record of value, cost, risk, reuse, and recommended action.
 
-![Data asset review card](../../images/part9/ch29_fig03_zh.png)
+![Data asset review card](../../images/part9/ch29_fig03.png)
 
 *Figure 29-3: Asset review card*
 

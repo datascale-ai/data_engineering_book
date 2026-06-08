@@ -1,5 +1,13 @@
 # Chapter 41: MedImage-ToolVQA Medical Image Tool-Use VQA Data Engineering
 
+## Abstract
+
+This chapter uses MedImage-ToolVQA as a focused dataset case for medical image tool-use data engineering. It examines task definition, sample structure, construction workflow, quality control, evaluation protocol, and safety boundaries. The chapter emphasizes how the dataset validates earlier data-engineering principles and clarifies its reproducibility conditions, model-training role, benchmark value, and deployment limits.
+
+## Keywords
+
+MedImage-ToolVQA; specialized dataset; evaluation benchmark; annotation workflow; quality control
+
 Medical image question answering is often treated as a special form of visual question answering (VQA). That classification is reasonable, but it can hide a crucial difference: **seeing** in medical images is not the same as recognizing objects in natural images. In natural images, subjects usually have clear outlines and semantic boundaries. In medical images, slight ground-glass opacity on a chest X-ray, a small low-density lesion in CT, local cell arrangement on pathology slides, or weak-boundary echoes in ultrasound may occupy only a tiny region. Their meaning depends on anatomy, modality, acquisition conditions, and the clinical question.
 
 Medical VQA datasets such as VQA-RAD, PathVQA, and SLAKE show that sample design must consider image modality, professional semantics, question source, and human verification (Lau et al. 2018; He et al. 2020; Liu et al. 2021). Data engineering therefore cannot stop at the image-question-answer triple. A medical image agent often works more like this: view the whole image, identify the structure or finding mentioned by the question, decide whether local zoom, segmentation, or boundary refinement is needed, use tool observations to update judgment, and then answer. The final answer is only the endpoint; the evidence path is also training signal.
@@ -8,7 +16,7 @@ MedImage-ToolVQA is a data engineering case built around this idea. It does not 
 
 This chapter explains the difference between medical image VQA and ordinary VQA, why tool trajectories are useful supervision, how MedImage-ToolVQA structures samples, how the construction pipeline and tool system work, and how to handle quality control, privacy, compliance, and medical safety boundaries. The chapter discusses data engineering and model-training supervision only. It does not provide clinical diagnostic advice.
 
-![Figure 41-1: Local evidence loop for a medical image agent](../../images/part12/ch41_01_medimage_tool_vqa_evidence_loop.png)
+![Figure 41-1: Local evidence loop for a medical image agent](../../images/part12/ch41_01_medimage_tool_vqa_evidence_loop_en.png)
 
 *Figure 41-1: The key is to record where to look again, how to look, and how judgment changes after observation.*
 
@@ -139,7 +147,7 @@ make_sft:
     produce training records
 ```
 
-![Figure 41-2: MedImage-ToolVQA conceptual construction flow](../../images/part12/ch41_02_medimage_tool_vqa_pipeline.png)
+![Figure 41-2: MedImage-ToolVQA conceptual construction flow](../../images/part12/ch41_02_medimage_tool_vqa_pipeline_en.png)
 
 The implementation can keep separate framework-specific entry points. [MedImage-ToolVQA-Mindspore](https://github.com/blackkiring/MedImage-ToolVQA-Mindspore) is the project implementation repository for MindSpore data processing, training packaging, inference, evaluation, and documentation.
 
@@ -169,7 +177,7 @@ MedImage-ToolVQA uses three visual tools: `Zoom-in`, `BiomedParse`, and `SAM2`.
 
 The core of a tool trajectory is multi-turn structure: action, observation, continued judgment.
 
-![Figure 41-3: Multi-turn structure of tool-call trajectories](../../images/part12/ch41_03_tool_trajectory_structure.png)
+![Figure 41-3: Multi-turn structure of tool-call trajectories](../../images/part12/ch41_03_tool_trajectory_structure_en.png)
 
 A simplified trajectory has four steps. The user provides the original image, question, and options. The assistant decides local evidence is needed and outputs a structured tool call. The environment returns a new observation image. The assistant uses both original and observation images to answer.
 
@@ -228,7 +236,7 @@ In SFT, clarity and stability matter most. The model must learn that `<tool_call
 
 Medical image SFT records should also keep an imaging-task schema. Here “diagnosis” means structuring the training task, candidate labels, evidence region, and safety boundary; it does not ask the model to provide clinical conclusions.
 
-![Figure 41-5: Real image and bbox evidence in the SFT schema](../../images/part12/ch41_05_sft_schema_real_bbox_example.png)
+![Figure 41-5: Real image and bbox evidence in the SFT schema](../../images/part12/ch41_05_sft_schema_real_bbox_example_en.png)
 
 *Figure 41-5: Bbox is a structured field and should be recoverable as reviewable visual evidence.*
 
@@ -345,7 +353,7 @@ Tool-use data quality is not determined by answer correctness alone. A sample sh
 
 Quality control should be layered across question generation, region validation, observation generation, trajectory synthesis, and training packaging.
 
-![Figure 41-4: Quality-control and human-review gates](../../images/part12/ch41_04_quality_review_gate.png)
+![Figure 41-4: Quality-control and human-review gates](../../images/part12/ch41_04_quality_review_gate_en.png)
 
 The first layer is **structure validation**: prompt, options, answer, image references, region fields, and tool parameters must be complete and parseable. Tool names must come from a whitelist; bbox coordinates must be in bounds.
 
@@ -419,6 +427,14 @@ This chapter connects Part 3's multimodal cleaning and grounding, Part 6's Tool-
 MedImage-ToolVQA extends medical image VQA from single-step answer supervision to multi-turn supervision containing local visual evidence and tool-use behavior. It organizes ROI, mask, bbox, target description, tool observations, and multiple-choice answers into one evidence chain, so models learn not only what to answer, but how to obtain and use visual evidence.
 
 The advantage is stronger interpretability and auditability: tool parameters, observation images, and final answers can be checked together. The cost is higher data-engineering burden: each stage needs validation, each tool needs a boundary, and each derived image needs tracing and de-identification. In a high-risk setting such as medical imaging, the dataset also encodes behavioral rules: when to inspect directly, when to call tools, how to update after observation, and which answers require quality control, privacy protection, and human review.
+
+## Chapter Summary
+
+This chapter reviewed MedImage-ToolVQA as a specialized dataset case in large-model data engineering. Its main contribution is to place concepts, data objects, quality signals, and engineering deliverables into one narrative, so readers can distinguish which process signals need explicit recording and which outputs require sampling, evaluation, or audit.
+
+The method should be applied with attention to data source, business goal, model capability, cost budget, and compliance requirements. For scenarios involving sensitive information, cross-system calls, automated decisions, or public release, human review, version freezing, permission control, and exception rollback should remain part of the workflow rather than optional additions.
+
+Within the structure of this book, this chapter sits at the specialized-dataset validation layer. It connects earlier concepts to later open-model data recipes and project case studies. Readers can use its framework together with figures, references, and appendix checklists to turn the method into a reproducible, inspectable, and deliverable engineering process.
 
 ## References
 

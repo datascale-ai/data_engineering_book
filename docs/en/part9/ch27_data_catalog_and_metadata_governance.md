@@ -94,7 +94,7 @@ At scale, a dataset registry must solve three problems:
 
 Systems such as Google's Goods, Ground, and Data Tamer illustrate the direction. Goods automatically cataloged billions of internal datasets and inferred sources, owners, schemas, and dependencies (Halevy et al. 2016). Ground proposed a data context service that manages application, behavior, and change context around data (Hellerstein et al. 2017). Data Tamer showed how heterogeneous data sources can be curated and matched at scale with expert confirmation at key points (Stonebraker et al. 2013). Their shared lesson is that large-scale registries must rely heavily on automatic collection; manual registration alone decays quickly.
 
-![Data asset registration and launch workflow](../../images/part9/ch27_fig01_zh.png)
+![Data asset registration and launch workflow](../../images/part9/ch27_fig01.png)
 
 *Figure 27-1: Data asset registration and launch workflow*
 
@@ -202,7 +202,7 @@ impact_analysis:
 
 The `impact_analysis` field makes lineage actionable. It records who is affected by upstream changes and what downstream systems are at risk if this asset fails.
 
-![Data lineage graph](../../images/part9/ch27_fig02_zh.png)
+![Data lineage graph](../../images/part9/ch27_fig02.png)
 
 *Figure 27-2: Data lineage graph*
 
@@ -253,7 +253,7 @@ Lifecycle matters because exits and entrances both have engineering consequences
 | **ARCHIVED** | No active updates, retained for audit and history | Long term | Need for full deletion | Read-only |
 | **DELETED** | Physically deleted if legally allowed | - | Permanent operation | No access |
 
-![Data asset lifecycle state machine](../../images/part9/ch27_fig03_zh.png)
+![Data asset lifecycle state machine](../../images/part9/ch27_fig03.png)
 
 *Figure 27-3: Data asset lifecycle state machine*
 
@@ -331,7 +331,7 @@ Data-catalog managers need a dashboard view across hundreds or thousands of asse
 
 These metrics turn "how good is governance?" into measurable operational indicators. They must be collected continuously and automatically; otherwise, they become stale reporting numbers. Mature platforms embed metric collection into pipelines so the dashboard becomes an operational tool rather than a one-time slide.
 
-![Role- and purpose-based permission matrix](../../images/part9/ch27_fig04_zh.png)
+![Role- and purpose-based permission matrix](../../images/part9/ch27_fig04.png)
 
 *Figure 27-4: Example permission-governance matrix*
 
