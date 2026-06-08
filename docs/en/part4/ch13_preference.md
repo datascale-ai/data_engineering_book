@@ -536,4 +536,4 @@ When preference data is understood and built this way, it is no longer just a st
 
 ## References
 
-<!-- TBD: papers, blogs, tools, and official documentation cited in this chapter. See publishing/citations_progress.md for the completion plan. -->
+For further reading, see the RLHF, preference-modeling, direct-preference-optimization, constitutional-AI, and process-reward-model literature, together with annotation-consistency work such as Cohen's kappa. In production projects, these references should be paired with the team's own preference specification, arbitration log, reward-model card, and release evaluation report so that algorithm choices remain traceable to data-governance decisions.

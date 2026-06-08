@@ -544,4 +544,4 @@ For math, logic, code, and similar tasks, truly high-value data is not "data wit
 
 ## References
 
-<!-- TBD: papers, blogs, tools, and official documentation cited in this chapter. See publishing/citations_progress.md for the completion strategy. -->
+For further reading, review work on chain-of-thought prompting, self-consistency, program-of-thought, tree-of-thought, process supervision, verifier-based reasoning, and execution-grounded code reasoning. A production reasoning-data program should connect these papers to internal verifier specifications, error taxonomies, process-labeling guidelines, and dataset version cards rather than treating references as an isolated bibliography.
