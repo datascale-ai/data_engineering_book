@@ -53,7 +53,7 @@ Multi-domain design reduces overfitting to a single theme. Chart conventions, le
 
 The dataset contains more than 20 common visualization styles, including bar charts, map charts, table charts, card charts, donut charts, pie charts, bubble charts, ranking charts, stacked bar charts, line charts, grouped bar charts, pictograms, treemaps, ranking card charts, chord diagrams, tree diagrams, area charts, radar charts, sankey diagrams, gantt charts, scatter plots, 3d bar charts, and timelines.
 
-Each infographic uses whatever mixed layout the original creator used, such as “map + table + stacked bar + pictogram” or “pie chart + ranking card + line trend.” Different chart types store data differently: tables use rows and columns, maps use geographic regions, pictograms use icon counts, and line charts use temporal sequences. The model must adapt reading rules across formats and then aggregate across them.
+Each infographic uses whatever mixed layout the original creator used, such as “map + table + stacked bar + pictogram” or “pie + ranking card + line.” Different chart types store data differently: tables use rows and columns, maps use geographic regions, pictograms use icon counts, and line charts use temporal sequences. The model must adapt reading rules across formats and then aggregate across them.
 
 ![Figure 40-2: Chart type distribution](../../images/part12/ch40_chart_en.png)
 
