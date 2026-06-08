@@ -309,11 +309,11 @@
 
 ## 参考文献
 
-中华人民共和国网络安全法. Available at: https://www.gov.cn/xinwen/2016-11/07/content_5129723.htm
+中华人民共和国网络安全法. Available at: http://www.npc.gov.cn/zgrdw/npc/xinwen/2016-11/07/content_2001605.htm
 
-中华人民共和国数据安全法. Available at: https://www.gov.cn/xinwen/2021-06/11/content_5616919.htm
+中华人民共和国数据安全法. Available at: https://www.cac.gov.cn/2021-06/11/c_1624994566919140.htm
 
-中华人民共和国个人信息保护法. Available at: https://www.gov.cn/xinwen/2021-08/20/content_5632486.htm
+中华人民共和国个人信息保护法. Available at: http://www.npc.gov.cn/npc/c2/c30834/202108/t20210820_313088.html
 
 National Institute of Standards and Technology (2023) AI Risk Management Framework (AI RMF 1.0). Available at: https://www.nist.gov/itl/ai-risk-management-framework
 
