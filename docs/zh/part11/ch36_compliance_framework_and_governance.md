@@ -7,10 +7,6 @@
 
 ---
 
-# 第36章：数据合规框架与治理
-
----
-
 ## 摘要
 在数据驱动的时代，合规不再是法务部门在项目上线前盖的一个章，而是决定系统能否长期稳定运行的基础架构约束。很多系统在算法效果、业务转化、灰度表现上都达到了上线标准，却在最终评审中因数据来源不清、授权边界模糊、日志留痕不全或敏感信息暴露而被紧急叫停。问题并不在于团队“不重视合规”，而在于合规要求长期被视为研发完成之后的审批附件，而不是系统设计之初就必须纳入的约束条件。
 
@@ -641,7 +637,12 @@ DPIA 的核心不是“写一篇长报告”，而是系统性回答以下问题
 ### 36.4.5 跨境传输治理
 
 跨境传输的核心难点在于：一份数据一旦离开原有法域，其后续处理、留存、共享与审计都可能变得更复杂。
-因此，跨境治理不应只在合同层解决，而应在系统层同时做到：
+因此，跨境治理不应只在合同层解决，而应先完成法域映射与合法传输机制确认，再在系统层落实控制：
+
+* 明确数据来源地、接收地与中转地对应的适用法域
+* 由合规/法务确认合法传输路径、传输依据与保留条件
+* 按地区规则选择合同条款、标准合同条款、认证、安全评估或监管申报等法律路径
+* 在法律路径未确认前，默认暂停跨境流转并进入人工审批
 
 * 标注跨境流转路径
 * 控制最小字段集
@@ -675,7 +676,7 @@ DPIA 的核心不是“写一篇长报告”，而是系统性回答以下问题
 | 未成年人       | 同意不足、商业化过度     | 监护人机制、用途限制、短保留期      |
 | 外采数据       | 来源不合法、责任不清     | 来源核验、DPA、用途绑定        |
 | 第三方 API    | 明文出域、日志残留      | 边界网关、脱敏、调用留痕         |
-| 跨境传输       | 出境后控制力弱        | 最小字段集、专项审批、专项审计      |
+| 跨境传输       | 出境后控制力弱        | 最小字段集、专项审批、专项审计、法域映射与法务复核 |
 | 大模型 Prompt | 敏感信息进入上下文      | Prompt 过滤、字段白名单、会话留痕 |
 
 ---
@@ -912,7 +913,7 @@ approval_rules:
 
 ### 36.5.5 审计日志结构（JSONL 示例）
 
-```json
+```jsonl
 {"event_time":"2026-03-10T10:15:01Z","actor":"algo_user_a","role":"algo_reader","action":"query","dataset":"dim_user_profile_masked","fields":["hashed_phone","age_band"],"record_count":200,"purpose":"feature_validation","approval_id":"APR-1029","policy_result":"allow_masked","trace_id":"trace-001"}
 {"event_time":"2026-03-10T10:22:48Z","actor":"platform_job_17","role":"pipeline_runner","action":"preflight_check","dataset":"p09_release_bundle","fields":[],"record_count":0,"purpose":"deployment_gate","approval_id":"N/A","policy_result":"pass","trace_id":"trace-002"}
 {"event_time":"2026-03-10T10:29:11Z","actor":"external_gateway","role":"api_gateway","action":"external_api_call","dataset":"prompt_payload","fields":["masked_phone","case_summary"],"record_count":1,"purpose":"assisted_summary","approval_id":"APR-1081","policy_result":"allow_after_redaction","trace_id":"trace-003"}
