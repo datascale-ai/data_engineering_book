@@ -1,6 +1,6 @@
 # 参考文献 DOI / Springer 样式 / 真实性终审报告
 
-- 参考文献条目：806
+- 参考文献条目：809
 - DOI/URL/年份/样式候选问题：583
 - 所有条目默认需要人工真实性终审；脚本列出 DOI、URL、年份和样式候选问题，但不替代逐条查证。
 
@@ -23,6 +23,9 @@
 | `docs/zh/appendix_c_cost_estimation_and_resource_templates.md` | 3 | 2023 |  |  | needs-authenticity-review, missing-doi-url-arxiv | Kwon W, Li Z, Zhuang S, Sheng Y, Zheng L, Yu C H, Gonzalez J E, Zhang H, Stoica I (2023) Efficient Memory Management for Large Language Model Serving with PagedAttention. In: Pr... |
 | `docs/zh/appendix_c_cost_estimation_and_resource_templates.md` | 4 |  |  | https://kubernetes.io/docs/ | needs-authenticity-review, missing-year, missing-terminal-period | Kubernetes Documentation. Available at: https://kubernetes.io/docs/ |
 | `docs/zh/appendix_c_cost_estimation_and_resource_templates.md` | 5 |  |  | https://docs.vllm.ai/ | needs-authenticity-review, missing-year, missing-terminal-period | vLLM Documentation. Available at: https://docs.vllm.ai/ |
+| `docs/zh/appendix_g_mindspore_note.md` | 1 | 2026 |  | https://www.mindspore.cn/view/en. | needs-authenticity-review | MindSpore Contributors (2026) MindSpore Documentation. Available at: https://www.mindspore.cn/view/en. |
+| `docs/zh/appendix_g_mindspore_note.md` | 2 | 2026 |  | https://github.com/mindspore-ai/mindspore. | needs-authenticity-review | MindSpore Contributors (2026) MindSpore source repository. Available at: https://github.com/mindspore-ai/mindspore. |
+| `docs/zh/appendix_g_mindspore_note.md` | 3 | 2026 |  | https://www.mindspore.cn/tutorials/en/r2.9.0/beginner/autograd.html. | needs-authenticity-review | MindSpore Contributors (2026) Automatic Differentiation, MindSpore Tutorials. Available at: https://www.mindspore.cn/tutorials/en/r2.9.0/beginner/autograd.html. |
 | `docs/zh/part1/ch01_data_change.md` | 1 | 2020 |  |  | needs-authenticity-review | Kaplan J, McCandlish S, Henighan T, Brown T B, Chess B, Child R, Gray S, Radford A, Wu J, Amodei D (2020) Scaling Laws for Neural Language Models. arXiv preprint arXiv:2001.08361. |
 | `docs/zh/part1/ch01_data_change.md` | 2 | 2022 |  |  | needs-authenticity-review | Hoffmann J, Borgeaud S, Mensch A, Buchatskaya E, Cai T, Rutherford E, de Las Casas D, Hendricks L A, Welbl J, Clark A, Hennigan T, Noland E, Millican K, van den Driessche G, Dam... |
 | `docs/zh/part1/ch01_data_change.md` | 3 | 2021 |  |  | needs-authenticity-review | Rae J W, Borgeaud S, Cai T, Millican K, Hoffmann J, Song F, Aslanides J, Henderson S, Ring R, Young S, Rutherford E, Hennigan T, Menick J, Cassirer A, Powell R, van den Driessch... |
@@ -303,8 +306,5 @@
 | `docs/zh/part14/p03_llava_instruct.md` | 1 | 2023 |  |  | needs-authenticity-review, missing-doi-url-arxiv | 1. Liu, H., Li, C., Wu, Q., & Lee, Y. J. (2023). Visual Instruction Tuning. NeurIPS 2023. |
 | `docs/zh/part14/p03_llava_instruct.md` | 2 | 2014 |  |  | needs-authenticity-review, missing-doi-url-arxiv | 2. Lin, T.-Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D., Dollár, P., & Zitnick, C. L. (2014). Microsoft COCO: Common Objects in Context. ECCV 2014. |
 | `docs/zh/part14/p03_llava_instruct.md` | 3 | 2021 |  |  | needs-authenticity-review, missing-doi-url-arxiv | 3. Radford, A., Kim, J. W., Hallacy, C., Ramesh, A., Goh, G., et al. (2021). Learning Transferable Visual Models From Natural Language Supervision. ICML 2021. |
-| `docs/zh/part14/p03_llava_instruct.md` | 4 | 2021 |  |  | needs-authenticity-review, missing-doi-url-arxiv | 4. Mathew, M., Karatzas, D., & Jawahar, C. V. (2021). DocVQA: A Dataset for VQA on Document Images. WACV 2021. |
-| `docs/zh/part14/p03_llava_instruct.md` | 5 | 2022 |  |  | needs-authenticity-review, missing-doi-url-arxiv | 5. Masry, A., Long, D. X., Tan, J. Q., Joty, S., & Hoque, E. (2022). ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. ACL 2022. |
-| `docs/zh/part14/p04_synthetic_textbook.md` | 1 | 2020 |  |  | needs-authenticity-review, missing-doi-url-arxiv | 1. Raffel, C., Shazeer, N., Roberts, A., Lee, K., Narang, S., Matena, M., Zhou, Y., Li, W., & Liu, P. J. (2020). Exploring the Limits of Transfer Learning with a Unified Text-to... |
 
-> 其余 506 条见 JSON 明细。
+> 其余 509 条见 JSON 明细。

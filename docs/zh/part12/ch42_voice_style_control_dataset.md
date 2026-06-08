@@ -377,7 +377,7 @@ VoiceStyleControl 继承了音视频数据工程的底层能力。第10章讨论
 
 在多模态生成数据工程中，VoiceStyleControl 与第48章共享同一个核心模式：把生成目标拆为内容条件与风格条件，再用结构化 schema 绑定训练监督。T2I/T2V 中的 prompt、style、motion、camera、safety tag，在语音中对应 `answer`、`gender`、`mood`、参考声音 ID、sample_rate 和 audio token。第十四篇项目十“端到端 LLM 数据飞轮”也可以吸收这套设计：离线构建初版语音数据，训练可控生成模型，在线收集体验反馈，回流到质检和配平，再发布下一版数据与模型。
 
-## 42.9 小结
+## 本章小结
 
 VoiceStyleControl 的价值不在于把语音样本简单堆到更大规模，而在于把语义响应、声音条件、情绪控制和语音生成监督放进同一条可审计记录。S2SEmoControl 提供 spoken query 到 spoken answer 的交互监督，TTSSpeakerControl 提供自然语言风格描述到目标语音的直接监督。二者合在一起，使模型既能理解用户语音，又能依据指定声音条件和情绪生成回答。
 

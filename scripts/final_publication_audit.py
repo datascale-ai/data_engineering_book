@@ -419,6 +419,8 @@ def main() -> int:
                 "- `style_report.md`：逐章统稿与风格候选表达。",
                 "- `figure_rights_report.md`：图表权属、AI 声明与高清源文件确认清单。",
                 "- `reference_audit_report.md`：参考文献 DOI / URL / 年份 / 样式候选问题。",
+                "- `quantitative_data_audit.md`：全文量化数据、样本规模、比例、成本、性能数值的来源风险清单。",
+                "- `quantitative_source_spotcheck.md`：量化数据外部来源抽样核验记录。",
                 "- `manual_review_checklist.md`：指定抽检章节与高风险篇章人工签核清单。",
                 "- `final_publication_audit.json`：完整机器可读明细。",
                 "",

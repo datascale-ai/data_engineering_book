@@ -711,7 +711,7 @@ def render_context(events: list[dict]) -> list[str]:
 
 这一步很像把“系统日志”翻译成“训练可消费语境”。
 
-而 `build_records()` 更进一步，它并不是一条轨迹只产出一条样本，而是沿着步骤不断产出带 `record_id`、`trajectory_id`、`task_id`、`category`、`variant` 等字段的监督记录。这也是为什么最终训练集虽然只有 `22` 条原始轨迹，却能形成 `103` 条训练记录。
+而 `build_records()` 更进一步，它并不是一条轨迹只产出一条样本，而是沿着步骤不断产出带 `record_id`、`trajectory_id`、`task_id`、`category`、`variant` 等字段的监督记录。在本章示例中，`22` 条原始轨迹可扩展为 `103` 条训练记录；正式复现实验应同步保留轨迹清单和构建日志。
 
 ### 14.3 训练接口层产物
 
