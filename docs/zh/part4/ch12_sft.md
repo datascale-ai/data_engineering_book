@@ -92,8 +92,6 @@ SFT数据设计与指令体系；监督微调；偏好数据；对齐数据；�
 
 反过来看，像“提升模型世界知识总量”“显著增强跨领域复杂推理上限”这样的目标，往往并不是SFT能够单独承担的。标注团队如果不清楚这一点，就容易在样本建设中陷入方向性浪费：一方面拼命堆数据，另一方面又无法解释模型为什么仍然在底层复杂能力上没有本质变化。更常见的情况是，团队会不自觉地把一些本该由基础模型能力、预训练质量、检索系统、工具系统甚至推理架构承担的任务，统统压到SFT阶段来解决。这样做的结果通常是，SFT目标越来越大，样本越来越杂，最后什么都想教，什么都没教透。
 
-这也是为什么项目里常会出现一种误判：模型上线后表现不够理想，第一反应永远是“是不是SFT数据还不够多”。但很多时候问题常常出在目标本来就没有被正确限定，而非数据数量本身。比如希望模型通过SFT突然掌握一个此前几乎没见过的专业知识体系，希望它仅靠监督样本就把复杂多跳推理稳定下来，希望它在没有工具支持的前提下解决原本应由外部系统完成的查询任务。这些期待一旦混进SFT目标里，团队就很容易在后续迭代中不断加数据、改模板、补样本，却始终感到效果“不成体系”。
-
 因此，在项目立项时，建议团队就明确SFT的成功标准。例如，模型是否需要在某类任务上达到90%以上的格式稳定率，是否需要将高风险错误率压到某个阈值以下，是否需要保证多轮回答风格一致，是否需要在工具任务中维持较高的参数正确率。只有当SFT目标被转化为可评估的工程标准时，数据设计工作才真正具备方向。
 
 这里最关键的，并非指标一定要设计得多复杂，关键是它必须真的能指导生产。比如“让回答更自然”这种目标，如果不能继续拆成更可观察的维度，就很难落实；但如果把它改写成“客服场景下避免过度书面化表达，并保证下一步操作说明完整”，数据团队就知道该怎么写模板，审核团队也知道该怎么打分。再比如“增强模型安全性”听起来很大，但如果进一步落成“医疗场景中高风险症状不得给出延迟就医建议”“法务场景中信息不足时必须显式说明限制条件”，那它就已经从空泛目标变成可执行规范了。
@@ -337,7 +335,7 @@ SFT数据设计不是“越长越好”或“越复杂越好”。一个数据�
 
 为了便于团队建立任务映射关系，表12-1给出了指令类型与适用任务的示例关系。
 
-**表：指令类型与适用任务表**
+**表12-1：指令类型与适用任务表**
 
 | 指令类型 | 典型输入形态 | 目标输出形态 | 适用任务 | 标注重点 | 常见风险 |
 |---|---|---|---|---|---|
@@ -560,7 +558,7 @@ datasets/
 
 为了便于实际验收，表12-2给出了一个可落地的SFT质量维度评分表示例。
 
-**表：监督微调质量维度评分表示例**
+**表12-2：监督微调质量维度评分表示例**
 
 | 评分维度 | 1分 | 2分 | 3分 | 4分 | 5分 |
 |---|---|---|---|---|---|
@@ -691,7 +689,7 @@ Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C. D., & Finn, C. (2
 
 Bai, Y., Kadavath, S., Kundu, S., Askell, A., Kernion, J., Jones, A., et al. (2022). *Constitutional AI: Harmlessness from AI Feedback*. arXiv:2212.08073.
 
-Schick, T., Dwivedi-Yu, J., Dessì, R., Raileanu, R., Lomeli, M., Zettlemoyer, L., Cancedda, N., & Scialom, T. (2023). *Toolformer: Language Models Can Teach Themselves to Use Tools*. arXiv:2302.04761.
+Schick, T., Dwivedi-Yu, J., Dessì, R., Raileanu, R., Lomeli, M., Zettlemoyer, L., Cancedda, N., & Scialom, T. (2023). *Toolformer: Language Models Can Teach Themselves to Use Tools*. Advances in Neural Information Processing Systems, 36 (NeurIPS 2023 Oral). arXiv:2302.04761.
 
 Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., & Cao, Y. (2023). *ReAct: Synergizing Reasoning and Acting in Language Models*. International Conference on Learning Representations. arXiv:2210.03629.
 

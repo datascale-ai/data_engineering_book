@@ -319,7 +319,7 @@ if __name__ == "__main__":
 
 为了让模型协作方式更清晰，下面给出一张常见协作模式与适用任务的对应表。
 
-*表16-1： 协作模式与适用任务*
+**表16-1： 协作模式与适用任务**
 
 | 协作模式 | 角色配置 | 典型流程 | 适用任务 | 优势 | 风险点 |
 |---|---|---|---|---|---|
@@ -357,7 +357,7 @@ if __name__ == "__main__":
 
 ### 不同蒸馏类型对应不同的监督密度
 
-虽然答案蒸馏、过程蒸馏、风格蒸馏和工具轨迹蒸馏常常被并列讨论，但它们之间一个非常关键的差异在于监督密度。答案蒸馏通常提供的是相对稀疏的监督信号，即学生只知道“输入最终对应什么输出” (Hinton et al. 2015; Kim and Rush 2016)；过程蒸馏 (Lightman et al. 2023)提供的是中等到高密度监督，因为学生不仅看见最终答案，还看见部分判断路径 (Lightman et al. 2023; Wei et al. 2022)；工具轨迹蒸馏 (Schick et al. 2023; Yao et al. 2023; Patil et al. 2024)的监督密度往往更高，因为它不仅包含决策结果，还包含调用时机、动作序列、执行反馈与收束方式 (Schick et al. 2023)。
+虽然答案蒸馏、过程蒸馏、风格蒸馏和工具轨迹蒸馏常常被并列讨论，但它们之间一个非常关键的差异在于监督密度。答案蒸馏通常提供的是相对稀疏的监督信号，即学生只知道“输入最终对应什么输出” (Hinton et al. 2015; Kim and Rush 2016)；过程蒸馏 (Lightman et al. 2024)提供的是中等到高密度监督，因为学生不仅看见最终答案，还看见部分判断路径 (Lightman et al. 2024; Wei et al. 2022)；工具轨迹蒸馏 (Schick et al. 2023; Yao et al. 2023; Patil et al. 2024)的监督密度往往更高，因为它不仅包含决策结果，还包含调用时机、动作序列、执行反馈与收束方式 (Schick et al. 2023)。
 
 这件事看上去像是样本格式差异，实际上会直接影响学生学到什么、学得多稳。答案蒸馏最“轻”，因为它几乎只告诉学生最后该说什么。这样的监督好处是简单、干净、训练成本低，学生不容易被太多中间信息拖住，尤其适合那些输入边界清楚、结果形式稳定的任务，比如结构化抽取、短答分类、格式规范改写之类。可它的弱点也很明显：学生知道最后长成什么样，却不一定知道为什么要这么答。遇到稍微变形一点的输入，或者需要在几个相近选项里做判断时，它就容易显得脆。
 
@@ -411,7 +411,7 @@ if __name__ == "__main__":
 
 ### 解释链保留的关键在可迁移性，而非长度
 
-在大模型蒸馏中，解释链 (Lightman et al. 2023; Wei et al. 2022)一直是一个容易被神化的对象。很多团队直觉上认为，只要把教师的思考过程完整保留下来，学生就更容易学会推理 (Wei et al. 2022)。但实际情况要复杂得多。解释链是否有价值，并不由它是否完整决定，而由它是否对学生形成可迁移的判断结构决定。
+在大模型蒸馏中，解释链 (Lightman et al. 2024; Wei et al. 2022)一直是一个容易被神化的对象。很多团队直觉上认为，只要把教师的思考过程完整保留下来，学生就更容易学会推理 (Wei et al. 2022)。但实际情况要复杂得多。解释链是否有价值，并不由它是否完整决定，而由它是否对学生形成可迁移的判断结构决定。
 
 这种误解很常见，因为从人的视角看，一段长而完整的解释链往往显得“信息很多”。教师先分析背景，再拆解条件，再权衡若干可能性，最后得出结论，整个过程看上去很像真正的推理轨迹。可问题在于，学生模型并不是在阅读这段过程，它是在拿这段过程当训练信号。对小模型来说，过长的自然语言解释并不一定会自动变成更清楚的推理框架，反而很可能先变成一堆要模仿的句式、铺垫和表达习惯。最后学到手的，常常是“像在分析”，而不一定是真的更会判断。
 
@@ -664,7 +664,7 @@ Mirzadeh, S. I., Farajtabar, M., Li, A., et al. (2020). Improved Knowledge Disti
 
 Kim, Y., & Rush, A. M. (2016). Sequence-Level Knowledge Distillation. Proceedings of the 2016 Conference on Empirical Methods in Natural Language Processing, 1317–1327.
 
-Lightman, H., Kosaraju, V., Burda, Y., et al. (2023). Let’s Verify Step by Step. arXiv preprint arXiv:2305.20050.
+Lightman, H., Kosaraju, V., Burda, Y., et al. (2024). Let’s Verify Step by Step. International Conference on Learning Representations (ICLR 2024). arXiv:2305.20050.
 
 Wei, J., Wang, X., Schuurmans, D., et al. (2022). Chain-of-Thought Prompting Elicits Reasoning in Large Language Models. Advances in Neural Information Processing Systems, 35, 24824–24837.
 
