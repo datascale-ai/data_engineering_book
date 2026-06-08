@@ -1,5 +1,9 @@
 # Chapter 42: VoiceStyleControl Controllable Voice Interaction Data Engineering
 
+## Abstract
+
+This chapter uses VoiceStyleControl controllable voice interaction data engineering as a specialized dataset case study. It analyzes the task definition, sample structure, annotation pipeline, quality control, and evaluation protocol. The chapter emphasizes how this dataset validates the data engineering methods discussed earlier in the book, and explains its applicability boundaries, reproducibility conditions, and risk-control requirements for model training, benchmark evaluation, and industrial deployment.
+
 When dialogue moves from text into speech, the supervision target changes in a fundamental way. Text dialogue data mainly answers two questions: what does the user want, and what should the assistant say? Voice interaction data must also answer who should say the sentence, with what emotion, and whether the resulting voice is audible, controllable, and suitable for the setting. The sentence "Run now, this place is not safe" carries the same text whether it is read calmly or spoken with a trembling, fearful voice, but the training signal is completely different.
 
 That is the value of VoiceStyleControl. It does not simply concatenate ASR transcripts, TTS readings, and dialogue text. It places the user request, assistant response text, target voice condition, emotional style, and corresponding speech supervision into one auditable record. Text fields describe what the turn is about. Style fields describe what voice and emotion should be used. Audio files and discrete speech tokens provide acoustic targets that can be learned and rechecked during generation. The model learns not only response content, but how to generate emotional speech under specified semantic and style conditions.
@@ -9,6 +13,10 @@ The engineering entry point for this sample organization is the public repositor
 As a controllable voice interaction case, VoiceStyleControl builds on the audio and video data engineering ideas from Chapter 10: sampling rate, audio segmentation, ASR, speaker characteristics, and acoustic quality remain foundational. It also connects to multi-turn interaction in Chapter 20, online feedback in Chapter 23, and privacy and compliance in Chapters 36 and 37. Looking ahead, it shares a pattern with the multimodal generation work in Chapter 48: separate the generation target into content conditions and style conditions, fix them in a structured schema, and feed the result into an end-to-end data flywheel.
 
 The engineering focus is not the TTS architecture or voice-cloning algorithm itself. The focus is how control conditions are recorded, how they enter training, and how audio quality, dialogue naturalness, and compliance boundaries are balanced. Only when these questions are carried by stable data structures and processes can VoiceStyleControl become a reusable controllable voice interaction data asset instead of a collection of pleasant-sounding synthetic samples.
+
+## Keywords
+
+specialized dataset; evaluation benchmark; annotation pipeline; quality control; data engineering practice
 
 ## 42.1 Why Voice Dialogue Needs Explicit Style Control
 
@@ -55,7 +63,7 @@ VoiceStyleControl should therefore not be read as a plain TTS dataset. Ordinary 
 
 ## 42.3 Sample Schema: Separate Semantic and Style Channels
 
-![Figure 42-1: Dual-channel schema for semantic response and style control](../../images/part12/ch42_fig02_dual_channel_schema.svg)
+![Figure 42-1: Dual-channel schema for semantic response and style control](../../images/part12/ch42_fig02_dual_channel_schema_en.svg)
 
 *Figure 42-1: The semantic channel answers what to say; the style channel answers what voice and emotion to use; the acoustic supervision channel binds both to audio files, speech tokens, and sampling configuration.*
 
@@ -217,7 +225,7 @@ After samples enter the dataloader, the standard schema can be projected into di
 
 ## 42.4 Construction Pipeline: From Text Dialogue to Controllable Voice Records
 
-![Figure 42-2: VoiceStyleControl construction pipeline](../../images/part12/ch42_fig01_data_pipeline.svg)
+![Figure 42-2: VoiceStyleControl construction pipeline](../../images/part12/ch42_fig01_data_pipeline_en.svg)
 
 *Figure 42-2: Text dialogue or style content receives speaker and emotion conditions, is synthesized or collected through an authorized reference voice pool, and then passes tokenization, quality control, balancing, and packaging.*
 
@@ -247,7 +255,7 @@ The release artifact should also include a data card. It records total sample co
 
 ## 42.5 Quality Evaluation and Closed-Loop Repair
 
-![Figure 42-3: Quality evaluation and data-flywheel loop](../../images/part12/ch42_fig03_quality_loop.svg)
+![Figure 42-3: Quality evaluation and data-flywheel loop](../../images/part12/ch42_fig03_quality_loop_en.svg)
 
 *Figure 42-3: Automatic checks, reverse ASR, style evaluation, and human sampling form issue queues that feed back into resynthesis, relabeling, downweighting, or removal.*
 
@@ -304,6 +312,8 @@ Voice identity is a highly sensitive data asset. A person's voice can reveal age
 | Bias and stereotype | `gender` is persistently tied to `mood` or content | Distribution monitoring, counterfactual samples, ban stereotyped templates | Distribution report, bias evaluation |
 | Version loss of control | Samples are resynthesized or relabeled without traceability | Data versioning, hashes, frozen training sets | Experiment tracking ID |
 
+Table 42-4 turns risk governance into data gates. References without authorization must not enter the synthesis queue. Revoked references must be traceable to all derived audio files and tokens. High-risk emotional-manipulation samples cannot rely only on post-training safety policies; they should be blocked or downweighted during data construction. For voice generation, compliance is not the final filter before launch. It is part of the sample lifecycle.
+
 The reference voice pool is the main governance object. Each reference should have a `consent_id`, authorization scope, collection method, allowed tasks, expiration time, and revocation status. If authorization permits research only, the sample cannot enter commercial model training. If a speaker revokes authorization, the manifest should locate all affected `query_id/answer_id` values, audio files, token files, and training versions. Public releases should use reference IDs that cannot be traced back to a real identity, and should avoid using names in IDs, filenames, or paths.
 
 Emotion control also has misuse boundaries. Strong emotions such as fearful and angry can improve expression, but they can also manipulate users. Customer service, education, medical, and financial settings should restrict high-pressure emotional output, especially fear-based prompts that push users to transfer money, buy something, reveal verification codes, or make health decisions. For minors and psychologically vulnerable users, systems should prefer neutral or gentle supportive styles and preserve policy-trigger logs.
@@ -322,7 +332,7 @@ Online feedback turns offline style labels into user-experience signals. The cli
 
 Privacy and compliance chapters provide boundaries. Chapter 36 requires authorization, purpose, retention, and audit to be moved forward into the data lifecycle. Chapter 37 reminds us that voice identity risk can be reduced with access control, federated training, encrypted storage, and minimal collection. The more controllable voice data emphasizes voice conditions and reference timbre, the less compliance can be treated as an appendix.
 
-In multimodal generation data engineering, VoiceStyleControl shares the same core pattern as Chapter 48: split the generation target into content conditions and style conditions, then bind training supervision through a structured schema. In T2I or T2V, prompt, style, motion, camera, and safety tags correspond to `answer`, `gender`, `mood`, reference voice ID, `sample_rate`, and audio tokens in speech. The data flywheel project in Part 14 can reuse this design: build an initial offline voice dataset, train a controllable generation model, collect online experience feedback, feed issues back into QC and balancing, and release the next data and model version.
+In multimodal generation data engineering, VoiceStyleControl shares the same core pattern as Chapter 48: split the generation target into content conditions and style conditions, then bind training supervision through a structured schema. In T2I or T2V, prompt, style, motion, camera, and safety tags correspond to `answer`, `gender`, `mood`, reference voice ID, `sample_rate`, and audio tokens in speech. Part 14 Project 10, "End-to-End LLM Data Flywheel," can also reuse this design: build an initial offline voice dataset, train a controllable generation model, collect online experience feedback, feed issues back into QC and balancing, and release the next data and model version.
 
 ## 42.9 Summary
 
@@ -331,6 +341,14 @@ VoiceStyleControl is valuable not because it piles up more speech samples, but b
 The key data engineering work is to separate semantic and style channels; preserve fields such as `query_gender`, `answer_gender`, `query_mood`, `answer_mood`, `gender`, and `mood`; write `sample_rate`, audio paths, speech-token paths, and tokenizer versions into the data contract; use reverse ASR, voice-condition checks, emotion recognition, audio-quality metrics, and human review to build the evaluation protocol; and enforce authorization, revocation, watermarking, and audit in the reference voice pool and voice-cloning pipeline.
 
 As voice interaction moves from "can speak" to "can speak in a controlled way," the dataset boundary changes as well. Every sample must answer four questions: is the content correct, does the voice condition match the target, does the emotion match the control condition, and is the generation process compliant and traceable? Only when all four hold can controllable voice interaction data become a reliable training asset.
+
+## Chapter Summary
+
+This chapter uses VoiceStyleControl controllable voice interaction data engineering to organize the core issues, processing workflow, and acceptance criteria for this specialized dataset case. Its contribution is to place concepts, data objects, quality signals, and engineering deliverables into one narrative, helping readers judge which stages need explicit records and which results need to be verified through sampling, evaluation, or audit.
+
+The applicability of this chapter's methods should be judged together with data sources, business goals, model capabilities, cost budgets, and compliance requirements. For scenarios involving sensitive information, cross-system calls, automated decision-making, or public release, teams should preserve human review, frozen versions, permission controls, and abnormal rollback mechanisms, rather than extending the example workflow directly into production promises.
+
+Within the structure of the book, this chapter sits in the specialized dataset validation layer. It connects the foundational concepts introduced earlier with open-source model data recipes and project case studies. Readers can use the chapter's framework together with its figures, tables, references, and appendix checklists to turn the methods into reproducible, inspectable, and deliverable engineering workflows.
 
 ## References
 

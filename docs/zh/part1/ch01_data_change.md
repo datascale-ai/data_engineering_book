@@ -185,9 +185,9 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
 
 现代的**大模型数据工程师（LLM Data Engineer）**已经从传统数据工程、机器学习工程和平台工程之间分化出来。这个角色不再只负责 SQL 报表或离线 ETL，也不只是执行标注规范，而是处于模型研发链条的数据接口位置，需要同时具备以下四类能力：
 
-1. **大规模分布式计算能力**：熟练掌握 Ray Data、Apache Spark、Dask 等大规模并行计算框架，能够在数千个 CPU 核心上设计并调优由 MinHash LSH (Broder 1997) + Bloom Filter (Bloom 1970) 驱动的高效去重作业。要能感知 I/O 瓶颈与计算瓶颈的差异，懂得如何调整分区策略（Partitioning）来避免整个作业被几个超大 Shard 文件拖垮。
+1. **大规模分布式计算能力**：熟练掌握 Ray Data、Apache Spark、Dask 等大规模并行计算框架，能够在数千个 CPU 核心上设计并调优由 MinHash LSH (Broder 1997) + Bloom Filter (Bloom 1970) 驱动的高效去重作业。要能感知 I/O 瓶颈与计算瓶颈的差异，懂得如何调整分区策略（Partitioning）来避免几个超大 Shard 文件阻塞整个作业。
 2. **算法感知度（ML-Awareness）**：需要深刻理解 Tokenization 的底层原理（BPE、Unigram LM），懂得如何解读 Perplexity（困惑度）曲线来判断数据质量好坏，知道如何利用 KenLM (Heafield 2011) 这样的 N-gram 语言模型为候选数据打出"信息密度评分"，从而在算力成本和语料质量之间做出精确权衡。他们有时需要与算法研究员一起设计"消融实验"（Ablation Study），通过"数据集 A vs 数据集 B"的对照组，探明某类语料对某项基准测试提升的真实贡献率。
-3. **数据治理与版本控制工程**：像 Git 控制代码版本一样，用 LakeFS 或 DVC 管理 TB 乃至 PB 级别的数据集版本。每一次数据过滤规则的修改、每一次领域配比权重的调整，都应当形成一个可追溯的数据版本提交（commit）。这是数据工程区别于"数据搬运"的根本体现——当模型训练出问题时，必须能够"git bisect"般地将脏数据的源头精确定位到某次配比调整或某一批爬取数据。
+3. **数据治理与版本控制工程**：像 Git 控制代码版本一样，用 LakeFS 或 DVC 管理 TB 乃至 PB 级别的数据集版本。每一次数据过滤规则的修改、每一次领域配比权重的调整，都应当形成一个可追溯的数据版本提交（commit）。这是数据工程区别于"数据搬运"的根本体现——当模型训练出问题时，必须能够"git bisect"般地将低质量数据的源头精确定位到某次配比调整或某一批爬取数据。
 4. **大语言模型生态嗅觉与工具链整合**：熟悉各类主流开源数据集（如 The Pile (Gao et al. 2020)、RefinedWeb (Penedo et al. 2023)、FineWeb-Edu (Lozhkov et al. 2024)、Dolma (Soldaini et al. 2024)、DCLM-Baseline (Li et al. 2024)），了解各数据集的内容偏向与局限；同时能熟练使用 Data-Juicer (Chen et al. 2024)、datatrove (Penedo et al. 2024)、dolma-toolkit 等专为 LLM 逻辑设计的数据处理工具框架，而非用通用 ETL 工具生搬硬套。
 
 **表 1-5：LLM 数据工程师与传统 ML 数据工程师能力边界对照表**
