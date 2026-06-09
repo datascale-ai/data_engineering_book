@@ -166,9 +166,6 @@ schema 的三个部分 $\{K, T, C\}$ 与最终的层级 JSON 一一对应：$K$ 
 **代码示例 1：Schema 的 Python 数据类定义。** 下面的代码展示了 schema $S=\{K, T, C\}$ 的程序化表示。每种业务文档类型对应一个 `Schema` 实例；三个约束字段（`price_field`、`qty_field`、`amount_field`）加上 `total_field` 在不改变 JSON 输出格式的前提下编码了算术规则 $C$。
 
 ```python
-from dataclasses import dataclass, field
-from typing import List, Optional
-
 @dataclass
 class Schema:
     """单种业务文档的 schema 定义 S = {K, T, C}。"""
@@ -240,9 +237,6 @@ StructBill-CN 通过一条多阶段流水线构建，核心诉求是**同时保�
 **代码示例 2：逻辑一致性校验门禁。** 下面的函数实现了图 38-3 中的结构门禁（$I_{gate}$）、行级检查（Row-ACR）与文档级检查（Doc-ACR）。它在构建流水线中拦截不自洽的标注，在评测流水线中给模型输出打分——同一份代码、两处复用。输入的 `Schema` 来自代码示例 1。
 
 ```python
-import json
-from typing import Tuple
-
 def validate_logic(pred_text: str, schema: Schema, eps: float = 0.01
                    ) -> Tuple[bool, float, float]:
     """逻辑一致性校验门禁。
@@ -498,24 +492,22 @@ Zhang, N., Chen, M., Bi, Z., et al. (2022). CBLUE: A Chinese Biomedical Language
 
 Zhong, X., ShafieiBavani, E., and Jimeno Yepes, A. (2020). Image-based Table Recognition: Data, Model, and Evaluation. *arXiv preprint arXiv:2011.13534*. 
 
-**以下条目为 2025–2026 年的最新进展，体现本章方法论在文档 AI 社区的快速演进。标注"原始材料引用"的来自论文参考文献列表；其余为编者补充的"补充调研"。**
+Bai, S., Cai, Y., Chen, R., et al. (2025a). Qwen3-VL Technical Report. *arXiv preprint*.
 
-Bai, S., Cai, Y., Chen, R., et al. (2025a). Qwen3-VL Technical Report. *arXiv preprint*. ——**原始材料引用**，§38.6.5 中提及的新一代多模态主干，论文实验中亦作为 SFT/SRPO 基线。
+ChatDOC (2025). OCRFlux-3B: A Multimodal Large Language Model for Document Parsing. *Hugging Face Model Card*.
 
-ChatDOC (2025). OCRFlux-3B: A Multimodal Large Language Model for Document Parsing. *Hugging Face Model Card*. ——**原始材料引用**，论文中 SRPO 所用的 SFT 基线主干之一。
+Cui, C., Sun, T., Liang, S., et al. (2025). PaddleOCR-VL: Boosting Multilingual Document Parsing via a 0.9B Ultra-Compact Vision-Language Model. *arXiv preprint*.
 
-Cui, C., Sun, T., Liang, S., et al. (2025). PaddleOCR-VL: Boosting Multilingual Document Parsing via a 0.9B Ultra-Compact Vision-Language Model. *arXiv preprint*. ——**原始材料引用**，§38.6.5 中提及的轻量端到端文档解析模型。
+Guo, D., Yang, D., Zhang, H., et al. (2025). DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. *arXiv preprint arXiv:2501.12948*.
 
-Guo, D., Yang, D., Zhang, H., et al. (2025). DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. *arXiv preprint arXiv:2501.12948*. ——**补充调研**，从纯文本侧证明 RL + 可验证奖励可诱导推理能力，是 GRPO 机制的理论根基。
+Hunyuan Vision Team, Lyu, P., Wan, X., et al. (2025). HunyuanOCR Technical Report. *arXiv preprint*.
 
-Hunyuan Vision Team, Lyu, P., Wan, X., et al. (2025). HunyuanOCR Technical Report. *arXiv preprint*. ——**原始材料引用**，§38.6.5 中提及的利用 GRPO 硬约束奖励提升格式精度的 OCR 系统。
+Li, Y., Yang, G., Liu, H., Wang, B., and Zhang, C. (2025a). Dots.OCR: Multilingual Document Layout Parsing in a Single Vision-Language Model. *arXiv preprint*.
 
-Li, Y., Yang, G., Liu, H., Wang, B., and Zhang, C. (2025a). Dots.OCR: Multilingual Document Layout Parsing in a Single Vision-Language Model. *arXiv preprint*. ——**原始材料引用**，§38.6.5 中提及的多语言文档解析模型。
+Poznanski, J., Soldaini, L., and Lo, K. (2025). olmOCR 2: Unit Test Rewards for Document OCR. *arXiv preprint arXiv:2510.19817*.
 
-Poznanski, J., Soldaini, L., and Lo, K. (2025). olmOCR 2: Unit Test Rewards for Document OCR. *arXiv preprint arXiv:2510.19817*. ——**补充调研**，§38.6.5 中提及，把奖励信号抽象为可运行的二值化单元测试，是可验证奖励在文档 OCR 上的最新实践。
+Smock, B., Faucon-Morin, V., Sokolov, M., et al. (2025). PubTables-v2: A New Large-Scale Dataset for Full-Page and Multi-Page Table Extraction. *arXiv preprint arXiv:2512.10888*.
 
-Smock, B., Faucon-Morin, V., Sokolov, M., et al. (2025). PubTables-v2: A New Large-Scale Dataset for Full-Page and Multi-Page Table Extraction. *arXiv preprint arXiv:2512.10888*. ——**补充调研**，全页面及多页表格抽取的大规模基准，与 StructBill-CN 的表格评测维度形成互补。
+Wang, W., Gao, Z., Gu, L., et al. (2025). InternVL3.5: Advancing Open-Source Multimodal Models in Versatility, Reasoning, and Efficiency. *arXiv preprint arXiv:2508.18265*.
 
-Wang, W., Gao, Z., Gu, L., et al. (2025). InternVL3.5: Advancing Open-Source Multimodal Models in Versatility, Reasoning, and Efficiency. *arXiv preprint arXiv:2508.18265*. ——**原始材料引用**，§38.6.5 中提及的高精度开源多模态主干。
-
-Zhang, J., Liu, Y., Wu, Z., et al. (2025). MonkeyOCR v1.5 Technical Report: Unlocking Robust Document Parsing for Complex Patterns. *arXiv preprint*. ——**原始材料引用**，§38.6.5 中提及的利用 GRPO 渲染-比对奖励提升文档解析稳健性的工作。
+Zhang, J., Liu, Y., Wu, Z., et al. (2025). MonkeyOCR v1.5 Technical Report: Unlocking Robust Document Parsing for Complex Patterns. *arXiv preprint*.

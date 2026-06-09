@@ -16,6 +16,7 @@
 - `mkdocs build --strict --clean` 必须通过。
 - `python3 scripts/publish_lint.py` 目标为 `ERROR=0`、`WARN=0`。
 - `python3 scripts/xref_scan.py` 目标为 `ERROR=0`；体例类 warning 已清零。
+- `python3 scripts/final_publication_audit.py --report-dir publishing/final_review --fail-on-blocker` 必须通过，且报告包进入人工签核流程。
 
 ## 三、章节 / 项目状态总表
 
@@ -72,16 +73,16 @@
 | P01 | 第十四篇：项目实战 | 项目一：基于 Ray 构建分布式 Mini-C4 数据流水线 | `docs/zh/part14/p01_mini_c4.md` | 已补摘要/关键词 | 已补 | 11 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
 | P02 | 第十四篇：项目实战 | 项目二：垂直领域专家 SFT（法律） | `docs/zh/part14/p02_legal_sft.md` | 已补摘要/关键词 | 已补 | 20 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
 | P03 | 第十四篇：项目实战 | 项目三：LLaVA 多模态指令数据工厂 | `docs/zh/part14/p03_llava_instruct.md` | 已补摘要/关键词 | 已补 | 8 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
-| P04 | 第十四篇：项目实战 | 项目四：合成数学与代码教材工厂 | `docs/zh/part14/p04_synthetic_textbook.md` | 已补摘要/关键词 | 已补 | 11 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
-| P05 | 第十四篇：项目实战 | 项目五：多模态 RAG 企业财报助手 | `docs/zh/part14/p05_mm_rag.md` | 已补摘要/关键词 | 已补 | 9 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
-| P06 | 第十四篇：项目实战 | 项目六：CoT 推理数据集构建与 PRM 训练 | `docs/zh/part14/p06_prm.md` | 已补摘要/关键词 | 已补 | 10 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
-| P07 | 第十四篇：项目实战 | 项目七：Agent Tool-Use 数据工厂 | `docs/zh/part14/p07_agent_tooluse.md` | 已补摘要/关键词 | 已补 | 14 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
-| P08 | 第十四篇：项目实战 | 项目八：企业级 DataOps 平台搭建：从数据项目到组织级治理能力 | `docs/zh/part14/p08_dataops.md` | 已补摘要/关键词 | 已补 | 11 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
-| P09 | 第十四篇：项目实战 | 项目九：隐私保护数据流水线 | `docs/zh/part14/p09_privacy_pipeline.md` | 已补摘要/关键词 | 已补 | 12 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
-| P10 | 第十四篇：项目实战 | 项目十：端到端 LLM 数据飞轮 | `docs/zh/part14/p10_flywheel.md` | 已补摘要/关键词 | 已补 | 10 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
-| P11 | 第十四篇：项目实战 | 项目十一：Mini-DeepSeek 预训练复现 | `docs/zh/part14/p11_mini_deepseek.md` | 已补摘要/关键词 | 已补 | 1 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
-| P12 | 第十四篇：项目实战 | 项目十二：R1 推理飞轮 | `docs/zh/part14/p12_r1_reasoning_flywheel.md` | 已补摘要/关键词 | 已补 | 1 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
-| P13 | 第十四篇：项目实战 | 项目十三：多模态指令工厂 | `docs/zh/part14/p13_multimodal_instruction_factory.md` | 已补摘要/关键词 | 已补 | 1 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
+| P04 | 第十四篇：项目实战 | 项目四：合成数学与代码教材工厂 | `docs/zh/part14/p04_synthetic_textbook.md` | 已补摘要/关键词 | 已补 | 11 图 / 1 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
+| P05 | 第十四篇：项目实战 | 项目五：多模态 RAG 企业财报助手 | `docs/zh/part14/p05_mm_rag.md` | 已补摘要/关键词 | 已补 | 9 图 / 1 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
+| P06 | 第十四篇：项目实战 | 项目六：CoT 推理数据集构建与 PRM 训练 | `docs/zh/part14/p06_prm.md` | 已补摘要/关键词 | 已补 | 10 图 / 1 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
+| P07 | 第十四篇：项目实战 | 项目七：Agent Tool-Use 数据工厂 | `docs/zh/part14/p07_agent_tooluse.md` | 已补摘要/关键词 | 已补 | 14 图 / 1 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
+| P08 | 第十四篇：项目实战 | 项目八：企业级 DataOps 平台搭建：从数据项目到组织级治理能力 | `docs/zh/part14/p08_dataops.md` | 已补摘要/关键词 | 已补 | 11 图 / 1 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
+| P09 | 第十四篇：项目实战 | 项目九：隐私保护数据流水线 | `docs/zh/part14/p09_privacy_pipeline.md` | 已补摘要/关键词 | 已补 | 12 图 / 1 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
+| P10 | 第十四篇：项目实战 | 项目十：端到端 LLM 数据飞轮 | `docs/zh/part14/p10_flywheel.md` | 已补摘要/关键词 | 已补 | 10 图 / 1 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
+| P11 | 第十四篇：项目实战 | 项目十一：Mini-DeepSeek 预训练复现 | `docs/zh/part14/p11_mini_deepseek.md` | 已补摘要/关键词 | 已补 | 1 图 / 1 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
+| P12 | 第十四篇：项目实战 | 项目十二：R1 推理飞轮 | `docs/zh/part14/p12_r1_reasoning_flywheel.md` | 已补摘要/关键词 | 已补 | 1 图 / 1 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
+| P13 | 第十四篇：项目实战 | 项目十三：多模态指令工厂 | `docs/zh/part14/p13_multimodal_instruction_factory.md` | 已补摘要/关键词 | 已补 | 1 图 / 1 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
 | P14 | 第十四篇：项目实战 | 项目十四：视频生成数据集：从视频源到可用于 T2V 训练的数据流水线 | `docs/zh/part14/p14_video_generation.md` | 已补摘要/关键词 | 已补 | 2 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
 | P15 | 第十四篇：项目实战 | 项目十五：基于 DataAgent 构建企业级语义问数助手 | `docs/zh/part14/p15_dataagent_semantic_nl2sql_agent.md` | 已补摘要/关键词 | 已补 | 2 图 / 0 表；已入台账 | 高优先级复核 | 可交付 | 高 | 终稿抽检语言、图源、alt text 与代码长度 |
 | Appendix a_tools_and_frameworks_quick_reference | 附录 | 附录A：工具与框架速查表 | `docs/zh/appendix_a_tools_and_frameworks_quick_reference.md` | 已补摘要/关键词 | 已补 | 0 图 / 1 表；已入台账 | 常规终稿复核 | 可交付 | 常规 | 终稿抽检语言、图源、alt text 与代码长度 |
@@ -99,7 +100,8 @@
 
 ## 五、最终交付动作
 
-1. 再跑三项机器校验：MkDocs、publish lint、xref scan。
-2. 抽检第 12、16、21、24、29、40 章与 P11、P12、P13、P15。
-3. 将图表高清源文件、AI 使用声明、alt text 表和参考文献清单打包给出版社。
-4. 确认 `outputs/`、PPT 产物、内部规划材料不进入出版构建。
+1. 再跑四项机器校验：MkDocs、publish lint、xref scan、final publication audit。
+2. 生成并复核 `publishing/final_review/` 报告包。
+3. 抽检第 12、16、21、24、29、40 章与 P11、P12、P13、P15。
+4. 将图表高清源文件、AI 使用声明、alt text 表和参考文献清单打包给出版社。
+5. 确认 `outputs/`、PPT 产物、内部规划材料不进入出版构建。

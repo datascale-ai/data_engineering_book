@@ -154,9 +154,6 @@ In this small sample, `key_information` and `Fee_List` are structure. The row-le
 **Code Example 1: Schema definition as a Python dataclass.** The following snippet shows how the schema $S=\{K, T, C\}$ is represented programmatically. Each business document type corresponds to one `Schema` instance. The three constraint fields (`price_field`, `qty_field`, `amount_field`) plus `total_field` encode the arithmetic rules $C$ without modifying the JSON output format.
 
 ```python
-from dataclasses import dataclass, field
-from typing import List, Optional
-
 @dataclass
 class Schema:
     """Business schema S = {K, T, C} for one document type."""
@@ -224,9 +221,6 @@ StructBill-CN uses a multi-stage pipeline whose goal is to preserve semantic con
 **Code Example 2: Logic-consistency validation gate.** This function implements the structure gate ($I_{gate}$), row-level check (Row-ACR), and document-level check (Doc-ACR) from Figure 38-3. The same code is reused in both the construction pipeline (to block inconsistent labels) and the evaluation pipeline (to score model outputs). It takes the `Schema` defined in Code Example 1.
 
 ```python
-import json
-from typing import Tuple
-
 def validate_logic(pred_text: str, schema: Schema, eps: float = 0.01
                    ) -> Tuple[bool, float, float]:
     """Logic-consistency gate.

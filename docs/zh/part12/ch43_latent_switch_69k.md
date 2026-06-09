@@ -2,21 +2,31 @@
 
 ## 摘要
 
-本章以“Latent-Switch-69K 隐式/显式推理数据工程”为专项数据集案例，分析任务定义、样本结构、标注流程、质量控制和评测协议。章节强调该数据集如何验证前文的数据工程方法，并说明其在模型训练、基准评测和产业落地中的适用边界、复现条件与风险控制要求。
+本章以 Latent-Switch-69K 为案例，讨论面向 latent-then-explicit reasoning 的推理数据工程。长 CoT 数据在可解释性和过程监督上有价值，但也会带来 token 成本高、冗余轨迹多、显式验证与隐藏规划边界不清等问题。章节首先说明 Long-CoT 为什么需要被压缩，随后梳理 Latent-Switch-69K 的规模、难度分布、领域构成和核心字段。本章重点分析从 teacher trace 到 solution intuition、压缩 CoT、latent budget、student sequence 和 supervision masks 的数据构建过程，并讨论 mask 不变量、质量控制、偏置风险和复用边界。通过该案例可以看到，推理数据压缩并不是简单删减文本，而是重新定义隐藏规划、显式验证和答案监督之间的关系。
 
 ## 关键词
 
-隐式推理；显式推理；Long-CoT；监督掩码；推理压缩
+Latent-Switch-69K；隐式推理；显式 CoT；latent budget；supervision mask；推理数据压缩
+
+## 学习目标
+
+通过本章学习，读者应能够：
+
+- 理解 Long-CoT 在 token 成本、显式过程监督与推理效率上的工程约束，以及为何需要被压缩。
+- 掌握 solution intuition、compressed CoT、latent placeholder 与 answer mask 在 latent-then-explicit 样本中的角色。
+- 设计 latent budget、student sequence 与 supervision masks 之间的 mask 不变量与一致性检查。
+- 评估推理数据压缩中的答案一致性、验证充分性、压缩边界与领域偏置等风险。
+- 将 latent-switch 的隐藏规划与显式验证分离思想迁移到数学、代码与复杂指令等自有数据场景。
 
 ## 43.0 开篇问题场景：Long-CoT 为什么还需要被压缩
 
-在第18章到第20章中，我们已经讨论过 Chain-of-Thought、工具调用轨迹和 Agent 交互数据的基本形态。对推理模型而言，长思维链有一个很直观的吸引力：模型把中间步骤写出来，训练者就能检查它是否在按某种可解释的路径解题，推理时也更容易通过自洽采样、验证器或过程奖励模型发现错误。然而，当 Long-CoT 从研究样例变成训练语料时，问题会立刻变得工程化。
+第18章到第20章已经讨论 Chain-of-Thought、工具调用轨迹和 Agent 交互数据的基本形态。对推理模型而言，长思维链具有明确吸引力：模型把中间步骤写出来，训练者就能检查它是否在按某种可解释的路径解题，推理时也更容易通过自洽采样、验证器或过程奖励模型发现错误。然而，当 Long-CoT 从研究样例变成训练语料时，问题会立刻变得工程化。
 
 第一，长 CoT 的 token 成本很高。数学、代码和科学问题中的推导往往占据输出的大部分长度，真正的最终答案只占很小一段。如果所有中间推理都以可见文本形式进入训练和推理，模型需要在大量重复、展开、试探和自我修正的文字上消耗上下文窗口、训练显存和推理时间。第二，长 CoT 并不天然等于高质量推理。有些轨迹只是把简单结论拆得很细，有些轨迹包含错误分支，有些轨迹会在最终答案正确的情况下写出冗余甚至不一致的中间解释。第三，普通 SFT 很难区分“应该被模型内化的高层解题意图”和“必须显式写给用户看的验证过程”。如果把全部 CoT 当作普通目标 token，模型学到的往往是长篇展开的写作习惯，而不是更有效的推理调度方式。
 
 Latent-Switch-69K 正是在这个问题背景下出现的。它不是一个简单的“更短 CoT 数据集”，也不是把 Long-CoT 样本做摘要后直接用于 SFT。它服务的是 [LaTER](https://github.com/TioeAre/LaTER) 这类 latent-then-explicit reasoning 系统：模型先经过一段有边界的 latent reasoning 区间，在连续隐状态中完成高层规划和压缩思考，然后切换回可见文本，用较短的显式 CoT 做符号验证，最后生成答案。数据工程目标因此发生了变化：样本不仅要回答“答案是什么”，也要回答“哪些内容适合成为隐藏规划预算，哪些内容仍需要作为可见验证监督”。
 
-![图43-1：Latent-Switch-69K 构建流水线图](../../images/part12/ch43_latent_switch_pipeline.png)
+![图43-1：Latent-Switch-69K 构建流水线图](../../images/part12/ch43_latent_switch_pipeline.svg)
 
 *图43-1：Latent-Switch-69K 将 Dolci-Think-SFT-32B 的推理轨迹蒸馏为 solution intuition、压缩 CoT、latent budget、student sequence 和 mask 对齐后的 SFT 记录。*
 
@@ -61,11 +71,112 @@ Latent-Switch-69K 中保留有以下字段：`dataset_name`、`source_dataset`�
 
 Latent-Switch-69K 的构建起点是 Dolci-Think-SFT-32B 中采样得到的推理轨迹。原始轨迹可以理解为 source reasoning traces：它们包含问题、一个或多个 assistant 输出、可能的 ground truth 或可抽取答案，以及来源和元数据。构建过程并不是直接筛选短答案，而是先把长轨迹拆解为两个互补目标：高层问题求解意图和较短的显式验证链。
 
+下面的教学化示例展示了最简单的 source trace 抽取方式：从 Hugging Face 读取 Dolci-Think-SFT-32B，使用固定随机种子打乱并选取一批记录，再把对话整理为后续蒸馏需要的最小字段。真实 LaTER 管线中的 `sample_Dolci-Think-SFT-32B.py` 会读取本地 Parquet 分片，并使用按来源分层的 reservoir sampling，避免简单随机抽样改变不同数据源的比例。
+
+```python
+from datasets import load_dataset
+
+
+def first_message(messages, role):
+    return next(
+        (item["content"] for item in messages if item.get("role") == role),
+        "",
+    )
+
+
+def last_message(messages, role):
+    return next(
+        (item["content"] for item in reversed(messages) if item.get("role") == role),
+        "",
+    )
+
+
+dataset = load_dataset("allenai/Dolci-Think-SFT-32B", split="train")
+sample_size = min(2000, len(dataset))
+sampled = dataset.shuffle(seed=42).select(range(sample_size))
+
+source_traces = []
+for row in sampled:
+    messages = row.get("messages", [])
+    source_traces.append(
+        {
+            "record_id": row.get("id"),
+            "source_dataset": row.get("source", row.get("dataset", "unknown")),
+            "problem": first_message(messages, "user"),
+            "source_cot": last_message(messages, "assistant"),
+        }
+    )
+```
+
 第一阶段是提取 solution intuition。数据构建提示要求 teacher 只抽取关键洞见，不要写成短 CoT，也不要直接给最终答案。这个字段应该描述“解决这道题的高层计划”，例如应该建立什么方程、应该枚举哪类状态、代码题应该使用什么数据结构、科学题应该抓住哪条因果关系。它的颗粒度介于标签和完整推导之间：比领域标签更具体，但比逐步推理更压缩。这样做的核心价值是把 Long-CoT 中可被内化的 planning signal 提取出来，为后续 latent budget 提供依据。
 
 第二阶段是生成压缩显式 CoT。teacher 在原始问题和 solution intuition 的条件下继续解题，输出较短的推理过程和最终答案。由于 teacher 已经拿到高层计划，它不需要重新展开全部探索过程，也不需要重复原始轨迹中的无效分支。保留样本因此包含四个主要内容：problem、intuition、compressed CoT、final answer。与普通摘要不同，compressed CoT 的目标不是“把原文变短”，而是留下足够的可见验证路径，让模型在 latent reasoning 之后仍能用文本完成符号检查。
 
-![图43-3：原始 CoT、压缩 CoT 与 latent placeholder 对比](../../images/part12/ch43_cot_latent_comparison.png)
+下面的最小实现使用 OpenAI-compatible API 串联两个阶段。第一阶段只要求返回 JSON 格式的 `correct_insight`；第二阶段以问题和该 intuition 为条件继续生成，并把 API 返回的隐藏 reasoning 内容记录为 `distilled_cot`，把可见内容记录为最终答案。密钥、API 地址和 teacher model 均从环境变量读取。
+
+```python
+import asyncio
+import json
+import os
+
+from openai import AsyncOpenAI
+
+
+client_kwargs = {"api_key": os.environ["OPENAI_API_KEY"]}
+if os.getenv("OPENAI_BASE_URL"):
+    client_kwargs["base_url"] = os.environ["OPENAI_BASE_URL"]
+
+client = AsyncOpenAI(**client_kwargs)
+teacher_model = os.environ["TEACHER_MODEL"]
+
+
+async def call_teacher(system_prompt, user_prompt):
+    response = await client.chat.completions.create(
+        model=teacher_model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        extra_body={"thinking": {"type": "enabled"}},
+    )
+    message = response.choices[0].message
+    reasoning = getattr(message, "reasoning_content", None)
+    content = message.content or ""
+
+    # Some compatible APIs place reasoning inside the visible content.
+    if not reasoning and "<think>" in content and "</think>" in content:
+        reasoning, content = content.split("<think>", 1)[1].split("</think>", 1)
+    return (reasoning or "").strip(), content.strip()
+
+
+async def distill_one(problem, source_cot):
+    _, insight_json = await call_teacher(
+        "Return valid JSON with one field named correct_insight. "
+        "Give only the high-level solution plan, without the final answer "
+        "or a complete chain of thought.",
+        f"Problem:\n{problem}\n\nReference reasoning:\n{source_cot}",
+    )
+    intuition = json.loads(insight_json)["correct_insight"]
+
+    distilled_cot, answer = await call_teacher(
+        "Continue from the supplied solution intuition. Keep the reasoning "
+        "compact, verify the key steps, and give the final answer.",
+        f"Problem:\n{problem}\n\nSolution intuition:\n{intuition}",
+    )
+    return {
+        "problem": problem,
+        "solution_intuition": intuition,
+        "distilled_cot": distilled_cot,
+        "answer": answer,
+    }
+
+
+record = asyncio.run(
+    distill_one(source_traces[0]["problem"], source_traces[0]["source_cot"])
+)
+```
+
+![图43-3：原始 CoT、压缩 CoT 与 latent placeholder 对比](../../images/part12/ch43_cot_latent_comparison.svg)
 
 *图43-3：source trace 中的大量可见推理被拆成两类信号：solution intuition 用于估计 latent budget，压缩 CoT 用于显式验证和答案监督。*
 
@@ -96,7 +207,7 @@ $$
 
 第五阶段是 sequence rendering。系统把 problem、latent placeholder、compressed CoT 和 answer 渲染为 chat-style student sequence。这个阶段需要 tokenizer contract：`<latent_think>`、`</latent_think>`、`<think>`、`</think>` 必须被稳定识别，不能在不同 tokenizer 或不同 special-token 注册方式下被拆成不可预测片段。否则，span 检查和 mask 构造都会不可靠。
 
-第六阶段是 mask materialization。数据加载器根据 token ids 重新定位边界，构造 labels、loss weights 和各种 mask。这个阶段最好不要只依赖原始字符串中的字符偏移，因为 tokenizer 改变会让字符偏移失效。更稳妥的方式是基于 token id 中的 special token 位置构造 span，并在每条样本上校验边界出现次数、顺序、答案区间和 teacher-reference 区间是否有效。
+第六阶段是 mask materialization。数据加载器根据 token ids 重新定位边界，构造 labels、loss weights 和各种 mask。这个阶段不宜只依赖原始字符串中的字符偏移，因为 tokenizer 改变会让字符偏移失效。更稳妥的方式是基于 token id 中的 special token 位置构造 span，并在每条样本上校验边界出现次数、顺序、答案区间和 teacher-reference 区间是否有效。
 
 ## 43.3 Latent budget 与 student sequence：样本如何被渲染
 
@@ -112,6 +223,60 @@ $$
 $$
 
 其中 $(l_1,\dots,l_m)$ 是 latent placeholder positions，$(t_1,\dots,t_n)$ 是蒸馏后的显式 CoT tokens，$(a_1,\dots,a_r)$ 是最终答案 tokens。代码实现中，latent placeholder 可以由重复的 `latent_pad_token` 填充；但训练时这些位置不会被当作普通语言目标。模型前向过程中，placeholder 的输入 embedding 会被 latent projector 产生的 recurrent latent states 替换。换言之，这些位置在序列里有 token 边界和长度，但语义上是隐藏计算槽位。
+
+下面的记录渲染函数对应 LaTER `preprocess.py` 中 `build_sft_record` 的核心逻辑：先用 student tokenizer 计算 solution intuition 的 token 长度，再把约 $(L/2)$ 个 latent steps 裁剪到允许范围，最后同时保存结构化字段和渲染后的 assistant sequence。示例使用 `<|endoftext|>` 作为占位 token；实际训练必须确保它与 tokenizer 和模型配置中的 `latent_pad_token` 完全一致。
+
+```python
+import os
+
+from transformers import AutoTokenizer
+
+
+tokenizer = AutoTokenizer.from_pretrained(os.environ["STUDENT_TOKENIZER"])
+
+
+def build_sft_record(problem, intuition, distilled_cot, answer):
+    intuition_tokens = tokenizer.encode(intuition, add_special_tokens=False)
+    n_latent_steps = min(128, max(1, len(intuition_tokens) // 2))
+    latent_pad_token = "<|endoftext|>"
+    latent_placeholder = latent_pad_token * n_latent_steps
+
+    assistant_content = (
+        f"<latent_think>{latent_placeholder}</latent_think>"
+        f"<think>{distilled_cot}</think>{answer}"
+    )
+    return {
+        "messages": [
+            {"role": "user", "content": problem},
+            {"role": "assistant", "content": assistant_content},
+        ],
+        "assistant_cot": distilled_cot,
+        "assistant_answer": answer,
+        "solution_intuition": intuition,
+        "n_latent_steps": n_latent_steps,
+        "latent_pad_token": latent_pad_token,
+        "state_align_reference_messages": [
+            {
+                "role": "user",
+                "content": f"Problem:\n{problem}\n\nSolution intuition:\n{intuition}",
+            },
+            {
+                "role": "assistant",
+                "content": f"<think>{distilled_cot}</think>{answer}",
+            },
+        ],
+    }
+
+
+sft_record = build_sft_record(
+    record["problem"],
+    record["solution_intuition"],
+    record["distilled_cot"],
+    record["answer"],
+)
+```
+
+生产预处理还会依据压缩率和字段完整性过滤样本，并记录 CoT、answer 的 loss weight。更重要的是，渲染后的记录仍需交给数据加载器重新定位 special-token spans 和构造 supervision masks；仅仅拼出这段字符串，并不意味着样本已经可以安全训练。
 
 下面是一个教学化的简化样本序列示例。它只用于说明 schema 和 mask 关系，不是数据集中某条真实训练样本。
 
@@ -166,7 +331,7 @@ $$
 
 其中 $\mathcal{S}_{prompt}$ 表示用户 prompt 与 assistant prefix 之前的上下文位置，$\mathcal{S}_{lat}^{int}$ 表示 `<latent_think>` 和 `</latent_think>` 之间的内部 placeholder 位置。被置为 `-100` 的 token 不被普通 CE 直接拟合。这样做避免了一个错误目标：要求模型在 latent 内部位置预测某个固定文本 token。对 LaTER 来说，latent 内部位置的价值不是输出 `<|endoftext|>`，而是让模型执行若干步隐藏状态更新。
 
-![图43-5：Supervision mask 示意图](../../images/part12/ch43_supervision_mask.png)
+![图43-5：Supervision mask 示意图](../../images/part12/ch43_supervision_mask.svg)
 
 *图43-5：prompt 与 latent interior 被普通 CE mask 掉；latent 边界、显式 CoT、答案和结束 token 由不同权重和 mask 控制。*
 
@@ -194,7 +359,7 @@ $$
 
 对于数据工程师来说，最实用的检查不是重新推导损失函数，而是确认每条样本的 mask 是否满足几条不变量。第一，prompt 区间所有 labels 都应为 `-100`。第二，latent interior 区间所有 labels 都应为 `-100`，但 latent boundary token 不应被当作普通 prompt mask。第三，`cot_mask` 应覆盖 `<think>` 到 `</think>` 相关位置，且 answer_start 必须在 think_end 之后。第四，`answer_mask` 不应包含 `<|im_end|>`，因为结束 token 可以单独监督。第五，teacher KL mask 不应覆盖 latent interior，因为 teacher reference 本身不含这些 placeholder。
 
-这些不变量最好在数据构造和训练加载两个阶段都检查一次。构造阶段检查可以阻止坏样本入库；训练加载阶段检查可以发现 tokenizer、max_length、截断策略或配置变更带来的新问题。尤其是 max_length 截断，一旦截掉 answer 区间，样本就会只剩结构和推理，没有最终答案监督。代码中因此会在截断后重新构造 spans，并检查 answer_start 是否仍小于 im_end。
+这些不变量应在数据构造和训练加载两个阶段都检查一次。构造阶段检查可以阻止坏样本入库；训练加载阶段检查可以发现 tokenizer、max_length、截断策略或配置变更带来的新问题。尤其是 max_length 截断，一旦截掉 answer 区间，样本就会只剩结构和推理，没有最终答案监督。代码中因此会在截断后重新构造 spans，并检查 answer_start 是否仍小于 im_end。
 
 还有一个细节是显式 CoT 的权重。Latent-Switch-69K 不是要删除显式推理，而是要降低对完整长 CoT 的依赖。若 CoT 权重过高，模型会更倾向于把能力用在复现可见推理文字上；若 CoT 权重过低，模型可能只学会结构和答案，显式验证链变弱。数据侧至少要保留可配置的 `cot_loss_weight` 或等价字段，使训练者能够在不同任务上调整“可见验证”与“最终答案”的平衡。
 
@@ -226,7 +391,7 @@ Latent-Switch-69K 的质量控制不只是过滤脏文本。由于它同时包�
 
 为了让这些报告真正可用，可以为 Latent-Switch-69K 建立一套发布前验收清单。长度层面，检查 source CoT、distilled CoT、intuition、answer 和 total sequence 的分布，重点关注过短和过长样本。过短样本可能没有足够监督，过长样本可能在训练时频繁截断。压缩层面，检查压缩率的均值、中位数、分位数和极端值，确认不是某个来源数据集导致异常。
 
-结构层面，逐条检查四个边界 token 的出现次数和顺序。任何缺失、重复、嵌套或顺序错误都应直接隔离。mask 层面，抽样渲染 token 区间，把 prompt、latent internal、latent boundary、CoT、answer 和 im_end 用不同颜色展示，确认人眼理解与程序 mask 一致。对于一类新数据源，最好至少人工查看几十条样本，尤其是长数学证明、代码函数、选择题和开放问答。
+结构层面，逐条检查四个边界 token 的出现次数和顺序。任何缺失、重复、嵌套或顺序错误都应直接隔离。mask 层面，抽样渲染 token 区间，把 prompt、latent internal、latent boundary、CoT、answer 和 im_end 用不同颜色展示，确认人工理解与程序 mask 一致。对于一类新数据源，建议至少人工查看几十条样本，尤其是长数学证明、代码函数、选择题和开放问答。
 
 语义层面，检查 intuition 是否含有最终答案，compressed CoT 是否能支持答案，answer 是否与 ground truth 或 verifier 一致。对于代码任务，应尽量区分“解释中的思路正确”和“最终代码可运行”两个层面；对于数学任务，应区分“最终数值正确”和“推导链可验证”两个层面。latent-switch 数据的目标是高层规划加显式验证，因此这两个层面都不能完全放弃。
 

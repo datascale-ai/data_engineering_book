@@ -30,6 +30,8 @@ P09 聚焦敏感数据进入训练、分析与共享链路之前的治理过程�
 
 以规则和示例数据验证治理链路，不替代法律意见、DPIA 或生产级隐私平台。这些边界使案例能够被复现和审计；当数据规模、数据来源、权限范围或部署环境变化时，需要重新评估采样策略、质量阈值、运行成本和合规要求。
 
+本项目与[附录B：合规与上线检查清单](../appendix_b_compliance_and_release_checklist.md)高度相关。P09 给出隐私处理链、审计日志、预检和事故复盘的项目级产物，附录B则把这些产物转化为发布门禁、撤回机制和责任分工清单。读者在复用 P09 时，应把本章的 `privacy_spec`、分类结果、脱敏产物、审计日志、preflight 结果和 postmortem 记录逐项映射到附录B，而不是只把它们视为实验输出。隐私治理边界可参考 GDPR (European Union 2016) 与 NIST Privacy Framework (NIST 2020)，技术选项则可结合差分隐私 (Dwork and Roth 2014) 与联邦学习综述 (Kairouz et al. 2021) 理解。
+
 ## 架构决策
 
 本项目采用“隐私规格、PII 检测、风险分类、差异化脱敏、审计日志和项目检查”的架构路径。该决策优先保证输入输出契约、版本可追踪、异常可定位和结果可复核，而不是把全部逻辑压缩为一次性脚本运行。
@@ -38,9 +40,12 @@ P09 聚焦敏感数据进入训练、分析与共享链路之前的治理过程�
 
 核心数据流可概括为：
 
+Listing P09-1 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```text
 原始记录 -> PII 检测 -> 数据分类 -> 脱敏/去标识化 -> 风险标签 -> 审计与检查报告
 ```
+
+该片段的作用是把上述流程转化为可检查的结构化表示。
 
 样本 schema 至少应保留 `id`、`source`、`content_or_payload`、`metadata`、`quality_signals`、`split_or_stage` 与 `audit_trace` 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。
 
@@ -51,6 +56,15 @@ P09 聚焦敏感数据进入训练、分析与共享链路之前的治理过程�
 ## 实验或验收指标
 
 验收指标包括PII 检出率、误报漏报样本、脱敏字段覆盖、审计链完整性、策略命中率和检查通过率。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。
+
+| 验收维度 | 指标/证据 | 出版复核口径 |
+| --- | --- | --- |
+| 识别与处理 | PII 检出率、误报/漏报样本和脱敏字段覆盖 | 每类敏感字段应有规则来源、处理动作和复核样例 |
+| 审计闭环 | 策略命中率、审计日志完整性和 incident/postmortem 记录 | 合规说明需能追踪到数据主体、处理依据和操作人 |
+| 发布门禁 | preflight 结果、版本冻结、撤回路径和责任 owner | 与附录B逐项对齐，确认发布、下线、撤回和复盘证据完整 |
+| 合规边界 | 跨境传输、过度脱敏、权限误配和保留期限风险 | 不把规则法原型表述为完整法规合规结论 |
+
+*表 P09-1：隐私流水线出版验收表*
 
 ## 成本、风险与合规边界
 
@@ -97,7 +111,7 @@ P09 的核心目标正是解决这一类问题。根据项目整体报告，P09 
 从原始记录出发，完成分类、PII 检测、去标识化、隔离与告警，形成一条可复现的数据处理流程。
 
 **目标三：建立运维与事故响应闭环。**
-通过 preflight、incident simulation 和 postmortem，让流水线不仅能“平时运行”，也能展示“出事时如何响应”。
+通过 preflight、incident simulation 和 postmortem，让流水线不仅能“平时运行”，也能展示“事故发生时如何响应”。
 
 **目标四：形成可验证的工程交付。**
 最终输出不仅包括处理后的 JSON/JSONL 产物，还包括指标文件、主报告、测试结果和项目检查报告，确保代码、产物与叙述一致。
@@ -116,7 +130,7 @@ P09 的核心目标正是解决这一类问题。根据项目整体报告，P09 
 
 #### 3）技术实现边界
 
-项目纳入了差分隐私、TEE、FHE 等技术选项说明，但它们更多停留在“选项层”和“架构位点层”，并不意味着这些能力都已经被深度工程化实现。
+项目纳入了差分隐私、TEE、FHE 等技术选项说明，但它们更多停留在“选项层”和“架构位点层”，并不意味着这些能力都已经被深度工程化实现。涉及 LLM 应用侧安全边界时，还应结合 OWASP LLM 应用风险清单 (OWASP Foundation 2025) 检查提示注入、数据泄露和工具误用风险。
 
 #### 4）治理能力边界
 
@@ -155,7 +169,8 @@ P09 的核心目标正是解决这一类问题。根据项目整体报告，P09 
 
 ## 4. 整体架构：从隐私规格到项目检查的处理流水线
 
-![图 1：P09 隐私保护数据流水线总体架构](../../images/part10/10_9_fig01_privacy_pipeline_overview.png)
+![图 P09-1](../../images/part10/10_9_fig01_privacy_pipeline_overview.png)
+*图 P09-1：P09 隐私保护数据流水线总体架构*
 
 从工程视角看，P09 可以拆成三层。
 
@@ -225,7 +240,8 @@ P09 的核心目标正是解决这一类问题。根据项目整体报告，P09 
 
 这意味着隐私流水线首先是一条需要被完整定义的控制链，而不是若干脱敏动作的拼接。
 
-![图 2：P09 隐私流水线关键工程面图](../../images/part10/10_9_fig02_roles_and_responsibilities.png)
+![图 P09-2](../../images/part10/10_9_fig02_roles_and_responsibilities.png)
+*图 P09-2：P09 隐私流水线关键工程面图*
 
 ---
 
@@ -243,6 +259,7 @@ P09 的第一个脚本是 `src/build_privacy_specs.py`。这件事本身就很�
 
 对应代码如下：
 
+Listing P09-2 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 def build_scope() -> dict:
     return {
@@ -262,6 +279,8 @@ def build_scope() -> dict:
     }
 ```
 
+该片段的作用是把上述流程转化为可检查的结构化表示。
+
 这段结构说明，P09 的起点不是脱敏动作，而是控制目标。
 
 ### 6.2 分类策略的枢纽作用
@@ -275,6 +294,7 @@ def build_scope() -> dict:
 
 `build_classification_policy()` 把这些规则组织成结构化对象：
 
+Listing P09-3 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 def build_classification_policy() -> dict:
     return {
@@ -299,13 +319,16 @@ def build_classification_policy() -> dict:
     }
 ```
 
+该片段的作用是把上述流程转化为可检查的结构化表示。
+
 ### 6.3 访问策略的前置约束
 
 很多项目会先把数据处理完，再临时写一句“只有管理员可以访问原始数据”。但 P09 把 `access_policy.json` 也放在规格层生成，这意味着权限不是后补说明，而是先验约束。
 
 这一点非常关键，因为隐私控制里最昂贵的错误，往往不是“掩码没写完整”，而是“根本不该看到原始数据的人先看到了”。
 
-![图 3：隐私规格层四类产物关系图](../../images/part10/10_9_fig03_specs_layer.png)
+![图 P09-3](../../images/part10/10_9_fig03_specs_layer.png)
+*图 P09-3：隐私规格层四类产物关系图*
 
 ---
 
@@ -328,6 +351,7 @@ def build_classification_policy() -> dict:
 
 `run_privacy_pipeline.py` 中的 `build_raw_records()` 直接给出了代表性数据：
 
+Listing P09-4 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 def build_raw_records() -> list[dict]:
     return [
@@ -355,13 +379,16 @@ def build_raw_records() -> list[dict]:
     ]
 ```
 
+该片段的作用是把上述流程转化为可检查的结构化表示。
+
 这类写法的优点是，不必先下载外部数据集，也能完整理解流水线逻辑。它牺牲了一定的真实复杂度，换来更强的可复现性。
 
 ### 7.3 场景样本的构造依据
 
 如果只说“准备了一些样本”，信息量其实很弱。更重要的是写清楚：这些样本为什么选这些域、覆盖哪些字段模式、服务于后续哪些控制动作。
 
-![图 4：原始敏感记录场景覆盖图](../../images/part10/10_9_fig04_raw_records_coverage.png)
+![图 P09-4](../../images/part10/10_9_fig04_raw_records_coverage.png)
+*图 P09-4：原始敏感记录场景覆盖图*
 
 ---
 
@@ -379,6 +406,7 @@ def build_raw_records() -> list[dict]:
 
 代码如下：
 
+Listing P09-5 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 EMAIL_RE = re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b")
 PHONE_RE = re.compile(r"\b\d{3}-\d{3}-\d{4}\b")
@@ -401,6 +429,8 @@ def detect_pii(text: str) -> list[dict]:
     return detections
 ```
 
+该片段的作用是把上述流程转化为可检查的结构化表示。
+
 ### 8.2 检测结果作为数据资产
 
 很多项目会在代码里检测完就直接替换，不保留检测结构。但 P09 把 `pii_detections` 放进了分类结果里，使得后续评估可以统计字段分布，检查脚本也可以验证规则是否真的生效。
@@ -411,7 +441,8 @@ def detect_pii(text: str) -> list[dict]:
 
 整体报告显示，PII 检测覆盖了多种字段模式，其中 email=5、phone=3、patient_id=2、bank_account=2。 这说明即使在一个小规模数据集中，项目也已经具备跨字段模式的最小覆盖，而不是只处理单一类型的标识符。
 
-![图 5：PII 检测规则与命中分布图](../../images/part10/10_9_fig05_pii_detection_distribution.png)
+![图 P09-5](../../images/part10/10_9_fig05_pii_detection_distribution.png)
+*图 P09-5：PII 检测规则与命中分布图*
 
 ---
 
@@ -419,6 +450,7 @@ def detect_pii(text: str) -> list[dict]:
 
 真正稳健的隐私分类，往往不是“只看字段内容”或“只看数据来源”，而是两者结合。P09 的 `classify_record()` 就体现了这一点。
 
+Listing P09-6 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 def classify_record(record: dict, classification_policy: dict) -> dict:
     source_type_map = {
@@ -436,6 +468,8 @@ def classify_record(record: dict, classification_policy: dict) -> dict:
         "requires_quarantine": sensitivity == "restricted",
     }
 ```
+
+该片段的作用是把上述流程转化为可检查的结构化表示。
 
 ### 9.1 这段逻辑解决了什么问题
 
@@ -457,7 +491,8 @@ def classify_record(record: dict, classification_policy: dict) -> dict:
 
 整体报告显示，8 条原始记录中有 7 条被判定为 restricted，且 7 条都进入了隔离。 这与项目的场景选择是匹配的：样本集中大部分记录本来就带有高敏特征，目的是把治理链路展示清楚，而不是刻意制造大量低风险样本。
 
-![图 6：分类判定与隔离触发关系图](../../images/part10/10_9_fig06_classification_and_quarantine.png)
+![图 P09-6](../../images/part10/10_9_fig06_classification_and_quarantine.png)
+*图 P09-6：分类判定与隔离触发关系图*
 
 ---
 
@@ -470,6 +505,7 @@ def classify_record(record: dict, classification_policy: dict) -> dict:
 
 P09 在 `redact_payload()` 中使用了三种策略：tokenize、mask 与 remove。
 
+Listing P09-7 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 def redact_payload(text: str, detections: list[dict]) -> str:
     redacted = text
@@ -485,6 +521,8 @@ def redact_payload(text: str, detections: list[dict]) -> str:
     return redacted
 ```
 
+该片段的作用是把上述流程转化为可检查的结构化表示。
+
 ### 10.1 tokenize、mask 与 remove 的分工
 
 * **tokenize** 适合邮箱、银行账号、patient id 这类需要保留“同一实体一致性”但不应暴露原值的字段；
@@ -495,11 +533,14 @@ def redact_payload(text: str, detections: list[dict]) -> str:
 
 辅助脚本中使用 `sha256` 生成稳定 token：
 
+Listing P09-8 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 def hash_token(value: str) -> str:
     digest = hashlib.sha256(value.encode("utf-8")).hexdigest()
     return f"tok_{digest[:12]}"
 ```
+
+该片段的作用是把上述流程转化为可检查的结构化表示。
 
 这样做的好处在于，同一个原值会映射到相同 token，既能避免直接暴露原始标识符，也能支持后续做弱关联分析。
 
@@ -507,7 +548,8 @@ def hash_token(value: str) -> str:
 
 因为隐私工程里最忌讳的，就是把所有问题都写成一个模糊的“脱敏处理”。真正有工程含义的写法，必须把不同字段的控制意图区分出来。
 
-![图 7：不同 PII 类型的去标识化策略图](../../images/part10/10_9_fig07_redaction_strategies.png)
+![图 P09-7](../../images/part10/10_9_fig07_redaction_strategies.png)
+*图 P09-7：不同 PII 类型的去标识化策略图*
 
 ---
 
@@ -517,6 +559,7 @@ def hash_token(value: str) -> str:
 
 P09 通过 `build_isolation_plan()` 显式给出四类 zone：raw_zone、quarantine_zone、redacted_zone 和 audit_zone。
 
+Listing P09-9 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 def build_isolation_plan() -> dict:
     return {
@@ -535,6 +578,8 @@ def build_isolation_plan() -> dict:
         ],
     }
 ```
+
+该片段的作用是把上述流程转化为可检查的结构化表示。
 
 ### 11.1 为什么 zone 模型重要
 
@@ -555,7 +600,8 @@ quarantine_zone 的意义在于：
 
 整体报告显示，当前 restricted 记录为 7 条，隔离记录也是 7 条。 这表明隔离逻辑与分类逻辑保持一致，而不是“分类归分类，隔离另说”。
 
-![图 8：存储分区与角色访问边界图](../../images/part10/10_9_fig08_storage_zones.png)
+![图 P09-8](../../images/part10/10_9_fig08_storage_zones.png)
+*图 P09-8：存储分区与角色访问边界图*
 
 ---
 
@@ -567,6 +613,7 @@ quarantine_zone 的意义在于：
 
 `build_alerts()` 构造了两个典型告警：
 
+Listing P09-10 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 def build_alerts() -> list[dict]:
     return [
@@ -587,6 +634,8 @@ def build_alerts() -> list[dict]:
     ]
 ```
 
+该片段的作用是把上述流程转化为可检查的结构化表示。
+
 这两个告警非常典型：一个是越权访问原始区，一个是未经批准请求导出 restricted 数据。它们恰好对应了隐私治理中最危险的两类动作。
 
 ### 12.2 为什么审计日志和告警必须一起出现
@@ -597,7 +646,8 @@ def build_alerts() -> list[dict]:
 
 整体报告显示，当前项目共有告警 2 条、告警解决率 100%、审计事件 5 条。 这说明项目已经不是“生成了一些脱敏文件”，而是开始具备安全运营语义。
 
-![图 9：告警、审计与事件响应关系图](../../images/part10/10_9_fig09_alerts_and_audit.png)
+![图 P09-9](../../images/part10/10_9_fig09_alerts_and_audit.png)
+*图 P09-9：告警、审计与事件响应关系图*
 
 ---
 
@@ -607,6 +657,7 @@ def build_alerts() -> list[dict]:
 
 P09 在 `simulate_privacy_ops.py` 中先做 preflight，再做 incident simulation。这一顺序很有工程意味。
 
+Listing P09-11 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 preflight = {
     "checks": [
@@ -618,6 +669,8 @@ preflight = {
     ]
 }
 ```
+
+该片段的作用是把上述流程转化为可检查的结构化表示。
 
 ### 13.1 preflight 检查项设计
 
@@ -639,7 +692,8 @@ preflight = {
 
 > 不是“跑完再看”，而是“先确认最低条件成立，再进入更高风险的处理和演练阶段”。
 
-![图 10：preflight 检查流程图](../../images/part10/10_9_fig10_preflight_checks.png)
+![图 P09-10](../../images/part10/10_9_fig10_preflight_checks.png)
+*图 P09-10：preflight 检查流程图*
 
 ---
 
@@ -649,6 +703,7 @@ preflight = {
 
 P09 将 incident 场景写成结构化记录：分析师未经批准尝试导出 restricted 原始记录，其中 detection、containment、outcome 和 response_minutes 都被显式保留。
 
+Listing P09-12 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 incident = {
     "incident_id": "privacy_inc_001",
@@ -663,6 +718,8 @@ incident = {
     "response_minutes": 24,
 }
 ```
+
+该片段的作用是把上述流程转化为可检查的结构化表示。
 
 对应的 postmortem 则继续记录 root cause、what_worked 和 follow_ups。
 
@@ -683,7 +740,8 @@ incident = {
 
 把 incident 和 postmortem 写进去，更容易看清一件事：隐私流水线并不是一条静态 ETL，而是一套包含异常响应能力的治理体系。
 
-![图 11：事故响应与 postmortem 闭环图](../../images/part10/10_9_fig11_incident_postmortem.png)
+![图 P09-11](../../images/part10/10_9_fig11_incident_postmortem.png)
+*图 P09-11：事故响应与 postmortem 闭环图*
 
 ---
 
@@ -695,6 +753,7 @@ P09 的评估由 `src/evaluate_privacy_pipeline.py` 完成。它不是手工写�
 
 评估阶段会先读取 scope、classification、access、tech options、raw/classified/redacted/quarantined、alerts、audit、preflight、incident、postmortem 等全部产物，再计算关键结果。
 
+Listing P09-13 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 metrics = {
     "domain_count": len(scope["example_domains"]),
@@ -719,6 +778,8 @@ metrics = {
     "postmortem_follow_up_count": len(postmortem["follow_ups"]),
 }
 ```
+
+该片段的作用是把上述流程转化为可检查的结构化表示。
 
 ### 15.2 为什么 `has_direct_pii()` 很关键
 
@@ -788,7 +849,7 @@ metrics = {
 
 ### 17.2 验证闭环的结构位置
 
-10-2 特别强调“代码、产物、统计与报告彼此一致”才算项目真正跑通。 P09 虽然任务不同，但继承的是同一种工程习惯：
+10-2 特别强调“代码、产物、统计与报告彼此一致”才算项目真正验证。 P09 虽然任务不同，但继承的是同一种工程习惯：
 
 > 一个数据工程案例，不能只靠描述自证，而必须让检查脚本成为验收器。
 
@@ -895,6 +956,7 @@ P09 的核心产物则是控制策略、处理结果、审计证据、运维文�
 
 P09 的最小运行顺序可以概括为下面五步：
 
+Listing P09-14 给出了命令行运行示例，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```bash
 python src/build_privacy_specs.py
 python src/run_privacy_pipeline.py
@@ -902,6 +964,8 @@ python src/simulate_privacy_ops.py
 python src/evaluate_privacy_pipeline.py
 python src/run_p9_checks.py
 ```
+
+该片段的作用是把上述流程转化为可检查的结构化表示。
 
 这五步分别对应：
 
@@ -917,11 +981,12 @@ python src/run_p9_checks.py
 
 因为它把整章内容从“叙述”重新收束成“动作”。章节里最容易留下印象的，往往正是这种一步一步的执行链。
 
-![图 12：P09 最小可复现运行链图](../../images/part10/10_9_fig12_execution_sequence.png)
+![图 P09-12](../../images/part10/10_9_fig12_execution_sequence.png)
+*图 P09-12：P09 最小可复现运行链图*
 
 ---
 
-## 22. 本章小结：P09 展示的系统能力
+## 22. 方法复盘：P09 展示的系统能力
 
 如果只看表面，P09 像是一个小型隐私保护项目；但从工程结构上看，它展示的是一种很完整的能力：
 
@@ -982,7 +1047,7 @@ python src/run_p9_checks.py
 
 ## 专题：隐私治理的指标与长期演进
 
-P09 当前的规模很小，但它已经很适合用来说明一个更长期的问题：隐私治理到底应该如何度量。因为如果没有稳定指标，团队很容易把隐私工作理解成“尽量少出事”；而实际上，成熟的隐私流水线应该能够被持续量化、持续对比和持续改进。
+P09 当前的规模很小，但它已经很适合用来说明一个更长期的问题：隐私治理到底应该如何度量。因为如果没有稳定指标，团队很容易把隐私工作理解成“尽量减少事故”；而实际上，成熟的隐私流水线应该能够被持续量化、持续对比和持续改进。
 
 ### 一、指标不应只看检测命中数
 

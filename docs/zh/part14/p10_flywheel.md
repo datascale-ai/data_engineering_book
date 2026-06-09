@@ -1,11 +1,11 @@
 # 项目十：端到端 LLM 数据飞轮
 
 ## 摘要
-P10 聚焦把数据、监督、训练、应用、平台治理和反馈回流组织成一条持续运转的端到端大语言模型（LLM）数据飞轮。章节重点不在新增单点能力，而在把前面九个项目的资产、接口、阶段和控制点整合为统一系统。
+P10 聚焦把数据、监督、训练、应用、平台治理和反馈回流组织成一条持续运转的端到端大语言模型（LLM）数据飞轮。章节重点不在新增单点能力，而在把第十四篇项目资产、接口、阶段和控制点整合为统一系统。随着本篇扩展到 P01-P15，P10 的出版口径应从早期“前九个项目总装”更新为“第十四篇项目总装层”，既覆盖 P01-P09 的基础数据工程，也预留 P11-P15 的开源配方、推理飞轮、多模态指令、视频生成和企业级问数能力。
 
 本章可以按四条主线理解：
 
-* 资产汇总与阶段规划：把前面九个项目的产物纳入统一 registry 与阶段体系。
+* 资产汇总与阶段规划：把 P01-P15 的产物纳入统一 registry 与阶段体系。
 * 训练、应用与反馈接口：明确数据进入训练、模型进入应用、应用反馈回流上游的连接方式。
 * 控制点与治理边界：把版本控制、回滚、人审、隐私隔离和异常响应写入系统结构。
 * 检查验收与组织复用：通过代码、产物和检查脚本验证飞轮能否稳定运行。
@@ -38,9 +38,12 @@ P10 聚焦把数据、监督、训练、应用、平台治理和反馈回流组�
 
 核心数据流可概括为：
 
+Listing P10-1 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```text
 项目资产 -> registry -> 阶段计划 -> 训练/评测反馈 -> 数据修订 -> 发布决策 -> 飞轮报告
 ```
+
+该片段的作用是把上述流程转化为可检查的结构化表示。
 
 样本 schema 至少应保留 `id`、`source`、`content_or_payload`、`metadata`、`quality_signals`、`split_or_stage` 与 `audit_trace` 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。
 
@@ -52,6 +55,14 @@ P10 聚焦把数据、监督、训练、应用、平台治理和反馈回流组�
 
 验收指标包括资产覆盖率、反馈闭环率、版本迭代周期、评测回归定位、发布通过率和里程碑完成度。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。
 
+| 验收维度 | 指标/证据 | 出版复核口径 |
+| --- | --- | --- |
+| 资产整合 | 上游项目覆盖率、registry 完整性和接口映射记录 | 每个上游资产应能说明来源、责任人、版本和复用方式 |
+| 反馈闭环 | 反馈回流率、评测回归定位和版本迭代周期 | 飞轮指标应说明触发动作，不能停留在仪表盘展示 |
+| 组织决策 | 发布通过率、里程碑完成度和风险台账关闭率 | 跨项目风险必须有 owner、期限和复盘结果 |
+
+*表 P10-1：LLM 数据飞轮出版验收表*
+
 ## 成本、风险与合规边界
 
 成本主要来自跨项目治理、反馈采集和评测复跑；风险集中在归因不清、指标漂移和组织责任断点。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。
@@ -62,7 +73,7 @@ P10 聚焦把数据、监督、训练、应用、平台治理和反馈回流组�
 
 ## 可复现资源说明
 
-复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。
+复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。总装层需要统一记录数据集、并行处理、实验追踪和质量检查，因此可参考 Hugging Face Datasets (Hugging Face 2026)、Ray Data (Ray Project 2026)、MLflow (MLflow Authors 2026) 与 Great Expectations (Great Expectations Contributors 2026) 的工程对象；基础语料进入飞轮前，也应保留类似 C4/T5 数据处理中的来源与过滤说明 (Raffel et al. 2020)。
 
 ## 1. 项目背景：端到端大语言模型（LLM）数据飞轮的必要性
 
@@ -76,7 +87,7 @@ P10 聚焦把数据、监督、训练、应用、平台治理和反馈回流组�
 
 第三类是**治理断裂**。很多团队愿意谈模型、谈效果、谈产品，但不愿意把版本控制、回滚机制、隐私边界、组织分工和事故响应写进系统设计。这会导致系统一旦放大，就无法稳定运转。
 
-因此，P10 的目标是构建一个**端到端大语言模型（LLM）数据飞轮总装层**，把前面九个项目的产物、阶段、接口、控制点和治理机制汇总为统一的系统结构。
+因此，P10 的目标是构建一个**端到端大语言模型（LLM）数据飞轮总装层**，把第十四篇 P01-P15 的产物、阶段、接口、控制点和治理机制汇总为统一的系统结构。早期代码原型中只纳入 P01-P09，可作为最小总装实现理解；当前书稿的出版叙述则应按 P01-P15 的完整项目集合解释。
 
 这一结构面向的是持续迭代的组织级工程场景。随着语料扩展、新任务接入、模型替换、应用上线和反馈回流，真正能够被复用的不是某个单独脚本，而是这套“资产汇总—阶段规划—系统边界—治理控制—验证闭环”的系统方法。
 
@@ -88,7 +99,7 @@ P10 聚焦把数据、监督、训练、应用、平台治理和反馈回流组�
 
 本项目聚焦以下四个目标。
 
-**目标一：把前面九个项目整理成一张统一的系统总图。**
+**目标一：把第十四篇项目整理成一张统一的系统总图。**
 即把分散在不同目录、不同报告和不同任务形态中的项目产物，统一纳入一个可追踪的 registry 与阶段体系。
 
 **目标二：建立从数据到应用再到治理的飞轮结构。**
@@ -106,7 +117,7 @@ P10 聚焦把数据、监督、训练、应用、平台治理和反馈回流组�
 
 #### 1）集成范围边界
 
-当前飞轮聚焦 P01-P09 已有项目产物的离线整合，而不是重新执行所有上游训练流程。这意味着它更适合作为**系统总装图与工程复盘层**，而不是在线实时生产系统本身。
+当前飞轮聚焦已有项目产物的离线整合，而不是重新执行所有上游训练流程。早期实现以 P01-P09 为最小闭环，当前第十四篇出版口径应扩展到 P01-P15，并把 P11-P15 标记为新增配方、推理、多模态、视频和企业应用能力。这意味着它更适合作为**系统总装图与工程复盘层**，而不是在线实时生产系统本身。
 
 #### 2）时效性边界
 
@@ -114,7 +125,7 @@ P10 聚焦把数据、监督、训练、应用、平台治理和反馈回流组�
 
 #### 3）评估边界
 
-P10 更关注跨项目整合程度、阶段完成率、控制点、瓶颈和治理结构，而不是单个模型在某个 benchmark 上的极致分数。
+P10 更关注跨项目整合程度、阶段完成率、控制点、瓶颈和治理结构，而不是单个模型在某个 benchmark 上的最高分数。
 
 #### 4）组织边界
 
@@ -149,7 +160,8 @@ P10 更关注跨项目整合程度、阶段完成率、控制点、瓶颈和治�
 
 ## 4. 整体架构：从上游项目资产到组织级飞轮总装
 
-![图 1：端到端 LLM 数据飞轮总览图](../../images/part10/10_10_fig01_flywheel_overview.png)
+![图 P10-1](../../images/part10/10_10_fig01_flywheel_overview.png)
+*图 P10-1：端到端 LLM 数据飞轮总览图*
 
 从工程视角看，本项目可以拆成五层，而不是只看“数据输入—模型输出”这样一条线性流程。
 
@@ -159,7 +171,7 @@ P10 更关注跨项目整合程度、阶段完成率、控制点、瓶颈和治�
 
 ### 4.2 第二层：处理层（processing layer）
 
-这一层解决的是“原料如何变成可训练、可消费、可治理的中间资产”。清洗、去重、脱敏、指令合成、课程包装等能力都位于这里。它决定飞轮进入模型层之前，数据是否已经被工程化。
+这一层解决的是“原料如何变成可训练、可消费、可治理的中间资产”。清洗、去重、脱敏、指令合成、课程组织等能力都位于这里。它决定飞轮进入模型层之前，数据是否已经被工程化。
 
 ### 4.3 第三层：建模层（modeling layer）
 
@@ -188,11 +200,11 @@ P10 更关注跨项目整合程度、阶段完成率、控制点、瓶颈和治�
 
 飞轮的复用能力首先建立在 registry 之上。registry 负责明确上游项目清单、阶段归属、输出资产和下游接口，把分散项目转化为可追踪、可组合的系统资产。
 
-P10 当前已经把前面九个项目统一纳入汇总体系，形成了项目 registry 与 phase inventory。当前结构包括：
+P10 的 registry 应按照第十四篇 P01-P15 的完整目录维护。早期实现已经把 P01-P09 统一纳入汇总体系，形成项目 registry 与 phase inventory；当前书稿中，需要把 P10-P15 作为新增总装对象继续补入。当前出版口径包括：
 
-* 已纳入上游项目 `9` 个；
+* 应纳入项目 `15` 个；
 * 已规划阶段 `5` 个；
-* 已汇总接口 `17` 个。
+* 已汇总接口至少覆盖数据、训练、应用、治理、推理、多模态、视频和企业问数等能力面。
 
 这些统计反映的不是数量本身，而是系统已经具备跨项目资产登记、阶段划分和接口暴露能力，为后续复用、阶段规划和治理控制提供统一入口。
 
@@ -215,14 +227,16 @@ P10 当前已经把前面九个项目统一纳入汇总体系，形成了项目 
 * 它为后续架构映射和瓶颈识别提供依据；
 * 它为组织层复盘提供统一语言。
 
-![图 2：上游项目 registry 与接口映射图](../../images/part10/10_10_fig02_registry_and_interfaces.png)
+![图 P10-2](../../images/part10/10_10_fig02_registry_and_interfaces.png)
+*图 P10-2：上游项目 registry 与接口映射图*
 
 ---
 
 ## 6. 代码展开一：汇总上游项目资产
 
-`src/collect_upstream_projects.py` 负责汇总上游项目资产，并将项目信息整理为统一规格。下面的代码片段展示了 registry 的核心结构。
+`src/collect_upstream_projects.py` 负责汇总上游项目资产，并将项目信息整理为统一规格。
 
+Listing P10-2 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 PROJECT_SPECS = [
     {
@@ -245,8 +259,59 @@ PROJECT_SPECS = [
         "deliverables": ["domain_sft_dataset", "preference_pairs", "risk_refusals"],
         "interfaces_out": ["sft_corpus", "preference_data"],
     },
+    {
+        "project_id": "p10",
+        "title": "End-to-End LLM Data Flywheel",
+        "project_dir": "project_10_flywheel",
+        "phase": "governance",
+        "deliverables": ["upstream_registry", "stage_plan", "risk_ledger", "release_dashboard"],
+        "interfaces_out": ["project_registry", "release_gate", "feedback_routing"],
+        "registry_role": "assembly_layer",
+    },
+    {
+        "project_id": "p11",
+        "title": "Mini-DeepSeek Pretraining Recipe",
+        "project_dir": "project_11_mini_deepseek",
+        "phase": "foundation_recipe",
+        "deliverables": ["mixed_corpus", "tokenizer", "packed_dataset", "training_smoke_report"],
+        "interfaces_out": ["pretraining_recipe", "tokenizer_artifact", "packed_training_data"],
+    },
+    {
+        "project_id": "p12",
+        "title": "Teaching-scale R1 Reasoning Data Flywheel",
+        "project_dir": "project_12_r1_flywheel",
+        "phase": "reasoning",
+        "deliverables": ["cold_start_data", "sampled_traces", "verifier_results", "merged_sft_data"],
+        "interfaces_out": ["reasoning_traces", "rejection_sampled_sft", "verifier_manifest"],
+    },
+    {
+        "project_id": "p13",
+        "title": "Multimodal Instruction Factory",
+        "project_dir": "project_13_mm_instruction_factory",
+        "phase": "multimodal_instruction",
+        "deliverables": ["seed_manifest", "judge_scores", "multilingual_pack", "mm_sft_jsonl"],
+        "interfaces_out": ["qwen_vl_instruction_data", "quality_judge_records"],
+    },
+    {
+        "project_id": "p14",
+        "title": "Video Generation Dataset Pipeline",
+        "project_dir": "project_14_video_generation",
+        "phase": "generative_media",
+        "deliverables": ["source_video_manifest", "shot_clips", "motion_scores", "t2v_training_samples"],
+        "interfaces_out": ["video_caption_data", "t2v_manifest"],
+    },
+    {
+        "project_id": "p15",
+        "title": "DataAgent Semantic BI Assistant",
+        "project_dir": "project_15_dataagent_semantic_bi",
+        "phase": "enterprise_application",
+        "deliverables": ["agent_yaml", "semantic_service_config", "sql_outputs", "csv_outputs", "audit_trace"],
+        "interfaces_out": ["semantic_bi_service", "a2a_endpoint", "workspace_assets"],
+    },
 ]
 ```
+
+该片段的作用是把上述流程转化为可检查的结构化表示。
 
 这段结构反映了上游资产汇总的几个基本要求：
 
@@ -259,7 +324,8 @@ PROJECT_SPECS = [
 
 这种结构化表达把项目汇总落实为可复制的方法。后续其他总装层项目也可以沿用同样方式，将已有项目逐个纳入统一 registry，而不必依赖手工整理。
 
-![图 3：上游项目结构化配置示意图](../../images/part10/10_10_fig03_project_specs.png)
+![图 P10-3](../../images/part10/10_10_fig03_project_specs.png)
+*图 P10-3：上游项目结构化配置示意图*
 
 ---
 
@@ -282,14 +348,16 @@ P10 的价值之一，就是把飞轮拆成了更清晰的阶段体系。当前�
 
 阶段规划把飞轮从单纯的连通关系扩展为可推进、可复盘、可治理的组织结构。这里真正重要的，是把可迁移的推进方法明确下来，而不是停留在静态示意图层面。
 
-![图 4：五阶段推进与里程碑关系图](../../images/part10/10_10_fig04_stage_plan.png)
+![图 P10-4](../../images/part10/10_10_fig04_stage_plan.png)
+*图 P10-4：五阶段推进与里程碑关系图*
 
 ---
 
 ## 8. 代码展开二：构建飞轮架构与阶段规划
 
-`src/build_flywheel.py` 负责把前面九个项目映射到飞轮结构中。下面的代码片段展示了五层架构的结构化表达。
+`src/build_flywheel.py` 负责把第十四篇项目映射到飞轮结构中。早期最小实现只覆盖 P01-P09；当前出版口径应把 P10-P15 继续映射到 governance、foundation recipe、reasoning、multimodal instruction、generative media 和 enterprise application 等阶段。
 
+Listing P10-3 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 def build_architecture(registry: list[dict]) -> dict:
     return {
@@ -297,21 +365,33 @@ def build_architecture(registry: list[dict]) -> dict:
             {
                 "name": "data_source_layer",
                 "responsibilities": ["web/data ingestion", "sensitive data intake", "document intake"],
-                "mapped_projects": ["p1", "p5", "p9"],
+                "mapped_projects": ["p1", "p5", "p9", "p11", "p14"],
             },
             {
                 "name": "processing_layer",
                 "responsibilities": ["cleaning", "dedup", "de-identification", "instruction synthesis", "curriculum packaging"],
-                "mapped_projects": ["p1", "p2", "p3", "p4", "p9"],
+                "mapped_projects": ["p1", "p2", "p3", "p4", "p9", "p11", "p13", "p14"],
             },
             {
                 "name": "modeling_layer",
                 "responsibilities": ["SFT", "PRM", "agent tool-use training", "multimodal training"],
-                "mapped_projects": ["p2", "p3", "p4", "p6", "p7"],
+                "mapped_projects": ["p2", "p3", "p4", "p6", "p7", "p11", "p12", "p13"],
+            },
+            {
+                "name": "application_layer",
+                "responsibilities": ["RAG service", "agent execution", "semantic BI", "feedback collection"],
+                "mapped_projects": ["p5", "p7", "p10", "p15"],
+            },
+            {
+                "name": "governance_layer",
+                "responsibilities": ["release gates", "privacy controls", "rollback", "cross-project registry"],
+                "mapped_projects": ["p8", "p9", "p10"],
             },
         ]
     }
 ```
+
+该片段的作用是把上述流程转化为可检查的结构化表示。
 
 这段结构说明，飞轮依赖显式映射来维持一致性。项目与层级被写入数据结构后，报告、检查、dashboard 和治理分析都可以围绕同一套映射展开。
 
@@ -332,7 +412,8 @@ def build_architecture(registry: list[dict]) -> dict:
 
 这种表达方式，才真正让飞轮具备工程可维护性。
 
-![图 5：飞轮五层结构代码映射图](../../images/part10/10_10_fig05_architecture_code_mapping.png)
+![图 P10-5](../../images/part10/10_10_fig05_architecture_code_mapping.png)
+*图 P10-5：飞轮五层结构代码映射图*
 
 ---
 
@@ -359,7 +440,8 @@ P10 当前结果显示，飞轮架构包含 `5` 层、`4` 个控制点和 `4` �
 
 控制点的存在说明，飞轮并不追求无差别加速，而是为不同环节配置不同的流转速度、审查要求和可追踪性。
 
-![图 6：系统边界与控制点示意图](../../images/part10/10_10_fig06_boundaries_and_control_points.png)
+![图 P10-6](../../images/part10/10_10_fig06_boundaries_and_control_points.png)
+*图 P10-6：系统边界与控制点示意图*
 
 ---
 
@@ -380,7 +462,8 @@ P10 当前结果显示，飞轮架构包含 `5` 层、`4` 个控制点和 `4` �
 
 对工程师来说，阶段计划可能已经足够；但对管理者、评审和跨团队协作方来说，milestone 往往是更容易沟通的对象。它把复杂技术过程转换成更可执行的组织节奏。
 
-![图 7：运行记录与里程碑板示意图](../../images/part10/10_10_fig07_runs_and_milestones.png)
+![图 P10-7](../../images/part10/10_10_fig07_runs_and_milestones.png)
+*图 P10-7：运行记录与里程碑板示意图*
 
 ---
 
@@ -388,7 +471,7 @@ P10 当前结果显示，飞轮架构包含 `5` 层、`4` 个控制点和 `4` �
 
 P10 当前给出的关键结果包括：
 
-* 已纳入上游项目 `9` 个；
+* 当前出版口径应纳入项目 `15` 个；
 * 已规划阶段 `5` 个；
 * 已汇总接口 `17` 个；
 * 上游检查通过 `103/103`；
@@ -401,7 +484,7 @@ P10 当前给出的关键结果包括：
 
 这些数字主要反映三个系统层面的结论。
 
-第一，前面九个项目当前已经达到可被纳入总装层的状态。`103/103` 的上游检查通过结果说明，上游项目当前全部处于可集成状态。
+第一，早期 P01-P09 最小闭环已经达到可被纳入总装层的状态。`103/103` 的上游检查通过结果说明，基础项目当前处于可集成状态；在第十四篇扩展到 P15 后，还需要把 P11-P15 的配方、推理、多模态、视频和企业应用产物补入同一 registry，并为新增项目建立同等检查口径。
 
 第二，飞轮结构已经不只是“有很多项目”，而是形成了分层结构、阶段设计和治理边界，这让它开始具备系统级可讨论性。
 
@@ -450,7 +533,8 @@ P10 的独特之处，在于它衡量的不是局部最优，而是一条工程�
 * 仍未解决的关键问题；
 * 下一轮优化最值得投入的方向。
 
-![图 8：飞轮瓶颈定位图](../../images/part10/10_10_fig08_bottleneck_map.png)
+![图 P10-8](../../images/part10/10_10_fig08_bottleneck_map.png)
+*图 P10-8：飞轮瓶颈定位图*
 
 ---
 
@@ -476,8 +560,9 @@ P10 的独特之处，在于它衡量的不是局部最优，而是一条工程�
 
 ## 14. 代码展开三：在评估脚本中生成系统级指标
 
-`src/evaluate_flywheel.py` 负责把散落在多份产物中的结果收束成系统级指标与总报告。下面的代码片段展示了这种计算方式。
+`src/evaluate_flywheel.py` 负责把散落在多份产物中的结果收束成系统级指标与总报告。
 
+Listing P10-4 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 total_manual_review_hours = round(sum(item["estimated_manual_review_hours"] for item in registry), 2)
 total_manual_review_cost_rmb = round(sum(item["estimated_manual_review_cost_rmb"] for item in registry), 2)
@@ -491,6 +576,8 @@ bottlenecks = [
 ]
 ```
 
+该片段的作用是把上述流程转化为可检查的结构化表示。
+
 这段计算逻辑把系统级判断落实为结构化指标与结构化结论。报告中的主要结论由 registry、runs 和其他中间产物共同支撑，而不是来自主观归纳。
 
 ### 14.1 系统级指标的计算基础
@@ -502,7 +589,8 @@ bottlenecks = [
 
 因此，这段代码承担的是从指标生成到结果解读的连接作用。
 
-![图 9：系统级指标生成逻辑图](../../images/part10/10_10_fig09_metrics_codegen.png)
+![图 P10-9](../../images/part10/10_10_fig09_metrics_codegen.png)
+*图 P10-9：系统级指标生成逻辑图*
 
 ---
 
@@ -540,8 +628,9 @@ PASS 说明 P10 当前已经具备代码、产物、统计和报告相互对齐�
 
 ## 16. 代码展开四：将检查机制写成工程契约
 
-P10 的 `src/run_p10_checks.py` 脚本，把总装层的验收规则写成了可执行工程契约。下面的代码片段展示了检查脚本的基础结构。
+P10 的 `src/run_p10_checks.py` 脚本，把总装层的验收规则写成了可执行工程契约。
 
+Listing P10-5 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
 ```python
 def run_command(command: list[str], name: str) -> dict:
     result = subprocess.run(command, capture_output=True, text=True)
@@ -554,6 +643,8 @@ def run_command(command: list[str], name: str) -> dict:
         "stderr": result.stderr.strip(),
     }
 ```
+
+该片段的作用是把上述流程转化为可检查的结构化表示。
 
 这段结构体现了检查机制的几个基本要求：
 
@@ -568,7 +659,8 @@ def run_command(command: list[str], name: str) -> dict:
 
 这一节说明，P10 并不止于汇总上游项目，还把总装层自身纳入了工程质量管理。对于整章来说，这一部分承担的是把系统整合与质量契约连接起来的作用。
 
-![图 10：检查脚本与系统契约图](../../images/part10/10_10_fig10_check_contracts.png)
+![图 P10-10](../../images/part10/10_10_fig10_check_contracts.png)
+*图 P10-10：检查脚本与系统契约图*
 
 ---
 
@@ -659,7 +751,7 @@ def run_command(command: list[str], name: str) -> dict:
 
 P10 当前已经形成了较完整的系统结构，但它依然有非常明确的局限。
 
-首先，它高度依赖前面九个项目的报告准确性和产物完整性。如果上游项目本身统计有误、字段失真或测试不完整，那么 P10 再完整，也只能在错误输入上进行结构化整合。
+首先，它高度依赖第十四篇各项目的报告准确性和产物完整性。如果上游项目本身统计有误、字段失真或测试不完整，那么 P10 再完整，也只能在错误输入上进行结构化整合。随着 P11-P15 加入，registry 还要额外记录模型配方、推理轨迹、多模态样本、视频片段和 DataAgent 服务资产，否则总装层会继续停留在 P01-P09 的旧边界内。
 
 其次，当前识别出的瓶颈仍主要集中在基础语料规模、PRM 验证质量和平台回归控制上。这说明飞轮虽然已经形成，但还没有完全进入“高频自增强”状态。
 
@@ -669,7 +761,7 @@ P10 当前已经形成了较完整的系统结构，但它依然有非常明确�
 
 局限说明的意义，在于帮助界定当前系统的完成度与后续扩展方向：
 
-* 什么已经跑通；
+* 什么已经验证；
 * 什么仍在过渡态；
 * 下一阶段最可能补齐哪些环节。
 
@@ -770,7 +862,7 @@ P10 位于全书后段，其作用在于对前面项目进行系统级收束。
 * 系统可以在多轮迭代中保留结构、边界和记忆；
 * 组织能够从项目堆叠转向能力体系建设。
 
-P10 的价值并不只是总结前面九个项目，而是把它们重新组织为一条可解释、可检查、可扩展的端到端系统链。这也是本章最重要的工程意义。
+P10 的价值并不只是总结前面若干项目，而是把第十四篇 P01-P15 重新组织为一条可解释、可检查、可扩展的端到端系统链。这也是本章最重要的工程意义。
 
 ---
 
@@ -1004,7 +1096,7 @@ P10 作为总装层，还有一个特别值得补出来的工程动作，就是�
 
 ## 专题：总装层 owner 的职责边界
 
-飞轮要真正运转起来，还需要一个在很多团队里经常被忽视的角色，就是总装层 owner。没有这个角色，P10 很容易退化成“大家都看一下，但没人真正负责”的汇总项目；有了这个角色，总装层才会成为持续性的系统入口。
+飞轮要真正运转起来，还需要一个在很多团队里经常被忽视的角色，就是总装层 owner。没有这个角色，P10 很容易退化成“各方都看一下，但没有人真正负责”的汇总项目；有了这个角色，总装层才会成为持续性的系统入口。
 
 ### 一、owner 负责的不是替代所有项目，而是维护系统主链
 

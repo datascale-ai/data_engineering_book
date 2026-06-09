@@ -3,13 +3,17 @@
 ---
 
 ## 摘要
-标注和评测是 LLM 数据工程中人力密度最高的两个环节。标注需要大量人工判断，评测需要精心设计的测试用例和一致性校准。当模型迭代加速、数据需求多样化时，纯人工的标注和评测体系迅速成为瓶颈。标注、合成与评测 Agent 的目标不是"取代人类标注员和评测员"，而是在三个维度上放大人类的能力：通过标注辅助降低单条标注的认知负荷，通过合成数据扩充覆盖长尾场景，通过自动评测加速反馈闭环。
+标注和评测是大语言模型（Large Language Model，LLM）数据工程中人力密度最高的两个环节。标注需要大量人工判断，评测需要精心设计的测试用例和一致性校准。当模型迭代加速、数据需求多样化时，纯人工的标注和评测体系迅速成为瓶颈。标注、合成与评测 Agent 的目标不是"取代人类标注员和评测员"，而是在三个维度上放大人类的能力：通过标注辅助降低单条标注的认知负荷，通过合成数据扩充覆盖长尾场景，通过自动评测加速反馈闭环。
 
 本章从标注辅助 Agent 出发，讨论 Agent 如何提供任务解释、样例推荐、灰区判定和冲突仲裁；然后进入合成数据 Agent，讨论种子扩展、prompt 生成、难度控制和验证器调用；接着讨论评测与红队 Agent，如何自动生成 challenge set 和红队样本；最后讨论一致性校准——如何避免"Agent 评 Agent 生成的数据"的自嗨循环。本章承接 Ch12-Ch17 的 SFT、偏好、标注、合成数据和坍缩治理，将这些环节升级为 Agent 驱动的工作流。
 
+## 关键词
+
+标注辅助 Agent；合成数据；自动评测；红队样本；一致性校准；LLM-as-Judge
+
 ---
 
-## 33.0 学习目标
+## 学习目标
 
 通过本章学习，读者应能够：
 
@@ -25,9 +29,9 @@
 
 某对话模型团队每周需要标注 5000 条新样本，同时维护一个 2000 题的评测集。团队规模 15 人，其中 10 名标注员、3 名评测设计员、2 名数据工程师。三件事情同时出现了问题：
 
-**标注雪崩**：模型版本从 v2.1 迭代到 v2.3，新增了代码生成和长文本摘要两个能力维度。标注需求从每周 5000 条暴涨至 12000 条。标注团队加班加点，但标注质量开始下滑——标注员疲劳导致灰区 case 的随意判定增多，标注一致性（IAA）从 0.88 降至 0.72。
+**标注雪崩**：模型版本从 v2.1 迭代到 v2.3，新增了代码生成和长文本摘要两个能力维度。标注需求从每周 5000 条暴涨至 12000 条。标注团队加班加点，但标注质量开始下滑——标注员疲劳导致灰区 case 的随意判定增多，标注员一致性（Inter-Annotator Agreement，IAA）从 0.88 降至 0.72。
 
-**评测失真**：评测集是三个月前构建的，大量题目已经被模型"背下来"。模型在评测集上的准确率高达 92%，但上线后的用户满意度评分只有 3.8/5。评测集丧失了区分度——它不再能反映模型在真实场景中的表现。
+**评测失真**：评测集是三个月前构建的，大量题目已经被模型"背下来"。模型在评测集上的准确率达 92%，但上线后的用户满意度评分只有 3.8/5。评测集丧失了区分度——它不再能反映模型在真实场景中的表现。
 
 **合成数据失控**：为弥补标注产能不足，团队开始大量使用合成数据。但缺乏难度控制——合成的样本要么太简单（模型已经能完美回答），要么太难（包含不合理的约束），导致训练效果边际递减，甚至出现模型坍缩的早期信号。
 
@@ -44,9 +48,9 @@
 
 ### 33.1.1 标注辅助的四个维度
 
-标注辅助 Agent 的核心定位是"标注员的智能副驾"——不是取代标注员做判断，而是在标注流程的每个环节降低认知负荷、提升判断一致性。
+标注辅助 Agent 的核心定位是"标注员的辅助决策工具"——不是取代标注员做判断，而是在标注流程的每个环节降低认知负荷、提升判断一致性。指令微调、RLHF、AI feedback 和偏好优化实践都表明，标注与反馈数据的质量会直接决定对齐效果，而不是简单依赖样本数量堆叠（Ouyang et al. 2022; Bai et al. 2022; Wang et al. 2023; Cui et al. 2023; Rafailov et al. 2023）。
 
-![标注辅助 Agent 的四个维度](../../images/part10/ch33_annotation_agent_dimensions.png)
+![标注辅助 Agent 的四个维度](../../images/part10/ai_agent_decision_workflow_ch33_01.png)
 
 **图33-1：标注辅助 Agent 的四个维度**
 
@@ -62,21 +66,23 @@
 
 标注员之间的判断一致性（Inter-Annotator Agreement, IAA）是标注质量的核心指标。Agent 可以实时监控每位标注员的标注分布和与基准的偏离程度：
 
+**表33-1：标注员一致性监控指标**
+
 | 监控指标 | 计算方法 | 告警阈值 | 建议动作 |
 |---------|---------|---------|---------|
 | 个人与群体一致性 | Cohen`s Kappa / Fleiss` Kappa | < 0.7 | 通知标注员复核，推送校准样本 |
-| 标注分布偏移 | KL 散度（个人 vs 群体） | > 0.3 | 检查是否存在系统性偏见 |
+| 标注分布偏移 | Kullback-Leibler 散度（KL 散度）（个人 vs 群体） | > 0.3 | 检查是否存在系统性偏见 |
 | 灰区样本标注时间 | 单条标注耗时 | < 3s 或 > 120s | 过快可能随意标注，过慢可能困惑 |
 | 标注修改率 | 审核驳回后修改的比例 | > 15% | 需要重新培训或调整任务分配 |
-
-**表33-1：标注员一致性监控指标**
 
 
 ### 33.1.3 标注经济学：成本、质量与速度的三角平衡
 
-标注质量的追求不能脱离成本约束。标注 Agent 的设计必须理解标注经济学的核心逻辑：**完美标注的成本是无限的，工程上需要在成本、质量和速度之间找到帕累托最优。**
+标注质量的追求不能脱离成本约束。标注 Agent 的设计必须理解标注经济学的核心逻辑：**追求极高一致性的标注成本会快速上升，工程上需要在成本、质量和速度之间找到帕累托最优。** 近年来的 AlpacaFarm、LIMA 和 RewardBench 等工作也说明，反馈数据的组织方式、奖励模型评估和少量高质量样本常常比无差别扩张更关键（Dubois et al. 2023; Zhou et al. 2023; Lambert et al. 2024）。
 
 **标注成本结构分析：**
+
+**表33-2：标注成本结构对比**
 
 | 成本项 | 纯人工模式 | Agent 辅助模式 | 节约来源 |
 |-------|-----------|--------------|---------|
@@ -86,8 +92,6 @@
 | 标注员培训周期 | 2-4 周 | 1-2 周 | Agent 实时提供指南解释和校准反馈 |
 | 质量审核人力 | 1 审核员 : 5 标注员 | 1 审核员 : 10 标注员 | Agent 预筛选有问题的标注 |
 | 返工率 | 15-25% | 5-10% | Agent 实时一致性检查 |
-
-**表33-2：标注成本结构对比**
 
 从投入产出比来看，将标注辅助 Agent 的成本分摊到标注员身上，通常能在 2-3 个月内收回投资——主要收益来自标注效率提升（30-50%）和返工率下降（50-70%）。
 
@@ -105,6 +109,8 @@
 
 **基于标注员画像的分发策略：**
 
+**表33-3：标注分发策略对比**
+
 | 标注员画像维度 | 采集方式 | 分发匹配逻辑 |
 |-------------|---------|------------|
 | 领域熟练度 | 历史标注准确率按领域统计 | 优先分配擅长领域的样本 |
@@ -112,8 +118,6 @@
 | 标注速度 | 历史标注耗时统计 | 匹配任务紧急程度 |
 | 疲劳状态 | 连续标注时长 + 最近准确率趋势 | 疲劳预警时分配简单样本或建议休息 |
 | 语言能力 | 标注员注册时声明的语言 | 匹配样本语言 |
-
-**表33-3：标注分发策略对比**
 
 Agent 还应为每个标注批次设定校准样本——这些样本已有标准答案，用于在正式标注前校准标注员的判断标准。当标注员在校准样本上的准确率低于 85% 时，Agent 应建议重新培训或调整任务分配。
 
@@ -124,9 +128,9 @@ Agent 还应为每个标注批次设定校准样本——这些样本已有标�
 
 ### 33.2.1 从种子扩展到质量报告
 
-合成数据 Agent 的核心闭环是一个受控的生成-验证-筛选流水线：
+合成数据 Agent 的核心闭环是一个受控的生成-验证-筛选流水线。Self-Instruct、UltraFeedback 和合成数据坍缩研究共同提示，合成数据的价值来自受控扩展与严格验证，而风险来自递归自消费、分布收缩和质量信号失真（Wang et al. 2023; Cui et al. 2023; Alemohammad et al. 2024; Gerstgrasser et al. 2024; Shumailov et al. 2024）：
 
-![合成数据 Agent 闭环流水线](../../images/part10/ch33_synthetic_data_loop.png)
+![合成数据 Agent 闭环流水线](../../images/part10/ai_agent_decision_workflow_ch33_02.png)
 
 **图33-2：合成数据 Agent 闭环流水线**
 
@@ -140,6 +144,8 @@ Agent 还应为每个标注批次设定校准样本——这些样本已有标�
 
 **验证器调用。** 生成的合成数据在入库前必须经过多层验证：
 
+**表33-4：合成数据多层验证**
+
 | 验证层 | 检查内容 | 工具/方法 |
 |-------|---------|----------|
 | 格式层 | 数据格式是否符合 Schema | 结构化校验 |
@@ -148,30 +154,28 @@ Agent 还应为每个标注批次设定校准样本——这些样本已有标�
 | 安全层 | 是否包含有害/违规内容 | 安全分类器 |
 | 多样性层 | 与已有数据的语义相似度 | Embedding 相似度去重 |
 
-**表33-4：合成数据多层验证**
-
 ### 33.2.2 坍缩风险控制
 
-合成数据的最大风险是"模型坍缩"——当模型大量使用自己生成的数据训练时，生成分布会逐渐收窄，失去多样性。Agent 可以通过以下策略控制坍缩风险：
+合成数据的最大风险是"模型坍缩"——当模型大量使用自己生成的数据训练时，生成分布会逐渐收窄，失去多样性。关于递归生成数据的实验已经观察到分布尾部丢失、模式强化和错误累积等现象，因此 Agent 必须把坍缩监控作为生产级控制点（Alemohammad et al. 2024; Gerstgrasser et al. 2024; Shumailov et al. 2024）。Agent 可以通过以下策略控制坍缩风险：
 
 1. **多样性预算**：为每批合成数据设定语义多样性预算，确保与已有训练数据的最大余弦相似度不超过阈值。
 2. **真实数据锚定**：合成数据在训练中的占比不超过一定比例（通常建议 < 50%），始终保留真实人工标注数据的锚定作用。
 3. **分布监控**：持续监控合成数据的嵌入分布，当分布出现明显的集中趋势时触发告警。
 
 
-### 33.2.2.1 坍缩的早期检测指标
+#### 33.2.2.1 坍缩的早期检测指标
 
-模型坍缩不是突然发生的——它在完全显现前有几周甚至几个月的潜伏期。Agent 的监控系统应追踪以下早期预警指标：
+模型坍缩通常是逐步显现的——它在完全显现前有几周甚至几个月的潜伏期。Agent 的监控系统应追踪以下早期预警指标：
 
-**分布偏移指标：** 定期计算合成数据嵌入分布与真实数据嵌入分布之间的 Wasserstein 距离或 MMD（Maximum Mean Discrepancy）。当距离连续三周扩大（即使每周变化很小），即使尚未超过阈值，也应触发预警。
+**分布偏移指标：** 定期计算合成数据嵌入分布与真实数据嵌入分布之间的 Wasserstein 距离或最大均值差异（Maximum Mean Discrepancy，MMD）。当距离连续三周扩大（即使每周变化很小），即使尚未超过阈值，也应触发预警。
 
-**多样性衰减曲线：** 追踪合成数据的语义多样性指数（基于嵌入的余弦相似度矩阵的特征值分布）随时间的变化。健康状态下该指数应保持稳定或小幅波动；持续下降是坍缩的最强信号。
+**多样性衰减曲线：** 追踪合成数据的语义多样性指数（基于嵌入的余弦相似度矩阵的特征值分布）随时间的变化。健康状态下该指数应保持稳定或小幅波动；持续下降是坍缩的明确信号。
 
 **尾部覆盖率：** 检查合成数据是否覆盖了真实数据的"长尾"部分——低频但不罕见的数据类型。坍缩往往首先从尾部开始——Agent 停止生成低频类型的样本，只集中在高频模式上。
 
 **人工评估抽样：** 无论自动化指标如何，每两周从合成数据中随机抽样 50-100 条进行人工质量评估。自动化指标可能漏掉"指标看起来正常但内容质量下降"的情况。
 
-### 33.2.2.2 合成数据的知识产权与合规考量
+#### 33.2.2.2 合成数据的知识产权与合规考量
 
 合成数据虽然由模型生成，但其知识产权状态和法律风险并不比采集数据简单：
 
@@ -185,6 +189,8 @@ Agent 还应为每个标注批次设定校准样本——这些样本已有标�
 
 合成数据的难度控制是避免"合成数据坍缩"的关键。Agent 需要建立多维度的难度评估体系：
 
+**表33-5：合成数据难度控制维度**
+
 | 难度维度   | 评估方法                      | L1（基础）            | L3（中等） | L5（困难）              |
 | ---------- | ----------------------------- | --------------------- | ---------- | ----------------------- |
 | 推理步数   | 答案生成所需的最小推理步骤    | 1-2 步                | 3-4 步     | 5+ 步                   |
@@ -192,8 +198,6 @@ Agent 还应为每个标注批次设定校准样本——这些样本已有标�
 | 约束复杂度 | prompt 中的约束条件数量与类型 | 无约束或 1 个简单约束 | 2-3 个约束 | 4+ 约束或矛盾约束识别   |
 | 干扰信息   | 是否包含需要忽略的无关信息    | 无干扰                | 1 处干扰   | 多处干扰 + 需要主动识别 |
 | 格式要求   | 输出格式的复杂程度            | 自由文本              | 结构化输出 | 严格格式 + 内容约束     |
-
-**表33-5：合成数据难度控制维度**
 
 Agent 在生成合成数据时，应先设定目标难度分布（如 L1:L3:L5 = 40%:40%:20%），然后在生成过程中实时统计各难度层级的产出量，动态调整生成策略以确保分布均衡。
 
@@ -204,7 +208,7 @@ Agent 在生成合成数据时，应先设定目标难度分布（如 L1:L3:L5 =
 
 ### 33.3.1 自动生成 Challenge Set
 
-评测 Agent 的首要能力是自动生成具有区分度的测试样本。一个好的 challenge set 应该能区分模型的不同能力层级——如果一个测试集所有模型都能得满分或都得零分，它的评测价值为零。
+评测 Agent 的首要能力是自动生成具有区分度的测试样本。一个好的 challenge set 应该能区分模型的不同能力层级——如果一个测试集所有模型都能得满分或都得零分，它的评测价值为零。CheckList、HELM、WILDS 和 WildBench 等评测体系都强调，评测集需要覆盖行为切片、分布漂移和真实用户难题，而不是只报告单一平均分（Ribeiro et al. 2020; Liang et al. 2023; Koh et al. 2021; Lin et al. 2024）。
 
 Challenge set 的生成策略：
 
@@ -214,14 +218,14 @@ Challenge set 的生成策略：
 
 ### 33.3.2 红队样本生成
 
-红队 Agent 的角色是主动寻找模型的安全漏洞和能力边界。红队样本的生成策略包括：
+红队 Agent 的角色是主动寻找模型的安全漏洞和能力边界。红队样本的生成策略包括自动化对抗生成、语言模型辅助红队、越狱变体搜索和边界行为压力测试，这类方法可以帮助团队在上线前发现常规评测集覆盖不到的风险（Perez et al. 2022; Liu et al. 2023）：
 
-- **越狱 prompt 变体**：对已知的越狱攻击模式进行同义替换、语言切换、角色扮演包装，测试模型的防御鲁棒性。
+- **越狱 prompt 变体**：对已知的越狱攻击模式进行同义替换、语言切换、角色扮演改写，测试模型的防御鲁棒性。
 - **边界压力测试**：构造极端输入（超长文本、特殊字符序列、格式嵌套），测试模型的稳定性。
 - **知识盲区探测**：识别模型训练数据中覆盖不足的知识领域和时间范围，生成针对性的测试样本。
 
 
-### 33.3.2.1 红队 Agent 的攻击策略分类
+#### 33.3.2.1 红队 Agent 的攻击策略分类
 
 红队 Agent 的攻击策略可以分为六个维度，每个维度测试模型的不同安全边界：
 
@@ -239,9 +243,11 @@ Challenge set 的生成策略：
 
 红队 Agent 的产出不是一份"出现哪些问题"的报告，而是一个持续更新的**安全缺陷数据库**——每个缺陷包含攻击样本、模型回复、风险评级和建议的防御措施。这个数据库直接输入模型的安全训练流程和 Agent 的输入过滤规则。
 
-### 33.3.2.2 红队测试的频率与触发机制
+#### 33.3.2.2 红队测试的频率与触发机制
 
 红队测试不是一次性活动，而应该嵌入持续集成流程：
+
+**表33-6：安全红队测试触发条件与测试范围**
 
 | 触发条件 | 测试范围 | 测试深度 |
 |---------|---------|---------|
@@ -258,6 +264,8 @@ Challenge set 的生成策略：
 
 评测 Agent 应能按多个维度对评测结果进行切片分析，帮助团队精确定位模型的能力短板：
 
+**表33-7：评测切片维度**
+
 | 切片维度 | 示例 | 用途 |
 |---------|------|------|
 | 能力维度 | 推理、知识、生成、安全 | 定位能力短板 |
@@ -266,21 +274,19 @@ Challenge set 的生成策略：
 | 输入长度 | 短（< 512 tokens）、中、长（> 4096 tokens） | 长文本能力评估 |
 | 语言 | 中文、英文、中英混合 | 多语言能力评估 |
 
-**表33-6：评测切片维度**
-
 ### 33.3.4 评测集的健康度监控
 
 评测集不是一劳永逸的——它需要持续监控健康度指标，确保评测集保持区分度和代表性：
 
+**表33-8：评测集健康度监控指标**
+
 | 健康度指标 | 计算方法 | 健康阈值 | 不健康时的动作 |
 |-----------|---------|---------|-------------|
 | 区分度 | 不同模型在该评测集上的分数方差 | 方差 > 0.05 | 若方差过小，增加高难度题目 |
-| 天花板效应 | 最佳模型得分 | < 95% | 若接近满分，增加更难的题目 |
+| 上限效应 | 最佳模型得分 | < 95% | 若接近满分，增加更难的题目 |
 | 地板效应 | 随机基线得分 | > 10% | 若接近零分，检查题目可解性 |
 | 新鲜度 | 最近一个月新增题目占比 | > 20% | 若过低，触发题目更新 |
 | 覆盖度 | 能力维度 x 难度层级的覆盖率 | > 80% | 补充覆盖不足的维度 |
-
-**表33-7：评测集健康度监控指标**
 
 ------
 
@@ -288,13 +294,15 @@ Challenge set 的生成策略：
 
 ### 33.4.1 Agent Judge 与人工 Judge 的校准机制
 
-当 Agent 同时参与数据生成和评测时，存在"自己评自己"的自嗨风险。一致性校准机制是防止这个问题的关键：
+当 Agent 同时参与数据生成和评测时，存在"自己评自己"的自嗨风险。一致性校准机制是防止这个问题的关键。G-Eval、MT-Bench/Chatbot Arena、JudgeLM、Prometheus 和 Prometheus 2 等工作说明，LLM-as-a-judge 需要与人工判断、评分细则和跨模型一致性持续校准，不能默认等价于人工评测（Liu et al. 2023; Zheng et al. 2023; Zhu et al. 2023; Kim, Shin et al. 2024; Kim, Suk et al. 2024）：
 
 1. **双盲校准**：定期从 Agent 评测的样本中抽取一部分，交由人工评测员独立评分。计算 Agent 评分与人工评分的一致性。
 2. **分歧分析**：对 Agent 与人工评分不一致的样本进行分析，找出系统性偏差——Agent 是否倾向于给某类样本偏高或偏低的分数。
 3. **校准集维护**：维护一个高质量的人工标注校准集，Agent 在新评测任务前必须先在这个校准集上验证其评分与人工评分的一致性。
 
 ### 33.4.2 人机一致性表
+
+**表33-9：人机评测一致性矩阵**
 
 | 评测维度 | Agent 单独评分准确率 | 人工评分准确率 | Agent-人工一致性 | 建议使用方式 |
 |---------|-------------------|-------------|----------------|------------|
@@ -303,8 +311,6 @@ Challenge set 的生成策略：
 | 逻辑一致性 | 75% | 90% | 0.72 | Agent 建议 + 人工决策 |
 | 安全性判断 | 91% | 97% | 0.89 | Agent 自动 + 人工复审高风险 |
 | 风格/语气 | 70% | 85% | 0.65 | 以人工判断为主 |
-
-**表33-8：人机评测一致性矩阵**
 
 从表中可以看出，Agent 在规则性较强的维度（安全性、相关性）上与人工一致性较高，可以承担更多自动评测任务；而在主观性较强的维度（风格/语气、逻辑一致性）上仍需要人工主导。
 
@@ -347,7 +353,7 @@ Challenge set 的生成策略：
 
 **干预效果：** 四周后，合成数据的多样性指数恢复至 0.75，训练模型的真实场景表现稳定。
 
-**教训：** 合成数据 Agent 不能只是一个"生成器"——它必须同时是一个"监控器"，持续追踪合成数据的分布变化，在坍缩发生前预警。坍缩一旦发生，修复成本远高于预防成本。
+**教训：** 合成数据 Agent 不能只是一个"生成器"——它必须同时是一个"监控器"，持续追踪合成数据的分布变化，在坍缩发生前预警。坍缩发生后，修复成本通常高于前置预防成本。
 
 ------
 
@@ -372,9 +378,9 @@ Challenge set 的生成策略：
 - **Ch12-Ch13**：SFT 数据与偏好对齐——本章的标注和合成数据是其上游输入。
 - **Ch14-Ch15**：标注体系设计与质量管控——本章在其基础上引入 Agent 辅助标注。
 - **Ch16-Ch17**：合成数据生成与坍缩治理——本章的合成数据 Agent 和坍缩控制是其工程化实现。
-- **Ch34**：Agent 架构与任务边界——本章标注和评测 Agent 遵循六层架构设计。
-- **Ch35**：采集清洗 Agent——本章的标注数据依赖于 Ch35 的清洗输出。
-- **Ch38**：安全权限与人机协同——本章红队 Agent 的安全测试与 Ch38 的权限模型衔接。
+- **Ch31**：Agent 架构与任务边界——本章标注和评测 Agent 遵循六层架构设计。
+- **Ch32**：采集清洗 Agent——本章的标注数据依赖于 Ch32 的清洗输出。
+- **Ch35**：安全权限与人机协同——本章红队 Agent 的安全测试与 Ch35 的权限模型衔接。
 
 ------
 
@@ -387,6 +393,7 @@ Challenge set 的生成策略：
 **将模糊标准转化为可操作检查项：**
 
 业务标准"回答是否友好"对 Agent 来说不可操作。Agent 需要将其拆解为可检查的维度：
+
 - 是否使用了攻击性或贬损性语言？（规则匹配）
 - 是否在拒绝回答时提供了替代建议？（模式匹配）
 - 语气是否保持中立客观？（情感分析）
@@ -396,43 +403,71 @@ Agent 辅助标注的关键能力不是"理解标准"，而是"将标准拆解�
 
 ### 合成数据的"真实性"悖论
 
-合成数据面临一个根本性悖论：合成数据的价值在于模仿真实数据的分布，但如果合成数据完美模仿了真实数据，它就没有提供新信息；如果它提供了新信息，就必须解决"这个新信息是否合理"的验证问题。
+合成数据面临一个核心张力：合成数据的价值在于模仿真实数据的分布，但如果合成数据高度模仿了真实数据，它就没有提供新信息；如果它提供了新信息，就必须解决"这个新信息是否合理"的验证问题。
 
 解决这个悖论的工程策略是 **"真实性锚定"**——合成数据必须以真实数据为锚点：
+
 - 每条合成数据必须能追溯到至少一条真实种子数据的语义来源。
 - 合成数据中的"创新"部分（如新的表述方式、新的场景）不能与真实数据的分布相矛盾。
 - 当合成数据的分布与真实数据的分布出现统计学显著差异时，Agent 必须自动标记并暂停该批合成数据的使用。
 
 ### 评测的"古德哈特定律"防御
 
-古德哈特定律（Goodhart's Law）指出："当一个指标成为目标时，它就不再是一个好指标。"在评测 Agent 的场景中，这意味着如果模型知道评测集的内容，评测分数就不再反映模型的真实能力。
+古德哈特定律（Goodhart's Law）指出："当一个指标成为目标时，它就不再是一个好指标。"在评测 Agent 的场景中，这意味着如果模型知道评测集的内容，评测分数就不再反映模型的真实能力。更稳健的做法是把行为测试、整体评测、真实用户难题和分布外测试结合起来，降低单一指标被过拟合或被游戏化的风险（Ribeiro et al. 2020; Liang et al. 2023; Koh et al. 2021; Lin et al. 2024）。
 
 防御策略：
+
 1. **评测集的部分保密**：保留一部分评测集不对模型开发团队公开，仅用于最终评估。
 2. **评测集的持续更新**：Agent 自动生成的新评测题必须包含与旧评测题不同的知识背景和推理模式。
 3. **能力维度多元化**：不依赖单一的评测分数，而是按能力维度、难度层级、领域进行切片评估。
 4. **上线后的真实反馈闭环**：将模型上线后的用户反馈（点赞、投诉、修正）作为评测集的重要补充，弥补离线评测的不足。
 
-
-## 本章参考文献
-
-- Bowman, S. R., et al. "Measuring Agreement on Disagreeable Annotations." ACL 2023.
-- Perez, E., et al. "Red Teaming Language Models with Language Models." EMNLP 2022.
-- Zheng, L., et al. "Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena." NeurIPS 2023.
-- Shumailov, I., et al. "The Curse of Recursion: Training on Generated Data Makes Models Forget." 2023.
-
 ## 本章小结
 
-本章围绕“标注、合成与评测 Agent”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
+本章围绕标注、合成与评测三类数据生产环节的 Agent 化展开，主线是在提升产能的同时守住数据可信度。标注辅助 Agent 从预标注、置信度分流、标注员校准与一致性监控、任务智能分发四个维度切入，并以成本、质量、速度的三角平衡约束自动化程度。合成数据 Agent 强调从种子扩展到质量报告的闭环，重点防范分布坍缩风险，并建立难度控制体系，使合成样本既多样又可控。
 
-本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
-
-在全书结构中，本章位于Agent 自动化层，承担承接前文基础概念并导向隐私、合规和专项数据集案例的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
+评测与红队 Agent 负责自动生成 Challenge Set、红队样本与评测切片，并对评测集进行健康度监控，避免评测目标被模型"刷分"。本章专门讨论一致性校准，给出 Agent Judge 与人工 Judge 的校准机制与人机一致性表，强调自动评测必须以人工锚点防止自嗨。最后针对标注标准的可操作性转换、合成数据的真实性悖论与评测的古德哈特定律，提出在自动化生产中持续保留人工校验与抽样的工程要求。
 
 ## 参考文献
 
-1. Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., & Cao, Y. (2023). ReAct: Synergizing Reasoning and Acting in Language Models. arXiv:2210.03629.
-2. Schick, T., Dwivedi-Yu, J., Dessì, R., Raileanu, R., Lomeli, M., Hambro, E., Zettlemoyer, L., Cancedda, N., & Scialom, T. (2023). Toolformer: Language Models Can Teach Themselves to Use Tools. arXiv:2302.04761.
-3. NIST. (2023). Artificial Intelligence Risk Management Framework (AI RMF 1.0). National Institute of Standards and Technology.
-4. OWASP Foundation. (2025). OWASP Top 10 for Large Language Model Applications.
-5. OpenTelemetry Authors. (2026). OpenTelemetry Documentation. https://opentelemetry.io/docs/
+Alemohammad S, Casco-Rodriguez J, Luzi L, et al. (2024) Self-Consuming Generative Models Go MAD. In: International Conference on Learning Representations.
+
+Bai Y, Kadavath S, Kundu S, et al. (2022) Constitutional AI: Harmlessness from AI Feedback. arXiv preprint arXiv:2212.08073.
+
+Cui G, Yuan L, Ding N, Yao G, Zhu W, Ni Y, Xie G, Liu Z, Sun M (2023) UltraFeedback: Boosting Language Models with Scaled AI Feedback. arXiv preprint arXiv:2310.01377.
+
+Dubois Y, Li X, Taori R, Zhang T, Gulrajani I, Ba J, Guestrin C, Liang P, Hashimoto T B (2023) AlpacaFarm: A Simulation Framework for Methods that Learn from Human Feedback. In: Advances in Neural Information Processing Systems 36.
+
+Gerstgrasser M, Schaeffer R, Dey A, et al. (2024) Is Model Collapse Inevitable? Breaking the Curse of Recursion by Accumulating Real and Synthetic Data. arXiv preprint arXiv:2404.01413.
+
+Kim S, Shin J, Cho Y, Jang J, Longpre S, Lee H, Yun S, Shin S, Kim S, Thorne J, Seo M (2024) Prometheus: Inducing Fine-grained Evaluation Capability in Language Models. In: International Conference on Learning Representations.
+
+Kim S, Suk J, Longpre S, Lin B Y, Shin J, Welleck S, Neubig G, Lee M, Lee K, Seo M (2024) Prometheus 2: An Open Source Language Model Specialized in Evaluating Other Language Models. arXiv preprint arXiv:2405.01535.
+
+Koh P W, Sagawa S, Marklund H, et al. (2021) WILDS: A Benchmark of in-the-Wild Distribution Shifts. In: Proceedings of the 38th International Conference on Machine Learning, pp 5637-5664.
+
+Lambert N, Pyatkin V, Morrison J, Miranda L, Lin B Y, Chandu K, Dziri N, Kumar S, Zick T, Choi Y, Smith N A, Hajishirzi H (2024) RewardBench: Evaluating Reward Models for Language Modeling. arXiv preprint arXiv:2403.13787.
+
+Liang P, Bommasani R, Lee T, et al. (2023) Holistic Evaluation of Language Models. Transactions on Machine Learning Research.
+
+Liu Y, Iter D, Xu Y, et al. (2023) G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment. In: Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing, pp 2511-2522.
+
+Lin B Y, et al. (2024) WildBench: Benchmarking LLMs with Challenging Tasks from Real Users in the Wild. arXiv preprint arXiv:2406.04770.
+
+Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S, Slama K, Ray A, Schulman J, Hilton J, Kelton F, Miller L, Simens M, Askell A, Welinder P, Christiano P, Leike J, Lowe R (2022) Training language models to follow instructions with human feedback. In: Advances in Neural Information Processing Systems 35, pp 27730-27744.
+
+Perez E, Huang S, Song F, Cai T, Ring R, Aslanides J, Glaese A, McAleese N, Irving G (2022) Red Teaming Language Models with Language Models. In: Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing, pp 3419-3448.
+
+Rafailov R, Sharma A, Mitchell E, Manning C D, Ermon S, Finn C (2023) Direct Preference Optimization: Your Language Model is Secretly a Reward Model. In: Advances in Neural Information Processing Systems 36.
+
+Ribeiro M T, Wu T, Guestrin C, Singh S (2020) Beyond Accuracy: Behavioral Testing of NLP Models with CheckList. In: Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics, pp 4902-4912.
+
+Shumailov I, Shumaylov Z, Zhao Y, et al. (2024) AI models collapse when trained on recursively generated data. Nature 631:755-759.
+
+Wang Y, Kordi Y, Mishra S, et al. (2023) Self-Instruct: Aligning Language Models with Self-Generated Instructions. In: Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics, pp 13484-13508.
+
+Zheng L, Chiang W-L, Sheng Y, et al. (2023) Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. In: Advances in Neural Information Processing Systems 36.
+
+Zhu L, Wang X, Wang Y, et al. (2023) JudgeLM: Fine-tuned Large Language Models are Scalable Judges. arXiv preprint arXiv:2310.17631.
+
+Zhou C, Liu P, Xu P, et al. (2023) LIMA: Less Is More for Alignment. In: Advances in Neural Information Processing Systems 36.

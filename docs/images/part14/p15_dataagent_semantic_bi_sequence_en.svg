@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="1120" viewBox="0 0 1800 1120" role="img" aria-labelledby="title desc">
+  <title id="title">Runtime flow of the DataAgent enterprise semantic BI assistant</title>
+  <desc id="desc">A sequence flow from a user asking a business data question, through the main agent, NL2SQL tool, NL2SQL sub-agent, Semantic Service, business database, and workspace, to the final business explanation, SQL/CSV paths, and risk notes.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#334155" />
+    </marker>
+    <marker id="arrow-blue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#2563eb" />
+    </marker>
+    <style>
+      text {
+        font-family: "Inter", "Segoe UI", Arial, sans-serif;
+        fill: #0f172a;
+      }
+      .participant {
+        fill: #f8fafc;
+        stroke: #334155;
+        stroke-width: 2;
+        rx: 8;
+      }
+      .participant-text {
+        font-size: 22px;
+        font-weight: 700;
+        text-anchor: middle;
+        dominant-baseline: middle;
+      }
+      .lifeline {
+        stroke: #94a3b8;
+        stroke-width: 2;
+        stroke-dasharray: 8 8;
+      }
+      .message {
+        stroke: #334155;
+        stroke-width: 2.5;
+        fill: none;
+        marker-end: url(#arrow);
+      }
+      .message-primary {
+        stroke: #2563eb;
+        stroke-width: 3;
+        fill: none;
+        marker-end: url(#arrow-blue);
+      }
+      .message-return {
+        stroke: #64748b;
+        stroke-width: 2.5;
+        stroke-dasharray: 8 7;
+        fill: none;
+        marker-end: url(#arrow);
+      }
+      .activation {
+        fill: #dbeafe;
+        stroke: #2563eb;
+        stroke-width: 1.5;
+        rx: 5;
+      }
+      .label {
+        font-size: 20px;
+        text-anchor: middle;
+        dominant-baseline: middle;
+      }
+      .small-label {
+        font-size: 18px;
+        text-anchor: middle;
+        dominant-baseline: middle;
+      }
+      .label-bg {
+        fill: #ffffff;
+        opacity: 0.92;
+        rx: 6;
+      }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1800" height="1120" fill="#ffffff" />
+
+  <g id="participants">
+    <rect class="participant" x="35" y="30" width="160" height="56" />
+    <text class="participant-text" x="115" y="58">User</text>
+
+    <rect class="participant" x="245" y="30" width="190" height="56" />
+    <text class="participant-text" x="340" y="58">Main Agent</text>
+
+    <rect class="participant" x="505" y="30" width="260" height="56" />
+    <text class="participant-text" x="635" y="58">nl2sql tool</text>
+
+    <rect class="participant" x="825" y="30" width="220" height="56" />
+    <text class="participant-text" x="935" y="58">NL2SQL Sub-agent</text>
+
+    <rect class="participant" x="1095" y="30" width="230" height="56" />
+    <text class="participant-text" x="1210" y="58">Semantic Service</text>
+
+    <rect class="participant" x="1390" y="30" width="190" height="56" />
+    <text class="participant-text" x="1485" y="58">Business DB</text>
+
+    <rect class="participant" x="1650" y="30" width="130" height="56" />
+    <text class="participant-text" x="1715" y="58">workspace</text>
+  </g>
+
+  <g id="lifelines">
+    <line class="lifeline" x1="115" y1="86" x2="115" y2="1065" />
+    <line class="lifeline" x1="340" y1="86" x2="340" y2="1065" />
+    <line class="lifeline" x1="635" y1="86" x2="635" y2="1065" />
+    <line class="lifeline" x1="935" y1="86" x2="935" y2="1065" />
+    <line class="lifeline" x1="1210" y1="86" x2="1210" y2="1065" />
+    <line class="lifeline" x1="1485" y1="86" x2="1485" y2="1065" />
+    <line class="lifeline" x1="1715" y1="86" x2="1715" y2="1065" />
+  </g>
+
+  <g id="activations">
+    <rect class="activation" x="328" y="130" width="24" height="865" />
+    <rect class="activation" x="623" y="310" width="24" height="565" />
+    <rect class="activation" x="923" y="385" width="24" height="330" />
+  </g>
+
+  <g id="messages">
+    <line class="message-primary" x1="115" y1="140" x2="330" y2="140" />
+    <rect class="label-bg" x="120" y="116" width="225" height="32" />
+    <text class="label" x="232" y="132">Ask a business data question</text>
+
+    <path class="message" d="M352 215 H430 V260 H352" />
+    <rect class="label-bg" x="360" y="198" width="300" height="32" />
+    <text class="label" x="510" y="214">Parse goal, metrics, and filters</text>
+
+    <line class="message-primary" x1="352" y1="315" x2="623" y2="315" />
+    <rect class="label-bg" x="365" y="291" width="430" height="32" />
+    <text class="small-label" x="580" y="307">Call tool with query, sql_filename, csv_filename</text>
+
+    <line class="message" x1="647" y1="390" x2="923" y2="390" />
+    <rect class="label-bg" x="650" y="366" width="390" height="32" />
+    <text class="small-label" x="845" y="382">Create temporary NL2SQL config and start sub-agent</text>
+
+    <line class="message" x1="947" y1="465" x2="1198" y2="465" />
+    <rect class="label-bg" x="950" y="441" width="400" height="32" />
+    <text class="small-label" x="1150" y="457">Retrieve candidate tables, fields, joins, and values</text>
+
+    <line class="message-return" x1="1198" y1="540" x2="947" y2="540" />
+    <rect class="label-bg" x="970" y="516" width="280" height="32" />
+    <text class="label" x="1110" y="532">Return schema semantic context</text>
+
+    <path class="message" d="M947 615 H1045 V660 H947" />
+    <rect class="label-bg" x="965" y="598" width="360" height="32" />
+    <text class="label" x="1145" y="614">Generate, validate, reflect, and select SQL</text>
+
+    <line class="message-primary" x1="947" y1="705" x2="1473" y2="705" />
+    <rect class="label-bg" x="1120" y="681" width="170" height="32" />
+    <text class="label" x="1205" y="697">Execute final SQL</text>
+
+    <line class="message-return" x1="1473" y1="780" x2="947" y2="780" />
+    <rect class="label-bg" x="1110" y="756" width="230" height="32" />
+    <text class="label" x="1225" y="772">Return columns and rows</text>
+
+    <line class="message-return" x1="923" y1="855" x2="647" y2="855" />
+    <rect class="label-bg" x="680" y="831" width="245" height="32" />
+    <text class="label" x="802" y="847">Return SQL and query result</text>
+
+    <line class="message-primary" x1="647" y1="930" x2="1703" y2="930" />
+    <rect class="label-bg" x="1050" y="906" width="260" height="32" />
+    <text class="label" x="1180" y="922">Save SQL and CSV files</text>
+
+    <line class="message-return" x1="623" y1="1005" x2="352" y2="1005" />
+    <rect class="label-bg" x="375" y="981" width="290" height="32" />
+    <text class="label" x="520" y="997">Return file paths and execution summary</text>
+
+    <line class="message-return" x1="328" y1="1065" x2="115" y2="1065" />
+    <rect class="label-bg" x="95" y="1036" width="430" height="32" />
+    <text class="small-label" x="310" y="1052">Return explanation, SQL/CSV paths, and risk notes</text>
+  </g>
+</svg>
