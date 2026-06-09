@@ -115,18 +115,7 @@ Hierarchical JSON is used because it maps directly to real database schema: glob
 
 The three schema parts map to the final JSON as follows: $K$ becomes the global `key_information` object, $T$ becomes the `Fee_List` array and its row fields, and $C$ becomes validation relationships attached to numeric fields rather than visible JSON nodes.
 
-```mermaid
-flowchart LR
-  S["Schema S = tuple K, T, C"] --> K["K: global key fields"]
-  S --> T["T: table definition"]
-  S --> C0["C: deterministic constraints"]
-  K --> J1["key_information<br>Hospital_Name<br>Invoice_No<br>Total_Cost"]
-  T --> J2["Fee_List array<br>Item_Name / Unit_Price<br>Quantity / Amount"]
-  C0 --> J3["logic binding<br>unit price x quantity = amount<br>sum(amount) = total"]
-  J1 --> O[("hierarchical JSON output")]
-  J2 --> O
-  J3 -. validate .-> O
-```
+![ch38_Figure_38-1](..\..\images\part12\ch38_Figure_38-1_en.png)
 
 *Figure 38-1: Schema-to-JSON mapping. Key fields and table structure become visible JSON nodes; constraints remain verifiable relationships attached to numeric fields.*
 
@@ -178,18 +167,9 @@ This table acts as a contract between annotation rules and evaluation scripts.
 
 StructBill-CN uses a multi-stage pipeline whose goal is to preserve semantic content and business-logic topology while creating traceable quality gates.
 
-```mermaid
-flowchart TD
-  A["1. Collect raw bill images<br>CHIP-2022 / SIBR-Med"] --> B["2. Denoise and grade image quality<br>dedup / deskew / resolution filter"]
-  B --> C1["3. Design schema<br>global keys K + table T + constraints C"]
-  C1 --> D["4. Annotate hierarchical JSON<br>global KV + nested line items"]
-  D --> E["5. Validate schema alignment<br>required keys / types / structure"]
-  E --> F["6. Validate logic consistency<br>row product / document sum"]
-  F --> G{"quality gate passed?"}
-  G -->|no| D
-  G -->|yes| H["7. Version split<br>Train : Test = 8 : 2"]
-  H --> I[("trainable, evaluable,<br>reviewable data asset")]
-```
+![ch38_Figure_38-2](..\..\images\part12\ch38_Figure_38-2_en.png)
+
+
 
 *Figure 38-2: StructBill-CN construction pipeline. Samples that fail logic validation return to annotation rather than entering the training set.*
 
@@ -205,18 +185,7 @@ flowchart TD
 
 **6. Logic consistency validation.** The core step checks whether annotations are arithmetically self-consistent: row by row, unit price x quantity approximately equals amount; at document level, line-item amounts approximately sum to total. Tolerance $\varepsilon$ absorbs OCR and floating-point noise.
 
-```mermaid
-flowchart TD
-  P["input: annotation or prediction JSON"] --> G1{"JSON parseable?"}
-  G1 -->|no| X["structure gate failed<br>I_gate = 0, reward = 0"]
-  G1 -->|yes| G2{"schema-compliant?"}
-  G2 -->|no| X
-  G2 -->|yes| G3{"fabricated table rows?"}
-  G3 -->|yes| X
-  G3 -->|no| R1["row-level check<br>each u * q ~= a ?"]
-  R1 --> R2["document-level check<br>sum(a) ~= T ?"]
-  R2 --> SC["consistency score"]
-```
+![ch38_Figure_38-3](..\..\images\part12\ch38_Figure_38-3_en.png)
 
 *Figure 38-3: Logic-consistency validation. The same gate is reused during construction to block inconsistent labels and during evaluation/training to score model output.*
 
@@ -291,6 +260,28 @@ Medical-expense documents are high-risk data. Even though this benchmark uses pu
 
 **Auditability.** Each record should trace back to source image version, schema version, annotator/reviewer, and logic-validation results. SCVR and the error-attribution table can form the audit chain of who changed what, in which version, and why.
 
+**De-identification and risk control: compliance status of this benchmark and field-level masking rules for production extension.** It is essential to strictly separate "the benchmark data itself" from "extending the methodology to private data."
+
+Regarding the benchmark data, all images in StructBill-CN **come exclusively from public academic datasets** — CHIP-2022 and SIBR-Med — which were de-identified by their original publishers before public release. StructBill-CN does not ingest any Protected Health Information (PHI). 
+
+Regarding production extension, when this chapter's methodology is applied to real private bills or medical records, field-level masking must be performed at the earliest stage of the pipeline. The table below provides concrete masking rules for each sensitive-field type in medical-expense documents.
+
+*Table 38-4: Field-level de-identification rules for medical-expense documents (for production extension)*
+
+| Sensitive Field Type | Example | Masking Rule | Notes |
+|---|---|---|---|
+| Patient name | Zhang XX | Replace entirely with placeholder `<NAME>` or irreversible hash | Core PHI field; must be fully removed |
+| National ID / Social Security No. | 110108… | Replace entirely or retain only last 4 digits | Direct identifier; full text must not be retained |
+| Phone number | 138… | Replace entirely or retain only last 4 digits | Direct identifier |
+| Address | Beijing, Chaoyang… | Mask to province/city level; remove street and apartment | Quasi-identifier; coarse geography is sufficient |
+| Hospital name | Example Hospital | **Retain in public benchmark** (public institution); optionally anonymize in private deployment | Typically not personal privacy |
+| Invoice / serial number | 4700852972 | **Retain in public benchmark** (no privacy risk once de-linked); replace with sequential pseudo-ID in private deployment | Risk is manageable after de-linking |
+| Amount / unit price / quantity | 54.76 / 1.00 | **Retain original values** — arithmetic constraint validation (P×Q=A / Σ=T) depends on real numbers | If high-risk scenarios require amount masking, apply uniform scaling to the entire document and **recompute consistency** to preserve logic constraints |
+| Diagnosis / item name | Penicillin injection | **Retain in public benchmark** (medical terminology is not personal information); for highly sensitive diseases (e.g., HIV, psychiatric), replace with a superordinate category | Grade-based treatment by sensitivity |
+| Date | 2024-01-15 | Shift by a fixed random number of days per document (preserving inter-row temporal order) | Shift rather than delete to keep business-temporal semantics |
+
+An engineering point often overlooked in this table is the **tension between amount de-identification and logic constraints**. Randomly perturbing amounts breaks row-level "unit price × quantity = amount" and document-level "Σ line items = total," turning the downstream SCL-Reward logic-verification signal dirty. The recommended approach is **uniform scaling**: multiply all amounts by a single random factor per document, then recompute and overwrite `Total_Cost` to maintain arithmetic self-consistency while masking actual values. This operation must be performed before §38.4 step ⑥ (logic-consistency validation) and the scaling factor must be recorded in the lineage metadata for audit traceability.
+
 ### 38.6.4 Where Not to Use It
 
 This dataset should not be used:
@@ -355,5 +346,27 @@ Yang, Z., Long, R., Wang, P., et al. (2023). Modeling Entities as Semantic Point
 Zhang, N., Chen, M., Bi, Z., et al. (2022). CBLUE: A Chinese Biomedical Language Understanding Evaluation Benchmark. *Proc. ACL*, pp. 7888-7915.
 
 Zhong, X., ShafieiBavani, E., and Jimeno Yepes, A. (2020). Image-based Table Recognition: Data, Model, and Evaluation. *arXiv preprint arXiv:2011.13534*.
+
+Bai, S., Cai, Y., Chen, R., et al. (2025a). Qwen3-VL Technical Report. *arXiv preprint*.
+
+ChatDOC (2025). OCRFlux-3B: A Multimodal Large Language Model for Document Parsing. *Hugging Face Model Card*. 
+
+Cui, C., Sun, T., Liang, S., et al. (2025). PaddleOCR-VL: Boosting Multilingual Document Parsing via a 0.9B Ultra-Compact Vision-Language Model. *arXiv preprint*.
+
+Guo, D., Yang, D., Zhang, H., et al. (2025). DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. *arXiv preprint arXiv:2501.12948*.
+
+Hunyuan Vision Team, Lyu, P., Wan, X., et al. (2025). HunyuanOCR Technical Report. *arXiv preprint*.
+
+Li, Y., Yang, G., Liu, H., Wang, B., and Zhang, C. (2025a). Dots.OCR: Multilingual Document Layout Parsing in a Single Vision-Language Model. *arXiv preprint*. 
+
+Poznanski, J., Soldaini, L., and Lo, K. (2025). olmOCR 2: Unit Test Rewards for Document OCR. *arXiv preprint arXiv:2510.19817*.
+
+Smock, B., Faucon-Morin, V., Sokolov, M., et al. (2025). PubTables-v2: A New Large-Scale Dataset for Full-Page and Multi-Page Table Extraction. *arXiv preprint arXiv:2512.10888*.
+
+Wang, W., Gao, Z., Gu, L., et al. (2025). InternVL3.5: Advancing Open-Source Multimodal Models in Versatility, Reasoning, and Efficiency. *arXiv preprint arXiv:2508.18265*.
+
+Zhang, J., Liu, Y., Wu, Z., et al. (2025). MonkeyOCR v1.5 Technical Report: Unlocking Robust Document Parsing for Complex Patterns. *arXiv preprint*.
+
+
 
 SRPO code: https://github.com/Yuefeng-Zou/SRPO_CODE

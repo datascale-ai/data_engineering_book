@@ -1,15 +1,12 @@
 # 第38章：StructBill-CN 票据文档理解数据工程
 
-## 摘要
+## 本章摘要
+
 在医疗票据、费用结算单、药房发票等高风险文档场景中，"把图像里的字读出来"远远不够——真正的目标是把图像直接转写成一个可查询、可入库的数据库记录。然而，当前的多模态大模型在这类任务上面临三重困境：全局键值抽取频繁出现数值幻觉与空间定位漂移，传统表格结构识别在无线表上直接失效，而 token 级损失函数无法感知"看似只差一个字符却在业务逻辑上彻底错误"的算术不一致。这意味着，一个语法完全合法、字段也基本对的 JSON 输出，仍然可能在算术上自相矛盾，无法进入下游财务审计或保险理赔系统。
 
 本章围绕 StructBill-CN 数据集，系统讲述如何从真实票据图像、预定义 schema、层级 JSON 标注与确定性逻辑约束出发，构建一份可训练、可评测、可复查的数据资产。核心不是介绍一个数据集名称，而是说明四件事：第一，这类高风险文档为什么难做结构化抽取；第二，样本结构如何把 schema、层级 JSON 与逻辑约束编码到同一个标注里；第三，构建流水线如何通过逻辑一致性门禁保证标注本身算术自洽；第四，评测协议如何让字段级准确率、结构一致性、算术一致性和 schema 约束违反率串成闭环。
 
 与其他章节不同，本章是第十二篇"专项数据集与数据工程实践"中的一个完整案例。它承接第三篇的文档理解与 OCR、第七篇的 RAG/文档证据组织、第八篇的数据版本与实验追踪、第九篇的数据资产与契约治理以及第十一篇的合规边界，向后则为第十三篇的 VLM 数据配方和第十四篇的多模态 RAG/隐私流水线项目提供一个中文垂直文档的数据工程案例。
-
-## 关键词
-
-StructBill-CN；专项数据集；评测基准；标注流程；质量控制
 
 ## 38.0 学习目标
 
@@ -126,18 +123,7 @@ StructBill-CN 的每个样本，把一张票据图像与一份预定义 schema �
 
 schema 的三个部分 $\{K, T, C\}$ 与最终的层级 JSON 一一对应：$K$ 落到全局 `key_information` 对象，$T$ 落到 `Fee_List` 数组及其行内字段，$C$ 则不直接成为字段，而是作为「校验关系」贴附在数值字段之上。结构关系如图 38-1。
 
-```mermaid
-flowchart LR
-  S["Schema S = 三元组 K, T, C"] --> K["K：全局键字段"]
-  S --> T["T：表结构定义"]
-  S --> C0["C：确定性约束规则"]
-  K --> J1["key_information<br>Hospital_Name<br>Invoice_No<br>Total_Cost"]
-  T --> J2["Fee_List 数组<br>Item_Name / Unit_Price<br>Quantity / Amount"]
-  C0 --> J3["逻辑绑定<br>单价 × 数量 = 金额<br>Σ 金额 = 总额"]
-  J1 --> O[("层级 JSON 输出")]
-  J2 --> O
-  J3 -. 校验 .-> O
-```
+![Figure 38-1](../../images/part12/ch38_Figure_38-1.png)
 
 *图 38-1：Schema 到层级 JSON 的结构示意 —— 键字段与表结构构成可见的 JSON 节点；约束规则不是节点，而是贴附在金额、总额等数值字段上的可验证关系。*
 
@@ -197,18 +183,7 @@ flowchart LR
 
 StructBill-CN 通过一条多阶段流水线构建，核心诉求是**同时保留语义内容与业务逻辑拓扑**，并在每一步设置可回溯的质量门禁。整体数据流如图 38-2。
 
-```mermaid
-flowchart TD
-  A["① 原始票据图像采集<br>CHIP-2022 / SIBR-Med"] --> B["② 图像去噪与质量分级<br>去重 / 倾斜校正 / 分辨率过滤"]
-  B --> C1["③ Schema 设计<br>全局键 K + 表结构 T + 约束 C"]
-  C1 --> D["④ 层级 JSON 标注<br>全局 KV + 嵌套 line-item"]
-  D --> E["⑤ Schema 对齐校验<br>必填键 / 类型 / 结构合法性"]
-  E --> F["⑥ 逻辑一致性校验<br>行级乘积 / 文档级求和"]
-  F --> G{"质检门禁通过?"}
-  G -->|否| D
-  G -->|是| H["⑦ 版本切分<br>Train : Test = 8 : 2"]
-  H --> I[("可训练 / 可评测<br>可复查数据资产")]
-```
+![Figure 38-2](../../images/part12/ch38_Figure_38-2.png)
 
 *图 38-2：StructBill-CN 数据构建流水线 —— 关键设计是第 ⑥ 步与质检门禁：未通过逻辑一致性校验的样本会回流到标注阶段重做，而不是直接进入训练集。*
 
@@ -218,7 +193,7 @@ flowchart TD
 
 **② 去噪与质量分级。** 这一步是后续标注与逻辑校验能否成立的前提，工程上至少应包含：重复图像去重、倾斜/旋转校正、过低分辨率与严重残缺图像的过滤或单独分桶。质量分级的产物不只是"干净图像"，还包括一份图像质量元数据，供后续错误归因时区分"模型错"还是"图像本身不可读"。
 
-**③ Schema 设计。** 为每一类业务文档定义 $S=\{K, T, C\}$：先确定全局键字段 $K$ 与表结构 $T$，再把领域算术规则写进约束 $C$（行级乘积关系、文档级求和关系）。schema 是这份数据资产的"契约"，它一旦冻结，标注规范与评测脚本都以它为准（参见 §38.7 对 Ch27–Ch30 数据契约治理的回链）。
+**③ Schema 设计。** 为每一类业务文档定义 $S=\{K, T, C\}$：先确定全局键字段 $K$ 与表结构 $T$，再把领域算术规则写进约束 $C$（行级乘积关系、文档级求和关系）。schema 是这份数据资产的"契约"，它一旦冻结，标注规范与评测脚本都以它为准。
 
 **④ 层级 JSON 标注。** ground truth 被组织成"全局 Key-Value 属性 + 嵌套 line-item 列表"的 ingestion-ready 层级 JSON。标注按语义归属（而非几何坐标）分配标签，从而最小化下游后处理。对无表格的通知单这类文档，`Fee_List` 可为空，但 schema 结构保持一致，避免格式分叉。
 
@@ -226,18 +201,7 @@ flowchart TD
 
 **⑥ 逻辑一致性校验。** 这是 StructBill-CN 区别于普通抽取数据集的核心步骤——**对标注本身做算术自洽性检查**：逐行验证「单价 × 数量 ≈ 金额」，并验证「明细金额之和 ≈ 总额」（均带容差 $\varepsilon$ 以吸收 OCR 浮点误差）。校验流程见图 38-3。只有当标注本身算术自洽时，它才能作为可靠的逻辑监督信号；否则后续基于该数据训练的奖励信号就是"脏"的。
 
-```mermaid
-flowchart TD
-  P["输入：标注或预测 JSON"] --> G1{"JSON 可解析?"}
-  G1 -->|否| X["结构门禁失败<br>I_gate = 0，奖励归零"]
-  G1 -->|是| G2{"Schema 合规?"}
-  G2 -->|否| X
-  G2 -->|是| G3{"是否捏造表行?"}
-  G3 -->|是| X
-  G3 -->|否| R1["行级校验<br>每行 u * q ≈ a ?"]
-  R1 --> R2["文档级校验<br>sum of a ≈ T ?"]
-  R2 --> SC["输出一致性得分"]
-```
+![Figure 38-3](../../images/part12/ch38_Figure_38-3.png)
 
 *图 38-3：逻辑一致性校验流程 —— 同一套门禁逻辑在两处复用：构建期用于拦截不自洽的标注，评测/训练期用于给模型输出打一致性分（即 §38.6 的 SCL-Reward 中的结构门禁 $I_{gate}$ 与逻辑奖励 $R_{logic}$）。这种"构建即评测"的复用，是保证训练目标与评测口径一致的关键工程手段。*
 
@@ -328,6 +292,28 @@ SCVR 是本章为工程监控目的给出的派生指标定义（不引入任何
 
 **可审计性。** 每条记录应可回溯到：源图像版本、schema 版本、标注人/复核人、逻辑校验结论。结合 §38.5 的 SCVR 与错误归因表，形成"谁、在哪个版本、为什么改"的审计链路。
 
+**脱敏风控：本基准的合规状态与生产扩展的字段级去标识化方案。** 有必要把"本基准数据本身"与"方法论向私有数据扩展"两件事严格区分开来。
+
+就基准数据而言，StructBill-CN 所采用的全部图像**均来自公开学术数据集**——CHIP-2022 与 SIBR-Med，两者在原始发布时已由数据集提供方完成去标识化处理，StructBill-CN 不额外接入任何受保护健康信息（PHI）。
+
+就生产扩展而言，当本章的方法论被应用于真实私有票据/病历数据时，必须在数据进入流水线的最早阶段执行字段级脱敏。下表给出医疗费用文档中各类敏感字段的具体遮盖规则，供生产部署时作为去标识化规范的起点。
+
+*表 38-4：医疗费用文档字段级去标识化规则（面向生产扩展）*
+
+| 敏感字段类型       | 示例          | 遮盖规则                                                     | 说明                                                         |
+| ------------------ | ------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 患者姓名           | 张某某        | 完全替换为占位符 `<NAME>` 或不可逆 hash                      | PHI 核心字段，必须完全去除                                   |
+| 身份证号 / 社保号  | 110108…       | 完全替换或仅保留末 4 位                                      | 直接标识符，不可保留全文                                     |
+| 联系电话           | 138…          | 完全替换或仅保留末 4 位                                      | 直接标识符                                                   |
+| 住址               | 北京市朝阳区… | 脱敏至省/市级，删除街道与门牌号                              | 准标识符，保留粗粒度地理信息即可                             |
+| 医院名称           | 示例医院      | **公开基准中保留**（公共机构信息）；私有部署可选匿名化       | 通常不构成个人隐私                                           |
+| 发票号 / 流水号    | 4700852972    | **公开基准中保留**（去关联后无隐私风险）；私有部署中替换为序列化伪 ID | 去关联后风险可控                                             |
+| 金额 / 单价 / 数量 | 54.76 / 1.00  | **保留原值**——算术约束校验（P×Q=A / Σ=T）依赖真实数值        | 若高风险场景要求金额脱敏，可对全单做等比例缩放后**重算一致性**以保证逻辑约束不被破坏 |
+| 诊断 / 项目名称    | 青霉素注射液  | **公开基准中保留**（医学术语非个人信息）；涉及高度敏感疾病（如 HIV / 精神类）时替换为上位类目 | 视敏感程度分级处理                                           |
+| 日期               | 2024-01-15    | 整单偏移固定随机天数（保持行间时序关系）                     | 偏移而非删除，以保留业务时序语义                             |
+
+该表有一个工程上常被忽视的要点：**金额字段的脱敏与逻辑约束之间存在张力**。如果把金额随机扰动，行级「单价 × 数量 = 金额」与文档级「Σ 明细 = 总额」将被破坏，导致后续 SCL-Reward 的逻辑校验信号变"脏"。推荐做法是：对全单金额做**等比例缩放**（即乘以一个统一的随机因子），再重新计算并写回 `Total_Cost`，从而在脱敏的同时保持算术自洽。这一操作必须在 §38.4 第⑥步（逻辑一致性校验）之前完成，并在血缘元数据中记录缩放因子，以便审计回溯。
+
 ### 38.6.4 不该滥用到哪里
 
 明确边界同样重要。这份数据集**不适合**：
@@ -392,6 +378,26 @@ Yang, Z., Long, R., Wang, P., et al. (2023). Modeling Entities as Semantic Point
 Zhang, N., Chen, M., Bi, Z., et al. (2022). CBLUE: A Chinese Biomedical Language Understanding Evaluation Benchmark. *Proc. ACL*, pp. 7888–7915. 
 
 Zhong, X., ShafieiBavani, E., and Jimeno Yepes, A. (2020). Image-based Table Recognition: Data, Model, and Evaluation. *arXiv preprint arXiv:2011.13534*. 
+
+Bai, S., Cai, Y., Chen, R., et al. (2025a). Qwen3-VL Technical Report. *arXiv preprint*.
+
+ChatDOC (2025). OCRFlux-3B: A Multimodal Large Language Model for Document Parsing. *Hugging Face Model Card*.
+
+Cui, C., Sun, T., Liang, S., et al. (2025). PaddleOCR-VL: Boosting Multilingual Document Parsing via a 0.9B Ultra-Compact Vision-Language Model. *arXiv preprint*.
+
+Guo, D., Yang, D., Zhang, H., et al. (2025). DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. *arXiv preprint arXiv:2501.12948*.
+
+Hunyuan Vision Team, Lyu, P., Wan, X., et al. (2025). HunyuanOCR Technical Report. *arXiv preprint*.
+
+Li, Y., Yang, G., Liu, H., Wang, B., and Zhang, C. (2025a). Dots.OCR: Multilingual Document Layout Parsing in a Single Vision-Language Model. *arXiv preprint*.
+
+Poznanski, J., Soldaini, L., and Lo, K. (2025). olmOCR 2: Unit Test Rewards for Document OCR. *arXiv preprint arXiv:2510.19817*.
+
+Smock, B., Faucon-Morin, V., Sokolov, M., et al. (2025). PubTables-v2: A New Large-Scale Dataset for Full-Page and Multi-Page Table Extraction. *arXiv preprint arXiv:2512.10888*.
+
+Wang, W., Gao, Z., Gu, L., et al. (2025). InternVL3.5: Advancing Open-Source Multimodal Models in Versatility, Reasoning, and Efficiency. *arXiv preprint arXiv:2508.18265*.
+
+Zhang, J., Liu, Y., Wu, Z., et al. (2025). MonkeyOCR v1.5 Technical Report: Unlocking Robust Document Parsing for Complex Patterns. *arXiv preprint*.
 
 
 
