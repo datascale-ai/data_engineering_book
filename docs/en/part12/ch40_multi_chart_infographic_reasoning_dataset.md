@@ -43,7 +43,7 @@ The dataset is described from four perspectives: sample size, domain coverage, c
 
 ### 40.2.2 Domain Coverage Across 28 Fields
 
-The dataset samples across 28 vertical fields covering public life, industry, research, entertainment, and economics: business, technology, beauty and health, finance, marketing, humanities and demographics, employment, social media, education, food, transportation, computing and internet, retail, law, sports, zoology, energy, environment, film and entertainment, real estate, tourism, parenting, lifestyle, home and garden, manufacturing, natural science, politics, and history.
+The dataset samples across 28 vertical fields covering public life, industry, research, entertainment, and economics: animals, business, career & jobs, home & garden, computers & internet, industry, law and legal, lifestyle, education, energy, entertainment, environment, finance & money, food & drink, health & beauty, pregnancy & parenting, marketing, politics and history, people, real estate, shopping, science, social media, sports, technology, transportation, and travel.
 
 Multi-domain design reduces overfitting to a single theme. Chart conventions, legends, and domain abbreviations differ across fields, raising the difficulty of visual-context reasoning.
 
