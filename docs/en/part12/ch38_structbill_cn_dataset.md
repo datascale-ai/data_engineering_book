@@ -79,6 +79,8 @@ StructBill-CN contains **2,300 high-resolution bill images** across **six busine
 
 Using public academic sources is a deliberate compliance choice. A publishable benchmark should be built on public sources, while real private production data should enter only through a governed production process. This public benchmark / private production split is a baseline principle for high-risk document data engineering.
 
+**Code and data resources.** The StructBill-CN dataset, schema definitions, annotation tools, and SRPO training code are available at [github.com/vanvan6992/StructBill-CN](https://github.com/vanvan6992/StructBill-CN). The SRPO algorithm implementation (including MindSpore-based GRPO and SCL-Reward) is available at [github.com/Yuefeng-Zou/SRPO_CODE](https://github.com/Yuefeng-Zou/SRPO_CODE). 
+
 ### 38.2.2 Task Definition
 
 Given a document image $X$ and a schema $S=\{K,T,C\}$, where $K$ is the set of global key fields, $T$ is the table definition, and $C$ is the set of deterministic constraints, the goal is to learn a policy that generates a structured sequence $Y$ maximizing $P(Y\,|\,X,S)$.
@@ -115,18 +117,7 @@ Hierarchical JSON is used because it maps directly to real database schema: glob
 
 The three schema parts map to the final JSON as follows: $K$ becomes the global `key_information` object, $T$ becomes the `Fee_List` array and its row fields, and $C$ becomes validation relationships attached to numeric fields rather than visible JSON nodes.
 
-```mermaid
-flowchart LR
-  S["Schema S = tuple K, T, C"] --> K["K: global key fields"]
-  S --> T["T: table definition"]
-  S --> C0["C: deterministic constraints"]
-  K --> J1["key_information<br>Hospital_Name<br>Invoice_No<br>Total_Cost"]
-  T --> J2["Fee_List array<br>Item_Name / Unit_Price<br>Quantity / Amount"]
-  C0 --> J3["logic binding<br>unit price x quantity = amount<br>sum(amount) = total"]
-  J1 --> O[("hierarchical JSON output")]
-  J2 --> O
-  J3 -. validate .-> O
-```
+![ch38_Figure_38-1](..\..\images\part12\ch38_Figure_38-1_en.png)
 
 *Figure 38-1: Schema-to-JSON mapping. Key fields and table structure become visible JSON nodes; constraints remain verifiable relationships attached to numeric fields.*
 
@@ -160,6 +151,33 @@ This “constraints as relationships, not fields” design lets the same JSON se
 
 In this small sample, `key_information` and `Fee_List` are structure. The row-level and document-level arithmetic equations are logic constraints. Both must be annotated, validated, and evaluated.
 
+**Code Example 1: Schema definition as a Python dataclass.** The following snippet shows how the schema $S=\{K, T, C\}$ is represented programmatically. Each business document type corresponds to one `Schema` instance. The three constraint fields (`price_field`, `qty_field`, `amount_field`) plus `total_field` encode the arithmetic rules $C$ without modifying the JSON output format.
+
+```python
+@dataclass
+class Schema:
+    """Business schema S = {K, T, C} for one document type."""
+    root_keys: List[str]                        # K: required global key fields
+    table_key: Optional[str] = None             # T: line-item table key in JSON
+    row_fields: List[str] = field(default_factory=list)
+    price_field: Optional[str] = None           # ┐
+    qty_field: Optional[str] = None             # │ C: deterministic
+    amount_field: Optional[str] = None          # │    constraint fields
+    total_field: Optional[str] = None           # ┘
+    anti_hallucination: bool = True
+
+# Example: medical expense list schema
+expense_schema = Schema(
+    root_keys=["Hospital_Name", "Invoice_No", "Total_Cost"],
+    table_key="Fee_List",
+    row_fields=["Item_Name", "Unit_Price", "Quantity", "Amount"],
+    price_field="Unit_Price",
+    qty_field="Quantity",
+    amount_field="Amount",
+    total_field="Total_Cost",
+)
+```
+
 ### 38.3.4 Field Types, Annotation Rules, and Metrics
 
 *Table 38-2: Field type, annotation rule, and metric mapping*
@@ -178,18 +196,9 @@ This table acts as a contract between annotation rules and evaluation scripts.
 
 StructBill-CN uses a multi-stage pipeline whose goal is to preserve semantic content and business-logic topology while creating traceable quality gates.
 
-```mermaid
-flowchart TD
-  A["1. Collect raw bill images<br>CHIP-2022 / SIBR-Med"] --> B["2. Denoise and grade image quality<br>dedup / deskew / resolution filter"]
-  B --> C1["3. Design schema<br>global keys K + table T + constraints C"]
-  C1 --> D["4. Annotate hierarchical JSON<br>global KV + nested line items"]
-  D --> E["5. Validate schema alignment<br>required keys / types / structure"]
-  E --> F["6. Validate logic consistency<br>row product / document sum"]
-  F --> G{"quality gate passed?"}
-  G -->|no| D
-  G -->|yes| H["7. Version split<br>Train : Test = 8 : 2"]
-  H --> I[("trainable, evaluable,<br>reviewable data asset")]
-```
+![ch38_Figure_38-2](..\..\images\part12\ch38_Figure_38-2_en.png)
+
+
 
 *Figure 38-2: StructBill-CN construction pipeline. Samples that fail logic validation return to annotation rather than entering the training set.*
 
@@ -205,20 +214,56 @@ flowchart TD
 
 **6. Logic consistency validation.** The core step checks whether annotations are arithmetically self-consistent: row by row, unit price x quantity approximately equals amount; at document level, line-item amounts approximately sum to total. Tolerance $\varepsilon$ absorbs OCR and floating-point noise.
 
-```mermaid
-flowchart TD
-  P["input: annotation or prediction JSON"] --> G1{"JSON parseable?"}
-  G1 -->|no| X["structure gate failed<br>I_gate = 0, reward = 0"]
-  G1 -->|yes| G2{"schema-compliant?"}
-  G2 -->|no| X
-  G2 -->|yes| G3{"fabricated table rows?"}
-  G3 -->|yes| X
-  G3 -->|no| R1["row-level check<br>each u * q ~= a ?"]
-  R1 --> R2["document-level check<br>sum(a) ~= T ?"]
-  R2 --> SC["consistency score"]
-```
+![ch38_Figure_38-3](..\..\images\part12\ch38_Figure_38-3_en.png)
 
 *Figure 38-3: Logic-consistency validation. The same gate is reused during construction to block inconsistent labels and during evaluation/training to score model output.*
+
+**Code Example 2: Logic-consistency validation gate.** This function implements the structure gate ($I_{gate}$), row-level check (Row-ACR), and document-level check (Doc-ACR) from Figure 38-3. The same code is reused in both the construction pipeline (to block inconsistent labels) and the evaluation pipeline (to score model outputs). It takes the `Schema` defined in Code Example 1.
+
+```python
+def validate_logic(pred_text: str, schema: Schema, eps: float = 0.01
+                   ) -> Tuple[bool, float, float]:
+    """Logic-consistency gate.
+
+    Returns (gate_pass, row_acr, doc_acr).
+    Reused in construction (block bad labels) and evaluation (score outputs).
+    """
+    # ── Structure gate (I_gate) ──
+    try:
+        obj = json.loads(pred_text)
+    except json.JSONDecodeError:
+        return False, 0.0, 0.0                    # invalid JSON → gate fails
+
+    ki = obj.get("key_information", {})
+    if any(k not in ki for k in schema.root_keys):
+        return False, 0.0, 0.0                    # missing required keys
+
+    rows = obj.get(schema.table_key, []) if schema.table_key else []
+
+    # ── Row-level: |unit_price × quantity − amount| < ε ──
+    ok, checked = 0, 0
+    row_amounts = []
+    for r in rows:
+        u, q, a = r.get(schema.price_field), r.get(schema.qty_field), r.get(schema.amount_field)
+        if u is None or q is None or a is None:
+            continue
+        u, q, a = float(u), float(q), float(a)
+        checked += 1
+        if abs(u * q - a) < eps:
+            ok += 1
+        row_amounts.append(a)
+
+    row_acr = ok / checked if checked else 1.0
+
+    # ── Document-level: |Σ amounts − total_cost| < ε ──
+    total = ki.get(schema.total_field)
+    if total is not None and row_amounts:
+        doc_acr = 1.0 if abs(sum(row_amounts) - float(total)) < eps else 0.0
+    else:
+        doc_acr = 1.0
+
+    return True, row_acr, doc_acr
+```
 
 **7. Version split.** The dataset uses an 8:2 train-test split. In practice, the split should preserve the six schema distributions, reserve true cross-layout test samples, and attach data fingerprints and statistics to each version.
 
@@ -245,6 +290,41 @@ These metrics must coexist. F1 says whether fields were found, but not whether n
 Academic metrics tend to be positive: how much is correct. Production monitoring often needs the negative view: how much violates constraints. From the gate in Section 38.4, we can derive **SCVR (Schema Constraint Violation Rate)**: the proportion of outputs that fail the structure gate or logic validation. SCVR complements Row-ACR and Doc-ACR by answering how many records cannot be inserted directly, including structural failures.
 
 SCVR adds no new labels. It reuses the existing structure and logic validation flow.
+
+**Code Example 3: Batch SCVR computation.** Using `validate_logic` from Code Example 2, the following function computes SCVR and companion metrics over a batch of model predictions. It requires no additional labels beyond the existing schema and arithmetic constraints.
+
+```python
+def compute_scvr(predictions: list, schema: Schema,
+                 eps: float = 0.01) -> dict:
+    """Compute SCVR and companion metrics over a prediction batch.
+
+    SCVR = proportion of records that fail the structure or logic gate
+           (i.e., cannot be directly ingested into a database).
+    """
+    n = len(predictions)
+    violations = 0
+    row_acrs, doc_acrs = [], []
+
+    for pred_text in predictions:
+        gate, row_acr, doc_acr = validate_logic(pred_text, schema, eps)
+        if not gate:
+            violations += 1               # structure or hallucination failure
+        else:
+            row_acrs.append(row_acr)
+            doc_acrs.append(doc_acr)
+
+    scvr = violations / n if n else 0.0
+    return {
+        "scvr": scvr,
+        "ingestible_rate": 1.0 - scvr,    # complement: can go to DB directly
+        "mean_row_acr": sum(row_acrs) / len(row_acrs) if row_acrs else 0.0,
+        "mean_doc_acr": sum(doc_acrs) / len(doc_acrs) if doc_acrs else 0.0,
+    }
+
+# Example usage:
+# metrics = compute_scvr(model_outputs, expense_schema)
+# print(f"SCVR={metrics['scvr']:.1%}, ingestible={metrics['ingestible_rate']:.1%}")
+```
 
 ### 38.5.2 Engineering Conventions for Reproducible Evaluation
 
@@ -275,7 +355,7 @@ This chapter does not detail the model. From the data-consumption perspective:
 - **Training use.** SRPO first uses the data for SFT warm start so the model can output legal JSON, then uses GRPO (Shao et al., 2024) with group sampling and SCL-Reward. The reported configuration is SFT for 10 epochs, learning rate 1e-5, batch size 128; GRPO group size G=8, reward coefficients $\lambda=0.4$ and $\gamma=0.6$; hardware 8 x NVIDIA A800 (80GB).
 - **Qualitative effect.** The source material reports that standard SFT saturates near 84% on logic scores, while adding logic reward improves Row/Doc-ACR by about 10 percentage points. The point is that logic annotation turns arithmetic consistency into an optimizable target.
 
-Hungarian matching (Kuhn, 1955) is used for row-level one-to-one alignment because generated row order may differ from ground truth or include missing/spurious rows. That, in turn, requires each row to contain sufficiently discriminative fields such as item name, unit price, and quantity. Algorithm design and annotation rules must be co-designed.
+Hungarian matching is used for row-level one-to-one alignment because generated row order may differ from ground truth or include missing/spurious rows. That, in turn, requires each row to contain sufficiently discriminative fields such as item name, unit price, and quantity. Algorithm design and annotation rules must be co-designed.
 
 ### 38.6.2 What the Dataset Is Suitable For
 
@@ -290,6 +370,28 @@ Medical-expense documents are high-risk data. Even though this benchmark uses pu
 **Human in the loop.** Extraction used for claims, audit, or database ingestion must retain human review. The model is an assistant, not an automatic decision-maker.
 
 **Auditability.** Each record should trace back to source image version, schema version, annotator/reviewer, and logic-validation results. SCVR and the error-attribution table can form the audit chain of who changed what, in which version, and why.
+
+**De-identification and risk control: compliance status of this benchmark and field-level masking rules for production extension.** It is essential to strictly separate "the benchmark data itself" from "extending the methodology to private data."
+
+Regarding the benchmark data, all images in StructBill-CN **come exclusively from public academic datasets** — CHIP-2022 and SIBR-Med — which were de-identified by their original publishers before public release. StructBill-CN does not ingest any Protected Health Information (PHI). 
+
+Regarding production extension, when this chapter's methodology is applied to real private bills or medical records, field-level masking must be performed at the earliest stage of the pipeline. The table below provides concrete masking rules for each sensitive-field type in medical-expense documents.
+
+*Table 38-4: Field-level de-identification rules for medical-expense documents (for production extension)*
+
+| Sensitive Field Type | Example | Masking Rule | Notes |
+|---|---|---|---|
+| Patient name | Zhang XX | Replace entirely with placeholder `<NAME>` or irreversible hash | Core PHI field; must be fully removed |
+| National ID / Social Security No. | 110108… | Replace entirely or retain only last 4 digits | Direct identifier; full text must not be retained |
+| Phone number | 138… | Replace entirely or retain only last 4 digits | Direct identifier |
+| Address | Beijing, Chaoyang… | Mask to province/city level; remove street and apartment | Quasi-identifier; coarse geography is sufficient |
+| Hospital name | Example Hospital | **Retain in public benchmark** (public institution); optionally anonymize in private deployment | Typically not personal privacy |
+| Invoice / serial number | 4700852972 | **Retain in public benchmark** (no privacy risk once de-linked); replace with sequential pseudo-ID in private deployment | Risk is manageable after de-linking |
+| Amount / unit price / quantity | 54.76 / 1.00 | **Retain original values** — arithmetic constraint validation (P×Q=A / Σ=T) depends on real numbers | If high-risk scenarios require amount masking, apply uniform scaling to the entire document and **recompute consistency** to preserve logic constraints |
+| Diagnosis / item name | Penicillin injection | **Retain in public benchmark** (medical terminology is not personal information); for highly sensitive diseases (e.g., HIV, psychiatric), replace with a superordinate category | Grade-based treatment by sensitivity |
+| Date | 2024-01-15 | Shift by a fixed random number of days per document (preserving inter-row temporal order) | Shift rather than delete to keep business-temporal semantics |
+
+An engineering point often overlooked in this table is the **tension between amount de-identification and logic constraints**. Randomly perturbing amounts breaks row-level "unit price × quantity = amount" and document-level "Σ line items = total," turning the downstream SCL-Reward logic-verification signal dirty. The recommended approach is **uniform scaling**: multiply all amounts by a single random factor per document, then recompute and overwrite `Total_Cost` to maintain arithmetic self-consistency while masking actual values. This operation must be performed before §38.4 step ⑥ (logic-consistency validation) and the scaling factor must be recorded in the lineage metadata for audit traceability.
 
 ### 38.6.4 Where Not to Use It
 
@@ -356,4 +458,22 @@ Zhang, N., Chen, M., Bi, Z., et al. (2022). CBLUE: A Chinese Biomedical Language
 
 Zhong, X., ShafieiBavani, E., and Jimeno Yepes, A. (2020). Image-based Table Recognition: Data, Model, and Evaluation. *arXiv preprint arXiv:2011.13534*.
 
-SRPO code: https://github.com/Yuefeng-Zou/SRPO_CODE
+Bai, S., Cai, Y., Chen, R., et al. (2025a). Qwen3-VL Technical Report. *arXiv preprint*.
+
+ChatDOC (2025). OCRFlux-3B: A Multimodal Large Language Model for Document Parsing. *Hugging Face Model Card*. 
+
+Cui, C., Sun, T., Liang, S., et al. (2025). PaddleOCR-VL: Boosting Multilingual Document Parsing via a 0.9B Ultra-Compact Vision-Language Model. *arXiv preprint*.
+
+Guo, D., Yang, D., Zhang, H., et al. (2025). DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. *arXiv preprint arXiv:2501.12948*.
+
+Hunyuan Vision Team, Lyu, P., Wan, X., et al. (2025). HunyuanOCR Technical Report. *arXiv preprint*.
+
+Li, Y., Yang, G., Liu, H., Wang, B., and Zhang, C. (2025a). Dots.OCR: Multilingual Document Layout Parsing in a Single Vision-Language Model. *arXiv preprint*. 
+
+Poznanski, J., Soldaini, L., and Lo, K. (2025). olmOCR 2: Unit Test Rewards for Document OCR. *arXiv preprint arXiv:2510.19817*.
+
+Smock, B., Faucon-Morin, V., Sokolov, M., et al. (2025). PubTables-v2: A New Large-Scale Dataset for Full-Page and Multi-Page Table Extraction. *arXiv preprint arXiv:2512.10888*.
+
+Wang, W., Gao, Z., Gu, L., et al. (2025). InternVL3.5: Advancing Open-Source Multimodal Models in Versatility, Reasoning, and Efficiency. *arXiv preprint arXiv:2508.18265*.
+
+Zhang, J., Liu, Y., Wu, Z., et al. (2025). MonkeyOCR v1.5 Technical Report: Unlocking Robust Document Parsing for Complex Patterns. *arXiv preprint*.
