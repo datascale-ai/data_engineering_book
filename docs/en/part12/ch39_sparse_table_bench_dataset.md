@@ -149,7 +149,11 @@ A core design principle of SparseTable-Bench is to represent each table image as
 <<<<<<< HEAD
 `[EMPTY_CELL]` is not ordinary text. It expresses “the structure exists but the content is empty.” Even if no readable character exists in the region, the position still has row-column coordinates, bbox, and context. This prevents the model from treating blank regions as nonexistent and reduces column collapse and left-shift errors.
 
+<<<<<<< HEAD
 ![Figure 39-2: Three synchronized supervision signals in a table sample](../../images/part12/ch39_02_supervision_schema.png)
+=======
+![Figure 39-2: Three synchronized supervision signals in a table sample](../../images/part12/ch39_02_supervision_schema_en.png)
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 From a data-engineering perspective, the schema contains these objects and checks:
 
@@ -168,7 +172,11 @@ The empty-cell token must be consistent across data, tokenizer, training script,
 
 STB can be organized into four stages: table collection, structure extraction, spatial annotation, and sparse-topology augmentation.
 
+<<<<<<< HEAD
 ![Figure 39-1: Four-stage SparseTable-Bench construction pipeline](../../images/part12/ch39_01_stb_pipeline.png)
+=======
+![Figure 39-1: Four-stage SparseTable-Bench construction pipeline](../../images/part12/ch39_01_stb_pipeline_en.png)
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 ### 39.4.1 Table Collection
 
@@ -211,7 +219,11 @@ STB's value is that it turns unstable, hard-to-explain evaluation issues into an
 
 STB-Mask-Stress is the robustness split. It systematically reduces text cues while preserving table topology, then observes whether the model can still recover row-column structure and empty-cell positions. It is closer to a structural understanding stress test than ordinary augmentation.
 
+<<<<<<< HEAD
 ![Figure 39-3: STB-Mask-Stress occlusion generation and evaluation flow](../../images/part12/ch39_03_mask_stress_flow.png)
+=======
+![Figure 39-3: STB-Mask-Stress occlusion generation and evaluation flow](../../images/part12/ch39_03_mask_stress_flow_en.png)
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 The masking strategy is column-aware:
 

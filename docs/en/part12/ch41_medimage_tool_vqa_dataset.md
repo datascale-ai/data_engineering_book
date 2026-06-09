@@ -1,7 +1,10 @@
 # Chapter 41: MedImage-ToolVQA Medical Image Tool-Use VQA Data Engineering
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 ## Abstract
 
 This chapter uses MedImage-ToolVQA as a focused dataset case for medical image tool-use data engineering. It examines task definition, sample structure, construction workflow, quality control, evaluation protocol, and safety boundaries. The chapter emphasizes how the dataset validates earlier data-engineering principles and clarifies its reproducibility conditions, model-training role, benchmark value, and deployment limits.
@@ -10,7 +13,10 @@ This chapter uses MedImage-ToolVQA as a focused dataset case for medical image t
 
 MedImage-ToolVQA; specialized dataset; evaluation benchmark; annotation workflow; quality control
 
+<<<<<<< HEAD
 >>>>>>> upstream/main
+=======
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 Medical image question answering is often treated as a special form of visual question answering (VQA). That classification is reasonable, but it can hide a crucial difference: **seeing** in medical images is not the same as recognizing objects in natural images. In natural images, subjects usually have clear outlines and semantic boundaries. In medical images, slight ground-glass opacity on a chest X-ray, a small low-density lesion in CT, local cell arrangement on pathology slides, or weak-boundary echoes in ultrasound may occupy only a tiny region. Their meaning depends on anatomy, modality, acquisition conditions, and the clinical question.
 
 Medical VQA datasets such as VQA-RAD, PathVQA, and SLAKE show that sample design must consider image modality, professional semantics, question source, and human verification (Lau et al. 2018; He et al. 2020; Liu et al. 2021). Data engineering therefore cannot stop at the image-question-answer triple. A medical image agent often works more like this: view the whole image, identify the structure or finding mentioned by the question, decide whether local zoom, segmentation, or boundary refinement is needed, use tool observations to update judgment, and then answer. The final answer is only the endpoint; the evidence path is also training signal.
@@ -20,10 +26,14 @@ MedImage-ToolVQA is a data engineering case built around this idea. It does not 
 This chapter explains the difference between medical image VQA and ordinary VQA, why tool trajectories are useful supervision, how MedImage-ToolVQA structures samples, how the construction pipeline and tool system work, and how to handle quality control, privacy, compliance, and medical safety boundaries. The chapter discusses data engineering and model-training supervision only. It does not provide clinical diagnostic advice.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ![Figure 41-1: Local evidence loop for a medical image agent](../../images/part12/ch41_01_medimage_tool_vqa_evidence_loop.png)
 =======
 ![Figure 41-1: Local evidence loop for a medical image agent](../../images/part12/ch41_01_medimage_tool_vqa_evidence_loop_en.png)
 >>>>>>> upstream/main
+=======
+![Figure 41-1: Local evidence loop for a medical image agent](../../images/part12/ch41_01_medimage_tool_vqa_evidence_loop_en.png)
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 *Figure 41-1: The key is to record where to look again, how to look, and how judgment changes after observation.*
 
@@ -84,10 +94,14 @@ ROI also prevents questions from becoming pure text medical QA. “What organ do
 At the same time, local evidence can create **localization leakage**. If the question says “the boxed region” or “inside the mask,” the model does not learn active localization. Good questions imply the need for local observation without exposing bbox or mask.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### Question and Option Design
 =======
 ### 41.4.1 Question and Option Design
 >>>>>>> upstream/main
+=======
+### 41.4.1 Question and Option Design
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 A good medical image VQA question should satisfy three conditions: it is tied to a concrete image region, it does not leak annotation position, and its options differ by observable visual evidence.
 
@@ -96,10 +110,14 @@ The question should not be general medical knowledge or a broad modality/organ l
 Medical questions should also avoid asking for clinical treatment or diagnosis. Multiple-choice answers can select the option that best matches image appearance, but explanations should not expand into patient advice.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### Observation Image Lifecycle
 =======
 ### 41.4.2 Observation Image Lifecycle
 >>>>>>> upstream/main
+=======
+### 41.4.2 Observation Image Lifecycle
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 Observation images are not ordinary illustrations. They are derived from the original image and returned to the model as new inputs.
 
@@ -163,10 +181,14 @@ make_sft:
 ```
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ![Figure 41-2: MedImage-ToolVQA conceptual construction flow](../../images/part12/ch41_02_medimage_tool_vqa_pipeline.png)
 =======
 ![Figure 41-2: MedImage-ToolVQA conceptual construction flow](../../images/part12/ch41_02_medimage_tool_vqa_pipeline_en.png)
 >>>>>>> upstream/main
+=======
+![Figure 41-2: MedImage-ToolVQA conceptual construction flow](../../images/part12/ch41_02_medimage_tool_vqa_pipeline_en.png)
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 The implementation can keep separate framework-specific entry points. [MedImage-ToolVQA-Mindspore](https://github.com/blackkiring/MedImage-ToolVQA-Mindspore) is the project implementation repository for MindSpore data processing, training packaging, inference, evaluation, and documentation.
 
@@ -197,10 +219,14 @@ MedImage-ToolVQA uses three visual tools: `Zoom-in`, `BiomedParse`, and `SAM2`.
 The core of a tool trajectory is multi-turn structure: action, observation, continued judgment.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ![Figure 41-3: Multi-turn structure of tool-call trajectories](../../images/part12/ch41_03_tool_trajectory_structure.png)
 =======
 ![Figure 41-3: Multi-turn structure of tool-call trajectories](../../images/part12/ch41_03_tool_trajectory_structure_en.png)
 >>>>>>> upstream/main
+=======
+![Figure 41-3: Multi-turn structure of tool-call trajectories](../../images/part12/ch41_03_tool_trajectory_structure_en.png)
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 A simplified trajectory has four steps. The user provides the original image, question, and options. The assistant decides local evidence is needed and outputs a structured tool call. The environment returns a new observation image. The assistant uses both original and observation images to answer.
 
@@ -236,10 +262,14 @@ to be only artifact.
 Tool arguments must be structured. Tool returns must become new multimodal input, not a text note saying “already zoomed.” The final answer should consume the observation. The trajectory should avoid diagnostic claims and stay within the option-comparison task.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### Three-Layer Reading of a Sample
 =======
 ### 41.7.1 Three-Layer Reading of a Sample
 >>>>>>> upstream/main
+=======
+### 41.7.1 Three-Layer Reading of a Sample
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 Each record can be read at three layers:
 
@@ -250,10 +280,14 @@ Each record can be read at three layers:
 All three layers must work. If the question is good but evidence is missing, it is ordinary VQA. If evidence exists but behavior ignores the observation, it is VQA with extra annotations. If behavior is complete but the question is text-answerable, the tool call becomes formal decoration.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### Difference from Ordinary Chain-of-Thought
 =======
 ### 41.7.2 Difference from Ordinary Chain-of-Thought
 >>>>>>> upstream/main
+=======
+### 41.7.2 Difference from Ordinary Chain-of-Thought
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 Tool trajectories are sometimes confused with chain-of-thought data. Both include intermediate process, but the training meaning differs. Ordinary CoT unfolds in text. Tool trajectories include external actions and environment feedback: the model calls a tool, receives a new observation, then continues. It does not merely “think in more detail”; it sees something new.
 
@@ -268,10 +302,14 @@ In SFT, clarity and stability matter most. The model must learn that `<tool_call
 Medical image SFT records should also keep an imaging-task schema. Here “diagnosis” means structuring the training task, candidate labels, evidence region, and safety boundary; it does not ask the model to provide clinical conclusions.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ![Figure 41-5: Real image and bbox evidence in the SFT schema](../../images/part12/ch41_05_sft_schema_real_bbox_example.png)
 =======
 ![Figure 41-5: Real image and bbox evidence in the SFT schema](../../images/part12/ch41_05_sft_schema_real_bbox_example_en.png)
 >>>>>>> upstream/main
+=======
+![Figure 41-5: Real image and bbox evidence in the SFT schema](../../images/part12/ch41_05_sft_schema_real_bbox_example_en.png)
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 *Figure 41-5: Bbox is a structured field and should be recoverable as reviewable visual evidence.*
 
@@ -389,10 +427,14 @@ Tool-use data quality is not determined by answer correctness alone. A sample sh
 Quality control should be layered across question generation, region validation, observation generation, trajectory synthesis, and training packaging.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ![Figure 41-4: Quality-control and human-review gates](../../images/part12/ch41_04_quality_review_gate.png)
 =======
 ![Figure 41-4: Quality-control and human-review gates](../../images/part12/ch41_04_quality_review_gate_en.png)
 >>>>>>> upstream/main
+=======
+![Figure 41-4: Quality-control and human-review gates](../../images/part12/ch41_04_quality_review_gate_en.png)
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 The first layer is **structure validation**: prompt, options, answer, image references, region fields, and tool parameters must be complete and parseable. Tool names must come from a whitelist; bbox coordinates must be in bounds.
 
@@ -407,10 +449,14 @@ The fifth layer is **human review**. High-risk or low-confidence samples enter a
 Review results should not be only pass/fail. Better categories are `passed`, `revise`, `downgrade`, and `discard`, with reasons written back into version records.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### Evaluation Protocol
 =======
 ### 41.10.1 Evaluation Protocol
 >>>>>>> upstream/main
+=======
+### 41.10.1 Evaluation Protocol
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 Accuracy is only the first layer. A complete evaluation should cover:
 
@@ -424,10 +470,14 @@ Aggregate accuracy can be misleading because option distribution is imbalanced. 
 The evaluation principle is: answer correctness is only the first layer; reasonable behavior is the full target.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### Data Cards and Version Notes
 =======
 ### 41.10.2 Data Cards and Version Notes
 >>>>>>> upstream/main
+=======
+### 41.10.2 Data Cards and Version Notes
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 Medical image tool-use data contains images, region evidence, tool trajectories, answers, and safety boundaries, so it needs a data card and version notes (Gebru et al. 2021).
 
@@ -460,20 +510,28 @@ The basic principles are:
 - add safety boundaries and human review in high-risk domains
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### Migrating the Pattern
 =======
 ### 41.12.1 Migrating the Pattern
 >>>>>>> upstream/main
+=======
+### 41.12.1 Migrating the Pattern
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 The same structure can be migrated to document QA with page-region zoom, chart QA with subchart localization, remote sensing with region retrieval, or industrial inspection with defect zoom. What changes is the evidence object and tool boundary. Medical data uses ROI, mask, and bbox; document data may use page regions, table cells, and OCR coordinates; chart data may use axes, legends, and curve segments.
 
 The core remains stable: define evidence objects, define tool actions, and write returned observations into multi-turn samples.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### Connection with Other Chapters
 =======
 ### 41.12.2 Connection with Other Chapters
 >>>>>>> upstream/main
+=======
+### 41.12.2 Connection with Other Chapters
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 
 This chapter connects Part 3's multimodal cleaning and grounding, Part 6's Tool-Use and Agent data, Part 10's discussion of data engineering agents, Part 11's privacy and compliance boundary, and Part 13/14's training recipes and project practice. Its real topic is not only medical images, but how data engineering should record evidence, action, feedback, and risk when models actively gather visual evidence.
 
@@ -484,7 +542,10 @@ MedImage-ToolVQA extends medical image VQA from single-step answer supervision t
 The advantage is stronger interpretability and auditability: tool parameters, observation images, and final answers can be checked together. The cost is higher data-engineering burden: each stage needs validation, each tool needs a boundary, and each derived image needs tracing and de-identification. In a high-risk setting such as medical imaging, the dataset also encodes behavioral rules: when to inspect directly, when to call tools, how to update after observation, and which answers require quality control, privacy protection, and human review.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 ## Chapter Summary
 
 This chapter reviewed MedImage-ToolVQA as a specialized dataset case in large-model data engineering. Its main contribution is to place concepts, data objects, quality signals, and engineering deliverables into one narrative, so readers can distinguish which process signals need explicit recording and which outputs require sampling, evaluation, or audit.
@@ -493,7 +554,10 @@ The method should be applied with attention to data source, business goal, model
 
 Within the structure of this book, this chapter sits at the specialized-dataset validation layer. It connects earlier concepts to later open-model data recipes and project case studies. Readers can use its framework together with figures, references, and appendix checklists to turn the method into a reproducible, inspectable, and deliverable engineering process.
 
+<<<<<<< HEAD
 >>>>>>> upstream/main
+=======
+>>>>>>> c84f31e37b4e2ab281e62239ead34a02605c787f
 ## References
 
 Antol, S., Agrawal, A., Lu, J., Mitchell, M., Batra, D., Zitnick, C. L., & Parikh, D. (2015). VQA: Visual Question Answering. Proceedings of the IEEE International Conference on Computer Vision, 2425-2433. https://doi.org/10.1109/ICCV.2015.279
