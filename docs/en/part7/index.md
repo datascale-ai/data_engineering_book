@@ -1,17 +1,21 @@
-# Part 7: Application-Level Data Engineering
+# Part VII: Application-Level Data Engineering
 
-## Positioning
+## Scope of This Part
 
-Part 7 takes an application-system perspective. It covers RAG, visual retrieval, multimodal evidence fusion, online feedback loops, and knowledge updates, focusing on data engineering design for real business systems.
+Part VII approaches data engineering from an application-systems perspective, covering RAG, visual retrieval, multimodal evidence fusion, online feedback loops, and knowledge updates—focusing on data engineering design for real-world production use cases.
 
-## Part Contents
+## Terminology Conventions
 
-- [Chapter 21: RAG Data Pipeline](ch21_rag_pipeline.md)
+Throughout this part, "Retrieval-Augmented Generation (RAG)" refers to the complete pipeline encompassing document ingestion, chunking, indexing, retrieval, reranking, and generation with citations. "Evidence" refers to context fragments that can be cited, located, and audited by the model. "Online feedback" refers to evaluation signals, corrections, and updates derived from real user interactions. RAG corpora, knowledge bases, retrieval indexes, and feedback samples should be managed separately and not conflated with static document repositories.
+
+## Table of Contents
+
+- [Chapter 21: RAG Data Pipelines](ch21_rag_pipeline.md)
 - [Chapter 22: Multimodal RAG and Visual Retrieval](ch22_multimodal_rag_visual_retrieval.md)
-- [Chapter 23: Online Feedback Closed Loop and Knowledge Update](ch23_online_feedback_knowledge_update.md)
+- [Chapter 23: Online Feedback Loops and Knowledge Updates](ch23_online_feedback_knowledge_update.md)
 
-## Suggested Reading Order
+## Recommended Reading Order
 
-- Read Chapter 21 first to master document ingestion, chunking, indexing, and retrieval.
-- Then read Chapter 22 to understand multimodal RAG, visual evidence localization, and evaluation attribution.
-- Finally read Chapter 23 to connect online feedback, knowledge backfilling, and version updates into a loop.
+- Start with Chapter 21 to understand document ingestion, chunking, indexing, and retrieval workflows.
+- Proceed to Chapter 22 to explore multimodal RAG, visual evidence localization, and evaluation attribution.
+- Finish with Chapter 23 to integrate online feedback, knowledge backfilling, and version updates into the closed loop.

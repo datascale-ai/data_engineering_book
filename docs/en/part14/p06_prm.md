@@ -1,835 +1,1143 @@
-# Project 6: CoT Reasoning Dataset Construction and PRM Training
+# Project Six: CoT Reasoning Dataset Construction and PRM Training
 
 ## Abstract
-P06 focuses on building a data factory for chain-of-thought reasoning and process reward model training.
+P06 focuses on organizing the reasoning process itself into a trainable, verifiable, analyzable, and iterable process-supervision data asset. The chapter's emphasis is not on demonstrating individual chains of thought, but on the engineering integration between step-level supervision, reward assignment, and the PRM training interface.
 
-The project does not only judge whether the final answer is correct.
+This chapter can be understood along four main threads:
 
-It splits reasoning into steps, verifies each step where possible, assigns process labels, organizes reward buckets, and packages the result for PRM-style training.
+* Seed tasks and trajectory generation: from task sampling into CoT trajectory construction.
+* Step validation and reward assignment: organizing supervision signals around process labels, reward buckets, and trajectory types.
+* PRM packaging and training splits: organizing processed results into directly trainable process-supervision data.
+* Evaluation and project inspection: validating the data factory's state through metrics, inspection scripts, and noise analysis.
 
-The chapter can be read through four lines.
+Read in engineering order, this chapter corresponds to a complete pipeline:
 
-- Seed tasks and task specifications: define what the reasoning problem is before generating traces.
-- Positive, negative, and repair trajectories: build process contrast instead of only keeping successful solutions.
-- Step validation and labeling: turn reasoning into inspectable process units.
-- Training packaging, noise control, and replay: make process supervision usable across iterations.
+**Task Sampling → Trajectory Generation → Step Validation → Reward Assignment → PRM Packaging → Training Split → Data Evaluation → Project Inspection**
 
-The engineering chain is:
+The core objective behind this structure is to extend CoT and PRM data from outcome supervision into a process-supervision pipeline built around step-level signals.
 
-```text
-seed tasks -> task specs -> positive/negative/repair traces -> step segmentation -> automatic validation -> step labels -> reward buckets -> PRM training package -> evaluation and replay
-```
-
-The core goal is to make reasoning process signals trustworthy enough for training and review.
+---
 
 ## Keywords
 
-Chain-of-thought; process supervision; PRM; step labels; reward bucket; replay set
+CoT; PRM; process supervision; reasoning trajectory; reward modeling
 
 ## Project Goals and Reader Takeaways
 
-This project uses CoT reasoning dataset construction and PRM training as the core case.
-
-After completing the chapter, readers should be able to define task specs, construct different trace types, split reasoning into steps, design step-level labels, interpret verifier results, and package PRM data for experiments.
+This project uses "CoT Reasoning Dataset and PRM Training" as its central case study, with the goal of constructing process-supervision samples containing positive examples, negative examples, and repair paths for training or evaluating a PRM. CoT trajectory design references the foundational findings of chain-of-thought prompting (Wei et al. 2022), and the acceptance criteria for process supervision and step-level verification reference "Let's Verify Step by Step" (Lightman et al. 2023). Upon completing this chapter, readers should be able to identify the key data objects for this scenario, decompose the engineering pipeline, define acceptance metrics, and transfer the case methodology to related data engineering tasks.
 
 ## Scenario Constraints and Data Boundaries
 
-The project uses a small and controlled task set, mainly around mathematics and code.
+The focus is on verifiable reasoning tasks and structured step labels, and does not cover all open-domain complex reasoning. These boundaries allow the case to be reproduced and audited; when data scale, data sources, permission scope, or deployment environment change, the sampling strategy, quality thresholds, operating costs, and compliance requirements must be re-evaluated.
 
-It does not train a frontier reasoning model.
+## Architectural Decisions
 
-It does not claim that automatic verification can replace human review.
+This project adopts an architectural path of "seed tasks, trajectory generation, step segmentation, automatic validation, label design, and PRM data packaging." This decision prioritizes guaranteeing input/output contracts, version traceability, anomaly localization, and result verifiability, rather than compressing all logic into a one-shot script run.
 
-It is a minimal process-supervision factory that makes the data objects and control points explicit.
+## Sample Schema / Data Flow
 
-## Architecture Decision
+The core data flow can be summarized as:
 
-The project adopts an architecture based on task specs, trace construction, step segmentation, automatic validation, process labels, reward buckets, training delivery, and replay.
-
-This keeps the relationship between task, trace, step, verifier, label, and training record visible.
-
-## Sample Schema and Data Flow
-
-The minimal step record should include `task_id`, `trace_id`, `trace_type`, `step_index`, `step_text`, `local_claim`, `verification_signal`, `label`, `reward_bucket`, `split`, and `audit_trace`.
-
+Listing P06-1 provides a process or path example illustrating the input/output relationships, structural constraints, or execution patterns discussed in this section.
 ```text
-task -> trace -> step -> verifier output -> process label -> reward bucket -> PRM record
+Reasoning Task → Multi-path CoT Trajectories → Step Segmentation → Validation & Labeling → PRM Training Samples → Evaluation Report
 ```
 
-This schema keeps process information separate from final-answer correctness.
+This excerpt transforms the above process into a checkable, structured representation.
 
-## Core Implementation Fragments
+The sample schema should retain at minimum the fields `id`, `source`, `content_or_payload`, `metadata`, `quality_signals`, `split_or_stage`, and `audit_trace`; specific fields are further refined by the data types, downstream tasks, and acceptance criteria of this project.
 
-The chapter keeps fragments that explain task specs, trace types, step schemas, verifier outputs, and PRM training records.
+## Core Implementation Excerpts
 
-Long generated traces and full verifier logs should be maintained in companion resources.
+The main text retains only the key implementation excerpts that illustrate design trade-offs. Complete scripts, long configuration files, execution logs, and large files should be placed in the companion repository or appendix; code presentation focuses on input/output contracts, quality thresholds, exception handling, and acceptance interfaces.
 
-## Experimental and Acceptance Metrics
+## Experimental or Acceptance Metrics
 
-Acceptance metrics include seed-task coverage, trace distribution, step count, verifier pass rate, positive/negative/repair balance, reward-bucket distribution, smoke-test pass rate, and replay-set coverage.
+Acceptance metrics include step annotation consistency, validation pass rate, positive-to-negative sample ratio, repair coverage, PRM discriminability, and spot-check error rate. If the project enters production, a curriculum, or a public reproduction environment, version numbers, dependency environments, random seeds, sample spot-check results, and failure sample post-mortem records should also be documented.
 
-For reproduction, record generation model, verifier version, prompt version, random seed, and manual review samples.
+| Acceptance Dimension | Metric / Evidence | Publication Review Criteria |
+| --- | --- | --- |
+| Process Labels | Step annotation consistency, reward bucket distribution, and validation pass rate | Verify that positive, negative, and repair trajectories each have independent evidence upon spot-check |
+| Training Interface | PRM sample field completeness rate, training split records, and manifest | Each data batch should be traceable back to task, trajectory, validator, and label source |
+| Noise Control | Negative sample contamination rate, ambiguous repair trajectory samples, and manual review conclusions | Do not treat samples not covered by the validator directly as high-quality supervision signals |
+
+*Table P06-1: Process Supervision Data Publication Acceptance Table*
 
 ## Cost, Risk, and Compliance Boundaries
 
-Costs mainly come from trace generation, verification, labeling, review, and replay maintenance.
-
-Risks include incorrect step labels, ambiguous repair traces, over-trusting weak verifiers, synthetic-style bias, and using noisy process labels as if they were ground truth.
+Costs arise primarily from multi-path reasoning generation and validation; risks are concentrated in incorrect trajectories being labeled as positive examples, insufficient validator coverage, and process label noise. When external data, personal information, copyrighted content, or third-party services are involved, source descriptions, permission status, desensitization strategies, call records, and manual review records must be retained.
 
 ## Common Failure Modes
 
-Common failures include positive traces that are too easy, negative traces that are unrealistic, repair traces with unclear error boundaries, verifier false positives, step segmentation that loses context, and reward buckets that imply false precision.
+Common failures include input distribution drift, missing schema fields, quality thresholds that are too loose or too tight, insufficient evaluation sample coverage, unstable model calls, and non-reproducible results. When investigating, prioritize locating data boundaries and intermediate artifacts before examining the model, toolchain, and deployment environment.
 
-## Reproducible Resource Notes
+## Reproducibility Resource Description
 
-Reproduction materials should include seed tasks, task specs, trace files, step files, verifier outputs, label mappings, reward-bucket definitions, training splits, metrics, and replay sets.
+Reproduction materials should include data source descriptions, minimal samples, configuration files, run commands, metrics scripts, inspection reports, and artifact directories. The main text retains necessary excerpts; complete notebooks, long scripts, and large files are maintained separately as companion resources.
 
-## 1. Project Background: Why a CoT and PRM Data Factory Is Needed
+## 1. Project Background: The Necessity of a CoT and PRM Data Factory
 
-Outcome supervision tells a model whether the final answer is correct.
+General large language models already possess strong capabilities for open-domain generation tasks, but once they enter scenarios involving mathematical problem-solving, code reasoning, complex planning, or multi-step judgment, problems emerge rapidly.
 
-Process supervision asks a more detailed question: which reasoning steps are trustworthy, which are wrong, and which steps repair an earlier mistake?
+The most common issue is not that "the model cannot articulate"—it is that "the model can articulate, but cannot stably reason through the correct process."
 
-This distinction matters for mathematics, code, tool use, and multi-step agents.
+The first class of problem is **correct results with an unusable process**. A model may produce the correct answer, but the intermediate reasoning is nothing more than templated elaboration, post-hoc explanation, or even random concatenation. If such trajectories are used directly for supervision, what the model learns is not reasoning ability, but a pattern of generating superficially plausible explanations centered on the correct answer.
 
-A final answer can be right for the wrong reason.
+The second class of problem is **a process that looks reasonable, but whose critical step has already gone wrong**. For outcome supervision, samples like these are simply categorized as "wrong answer," but for process supervision, what truly matters is localization: was it a failure of condition identification, formula substitution, code execution, or the repair path itself?
 
-A final answer can be wrong even though many early steps were useful.
+The third class of problem is **an uneven error distribution**. Positive trajectories tend to be cleaner, while negative and repair trajectories are more prone to noise, annotation ambiguity, and inconsistencies in intermediate states. If the project does not manage these trajectory types separately, signal contamination during PRM training is inevitable.
 
-P06 therefore treats reasoning traces as data assets that must be segmented, verified, labeled, packaged, and replayed.
+Therefore, the goal of P06 is not to produce yet another "small SFT dataset with CoT," but to construct a **CoT and PRM data factory** that organizes seed tasks, trajectory generation, step labels, validation signals, process rewards, and training interfaces into a reusable, inspectable, and extensible production pipeline.
 
-The project is small by design.
+This pipeline does not serve a one-off experiment, but a more universally applicable methodology:
 
-Its value is making the process-supervision structure visible.
+> When a team later needs to extend process supervision from mathematics and code to tabular reasoning, tool invocation, Agent planning, or even complex business workflows, what can truly be reused is not any particular chain of thought, but this engineering methodology of "going from tasks to step-level supervision."
+
+---
 
 ## 2. Project Goals and Boundaries
 
 ### 2.1 Project Goals
 
-The first goal is to define seed tasks and task specifications before trace generation.
+This project focuses on the following four objectives.
 
-The second goal is to generate positive, negative, and repair traces in parallel.
+**Objective One: Establish a transformation pipeline from seed tasks to step-level supervision.**
+That is, the project does not stop at the level of questions and answers, but explicitly generates multi-step reasoning trajectories and further decomposes them into step records suitable for PRM training.
 
-The third goal is to split traces into step-level records and attach verification signals.
+**Objective Two: Establish a process data system capable of distinguishing different trajectory types.**
+The project explicitly distinguishes three trajectory types—positive, negative, and repair—so that process supervision no longer consists of only two coarse-grained states ("correct/incorrect"), but can express a data distribution that more closely reflects real reasoning processes.
 
-The fourth goal is to package the resulting records into PRM-ready training artifacts with metrics and checks.
+**Objective Three: Establish an automatic validation and reward assignment feedback loop.**
+The difficulty of process supervision lies not in generation but in selection. Through rule-based checks, execution validation, result comparison, and reward buckets, the project converts "trajectory quality" from a subjective judgment into a verifiable signal as much as possible.
+
+**Objective Four: Output PRM data assets directly consumable by the training system.**
+The final deliverable is not just intermediate scripts, but also training-interface artifacts such as `prm_step_dataset.jsonl`, `train.jsonl`, `val.jsonl`, `smoke_test.jsonl`, and `training_manifest.json`.
 
 ### 2.2 Project Boundaries
 
-The project does not prove full reasoning-model improvement.
+To maintain reproducibility, this project explicitly sets several boundaries.
 
-It does not solve all process-label ambiguity.
+#### 1) Task Scope Boundary
 
-It does not replace human review for hard tasks.
+The current project covers only **mathematics** and **code** reasoning tasks. These two domains are suitable for an initial demonstration of process supervision, because they are relatively amenable to constructing verifiable signals and make it easier to align erroneous steps with final outcomes.
 
-It does not scale to every domain in the prototype stage.
+#### 2) Trajectory Type Boundary
 
-### 2.3 Role of Boundary Setting
+Current trajectories fall into three categories:
 
-Process supervision is easy to overclaim.
+* positive
+* negative
+* repair
 
-Clear boundaries prevent the reader from treating verifier output as unquestionable truth.
+This design is already sufficient to demonstrate the basic form of process supervision, but does not yet cover more complex trajectory relationships such as multi-branch search, tool-call rollback, or mixed planning-execution pipelines.
 
-The case demonstrates an engineering method, not a final PRM product.
+#### 3) Supervision Granularity Boundary
 
-## 3. Project Position: P06 in the Capability Chain
+This project emphasizes step-level supervision, but primarily focuses on **rule-based validation + heuristic scoring + data packaging**, rather than fully deploying a large-scale PRM model training platform. In other words, it more closely resembles a prototype process-supervision data factory than a final-state system.
 
-P06 sits between reasoning-data construction and reward-model training.
+#### 4) Scale Boundary
 
-Earlier chapters discuss CoT, tool use, and data quality.
+The current seed tasks number 36, with 108 generated trajectories and 534 total steps. The scale is manageable and better suited for methodology demonstration and structural analysis than for large-scale industrial training. The existing data is sufficient to illustrate the process, metrics, and noise issues, but should not be overstated as "already covering a broad range of reasoning scenarios."
 
-This project turns those ideas into a concrete process-supervision pipeline.
+### 2.3 The Role of Boundary Setting
 
-Its key contribution is to move from answer-level samples to step-level evidence.
+The most common misjudgment in process supervision projects is to see CoT, step labels, and reward signals and conclude that a mature PRM data system has already been built. In reality, a credible data factory is not built from terminology—it is built through boundary management.
 
-![Figure 1: CoT and PRM Data Factory Overview](../../images/part10/10_6_fig01_prm_factory_overview.png)
+For P06, the value of clearly stated boundaries lies in:
 
-## 4. Overall Architecture: From Seed Tasks to PRM Training Assets
+* Keeping the task domain on which current conclusions depend transparent;
+* Preventing small-scale validation results from being misread as universal conclusions;
+* Helping to clarify priorities for subsequent extensions rather than blindly scaling up;
+* Making the project resemble a sustainable, iterable engineering capability rather than a conceptual demonstration.
 
-### 4.1 Layer 1: Task and Trace Generation
+---
 
-This layer samples tasks, builds task specs, and generates positive, negative, and repair traces.
+## 3. Project Positioning: P06's Place in the Capability Chain
 
-It defines the behavior distribution before validation begins.
+If the book as a whole is viewed as a large-language-model data engineering capability chain, P06 occupies a central position in the segment moving from "outcome supervision toward process supervision."
 
-### 4.2 Layer 2: Step Verification and Reward Assignment
+Earlier chapters have already discussed SFT data, preference pairs, evaluation, and QA in general. But once teams enter reasoning scenarios, they quickly discover:
 
-This layer segments traces into steps, runs automatic checks, attaches validation signals, and assigns labels and reward buckets.
+* Pure outcome labels cannot express intermediate errors;
+* Pure preference comparisons are insufficient to pinpoint step-level signals;
+* Pure "chain-of-thought demonstration" does not equate to trainable process supervision;
+* Data validation before training is more determinative of the final performance ceiling than training itself.
 
-It is the core process-supervision layer.
+Therefore, the value of this chapter lies not in reintroducing the concept of PRM, but in grounding these methods in a **concrete, executable engineering project**: CoT reasoning dataset construction and PRM training preparation.
 
-### 4.3 Layer 3: Training Packaging and Delivery
+In other words, this chapter does not answer "what is a PRM," but rather addresses more specific questions:
 
-This layer exports PRM train/validation/smoke splits, manifests, reports, and replay sets.
+* How should process supervision data be organized?
+* Why must step labels be designed before PRM training?
+* Why can negative and repair trajectories not be merged into a single class of "bad samples"?
+* Why is the reward bucket not a finishing touch, but an important bridge to the downstream training interface?
+* Under limited resources, how does one first build a runnable, verifiable, and extensible PRM data feedback loop?
 
-It gives training code a stable interface.
+In this sense, the most important contribution of this chapter is not "training one more model," but answering a larger question:
 
-![Figure 2: Step-level Validation and Training Loop](../../images/part10/10_6_fig02_step_validation_loop.png)
+> When a team wants the model to learn a better process rather than merely a better result, how should data engineering be redesigned?
 
-## 5. Seed Tasks: The Task Layer as Supervision Starting Point
+![Figure P06-1](../../images/part10/10_6_fig01_prm_factory_overview.png)
+*Figure P06-1: CoT and PRM Data Factory Overview*
+
+---
+
+## 4. Overall Architecture: A Process Supervision Pipeline from Seed Tasks to PRM Training Assets
+
+From an engineering perspective, this project can be decomposed into three layers.
+
+### 4.1 Layer One: Task and Trajectory Generation
+
+This layer addresses "how to reliably obtain reasoning trajectories amenable to analysis." It primarily includes:
+
+* Task sampling
+* Specification definition
+* Multi-trajectory generation
+* Trajectory type control
+* Positive/negative/repair sample ratio management
+
+The goal of this layer is not to immediately produce a training set, but to expand raw tasks into a set of reasoning traces that are comparable, analyzable, and verifiable.
+
+### 4.2 Layer Two: Step Validation and Reward Assignment
+
+This layer addresses "whether these processes are worth learning." It primarily includes:
+
+* Step segmentation
+* Rule-based checking
+* Result execution and comparison
+* Step label generation
+* Reward bucket assignment
+* Process-only signal extraction
+
+This is the most critical part of the entire project, because it determines whether the system learns to "write chains of thought" or to "accumulate reliable process signals."
+
+### 4.3 Layer Three: Training Packaging and Delivery
+
+This layer addresses "whether these process data can be directly consumed by training and evaluation systems." It primarily includes:
+
+* PRM step data packaging
+* Train/val splitting
+* Smoke test construction
+* Manifest generation
+* Dataset evaluation
+* Project inspection scripts
+
+Only at this stage does the project transition from "having generated some reasoning traces" to "having established a process-supervision data pipeline."
+
+![Figure P06-2](../../images/part10/10_6_fig02_step_validation_loop.png)
+*Figure P06-2: Step-Level Validation and Training Feedback Loop*
+
+---
+
+## 5. Seed Tasks: The Task Layer as the Supervision Starting Point
+
+When many people discuss PRM, they focus entirely on the reward or scoring model, overlooking the design of the upstream task layer.
+
+Yet in real-world engineering, the ceiling of PRM training is largely determined by: **what tasks, what difficulty levels, and what types of processes the system first encounters.**
 
 ### 5.1 Why Seed Tasks Are Necessary
 
-Seed tasks define the problem before the model starts reasoning.
+Without a clearly defined task pool, a project easily degrades into "randomly generating some reasoning traces"—which may look voluminous but has chaotic distribution and uneven difficulty, with no way to explain why these steps merit supervision.
 
-Without them, traces are hard to compare, verify, and stratify.
+Once the task layer is made explicit, the project can:
 
-### 5.2 Why the Project Starts with Math and Code
+* Constrain the source and specification of problems;
+* Maintain a basic balance across different task domains;
+* Trace which seed a given trajectory originates from;
+* After training, audit whether problems stem from the task, the trajectory, or the validation stage.
 
-Math and code tasks often have verifiable outputs.
+### 5.2 Why the Current Project Starts with Mathematics and Code
 
-They provide a practical starting point for process supervision because numeric results and executable snippets can be checked.
+Mathematics and code are two excellent starting points for process supervision.
 
-### 5.3 Why Seed Tasks Are Not Final Training Samples
+On one hand, both have relatively clear correctness standards, making result comparison and automatic validation more tractable. On the other hand, both possess sufficiently strong multi-step reasoning characteristics to genuinely expose step-level errors, rather than reducing to simple correct/incorrect classification.
 
-A seed task defines intent.
+### 5.3 Why Seed Tasks Are Not the Same as Final Training Samples
 
-The final PRM sample is built only after traces, steps, verification, labels, and packaging are added.
+Seed tasks are merely one layer of "supervision source," not the final unit of supervision. The real value of P06 lies in expanding seed tasks into multiple trajectory types, decomposing trajectories into steps, and only then exporting PRM data. This pipeline means:
 
-## 6. Task Sampling and Specification Design
+> The project's concern is not the problem itself, but the process signals generated around that problem.
 
+---
+
+## 6. Task Sampling and Specification Design: The Upstream Scheduling Layer
+
+`sampler.py` is responsible at this layer for constructing two types of seeds from GSM8K, MATH, and MBPP: math tasks extract the final answer and split it into reference steps, while code tasks retain `reference_code`, `test_setup_code`, and `test_list`, with everything unified into `seed_pool.jsonl` and `task_spec.json`. The MATH dataset's problem structure provides a canonical source for multi-step reasoning and process verification (Hendrycks et al. 2021). This prepares the fields required for downstream trace generation and validation at the upstream stage.
+
+The corresponding implementation is as follows:
+
+Listing P06-2 provides a Python implementation excerpt illustrating the input/output relationships, structural constraints, or execution patterns discussed in this section.
 ```python
-task_spec = {
-    "task_id": "math_000123",
-    "domain": "math",
-    "difficulty": "medium",
-    "prompt": "A problem statement...",
-    "reference_answer": "42",
-    "verifier_type": "numeric",
-    "target_trace_types": ["positive", "negative", "repair"],
-}
+for index, record in enumerate(gsm8k):
+    final_answer = extract_final_answer(record["answer"])
+    steps = split_reasoning_steps(record["answer"])
+    if not final_answer or len(steps) < 2:
+        continue
+    seeds.append(
+        {
+            "seed_id": f"math_{index}",
+            "domain": "math",
+            "topic": infer_math_topic(record["question"]),
+            "question": record["question"],
+            "reference_steps": steps,
+            "final_answer": final_answer,
+            "source_dataset": "gsm8k_train",
+        }
+    )
 ```
 
-### 6.1 What Specification Design Solves
+This excerpt transforms the above process into a checkable, structured representation.
 
-The spec records domain, difficulty, expected verifier, reference answer, and trace targets.
+`task_spec` encodes project constraints as structured configuration:
 
-It makes later traces comparable.
-
-### 6.2 Why Sampling Cannot Mean Only Diversity
-
-Sampling should control difficulty, domain, verifier type, and target trace type.
-
-Raw diversity without evaluation structure is not enough.
-
-### 6.3 Engineering Value of `task_spec`
-
-The task spec becomes the anchor for trace generation, step labeling, validation, splitting, and reporting.
-
-![Figure 3: Task Sampling and Spec Generation](../../images/part10/10_6_fig03_task_sampling.png)
-
-## 7. Trace Generation: Building Positive, Negative, and Repair Together
-
-Positive traces show correct reasoning.
-
-Negative traces intentionally include plausible wrong paths.
-
-Repair traces show the model identifying and correcting an error.
-
+Listing P06-3 provides a Python implementation excerpt illustrating the input/output relationships, structural constraints, or execution patterns discussed in this section.
 ```python
-trace = {
-    "trace_id": "math_000123_repair_00",
-    "task_id": "math_000123",
-    "trace_type": "repair",
-    "steps": [
-        {"index": 0, "text": "Set up the equation..."},
-        {"index": 1, "text": "Notice the earlier coefficient was wrong..."},
-        {"index": 2, "text": "Recompute and get 42."},
+task_spec = {
+    "seed_count": len(seeds),
+    "domain_distribution": dict(Counter(seed["domain"] for seed in seeds)),
+    "trace_targets": {
+        "positive": "correct reasoning trace",
+        "negative": "corrupted or wrong reasoning trace",
+        "repair": "wrong step followed by correction",
+    },
+    "validation_targets": [
+        "final_answer_match",
+        "step_level_quality_labels",
+        "code_execution_and_unit_tests",
     ],
 }
 ```
 
-### 7.1 Why Positive-only Traces Are Not Enough
+This excerpt transforms the above process into a checkable, structured representation.
 
-A PRM needs contrast.
+The first step in the project pipeline is `src/sampler.py`: sample tasks and generate specifications, then proceed to reasoning trajectory generation. P06 treats "data distribution" as an engineering object that must be explicitly managed from the very beginning, rather than leaving it to model randomness.
 
-It needs to see good steps, bad steps, and recovery steps.
+### 6.1 What Problem Specification Design Solves
 
-### 7.2 What Negative Traces Solve
+A task spec is essentially answering several questions:
 
-Negative traces teach the reward model which plausible reasoning moves should receive low scores.
+* Does the current task belong to mathematics or code?
+* In what difficulty range does the problem roughly fall?
+* Does trajectory generation require a particular structure?
+* Does subsequent validation rely primarily on rules, execution, or result comparison?
 
-They are especially useful when errors are subtle.
+By surfacing these questions at the specification layer, the project's downstream generation, validation, and analysis all operate within a consistent boundary.
 
-### 7.3 Why Repair Traces Are More Important and More Dangerous
+### 6.2 Why Sampling Cannot Simply Mean "Diversity"
 
-Repair traces teach recovery.
+Many projects claim to have done sampling when in fact they only randomly selected problems. But for PRM, random does not equal appropriate, because process supervision cares less about surface-level problem diversity and more about:
 
-They are dangerous because the boundary between "mistake" and "repair" can be ambiguous.
+* Whether the error types are sufficiently varied;
+* Whether step granularity is amenable to segmentation;
+* Whether validation signals are obtainable;
+* Whether there is a comparative basis for positive, negative, and repair trajectories.
 
-### 7.4 What the Current Trace Structure Shows
+### 6.3 The Engineering Value of task spec
 
-The project treats trace type as a first-class field.
+The current project explicitly produces `seed_pool.jsonl` and `task_spec.json`, which means the task definitions are not buried inside code but are persisted as upstream scheduling information. The advantage of this approach is:
 
-This makes process distribution visible in metrics and training packaging.
+* Subsequent iterations can compare the effect of different specifications on trajectory quality;
+* Post-mortems can trace which task types more easily introduce noise;
+* The task layer and trajectory layer can be iterated separately without rewriting the entire pipeline each time;
+* Interfaces are preserved for future extension to new task domains.
 
-![Figure 4: Relationship Among Three Trace Types](../../images/part10/10_6_fig04_trace_types.png)
+![Figure P06-3](../../images/part10/10_6_fig03_task_sampling.png)
+*Figure P06-3: Task Sampling and Specification Generation Flowchart*
 
-## 8. Step Segmentation and Schema: The Minimum Unit of Process Supervision
+---
 
-### 8.1 Why Step Is the Required Unit
+## 7. Trajectory Generation: Parallel Construction of Positive, Negative, and Repair Trajectories
 
-Process supervision cannot operate on the whole answer only.
+The three trajectory types in P06 are explicitly constructed in `generate_traces.py`: positive trajectories use the reference steps directly; negative trajectories introduce errors by corrupting key numbers or mutating reference code; repair trajectories append a correction step after an erroneous trajectory. This implementation grounds "process supervision" in operable data synthesis logic.
 
-It needs local reasoning units.
+The corresponding implementation is as follows:
 
-The step is the minimum unit that can be reviewed, verified, and rewarded.
-
-### 8.2 What the Schema Solves
-
-![Figure 5: PRM Step Schema](../../images/part10/10_6_fig05_step_schema.png)
-
-The schema connects each step to its task, trace, position, local claim, verifier result, label, and reward bucket.
-
-This prevents labels from becoming detached from source context.
-
-### 8.3 Why Step Schema Must Be Preserved Separately
-
-Training records may compress context.
-
-The step schema preserves auditability.
-
-It lets reviewers trace a PRM sample back to the original reasoning trace.
-
-## 9. Automatic Validation: Result Checking for Process Supervision
-
+Listing P06-4 provides a Python implementation excerpt illustrating the input/output relationships, structural constraints, or execution patterns discussed in this section.
 ```python
-verdict = {
-    "step_id": "math_000123_repair_00_s02",
-    "verifier_pass": True,
-    "reason": "numeric_consistency",
-    "parsed_value": 42,
-    "expected_value": 42,
+wrong_steps = [dict(step) for step in correct_steps]
+wrong_steps[-1]["text"] = corrupt_numeric_text(wrong_steps[-1]["text"])
+wrong_steps[-1]["label"] = 0
+
+negative_final = {
+    "step_idx": len(wrong_steps) + 1,
+    "text": f"Final answer: {corrupt_numeric_text(seed['final_answer'])}",
+    "label": 0,
+    "kind": "final",
 }
+
+repair_steps = wrong_steps + [negative_final]
+repair_steps.append(
+    {
+        "step_idx": len(repair_steps) + 1,
+        "text": f"Correction: the previous arithmetic was wrong. The correct final answer is {seed['final_answer']}.",
+        "label": 1,
+        "kind": "repair",
+    }
+)
 ```
 
-### 9.1 Why Validation Must Move into Data Production
+This excerpt transforms the above process into a checkable, structured representation.
 
-If validation waits until training, noisy process labels have already entered the dataset.
+This implementation shows that a repair trace is not a separately constructed new problem, but is formed by explicitly appending a repair step after a negative trace. The logic for code tasks is analogous, except that errors originate from `mutate_python_code` and validation relies on subsequent unit test execution.
 
-Validation should be part of data creation.
+One of P06's core pipeline steps is `src/generate_traces.py`—generating multiple reasoning trajectories from seed tasks, rather than retaining only a single canonical answer trajectory.
 
-### 9.2 Which Signals Automatic Validation Can Use
+### 7.1 Why Generating Only Positive Trajectories Is Insufficient
 
-Signals include numeric equality, symbolic checks, code execution, final-answer comparison, format checks, and rule-based constraints.
+If process supervision retains only positive trajectories, the model can certainly learn "what a correct-looking process looks like," but still cannot effectively distinguish:
 
-### 9.3 Why Validation Is Not "the Stricter the Better"
+* Which local steps are unreliable;
+* Which repair strategies are effective;
+* Which errors are amplified in subsequent steps.
 
-Overly strict validation can reject useful repair steps or alternate solution paths.
+This causes PRM to easily degrade into a scorer that "prefers lengthy, well-formatted trajectories" rather than a model capable of identifying process quality.
 
-The goal is reliable signal, not maximum rejection.
+### 7.2 What Problem Negative Trajectories Solve
 
-### 9.4 What Current Validation Results Mean
+The value of negative trajectories is that they provide an explicit reference frame for "erroneous processes." Through them, the system can learn:
 
-Validation results should be interpreted by trace type.
+* How intermediate steps deviate from the correct path;
+* What warning signs appear before ultimate failure;
+* Which errors are merely local deviations versus which cause complete pipeline collapse.
 
-Negative and repair traces are expected to include failures.
+### 7.3 Why Repair Trajectories Are Both More Important and More Dangerous
 
-![Figure 6: Step Validation and Result Comparison](../../images/part10/10_6_fig06_validation_pipeline.png)
+Repair trajectories more closely resemble real-world reasoning correction processes than ordinary negative examples. They help the system learn:
 
-## 10. Step Label Design: Making Process Fields Operable
+* How to return to the correct path after an error occurs;
+* Which types of remediation are effective;
+* What context a repair process should preserve.
 
-### 10.1 Role of Step Labels
+However, repair trajectories are also the most prone to introducing noise. If the repair logic itself is unstable, what the model may learn is not "how to correct errors," but "how to reorganize errors into a continuation that appears superficially plausible."
 
-Step labels turn verification and review into training signals.
+### 7.4 What the Current Project's Trajectory Structure Indicates
 
-They tell the model which candidate step deserves reward.
+Existing metrics show that the project generated 108 trajectories, with the three types perfectly symmetric: `positive=36`, `negative=36`, `repair=36`. This demonstrates that the project's trajectory structure is not the result of generating some samples ad hoc, but of explicitly designing all three process types as parallel supervision objects.
 
-### 10.2 Why Labels Cannot Be Only Binary
+![Figure P06-4](../../images/part10/10_6_fig04_trace_types.png)
+*Figure P06-4: Schematic of the Three Trajectory Types*
 
-Binary correct/incorrect labels are too coarse.
+---
 
-Useful labels may include correct, incorrect, repaired, unsupported, format_error, and uncertain.
+## 8. Step Segmentation and Schema: The Minimal Unit of Process Supervision
 
-### 10.3 Why Process-only Supervision Signals Matter
+After trajectory generation is complete, the project does not directly use entire reasoning traces for training. Instead, it first performs step-level segmentation. This step is one of the most fundamental distinctions between P06 and an ordinary CoT sample library.
 
-Some steps matter even when the final answer is not yet visible.
+### 8.1 Why the Step Is a Necessary Unit
 
-Process-only signals let the reward model learn local reasoning quality.
+An entire trajectory can only express "whether it is good overall," but cannot express "which specific step is good and which is bad."
 
-![Figure 7: Step Labels and Process-only Signal](../../images/part10/10_6_fig07_step_labels.png)
+Yet what a PRM seeks to learn is precisely this finer-grained judgment:
 
-## 11. Reward Bucket: Layered Scoring Mechanism
+* Whether a given step is logically coherent;
+* Whether a given step is consistent with the preceding one;
+* Whether a given step introduces an erroneous fact or erroneous code;
+* Whether a given step, even without directly causing final failure, has already emitted a danger signal.
 
-### 11.1 Engineering Meaning of Reward Buckets
+### 8.2 What Problem the Schema Solves Here
 
-Reward buckets group steps into coarse quality levels.
+A step schema is not designed to make fields more complete; it is designed to allow validation, statistics, and training to all operate around the same unit. A typical step record should contain at minimum:
 
-They are easier to review than fragile continuous scores.
+* `trace_id`
+* `task_id`
+* `domain`
+* `trace_type`
+* `step_index`
+* `step_text`
+* `step_label`
+* `reward_bucket`
+* `validation_flags`
+* `final_outcome`
+* `metadata`
+
+With this schema layer in place, the project can subsequently:
+
+* Analyze step quality differences across domains;
+* Compare noise structures across trajectory types;
+* Trace which step distributions a given reward bucket originates from;
+* Package step data directly as PRM training inputs.
+
+### 8.3 Why the Step Schema Must Be Preserved Separately
+
+Many process supervision projects fail not because the model is too weak, but because the minimal supervision unit was never clearly designed at the outset, leading to:
+
+* Training that can only score entire responses;
+* No way to trace errors back to specific steps when they occur;
+* Data splits handled only at the coarse sample level;
+* No handle for noise analysis.
+
+From this perspective, the step schema is not an ancillary design element—it is the foundation of the PRM data factory.
+
+![Figure P06-5](../../images/part10/10_6_fig05_step_schema.png)
+*Figure P06-5: PRM Step Schema Schematic*
+
+---
+
+## 9. Automatic Validation: Result Verification for Process Supervision
+
+`validate_and_score.py` is responsible at this layer for chaining together domain routing, result validation, `trace_score` computation, and reward bucket mapping: math tasks go through final answer matching, and code tasks go through code execution and unit tests. This grounds automatic validation in a complete engineering feedback loop.
+
+The corresponding implementation is as follows:
+
+Listing P06-5 provides a Python implementation excerpt illustrating the input/output relationships, structural constraints, or execution patterns discussed in this section.
+```python
+if trace["domain"] == "math":
+    passed, validation = validate_math_trace(trace)
+else:
+    passed, validation = validate_code_trace(trace)
+
+label_sum = sum(step["label"] for step in trace["steps"])
+score = label_sum / max(1, len(trace["steps"]))
+bucket = reward_bucket(score)
+
+enriched["validation_passed"] = passed
+enriched["trace_score"] = round(score, 4)
+enriched["reward_bucket"] = bucket
+```
+
+This excerpt transforms the above process into a checkable, structured representation.
+
+The reward bucket is also not a black-box score, but a rule-interpretable piecewise function:
+
+Listing P06-6 provides a Python implementation excerpt illustrating the input/output relationships, structural constraints, or execution patterns discussed in this section.
+```python
+def reward_bucket(score: float) -> str:
+    if score >= 0.95:
+        return "high"
+    if score >= 0.6:
+        return "medium"
+    if score > 0:
+        return "low"
+    return "zero"
+```
+
+This excerpt transforms the above process into a checkable, structured representation.
+
+Writing it this way makes the signals on which validation depends, the origin of buckets, and the relationships among them all transparent.
+
+One of P06's central intermediate steps is `src/validate_and_score.py`, which validates, scores, and assigns labels to the generated trajectories. This step is critically important because it determines whether the project is accumulating supervision signals or amplifying generation noise.
+
+### 9.1 Why Validation Must Be Moved Upstream Into the Data Production Stage
+
+Many teams treat validation as post-training evaluation, but process supervision does not work that way. Once dirty trajectories enter PRM data, the trained model will likely become better at recognizing "pseudo-reasoning patterns" rather than better at recognizing genuine process quality.
+
+Therefore, validation here is not the project's epilogue—it is part of the production pipeline.
+
+### 9.2 What Signals Automatic Validation Can Rely On
+
+Based on the existing process description, the project combines **rule-based checking, execution, and result comparison** to assign labels and rewards to trajectories and steps. This indicates that current validation does not remain at the text surface, but integrates formal correctness, executability, and result consistency as much as possible.
+
+For math tasks, this kind of validation more readily relies on result comparison; for code tasks, it is more appropriate to combine execution results, test cases, and syntax/behavioral checks. This design ensures that "step quality" is no longer only a subjective description.
+
+### 9.3 Why Stricter Validation Is Not Always Better
+
+Intuitively, many people feel that tightening the rules will produce cleaner data. But in process supervision projects, overly strict validation also creates problems:
+
+* Valuable intermediate errors are over-removed;
+* Repair trajectories lose their raison d'être;
+* Data distribution becomes dominated by positive examples, making it harder for the PRM to learn correction boundaries;
+* The project devolves into a variant of outcome-only supervision.
+
+Therefore, a more appropriate strategy is not "blanket cleaning," but preserving structured differences: which steps pass, which fail, and which, despite failing, are still worth retaining as process signals.
+
+### 9.4 What the Current Project's Validation Results Indicate
+
+Existing metrics show that the overall trajectory validation pass rate is `67.59%`, but the positive trajectory pass rate reaches `100.00%`, indicating that current issues are concentrated in the control of negative and repair trajectories. This result is highly valuable because it clearly identifies that the next optimization step should not be to blindly scale up, but to prioritize improving cleaning and validation quality.
+
+![Figure P06-6](../../images/part10/10_6_fig06_validation_pipeline.png)
+*Figure P06-6: Step Validation and Result Comparison Pipeline*
+
+---
+
+## 10. Step Label Design: Operationalizing Process Fields
+
+When many people discuss process supervision, they use abstract concepts such as "high-quality chain of thought," "trustworthy steps," and "process consistency." But what can actually be implemented in engineering is not these abstract terms—it is **data labels that can enter fields, statistics, and training**.
+
+### 10.1 The Role of Step Labels
+
+The value of step labels lies in decomposing "process quality" into machine-consumable supervision signals. Through labels, the project can explicitly specify:
+
+* Which steps should be reinforced;
+* Which steps should be penalized;
+* Which steps are process-exclusive signals rather than accessories to an outcome;
+* Which steps, even within a negative trajectory, still carry local value.
+
+### 10.2 Why Labels Cannot Be Binary Only
+
+Simple positive/negative binary classification is certainly attractive for its ease of implementation and straightforward training. But for PRM, this is often too coarse. The reason is:
+
+* A repair trajectory may have errors in its first half and corrections in its second;
+* A negative trajectory may have only one critical error;
+* Some steps, while not optimal, should not be equated with pure noise.
+
+Therefore, P06's introduction of a joint structure of step labels and reward buckets is essentially an attempt to avoid crudely compressing all complexity into a single label bit.
+
+### 10.3 Why Process-Only Supervision Signals Matter
+
+Existing metrics show that the project contains `144` process-only supervision signal steps. The engineering significance of this number is clear: process supervision genuinely provides additional signals that outcome-only supervision cannot replace. If only final results are examined, the value of these 144 steps is completely discarded.
+
+This is precisely why a PRM data factory is not simply "breaking answers into pieces," but building a new supervision layer beyond outcomes.
+
+![Figure P06-7](../../images/part10/10_6_fig07_step_labels.png)
+*Figure P06-7: Step Labels and Process-Only Signal Schematic*
+
+---
+
+## 11. Reward Buckets: A Stratified Scoring Mechanism
+
+When many teams work on process scoring, they tend to simplify the entire problem into "giving a trajectory a single score." This approach can quickly validate ideas, but it also quickly runs into problems: scores are too sparse, boundaries are too subjective, and the training interface becomes unstable.
+
+### 11.1 The Engineering Significance of Reward Buckets
+
+The value of reward buckets lies not in being more "advanced" than continuous scores, but in being better suited to expressing interpretable intervals in the early stages of engineering. Through buckets, teams can more clearly distinguish:
+
+* High-quality processes that clearly merit reinforcement;
+* Intermediate processes with some value but insufficient stability;
+* Low-quality processes that should be down-weighted or excluded.
 
 ### 11.2 Why Buckets Are More Stable Than Continuous Scores
 
-Continuous scores can imply precision that the data does not support.
+In small-scale process supervision projects, continuous scores often produce two problems:
 
-Buckets such as high, medium, low, and reject better match human and verifier uncertainty.
+* Scoring criteria are difficult to keep stable;
+* It is subsequently hard to explain what the difference between 0.73 and 0.78 actually derives from.
 
-### 11.3 What the Current Bucket Structure Shows
+By contrast, buckets make it easier for the project to achieve in its early stages:
 
-The bucket design shows that the project values usable process ranking over false numerical precision.
+* Clear rule definitions;
+* Direct distribution statistics;
+* Simple training mapping;
+* Easier anomaly localization during post-mortems.
 
-## 12. PRM Data Packaging: Training Interface Layer
+### 11.3 What the Current Project's Bucket Structure Indicates
 
+The existing reward bucket distribution is: `high=36`, `medium=45`, `low=27`. This distribution indicates at least two things:
+
+First, the project has not made all trajectories "uniformly mediocre," but has formed distinguishable quality tiers.
+
+Second, the current data skews toward medium-to-high quality processes, while still retaining enough low-quality samples to provide contrastive learning foundations for the PRM.
+
+---
+
+## 12. PRM Data Packaging: The Training Interface Layer
+
+This section emphasizes the actual structure of the step-level dataset. P06 does not simply copy entire traces into the training directory; instead, it reorganizes each step into PRM training records and then generates `train.jsonl`, `val.jsonl`, `smoke_test.jsonl`, and `training_manifest.json`. This demonstrates that the minimal unit consumed by the training system is not a problem, but a step record carrying labels and reward signals.
+
+The corresponding packaging structure is as follows:
+
+Listing P06-7 provides a Python implementation excerpt illustrating the input/output relationships, structural constraints, or execution patterns discussed in this section.
 ```python
-prm_record = {
-    "prompt": "Problem statement...",
-    "partial_trace": "Step 1...\nStep 2...",
-    "candidate_step": "Therefore the answer is 42.",
-    "label": "correct",
-    "reward_bucket": "high",
-    "metadata": {
-        "domain": "math",
-        "trace_type": "repair",
-        "verifier_reason": "numeric_consistency",
-    },
+record = {
+    "record_id": f"{trace_id}_step_{step_idx}",
+    "domain": domain,
+    "trace_type": trace_type,
+    "prompt": question,
+    "step_text": step_text,
+    "label": step_label,
+    "reward_bucket": reward_bucket,
 }
 ```
 
-### 12.1 Why the Packaging Layer Is Important
+This excerpt transforms the above process into a checkable, structured representation.
 
-Training code should receive stable records.
+With this excerpt, the main text reads more like an engineering implementation than a results summary.
 
-It should not need to understand the internal generation pipeline.
+After trajectory generation, step segmentation, validation, and reward assignment are complete, the project must also complete a frequently overlooked step: re-packaging these intermediate signals into a data format directly consumable by the training system.
 
-### 12.2 Current Key Training Artifacts
+In P06's pipeline, this step is handled by `src/prepare_prm_data.py`. Its significance is that what the project ultimately builds is not a collection of scattered intermediate files, but a truly trainable data asset.
 
-Artifacts include PRM train, validation, and smoke splits; manifest files; verifier summaries; and replay records.
+### 12.1 Why the Packaging Layer Matters
 
-### 12.3 Why Smoke Test and Manifest Must Exist
+Without a packaging layer, the project encounters a common disconnect:
 
-The smoke set validates the training interface.
+* The research side believes "step labels already exist";
+* The training side believes "these files cannot be used directly";
+* The evaluation side cannot confirm the train/val split logic.
 
-The manifest records counts, versions, label distributions, and file paths.
+The role of the packaging layer is to reorganize the complex process supervision signals from preceding stages into standard assets that can enter training and evaluation systems.
 
-![Figure 8: PRM Data Packaging and Training Interface](../../images/part10/10_6_fig08_training_interface.png)
+### 12.2 What Key Training Artifacts the Current Project Produces
 
-## 13. Data Scale and Structure: Signals That the Factory Has Formed
+Existing reports show that the project explicitly produces:
 
-The important signal is not only total record count.
+* `data/training/prm_step_dataset.jsonl`
+* `data/training/train.jsonl`
+* `data/training/val.jsonl`
+* `data/training/smoke_test.jsonl`
+* `data/training/training_manifest.json`
 
-It is whether tasks, traces, steps, labels, buckets, verifier outputs, and splits are all present.
+This demonstrates that the project has not stalled at the "trajectory analysis" stage but has completed training interface layer delivery.
 
-### 13.1 What These Numbers Mean
+### 12.3 Why Smoke Tests and Manifests Must Also Exist
 
-Counts by task domain, trace type, label, reward bucket, and split reveal whether the factory is balanced enough for early experiments.
+Many data projects focus attention on train/val while neglecting smoke tests and manifests. In practice, both are important.
+
+* `smoke_test.jsonl` shows that the project has considered rapid pre-training validation;
+* `training_manifest.json` shows that the project has considered data versioning, scale, splitting, and metadata management.
+
+These artifacts do not directly improve model scores, but significantly improve project maintainability and reproducibility.
+
+![Figure P06-8](../../images/part10/10_6_fig08_training_interface.png)
+*Figure P06-8: PRM Data Packaging and Training Interface*
+
+---
+
+## 13. Data Scale and Structure: Signals That the Current Factory Has Taken Shape
+
+In project reviews, reviewers easily ask first "how many data records were produced." But for PRM, scale is important, but structure is more important.
+
+The key figures for the current project are as follows:
+
+* Seed tasks: `36`
+* Trajectories: `108`
+* Total steps: `534`
+* Process-only supervision signal steps: `144`
+* Step-level records in training set: `534`
+* Total estimated tokens: `58,381`
+
+### 13.1 What These Numbers Indicate
+
+First, the project has formed a complete "task → trajectory → steps → training data" expansion pipeline, rather than an isolated collection of CoT samples.
+
+Second, the step count is significantly higher than the task count, indicating that the supervision unit has successfully descended to the process layer rather than remaining at the problem level.
+
+Third, the `144` process-only signal steps show that the project has genuinely introduced new signals beyond outcomes, rather than merely rearranging answer text.
 
 ### 13.2 Why Structure Matters More Than Total Volume
 
-Large noisy process data can damage a PRM.
+If a PRM dataset has many steps but lacks:
 
-A smaller structured dataset is more useful for method validation.
+* Trajectory type differentiation;
+* Reward stratification;
+* A validation feedback loop;
+* Clear splits;
 
-## 14. Metric Interpretation: Meaning of Current Validation Results
+then its value remains limited.
+
+What is most worth preserving about P06 is precisely that these structural designs are already in place. The scale is small, but the feedback loop is relatively complete. The most critical point here is: **process supervision scales not by piling up volume, but by building structure first.**
+
+---
+
+## 14. Interpreting Metrics: The Meaning of Current Validation Results
+
+Many case studies, when reporting results, prefer to report a single aggregate number such as "generated over 100 trajectories." But what is genuinely more valuable are the metrics that help understand system behavior.
 
 ### 14.1 Current Key Metrics
 
-Key metrics include task count, trace count, step count, verifier pass rate, positive pass rate, negative failure rate, repair success rate, bucket distribution, and check pass rate.
+The most critical results from the existing project include:
 
-### 14.2 Why a Pass Rate Below 100% Can Be Good
+* Overall validation pass rate: `67.59%`
+* Positive trajectory pass rate: `100.00%`
+* Symmetric trajectory counts across three types: `36 / 36 / 36`
+* Reward bucket distribution: `36 / 45 / 27`
 
-If the dataset contains negative and repair traces, some failures should exist.
+Viewed together, these metrics are far more informative than reporting a single "number of trajectories."
 
-A perfect pass rate may mean the data lacks contrast.
+### 14.2 Why a Sub-100% Pass Rate Is Actually a Good Sign
 
-### 14.3 Why Positive 100% Pass Has Two Meanings
+Many projects treat "all passing" as success. But for process supervision, if all trajectories are validated as high-quality, that is more often a cause for concern—because it may mean:
 
-It may mean positives are clean.
+* Only positive examples were retained;
+* Validation rules are too permissive;
+* Noise was ignored;
+* The PRM cannot learn true boundaries.
 
-It may also mean the task set is too easy or the verifier is too permissive.
+P06's overall pass rate of `67.59%`, while not high, genuinely exposes the noise challenges in negative and repair trajectories. This engineering state of "surfacing problems" is often more valuable than pretending everything is perfect.
 
-![Figure 9: Validation Pass Rate by Trace Type](../../images/part10/10_6_fig09_validation_metrics.png)
+### 14.3 Why the 100% Positive Pass Rate Also Has a Dual Meaning
 
-## 15. Evaluation and Project Checks
+A positive trajectory pass rate of `100.00%` certainly indicates good quality in positive sample generation, but it also points to something else: the project's primary pressure is no longer on positive examples, but on cleaning and controlling erroneous and repair trajectories.
 
-Evaluation should check data consistency before downstream model performance.
+This indicates that the next optimization direction is already clear, rather than the project being in a chaotic state where "problems could be anywhere."
 
+![Figure P06-9](../../images/part10/10_6_fig09_validation_metrics.png)
+*Figure P06-9: Validation Pass Rate vs. Trajectory Type Comparison*
+
+---
+
+## 15. Evaluation and Project Inspection: The Self-Checking Layer
+
+`run_p6_checks.py` encodes a set of concrete engineering gates as automatic checks: first running `py_compile` and `evaluate_prm.py`, then checking whether required files exist, whether both the math and code domains are present, whether all three trajectory types (positive/negative/repair) are covered, whether step labels cover both positive and negative classes, whether all reward buckets are present, and whether train and val overlap.
+
+The corresponding implementation is as follows:
+
+Listing P06-8 provides a Python implementation excerpt illustrating the input/output relationships, structural constraints, or execution patterns discussed in this section.
 ```python
-checks = [
-    "all_steps_have_trace_id",
-    "all_reward_buckets_valid",
-    "no_empty_step_text",
-    "verifier_outputs_present",
-    "train_val_smoke_non_overlapping",
+dataset_checks = [
+    {
+        "name": "required_files_exist",
+        "passed": all(path.exists() for path in REQUIRED_FILES),
+    },
+    {
+        "name": "both_domains_present",
+        "passed": {"math", "code"} <= {trace["domain"] for trace in traces},
+    },
+    {
+        "name": "trace_types_present",
+        "passed": {"positive", "negative", "repair"} <= {trace["trace_type"] for trace in traces},
+    },
+    {
+        "name": "train_val_no_overlap",
+        "passed": not ({record["record_id"] for record in train} & {record["record_id"] for record in val}),
+    },
 ]
 ```
 
-### 15.1 Why Evaluation Cannot Only Look at the Trained Model
+This excerpt transforms the above process into a checkable, structured representation.
 
-If the data assets are inconsistent, model results are hard to interpret.
+These checks operationalize "project inspection" as executable engineering constraints.
 
-The project should validate process data first.
+In P06's pipeline, in addition to `evaluate_prm.py`, there is also `run_p6_checks.py`. This shows that the project is concerned not only with whether data can be generated, but also with whether the code, artifacts, and reports are mutually consistent.
 
-### 15.2 What Current Checks Cover
+### 15.1 Why Evaluation Cannot Only Examine Post-Training Model Performance
 
-Checks should cover required files, step fields, label values, bucket values, verifier outputs, split overlap, and report consistency.
+What a project chapter most needs to demonstrate is "engineering closure," not a final model score. Because in many real-world teams, what fails first is not the PRM model itself, but:
 
-### 15.3 Why Check Scripts Belong in the Chapter
+* A critical artifact was not generated;
+* Train and val overlap;
+* Some step label class was never covered at all;
+* A reward bucket is missing;
+* The code and the report describe different versions of the data.
 
-Check scripts make the project reproducible.
+### 15.2 What the Current Project's Inspection Coverage Indicates
 
-They show how acceptance is operationalized.
+Existing inspection results show:
 
-## 16. Noise Control: Governance of Negative and Repair Traces
+* Total checks: `10`
+* Checks passed: `10`
+* Overall status: `PASS`
+* Command-level checks: `py_compile, evaluate_prm`
+* Data-level checks: `required_files_exist, both_domains_present, trace_types_present, step_labels_cover_both_classes, reward_buckets_present, train_val_no_overlap ...`
 
-### 16.1 Why Negative Examples Are Naturally Noisy
+This demonstrates that the current project's checks are not perfunctory, but genuinely cover critical aspects including code runnability, file existence, data distribution, and training splits.
 
-Negative traces must be plausible enough to teach contrast.
+### 15.3 Why Inspection Scripts Deserve a Place in the Chapter Body
 
-If they are too obviously wrong, they are less useful.
+A PRM project without an inspection layer can easily appear normal during a demonstration but completely fall apart during reproduction. Including inspection scripts in the chapter body is fundamentally an emphasis on:
 
-If they are too subtle, labels become uncertain.
+> The credibility of a process supervision project comes not only from the samples themselves, but also from whether the project can demonstrate the absence of obvious engineering errors.
 
-### 16.2 Why Repair Traces Are More Ambiguous
+---
 
-Repair traces include both wrong and corrected reasoning.
+## 16. Noise Control: Governing Negative and Repair Trajectories
 
-The data factory must mark the transition point clearly.
+The aspect of P06 most worthy of deeper discussion is not how elegantly the positive trajectories were produced, but why negative and repair trajectories become the primary bottleneck.
 
-### 16.3 Clear Signal Given by the Current Project
+### 16.1 Why Negative Trajectories Are Inherently Noisier
 
-The project treats noise analysis as part of the main process.
+The problem with negative trajectories is that they often mix two entirely different components:
 
-It does not hide uncertain cases.
+* "Genuine error paths" with research value;
+* "Random garbled noise" with no supervisory value.
 
-![Figure 10: Noise Sources in Negative and Repair Traces](../../images/part10/10_6_fig10_noise_sources.png)
+If the project does not distinguish between the two, the PRM may well learn "how to penalize strangely styled text" rather than "how to identify genuinely erroneous reasoning steps."
 
-## 17. Cost and Benefit: Priority of Structural Closure
+### 16.2 Why Repair Trajectories Are More Prone to Ambiguity
 
-### 17.1 Real Benefit of a Small Project
+Repair trajectories look ideal in theory, because they simulate a model's process of recovering from an error. But the genuinely hard questions are:
 
-The early benefit is learning how to build process supervision assets.
+* From which step does the repair begin;
+* Whether the preceding erroneous steps are retained;
+* Whether the correct steps following the repair should be down-weighted;
+* Whether repair trajectories will produce stylistic biases.
 
-It is not model benchmark improvement.
+If these questions are not clearly addressed at the schema and validation layers, repair data quickly becomes the most unstable class of asset.
 
-### 17.2 Why the Chapter Emphasizes Structural Benefit
+### 16.3 The Clear Signal the Current Project Provides
 
-Once the structure is correct, scale becomes safer.
+Existing reports clearly indicate that the shortfall in overall pass rate is concentrated in negative and repair trajectories, and that subsequent optimization should prioritize trace validation and repair trajectory quality control rather than blindly expanding scale.
 
-If the structure is wrong, more data only adds more noise.
+This is a very important engineering conclusion, because it narrows "what to do next" from vague generality into a specific, well-defined production pipeline problem.
+
+![Figure P06-10](../../images/part10/10_6_fig10_noise_sources.png)
+*Figure P06-10: Noise Sources in Negative and Repair Trajectories*
+
+---
+
+## 17. Cost and Benefit: The Priority of Structural Closure
+
+In many teams, the mention of process supervision immediately conjures associations with longer CoT, more complex annotation, and higher training costs. This judgment is not entirely wrong, but it can be misleading:
+
+What is truly expensive is never "a few more steps"—it is **blindly scaling up before a validation feedback loop exists**.
+
+### 17.1 The Real Benefits of a Small-Scale Project
+
+For a small-scale process supervision project like P06, the greatest value lies not in immediately producing a strong PRM, but in first solidifying the following:
+
+* Whether steps can be segmented;
+* Whether labels are stable;
+* Whether rewards are interpretable;
+* Whether train/val is controllable;
+* Whether noise can be localized.
+
+Once these foundational questions remain unresolved, the larger the scale, the faster low-quality data expands.
+
+### 17.2 Why This Chapter Emphasizes "Structural Benefit"
+
+P06's current scale is not large, but it already possesses several key characteristics:
+
+* A complete staged pipeline;
+* Real metrics;
+* Clear bottlenecks;
+* Training interface artifacts;
+* An inspection and evaluation feedback loop.
+
+This means its primary value lies in "explaining process supervision engineering in a grounded way," not in "using massive data to prove PRM is necessarily effective."
 
 ### 17.3 A More Realistic Engineering Judgment
 
-The right next step is to improve labels, verifiers, and replay sets before expanding volume aggressively.
+For most teams, a first-version PRM project is better suited to following this principle:
 
-## 18. Main Deliverables
+> First make process signals into trustworthy assets, then discuss how to scale those assets up.
+
+---
+
+## 18. Primary Deliverables: Artifact Inventory
+
+A project chapter should not only describe "what was done," but also "what was left behind."
+
+Based on existing reports, P06 has formed a relatively complete deliverable system:
 
 ### 18.1 Intermediate Data Artifacts
 
-- Seed task pool.
-- Task specifications.
-- Positive traces.
-- Negative traces.
-- Repair traces.
-- Step-level records.
-- Verifier outputs.
+* `data/processed/seed_pool.jsonl`
+* `data/processed/task_spec.json`
+* `data/processed/cot_traces.jsonl`
+* `data/processed/trace_summary.json`
+* `data/processed/validated_traces.jsonl`
+* `data/processed/step_rewards.jsonl`
+* `data/processed/validation_summary.json`
 
 ### 18.2 Training Data Artifacts
 
-- PRM train split.
-- PRM validation split.
-- PRM smoke split.
-- Training manifest.
+* `data/training/prm_step_dataset.jsonl`
+* `data/training/train.jsonl`
+* `data/training/val.jsonl`
+* `data/training/smoke_test.jsonl`
+* `data/training/training_manifest.json`
 
-### 18.3 Report and Check Artifacts
+### 18.3 Report and Inspection Artifacts
 
-- Metrics report.
-- Noise analysis.
-- Check report.
-- Replay set.
+* `data/reports/p6_report.md`
+* `data/reports/p6_metrics.json`
+* `data/reports/p6_test_results.json`
+* `data/reports/p6_test_report.md`
 
-## 19. Limitations and Risks
+This artifact structure demonstrates that the project is no longer merely a notebook demonstration, but a relatively complete data engineering output.
 
-### 19.1 Main Limitations
+---
 
-The task scope is small, verifier coverage is limited, and labels still require review.
+## 19. Limitations and Risks: Current Process Supervision Constraints
 
-Repair trajectories remain hard to judge.
+The most common mistake in engineering case studies is to discuss only one's own structure and results without addressing vulnerabilities.
 
-### 19.2 Why Scaling First May Be Wrong
+But for PRM projects, limitations should not be omitted—they should be explicitly stated in a later section of the main text.
 
-Scaling before label and verifier quality is stable can create a larger noisy dataset.
+### 19.1 The Current Project's Primary Limitations
 
-Process supervision is especially sensitive to label noise.
+Based on existing reports, P06's primary limitations include at minimum:
 
-### 19.3 Why These Risk Judgments Must Remain
+* The overall validation pass rate is still only `67.59%`;
+* Negative and repair trajectories are more prone to introducing noise and annotation ambiguity;
+* The current scope covers only two types of reasoning tasks: mathematics and code;
+* The data scale is not yet appropriate for direct use as a large-scale PRM training corpus.
 
-The chapter should not overstate PRM readiness.
+These limitations do not diminish the project's value—on the contrary, they make the chapter more credible, because they demonstrate that the project is surfacing problems rather than avoiding them.
 
-Its credibility comes from naming the hard parts.
+### 19.2 Why "Scale First" May Actually Be the Wrong Direction
 
-## 20. Future Extensions
+Existing reports clearly indicate that if scaling continues without first improving cleaning and validation, PRM data will become dirtier before it becomes stronger. This judgment is critically important because it restores the engineering priorities to the correct order:
 
-### 20.1 Expand Task Range
+* First improve trace quality;
+* Then improve reward trustworthiness;
+* Finally expand task coverage and data scale.
 
-Add symbolic math, competitive programming, tool-use reasoning, and multi-step planning tasks.
+### 19.3 Why These Risk Judgments Must Be Preserved
 
-### 20.2 Refine Reward Definitions
+Because the case studies that teams actually reuse are generally not those that "claim everything is finished," but those that "clearly explain what should be done next."
 
-Introduce finer but still reviewable reward categories for local correctness, recovery, efficiency, and unsupported claims.
+---
 
-### 20.3 Move Toward Complex Agent Tasks
+## 20. Future Extensions: Toward More Complex Process Supervision Systems
 
-Process supervision can extend to agents when each action, observation, and recovery decision becomes a step-like object.
+P06 has already established an excellent starting point, but its greater value lies in preserving a clear path for subsequent extension.
 
-## 21. Summary: Value of Trustworthy Process Signals
+### 20.1 Extension Direction One: Expand the Task Range
 
-The value of P06 is not long reasoning text.
+Existing recommendations already indicate that the task range can be further extended to:
 
-Its value is trustworthy process signal.
+* Tabular reasoning
+* Scientific reasoning
+* Planning reasoning
 
-A PRM data factory records how steps are created, checked, labeled, packaged, and replayed.
+These task types share the characteristic that processes are more complex and validation is more difficult, which makes the necessity of step-level supervision even more apparent.
 
-That structure is the foundation for later reward-model experiments.
+### 20.2 Extension Direction Two: Refine Reward Definitions
 
-## Special Topic: Annotation Consistency and QA for PRM Data
+The current reward buckets already establish a basic tier structure, but can be further refined in the future:
 
-### 1. Why Step-level Annotation Is More Ambiguous
+* Distinguish local correctness from global correctness;
+* Distinguish formal errors from logical errors;
+* Distinguish recoverable errors from unrecoverable errors.
 
-Step quality often depends on surrounding context.
+This allows process signals to become better suited to downstream PRM or mixed training paradigms.
 
-A step can be locally valid but globally unhelpful.
+### 20.3 Extension Direction Three: Transfer to Complex Agent Tasks
 
-This makes annotation harder than final-answer checking.
+From a methodological standpoint, P06 already has transfer potential. Because many Agent tasks are fundamentally multi-step processes:
 
-### 2. Process Supervision Needs Layered QA
+* First plan;
+* Then execute;
+* Then observe;
+* Then revise.
 
-QA should inspect task specs, traces, step segmentation, verifier outputs, labels, and reward buckets.
+As long as the definition of "step" is extended from text reasoning to actions and states, the PRM data factory methodology has the potential to transfer to more complex scenarios. Relevant interaction patterns can reference the reasoning-action synergy paradigm of ReAct (Yao et al. 2023). If the approach continues toward a reinforcement-learning-based reasoning flywheel, a clear distinction should be made between the process supervision data construction in this chapter and the large-scale reasoning reinforcement learning system represented by DeepSeek-R1 (DeepSeek-AI 2025).
 
-One-level review is not enough.
+---
 
-### 3. QA Should Keep Useful Errors
+## 21. Conclusion: The Value of Trustworthy Process Signals
 
-Not every error should be deleted.
+What is most worth preserving about P06 is not how large a PRM dataset it has produced, but that it clearly demonstrates a critically important engineering judgment:
 
-Some wrong or repaired steps are valuable training signals if they are labeled clearly.
+> Outcome supervision focuses on whether the model ultimately got the answer right; process supervision focuses on how the model arrived at that result.
 
-## Special Topic: Strategy Choices When PRM Enters Training
+Based on existing project materials, P06 already possesses several key engineering characteristics:
 
-### 1. PRM Data Does Not Need Immediate Standalone Training
+* Clear task boundaries;
+* A structural pipeline from seed to trace to step;
+* Explicit differentiation of three trajectory types;
+* Automatic validation based on rules, execution, and result comparison;
+* Reward buckets and process-only signals;
+* Training interface artifacts and an inspection feedback loop;
+* Clear noise bottlenecks and future directions.
 
-Early PRM data can support reranking, critique models, verifier prompts, or mixed training before a separate PRM is trained.
+This means it is no longer merely "a data prototype demonstration with CoT," but is closer to a process supervision engineering case study that teams can reference.
 
-### 2. Different Stages Need Different Uses
+It can be summarized in one sentence:
 
-Prototype stages should emphasize diagnostics.
+> What a PRM data factory truly builds is not longer answers, but more trustworthy processes.
 
-Scaling stages can emphasize reward-model training and policy optimization.
+---
 
-### 3. PRM Projects Need Their Own Version Language
+## Special Topic: Annotation Consistency and QA Mechanisms for PRM Data
 
-Versions should describe task scope, trace mix, verifier changes, label policy, and replay-set changes.
+The most easily underestimated aspect of process supervision projects is not the model calls themselves, but annotation consistency. Outcome supervision only requires judging "whether the final answer is correct"; process supervision requires judging "whether each intermediate step is on the right track." This significantly increases the complexity of annotation and QA.
 
-## Special Topic: Value of Replay Sets in Process Supervision
+### I. Why Step-Level Annotation Is More Prone to Ambiguity
 
-### 1. What Problems Replay Sets Should Collect
+For the same problem, two reviewers can usually reach consensus on the final answer more easily, yet may give divergent quality judgments for intermediate steps. For example, a derivation step may have a correct result but skip a key explanation; or a local expression may be imprecise but the overall direction has not deviated. Such situations have relatively minor impact in outcome supervision, but in PRM they directly alter the reward signal.
 
-Replay sets should collect ambiguous repairs, verifier disagreements, format failures, correct final answers with wrong intermediate steps, and hard negative traces.
+Therefore, QA for projects like P06 cannot revolve solely around "whether there is an error," but must also address:
 
-### 2. Replay Sets Build Team Memory
+* Whether this step can be accepted as a training signal;
+* Whether this step's error is a formal error, a logical error, or a recoverable error;
+* Whether this step still preserves information valuable to subsequent steps;
+* Whether this trajectory should enter the repair channel rather than being discarded outright.
 
-A replay set prevents the team from rediscovering the same failures every release.
+Making these questions explicit allows teams to advance step-level supervision from "subjective impression" to "structured judgment."
 
-It becomes the memory of the process-supervision project.
+### II. Process Supervision Requires Tiered QA
+
+Compared to traditional SFT, PRM is better suited to a tiered QA mechanism. One practical decomposition is:
+
+* Sample-level QA: verify that task, answer, and trajectory are mutually consistent;
+* Step-level QA: verify each step's format, logical continuity, and local correctness;
+* Trajectory-level QA: verify that positive, negative, and repair trajectories each stand on their own;
+* Dataset-level QA: verify that reward buckets, task distribution, and train/val splits are stable.
+
+The value of this tiered approach is that it helps teams quickly localize the source of noise. Otherwise, once training performance is found to be poor, all problems are crudely attributed to "insufficient PRM data quality," with no one knowing whether the issue stems from step segmentation, label bucketing, repair design, or trajectory distribution.
+
+### III. QA Is Not Only About Removing Errors—It's Also About Preserving "Useful Errors"
+
+PRM data differs from ordinary high-quality question-answering data in another important respect: not all erroneous processes should be treated as valueless. Many repair trajectories depend precisely on the structure of "first making an error, then correcting it" to form process signals valuable to the model.
+
+Therefore, the goal of QA should not be merely to eliminate all errors, but to judge:
+
+* Which errors contaminate supervision and should be removed;
+* Which errors, though incorrect, have a clear repair path and are suitable for retention as repair assets;
+* Which errors can be transformed into failure replay examples for subsequent rule reinforcement;
+* Which errors indicate that the step segmentation method itself needs adjustment.
+
+Once teams develop this mental model, they will no longer apply a "pure dataset" mindset to inadvertently destroy the most valuable portion of PRM signals.
+
+---
+
+## Special Topic: Strategy Choices When Feeding PRM Into the Training System
+
+P06 has already prepared process supervision data into a training interface, but when actually entering training, another practical problem arises: how should these process signals actually be used? Different teams at different stages often have widely varying approaches to using PRM data.
+
+### I. PRM Data Does Not Necessarily Train in Isolation From the Start
+
+In many real-world projects, PRM data does not independently bear the entire training burden. A more common approach is to combine it with outcome supervision data, SFT data, or preference data into a composite training strategy. The reason is that process signals excel at shaping reasoning paths, but may not cover style, refusal behavior, safety, and task breadth on their own.
+
+Therefore, a more realistic training perspective is typically:
+
+* Use outcome supervision to ensure answer boundaries;
+* Use process supervision to strengthen intermediate reasoning quality;
+* Use preference or rule data to constrain output behavior;
+* Use smoke sets and replay sets to continuously monitor regression.
+
+From a systems engineering perspective, PRM does not replace everything—it fills in the capability layer of "why the model reasons the way it does."
+
+### II. Different Stages Suit Different Usage Patterns
+
+In the early stages of a project, PRM data is better suited as a "structural validation asset." That is, use it first to verify whether step segmentation, reward logic, and training templates are sound, rather than immediately pursuing large-scale gains. As data quality improves, gradually move it into a more prominent role.
+
+This typically means:
+
+* In the first stage, focus on data structure and training readability;
+* In the second stage, check whether process improvements on a small number of tasks are clear;
+* In the third stage, consider expanding task coverage and training proportion;
+* In the fourth stage, discuss whether to form a stable PRM training subsystem.
+
+The value of this incremental approach is to prevent teams from over-investing while process signals are still unstable.
+
+### III. PRM Projects Ultimately Need Their Own Version Language
+
+As P06 continues to iterate, teams will increasingly need a dedicated language for describing PRM data versions. For example:
+
+* Which tasks were added in this version;
+* Whether step segmentation rules have changed;
+* Whether reward buckets have been redefined;
+* Whether the proportion of repair trajectories has increased;
+* Which high-noise samples have been removed;
+* Which replay issues have been absorbed.
+
+Only when this information is stably preserved can teams truly evaluate "whether this version of PRM is better than the previous one." Otherwise, even if training results change, it is difficult to determine which process signal adjustment caused the change. For a highly structured data type like process supervision, the version language itself is part of engineering capability.
+
+---
+
+## Special Topic: The Value of a Replay Set for Process Supervision Projects
+
+Projects like P06 have another asset well worth preserving long-term: the replay set. Because many problems in process supervision do not immediately surface in aggregate metrics, but recur on certain typical trajectories. As long as these high-frequency problems are condensed into replay examples, teams can more quickly judge in each iteration: whether the current change is genuinely improving real problems, or merely making metrics look better.
+
+### I. What Problems Are Best Collected in a Replay Set
+
+For PRM, what is most worth including in a replay set is usually not random failures, but problems that persistently undermine the trustworthiness of process signals, such as:
+
+* Step segmentation causing context rupture;
+* Repair trajectories that appear to repair but actually only rewrite the answer;
+* Locally reasonable steps where the overall direction has already deviated;
+* Reward buckets assigning inconsistent values to the same class of error.
+
+Once these problems are fixed in place, they become important regression samples for subsequent rule changes, validation changes, and training template changes.
+
+### II. A Replay Set Helps Teams Build "Problem Memory"
+
+A major risk in many process supervision projects is not the current presence of noise, but repeatedly encountering the same class of noise in every iteration. The role of a replay set is to transform these problems from one-time experiences into persistently reviewable project memory. As long as this memory is in place, teams are better equipped to answer a key question: has this version of P06 genuinely improved, or is it just repeating past problems in a different form?
 
 ## Chapter Summary
 
-This chapter used a CoT and PRM data factory to show how process supervision can be organized as data engineering.
+This chapter uses "CoT Reasoning Dataset and PRM Training" as a case study to demonstrate the engineering organization required to construct process supervision samples containing positive examples, negative examples, and repair paths for training or evaluating a PRM. The primary value of the case lies in placing task definition, data boundaries, architectural decisions, sample schema, metrics acceptance, and reproducibility resources within a single pipeline, so that the project is no longer merely a sequence of operational steps but becomes a verifiable case study.
 
-The case connects seed tasks, task specs, trace generation, step segmentation, automatic validation, process labels, reward buckets, training packaging, noise control, and replay.
+The boundaries of this case must also be clearly preserved. The focus is on verifiable reasoning tasks and structured step labels, and does not cover all open-domain complex reasoning. In scenarios with greater scale, higher risk, or stronger compliance constraints, data sources, permission status, manual review proportions, operating costs, and failure rollback plans should be re-evaluated.
 
-Its boundary should remain clear: it is a structured prototype, not a complete reasoning-model training system.
-
-## Release Review Notes
-
-The first release review item is seed-task clarity.
-
-Each task should have a clear prompt, domain, difficulty, expected answer, and verifier type.
-
-Ambiguous tasks should be repaired before trace generation.
-
-The second item is trace-type balance.
-
-Positive, negative, and repair traces should each be visible.
-
-A dataset with only positive traces cannot teach a PRM enough contrast.
-
-The third item is step segmentation.
-
-Steps should be neither too large nor too small.
-
-A step that contains several reasoning moves is hard to label.
-
-A step that is only a fragment may lose meaning.
-
-The fourth item is verifier coverage.
-
-Every verifier output should state what it checked and what it did not check.
-
-Numeric, symbolic, code, and format verifiers have different blind spots.
-
-The fifth item is label policy.
-
-The release should define each label clearly.
-
-Labels such as correct, incorrect, repair, unsupported, and uncertain should not overlap.
-
-The sixth item is reward-bucket policy.
-
-Reward buckets should be coarse enough to be reliable.
-
-They should not pretend to provide exact continuous reward.
-
-The seventh item is negative trace realism.
-
-Negative traces should be plausible.
-
-Trivial wrong steps teach little.
-
-The eighth item is repair trace clarity.
-
-Repair traces should show where the error was noticed and what changed.
-
-Without this boundary, repair labels become noisy.
-
-The ninth item is split integrity.
-
-Train, validation, and smoke sets should be disjoint by task ID when possible.
-
-The tenth item is replay coverage.
-
-The replay set should include hard negatives, ambiguous repairs, verifier disagreements, and formatting failures.
-
-## Operating Notes
-
-Daily operation should inspect verifier pass rates by trace type.
-
-If positive pass rate drops, inspect generation quality and verifier configuration.
-
-If negative pass rate is too high, inspect whether negative traces are actually wrong.
-
-If repair pass rate is confusing, inspect the boundary between wrong step and corrected step.
-
-If many labels become uncertain, revise task specs or verifier coverage.
-
-If reward-bucket distribution collapses, the reward policy may be too coarse or too strict.
-
-If smoke tests fail, inspect schema and split files before changing generation.
-
-The project should keep verifier disagreement examples.
-
-Disagreements are not merely failures.
-
-They reveal where process supervision is hard.
-
-Those examples should be reviewed before scaling.
-
-The project should also keep a label-change ledger.
-
-When label definitions change, previous data may need migration or version separation.
-
-PRM data is especially sensitive to label-policy drift.
-
-## QA Notes
-
-QA should inspect task specs first.
-
-Bad task specs create bad traces.
-
-QA should then inspect trace construction.
-
-Positive traces should be clean.
-
-Negative traces should be instructive.
-
-Repair traces should be interpretable.
-
-QA should inspect step boundaries.
-
-The step is the unit of reward, so boundary errors become reward errors.
-
-QA should inspect verifier outputs.
-
-A verifier pass should not be treated as a universal correctness guarantee.
-
-QA should inspect reward buckets.
-
-Buckets should reflect process usefulness, not only final-answer correctness.
-
-Finally, QA should inspect replay cases.
-
-Replay cases protect the project from repeating old mistakes.
-
-## Scaling Notes
-
-Scaling PRM data should start with verifier and label stability.
-
-Expanding volume before labels are stable can increase noise.
-
-New domains should be added one at a time.
-
-Each new domain needs task specs, verifier choices, label examples, and replay cases.
-
-Agent tasks can be added later by treating actions, observations, and recovery decisions as process steps.
-
-That extension should not happen until the math/code prototype has stable process semantics.
-
-The long-term goal is not only a larger dataset.
-
-The long-term goal is a versioned process-supervision system.
-
-That system should explain what changed in task mix, trace mix, verifier policy, label policy, reward buckets, and replay cases.
-
-## Final Acceptance Checklist
-
-Seed tasks are unambiguous.
-
-Task specs include verifier type.
-
-Positive traces are present.
-
-Negative traces are present.
-
-Repair traces are present.
-
-Step segmentation is reviewed.
-
-Verifier outputs are stored.
-
-Verifier limits are documented.
-
-Labels are defined.
-
-Reward buckets are defined.
-
-Uncertain cases are retained.
-
-Replay cases are retained.
-
-Train and validation are disjoint.
-
-Smoke data loads correctly.
-
-Manifest matches artifacts.
-
-Noise analysis is present.
-
-Label-policy changes are versioned.
-
-Verifier changes are versioned.
-
-Known ambiguity is stated.
-
-Scaling plan prioritizes label stability.
-
-Reviewer calibration examples are retained.
-
-Future verifier gaps are listed.
-
-Replay promotion policy is documented.
+As part of Part Fourteen, this chapter corresponds to the project-level validation of the methods introduced earlier. Readers may combine this case with the data recipes from Part Thirteen, the platform governance chapters from earlier parts, and the checklists in the appendix, to form a closed loop from methodological understanding to engineering delivery.
 
 ## References
 
-1. Lightman, H., Kosaraju, V., Burda, Y., et al. (2023). Let's Verify Step by Step.
-2. Cobbe, K., Kosaraju, V., Bavarian, M., et al. (2021). Training Verifiers to Solve Math Word Problems.
-3. Wei, J., Wang, X., Schuurmans, D., et al. (2022). Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.
-4. Yao, S., Yu, D., Zhao, J., et al. (2023). Tree of Thoughts: Deliberate Problem Solving with Large Language Models.
-5. OpenAI. (2023). Process supervision research notes.
+1. Wei, J., Wang, X., Schuurmans, D., Bosma, M., Xia, F., Chi, E., Le, Q. V., & Zhou, D. (2022). Chain-of-Thought Prompting Elicits Reasoning in Large Language Models. NeurIPS 2022.
+2. Lightman, H., Kosaraju, V., Burda, Y., Edwards, H., Baker, B., Lee, T., Leike, J., Schulman, J., Sutskever, I., & Cobbe, K. (2023). Let's Verify Step by Step. arXiv:2305.20050.
+3. Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., & Cao, Y. (2023). ReAct: Synergizing Reasoning and Acting in Language Models. arXiv:2210.03629.
+4. DeepSeek-AI. (2025). DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning.
+5. Hendrycks, D., Burns, C., Kadavath, S., Arora, A., Basart, S., Tang, E., Song, D., & Steinhardt, J. (2021). Measuring Mathematical Problem Solving With the MATH Dataset. NeurIPS 2021.

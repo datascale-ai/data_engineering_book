@@ -1,877 +1,1224 @@
-# Project 2: Vertical-domain Expert SFT for Law
+# Project 2: Vertical-Domain Expert SFT (Legal)
+
 
 ## Abstract
-P02 focuses on building a legal-domain SFT data factory.
+P02 focuses on organizing regulatory texts, institutional documents, and legal task requirements into a trainable, auditable, and scalable vertical-domain SFT data pipeline. The emphasis is not on single-instance question-answer generation, but on the stable transformation process from seed knowledge to supervised assets.
 
-The project is not about making a model sound legal.
+This chapter can be understood through four main threads:
 
-It organizes legal source documents, layout-aware parsing, seed chunks, task taxonomy, controlled Self-Instruct expansion, explicit reasoning formats, preference pairs, QA records, risk-refusal data, training delivery, and validation into one data engineering chain.
+* **Seed knowledge processing:** Extracting usable structured knowledge fragments from regulatory PDFs and institutional texts.
+* **Task taxonomy and sample synthesis:** Decomposing distinct task layers — statute interpretation, legal Q&A, case analysis, and risk refusal.
+* **Quality control and preference augmentation:** Stabilizing supervisory signals through quality assurance (QA), preference pairs, and risk-boundary samples.
+* **Training packaging and acceptance testing:** Organizing processed data assets into finished, trainable, verifiable, and deliverable products.
 
-The project can be read through four main lines.
+Reading in engineering order, this chapter corresponds to a complete pipeline:
 
-- Knowledge boundary and seed construction: start from legal PDFs and preserve source metadata.
-- Supervision construction: build legal QA, statute explanation, and case-analysis samples under constraints.
-- Auxiliary supervision and risk control: add preference pairs, review records, and refusal samples.
-- QA, packaging, and validation: make the dataset reviewable, trainable, and versionable.
+**Raw regulatory PDF → Cleaning and chunking → Task design → Instruction synthesis → Preference augmentation → QA inspection → Training packaging → Acceptance testing**
 
-The engineering chain is:
+The core objective underlying this structure is to process legal knowledge into supervised data assets with task stratification, quality constraints, and acceptance mechanisms.
 
-```text
-legal PDFs -> layout-aware cleaning -> chunking and seed schema -> task taxonomy -> controlled Self-Instruct -> explicit legal reasoning -> preference pairs and review records -> risk refusal -> QA protocol -> training package and checks
-```
-
-The core goal is to turn legal data generation into a controlled factory with sources, boundaries, review paths, and training interfaces.
+---
 
 ## Keywords
 
-Legal SFT; domain data factory; legal QA; preference pairs; risk refusal; QA protocol
+Legal SFT; vertical-domain data; instruction taxonomy; compliance boundaries; annotation quality
 
 ## Project Goals and Reader Takeaways
 
-This project uses vertical-domain legal SFT as the core case.
-
-After completing the chapter, readers should understand how to clean legal source documents, define legal seed schemas, design task taxonomies, expand supervision under constraints, add risk-refusal and preference data, and package the result for training.
+This project uses a "legal-domain expert SFT data factory" as its central case study, with the goal of transforming regulatory texts, case law, and legal Q&A materials into traceable domain-specific SFT training assets. Upon completing this chapter, readers should be able to identify the key data objects in this scenario, decompose the engineering pipeline, define acceptance criteria, and transfer the methodology to analogous data engineering tasks.
 
 ## Scenario Constraints and Data Boundaries
 
-The project does not provide legal advice.
+The input is limited to publicly available or licensed legal texts; the project does not cover real legal consultation liability or production-grade case management systems. These boundaries make the case study reproducible and auditable. When the data scale, data sources, permission scope, or deployment environment change, the sampling strategy, quality thresholds, operational costs, and compliance requirements must be re-evaluated.
 
-It does not replace qualified lawyers.
+## Architectural Decisions
 
-It does not claim full jurisdiction coverage.
+This project follows an architectural path of "legal document parsing → task templates → sample generation → quality review → training split → risk annotation." This decision prioritizes clear input-output contracts, version traceability, anomaly localization, and result auditability, rather than compressing all logic into a single one-shot script run.
 
-It uses legal texts and synthetic expansion to demonstrate a data factory, and all legal claims should remain tied to source scope and review policy.
+## Sample Schema / Data Flow
 
-## Architecture Decision
+The core data flow can be summarized as:
 
-The project adopts a three-layer architecture: knowledge processing, supervision construction, and QA/delivery.
-
-This architecture keeps source provenance, task intent, review records, risk boundaries, and training artifacts connected.
-
-## Sample Schema and Data Flow
-
-The minimal seed schema should retain `seed_id`, `source_doc`, `jurisdiction`, `domain`, `article_no`, `source_span`, `text`, `risk_tags`, and `audit_trace`.
-
+Listing P02-1 provides a process or path example to illustrate the input-output relationships, structural constraints, or execution patterns in this section.
 ```text
-source document -> cleaned chunk -> seed record -> task sample -> reviewed sample -> training record
+Legal text/PDF → Document cleaning → Domain task schema → Instruction samples → Compliance and quality checks → SFT dataset
 ```
 
-The generated sample should keep both the instruction and the source lineage.
+This excerpt serves to transform the above process into an inspectable, structured representation.
 
-## Core Implementation Fragments
+A sample schema should retain at minimum the fields `id`, `source`, `content_or_payload`, `metadata`, `quality_signals`, `split_or_stage`, and `audit_trace`; specific fields are further refined by the data types, downstream tasks, and acceptance methods of this project.
 
-The chapter keeps fragments that explain PDF cleaning, chunk schemas, task sampling, reasoning templates, and QA decisions.
+## Core Implementation Excerpts
 
-Full generation prompts, long samples, and review logs should live in companion resources.
+The main text retains only the key implementation excerpts that illustrate design trade-offs. Complete scripts, lengthy configurations, execution logs, and large files should be placed in the companion repository or appendix; code presentation focuses on input-output contracts, quality thresholds, exception handling, and acceptance interfaces.
 
-## Experimental and Acceptance Metrics
+## Experimental or Acceptance Metrics
 
-Acceptance metrics include seed count, generated sample count, task distribution, legal-domain distribution, preference-pair count, refusal-sample count, QA acceptance rate, 50-sample validation results, and consistency-check pass rate.
-
-The project report highlights expansion from `2577` to `7737` samples as a structural signal rather than as a standalone quality claim.
+Acceptance metrics include task coverage, statute citation accuracy, sample format pass rate, manual spot-check pass rate, domain risk label completeness, and training split consistency. If the project enters production, coursework, or a public reproducibility environment, version numbers, dependency environments, random seeds, spot-check results, and failure sample post-mortems should also be recorded.
 
 ## Cost, Risk, and Compliance Boundaries
 
-Costs mainly come from legal source cleaning, generation, human review, preference construction, and validation.
-
-Risks include hallucinated law, fabricated citations, uneven jurisdiction coverage, overconfident advice, excessive synthetic ratio, and high QA cost.
+Costs arise primarily from document parsing, sample generation, and expert review; risks concentrate in regulatory currency, citation mismatches, unauthorized texts, and misuse of legal advice. When external data, personal information, copyrighted content, or third-party services are involved, source documentation, permission status, de-identification strategies, invocation logs, and manual review records should be retained.
 
 ## Common Failure Modes
 
-Common failures include broken PDF layout, lost article numbers, weak source spans, task imbalance, generated answers that exceed source scope, preference pairs without meaningful contrast, and refusal samples that are too artificial.
+Common failures include input distribution drift, missing schema fields, quality thresholds that are too loose or too strict, insufficient evaluation sample coverage, unstable model API calls, and non-traceable results. When debugging, prioritize locating data boundaries and intermediate artifacts before inspecting the model, toolchain, and deployment environment.
 
-## Reproducible Resource Notes
+## Reproducibility Resources
 
-Reproducible resources should include source-document notes, cleaned chunks, task configs, generation prompts, QA protocol, review logs, training splits, validation reports, and check scripts.
+Reproducibility materials should include data source documentation, minimal samples, configuration files, run commands, metric scripts, inspection reports, and artifact directories. The main text retains necessary excerpts; complete notebooks, long scripts, and large files are maintained separately as companion resources. The training packaging for legal SFT can follow the general text-to-text data organization approach (Raffel et al. 2020); data loading, batch processing, experiment tracking, and quality gates can reference Hugging Face Datasets (Hugging Face 2026), Ray Data (Ray Project 2026), MLflow (MLflow Authors 2026), and Great Expectations (Great Expectations Contributors 2026), respectively.
 
-## 1. Project Background: Why a Legal SFT Data Factory Is Needed
+## 1. Project Background: The Necessity of a Legal SFT Data Factory
 
-Legal SFT is a strong example of domain data engineering because surface fluency is not enough.
+General-purpose large language models already exhibit reasonably capable language expression in open-domain question answering, but the moment they enter legal scenarios, problems emerge rapidly.
 
-A model that sounds legal can still be unsafe.
+The three most common forms of distortion are as follows.
 
-It may cite nonexistent provisions, overstate conclusions, ignore jurisdiction boundaries, or answer questions that require professional advice.
+The first is **knowledge distortion**. Models conflate similar statutory provisions, mix old law with new law, or present rules that apply only to specific subjects under specific conditions as general conclusions. In ordinary encyclopedic Q&A this may amount to no more than "not quite accurate enough," but in legal scenarios it directly affects users' judgment.
 
-Therefore, the project starts from authoritative legal sources and builds a supervised factory around them.
+The second is **task distortion**. Many legal responses require more than "delivering a conclusion" — the model must also identify the issues in dispute within the facts, distinguish between facts and norms, specify conditions of applicability, and explicitly preserve boundary caveats under uncertainty. A model that can only recite statutory text is not the same as a model capable of providing compliant assistance.
 
-The goal is not only to produce answers.
+The third is **style distortion**. Legal contexts impose strong requirements on expression style: the model must neither draw reckless conclusions nor deflect every question with "consult a professional lawyer"; it must be as clear and accessible as possible while retaining necessary expressions of caution. This is fundamentally a behavioral style problem jointly determined by SFT and preference alignment.
 
-The goal is to preserve source, task type, legal reasoning structure, review status, preference signal, and risk boundary.
+Accordingly, the goal of P02 is not simply to "generate some legal Q&A pairs," but to build a **legal-domain SFT data factory** — organizing regulatory texts, task taxonomies, quality controls, preference signals, and risk boundaries into a reusable production pipeline.
+
+This pipeline serves not a one-time experiment, but a methodology:
+
+> When the team later needs to migrate from law to taxation, finance, healthcare, or customer service compliance, what can truly be reused is not some prompt, but this engineering method of transforming seed knowledge into supervised data.
+
+---
 
 ## 2. Project Goals and Boundaries
 
 ### 2.1 Project Goals
 
-The first goal is to build cleaned legal seed chunks from source PDFs.
+This project focuses on the following four objectives.
 
-The second goal is to build three main task families: `legal_qa`, `statute_explanation`, and `case_analysis`.
+**Goal 1: Establish a transformation pipeline from legal-domain seed corpora to supervised data.**
+Specifically, converting statutory provisions, institutional explanations, and related knowledge fragments from unstructured PDFs into structured samples suitable for training.
 
-The third goal is to construct preference pairs, review records, and risk-refusal samples.
+**Goal 2: Establish a task taxonomy oriented toward legal scenarios.**
+Rather than uniformly formatting all samples as "Q&A pairs," this project explicitly decomposes them into distinct task types — legal Q&A, statute interpretation, and case analysis — so that the model learns domain capabilities in different forms.
 
-The fourth goal is to package SFT, validation, smoke-test, and auxiliary data with reports and checks.
+**Goal 3: Establish an auditable, rejectable, and versionable quality assurance (QA) mechanism.**
+Legal data without review is prone to batch-amplifying erroneous samples. Therefore, the project produces not only SFT samples but also preference pairs, review records, and risk refusal samples.
+
+**Goal 4: Produce data assets directly consumable by the training side.**
+Final outputs include not only raw intermediate artifacts but also training interface assets such as `train.jsonl`, `val.jsonl`, `smoke_test.jsonl`, and `training_manifest.json`.
 
 ### 2.2 Project Boundaries
 
-The project does not cover all legal domains or all jurisdictions.
+To keep the project reproducible and clearly scoped, several explicit boundaries are defined.
 
-It does not replace legal professionals.
+#### 1) Knowledge Source Boundary
 
-It does not treat synthetic data as safe without review.
+The current scope focuses primarily on Chinese legal texts, mainly sourced from regulations and institutional documents rather than large-scale real user consultation records, full corpora of court judgments, or lawyers' working papers. This means the project is better suited as a **methodological demonstration and factory prototype** rather than a claim to cover all real-world legal questions.
 
-It does not claim that a lightweight validation set equals a full legal benchmark.
+#### 2) Task Boundary
 
-### 2.3 Role of Boundary Setting
+This project currently focuses on three task types:
 
-Legal-domain projects require cautious boundaries.
+* Legal Q&A (`legal_qa`)
+* Statute interpretation (`statute_explanation`)
+* Case analysis (`case_analysis`)
 
-The dataset should teach grounded legal assistance, not unauthorized legal advice.
+These three task types are sufficient to cover the main path of "knowledge expression — normative interpretation — fact categorization," but do not yet extend to more complex tasks such as contract review, litigation strategy, retrieval-based citation, or multi-turn case assistance.
 
-Clear boundaries make the project reusable and safer.
+#### 3) Supervision Method Boundary
 
-## 3. Project Position: P02 in the Capability Chain
+Although preference pairs and review records are introduced, the project overall relies primarily on a hybrid approach of **template-based teacher models + heuristic judges + human QA**, rather than depending entirely on open-ended, line-by-line annotation by human legal experts.
 
-P02 sits at the intersection of domain SFT, source-grounded generation, and review operations.
+#### 4) Deployment Capability Boundary
 
-It extends generic instruction tuning into a regulated domain.
+Risk refusal samples and a risk register are included, but the sample volume remains small. This is appropriate for demonstrating how to introduce safety boundaries within a factory, and should not be overstated as "sufficient to support production deployment."
 
-Its core contribution is showing how generation becomes a factory when every sample has a source, task type, risk status, and review trail.
+### 2.3 The Role of Boundary Definition
 
-## 4. Overall Architecture: From Legal PDFs to Training Assets
+Clearly articulating boundaries is critically important. An engineering project typically unfolds in one of two ways:
 
-![Figure 1: Legal-domain SFT Data Factory Overview](../../images/part10/10_2_fig01_legal_sft_factory_overview.png)
+* Writing the project as though it "can do everything"; or
+* Writing the project as "what it can do reliably and under what conditions."
 
-### 4.1 Layer 1: Knowledge Processing
+The latter is clearly more credible and more suitable for team reuse.
 
-This layer parses legal PDFs, removes layout artifacts, repairs broken text, chunks documents, and builds seed records.
+---
 
-It is the source layer of the factory.
+## 3. Project Positioning: P02's Location in the Capability Chain
 
-### 4.2 Layer 2: Supervision Construction
+If the entire book is viewed as a data engineering capability chain for large language models, P02 occupies a central position in the "instruction fine-tuning and preference data" segment.
 
-This layer samples tasks, runs controlled Self-Instruct, uses explicit legal reasoning formats, and builds preference and refusal data.
+Earlier chapters have already discussed general SFT data design, preference data and reward signals, annotation platforms, and QA methodology. The value of this chapter lies in pulling these methods back into a **real industry scenario**: law.
 
-It turns source chunks into supervised examples.
+That is, this chapter does not revisit the general knowledge of SFT from scratch; rather, it demonstrates:
 
-### 4.3 Layer 3: QA and Delivery
+* What new problems arise in SFT data design within a highly specialized, high-risk, strongly compliant scenario;
+* Why legal task decomposition cannot directly reuse general Q&A templates;
+* Why QA must be moved upstream into the production process;
+* Why SFT alone is insufficient, and why preference pairs and risk refusal samples must also be built;
+* How to factor in version evolution, cost, and human-machine collaboration from the very start of the project.
 
-This layer reviews samples, records accept/rework/reject decisions, packages training splits, and writes reports and checks.
+In this sense, the most important question this chapter addresses is not a "technology component checklist," but a larger one:
 
-It makes the data usable by training teams.
+> How should an industry SFT data factory be designed as a sustained production capability rather than a one-time data synthesis script?
 
-## 5. Engineering Prerequisites: Key Surfaces of a Legal Data Factory
+---
+
+## 4. Overall Architecture: The Legal Data Pipeline from Regulatory PDFs to Training Assets
+
+
+![Figure P02-1](../../images/part10/10_2_fig01_legal_sft_factory_overview.png)
+*Figure P02-1: Legal-Domain SFT Data Factory Overview*
+
+From an engineering perspective, this project can be decomposed into three layers.
+
+### 4.1 Layer 1: Knowledge Processing Layer
+
+This layer addresses the question: "Do we have clean, controllable legal knowledge fragments?" It primarily includes:
+
+* PDF parsing
+* Header and footer trimming
+* Chinese word-break repair
+* Embedded page number removal
+* Statutory text chunking and structuring
+
+The objective at this stage is not to generate training samples, but to transform raw legal text into knowledge units suitable as supervisory seeds.
+
+### 4.2 Layer 2: Supervision Construction Layer
+
+This layer addresses: "How do we transform knowledge fragments into training samples of different types?" It primarily includes:
+
+* Task type classification
+* Prompt templates and instruction taxonomy design
+* Self-Instruct synthesis
+* Chain-of-thought (CoT) externalization
+* Preference pair construction
+* Risk refusal sample construction
+
+This layer is the most critical part of the entire project, because it determines whether the model learns to "recite statutes" or to "work reliably across legal tasks."
+
+### 4.3 Layer 3: Quality Inspection and Delivery Layer
+
+This layer addresses: "Are these samples truly usable for training and deployment?" It primarily includes:
+
+* QA review records
+* Accept/reject rules
+* Training splits
+* Manifest generation
+* Evaluation reports
+* Project inspection scripts
+
+Only at this stage does the project transition from a "data generation experiment" to an "engineering closed loop."
+
+---
+
+## 5. Engineering Prerequisites: Key Roles in the Legal Data Factory
+
+Many teams, when first working on vertical-domain SFT, default to having a single algorithm engineer simultaneously handle knowledge organization, template authoring, quality review, and training set packaging. In legal scenarios, however, this role conflation tends to break down quickly.
+
+A more reasonable division of responsibilities typically includes at least the following roles.
 
 ### 5.1 Domain Design and Knowledge Boundary
 
-The factory must define legal domains, jurisdictions, document types, and source boundaries before generation.
+Responsible for defining task boundaries, determining sample types, mapping legal domain coverage, and identifying high-risk issues. This role does not necessarily require a practicing attorney, but at minimum must be able to distinguish which questions fall into "answerable knowledge Q&A" and which are approaching "individual legal opinions."
 
 ### 5.2 Data Processing and Structured Orchestration
 
-It must preserve IDs, chunks, article numbers, metadata, and source spans.
+Responsible for PDF parsing, cleaning rules, chunking logic, data schemas, intermediate artifact persistence, splitting, and inspection. This role is concerned with the stable production capability of data, not with how elegantly any single answer is written.
 
 ### 5.3 Generation Control and Task Orchestration
 
-It must control task type, source grounding, reasoning format, and refusal rules.
+Responsible for Self-Instruct templates, task sampling, prompt orchestration, post-processing of results, batch API calls, and failure retries. It bridges "knowledge input" and "supervised sample output."
 
-### 5.4 QA and Acceptance Loop
+### 5.4 QA and Acceptance Closed Loop
 
-It must support review decisions, error tags, rework, rejection, and final acceptance.
+Responsible for defining review protocols, spot-check rules, rework mechanisms, error labels, and escalation paths. In legal scenarios this role is especially critical, because the ultimate usability of the project depends not on how many samples the model generates, but on whether erroneous samples are identified and blocked from entering the pipeline.
 
-### 5.5 Role of Responsibility Surfaces
+### 5.5 The Purpose of Defining Key Roles
 
-These surfaces prevent the project from becoming a prompt collection.
+Many teams tackling industry SFT for the first time find themselves genuinely stuck not because they cannot write code, but because they have not decomposed the production process into roles and stages, leading to:
 
-They define ownership for source, generation, review, and training delivery.
+* No one defines task boundaries;
+* No one takes responsibility for whether samples are correct;
+* Rework rules never get implemented;
+* Version updates are coordinated purely by word of mouth.
 
-![Figure 2: Roles and Responsibilities in the Legal SFT Factory](../../images/part10/10_2_fig02_roles_and_responsibilities.png)
+Clearly articulating role assignments is, in essence, a statement that **industry SFT resembles a content production line rather than a single-point script.**
 
-## 6. Seed Data: The Seed Layer as Supervision Starting Point
+![Figure P02-2](../../images/part10/10_2_fig02_roles_and_responsibilities.png)
+*Figure P02-2: Legal SFT Data Factory Role Assignment Diagram*
 
-### 6.1 Statutory Text as the First Seed Batch
+---
 
-Legal source text provides the initial knowledge boundary.
+## 6. Seed Data: The Seed Layer as the Starting Point for Supervision
 
-The model should not invent law beyond this boundary.
+In general Q&A, many teams directly scrape Q&A pairs from knowledge bases, web pages, or forums as training data. Legal scenarios are not suited to this approach.
 
-### 6.2 Boundary of Legal Text
+The reason is straightforward: in legal Q&A, user-generated statements are often incomplete, and their sources are not necessarily authoritative. If open Q&A is used directly as training ground truth, the model learns large amounts of vague expression, unverified conclusions, and inconsistent style.
 
-Source text alone is not a training dataset.
+Therefore, this project begins with **regulatory and institutional texts** to build a relatively stable seed corpus. The value of this layer is not "covering all user questions," but providing a traceable, interpretable, and chunkable knowledge foundation.
 
-It must be cleaned, chunked, labeled, and tied to task formats.
+### 6.1 Regulatory Text as the First Batch of Seeds
 
-## 7. PDF Parsing and Intelligent Cleaning
+* The structure is relatively clear and well-suited to chunking;
+* The authority is comparatively high, making it appropriate as a basis for supervision;
+* It naturally supports statute interpretation, knowledge Q&A, and rule summarization;
+* Quality control is more feasible at small project scale.
 
-### 7.1 Limits of Plain Text Extraction
+### 6.2 Limitations of Regulatory Text
 
-Legal PDFs contain headers, footers, embedded page numbers, broken lines, and article numbering.
+If the data factory relies solely on regulatory text, two notable problems arise.
 
-Plain extraction often destroys structure.
+First, regulatory text is inherently biased toward "normative expression" and does not reflect how real users actually phrase their questions.
 
-### 7.2 Component Choices
+Second, regulatory text is better suited to supporting "interpretation" and "citation," but provides insufficient coverage of complex case analysis, ambiguous fact classification, and colloquial business-context expression.
 
-The project should use PDF tools that support layout-aware extraction and page-span tracking.
+Regulatory text is therefore appropriate as the first-layer seed, but should not be mistaken for the complete supervised dataset itself.
 
-### 7.3 Cropping Headers and Footers
+---
 
+## 7. PDF Parsing and Intelligent Cleaning: Layout Cleansing of Legal Texts
+
+One of the defining characteristics of legal and regulatory PDFs is that **the content is highly rigorous, yet the layout is extremely unfriendly to machines.**
+
+Human readers tolerate headers, footers, page numbers, watermarks, paragraph line breaks, two-column layouts, and hyphenation without significant difficulty; for machines, however, all of these are noise sources that contaminate training samples.
+
+### 7.1 Limitations of Plain Text Extraction
+
+Many practitioners, when processing PDFs, simply use a tool that outputs a string and then feed that text directly into a chunker. This approach may barely suffice in general contexts, but it is highly problematic in legal scenarios.
+
+When legal text is mis-parsed, two particularly harmful outcomes result:
+
+* Originally separate statutory provisions are concatenated into a single sentence;
+* The logical continuity of a statute is fragmented by page numbers, headers, and hyphenation.
+
+This not only degrades sample readability, but also causes downstream Self-Instruct to generate supervised data that "looks plausible but originates from a corrupted source."
+
+### 7.2 Component Selection
+
+| Component | Choice | Function | Rationale |
+| --- | --- | --- | --- |
+| PDF parsing | `pdfplumber` | Read page text and coordinates | Supports bounding-box-based header/footer trimming; well-suited for institutional PDFs |
+| Cleaning logic | `Regex` | Repair word breaks, remove page numbers, strip dirty characters | Many errors in legal PDFs are rule-based; regex is the most direct and controllable option at early stages |
+| Generative model | `DeepSeek-V3` | Instruction synthesis and reasoning expansion | Balances reasoning quality and cost; suitable for large-scale synthesis |
+| Orchestration logic | `Python` | Batch processing, sampling, post-processing | Facilitates rapid construction of a minimal reproducible pipeline |
+
+*Table P02-1: Components and Selection Rationale*
+
+### 7.3 Trimming Headers and Footers
+
+In legal PDFs, the most typical repetitive noise comes from headers and footers — for example, the regulation title repeating at the top of every page, and page numbers or publication information in the footer. If these are not removed during parsing, they are repeatedly ingested into training data as if they were body text.
+
+Accordingly, this project crops approximately the top and bottom 5% of each page when reading, retaining only the central body region. The advantages of this approach are:
+
+* More stable than post-extraction cleaning, because noise is reduced at the source;
+* Broadly compatible with most regulatory PDFs;
+* Simple to implement, making it a good minimal reproducible solution.
+
+The corresponding implementation is as follows:
+
+Listing P02-2 provides a Python implementation excerpt to illustrate the input-output relationships, structural constraints, or execution patterns in this section.
 ```python
-def crop_header_footer(page, top_ratio=0.08, bottom_ratio=0.08):
-    width, height = page.rect.width, page.rect.height
-    return page.get_textbox((
-        0,
-        height * top_ratio,
-        width,
-        height * (1 - bottom_ratio),
-    ))
+with pdfplumber.open(file_path) as pdf:
+    for page in pdf.pages:
+        width, height = page.width, page.height
+        bbox = (0, height * 0.05, width, height * 0.95)
+        page_crop = page.crop(bbox=bbox)
+        text = page_crop.extract_text()
 ```
 
-Cropping recurring page chrome helps prevent irrelevant text from entering seeds.
+This excerpt serves to transform the above process into an inspectable, structured representation.
 
 ### 7.4 Removing Embedded Page Numbers
 
-Embedded page numbers break legal clauses and confuse chunking.
+More insidious than headers and footers are page numbers embedded within the body text, for example:
 
-They should be removed with targeted rules and reviewed examples.
+Listing P02-3 provides a process or path example to illustrate the input-output relationships, structural constraints, or execution patterns in this section.
+```text
+……shall bear corresponding legal liability. - 195 - The parties concerned……
+```
 
-### 7.5 Repairing Broken Text
+This excerpt serves to transform the above process into an inspectable, structured representation.
 
-Mechanical line breaks should be repaired while preserving legal numbering and paragraph boundaries.
+A naive rule that simply "deletes dash-number-dash patterns" will readily misfire on legitimate numbering or list structures within the body text. Therefore, this project applies more carefully constrained regular expressions to enforce context boundaries around page numbers, deleting only fragments that more closely resemble standalone page-number blocks, without touching body-text numbering.
 
-### 7.6 Necessity of Fine-grained Cleaning Control
+This type of cleaning looks like "glue code," yet it is often critically important in engineering, because it determines:
 
-Legal cleaning must be auditable.
+> Whether we are performing fine-grained repair on legal text, or using blunt rules to destroy the statutes themselves.
 
-If a clause changes meaning during cleaning, the downstream sample becomes risky.
+### 7.5 Repairing Chinese Word Breaks
 
-![Figure 3: Legal PDF Intelligent Cleaning Pipeline](../../images/part10/10_2_fig03_pdf_cleaning_pipeline.png)
+Another common problem in Chinese PDFs is "spurious spaces," for example:
 
-![Figure 4: Embedded Page-number and Broken-word Repair Examples](../../images/part10/10_2_fig04_cleaning_examples.png)
+Listing P02-4 provides a process or path example to illustrate the input-output relationships, structural constraints, or execution patterns in this section.
+```text
+legal provisions
+contractual relationship
+```
+
+This excerpt serves to transform the above process into an inspectable, structured representation.
+
+For humans this does not impede reading, but for models it disrupts tokenization statistics, degrades generation fluency, and reduces the usability of downstream samples. Accordingly, this project applies rule-based repair to anomalous spaces between adjacent Chinese characters, and handles consecutive word breaks through multiple substitution passes.
+
+### 7.6 The Necessity of Fine-Grained Cleaning Control
+
+The first step in industry SFT is never "figure out how to generate more data," but rather **ensuring the seed layer is clean first**. So long as seed texts contain extensive layout damage, all subsequent templates, CoT, preferences, and QA will operate on a contaminated foundation — and costs will only escalate from there.
+
+![Figure P02-3](../../images/part10/10_2_fig03_pdf_cleaning_pipeline.png)
+*Figure P02-3: Legal PDF Intelligent Cleaning Pipeline Diagram*
+
+![Figure P02-4](../../images/part10/10_2_fig04_cleaning_examples.png)
+*Figure P02-4: Examples of Embedded Page Number Removal and Chinese Word-Break Repair*
+
+---
 
 ## 8. Chunking and Schema: Structuring Legal Seeds
 
-### 8.1 Chunking as a Required Step
+After completing the basic cleaning, the project does not feed long texts directly into the generative model; instead, it first performs **chunking and structuring**.
 
-Legal documents are long and hierarchical.
+### 8.1 Chunking as a Necessary Step
 
-Chunking creates manageable source units while retaining legal context.
+A regulatory or institutional text is often very long. Feeding it directly to a model creates three problems:
 
-### 8.2 What Schema Solves
+* Overly long context is costly and introduces noise;
+* Different statutory provisions cover mixed topics, making them unsuitable as single supervisory units;
+* Subsequent tracing of sample provenance is difficult, impeding QA and retrospective analysis.
 
-Schema records source document, jurisdiction, article, text span, legal domain, and risk tags.
+A more appropriate approach is therefore to chunk by statutory article, provision paragraph, or relatively self-contained knowledge fragment, turning each chunk into a traceable seed sample.
 
-It lets generated samples remain traceable.
+### 8.2 What the Schema Solves Here
+
+A schema is not there for aesthetics; it exists so that all downstream stages can operate on unified fields. A typical legal seed sample should contain at minimum:
+
+* `id`: Unique identifier
+* `source_name`: Name of the source regulation or institutional document
+* `article_no`: Article number or chapter position
+* `text`: Cleaned body fragment
+* `task_type`: Which task type it will be expanded into
+* `risk_level`: Whether it belongs to a high-risk topic
+* `metadata`: Version, cleaning log, parse source, and other supplementary information
+
+With this schema layer in place, the project can subsequently:
+
+* Trace which statute a given supervised sample originated from;
+* Compare sample distributions across different sources;
+* Route high-risk samples into a dedicated stream;
+* Trace back upstream seeds when problems are found in the training set.
 
 ### 8.3 Schema as the Foundation of the Seed Layer
 
-Every generated sample should be able to trace back to a seed.
+Many data projects fail not because the model is poor, but because no unified field structure was established from the start, leading to situations where:
 
-If seed metadata is weak, QA becomes expensive and unreliable.
+* QA cannot verify provenance;
+* Preference pairs cannot be linked to their primary samples;
+* Train/val splits cannot be isolated by source;
+* Version rollbacks have no starting point.
 
-![Figure 5: Legal Seed Sample Schema](../../images/part10/10_2_fig05_seed_schema.png)
+The schema is the foundation of an industry SFT factory, not an accessory.
 
-## 9. Task System: Legal SFT Task Layers
+![Figure P02-5](../../images/part10/10_2_fig05_seed_schema.png)
+*Figure P02-5: Legal Seed Sample Schema Diagram*
 
-### 9.1 Legal QA
+---
 
-`legal_qa` teaches source-grounded answers to factual or procedural questions.
+## 9. Task Taxonomy: Task Stratification in Legal SFT
 
-It should preserve citation discipline.
+If a team were to build a legal SFT dataset by intuition, the data they most naturally produce would tend to look like this (XXX denotes a template slot filled in with specific article numbers):
 
-### 9.2 Statute Explanation
+> Instruction: Please explain Article XXX of the Civil Code.
+> Output: This article stipulates that……
 
-`statute_explanation` teaches the model to explain provisions in clear language while preserving conditions and exceptions.
+Such samples certainly have value, but if the entire dataset looks like this, the model will ultimately become nothing more than a "statute recitation engine."
 
-### 9.3 Case Analysis
+What legal scenarios truly require is not just recitation of normative text, but stable performance across different task forms. Accordingly, this project decomposes supervisory tasks into at least three major categories.
 
-`case_analysis` gives a short fact pattern and asks for issue, rule, analysis, conclusion, and caveat.
+### 9.1 Legal Q&A (`legal_qa`)
 
-### 9.4 Quality-control Role of Task Decomposition
+This task type targets scenarios closer to real user queries, with an emphasis on:
 
-Task decomposition lets reviewers compare like with like.
+* Translating normative expression into questions users can understand;
+* Providing answers in relatively clear natural language;
+* Including conditional qualifications and boundary caveats where necessary.
 
-It also prevents one task type from dominating the dataset.
+This task type trains the model's "user interface capability."
 
-![Figure 6: Legal Task Taxonomy](../../images/part10/10_2_fig06_task_taxonomy.png)
+### 9.2 Statute Interpretation (`statute_explanation`)
 
-## 10. Task Distribution and Sample Structure
+This task type targets statutory comprehension and normative exegesis, with an emphasis on:
+
+* Restoring the meaning of a provision;
+* Explaining conditions of applicability;
+* Distinguishing key concepts;
+* Noting, where necessary, situations the provision does not directly cover.
+
+This task type trains the model's "normative expression capability."
+
+### 9.3 Case Analysis (`case_analysis`)
+
+This is the task type most closely aligned with legal reasoning, with an emphasis on:
+
+* Extracting issues in dispute from the facts;
+* Assessing how relevant statutory provisions might apply;
+* Articulating the conditions under which a conclusion holds and the associated uncertainties;
+* Avoiding definitive conclusions when the facts are insufficient.
+
+This task type trains the model's "fact-to-rule mapping capability."
+
+### 9.4 The Quality Control Role of Task Decomposition
+
+Task decomposition is not intended to make a table look more impressive; it is designed to avoid a very common problem:
+
+> The sample set looks large, but in practice all samples are training the same capability over and over.
+
+In the legal domain, this problem of "superficially diverse but substantively uniform" samples is especially pronounced. Only by explicitly distinguishing Q&A, interpretation, and analysis capabilities does the model have a chance to learn a more complete behavioral distribution.
+
+![Figure P02-6](../../images/part10/10_2_fig06_task_taxonomy.png)
+*Figure P02-6: Legal Task Taxonomy Stratification Diagram*
+
+---
+
+## 10. Task Distribution and Sample Structure: Controlling Distribution Balance
+
+Once the task taxonomy is established, the next question is not "can we generate samples," but "is the distribution of generated samples healthy."
+
+In the example artifact statistics for this chapter, each of the three primary task types contains 2,577 samples, illustrating the acceptance criterion for relatively balanced task structure. The final training set contains 7,737 samples, indicating that the pipeline can expand from regulatory seeds into a more complete supervised data asset. At the same time, legal source distribution is not balanced: Civil Code–related samples number 3,882; Criminal Law, 1,710; and Company Law, 855 — significant concentration remains in cross-domain coverage. If these figures are used in a formal deliverable, they should be archived together with the data manifest, generation script version, and sampling log.
+
+This set of figures communicates at least three things:
+
+First, the project has moved beyond "randomly producing some samples" and has formed a relatively well-defined task structure.
+
+Second, the factory has developed the capability to expand from seeds into multi-task supervised samples.
+
+Third, legal domain coverage remains one of the highest-priority areas for optimization in the next phase.
 
 ### 10.1 Task Balance and Source Distribution
 
-The report should show task distribution and legal-domain coverage together.
+Viewed purely by task type, the three sample categories are indeed balanced. But looking further at provenance, it becomes apparent that samples are concentrated in a small number of legal domains. This means the model, while learning relatively evenly across "task forms," may still be skewed toward certain areas in "knowledge distribution."
 
-Balanced tasks are not enough if source coverage is narrow.
+### 10.2 The Importance of Sample Structure
 
-### 10.2 Importance of Sample Structure
+A total sample count can only answer "how large is the scale," not "toward what will the model be biased." In industry data engineering, distributional structure is often more important than absolute volume.
 
-Each sample should retain instruction, answer, source, task type, reasoning format, risk flags, and review status.
+![Figure P02-7](../../images/part10/10_2_fig07_task_vs_domain_distribution.png)
+*Figure P02-7: Task Distribution vs. Legal Domain Coverage Comparison Chart*
 
-![Figure 7: Task Distribution and Legal-domain Coverage](../../images/part10/10_2_fig07_task_vs_domain_distribution.png)
+---
 
-## 11. Self-Instruct: Necessity of Controlled Synthesis
+## 11. Self-Instruct: The Necessity of Controlled Synthesis
 
-### 11.1 Role of Synthetic Expansion
+The single most critical step between regulatory seeds and SFT samples is synthesis expansion. Rather than having humans author all legal Q&A pairs line by line, the project adopts a Self-Instruct approach: a teacher model automatically generates candidate samples based on statutory provisions and task templates.
 
-Synthetic expansion increases coverage and transforms source chunks into varied tasks.
+### 11.1 The Role of Synthesis Expansion
 
-### 11.2 Constraints of Legal Synthesis
+If the project relied entirely on human authorship, costs would quickly spiral out of control. In the example estimation for this chapter, manual review labor is illustrated at approximately 193.28 hours and review cost at approximately 23,193.6 CNY as a demonstration of cost accounting methodology; formal deliverables should replace these illustrative values with actual review records, unit-cost assumptions, and sampling logs. If all primary samples were also hand-authored, overall investment would be substantially higher. Using a teacher model to auto-expand first, then concentrating human effort on review and hard cases, is the more practical approach.
 
-The generator must not fabricate citations, exceed source scope, or give overconfident advice.
+### 11.2 Constraints on Legal Synthesis
+
+In general Q&A, a generative model can write relatively open-ended natural language answers; in legal contexts, the greater the freedom granted, the higher the risk. The model can easily:
+
+* Splice irrelevant provisions into an answer that appears correct;
+* Fill in conclusions based on common sense without any actual basis;
+* Confidently output "what should be done" recommendations;
+* Produce definitive answers on boundary questions without preserving uncertainty caveats.
+
+Accordingly, this project uses **template-constrained synthesis** rather than fully open-ended generation. The teacher model's degrees of freedom are bounded by the task templates and format requirements.
 
 ### 11.3 Weighted Roulette and Task Sampling
 
-Weighted sampling can balance task classes and source domains.
+To ensure the data distribution meets expectations, the project does not sample the three task types with simple uniform randomness; instead, it uses a weighted roulette mechanism. The core logic is:
 
-It should be recorded in the manifest.
+* Complex case analysis tasks train the model's high-value reasoning capability most effectively and are therefore assigned higher weight;
+* Tasks such as legal document drafting or concept disambiguation are also important, but do not need to dominate the sample quota at the current stage;
+* Task allocation ratios should be an explicitly adjustable engineering parameter, not a black box hidden inside a random-number generator.
 
-![Figure 8: Weighted Roulette Task Sampling](../../images/part10/10_2_fig08_weighted_task_sampling.png)
+The value of this approach is that it turns "data distribution" into a controllable object rather than a post hoc statistical outcome.
 
-## 12. Explicit Chain of Thought: Expression Constraints for Legal Reasoning
+![Figure P02-8](../../images/part10/10_2_fig08_weighted_task_sampling.png)
+*Figure P02-8: Weighted Roulette Task Sampling Diagram*
 
-### 12.1 Role of Explicit Reasoning
+---
 
-Explicit reasoning helps reviewers inspect how a conclusion was reached.
+## 12. Chain-of-Thought (CoT) Externalization: Expression Constraints for Legal Reasoning
 
-### 12.2 Boundaries of Legal CoT
+Many teams working on legal SFT mistake "expert feel" for "long, formal answers." What actually makes a model behave more like a legal assistant is typically not length, but rather **whether the reasoning process is visible, whether conclusions are structured, and whether boundaries are expressed.**
 
-Reasoning should be structured and cautious.
+### 12.1 The Role of Explicit Chain-of-Thought
 
-It should not encourage unauthorized advice or unsupported conclusions.
+Case analysis tasks are especially dependent on intermediate reasoning. If training data retains only the final conclusion, the model tends to learn how to produce an output without learning how to:
 
-### 12.3 Engineering Value of CoT
+* First identify the issues in dispute;
+* Then assess the applicable norms;
+* Then deliver a conditional conclusion;
+* Finally flag sources of uncertainty.
 
-A stable structure separates issue, rule, analysis, conclusion, and caveat.
+Accordingly, the project's post-processing pipeline externalizes the "reasoning process" fields within model outputs as much as possible, then concatenates them into a unified Markdown or section-divided format. The purpose is not to make the model "look like it is thinking," but to provide the training process with a more complete behavioral template.
 
-It makes review faster.
+### 12.2 Usage Boundaries of Legal CoT
 
-![Figure 9: CoT Structure for Case-analysis Samples](../../images/part10/10_2_fig09_cot_structure.png)
+CoT in legal scenarios also cannot be allowed to expand without limit. Reasoning that is excessively long, granular, and resembling an internal deliberation log is not necessarily appropriate as a final user-facing response. A more practical approach is to constrain CoT to the "structured reasoning" level, for example:
 
-## 13. Preference Pairs and Review Records
+1. Extract the issues in dispute
+2. Cross-reference the applicable rules
+3. Analyze conditions of applicability
+4. State the conclusion and its boundaries
 
-### 13.1 Role of Preference Pairs in Legal Scenarios
+This format preserves the reasoning path without turning the sample into an unwieldy monologue.
 
-Preference pairs compare answers that may both be fluent but differ in correctness, citation quality, caution, or risk handling.
+### 12.3 The Engineering Value of CoT
 
-### 13.2 Current Preference Signal Construction
+Within this project, CoT value is reflected primarily in two respects:
 
-Preference data should record chosen, rejected, reason, source, and reviewer notes.
+* It helps the model learn an expression order more closely resembling legal analysis;
+* It provides QA reviewers with clearer intermediate evidence, making it easier to identify samples where "the conclusion is right but the reasoning is wrong."
 
-### 13.3 Role of Review Records
+![Figure P02-9](../../images/part10/10_2_fig09_cot_structure.png)
+*Figure P02-9: CoT Structure Diagram for Case Analysis Tasks*
 
-Review records are data assets.
+---
 
-They store decision, error tags, rework instruction, and reviewer metadata.
+## 13. Preference Pairs and Review Records: Multi-Layer Supervisory Signals
 
-![Figure 10: Preference Pairs and Review Records](../../images/part10/10_2_fig10_preference_and_review.png)
+SFT samples alone can only tell the model "what constitutes an acceptable answer"; in legal contexts, this is not sufficient. Many responses are not simply "right" or "wrong," but differ along dimensions of style, risk management, boundary control, and expressive caution.
 
-## 14. Risk Refusal: Boundary-control Data
+This is precisely where preference pairs become important.
 
-### 14.1 Relation Between Risk Refusal and System Prompt
+### 13.1 The Role of Preference Pairs in Legal Scenarios
 
-Refusal should not live only in the system prompt.
+They address situations such as:
 
-It should appear in the dataset as realistic user requests and safe responses.
+* Two responses are both basically correct, but one is more restrained, clearer, and less prone to asserting definitive conclusions;
+* Two responses both cite rules, but one better explains the conditions of applicability;
+* Two responses both offer guidance, but one better distinguishes between informational explanation and legal opinion.
 
-### 14.2 Role of Risk-refusal Samples
+These distinctions are difficult to express with a single label, and preference pairs are well-suited to expressing "which one is better."
 
-They teach the model to avoid fabricated law, unauthorized advice, missing jurisdiction facts, and unsafe certainty.
+### 13.2 Preference Signal Development in the Current Project
 
-### 14.3 Current Risk-boundary Construction
+The project's existing artifacts show 7,731 preference pairs, running roughly in parallel with the accepted primary SFT sample count. This indicates that the factory does not build preference signals as an afterthought once primary SFT is complete, but treats them from the outset as an asset to be developed in parallel with primary supervision.
 
-The project adds risk-refusal samples as auxiliary supervision rather than afterthoughts.
+### 13.3 The Role of Review Records
 
-![Figure 11: Risk-refusal Branching in Legal Scenarios](../../images/part10/10_2_fig11_risk_refusal_flow.png)
+Many teams, after completing QA, retain only the "accepted" samples and discard the review records. This causes two problems:
 
-## 15. QA Protocol: Quality Gates for Legal Data
+* No one subsequently knows why a particular sample was accepted or rejected;
+* Failed samples cannot be recycled to improve templates in reverse.
+
+Accordingly, this project includes review records as part of its artifacts. The benefits are:
+
+* Sample quality history is traceable;
+* Second-round arbitration is supported;
+* Error patterns can be extracted from rejection reasons;
+* Evidence for the next round of template optimization is available.
+
+![Figure P02-10](../../images/part10/10_2_fig10_preference_and_review.png)
+*Figure P02-10: Relationship Between Preference Pairs and Review Records*
+
+---
+
+## 14. Risk Refusal: Boundary Control Data
+
+Legal contexts represent a quintessential high-risk scenario. A model should not simply "answer as much as possible," but must know **when it should decline, hand off to a human, or preserve boundary caveats.**
+
+### 14.1 The Relationship Between Risk Refusal and System Prompts
+
+Many teams think, before deployment: "The system prompt already says 'do not provide specific legal opinions,' so that should be enough." In practice, it is far from sufficient.
+
+The behavioral patterns a model truly learns come first and foremost from its training data. If the training set is filled with:
+
+* Reaching direct conclusions in individual cases;
+* Providing definitive recommendations when evidence is insufficient;
+* Outputting highly operational responses to high-sensitivity questions;
+
+then a system prompt at inference time will often fail to reliably suppress these behaviors.
+
+### 14.2 The Role of Risk Refusal Samples
+
+Risk refusal samples are, in essence, behavioral exemplars that teach the model "how to safely not answer." For example:
+
+* Explicitly stating that information is insufficient;
+* Reminding the user to consider specific facts and evidence;
+* Distinguishing general legal information from individual case opinions;
+* Recommending further judgment by a qualified professional.
+
+### 14.3 Risk Boundary Development in the Current Project
+
+The existing artifacts contain 6 risk refusal samples and 6 risk register entries. While this quantity is small, it conveys an important signal: the project has already transformed risk boundaries from "verbal reminders" into **explicit data assets.**
+
+![Figure P02-11](../../images/part10/10_2_fig11_risk_refusal_flow.png)
+*Figure P02-11: Legal Scenario Risk Refusal Routing Diagram*
+
+---
+
+## 15. QA Protocol: The Quality Gate for Legal Data
+
+The most underestimated stage in industry SFT is QA. Teams frequently concentrate most of their effort on "how to generate more samples," overlooking the fact that what truly determines deployment quality is "how to block bad samples."
+
+In legal contexts, a competent QA protocol must answer at least three questions:
+
+1. What kinds of samples should be accepted?
+2. What kinds of samples must be rejected?
+3. When problems are found, how is rework handled — rather than performing a single one-time cleanup?
 
 ### 15.1 Review Dimensions
 
-Review dimensions include correctness, source grounding, expression, format, risk handling, and citation discipline.
+Review dimensions can be decomposed into five items:
 
-### 15.2 Accept, Rework, and Reject Rules
+* **Correctness:** Is the conclusion consistent with the seed regulation and task intent?
+* **Completeness:** Are key conditions, exceptions, or applicability prerequisites missing?
+* **Expressive clarity:** Can the response be understood by non-specialist users?
+* **Format consistency:** Does it conform to the specified output template?
+* **Risk boundary:** Does it cross the line into individualized, assertive, or highly sensitive recommendations?
 
-Accepted samples enter training.
+### 15.2 Accept, Revise, and Reject Rules
 
-Reworked samples need clear instructions.
+An actionable QA protocol should not have only two states — "pass/fail." A more practical design includes at least:
 
-Rejected samples should keep error tags for analysis.
+* **Accept:** Can proceed directly into the training set;
+* **Revise:** Substance is correct, but expression, format, or boundary handling is inadequate; rework required;
+* **Reject:** Factual or normative errors, excessive risk, or task mismatch; does not enter training assets.
 
-### 15.3 Error Tagging
+### 15.3 Error Labeling
 
-Common error tags include hallucinated citation, wrong jurisdiction, overconfident conclusion, missing caveat, weak reasoning, and format violation.
+It is recommended to attach error labels to rejected samples within QA records, such as:
 
-### 15.4 Necessity of QA Protocol
+* Citation error
+* Conclusion out of bounds
+* Missing condition
+* Inappropriate style
+* Task mismatch
+* Facts insufficient but answer still asserted
 
-Legal SFT without QA protocol is not reliable.
+### 15.4 The Necessity of a QA Protocol
 
-The protocol turns review into an operating system.
+Without documenting QA protocols alongside generation logic, industry SFT degrades from a "data factory methodology" into a mere "description of data generation steps."
 
-![Figure 12: QA Review Loop](../../images/part10/10_2_fig12_qa_loop.png)
+![Figure P02-12](../../images/part10/10_2_fig12_qa_loop.png)
+*Figure P02-12: QA Review Closed-Loop Diagram*
 
-![Figure 13: QA Accept/Rework/Reject Decision Table](../../images/part10/10_2_fig13_qa_decision_table.png)
+![Figure P02-13](../../images/part10/10_2_fig13_qa_decision_table.png)
+*Figure P02-13: QA Accept / Revise / Reject Decision Table*
 
-## 16. Vendor Collaboration and Human-machine Division
+---
 
-### 16.1 Layered Review
+## 16. Vendor Collaboration and Human-Machine Division of Labor: Review Mechanisms at Scale
 
-Machine checks handle formatting, duplicates, obvious citation issues, and source-span presence.
+In small-scale experiments, team members can still handle most review work themselves. But once the project enters continuous iteration, the cost of manual review quickly becomes the primary bottleneck.
 
-Human reviewers judge legal correctness and risk.
+Using the example figures in this chapter, manual review labor is estimated at approximately 193.28 hours and review cost at approximately 23,193.6 CNY. These figures are intended to illustrate the cost accounting methodology; if published as actual project results, they must be supplemented with review records, sample IDs, rate assumptions, and reviewer sign-off. Without a more rational tiered review and vendor collaboration mechanism, costs will rapidly spiral as volume grows.
 
-### 16.2 Risks in Vendor Collaboration
+### 16.1 Tiered Review
 
-Vendor review can drift in standards, lose context, or optimize for speed rather than correctness.
+Not all samples require the same level of human intervention. A more rational design typically involves:
 
-Clear rubrics and audit samples are required.
+* Low-risk, rule-clear samples proceeding through automated pre-review first;
+* Medium-risk samples reviewed by annotators or domain operators;
+* High-risk or disputed samples escalating to senior personnel or expert arbitration.
 
-### 16.3 Engineering Position of Collaboration
+### 16.2 Risk Points in Vendor Collaboration
 
-Collaboration design belongs in the data factory.
+Once external annotation or review resources are introduced, teams most commonly fall into two traps:
 
-It is not a management appendix.
+* Providing only "what to do" without explaining "why it should be done this way";
+* Providing only standards, without counter-examples and boundary illustrations.
 
-![Figure 14: Human-in-the-loop and Vendor-layered Review](../../images/part10/10_2_fig14_human_in_the_loop.png)
+This is especially true in legal contexts. A simple guideline asking reviewers to "judge whether an answer is correct" is far from adequate. Reviewers need to see:
 
-## 17. Training Packaging: From Supervised Samples to Training Interface
+* Which answers are still sent back for revision despite being basically correct — because they are too assertive;
+* Which answers are too conservative, but are also unacceptable for being excessively so;
+* Which questions trigger risk refusal rather than continued supplementation.
 
-### 17.1 Packaging as an Independent Stage
+### 16.3 The Engineering Position of the Collaboration Mechanism
 
-Training packaging should not be treated as file copying.
+The word "factory" in "data factory" must ultimately be grounded in a collaboration mechanism. Documenting only models, templates, and scripts — without documenting people and process — makes it very difficult to achieve real-world team implementation.
 
-It maps reviewed samples into trainable formats.
+![Figure P02-14](../../images/part10/10_2_fig14_human_in_the_loop.png)
+*Figure P02-14: Human-in-the-Loop and Vendor Tiered Review Diagram*
 
-### 17.2 Main Training Artifacts
+---
 
-Artifacts include `train_sft.jsonl`, `val_sft.jsonl`, `smoke_sft.jsonl`, preference pairs, refusal samples, QA logs, and a training manifest.
+## 17. Training Packaging: From Supervised Samples to Training Interfaces
 
-### 17.3 Role of Smoke Test
+After generation, review, and preference construction are complete, the data factory must also package these artifacts into interfaces directly consumable by the training side.
 
-The smoke set validates schema, loader behavior, and tokenization before full training.
+### 17.1 Training Packaging as a Distinct Phase
 
-![Figure 15: Training Packaging and Delivery Interface](../../images/part10/10_2_fig15_training_artifacts.png)
+Many projects end once samples are produced, only to discover when training actually begins that:
 
-## 18. Result Overview
+* Fields are inconsistent and cannot be read by the training script;
+* Train/val splits are unstable;
+* Smoke tests are not representative of actual sample format;
+* Reports, metrics, and data files do not align with each other.
+
+Training packaging is therefore not simply exporting a JSONL file; it requires ensuring:
+
+* All primary fields are complete;
+* Train/val splits are reproducible;
+* The manifest accurately describes data scope and version;
+* Smoke tests can quickly surface interface issues.
+
+### 17.2 Primary Training Artifacts in This Project
+
+* `final_sft_dataset.jsonl`
+* `train.jsonl`
+* `val.jsonl`
+* `smoke_test.jsonl`
+* `training_manifest.json`
+
+### 17.3 The Role of Smoke Tests
+
+The value of a smoke test is not to evaluate model performance, but to surface obvious problems in the training pipeline as early as possible — such as missing fields, encoding errors, inconsistent sample formats, or mismatches between reading logic and the manifest.
+
+![Figure P02-15](../../images/part10/10_2_fig15_training_artifacts.png)
+*Figure P02-15: Training Packaging and Delivery Interface Diagram*
+
+---
+
+## 18. Results Overview: Example Project Output Summary
+
+Based on the example artifacts, P02 can form a comparatively complete set of legal-domain supervised assets, with the downstream lightweight validation demonstrating how supervisory signals are verified. If these figures are presented as actual project results, they must be correlated item by item with `training_manifest.json`, generation script version, random seed, sample IDs, and scoring records.
 
 ### 18.1 Sample Scale
 
-The project expands from `2577` seed-level assets to `7737` training-facing samples.
+* Number of seed statutes: `2,577`
+* High-quality SFT samples generated via template teacher: `7,731`
+* Low-quality contrast samples filtered or constructed via heuristic judge: `7,731`
+* Number of preference pairs: `7,731`
+* Final training set size: `7,737`
 
-This shows factory expansion capability, not automatic legal quality.
+This demonstrates that the example pipeline can expand from raw regulatory seeds into a structurally complete set of supervised assets, rather than remaining at the level of a handful of hand-crafted samples or a one-shot script demonstration.
 
 ### 18.2 Task Distribution
 
-The three main task classes remain visible, which means the task framework is stable.
+The three primary task types remain fully aligned:
+
+* `legal_qa = 2,577`
+* `statute_explanation = 2,577`
+* `case_analysis = 2,577`
+
+This distribution indicates that the project has strong allocation control at the task level, with no single task type disproportionately dominating the sample space.
 
 ### 18.3 Source Distribution
 
-Uneven source distribution shows where coverage should be improved next.
+The current legal source distribution is:
+
+* Civil Code of the People's Republic of China = `3,882`
+* Criminal Law of the People's Republic of China = `1,710`
+* Civil Procedure Law of the People's Republic of China = `951`
+* Company Law of the People's Republic of China = `855`
+* Labor Law of the People's Republic of China = `333`
+
+This demonstrates that the project has developed cross-domain expansion capability, but coverage across legal domains remains uneven, with Civil Code–related samples accounting for a notably higher proportion.
 
 ### 18.4 Preference and Risk Data
 
-Preference, QA, and risk-refusal records move the project from "can answer" toward "answers within boundaries."
+* QA review records: `7,731`
+* High-risk refusal samples: `6`
+* Average QA score: `5.0`
 
-### 18.5 Training and Delivery Artifacts
+This shows that the project is not building only primary SFT data, but concurrently constructing auxiliary supervisory layers related to QA, preferences, and risk boundaries. For industry SFT, this is often more important than simply increasing total sample count.
 
-The final artifacts include SFT splits, auxiliary data, manifests, reports, and validation results.
+### 18.5 Training and Delivery Layer Artifacts
 
-![Figure 16: P02 Metric Dashboard](../../images/part10/10_2_fig16_metrics_dashboard.png)
+* Training set split: `train = 6,947`, `val = 790`, `smoke = 24`
+* `training_manifest.json` packaging complete
+* Project inspection pipeline passes; training-side and report-side artifacts are mutually consistent
 
-## 19. Lightweight Downstream Validation
+This indicates that the project's output is not merely "a collection of JSONL files," but a set of assets directly consumable by the training side and consistently verifiable by inspection scripts.
+
+![Figure P02-16](../../images/part10/10_2_fig16_metrics_dashboard.png)
+*Figure P02-16: P02 Core Metrics Dashboard*
+
+---
+
+## 19. Lightweight Downstream Validation: Minimal Validation Design
+
+In prior versions, P02 was able to demonstrate "the data factory validated." But merely proving the pipeline exists is insufficient; what matters more is answering the following question:
+
+> Do these data — processed through QA, preference construction, and risk governance — actually outperform unprocessed or low-quality candidates?
+
+The newly added lightweight downstream validation is designed precisely to address this question.
 
 ### 19.1 Validation Design
 
-The project uses a lightweight sampled validation design rather than a heavy benchmark.
+The example validation randomly samples 50 paired samples under a fixed random seed (`seed = 20260409`) and performs lightweight quality validation on both `chosen` and `rejected` categories. The goal here is not to pursue a comprehensive model benchmark, but to answer in a cost-controlled and reproducible manner whether preferences and QA have genuinely widened the quality gap. For formal publication or delivery, the sampling script, sample ID list, and scoring results should be retained.
+
+This validation approach is appropriate for the project's current goals. The focus here is on data engineering methodology, not a complete downstream model paper. A good downstream validation need not be heavy at the outset, but it must meet at least three requirements:
+
+* Reproducible;
+* Interpretable;
+* Directly aligned with the key design assumptions stated earlier.
 
 ### 19.2 Validation Metrics
 
-Metrics should cover answer correctness, citation behavior, refusal behavior, format adherence, and reviewer acceptance.
+In this example 50-sample draw, the project uses several highly representative metrics:
+
+* Average quality score for `chosen`
+* Average quality score for `rejected`
+* Pairwise win rate
+* Statute citation coverage rate
+* Unsafe shortcut expression rate
+
+The strength of these metrics is that they are not purely abstract scores, but are directly tied to the real goals of legal SFT:
+
+* Quality score reflects overall acceptability;
+* Pairwise win rate reflects whether preference construction genuinely distinguishes good from bad responses;
+* Statute citation coverage rate reflects whether responses retain legal grounding;
+* Unsafe shortcut expression rate reflects whether high-risk, assertive expressions are effectively suppressed.
 
 ### 19.3 Validation Results
 
-Results should be interpreted as regression evidence for the data factory, not as a full legal capability claim.
+From the current results:
 
-### 19.4 Difference from Heavy Benchmarks
+* Average quality score for `chosen`: `5.0 / 5`
+* Average quality score for `rejected`: `1.0 / 5`
+* Pairwise win rate: `100.00%`
+* Statute citation coverage rate: `chosen = 100.00%`, `rejected = 0.00%`
+* Unsafe shortcut expression rate: `chosen = 0.00%`, `rejected = 100.00%`
 
-Heavy benchmarks evaluate model ability.
+These figures come from the example lightweight sample draw; formal publication should be accompanied by the sampling script and scoring details. In the pedagogical context, they indicate:
 
-Lightweight validation checks whether the data factory is producing stable task behavior.
+First, the current preference construction and QA mechanisms are not merely "going through the motions of review," but have genuinely separated high-quality samples from low-quality ones.
 
-### 19.5 Engineering Meaning
+Second, the two objectives most critical to legal contexts — **preserving statutory grounding** and **avoiding assertive shortcut expressions** — show marked differences between `chosen` and `rejected`.
 
-The 50-sample protocol gives the team a repeatable inspection path.
+Third, P02's supervisory design is beginning to exhibit a very important engineering property: it does not merely produce samples, but can provide initial evidence for why those samples deserve to enter the training set.
 
-### 19.6 How to Read Such Experiments
+### 19.4 The Distinction Between Lightweight Validation and Heavy Benchmarking
 
-Read them as safety and stability signals, not as final domain certification.
+It must be emphasized that the downstream validation here remains **lightweight validation** — not a comprehensive training benchmark and not an ablation study in the style of a research paper. Its value lies not in replacing large-scale evaluation, but in adding the piece that was previously most absent from this chapter:
 
-![Figure 17: 50-sample Validation Protocol](../../images/part10/10_2_fig17_eval_sampling_protocol.png)
+> Moving from "the data structure is reasonable" further toward "there is preliminary evidence that the data is effective."
 
-## 20. Result Interpretation: Structural Signals of the Current Factory
+This step is already very significant. Many data engineering projects fail precisely because they describe only the construction pipeline without any posterior validation, making it ultimately impossible to judge whether the resulting data is actually effective.
 
-### 20.1 Expansion from 2577 to 7737
+### 19.5 Engineering Implications of These Results
 
-This indicates the factory can expand source material into multiple supervision assets.
+This lightweight validation delivers at least three engineering-level signals.
 
-### 20.2 Balanced Main Tasks
+First, it demonstrates that preference pairs and QA records are worth keeping — they are not optional accessories. They not only help filter samples but also provide clearer behavioral boundaries for subsequent training.
 
-Balanced task types indicate that the task framework is operational.
+Second, it demonstrates that the design decision to "make statutory grounding explicit" is effective. `chosen` samples achieve 100% statute citation coverage while `rejected` samples score 0%, indicating that the current templates and inspection mechanisms can significantly drive model outputs to resemble genuine legal explanations rather than vague generalities.
 
-### 20.3 Uneven Legal-domain Distribution
+Third, it demonstrates that "making safety boundaries explicit" is beginning to take effect. The unsafe shortcut expression rate is 0% for `chosen` and 100% for `rejected`, meaning the project is now capable of proactively suppressing high-risk expression at the data level, rather than leaving this responsibility entirely to the system prompt at inference time.
 
-The next focus should be filling coverage gaps, not only increasing volume.
+### 19.6 How to Interpret This Type of Experiment
 
-### 20.4 Preference, QA, and Lightweight Validation Together
+The emphasis in this type of experiment is not on claiming some extreme result, but on demonstrating three things:
 
-Together they show movement from answer generation toward stable legal assistance.
+* A minimal reproducible downstream validation has been added;
+* It directly validates the key design assumptions presented earlier;
+* It provides direction for subsequent, more rigorous training experiments, rather than attempting to resolve all evaluation problems in one pass.
 
-### 20.5 Visible Human-review Cost
+![Figure P02-17](../../images/part10/10_2_fig17_eval_sampling_protocol.png)
+*Figure P02-17: 50-Sample Validation Protocol Diagram*
 
-Visible review cost means later versions must optimize review workflow.
+---
 
-### 20.6 What the Supplement Adds
+## 20. Interpreting Results: Structural Signals from the Current Data Factory
 
-The supplement adds stronger project evidence: task structure, auxiliary supervision, validation, and checks.
+Merely listing results has limited value. What matters more is understanding the engineering state reflected by these numbers.
 
-## 21. Quality Baseline for Legal SFT Data
+### 20.1 From 2,577 to 7,737: The Factory Has Expansion Capability
+
+This demonstrates that the project has achieved expansion from knowledge seeds to multi-task supervised data, rather than remaining at the stage of "organizing regulatory texts."
+
+### 20.2 Three Balanced Task Types: The Task Framework Is Stable
+
+If one task type far outnumbers the others, it usually signals an imbalance in the template system or sampling logic. The fact that all three task counts are perfectly aligned indicates that the task distribution layer has achieved a high degree of controllability.
+
+### 20.3 Uneven Domain Distribution: The Next Phase Should Focus on Coverage, Not Volume
+
+The primary challenge is no longer "do we have samples" but "are the samples evenly distributed." This is more important than simply continuing to accumulate data.
+
+### 20.4 Preference, QA, and Lightweight Downstream Validation Together: The Project Is Moving from "Can Answer" to "Answers More Reliably"
+
+Without primary SFT alone, it is difficult to prove that the model has learned better legal behavioral patterns. Without preference pairs but no validation, it is difficult to prove that preference construction is actually working. The newly added 50-sample lightweight downstream validation provides direct posterior evidence for both preferences and QA: `chosen` and `rejected` have been clearly separated on quality, citation, and safety dimensions.
+
+In other words, the current project is beginning to exhibit a more mature data engineering characteristic:
+
+> It not only generates training samples, but can also demonstrate through minimal validation "which samples are worth training on."
+
+### 20.5 Manual Review Cost Is Now Visible: Automation and Collaboration Optimization Must Be Considered Going Forward
+
+The 193.28 hours of manual review labor already represents a significant cost for a small-scale demonstration project. Without recognizing this, it is easy to assume that "generating more legal data just means spending a bit more on API calls." In reality, what is truly expensive is typically the subsequent review and rework.
+
+### 20.6 What This Addition Changes
+
+The newly added lightweight downstream validation fills in the piece on "how to judge whether the data design is effective."
+
+As a result, this chapter is no longer merely a "procedural description of a legal SFT data factory," but forms a more complete engineering closed loop:
+
+* Goals and boundaries;
+* Data pipeline and task design;
+* QA, preferences, and risk control;
+* Training interfaces and inspection closed loop;
+* And minimal reproducible downstream validation to support the earlier design judgments.
+
+---
+
+## 21. Quality Baseline: Usability Standards for Legal SFT Data
+
+The quality baseline here does not pursue an abstract perfect score; it explicitly defines: what data is ready to enter training, and what data must continue through rework.
+
+Projects of this type need to establish at least four baselines.
 
 ### 21.1 Correctness Baseline
 
-Answers must align with source text and avoid fabricated law.
+A response must not manifestly contradict the meaning of the seed regulation, must not introduce key conclusions out of thin air, and must not omit applicability conditions to a degree that materially affects the conclusion.
 
 ### 21.2 Expression Baseline
 
-Language should be clear, cautious, and not overconfident.
+A response should be clear, complete, and unambiguous. Even legal terminology should be made as readable as possible to non-specialist users rather than mechanically copying statutory text.
 
 ### 21.3 Format Baseline
 
-Samples should follow required task format.
+Samples of the same task type should follow a consistent output skeleton. For example, case analysis tasks should generally include disputed issues, applicable rules, analysis, and conclusion — rather than sometimes appearing as a single paragraph and other times as a collection of fragments.
 
 ### 21.4 Risk Baseline
 
-Out-of-scope or unsafe requests should be refused or redirected.
+High-risk questions must reflect boundary-awareness. When evidence is insufficient, facts are incomplete, or a question clearly approaches an individual case opinion, the response should preserve cautious expression or trigger a refusal template, rather than forcing a definitive judgment.
 
-### 21.5 Baseline Versus Single Score
+### 21.5 Baselines vs. Aggregate Scores
 
-A baseline is more useful than one aggregate score because legal errors differ in severity.
+Compared to the abstract statement "overall quality is good," a quality baseline functions more like a threshold: only what passes the threshold proceeds to the next step; anything that fails must be reworked. This has more engineering value than a single average score.
 
-## 22. Version Evolution
+---
 
-### 22.1 V1: Parse and Clean Statutes
+## 22. Version Evolution: Version Management for Industry SFT Datasets
 
-The first version proves source processing.
+A mature data factory does not treat the first version of a dataset as the final answer. On the contrary, it should inherently support version evolution.
 
-### 22.2 V2: Add Three Main Task Types
+### 22.1 V1: Validate the Regulatory Cleaning and Chunking Pipeline First
 
-The second version proves supervision construction.
+The value of the first version is establishing a stable pipeline from PDF to structured seed. It answers: can the seed layer be reliably produced?
+
+### 22.2 V2: Introduce the Three Primary Task Types
+
+The value of the second version is moving data from "knowledge fragments" to "supervised samples." This version addresses task taxonomy and distribution control.
 
 ### 22.3 V3: Add Preference Pairs and Review Records
 
-The third version adds ranking and review signals.
+The value of the third version is enabling samples to train not only "correct responses" but "better responses," and making quality history traceable.
 
-### 22.4 V4: Add Risk Refusal and Launch Boundaries
+### 22.4 V4: Add Risk Refusal Samples and Deployment Boundaries
 
-The fourth version introduces explicit safety boundaries.
+The value of the fourth version is modeling high-risk behavior separately, giving the factory a basic compliance and safety awareness capability.
 
-### 22.5 Record Value of Version Evolution
+### 22.5 The Documentation Value of Version Evolution
 
-Version history tells future users what changed and why.
+It demonstrates very clearly that: a data factory does not emerge fully formed all at once; each version has its own core objective; not all problems need to be solved in the first version; and the trigger condition for a version upgrade should come from real problems, not abstract perfectionism.
 
-![Figure 18: P02 Version-evolution Roadmap](../../images/part10/10_2_fig18_version_timeline.png)
+![Figure P02-18](../../images/part10/10_2_fig18_version_timeline.png)
+*Figure P02-18: P02 Version Evolution Roadmap*
 
-## 23. Cost Optimization
+---
 
-### 23.1 Cost Lessons
+## 23. Cost Optimization: Primary Cost Drivers in Legal Data
 
-The main costs are source cleaning, generation, review, validation, and rework.
+When teams work on large language model data projects, the first cost that comes to mind is typically the model API cost. In legal SFT, however, what is truly expensive is usually not generation, but rather:
 
-### 23.2 Automation Priorities
+* Manual review
+* Error rework
+* Escalation handling for high-risk samples
+* Version regression inspection
 
-Automate formatting checks, source-span checks, duplicate detection, and obvious citation failures before automating legal judgment.
+### 23.1 Cost Lessons from the Current Project
 
-### 23.3 Necessity of Cost Analysis
+The manual review labor in the current project has already reached 193.28 hours — a figure that serves as a compelling reminder: industry data factories are never just a matter of "running the model a bit more," but of "how to prevent human-machine collaboration from spiraling out of control."
 
-Without cost analysis, the factory cannot scale responsibly.
+### 23.2 Which Stages Deserve Priority Automation
 
-## 24. Verification Loop: Consistency Checks
+In legal contexts, what typically deserves priority automation is not final arbitration, but the mechanical filtering that precedes it, such as:
 
-### 24.1 Role of Check Scripts
+* Discarding format-noncompliant samples;
+* Pre-reviewing low-risk template samples;
+* Rule-based interception of obviously out-of-bounds expressions;
+* Clustering review records by error type.
 
-Check scripts verify that code, artifacts, metrics, and reports agree.
+### 23.3 The Necessity of Cost Analysis
 
-### 24.2 Current Validation State
+A project section should not only demonstrate "the method is viable," but also articulate the input-output relationship. If a method is theoretically sound but bears unacceptable labor costs in practice, it is not a method that can truly be deployed.
 
-The desired state is all command-level and artifact-level checks passing.
+---
 
-### 24.3 Engineering Role of Verification
+## 24. Validation Closed Loop: Consistency Checks for the Legal Data Pipeline
 
-Verification makes the data factory inspectable and reproducible.
+Whether a project is mature cannot be judged solely by whether output files exist; it also requires a consistency validation.
 
-![Figure 19: Code-artifact-report Consistency Validation](../../images/part10/10_2_fig19_validation_chain.png)
+### 24.1 The Role of Inspection Scripts
 
-## 25. Limitations and Risks
+Industry data projects are prone to the problem of "each part looks correct, but the whole is broken." For example:
 
-### 25.1 Uneven Legal-domain Coverage
+* Code runs, but artifacts are missing files;
+* Sample counts look normal, but there is leakage between train and val;
+* Metrics are written as passing, but the report references old numbers;
+* Preference pair count does not match primary sample count;
+* Smoke tests do not represent the actual training format.
 
-Some legal domains or jurisdictions may be underrepresented.
+### 24.2 Current Project Validation Status
 
-### 25.2 High Synthetic Ratio
+The project inspection results are:
 
-Synthetic expansion must be balanced by review and source grounding.
+* Total checks: 13
+* Passing checks: 13
+* Overall status: PASS
 
-### 25.3 Risk-refusal Samples Still Limited
+Command-level checks cover `py_compile`, `evaluate_factory`, and others; data/artifact-level checks cover key items including `required_files_exist`, `seed_count_positive`, `accepted_count_matches_seed_x_tasks`, `preference_pairs_cover_accepted`, `qa_reviews_cover_accepted`, and `train_val_no_overlap`.
 
-More boundary cases are needed before launch.
+### 24.3 The Engineering Purpose of the Validation Closed Loop
+
+It embodies a very important engineering habit: the completion standard for a data project is not "a large number of files were generated," but "code, artifacts, statistics, and reports are mutually consistent."
+
+![Figure P02-19](../../images/part10/10_2_fig19_validation_chain.png)
+*Figure P02-19: Code–Artifact–Report Consistency Validation Diagram*
+
+---
+
+## 25. Limitations and Risks: Constraints of the Current Factory
+
+A case study that discusses only successes is generally not credible. This is especially true for legal SFT, which is inherently constrained by data sources, review costs, and risk boundaries.
+
+### 25.1 Uneven Legal Domain Coverage
+
+Current samples are heavily concentrated in a small number of legal domains, which will cause uneven model performance in terms of knowledge breadth. Filling in coverage of long-tail legal domains and high-frequency real business issues is one of the most important priorities for the next phase.
+
+### 25.2 High Synthesis Ratio
+
+Although synthesis is a cost-effective necessity, an excessively high synthesis ratio introduces template register and teacher-bias issues. The model may learn to "answer in the manner of the template" without genuinely mastering diverse user expression patterns.
+
+### 25.3 Risk Refusal Samples Still Too Few
+
+Risk refusal mechanisms have been established, but the sample volume remains small. For genuine deployment scenarios, this is far from sufficient — particularly for individualized legal advice, sensitive disputes, and cases with insufficient evidence for judgment, which require a much richer set of refusal and boundary-preserving samples.
 
 ### 25.4 High QA Cost
 
-Legal review is expensive and must be planned as part of the system.
+As sample volume grows, manual review costs will continue to rise. Without introducing more granular pre-review, arbitration, and re-annotation mechanisms into the pipeline, scaling will face significant resistance.
 
-## 26. Cross-industry Transfer
+---
 
-### 26.1 Designs That Transfer Directly
+## 26. Cross-Industry Transfer: The Template Value of the Legal Factory
 
-Source-grounded seeds, task taxonomy, constrained synthesis, review records, refusal data, packaging, and checks transfer well.
+Law is not the only industry requiring vertical-domain SFT, but it is an excellent template. This is because the legal context simultaneously exhibits the following characteristics:
 
-### 26.2 Parts That Cannot Be Copied Directly
+* Highly structured knowledge
+* Tightly constrained tasks
+* Clear risk boundaries
+* Rigid QA requirements
+* High human-machine collaboration costs
 
-Legal risk categories, citation norms, and jurisdiction rules cannot be copied into other industries.
+These same characteristics also exist in taxation, finance, healthcare, and customer service compliance.
 
-### 26.3 Transferable Method Chain
+### 26.1 Directly Transferable Design Elements
 
-The transferable method is define sources, clean and chunk, build tasks, synthesize under constraints, review, add risk data, package, and validate.
+* The cleaning pipeline from unstructured documents to structured seeds;
+* The practice of decomposing the task taxonomy first, then scaling;
+* The approach of building SFT, preference pairs, and risk refusal in parallel;
+* QA protocols, error labels, and rework mechanisms;
+* Training packaging and validation closed loops.
 
-![Figure 20: Cross-domain Transfer Method Chain](../../images/part10/10_2_fig20_cross_domain_transfer.png)
+### 26.2 Elements That Cannot Be Directly Replicated
 
-## 27. Main Deliverables
+* Risk boundaries in legal contexts are not equivalent to medical or financial risk boundaries;
+* Statute interpretation tasks may not be primary tasks in other industries;
+* Legal document style is not equivalent to customer service or sales style;
+* Trigger conditions for high-risk refusal must be rewritten per industry.
 
-### 27.1 Seed and Processing Artifacts
+### 26.3 The Transferable Methodology Chain
 
-- Cleaned legal source chunks.
-- Seed schemas.
-- Source manifests.
+What is truly transferable is not any specific prompt, but this methodology chain:
 
-### 27.2 Main and Auxiliary Supervision Artifacts
+> Identify authoritative seeds → perform structured chunking → design the task taxonomy → apply controlled synthesis for expansion → establish QA and preferences → model risk boundaries separately → apply training packaging and consistency validation.
 
-- Legal QA samples.
-- Statute explanation samples.
-- Case-analysis samples.
-- Preference pairs.
-- QA review logs.
-- Risk-refusal records.
+![Figure P02-20](../../images/part10/10_2_fig20_cross_domain_transfer.png)
+*Figure P02-20: Cross-Industry Transfer Methodology Chain Diagram*
+
+---
+
+## 27. Primary Deliverables Checklist
+
+The primary deliverables are listed below.
+
+### 27.1 Seed and Processing Intermediate Artifacts
+
+* `data/processed/raw_chunks.jsonl`
+* `data/processed/legal_seed_dataset.jsonl`
+* `data/processed/instruction_taxonomy.json`
+
+### 27.2 Primary Supervised and Auxiliary Supervised Artifacts
+
+* `data/processed/domain_expert_sft.jsonl`
+* `data/processed/synthetic_candidates_rejected.jsonl`
+* `data/processed/legal_preference_pairs.jsonl`
+* `data/processed/legal_qa_review.jsonl`
+* `data/processed/legal_risk_refusal_sft.jsonl`
+* `data/processed/legal_risk_register.jsonl`
 
 ### 27.3 Training Interface Artifacts
 
-- Train split.
-- Validation split.
-- Smoke split.
-- Training manifest.
+* `data/training/final_sft_dataset.jsonl`
+* `data/training/train.jsonl`
+* `data/training/val.jsonl`
+* `data/training/smoke_test.jsonl`
+* `data/training/training_manifest.json`
 
-### 27.4 Report and Verification Artifacts
+### 27.4 Report and Validation Artifacts
 
-- Metrics report.
-- QA report.
-- Validation report.
-- Check report.
+* `data/reports/p2_report.md`
+* `data/reports/p2_metrics.json`
+* `data/reports/p2_test_results.json`
 
-## 28. Summary: Organizing Generation into a Factory
+Enumerating these deliverables is not merely to present a checklist, but to demonstrate that the result of an industry SFT factory is not a single training set file but a group of mutually related data assets.
 
-Legal SFT data should not be a pile of generated prompts.
+---
 
-It should be a factory where every sample has source, task type, review path, risk boundary, and training interface.
+## 28. Methodological Retrospective: Organizing Generation into a Factory
 
-That is the method value of P02.
+Looking back at the entire project, its true achievement is not "getting the model to generate a few more legal Q&A pairs," but rather:
 
-## Special Topic: Release Gates for Legal SFT Data
+* How to extract usable knowledge from authoritative yet messy PDFs;
+* How to decompose that knowledge into different types of supervisory tasks;
+* How to keep the generation process controlled rather than expanding arbitrarily;
+* How to turn model behavioral boundaries into data through preference pairs and risk refusal;
+* How to incorporate QA, cost, versioning, and validation closed loops together into the factory design.
 
-### 1. Release Should Inspect Content Risk and Engineering Risk
+This is also the central message this chapter most wants to convey:
 
-Content risk includes hallucinated law, wrong jurisdiction, missing caveats, and unsafe advice.
+> In high-expertise industries, the goal of SFT data engineering is never simply "produce more samples," but to establish a pipeline capable of continuously and reliably producing high-quality supervised assets.
 
-Engineering risk includes missing source metadata, split leakage, schema inconsistency, and report mismatch.
+Law is only one representative scenario for this methodology. Once the pipeline — from seeds to supervision, from generation to quality inspection, from samples to deployment interfaces — is mastered, a team has acquired the fundamental methodological foundation for building data factories in other industries.
 
-### 2. Gate Value Is Making Caution a System Property
+---
 
-Caution should not depend only on one reviewer.
+## Special Topic: Publication Gates for Legal SFT Data
 
-It should be encoded in task design, refusal data, QA rules, and release checks.
+One of the most significant differences between a legal-domain data factory and a general Q&A data factory is that legal data inherently bears a higher cost of error. For general Q&A, a suboptimal answer may only degrade user experience; for legal Q&A, erroneous supervisory signals can directly propagate into risk advice, refusal boundaries, and professional credibility. Accordingly, projects of the P02 type require clearly defined gate conditions before entering version release.
+
+### I. Pre-Release Review Must Cover Both Content Risk and Engineering Risk
+
+Legal SFT data cannot be evaluated solely on "is the volume sufficient" or "are the formats complete." It also requires simultaneous assessment of:
+
+* Whether statute citations, case summaries, and risk notices contain obvious errors or outdated expressions;
+* Whether refusal samples and high-risk consultation samples cover the critical boundaries;
+* Whether preference pairs and QA records genuinely support the conclusions in the current version;
+* Whether training interfaces, manifests, and test results are consistent with the version artifacts.
+
+In other words, the release threshold for a version of legal data is inherently higher than for ordinary data, because it must pass both a content credibility check and an engineering consistency check.
+
+### II. The Value of Gates Lies in Making "Caution" a System Property
+
+Many teams conducting industry data work leave caution for late-stage human review. A more robust approach is to move caution upstream into release gates. Once gates are written down in a structured form, the team gradually develops a stable habit: not "release first and explain later," but "first confirm risk boundaries, supervised assets, and validation evidence, then decide whether this version enters training and presentation." This institutionalized caution is precisely the long-term capability most worth preserving in industry SFT data.
 
 ## Chapter Summary
 
-This chapter used legal-domain SFT to show how a regulated vertical dataset can be organized as a data factory.
+This chapter uses a "legal-domain expert SFT data factory" as its case study, demonstrating the engineering organization required to transform regulations, case law, and legal Q&A materials into traceable domain-specific SFT training assets. The primary value of the case lies in placing task definition, data boundaries, architectural decisions, sample schemas, metric acceptance criteria, and reproducibility resources within a single pipeline, so that the project is no longer merely a sequence of operational steps but becomes an auditable case study.
 
-The project connects legal PDF cleaning, seed schemas, task taxonomy, controlled synthesis, reasoning templates, preference pairs, QA records, refusal data, training packaging, validation, and versioning.
+The boundaries of this case must also be clearly preserved. Input is limited to publicly available or licensed legal texts; the project does not cover real legal consultation liability or production-grade case management systems. In scenarios with larger scale, higher risk, or stronger compliance constraints, data sources, permission status, manual review ratios, operational costs, and failure rollback plans should all be re-evaluated.
 
-Its boundary should remain clear: it is a data engineering case for legal-domain supervision, not legal advice and not a complete legal AI product.
-
-## Release Review Notes
-
-The first release review item is source authority.
-
-Every seed should point to a legal source document.
-
-The source should include jurisdiction, document type, and article or section reference when available.
-
-The second item is layout cleaning.
-
-Reviewers should inspect whether headers, footers, page numbers, and broken lines were removed without changing legal meaning.
-
-This is especially important for article numbering.
-
-The third item is chunk integrity.
-
-Chunks should not cut a legal condition away from its exception.
-
-If chunking splits related clauses, generated answers can become overconfident.
-
-The fourth item is task distribution.
-
-Legal QA, statute explanation, and case analysis should each have enough samples to justify the task taxonomy.
-
-The fifth item is source distribution.
-
-Task balance is not sufficient if the dataset comes from a narrow legal domain.
-
-The report should show both task type and source coverage.
-
-The sixth item is synthetic expansion ratio.
-
-Synthetic samples should be tied to seed chunks.
-
-They should also carry generation metadata and review status.
-
-The seventh item is preference-pair quality.
-
-Preference pairs should express meaningful differences.
-
-Differences may include citation quality, caution, legal correctness, or refusal behavior.
-
-Pairs where both answers are nearly identical should be removed.
-
-The eighth item is refusal coverage.
-
-Risk-refusal samples should cover missing facts, out-of-scope jurisdiction, unsafe advice, fabricated citation, and professional-service boundaries.
-
-The ninth item is QA reproducibility.
-
-Review decisions should include decision type, error tags, reviewer notes, and rework instructions.
-
-The tenth item is training packaging.
-
-The SFT split, preference split, refusal split, smoke set, and manifest should be checked together.
-
-## Operating Notes
-
-During daily operation, first inspect source coverage.
-
-If one legal domain dominates, further generation may make imbalance worse.
-
-Then inspect QA error tags.
-
-If fabricated citations rise, tighten source-span checks before increasing generation.
-
-If overconfident advice rises, add refusal and caveat samples.
-
-If formatting errors rise, automate schema and template checks.
-
-If reviewer disagreement rises, revise the rubric before continuing production.
-
-Legal data factories should keep a release ledger.
-
-The ledger should record source scope, task distribution, synthetic ratio, refusal coverage, review pass rate, validation results, and known risk boundaries.
-
-It should also record which legal claims the data is not intended to support.
-
-That negative scope is part of safety.
-
-For downstream users, the most useful artifact is often the manifest.
-
-The manifest tells them what the dataset contains, how it was reviewed, and where its boundaries are.
-
-Without this manifest, a legal SFT dataset can be misused outside its intended scope.
-
-## Transfer and Scaling Notes
-
-The method can transfer to medicine, finance, insurance, and compliance.
-
-However, transfer should start from authoritative sources in the new domain.
-
-The task taxonomy must be rebuilt.
-
-The refusal taxonomy must also be rebuilt.
-
-Reviewers must understand the target domain.
-
-The legal project is therefore a method template, not a content template.
-
-Scaling should prioritize coverage and review efficiency before raw sample count.
-
-Adding more samples without source balance can make the factory look larger while reducing trust.
-
-## Final Acceptance Checklist
-
-Source documents are listed.
-
-Jurisdictions are recorded.
-
-PDF cleaning examples are reviewed.
-
-Article numbers are preserved.
-
-Chunks retain source spans.
-
-Seed schemas are complete.
-
-Task taxonomy is explicit.
-
-Task distribution is reported.
-
-Source distribution is reported.
-
-Synthetic ratio is visible.
-
-Generated samples keep source links.
-
-Preference pairs have contrast.
-
-Risk refusals cover boundary cases.
-
-QA decisions are logged.
-
-Error tags are standardized.
-
-Rework instructions are preserved.
-
-Smoke split loads correctly.
-
-Validation samples are reviewed.
-
-Manifest matches artifacts.
-
-Known legal boundaries are stated.
-
-Release notes include review status.
-
-Downstream users receive usage limits.
-
-Citation policy is documented.
-
-Refusal policy is documented.
-
-Reviewer calibration examples are retained.
-
-Synthetic prompt versions are retained.
-
-Future coverage gaps are listed.
-
-Legal-review sampling ratio is documented.
-
-Risk examples are retained.
-
-Citation examples are retained.
-
-Domain expansion plan is documented.
+As part of Part 14, this chapter corresponds to the project-level validation of the methods introduced earlier in the book. Readers may use this case together with the data recipes from Part 13, the platform governance chapters from earlier sections, and the checklists in the appendix to form a closed loop from methodological understanding to engineering delivery.
 
 ## References
 
-1. Wang, Y., Kordi, Y., Mishra, S., et al. (2023). Self-Instruct: Aligning Language Models with Self-Generated Instructions.
-2. Wei, J., Wang, X., Schuurmans, D., et al. (2022). Chain-of-Thought Prompting Elicits Reasoning in Large Language Models.
-3. Bai, Y., Kadavath, S., Kundu, S., et al. (2022). Constitutional AI: Harmlessness from AI Feedback.
-4. NIST. (2023). Artificial Intelligence Risk Management Framework.
-5. OECD. (2024). AI, Data Governance, and Risk Management Guidance.
+1. Raffel, C., Shazeer, N., Roberts, A., Lee, K., Narang, S., Matena, M., Zhou, Y., Li, W., & Liu, P. J. (2020). Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. *JMLR*, 21(140), 1–67.
+2. Hugging Face. (2026). Datasets Documentation. https://huggingface.co/docs/datasets/
+3. Ray Project. (2026). Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html
+4. MLflow Authors. (2026). MLflow Documentation. https://mlflow.org/docs/latest/
+5. Great Expectations Contributors. (2026). Great Expectations Documentation. https://docs.greatexpectations.io/
