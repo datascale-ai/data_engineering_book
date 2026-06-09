@@ -53,9 +53,9 @@ Multi-domain design reduces overfitting to a single theme. Chart conventions, le
 
 ### 40.2.3 Chart Types and Layout Features
 
-The dataset contains more than 20 common visualization styles, including bar charts, map charts, table charts, card charts, donut charts, pie charts, bubble charts, ranking charts, stacked bar charts, line charts, grouped bar charts, pictograms, treemaps, ranking card charts, chord diagrams, tree diagrams, area charts, radar charts, sankey diagrams, gantt charts, scatter plots, 3d bar charts, and timelines.
+The dataset contains more than 20 common visualization styles, including bar charts, map charts, tabular charts, card charts, donut charts, pie charts, bubble charts, ranking charts, stacked bar charts, line charts, grouped bar charts, pictogram charts, treemaps, ranking card charts, chord diagrams, tree charts, radial charts, radial bar charts, tile charts, gantt charts, scatter plots, 3d bar charts, and timeline charts.
 
-Each infographic uses whatever mixed layout the original creator used, such as “map + table + stacked bar + pictogram” or “pie + ranking card + line.” Different chart types store data differently: tables use rows and columns, maps use geographic regions, pictograms use icon counts, and line charts use temporal sequences. The model must adapt reading rules across formats and then aggregate across them.
+Each infographic uses whatever mixed layout the original creator used, such as “map + tabular + stacked bar + pictogram” or “pie + ranking card + line.” Different chart types store data differently: tables use rows and columns, maps use geographic regions, pictograms use icon counts, and line charts use temporal sequences. The model must adapt reading rules across formats and then aggregate across them.
 
 ![Figure 40-2: Chart type distribution](../../images/part12/ch40_chart_en.png)
 
@@ -93,7 +93,7 @@ The example is one integrated science infographic with several subchart regions:
 
 - **Subchart A: Radial chart.** Historical shark-attack county ranking in the United States. Key value: Volusia, Florida has 343 attacks, the county maximum. It supports Q1.
 - **Subchart B: Map chart.** State-level shark attacks in the last ten years. Key values: Florida 242, Hawaii 71. It supports Q2 and Q3.
-- **Subchart C: Table chart / side annotation.** Fatal shark-attack species in Massachusetts in 2018. Key answer: Presumed Great White. It supports Q4.
+- **Subchart C: Tabular chart / side annotation.** Fatal shark-attack species in Massachusetts in 2018. Key answer: Presumed Great White. It supports Q4.
 - **Subchart D: Bar chart.** Average annual accidental deaths in the United States. Key values: falling from bed 450, cats none. It supports Q5 and Q6.
 
 ### 40.3.2 Full Question Chain
