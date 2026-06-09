@@ -1,6 +1,6 @@
 # English Edition Status
 
-The Chinese edition is the canonical 2026 Springer mainline for this book. Its frozen publication scope is **14 parts, 48 chapters, 15 project case studies, and 4 appendices**, with front matter and an afterword in the site edition.
+The Chinese edition is the canonical 2026 Springer mainline for this book. Its frozen publication scope is **14 parts, 48 chapters, 15 project case studies, and 7 appendices (A-G)**, with front matter and an afterword in the site edition.
 
 The English edition is synchronized against that structure with a quality-first policy. Reader-facing navigation follows the Chinese mainline, existing complete English chapters are preserved when their quality and structure are usable, and stale or missing pages are replaced with edited English chapters rather than filled with raw machine translation.
 

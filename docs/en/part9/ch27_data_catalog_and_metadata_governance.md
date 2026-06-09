@@ -1,460 +1,627 @@
-# Chapter 27: Data Catalogs and Metadata Governance
+# Chapter 27: Data Asset Catalog and Metadata Governance
 
-## Introduction to Data Operations and Platform Development
+## Abstract
 
-As large-model applications deepen inside enterprises, the value of data becomes more visible. Yet many organizations still treat data as a pile of files. When data scientists need a dataset, they often locate sources by asking around, searching manually, or reading stale documents. This rough form of data management lowers reuse, increases compliance risk, hides quality problems, and encourages repeated construction.
+In large language model data engineering, enterprise data frequently exists in a state of being "visible but unreachable": data is scattered across disparate storage systems, and critical facts about that data—provenance, definitions, usage restrictions, and responsible parties—reside only in the memories of a few individuals or in ad hoc documents. This situation gives rise to data cascade failures and compliance risks. This chapter systematically addresses these issues through data asset catalogs and metadata governance. It begins by defining the six dimensions that distinguish a data asset from a mere file inventory—identity and ownership, structural schema, lineage and transformation, permissions and security, quality and confidence, and lifecycle—drawing on the documentation conventions of datasheets for datasets. It then discusses the layered metadata model of a dataset registry, along with mechanisms for automated collection and search-based discovery. Subsequent sections analyze data lineage, role- and attribute-based access control, and lifecycle management modeled as a state machine. The chapter concludes by examining governance maturity progression, organizational role responsibilities, and an actionable implementation checklist, explaining how to translate this methodology into sustainable day-to-day operations within a real organization.
 
-In real enterprise environments, these problems worsen quickly as data scale grows. When multiple datasets exist across departments, collection windows, and application scenarios, but there is no unified catalog, version management, lineage tracking, or access control, data users cannot reliably answer basic questions: which dataset is latest, which one fits a business scenario, where it was produced, what processing it went through, what it may or may not be used for, who owns its quality, and when it will be retired.
+## Keywords
 
-This part focuses on how data teams move from reactive handling to proactive governance in the age of large-model applications. Earlier parts discussed how to construct training data and optimize application-level data. Here the question changes: in a continuously evolving, cross-department, multi-application data environment, how can an organization build a systematic data-asset governance system so that data is no longer scattered files, but a strategic asset that can be managed, controlled, and reused?
+Data asset catalog; metadata governance; dataset registry; data lineage; permissions governance; lifecycle management
 
-This chapter develops that question from three angles: data-asset definition, metadata governance, and lineage plus lifecycle management. The emphasis is organizational collaboration, process discipline, and long-term maintainability. The goal is to let every data user find the data they need, judge whether it is usable, use it safely, and receive timely notifications when it changes.
+## Learning Objectives
 
-This shift is aligned with the broader movement toward data-centric AI. Over the past decade, industry investment in model architecture and compute has far exceeded investment in data governance, but production failures often originate in neglected data quality, documentation, and process issues (Sambasivan et al. 2021). The data-management field has also systematized these concerns: DAMA-DMBOK treats metadata management, data quality, data security, and data governance as mutually reinforcing functions (DAMA International 2017). This chapter asks how those principles can become engineering practice for large-model data teams.
+- Distinguish data assets from file inventories, and characterize a data asset along six dimensions: identity and ownership, structural schema, lineage and transformation, permissions and security, quality and confidence, and lifecycle.
+- Design a layered metadata model for a Dataset Registry, and explain automated collection and search-discovery mechanisms using datasheet conventions.
+- Construct a governance framework encompassing data lineage, RBAC and ABAC access control, and state-machine-based lifecycle management.
+- Assess an organization's data governance maturity, identify role responsibilities, and implement an actionable governance checklist.
+- Explain how the decoupling of data from its context leads to data cascade failures and the associated engineering costs.
 
-## Chapter Guide
+------
 
-Enterprise data engineering often has a paradoxical condition: the organization has a great deal of data, but much of it is "visible yet unreachable." Data is scattered across databases, data lakes, object storage, and local files. Documentation lives in wikis, emails, and shared folders. There is no unified inventory of what exists, where it is, who can use it, and how good it is.
+## Introduction: Data Assets, Data Products, and Data Contracts
 
-In this environment, reuse becomes expensive. A new project spends large amounts of time rediscovering, reprocessing, and revalidating data that may already exist. Worse, disorder becomes a source of compliance risk: sensitive data is used without clear permission records, unclear lineage blocks impact analysis, and version confusion makes audit trails unreliable.
+As large language model applications deepen, the value of data within enterprises has grown increasingly prominent. Yet many organizations remain at a stage where data is treated as an accumulation of files—when a data scientist needs a dataset, they typically locate the data source through informal inquiries, manual searches, or outdated documentation. This rudimentary approach to data management not only results in low data utilization, but also introduces compliance risks, quality deficiencies, and redundant engineering efforts. In real enterprise environments, such problems worsen exponentially as data volume grows. When a system contains multiple copies of a dataset—possibly originating from different departments, collected at different times, and applied in different contexts—without unified catalog management, version control, lineage tracking, or access control, a cascade of problems emerges. Data consumers cannot accurately determine which dataset is the most current, which dataset applies to their use case, where the data was generated, what processing it has undergone, what purposes it may and may not serve, who is responsible for its quality, or when it will be retired.
 
-Large-model workflows make the problem harder than traditional governance. The same data may be reused and transformed across pre-training, fine-tuning, RAG, and evaluation. A user-interaction log may train a preference model, populate a RAG knowledge base, and support system evaluation. Each use has different requirements for cleanliness, completeness, and freshness. Without a catalog, it is difficult to determine whether one dataset is suitable for one purpose.
+This part focuses on how data teams in the large language model era can upgrade from a reactive posture to proactive governance. In earlier parts, we discussed how to construct training data and optimize application-level data. In this part, the central question shifts to: in a continuously evolving data environment that spans multiple departments and serves multiple applications, how can one establish a systematic data asset governance framework—one that transforms data from files scattered across the enterprise into strategic assets that are manageable, controllable, and reusable? This transformation carries profound organizational significance. The maturity of data governance directly determines the credibility of an organization's data-driven decisions, and equally determines the costs that technical teams incur from redundant efforts, compliance exposure, and efficiency losses.
 
-Production machine-learning data lifecycle management is a known systems problem (Polyzotis et al. 2018). Enterprise data assets are always moving: new data arrives, old data expires, schemas evolve, and permissions change with the organization. Without a catalog and metadata layer, teams rely on memory and oral communication. That can barely work in a small team and fails at cross-department scale.
+This part will unfold along three directions—the definition of data assets, metadata governance, and lineage and lifecycle management—to systematically discuss how to build an enterprise-grade data catalog, registry, and governance framework. Unlike earlier parts, this section places greater emphasis on organizational collaboration, process standardization, and long-term maintainability. Its core objective is: to enable every data consumer within an organization to quickly find the data they need, accurately assess its usability, use it safely, and receive timely notifications when data changes.
 
-The core goal of this chapter is to build a framework that moves from data-asset definition to registration, governance, and application. It solves not only "where is the data?" but also "what can the data do?", "how good is it?", "who owns it?", and "who is allowed to use it?" With a centralized data catalog, normalized metadata model, complete lineage tracking, and strict permission governance, organizations can turn data from passive resources into active assets (Halevy et al. 2016).
+It is worth emphasizing that this transformation aligns closely with the data-centric AI movement that has emerged in recent years. Over the past decade, the industry has invested far more in model architectures and computing power than in the governance of data itself. Yet a growing body of research points out that what truly constrains the reliability of AI systems in production is often the long-neglected problems of data quality, data documentation, and data process management (Sambasivan et al. 2021). When data lacks documentation, accountable owners, and quality records, downstream systems accumulate cascading, hard-to-trace data cascade failures whose costs typically materialize only after a system goes live. At the same time, the data management community has codified these practices into systematic knowledge frameworks; for example, the data management body of knowledge identifies metadata management, data quality, data security, and data governance as mutually reinforcing core functions (DAMA International 2017). It is against this backdrop that this part discusses how data teams in the large language model era can translate these principles into engineering practice.
 
-## 27.1 Why Data Assets Are Not File Inventories
+The central question this part seeks to answer is: in the era of large language model data engineering, how can one build a governance framework that spans the full data lifecycle, elevating data from a passive resource to an active asset?
 
-### 27.1.1 A Realistic Case of Enterprise Data Disorder
+------
 
-An AI team at a large internet company is building a user-preference fine-tuning dataset for a recommender system. The project lead asks the data team whether user click feedback exists. The data team says yes and points to a dataset path in the data lake. The project team spends two weeks importing, cleaning, and formatting it locally.
+## Chapter Overview
 
-After training begins, model performance is far worse than expected. After repeated debugging, the team discovers the issue: the dataset came from a temporary analysis project three months earlier. Many records had been marked invalid because of a known logging bug, but that flag was never documented clearly. The dataset also used an older user taxonomy that was incompatible with the current system, causing widespread feature mismatch. Worse, it was supposed to be used only for one business line, but the team did not know that restriction and applied it elsewhere.
+In enterprise data engineering practice, a pervasive phenomenon exists: although organizations have accumulated vast amounts of data, that data is often in a state of being "visible but unreachable." Data is dispersed across different databases, data lakes, object storage systems, and local file systems; documentation is scattered across team wikis, emails, and shared folders; there is no unified inventory explaining what data exists, where it lives, who can use it, or what quality it offers. In such an environment, the cost of data reuse is extremely high. When a new project launches, teams must expend considerable effort rediscovering, reprocessing, and revalidating data that may already exist but has never been systematically managed. More seriously, this state of disarray also becomes a breeding ground for compliance risks. Sensitive data is used by multiple teams without explicit access records; unclear data lineage makes impact analysis impossible; version confusion prevents audits from tracing the true state of the data.
 
-At the same time, another team building a knowledge-base RAG system needs high-quality text-pair data. They remember that another project collected a large volume of user feedback text. After weeks of searching, they find the data in the personal cloud drive of a retired employee. It has not been updated for two years, and there is no record of whether it may be used for model training or whether privacy compliance was checked.
+Unlike traditional data governance, the large language model era imposes new demands on data catalog and metadata management. Across the multiple stages of pre-training, fine-tuning, RAG, and evaluation, the same dataset may be reused multiple times, transformed multiple times, and updated through multiple versions. Systems must accurately track how data is used and what its quality status is across all these different stages. For example, a set of user interaction logs may be used simultaneously for training a preference model, for building a RAG knowledge base, and for system evaluation. Each use case imposes different requirements on data cleanliness, completeness, and freshness. Without a data catalog, it becomes very difficult to determine whether a given dataset meets the requirements of a specific purpose.
 
-These cases are common in organizations without data catalogs and metadata management. The root problem is not only data quality. It is that the visibility, trustworthiness, and usability of data cannot be guaranteed systematically.
+In fact, managing the data lifecycle in production-grade machine learning systems is itself a well-studied and challenging problem (Polyzotis et al. 2018). Unlike one-time datasets, enterprise data assets exist in a state of continuous flux and ongoing versioning: new data is constantly ingested, old data gradually expires, schemas evolve with the business, and permissions are adjusted as the organization changes. Without a catalog and metadata layer to record these changes, data teams can only rely on individual memory and informal communication to maintain systems—an approach that may barely function within a small team, but inevitably breaks down at cross-departmental, multi-application scale. The significance of data catalogs and metadata governance lies precisely in consolidating knowledge that is dispersed across individual memories and ad hoc documents into organization-level, queryable, auditable shared infrastructure.
 
-In both cases, the data existed. What did not exist was knowledge about the data. Invalid flags, taxonomy versions, use restrictions, update times, training authorization, and privacy status may have existed in someone's memory or in a temporary document, but they were not attached to the dataset in a structured, searchable form. This separation between data and context is the breeding ground for data cascades: a small documentation gap upstream is amplified downstream into poor model performance, compliance exposure, and expensive rework (Sambasivan et al. 2021).
+Accordingly, the core objective of this chapter is to establish a complete framework spanning data asset definition, registration, governance, and application. This framework must address not only the discovery problem of "where is the data," but also a series of management questions: "what can the data be used for," "what is the data quality," "who is responsible for this data," and "who can use this data." By building a centralized data catalog, a standardized metadata model, complete lineage tracking, and rigorous permissions governance, an organization can transform data from a passive resource into an active asset (Halevy et al. 2016), thereby accelerating data application development while mitigating compliance and quality risks.
+
+------
+
+## 27.1 Why a Data Asset Is Not a File Inventory
+
+### 27.1.1 Real-World Cases of Enterprise Data Chaos
+
+An AI team at a large internet company was building a new user preference fine-tuning dataset for a recommendation system. The project lead first asked the data team whether user click feedback data was available. The data team replied "yes" and pointed to a dataset path in the data lake. The project team spent two weeks importing the data into their local environment, cleaning it, and formatting it. However, once model training began, they found that performance fell far short of expectations. After repeated debugging, they finally identified the root cause: the dataset came from a temporary analysis project three months earlier, in which a large number of records had been flagged as invalid due to a known bug in the log collection system—but this flag had never been clearly documented. Furthermore, the dataset used an older user classification taxonomy that was incompatible with the new version currently in use by the system, causing widespread feature mismatches. To make matters worse, the dataset was supposed to be used only for a specific line of business, but the team had no knowledge of this restriction, and inadvertently applied it to an unsuitable line of business.
+
+Meanwhile, another team was building a knowledge-base RAG system and needed high-quality text pair data. They recalled that a company project had once collected a large volume of user feedback text. After weeks of searching and coordination, they eventually found this data on the personal cloud storage of a former employee—but the data had not been updated in two years, and much of its content was outdated. More importantly, the dataset had never been explicitly marked as permitted for model training, and contained no record of privacy compliance.
+
+These two cases are not hypothetical. In organizations lacking data catalogs and metadata management, such situations are widespread. The root cause is not data quality per se, but the inability to systematically guarantee data visibility, trustworthiness, and usability.
+
+Analyzing the root causes of these two cases reveals that their failures were not attributable to "data not existing," but to "knowledge about the data not existing." In the first case, critical facts such as the invalid flag, the taxonomy version, and the usage scope restriction had existed at some point in someone's memory or a temporary document, but were never attached to the data in a structured, searchable form. In the second case, the update timestamp, training authorization status, and privacy compliance state had similarly never been recorded. This state of "data decoupled from its context" is precisely the classic breeding ground for data cascade failures—an apparently minor documentation gap at an early stage is repeatedly amplified downstream, ultimately manifesting as poor model performance, compliance exposure, or the need to start over entirely (Sambasivan et al. 2021). In other words, what these teams lost was not the data itself, but the time, compute, and trust expended in re-acquiring "knowledge about the data."
 
 ### 27.1.2 Definition and Dimensions of a Data Asset
 
-In traditional file management, a "dataset" is often just files at a storage location. That view ignores context, quality, usage rules, and evolution.
+In the traditional file-management mindset, a "dataset" is simply a collection of files at some storage location. The problem with this view is that it completely ignores the context, quality, usage rules, and evolution of the data.
 
-In modern data governance, a **data asset** must include several dimensions:
+In modern data governance frameworks, a **data asset** must encompass the following key dimensions:
 
-1. **Identity and ownership**: a globally unique identifier and an owner responsible for quality and updates.
-2. **Structure and schema**: fields, data types, value ranges, partitioning, and constraints.
-3. **Lineage and transformation**: sources and the full transformation chain from source data to current form.
-4. **Permissions and security**: who can read, modify, or delete the asset, especially for sensitive data.
-5. **Quality and confidence**: quality metrics such as missingness, duplication, outliers, and distribution drift.
-6. **Lifecycle**: creation, active use, maintenance, deprecation, archiving, and deletion states.
+**1. Identity and Ownership Dimension** — A globally unique identifier, along with an owner accountable for data quality and updates.
 
-These dimensions follow a long line of data-quality research. Data quality is not simply accuracy; it includes completeness, timeliness, consistency, accessibility, and believability from the consumer's perspective (Wang and Strong 1996). The quality and confidence dimension translates "is this data good enough?" into measurable indicators.
+**2. Structure and Schema Dimension** — Clearly defined fields, data types, value ranges, and partitioning schemes, which form the foundation for detecting quality issues.
 
-Machine-learning practice has also made dataset documentation an engineering norm. Datasheets for Datasets asks every dataset to document motivation, composition, collection process, recommended uses, and known limitations (Gebru et al. 2021). Model Cards apply a similar idea to models (Mitchell et al. 2019). A data catalog systematizes these artifacts at organizational scale: a datasheet explains one dataset, while a catalog makes thousands of datasets discoverable, comparable, and governable.
+**3. Lineage and Transformation Dimension** — Records of data provenance and the complete transformation chain from source data to its current form, essential for impact analysis.
 
-### 27.1.3 From File Inventories to Data Catalogs
+**4. Permissions and Security Dimension** — Definitions of who may read, modify, and delete the data; particularly important for access control on sensitive data.
 
-The shift is conceptual. A file inventory asks where data is. A data catalog asks what the data is, where it came from, what it can be used for, who owns it, and how trustworthy it is.
+**5. Quality and Confidence Dimension** — Associated quality metrics (missing rate, duplication rate, anomalies, distribution shift, etc.), enabling users to quickly assess whether the data meets their requirements.
+
+**6. Lifecycle Dimension** — From creation, active use, and maintenance through deprecation to deletion, each stage requires explicit status markers and management policies.
+
+These six dimensions are not arbitrary; they are directly connected to long-standing research in data quality and data documentation. As early as the 1990s, researchers observed that data quality is a multidimensional concept that cannot simply be equated with "accuracy," but must be understood from the perspective of data consumers, encompassing multiple dimensions such as completeness, timeliness, consistency, accessibility, and credibility (Wang and Strong 1996). The "quality and confidence dimension" of a data asset is a direct continuation of this thinking in engineering practice: it requires decomposing the abstract question of "is the data usable" into a set of measurable, comparable concrete metrics, so that different users' understandings of "quality" can be aligned to a common standard.
+
+In recent years, the machine learning community has further established "writing formal documentation for datasets" as an engineering norm. Datasheets for Datasets proposes that every dataset should, like a datasheet for an electronic component, be accompanied by documentation explaining its collection motivation, composition, collection process, intended uses, and known limitations (Gebru et al. 2021). The complementary Model Cards provides a similar documentation standard for models, requiring clear recording of a model's applicable scope, evaluation results, and potential biases (Mitchell et al. 2019). These documentation artifacts are entirely consistent in spirit with the "data asset dimensions" discussed in this chapter—both aim to transform critical context about data (or models) from personal knowledge into shareable, auditable structured records. A data asset catalog can be understood as the systematic, organizational-scale automation of such documentation conventions: a single dataset's datasheet answers "what is this one dataset," while the data asset catalog goes further to answer "how can tens of thousands of datasets be uniformly discovered, compared, and governed."
+
+### 27.1.3 From File Inventory to Data Asset Catalog
+
+This transition involves a fundamental shift in mindset. A file inventory is concerned with "where is the data," while a data asset catalog is concerned with "what is the data, where did it come from, what can it do, who is responsible for it, and what is its quality." Below is a concise partial example of structured metadata that binds the answers to these questions directly to the data:
 
 ```yaml
-asset_id: user_interaction_feedback_v3
-owner: data-governance-team@company.com
-schema:
-  - user_id (string, required)
-  - interaction_type (enum: like/dislike/share/collect)
-  - has_invalid_flag (boolean)
-quality_metrics: {completeness: 0.98, validity: 0.97, freshness: daily}
-permissions: {read: [ux_team, ml_team], write: [data_governance_team]}
-restrictions:
-  - Do not use for cross-border data sharing.
-  - Do not use for user-profiling models that may create discrimination risk.
-end_of_life: 2025-12-31
+asset_id: user_interaction_feedback_v3      # globally unique identifier
+owner: Data Governance Team (data-governance@company.com)
+schema:                                      # fields, types, and constraints
+  - name: user_id
+    type: string
+    required: true
+  - name: interaction_type
+    type: enum
+    allowed_values:
+      - like
+      - dislike
+      - share
+      - collect
+  - name: has_invalid_flag
+    type: boolean
+    description: whether the record is marked as invalid
+quality_metrics:
+  completeness: 0.98
+  validity: 0.97
+  freshness: daily
+permissions:
+  read:
+    - ux_team
+    - ml_team
+  write:
+    - data_governance_team
+restrictions:                               # usage restrictions
+  - Not to be used for cross-border data sharing (contains Chinese data, subject to PIPL)
+  - Not to be used for user profiling (may lead to discrimination)
+end_of_life: 2025-12-31                      # planned retirement date
 ```
 
-The `restrictions` field is important because it states what cannot be done. In a traditional file inventory, such constraints often live only in memory. Once written into metadata, they become rules that can be checked and audited.
+The `restrictions` field is particularly noteworthy: it explicitly declares what the data "must not be used for." In a traditional file inventory, such constraints typically exist only in the memory of select individuals; once written into metadata, however, they become hard rules that can be enforced by systems and tracked in audits. It is precisely this contextual information that elevates a collection of files into a data asset that can be used with confidence.
 
 ### 27.1.4 Section Summary
 
-The difference between data assets and file inventories reflects the shift from passive to active governance. A data catalog lets users judge quickly whether a dataset is suitable for a project. In the age of large-model applications, building such a catalog is not optional infrastructure; it is a prerequisite for large-scale data use.
+The distinction between a data asset and a file inventory reflects the shift in data governance from reactive to proactive. A data asset catalog enables data consumers to quickly assess whether a given dataset is appropriate for their project. In the era of large language model applications, building a data asset catalog is not an optional activity—it is essential infrastructure for large-scale data operations.
 
-## 27.2 Dataset Registry and Metadata Model
+---
 
-### 27.2.1 Core Concepts of a Dataset Registry
+## 27.2 Dataset Registry and the Metadata Model
 
-If a data catalog is the map of data, a **dataset registry** is the passport system for data. Every data asset receives a unique identifier and a structured metadata description. The registry is not only a passive record; it actively supports governance, reuse, and compliance.
+### 27.2.1 Core Concepts of the Dataset Registry
 
-At scale, a dataset registry must solve three problems:
+If a data asset catalog is "the map of data," then a dataset registry is "the passport of data." Every data asset must obtain a unique identifier and a complete metadata description in the registry. The role of a dataset registry is not merely to passively record information, but to actively support data governance, data reuse, and compliance management.
 
-- **Discoverability**: users can quickly find datasets through search, browsing, and filtering (Fernandez et al. 2018).
-- **Trustworthiness**: metadata and quality information are sufficient for users to judge usability.
-- **Governability**: data managers can maintain assets, track usage, and govern version evolution.
+In large-scale data engineering, a dataset registry must address three core requirements. First, it requires **discoverability**—the ability for users to quickly find the datasets they need through search, browsing, and filtering (Fernandez et al. 2018). Second, it requires **trustworthiness**—providing sufficient metadata and quality information so that users can accurately assess data usability. Third, it requires **governability**—furnishing data managers with management tools that enable them to systematically maintain data assets, track usage, and manage version evolution.
 
-Systems such as Google's Goods, Ground, and Data Tamer illustrate the direction. Goods automatically cataloged billions of internal datasets and inferred sources, owners, schemas, and dependencies (Halevy et al. 2016). Ground proposed a data context service that manages application, behavior, and change context around data (Hellerstein et al. 2017). Data Tamer showed how heterogeneous data sources can be curated and matched at scale with expert confirmation at key points (Stonebraker et al. 2013). Their shared lesson is that large-scale registries must rely heavily on automatic collection; manual registration alone decays quickly.
+These three requirements are not merely theoretical; multiple influential systems in industry and academia have responded to them. Google's Goods system automatically builds a catalog for billions of datasets within the company through background crawling, inferring their provenance, owners, schemas, and interdependencies, enabling engineers to discover and understand data without prior registration (Halevy et al. 2016). Ground proposed the abstraction of a "data context service," arguing that systems must manage not only data itself but also the application context, behavioral context, and change context about that data (Hellerstein et al. 2017). In data integration and cleaning, Data Tamer demonstrated how to organize, match, and merge heterogeneous data sources at scale in a semi-automated manner, supplemented by expert confirmation at critical decision points (Stonebraker et al. 2013). The shared lesson from these systems is: at scale, the registry must rely as much as possible on automated collection rather than requiring manual entry by users—the latter almost invariably falls into disuse as scale grows, ultimately causing the catalog to drift out of sync with the actual state of the data.
 
-![Data asset registration and launch workflow](../../images/part9/ch27_fig01.png)
+A data asset typically passes through a standardized registration process before it can be discovered and put into use. As shown in Figure 27-1, the data creator first prepares metadata and submits a registration request; the system then performs a combination of automated and manual quality checks and security and permissions reviews; only upon passing these checks is the asset published to the data catalog and made searchable. This process institutionalizes "who may register data and what conditions must be met beforehand" as enforceable checkpoints, which are the prerequisite for the governability of the registry.
 
-*Figure 27-1: Data asset registration and launch workflow*
+![Complete workflow from data asset creation to use](../../images/part9/ch27_fig01_zh.png)
 
-### 27.2.2 Complete Metadata Model
+*Figure 27-1: Data Asset Registration and Onboarding Workflow*
 
-A production dataset registry usually includes the following metadata categories.
 
-| Category | Representative Fields | Purpose |
+
+### 27.2.2 Complete Definition of the Metadata Model
+
+A production-grade dataset registry typically organizes metadata fields into the following categories. The design of these fields must serve both discovery and usage while also supporting governance and compliance.
+
+*Table 27-1: Core Metadata Field Categories for the Data Asset Registry*
+
+| Field Category | Representative Fields | Purpose |
 | --- | --- | --- |
-| **Identity** | asset_id, asset_name, description, asset_type | Unique identifier and basic description |
-| **Ownership** | owner_id, steward_id, business_owner | Quality, maintenance, and business responsibility |
+| **Identity** | asset_id, asset_name, description, asset_type | Globally unique identifier and basic description |
+| **Ownership** | owner_id, steward_id, business_owner | Clarify quality, maintenance, and business accountability |
 | **Structure** | schema, partitions, primary_key, row_count | Field definitions and physical structure |
-| **Source and lineage** | source_systems, lineage, dependencies | Source tracing and dependency analysis |
-| **Versioning** | version, changelog, schema_version | Version evolution |
-| **Quality metrics** | quality_score, completeness, validity, timeliness, uniqueness | Quantified usability |
-| **Usage records** | access_count, last_accessed, downstream_jobs, use_cases | Usage intensity and downstream dependency |
-| **Access control** | access_level, read/write/delete_groups, compliance_tags | Access and compliance labels |
-| **Risk and lifecycle** | risk_level, status, deprecation_date, end_of_life, retention_policy | Risk and lifecycle management |
-| **License and compliance** | license, privacy_classification, pii_fields, data_residency | Legal and privacy requirements |
+| **Provenance and Lineage** | source_systems, lineage, dependencies | Trace provenance and dependency relationships |
+| **Version and Iteration** | version, changelog, schema_version | Record version evolution |
+| **Quality Metrics** | quality_score, completeness, validity, timeliness, uniqueness | Quantify data usability |
+| **Usage Records** | access_count, last_accessed, downstream_jobs, use_cases | Reflect usage frequency and downstream dependencies |
+| **Access Control** | access_level, read/write/delete_groups, compliance_tags | Control access and compliance tagging |
+| **Risk and Lifecycle** | risk_level, status, deprecation_date, end_of_life, retention_policy | Risk assessment and status management |
+| **License and Compliance** | license, privacy_classification, pii_fields, data_residency | Satisfy legal and privacy requirements |
 
-In real systems, each category expands into detailed fields. Quality may include completeness, validity, freshness, deduplication rate, and accuracy. Access control may separate read, write, and delete groups and attach compliance tags. Lifecycle records creation, deprecation, and planned deletion. This two-level category-field structure gives a clear top-level view while supporting detailed governance (Cai and Zhu 2015; Rahm and Bernstein 2001).
+The table above lists representative fields by category; in actual production systems, each category is further expanded into multiple more granular fields. For example, quality metrics beyond an overall score are broken down into individual dimensions such as completeness rate, validity rate, timeliness, deduplication rate, and accuracy, allowing users to assess whether data meets the quality threshold for a specific purpose (Cai and Zhu 2015). Access control separately defines user groups with read, write, and delete permissions, accompanied by compliance tags. The lifecycle records key timestamps from creation through deprecation to planned deletion. This two-level "category–field" structure keeps the metadata model's top-level view clear while supporting fine-grained governance at each dimension, and simultaneously provides a unified vocabulary for field alignment and mapping between different data sources (Rahm and Bernstein 2001).
 
-Once a metadata model is adopted, it becomes a contract between teams. If all assets use the same categories and fields, cross-team discovery, comparison, and integration become possible. If every team invents its own metadata format, the catalog becomes a collection of incompatible islands. The design principle should be: **minimal mandatory core, flexible optional extensions**; and **unified terminology with controlled values** for fields such as `access_level`, `status`, and `content_type`.
+It is worth emphasizing that once the metadata model is established, it becomes a contract among teams within the organization. Only when all data assets are described using the same set of categories and fields does cross-team discovery, comparison, and integration become possible. Conversely, if each team invents its own metadata format, the catalog will degrade into a collection of non-interoperable islands. Therefore, metadata model design should follow two principles: first, **minimum core mandatory, extensions flexibly optional**—core fields (identity, ownership, structure, permissions) are mandatory for all assets, with the remainder extended on demand; second, **unified terminology, controlled vocabularies**—for critical fields such as `access_level`, `status`, and `content_type`, use controlled enumerations rather than free text, to prevent synonymous terms such as "internal," "confidential," and "restricted" from proliferating and causing filter failures. This schema governance is itself a microcosm of data governance at the metadata layer: it requires the organization to make a deliberate trade-off between "flexibility" and "consistency," and to institutionalize that trade-off through standards and tooling (DAMA International 2017).
 
-### 27.2.3 Layering and Inheritance in Metadata Models
+### 27.2.3 Layering and Inheritance in the Metadata Model
 
-Different data assets need different metadata extensions. Training datasets may need balance and feature-distribution fields. RAG knowledge bases may need retrieval quality and update-frequency fields. Evaluation sets may need golden-answer coverage and difficulty distribution.
+In practice, different types of data assets may require different metadata extensions. For example, training datasets may need additional fields such as "sample balance" and "feature distribution"; RAG knowledge bases may need "retrieval effectiveness" and "update frequency"; evaluation sets may need "golden answer coverage rate" and "difficulty distribution."
 
-A practical metadata model uses layers:
+To support this flexibility, metadata models typically adopt a layered design:
 
-1. **Core metadata**: mandatory fields for all assets, including identity, ownership, structure, source, quality, and permissions.
-2. **Type-specific metadata**: extensions for tables, files, streams, embeddings, and other asset types.
-3. **Scenario-specific metadata**: fields for training data, evaluation data, RAG data, and similar uses.
-4. **Custom metadata**: organization-specific fields.
+**Layer 1: Core Metadata** — The minimum set of fields required for all data assets, including identity, ownership, structure, provenance, quality, and permissions.
 
-Layering guarantees minimum usability while supporting flexibility. It also reduces the cost of merging and aligning models across departments (Noy and Musen 2000).
+**Layer 2: Type-Specific Metadata** — Extensions based on the data asset type; for example, tabular data, file data, streaming data, and embedding vectors each have different extension fields.
 
-### 27.2.4 Automatic Metadata Collection and Maintenance
+**Layer 3: Use-Case Metadata** — Metadata specific to particular application scenarios; for example, training data, evaluation data, and RAG data each have their own specific fields.
 
-Complete metadata is important, but manual maintenance is expensive and error-prone. Production registries use automatic collection and periodic validation.
+**Layer 4: Custom Metadata** — Allows organizations to add custom fields based on their own governance requirements.
 
-- **Structure** can be extracted by scanning database schemas, Parquet headers, JSON samples, and profiling results (Abedjan, Golab and Naumann 2015).
-- **Lineage** can be inferred from processing DAGs.
-- **Quality metrics** can be refreshed by scheduled quality checks.
-- **Access records** can be collected from audit logs.
+This layered design ensures minimum viability while supporting high flexibility. When multiple organizations or departments each maintain their own metadata extensions, the layering and inheritance mechanism also reduces the cost of merging and aligning different models (Noy and Musen 2000).
 
-Metadata updates should follow a policy:
+### 27.2.4 Automated Collection and Maintenance of Metadata
 
-- **Automatic updates** for row count, modification time, and access statistics.
-- **Passive updates** triggered when upstream sources change.
-- **Human confirmation** for business meaning, usage scenarios, and risk.
-- **Periodic validation** to detect drift between metadata and reality.
+Complete metadata is undeniably important, but the cost of maintaining it manually is too high and prone to errors. Production-grade data registries typically adopt mechanisms for automated collection and periodic validation.
 
-Systems such as Deequ let engineers define data-quality constraints declaratively and validate them at scale (Schelter et al. 2018). ML-focused validation frameworks can infer expected schemas and statistics and detect distribution drift in new batches before bad data reaches training (Breck et al. 2019). Connecting these tools to the registry turns `quality_metrics` from stale manual numbers into continuously refreshed signals.
+For **structural information**, automated extraction is possible by scanning database schemas, Parquet file headers, and JSON file samples; data profiling techniques can further automatically infer field types, value ranges, and potential constraints from samples (Abedjan, Golab and Naumann 2015). For **lineage information**, it can be automatically identified from the DAG of the data processing pipeline. For **quality metrics**, they can be automatically updated through periodic data quality check jobs. For **access records**, they can be automatically aggregated from audit logs.
+
+The key is to establish a **metadata update strategy**:
+
+- **Automatic updates**: Fields that can be automatically collected by the system—such as row counts, last-modified dates, and access statistics—are configured for periodic automated scanning.
+- **Passive updates**: When an upstream data source changes (e.g., a new field is added or a constraint is modified), changes are automatically detected and update prompts are triggered.
+- **Manual confirmation**: For fields requiring human judgment—such as business meaning, use cases, and risk level—a hybrid mode of "automated detection + manual confirmation" is adopted.
+- **Periodic validation**: Metadata accuracy is periodically spot-checked, with automatic alerts when inconsistencies are detected.
+
+For automated collection of quality metrics, there are mature engineering practices to draw upon. Systems such as Deequ allow engineers to declaratively define unit-test-style quality constraints for data (e.g., a given field's non-null rate should exceed a threshold, or a column's values should fall within a given set), and automatically validate these constraints at scale while continuously measuring quality metrics (Schelter et al. 2018). Data validation frameworks targeting machine learning scenarios go further, automatically inferring expected schemas and statistical characteristics from data and detecting deviations from historical distributions when new data batches arrive, thereby issuing alerts before low-quality data enters the training pipeline (Breck et al. 2019). Integrating this kind of quality validation with the metadata registry allows the `quality_metrics` fields to become not static numbers entered by hand and quickly outdated, but continuously refreshed, trustworthy real-time signals driven by the pipeline. This is especially critical for large language model data engineering: training and RAG pipelines routinely consume hundreds of millions of records, and any static, lagging quality description is unlikely to reflect the true state of the data.
 
 ### 27.2.5 Metadata Search and Discovery
 
-The value of a registry depends on discovery. Good search usually includes:
+The value of a dataset registry lies in whether it can help users quickly find the data they need. Good search capabilities typically include:
 
-- **Keyword search** across `asset_name`, `description`, and schema fields.
-- **Filtered search** by asset type, owner, status, access level, and quality score.
-- **Lineage search** for downstream assets depending on a source, or upstream assets required by an application.
-- **Similar-data recommendation** based on schema and use-case similarity.
-- **Quality-metric search**, such as "tables accessed more than 100 times in the last 30 days with completeness above 0.95."
+**Keyword search** — Supports searching within `asset_name`, `description`, and `schema` fields, and returns results sorted by relevance.
 
-Search quality directly affects reuse. If searching the catalog is slower than asking a colleague, users bypass it. Goods and Aurum show that the goal is to let users search data almost as naturally as searching the web, while using inferred schema similarity, usage relationships, and source lineage to build a navigable relationship network (Halevy et al. 2016; Fernandez et al. 2018).
+**Filtered search** — Supports multi-dimensional filtering by `asset_type`, `owner`, `status`, `access_level`, `quality_score`, and other dimensions.
+
+**Lineage search** — Given a data source, quickly finds all downstream data assets that depend on it; or given an application, finds all upstream data assets it requires.
+
+**Similar data recommendation** — Based on schema similarity and use-case similarity, recommends other potentially useful data assets, helping users discover potential reuse opportunities.
+
+**Quality-metric search** — Users can filter by quality metrics, for example: "find tables that have been accessed more than 100 times in the past 30 days and have completeness > 0.95."
+
+The convenience of search directly influences the willingness to reuse data. Many enterprises that have built data catalogs ultimately failed, often precisely because of poor search experiences that led users to continue asking around informally rather than using the catalog.
+
+This point is particularly apparent in the design of systems such as Goods and Aurum: both take "enabling users to search for data the way they search the web" as a core goal, and weave isolated datasets into a navigable network of relationships by automatically inferring schema similarity, usage relationships, and upstream provenance (Halevy et al. 2016; Fernandez et al. 2018). Their lesson is that the success or failure of a data catalog often does not depend on how comprehensive the metadata model design is, but on whether users can find a sufficiently good candidate dataset within seconds. If a catalog search takes longer than simply asking a colleague, the catalog will be bypassed; with no one using it, it receives no maintenance; with no maintenance, its usability further declines—a vicious cycle. Search and discovery capability should therefore be regarded as the "storefront" of the data catalog, requiring sustained investment and continuous refinement rather than being considered complete once built.
 
 ### 27.2.6 Section Summary
 
-A dataset registry uses structured metadata to turn files in storage into discoverable, understandable, trustworthy assets. The key is a metadata model that is both comprehensive and flexible, supported by automatic collection, validation, and strong search.
+Through a structured metadata model, the dataset registry transforms data from "files in storage" into "assets that can be discovered, understood, and trusted." The key is to build a metadata model that is both comprehensive and flexible, supports automated collection and validation, and provides strong search and discovery capabilities. Only when all these mechanisms are in place does the data catalog truly become an accelerator for organizational data reuse.
+
+---
 
 ## 27.3 Lineage, Permissions, and Lifecycle
 
-### 27.3.1 Complete Data Lineage Tracking
+### 27.3.1 Complete Lineage Tracking
 
-Data lineage is the soul of data-asset governance. It answers where data came from, what transformations it passed through, what it looks like now, and where it will flow. It supports troubleshooting, impact analysis, compliance audits, and data-quality diagnosis (Herschel, Diestelkämper and Ben Lahmar 2017).
+Data lineage is the soul of data asset governance. It answers a critical question: where did this data come from, what transformations has it undergone, what does it look like now, and where will it flow? Clear lineage relationships are essential across multiple scenarios: incident investigation, impact analysis, compliance auditing, and data quality diagnosis (Herschel, Diestelkämper and Ben Lahmar 2017).
 
-Large-model workflows make lineage complex. One raw user-interaction log can enter multiple pipelines: preference-model training, knowledge-base construction, and system evaluation. Without clear lineage, it is hard to answer where a model's training data came from or what models are affected when an upstream field definition changes.
+In large language model applications, lineage tracking becomes particularly complex. A set of raw user interaction logs may simultaneously enter multiple processing chains: one for training a preference model, one for building a knowledge base, and one for system evaluation. Each chain contains multiple processing steps. Without clear lineage records, it is very difficult to answer questions such as "where did a model's training data come from?" and "if the definition of an upstream field changes, which models will be affected?"
 
-Lineage has three layers:
+**A complete framework for lineage tracking encompasses three levels:**
 
-1. **System-level lineage**: the physical systems through which data flows, such as Kafka, stream processing, data lake, and offline warehouse.
-2. **Logical transformation lineage**: how data is processed, such as raw click events, deduplication, aggregation, feature engineering, and vectorization.
-3. **Semantic lineage**: how business meaning and risk change, such as when an anonymous user ID becomes linkable to profile attributes.
+**Level 1: System-Level Lineage** — The flow of data between physical systems. For example: raw log storage in Kafka → stream processing system → data lake → offline analytics database. This level answers "what is the physical path of the data."
 
-This corresponds to the classic idea of data provenance: why and where a result came from, which inputs and operations produced it, and how it should be interpreted (Buneman, Khanna and Tan 2001). Valuable lineage is not just a few upstream/downstream lines; it must support field-level impact analysis and compliance questioning.
+**Level 2: Logical Transformation Lineage** — The logical transformations applied to data during processing. For example: raw click events → deduplication → aggregation to user level → feature engineering → feature vectors. This level answers "how the data is processed."
+
+**Level 3: Semantic Lineage** — How the business meaning of the data evolves. For example: the `user_id` field in raw click events represents an anonymous user ID → after being joined with a user profile, user characteristics can be inferred → privacy compliance must be considered when using this data for training. This level answers "what are the business risks of the data."
+
+Data lineage has a more classical name in database research—data provenance. Addressing the two questions of "why does a result record have its current value" and "which inputs and operations produced it," researchers have developed different granularities of characterization such as why-provenance and where-provenance (Buneman, Khanna and Tan 2001), and over the following two decades established a systematic methodology covering databases, workflows, and scripted computation (Herschel, Diestelkämper and Ben Lahmar 2017). The three-level lineage discussed in this chapter can be seen as the engineering instantiation of these theories in enterprise data platforms: system-level lineage corresponds to "which systems did the data flow through," logical transformation lineage corresponds to classical why/how-provenance, and semantic lineage extends the scope of provenance from "how the data was computed" to "what the data means and what risks it carries." Understanding this connection helps avoid a common misconception—equating lineage with "recording a few upstream–downstream connections." Truly valuable lineage must be granular enough to support field-level impact analysis and compliance inquiries.
+
+In practice, lineage can be fully described through structured records. The concise example below illustrates the core lineage information for a feature dataset—sources, key transformation steps, downstream consumers, and most importantly, impact analysis:
 
 ```yaml
 dataset: user_preference_features_v2
 sources:
-  - user_click_logs (Kafka topic)
-transformations:
-  - bot_filter: remove bot accounts (98% retained, data_quality_team)
-  - dedup: deduplicate by (user, item, ts) (95% retained, data_quality_team)
-  - feature_eng: aggregate feature vectors (depends on user_profile_table)
-  - privacy_masking: hash user_id (GDPR 5.1.2, privacy_team)
+  - name: user_click_logs
+    type: Kafka topic
+    description: raw user click events, full collection
+transformations:                         # each step records the operation, output volume, and owner
+  - step: bot_filter
+    description: filter out bot accounts
+    retained_ratio: 0.98
+    owner: data_quality_team
+  - step: dedup
+    description: deduplicate by user, item, and timestamp
+    retained_ratio: 0.95
+    owner: data_quality_team
+  - step: feature_eng
+    description: aggregate to generate feature vectors
+    depends_on:
+      - user_profile_table
+  - step: privacy_masking
+    description: mask user_id -> hash
+    policy: GDPR 5.1.2
+    owner: privacy_team
 downstream_assets:
-  - preference_model_training
-  - rag_knowledge_embeddings
-  - model_evaluation_dataset
+  - preference_model_training              # SFT training data
+  - rag_knowledge_embeddings               # RAG knowledge base
+  - model_evaluation_dataset               # evaluation benchmark
 impact_analysis:
-  - user_profile_table changes -> rerun feature_eng (severity: high)
-  - quality failure in this dataset -> block dependent training jobs (severity: high)
+  - condition: upstream user_profile_table changes
+    action: feature_eng step must be re-run
+    severity: high
+  - condition: quality issue in this dataset
+    action: interrupt training jobs depending on this version
+    severity: high
 ```
 
-The `impact_analysis` field makes lineage actionable. It records who is affected by upstream changes and what downstream systems are at risk if this asset fails.
+The example above is highly condensed for brevity, but retains the essential skeleton of a lineage record. In production environments, each transformation step would also record more detailed processing logic, execution time, data volume ratios, and field changes. The **`impact_analysis` field** is particularly critical—it explicitly captures both "which downstream assets would be affected by an upstream change" and "which downstream systems would be impacted if this dataset has a problem," along with severity levels and mitigation actions. It is this field that transforms lineage from a static "data flow diagram" into a governance tool capable of driving incident investigation and change assessment.
 
-![Data lineage graph](../../images/part9/ch27_fig02.png)
+As shown in Figure 27-2, a single piece of raw data may simultaneously enter multiple processing chains and flow through multiple layers of transformation before reaching downstream applications such as training, retrieval, and evaluation, forming a directed acyclic graph (DAG). Complete lineage records enable an organization to trace data destinations forward along this graph and locate problem sources in reverse.
 
-*Figure 27-2: Data lineage graph*
+The true power of lineage is most fully realized in impact analysis scenarios. Consider an upstream `user_profile_table` planning to modify the definition of a certain field. Without lineage, engineers can only guess from experience and memory "who will be affected," making it very easy to overlook dependencies. With complete lineage, the system can automatically enumerate along the DAG all downstream assets that indirectly depend on that field (such as the feature engineering step in this example and its outputs `preference_model_training` and `rag_knowledge_embeddings`), assess the scope of impact one by one, and notify the responsible parties. In reverse, when a model exhibits anomalies in production, the team can trace back along the lineage: did the raw data source have a problem, did some transformation step introduce a defect, or did the semantics of some upstream field drift without anyone's knowledge? Without lineage, incident investigation and change assessment degrade into searching for a needle in a haystack; with lineage, they become deterministic operations that can be executed by traversing a graph.
 
-### 27.3.2 Permission Governance and Access Control
+![Data Lineage Graph](../../images/part9/ch27_fig02_zh.png)
 
-Permission governance answers who can access what data, in what scenario, for what purpose, and how access is audited. It involves technical controls such as table-, row-, and column-level permissions, and organizational processes such as approval, periodic review, and anomaly alerts.
+*Figure 27-2: Data Lineage Graph*
 
-Permission layers include:
 
-- **Dataset-level permissions** for the whole asset.
-- **Table/field-level permissions** for fine-grained control.
-- **Row-level permissions** based on conditions such as geography.
-- **Contextual permissions** based on time, location, and purpose.
 
-Role-Based Access Control (RBAC) reduces permission-maintenance complexity by assigning permissions to roles rather than individuals (Sandhu et al. 1996). In data-asset governance, RBAC often needs to be combined with attributes: sensitivity level, compliance tags, and access context. The same user data should have different visible granularity when used for preference-model training versus business analysis.
+### 27.3.2 Permissions Governance and Access Control
+
+Data permissions management must answer: who can access what data, in what context, for what reason, and how are access records audited. This involves not only technical implementation (e.g., dataset-level permissions, row-level permissions, column-level permissions) but also organizational processes (e.g., approval, periodic review, anomaly alerts).
+
+**Multiple levels of the permissions model:**
+
+**Dataset-level permissions** — Access rights for the entire data asset. For example, whether a given employee can access the "user interaction feedback dataset."
+
+**Table/field-level permissions** — Fine-grained control for data assets containing multiple tables or multiple fields. For example, an employee may access the `user_id` field but not the `email` field.
+
+**Row-level permissions** — Condition-based control at the row level. For example, employees in a given country can only access data from that country.
+
+**Context-based permissions** — Based on the context of access (time, location, purpose). For example, access to the full dataset is permitted only in the context of "model training"; in all other contexts, only the de-identified version may be used.
+
+The theoretical foundation for these permission levels is the widely adopted Role-Based Access Control (RBAC) model—which introduces "roles" as an intermediary layer between users and permissions, enabling permission management to be organized by responsibility rather than by individual, thereby substantially reducing the complexity of managing permissions in large organizations (Sandhu et al. 1996). In data asset governance, RBAC typically also needs to be combined with attribute-based control: beyond "which role does a user belong to," it is also necessary to consider the sensitivity level and compliance tags of the data itself, as well as the context in which access occurs (time, location, purpose), in order to support the field-level, row-level, and context-level controls described above. This is especially important for large language model applications—the same user data should be presented at completely different granularities depending on whether the purpose is "training a preference model" or "business analytics." This kind of "purpose-scoped access" requirement cannot be expressed by role alone and must be supplemented with attribute and context dimensions.
+
+In large language model applications, a key permissions scenario is **differentiated data access**: the same dataset is accessed at different levels of granularity by different teams according to their respective purposes. For example:
 
 ```yaml
 dataset: user_interaction_feedback
 permissions:
-  ml_training_team:      full_raw_data
-  rag_engineering_team:  deidentified_features
-  business_analytics_team: aggregated_stats
-  data_governance_team:  full_admin
+  ml_training_team:
+    access_level: full_raw_data
+    reason: training requires complete data
+    audit_sampling_rate: 1.0
+  rag_engineering_team:
+    access_level: deidentified_features
+    pii_handling: user_id hashed
+  business_analytics_team:
+    access_level: aggregated_stats
+    aggregation_rule: GROUP BY aggregations only
+    min_group_size: 1000
+  data_governance_team:
+    access_level: full_admin
+    includes_audit_logs: true
 ```
 
-A complete configuration would include access rationale, fields, row conditions, approval requirements, and audit sampling rates. The design minimizes sensitive exposure while preserving legitimate work.
+The example above lists only the access level for each team; a complete configuration would also include a justification for the grant, accessible fields, row-level conditions, approval requirements, and audit sampling rate for each entry. The design logic is: the training team needs full raw data for best results, but this comes with full-coverage access auditing; the RAG team uses only de-identified text and features; the business analytics team can only run aggregation queries to prevent reverse-engineering of individuals from aggregate results; the governance team has administrative access including audit logs. Through this purpose-scoped control at the field, row, and query levels, the organization minimizes exposure of sensitive information while meeting the data needs of all parties.
 
-Permissions must also be reviewed. Each asset should periodically check that:
+**Access approval and periodic review:**
 
-1. Existing users still need access.
-2. Missing users receive appropriate access.
-3. Abnormal access patterns are investigated.
-4. Permissions align with least privilege.
+Periodic review is an important component of permissions governance. Every data asset should have its permissions configuration reviewed periodically (e.g., quarterly) to ensure:
 
-Permission governance also requires audit and anomaly detection. A query may be technically allowed but still suspicious, such as a normally daytime analyst account suddenly downloading row-level raw data at night. Audit logs are themselves data assets and should be protected and retained.
+1. Personnel who have been granted permissions still require those permissions
+2. No personnel who should have permissions have been missed
+3. Non-compliant access patterns (e.g., bulk access at unusual times or from unusual locations) are identified and investigated
+4. Permissions are aligned with the principle of least privilege
+
+The other half of permissions governance is audit and anomaly detection. Configuring permissions alone is insufficient; it is also necessary to record "who accessed what data, when, and in what manner," and to remain alert to anomalous access patterns. For example, an analytics account that normally performs aggregation queries only during business hours, which suddenly downloads large volumes of row-level raw data late at night—even if technically "authorized" by permissions, such a pattern warrants an alert and human review. For sensitive data (especially assets containing PII), the audit sampling rate should be higher, ideally achieving complete traceability. These audit logs are themselves a data asset that must be properly protected, retained long-term, and made readily available for compliance reviews. By combining permissions configuration, access auditing, and anomaly alerts, permissions governance is elevated from a "static access control list" to a "dynamic security defense system."
 
 ### 27.3.3 Lifecycle Management and State Transitions
 
-Data assets are not permanent. They move from creation to active use, deprecation, archiving, and deletion. Each state needs explicit definition and management.
+Data assets are not permanent. From creation, active use, and gradual deprecation to eventual deletion or archival, each stage requires a clear definition and management strategy.
 
-Lifecycle matters because exits and entrances both have engineering consequences. Stale data that never retires occupies storage, pollutes search results, and may be reused incorrectly. Sudden deletion or schema change can break downstream pipelines. Modeling lifecycle as a state machine makes dependency changes explicit and auditable (Sculley et al. 2015; Polyzotis et al. 2018).
+The importance of lifecycle management stems from the fact that the "exit" of a data asset, like its "entry," produces engineering consequences. If outdated data is not retired in a timely manner, it will continue to consume storage, pollute search results, and potentially be misused by new projects. Conversely, if data is suddenly deleted or its schema is changed without the knowledge of downstream consumers, it will directly break pipelines that depend on it. Such problems are a significant source of technical debt in production-grade machine learning systems: unmanaged data dependencies accumulate in hidden ways, steadily increasing system maintenance costs and typically only coming to light when something breaks (Sculley et al. 2015). Modeling the lifecycle as a state machine with explicit transition conditions is essentially providing an explicit contract for data dependencies, ensuring that every state change undergoes evaluation, notification, and approval, thus transforming "implicit data debt" into a "visible, manageable, controlled process" (Polyzotis et al. 2018).
 
-| State | Characteristics | Typical Duration | Transition Condition | User Operation |
+*Table 27-2: Lifecycle States of a Data Asset*
+
+| State | Characteristics | Typical Duration | Transition Condition | User Action |
 | --- | --- | --- | --- | --- |
-| **CREATED** | Created, metadata complete, not yet online | 0-2 weeks | Pass quality and security review | Wait for activation |
-| **ACTIVE** | In normal use, updated regularly, discoverable | Business-dependent | Need for retirement | Normal use |
-| **DEPRECATED** | Planned retirement; new projects should not use it | 3-6 months | Downstreams migrated | Discouraged use |
-| **ARCHIVED** | No active updates, retained for audit and history | Long term | Need for full deletion | Read-only |
-| **DELETED** | Physically deleted if legally allowed | - | Permanent operation | No access |
+| **CREATED** | Newly created; metadata complete but not yet live | 0–2 weeks | Passes quality check and security review | Awaiting activation |
+| **ACTIVE** | In normal use; regularly updated; discoverable and usable | Depends on business needs | Whether deprecation is warranted | Free to use |
+| **DEPRECATED** | Planned for retirement; new projects should not use it; existing usage gradually migrated | 3–6 months | All downstream consumers have migrated | Discouraged from use |
+| **ARCHIVED** | No longer actively updated, but historical data retained for auditing and queries | Long-term | Whether complete deletion is required | Read-only access |
+| **DELETED** | Data has been physically deleted (if not prohibited by law) | — | Permanent operation | No access |
 
-![Data asset lifecycle state machine](../../images/part9/ch27_fig03.png)
 
-*Figure 27-3: Data asset lifecycle state machine*
 
-Key transition activities include:
+As shown in Figure 27-3, the states above can be abstracted as a state machine: a data asset transitions sequentially through CREATED → ACTIVE → DEPRECATED → ARCHIVED → DELETED, with each transition triggered by explicit conditions, ensuring that every step of the lifecycle is auditable and traceable.
 
-- **ACTIVE to DEPRECATED**: document the reason, migration path, user notifications, support plan, and migration deadline.
-- **DEPRECATED to ARCHIVED**: confirm downstream migration, move to cold storage, keep read-only access for history and audit, and scan for unexpected new access.
-- **ARCHIVED to DELETED**: confirm legal retention periods, obtain approvals, execute physical deletion, log deletion, and clean backups and snapshots.
+![Data Asset Lifecycle State Transition Diagram](../../images/part9/ch27_fig03_zh.png)
 
-Deletion is a compliance-sensitive operation in the age of GDPR and PIPL. A right-to-erasure request may require deleting original data, copies, backups, and derivatives. Without lineage, an organization cannot even know what downstream assets must be removed.
+*Figure 27-3: Data Asset Lifecycle State Machine*
+
+
+
+**Key activities during lifecycle transitions:**
+
+**From ACTIVE to DEPRECATED** — Requires:
+
+- A clear rationale (e.g., a newer version is superior, maintenance has been discontinued, the dataset has been superseded by a replacement)
+- A clear migration path and migration guide
+- Notification to all existing users, with migration support provided
+- A migration deadline that is achievable but not distant
+
+**From DEPRECATED to ARCHIVED** — Requires:
+
+- Confirmation that all downstream consumers have completed migration
+- Migration of active storage to cold storage to optimize costs
+- Maintaining read-only access to support historical queries and auditing
+- Periodic scanning to detect any unexpected new access
+
+**From ARCHIVED to DELETED** — Requires:
+
+- Confirmation that the legal retention period has been exceeded
+- Obtaining necessary compliance and legal approvals
+- Executing physical deletion and recording the deletion log
+- Cleaning up all associated backups and snapshots
+
+Against the backdrop of the intersection of large language models and privacy regulations, deletion is often not merely "cleaning up storage" but a controlled operation with strong compliance implications. Regulations such as the GDPR right to erasure and the deletion requirements of the Personal Information Protection Law (PIPL) may compel organizations to completely delete certain categories of personal data—including all copies, backups, and derived data—within specific timeframes. This imposes a sharp requirement on lifecycle management: deletion must be "demonstrably complete deletion." Without complete lineage records, an organization cannot even determine which downstream assets a dataset scheduled for deletion may have spawned, and thus cannot guarantee the thoroughness of the deletion. This again illustrates that lineage, permissions, and lifecycle are not isolated—only when they work together can an organization, when facing a regulatory inquiry, confidently demonstrate that "this data has been compliantly and traceably disposed of."
 
 ### 27.3.4 Section Summary
 
-Lineage, permissions, and lifecycle are the three pillars of data-asset governance. Lineage explains flow and transformation. Permissions control access and reduce compliance and security risk. Lifecycle prevents assets from accumulating indefinitely or disappearing unexpectedly.
+Lineage, permissions, and lifecycle are the three pillars of data asset governance. Lineage tracking enables an organization to understand how data flows and transforms, thereby supporting incident investigation, impact analysis, and compliance auditing. Permissions governance ensures that data is accessed by appropriate personnel in appropriate ways, mitigating compliance and security risks. Lifecycle management ensures that data assets do not accumulate indefinitely, while also preventing them from disappearing abruptly and breaking dependent systems. Together, these three dimensions constitute a mature, maintainable data asset ecosystem.
 
-## 27.4 Catalog Cases and Templates
+---
 
-### 27.4.1 Example Enterprise Data Catalog
+## 27.4 Asset Catalog Cases and Templates
 
-An e-commerce recommender system touches nearly all governance dimensions in this chapter: real-time streams, offline feature tables, training datasets, evaluation benchmarks, vector databases, RAG knowledge bases, and compliance logs. These assets belong to different teams, update at different rates, have different sensitivity levels, and depend on one another.
+### 27.4.1 A Real-World Enterprise Data Asset Catalog Example
 
-| Asset ID | Type | Quality Score | Status | Main Use |
+To illustrate how data asset governance is applied in practice, this section uses the data asset catalog of an e-commerce recommendation system to present cases involving diverse data types and governance requirements. The recommendation system is chosen because it naturally touches virtually all governance dimensions discussed in this chapter: it simultaneously depends on real-time streaming data, offline feature tables, training datasets, evaluation benchmarks, RAG knowledge bases, and compliance audit logs. These assets belong to different teams, are updated at different frequencies, carry different sensitivity levels, and are interconnected by complex lineage dependencies. Table 27-3 excerpts representative assets from this catalog, spanning multiple types including streaming data, feature tables, vector stores, training sets, evaluation sets, and knowledge bases.
+
+*Table 27-3: Data Asset Catalog Example for an E-Commerce Recommendation System*
+
+| Asset ID | Type | Quality Score | Status | Primary Use |
 | --- | --- | --- | --- | --- |
-| `raw_user_click` | Stream | 0.91 | ACTIVE | Real-time recommendation, training source |
-| `user_features` | Table | 0.96 | ACTIVE | SFT features, personalization |
-| `product_emb_v3` | Vector DB | 0.94 | ACTIVE | RAG retrieval, similar-item recommendation |
-| `pref_sft_v2` | Dataset | 0.98 | ACTIVE | Fine-tuning preference model |
+| `raw_user_click` | Stream | 0.91 | ACTIVE | Real-time recommendation, training data source |
+| `user_features` | Table | 0.96 | ACTIVE | SFT features, personalized recommendation |
+| `product_emb_v3` | Vector DB | 0.94 | ACTIVE | RAG retrieval, similarity recommendation |
+| `pref_sft_v2` | Dataset | 0.98 | ACTIVE | Fine-tuning preference learning model |
 | `rank_benchmark` | Dataset | 0.97 | ACTIVE | Model performance evaluation |
-| `kb_chunks` | Table | 0.93 | ACTIVE | RAG knowledge source |
-| `feedback_labeled` | Table | 0.94 | ACTIVE | SFT supervision and alignment |
-| `click_v1_legacy` | Table | 0.78 | DEPRECATED | Historical analysis and migration reference |
-| `audit_log` | Table | 0.96 | ACTIVE | Compliance checks and access tracing |
+| `kb_chunks` | Table | 0.93 | ACTIVE | RAG system knowledge source |
+| `feedback_labeled` | Table | 0.94 | ACTIVE | SFT supervision signal, alignment |
+| `click_v1_legacy` | Table | 0.78 | DEPRECATED | Historical analysis, migration reference |
+| `audit_log` | Table | 0.96 | ACTIVE | Compliance checking, access tracking |
 
-Even this small excerpt shows the catalog's value: heterogeneous asset types are visible together, quality is comparable, and deprecated assets are clearly marked.
+In a real catalog, each asset would also include fields for owner, update frequency, and access volume, with the total number of assets often reaching tens or even hundreds. Even so, this excerpt already demonstrates the value of a data asset catalog: asset types are highly heterogeneous (streams, tables, vector stores, and datasets coexist); quality scores are immediately apparent (core training and evaluation data are noticeably higher than raw feedback and legacy logs); and status fields directly identify assets requiring governance (e.g., `click_v1_legacy` is marked as DEPRECATED, signaling that new projects should not depend on it). In other words, this catalog consolidates dispersed decision criteria into a single view, making "which data to use" a decision that can be resolved with a single lookup.
 
-### 27.4.2 Detailed Metadata Example for One Asset
+### 27.4.2 Detailed Metadata Example for a Single Asset
+
+To illustrate how complete a production data asset's metadata can be, the following uses `user_preference_sft_v2` (User Preference Fine-Tuning Training Dataset v2) as a simplified example, retaining only representative fields in each module:
 
 ```yaml
+# Identity and ownership
 asset_id: user_preference_sft_v2
-description: User preference scores and interaction feedback for preference-model training
-owner_id: ml_training_team@company.com
+description: User preference ratings and interaction feedback on recommended products,
+             used for training preference learning models
+owner_id: ml_training_team@company.com   # additional steward / business_owner fields omitted
 
+# Storage and structure (schema has 7 fields total; 2 shown here)
 storage: s3://.../user_preference_sft/v2/ (parquet, 45GB, 128M rows)
 schema:
-  - user_id:          string(hashed), unique user identifier
-  - preference_score: float[0,1], higher means stronger preference
+  - name: user_id
+    type: string
+    pii_handling: hashed
+    description: unique user identifier (hashed)
+  - name: preference_score
+    type: float
+    range:
+      min: 0
+      max: 1
+    description: preference score (higher values indicate stronger preference)
 
-version: 2.1.0
-lineage: raw_user_click -> bot_filter -> feature_engineering -> [preference ranking model, cold-start model]
-quality_metrics: {overall: 0.98, completeness: 0.99, validity: 0.97}
-known_issues: 0.3% out-of-range scores under repair; unstable scores for cold-start users
+# Version, lineage, quality (all excerpted)
+version: 2.1.0                            # see version_history
+lineage:
+  source: raw_user_click
+  transformations:
+    - bot filtering
+    - feature engineering
+  downstream_assets:
+    - preference ranking model
+    - cold-start model
+quality_metrics:
+  overall: 0.98
+  completeness: 0.99
+  validity: 0.97
+known_issues:
+  - description: 0.3% of scores are out of range
+    status: fix in progress
+  - description: preference scores for cold-start users are unstable
 
+# Permissions, compliance, lifecycle
 access_level: internal
-pii_handling: user_id hashed
-compliance: [GDPR, CCPA]
+pii_handling:
+  user_id: hashed
+compliance:
+  - GDPR
+  - CCPA
 data_residency: US
 status: ACTIVE
 retention: 3y
 expected_active_until: 2026-12-31
 ```
 
-A mature data asset's metadata is a small specification. It records what the data is, whether it can be used, how it should be used, and how long it remains valid.
+The structural definition documents each field's type and value range; version history records each change and its compatibility; quality metrics provide numerical values for each dimension alongside known issues; and the permissions, usage records, and lifecycle modules are each detailed down to the team, downstream application, and individual timestamps.
 
-### 27.4.3 Overall Governance View Across Assets
+This example conveys a core principle: **the metadata of a mature data asset is itself a compact specification document**. It consolidates all the information needed to answer "what is this data, can it be used, how should it be used, and for how long" into a machine-readable, machine-verifiable structure, making the discovery, evaluation, and governance of data no longer dependent on informal oral transmission.
 
-Data-catalog managers need a dashboard view across hundreds or thousands of assets.
+### 27.4.3 An Aggregate Governance View Across Multiple Assets
+
+In a mature data organization, a data asset catalog may contain hundreds or even thousands of assets. Managers need an aggregate view of the health of the data asset portfolio, which is typically achieved through a dashboard. Table 27-4 lists key metrics commonly used in governance dashboards, organized along five dimensions—coverage, quality, compliance, lifecycle, and usage—with a target value and alert threshold specified for each metric.
+
+*Table 27-4: Key Metrics for the Data Asset Governance Dashboard (Selected)*
 
 | Dimension | Representative Metric | Target | Alert Threshold |
 | --- | --- | --- | --- |
-| **Coverage** | Assets with metadata / lineage | >95% / >90% | <90% / <80% |
+| **Coverage** | Percentage of assets with metadata / with lineage | >95% / >90% | <90% / <80% |
 | **Quality** | Average quality score | >0.90 | <0.80 |
-| **Compliance** | PII access violations | 0 | Any violation |
-| **Lifecycle** | Deprecated assets not migrated; orphaned data ratio | 0 / <5% | >5% / >10% |
-| **Usage** | Active asset ratio; reuse rate | >80% / >60% | <70% / <40% |
+| **Compliance** | PII data access violation incidents | 0 | Any violation |
+| **Lifecycle** | DEPRECATED assets not yet migrated / orphan data share | 0 / <5% | >5% / >10% |
+| **Usage** | Active asset share / data reuse rate | >80% / >60% | <70% / <40% |
 
-These metrics turn "how good is governance?" into measurable operational indicators. They must be collected continuously and automatically; otherwise, they become stale reporting numbers. Mature platforms embed metric collection into pipelines so the dashboard becomes an operational tool rather than a one-time slide.
+Each dimension in the table above can be further decomposed into additional metrics, such as the proportion of high-quality assets, permissions configuration completeness rate, and search hit rate. The significance of this metric framework is that it transforms the question "how well is data governance being done"—a question that previously could only be answered by intuition—into a set of quantifiable, threshold-alertable operational metrics. Once a metric crosses an alert threshold (e.g., the orphan data share exceeds 10%, or a PII access violation occurs), the system can proactively alert the governance team to intervene, turning data governance from a one-time project into sustainable day-to-day operations.
 
-![Role- and purpose-based permission matrix](../../images/part9/ch27_fig04.png)
+It is important to emphasize that these metrics are meaningful only when measured continuously and automatically. If quality scores, lineage coverage rates, and similar metrics depend on periodic manual aggregation, they will quickly become stale and misrepresentative, ultimately becoming "dashboard numbers that look good but no one believes." Mature governance platforms therefore embed metric collection into the data pipeline, using automated quality validation and metadata scanning to continuously refresh these metrics (Schelter et al. 2018), so that the dashboard genuinely becomes an actionable operational tool rather than a one-time reporting artifact. Seen from another angle, the governance dashboard and individual asset metadata are projections of the same mechanism at different scales: the former concerns itself with "the health distribution of the entire data asset portfolio," the latter concerns itself with "whether a specific dataset can be trusted," and both share the same continuously updated metadata foundation.
 
-*Figure 27-4: Example permission-governance matrix*
+In cross-team governance practice, the health of the permissions dimension is particularly worth examining separately. As shown in Figure 27-4, a permissions matrix can visually present "which team holds what permissions on which assets," enabling at-a-glance identification of excessive permissions or permissions gaps.
+
+![Permissions Management Matrix Based on Roles and Purposes](../../images/part9/ch27_fig04_zh.png)
+
+*Figure 27-4: Permissions Management Matrix Example*
+
+
 
 ### 27.4.4 Section Summary
 
-The example shows how a data catalog is applied in practice. The key is a governance system that is broad enough to cover all assets, detailed enough to describe each asset, and observable enough to monitor governance health.
+Through concrete cases, we have seen how data asset catalogs are applied in real organizations. The key is to build a governance framework that is both comprehensive (covering all data assets) and detailed (with complete metadata for each asset), while establishing a monitoring dashboard to maintain a real-time view of governance health.
 
-## 27.5 Governance Maturity, Roles, and Implementation Checklist
+---
 
-### 27.5.1 Maturity Evolution
+## 27.5 Governance Maturity, Organizational Roles, and Implementation Checklist
 
-Data governance is not a one-time project to build a catalog. It evolves in stages:
+The preceding sections have discussed data asset definitions, metadata models, lineage, permissions, lifecycle management, and catalog cases. In a real organization, however, these capabilities are rarely built all at once. Data governance is a path that must be pursued in stages, carried by clearly defined roles, and constrained by verifiable acceptance criteria. This section examines how to translate the foregoing methods into actual practice, from three perspectives: maturity progression, organizational roles, and an implementation checklist.
 
-1. **Ad hoc**: no unified catalog; data is scattered across team tables, documents, and personal storage. Discovery depends on oral communication.
-2. **Managed**: a centralized catalog appears; core assets register basic metadata such as owner, schema, and description. Metadata is largely manual.
-3. **Governed**: metadata collection becomes automated; lineage, quality metrics, and permissions are standard. Registration flows, lifecycle state machines, and periodic permission reviews are institutionalized.
-4. **Optimized**: governance integrates deeply into production and consumption. Quality checks run inside pipelines, lineage is extracted from job graphs, and access/compliance checks happen before data enters indexes.
+### 27.5.1 The Maturity Progression of Data Governance
 
-This path reminds teams not to attempt everything at once. Cover high-value and high-risk core assets first, then expand. For many organizations, the biggest leap is from a manually maintained static catalog to an automatically collected living catalog.
+A common misconception is to treat data governance as a "one-time project of building a catalog system." In reality, building governance capability more closely resembles a process of continuous evolution, which can be roughly divided into four stages.
 
-### 27.5.2 Organizational Roles
+**Stage 1: Ad Hoc.** No unified catalog exists; data is scattered across each team's databases, documents, and personal storage. Data discovery depends entirely on informal inquiries; metadata exists only in the memories of select individuals. The typical symptoms at this stage are precisely the two failure cases described in Section 27.1: data is "visible but unreachable," reuse costs are extremely high, and compliance risks are hidden.
 
-Data governance is not only a technical system; it is a responsibility structure.
+**Stage 2: Managed.** The organization begins building a centralized data catalog, requiring core data assets to register basic metadata (owner, schema, description). Data can be searched, but metadata is largely maintained manually, coverage is limited, and lineage and quality information is often absent or lagging.
 
-- **Data Owner**: often a business or team lead, ultimately responsible for quality, compliance, value, usage scope, and permission strategy.
-- **Data Steward**: maintains metadata, monitors quality, and responds to issues. The steward connects business and technical context.
-- **Governance Team**: defines global standards such as metadata schema, naming conventions, classification, compliance rules, and directory operation.
-- **Data Consumer**: data scientists, algorithm engineers, analysts, and others who discover and use data; their feedback drives continuous improvement.
+**Stage 3: Governed.** Metadata collection begins to be automated; lineage, quality metrics, and permissions configuration become standard. Registration processes, lifecycle state machines, and periodic permissions reviews are institutionalized. A governance dashboard is launched, enabling key metrics to be continuously monitored (Schelter et al. 2018).
 
-The earlier failure cases occur partly because ownership and stewardship are absent. If nobody owns whether a dataset can be used for training or what its restrictions are, that knowledge will not be recorded.
+**Stage 4: Optimized.** Governance is deeply integrated with data production and consumption processes: quality validation is embedded in pipelines, lineage is automatically extracted from job graphs, and permissions and compliance checks are automatically enforced before data enters the index. Data asset reuse rate and discovery rate become operational metrics that can be optimized; governance itself enters a virtuous cycle of "using data to govern data" (DAMA International 2017; Polyzotis et al. 2018).
 
-### 27.5.3 Data-Asset Governance Checklist
+The value of understanding this maturity progression is that it reminds teams not to attempt everything at once, but to prioritize high-value, high-risk core assets by business priority, then gradually expand breadth and depth. For most organizations, the leap from Stage 2 to Stage 3—upgrading from a "statically maintained catalog" to an "automatically collected living catalog"—is typically the step with the greatest payoff and the greatest challenge.
 
-| Category | Key Question | Acceptance Standard |
+### 27.5.2 Organizational Structure and Roles in Governance
+
+Data governance is not only a technical system but also a set of accountability assignments centered on data. Without clear role definitions, even the most sophisticated catalog system will gradually fall into disuse because "no one is responsible for the data." In mature data organizations, the following key roles typically exist (DAMA International 2017).
+
+**Data Owner** — Typically a business or team lead who bears ultimate responsibility for the quality, compliance, and value of a given data asset, and who decides the data's scope of use and permissions policy.
+
+**Data Steward** — Responsible for the day-to-day maintenance of a data asset, including metadata updates, quality monitoring, and issue response. The data steward is the hub connecting business and technology, ensuring that metadata is accurate, lineage is complete, and quality standards are met.
+
+**Data Governance Team** — Formulates organization-wide governance standards (metadata standards, naming conventions, classification and grading, compliance requirements), operates the data catalog platform, and presides over permissions reviews and compliance audits.
+
+**Data Consumer** — Includes data scientists, algorithm engineers, analysts, and others who discover and use data through the catalog. Consumer feedback (e.g., flagging data issues, submitting reuse requests) is important input for continuous governance improvement.
+
+The collaboration among these roles is essentially the explicit assignment of "knowledge about data and accountability for data" to individuals. The failure cases in Section 27.1 occurred in part because of the absence of explicit owners and stewards—when no one is responsible for "can this dataset be used for training" or "what are its restrictions," this critical information naturally goes unrecorded and unmaintained.
+
+### 27.5.3 Implementation Checklist for Data Asset Governance
+
+To translate the foregoing methods into actionable acceptance criteria, a governance checklist can be established. Its purpose is not to replace specific implementations, but to help teams systematically verify that key steps are in place whenever a data asset goes live or a governance capability is built.
+
+*Table 27-5: Data Asset Governance Implementation Checklist*
+
+| Check Category | Key Question | Acceptance Criterion |
 | --- | --- | --- |
-| Identity and ownership | Does the asset have a unique ID, owner, and steward? | Every asset maps to responsible people |
-| Metadata completeness | Are structure, description, purpose, and restrictions registered? | Core fields complete; restrictions explicit |
-| Lineage tracking | Are source, transformation, and downstream consumption recorded? | Can trace forward and backward |
-| Quality monitoring | Are quality metrics measured automatically and continuously? | Metrics refreshed by pipelines |
-| Permissions and compliance | Are role- and purpose-based permissions configured and PII tagged? | No unauthorized sensitive-data access |
-| Lifecycle | Are state and transition conditions defined? | Deprecation, archive, and deletion have plans and approvals |
-| Discoverability | Can users search, filter, and receive recommendations? | Target users can find data in reasonable time |
-| Feedback loop | Can consumers report and close data issues? | Problems are reported, assigned, and repaired |
+| Identity and Ownership | Is there a unique identifier, a clear owner, and a clear steward? | Every asset can be traced to a responsible party |
+| Metadata Completeness | Is structure, description, use case, and restrictions registered? | No missing core fields; restrictions explicitly declared |
+| Lineage Tracking | Are source, transformations, and downstream consumers recorded? | Data destinations can be traced forward; problem sources can be located in reverse |
+| Quality Monitoring | Are quality metrics measured automatically and continuously? | Metrics are refreshed by pipelines, not entered manually |
+| Permissions and Compliance | Are permissions configured by role and purpose; is PII labeled? | Sensitive data has no unauthorized access; compliance tags are complete |
+| Lifecycle | Are states and transition conditions defined? | Deprecation, archival, and deletion have plans and approvals |
+| Discoverability | Can the asset be found through search, filtering, and recommendation? | Target users can find the data within a reasonable timeframe |
+| Feedback Loop | Can consumer feedback be received and acted upon? | Data issues can be reported and resolved end-to-end |
 
-This checklist turns implicit expectations scattered across roles into one acceptance table. For high-risk data such as personal, financial, or medical data, stricter audits, sensitive-information detection, and access logging should be added.
+The value of this checklist is directly aligned with the engineering checklist for RAG data pipelines (see Chapter 21): it consolidates implicit requirements scattered across different roles' minds onto a single acceptance sheet, enabling problems to surface earlier and accountability to be assigned more clearly. For high-risk scenarios (e.g., data involving personal privacy, financial information, or medical records), more stringent compliance auditing, sensitive information detection, and access traceability requirements should be layered on top.
 
-### 27.5.4 Special Governance Challenges for Large Models
+### 27.5.4 Special Governance Challenges in Large Language Model Scenarios
 
-Large-model data governance faces challenges beyond traditional warehouses.
+This part has repeatedly emphasized that the large language model era imposes demands on data governance that go beyond those of traditional data warehouses. Three categories of challenges warrant particularly close attention.
 
-**Source and authorization tracking for training data.** Once data is used in model training, its influence is embedded into parameters and is hard to remove afterward. Lineage, authorization status, and compliance tags must be correct before data enters training. A dataset without training-authorization records can create serious compliance risk.
+**Provenance and authorization tracking for training data.** Once a dataset is used for model training, its influence becomes "embedded" in the model parameters and is difficult to remove after the fact. Therefore, the lineage, authorization status, and compliance annotations of training data must be accurately in place before data enters the training pipeline. A dataset without a clear training authorization record (such as the feedback data on a former employee's personal cloud storage described in Section 27.1), once used for training, may carry irreversible compliance risks. Attaching datasheet-style documentation to each training dataset has become an important component of responsible AI practice (Gebru et al. 2021).
 
-**Freshness and version governance for RAG knowledge sources.** RAG knowledge bases update continuously. Old documents must be retired or archived, or the model may answer with stale information. Lifecycle state machines support controlled knowledge evolution.
+**Timeliness and version governance for RAG knowledge sources.** In RAG systems, knowledge bases are continuously updated; outdated documents must be retired or archived in a timely manner, otherwise the model will generate incorrect answers based on stale knowledge. This requires knowledge assets to have clear version and lifecycle management—a direct echo of the knowledge update and version governance discussed in Chapter 23. The lifecycle state machine in the data asset catalog is the underlying mechanism supporting this kind of "controlled knowledge evolution."
 
-**Isolation and leakage protection for evaluation data.** If an evaluation set leaks into training data, results become invalid. Evaluation assets require strict permission isolation and lineage tracking.
+**Isolation and leakage prevention for evaluation data.** If evaluation data leaks into training data, evaluation results are invalidated. Evaluation data assets therefore require strict permissions isolation and lineage tracking to ensure they are not inadvertently mixed into the training pipeline at any stage. Such risks are often subtle, and can only be detected during post-hoc audits through complete lineage records.
 
-These challenges are not only about data quality. They are about whether knowledge about the data is recorded and enforced. Without governance, risks cascade downstream into model-level failures (Sambasivan et al. 2021).
+The common thread across these three categories of challenges is that none of them is a question of "whether the data itself is good," but rather a question of "whether knowledge about the data is accurately recorded and enforced." When data lacks governance, these risks are amplified layer by layer downstream in a "data cascade" pattern, ultimately manifesting as model-level failures that are difficult to diagnose (Sambasivan et al. 2021). This once again affirms the central position of this part: in the large language model era, data governance is not a supportive back-office function but foundational infrastructure that determines the reliability and compliance of AI systems.
 
 ### 27.5.5 Section Summary
 
-This section explained how data-asset governance lands in real organizations through maturity stages, role definitions, and implementation checklists. The goal is not merely to build a system. It is to ensure that knowledge and responsibility about data circulate reliably inside the organization.
+This section has examined how data asset governance can be implemented in real organizations, from three perspectives: maturity progression, organizational roles, and an implementation checklist. Building governance capability is a staged, evolutionary process requiring a clear division of responsibilities among data owners, data stewards, the governance team, and data consumers, with verifiable checklists constraining each step. An organization that can clearly answer "what data do we have, where did it come from, what is its quality, who can use it, and for how long" can continuously transform data—a strategic asset—into product capability, while avoiding repeated costs from redundant discovery, compliance exposure, and hidden technical debt (Sambasivan et al. 2021; Polyzotis et al. 2018). In large language model scenarios, training data authorization tracking, RAG knowledge timeliness governance, and evaluation data isolation are governance challenges that warrant particular vigilance. Ultimately, the goal of governance is not to build a system, but to ensure that "knowledge about data and accountability for data" flow continuously and reliably throughout the organization.
+
+---
 
 ## Chapter Summary
 
-This chapter began with the definition of data assets and explained the difference between a data asset and a file inventory. A data asset is not only stored data; it includes identity, ownership, structure, lineage, permissions, quality, and lifecycle.
+The essence of data asset catalogs and metadata governance is to consolidate "knowledge about data"—originally dispersed across individual memories and ad hoc documents—into organization-level, queryable, auditable shared infrastructure. This chapter first used the six dimensions of data assets to explain that what fundamentally distinguishes a data asset from a file inventory is the context, accountability, and constraints it carries. It then provided engineering methods for operationalizing these dimensions through the layered metadata model of the dataset registry, automated collection mechanisms, and search-discovery capabilities.
 
-By building a dataset registry, enterprises can transform scattered data into assets that can be discovered and trusted. A structured metadata model covering identity, ownership, structure, lineage, versioning, quality, usage, permissions, lifecycle, and compliance provides the foundation for manageability and usability.
-
-Lineage tracking lets organizations understand data flow and supports impact analysis and troubleshooting. Permission governance protects sensitive data. Lifecycle management prevents data assets from accumulating forever or disappearing unexpectedly.
-
-In the age of large-model applications, this governance system is especially important. The same data may be used for pre-training, SFT, RAG knowledge sources, and evaluation, with different requirements in each scenario. Effective governance makes complex cross-application reuse possible without relying on oral communication and manual management.
-
-Mature data organizations should build:
-
-1. **Automatic metadata collection** from schemas, DAGs, audit logs, and quality-validation frameworks.
-2. **Complete lineage tracking** from source systems to downstream applications.
-3. **Flexible permission models** based on RBAC plus attributes and context.
-4. **Health monitoring** that turns governance into measurable operational indicators.
-5. **Usage feedback loops** that bring consumer reports and reuse needs back into governance.
-6. **Clear roles and processes** for owners, stewards, governance teams, and consumers.
-
-When these capabilities are in place, data stops being an isolated storage object and becomes a manageable, traceable, reusable enterprise asset. This is the shift from "having enough data" to "having effective data."
-
-Ultimately, data catalogs and metadata governance serve a larger trend: AI competition is moving from model-centric to data-centric. As model architectures become more homogeneous and compute becomes purchasable, the real organizational gap increasingly lies in the quality, governability, and reusability of data assets. An organization that can answer what data it has, where it came from, how good it is, who can use it, and until when can continuously turn data into product capability while avoiding repeated discovery, compliance exposure, and hidden technical debt.
+Lineage, permissions, and lifecycle constitute three mutually supporting pillars of data asset governance: lineage supports incident investigation, impact analysis, and compliance tracing, and must be granular to the field level; permissions achieve purpose-scoped differentiated access through a combination of roles and attributes, supplemented by auditing and anomaly detection; and lifecycle incorporates data onboarding, deprecation, and demonstrably complete deletion into a controlled process through a state machine with explicit transition conditions. Building governance capability is a staged, evolutionary process requiring a clear division of responsibilities among data owners, data stewards, the governance team, and data consumers, with verifiable checklists constraining each step. In large language model scenarios, training data authorization tracking, RAG knowledge source timeliness governance, and evaluation data isolation are governance challenges that warrant particular vigilance.
 
 ## References
 
-Abedjan Z, Golab L, Naumann F (2015) Profiling relational data: a survey. The VLDB Journal 24(4):557-581.
+Abedjan Z, Golab L, Naumann F (2015) Profiling relational data: a survey. The VLDB Journal 24(4):557–581.
 
 Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for Machine Learning. In: Proceedings of the 2nd SysML Conference (MLSys).
 
-Buneman P, Khanna S, Tan W-C (2001) Why and Where: A Characterization of Data Provenance. In: Proceedings of the 8th International Conference on Database Theory (ICDT), pp 316-330.
+Buneman P, Khanna S, Tan W-C (2001) Why and Where: A Characterization of Data Provenance. In: Proceedings of the 8th International Conference on Database Theory (ICDT), pp 316–330.
 
-Cai L, Zhu Y (2015) The Challenges of Data Quality and Data Quality Metrics. Journal of Data and Information Quality 6(2-3):1-10.
+Cai L, Zhu Y (2015) The Challenges of Data Quality and Data Quality Metrics. Journal of Data and Information Quality 6(2-3):1–10.
 
 DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications, Basking Ridge.
 
-Fernandez R C, Abedjan Z, Koko F, Yuan G, Madden S, Stonebraker M (2018) Aurum: A Data Discovery System. In: 2018 IEEE 34th International Conference on Data Engineering (ICDE), pp 1001-1012.
+Fernandez R C, Abedjan Z, Koko F, Yuan G, Madden S, Stonebraker M (2018) Aurum: A Data Discovery System. In: 2018 IEEE 34th International Conference on Data Engineering (ICDE), pp 1001–1012.
 
-Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92.
+Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86–92.
 
-Halevy A, Korn F, Noy N F, Olston C, Polyzotis N, Roy S, Whang S E (2016) Goods: Organizing Google's Datasets. In: Proceedings of the 2016 ACM SIGMOD International Conference on Management of Data, pp 795-806.
+Halevy A, Korn F, Noy N F, Olston C, Polyzotis N, Roy S, Whang S E (2016) Goods: Organizing Google's Datasets. In: Proceedings of the 2016 ACM SIGMOD International Conference on Management of Data, pp 795–806.
 
 Hellerstein J M, Sreekanti V, Gonzalez J E, Dalton J, Dey A, Nag S, Ramachandran K, Arora S, Bhattacharyya A, Das S, Donsky M, Fierro G, She C, Steinbach C, Subramanian V, Sun E (2017) Ground: A Data Context Service. In: 8th Biennial Conference on Innovative Data Systems Research (CIDR).
 
-Herschel M, Diestelkämper R, Ben Lahmar H (2017) A survey on provenance: What for? What form? What from? The VLDB Journal 26(6):881-906.
+Herschel M, Diestelkämper R, Ben Lahmar H (2017) A survey on provenance: What for? What form? What from? The VLDB Journal 26(6):881–906.
 
-Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency (FAT*), pp 220-229.
+Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency (FAT*), pp 220–229.
 
-Noy N F, Musen M A (2000) PROMPT: Algorithm and Tool for Automated Ontology Merging and Alignment. In: Proceedings of the 17th National Conference on Artificial Intelligence (AAAI), pp 450-455.
+Noy N F, Musen M A (2000) PROMPT: Algorithm and Tool for Automated Ontology Merging and Alignment. In: Proceedings of the 17th National Conference on Artificial Intelligence (AAAI), pp 450–455.
 
-Polyzotis N, Roy S, Whang S E, Zinkevich M (2018) Data Lifecycle Challenges in Production Machine Learning: A Survey. ACM SIGMOD Record 47(2):17-28.
+Polyzotis N, Roy S, Whang S E, Zinkevich M (2018) Data Lifecycle Challenges in Production Machine Learning: A Survey. ACM SIGMOD Record 47(2):17–28.
 
-Rahm E, Bernstein P A (2001) A survey of approaches to automatic schema matching. The VLDB Journal 10(4):334-350.
+Rahm E, Bernstein P A (2001) A survey of approaches to automatic schema matching. The VLDB Journal 10(4):334–350.
 
-Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1-15.
+Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1–15.
 
-Sandhu R S, Coyne E J, Feinstein H L, Youman C E (1996) Role-Based Access Control Models. IEEE Computer 29(2):38-47.
+Sandhu R S, Coyne E J, Feinstein H L, Youman C E (1996) Role-Based Access Control Models. IEEE Computer 29(2):38–47.
 
-Schelter S, Lange D, Schmidt P, Celikel M, Biessmann F, Grafberger A (2018) Automating Large-Scale Data Quality Verification. Proceedings of the VLDB Endowment 11(12):1781-1794.
+Schelter S, Lange D, Schmidt P, Celikel M, Biessmann F, Grafberger A (2018) Automating Large-Scale Data Quality Verification. Proceedings of the VLDB Endowment 11(12):1781–1794.
 
-Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503-2511.
+Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503–2511.
 
 Stonebraker M, Bruckner D, Ilyas I F, Beskales G, Cherniack M, Zdonik S, Pagan A, Xu S (2013) Data Curation at Scale: The Data Tamer System. In: 6th Biennial Conference on Innovative Data Systems Research (CIDR).
 
-Wang R Y, Strong D M (1996) Beyond Accuracy: What Data Quality Means to Data Consumers. Journal of Management Information Systems 12(4):5-33.
+Wang R Y, Strong D M (1996) Beyond Accuracy: What Data Quality Means to Data Consumers. Journal of Management Information Systems 12(4):5–33.

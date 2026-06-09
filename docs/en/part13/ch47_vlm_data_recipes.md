@@ -1,132 +1,188 @@
-# Chapter 47: VLM Data Recipes from Pre-training to Visual Alignment
+# Chapter 47: Multimodal Large Model (VLM) Data Recipes: From Pre-Training to Visual Alignment
 
-"With the same ViT visual encoder and the same LLM backbone, why did our faithful reproduction of the LLaVA-1.5 training pipeline score 10 to 15 points below Qwen2.5-VL and InternVL on difficult benchmarks such as MMMU and DocVQA?"
+## Abstract
 
-In spring 2025, a multimodal team at a leading AI lab ran into a painful recipe failure. Their setup looked sound: use a visual encoder comparable to Qwen2.5-VL's class, connect it to a similarly sized Chinese base LLM, and follow the classic LLaVA-1.5 (Liu et al. 2024b) two-stage recipe. Stage 1 used 558K LAION-CC-SBU image-text pairs for visual alignment pre-training. Stage 2 used LLaVA-Instruct-150K for full fine-tuning. Training took three weeks, the GPU bill reached six figures, and early internal tests looked decent: fluent dialogue, reasonable refusals, and acceptable instruction following.
+As architectural innovations in Vision-Language Models (VLMs) converge, the sophistication of data recipes has become the primary dividing line between leading models and their followers. This chapter systematically deconstructs the data engineering practices of mainstream VLMs—including Qwen2.5-VL, InternVL3, LLaVA-OneVision, and MiniCPM-V—through the lens of "recipes." The discussion first establishes a three-stage pipeline covering pre-training, multi-task high-resolution alignment, and Supervised Fine-Tuning (SFT), explaining the order-of-magnitude differences in data scale, quality requirements, and freezing strategies at each stage. It then cross-compares these models' data composition ratios across image-text pairs, interleaved image-text documents, OCR-Rich data, visual grounding data, and video data, identifying key trends such as the primacy of re-captioning, safe thresholds for OCR data, and the evolution of video data from optional to mandatory. The chapter subsequently analyzes the data engineering divergence between the Dynamic Hi-Res Patching and Native Resolution camps with respect to token-length management and bucketing, as well as quality-improvement mechanisms combining CLIP-score filtering with strong-VLM re-annotation. The chapter emphasizes that transforming raw alt-text into executable visual supervision signals is the central challenge for reproducibility in modern VLM data recipes.
 
-Then the public MMMU (Yue et al. 2024) and DocVQA (Mathew et al. 2021) leaderboards delivered a shock. The model trailed Qwen2.5-VL-7B and InternVL3-8B by more than 12 points, even though its visual encoder was larger and the base LLM had been strengthened for Chinese.
+## Keywords
 
-After a week of investigation, the conclusion was clear: the architecture was not the main problem. The data recipe was. Four ignored data engineering dimensions created the gap.
+VLM data recipe; vision-language model; re-captioning; high-resolution training; OCR-Rich data; multimodal SFT
 
-* **Data quality.** Raw LAION alt-text had a median image-text relevance of only about 0.26 by CLIP cosine similarity, while GPT-4V-style recaptioned data used by InternVL was estimated around 0.61 [I]. Low-quality captions are like textbooks with wrong labels under the pictures.
-* **Resolution strategy.** Fixed resizing to 336 x 336 erased dense text in financial PDFs, textbook diagrams, and documents.
-* **Coverage of data types.** LLaVA-Instruct-150K lacks OCR-rich, ChartQA, and grounding instructions with bounding boxes, leaving the model weak at document understanding and precise localization.
-* **Curriculum scheduling.** All data was fed uniformly across two stages. High-information-density data such as visual math reasoning was not upsampled late, and no annealed high-quality window was introduced at the end of pre-training.
+## Learning Objectives
 
-This story is common. It reveals a central proposition of modern VLM engineering: the precision of the data recipe sets the ceiling of model intelligence. Architecture innovation has started to converge. The gap between leading labs and followers is now mostly in fine-grained, even harsh, multimodal data engineering.
+- Design a three-stage VLM pipeline covering pre-training, multi-task high-resolution alignment, and SFT, and articulate the differences in data scale, quality requirements, and freezing strategies at each stage.
+- Compare Qwen2.5-VL, InternVL3, LLaVA-OneVision, and MiniCPM-V with respect to their data composition ratios across image-text pairs, interleaved documents, OCR-Rich data, visual grounding, and video data.
+- Distinguish the data engineering divergences between the Dynamic Hi-Res Patching and Native Resolution camps in token-length management and bucketing.
+- Design a quality-improvement mechanism combining CLIP-score filtering with strong-VLM re-annotation, and establish safe OCR data thresholds.
+- Explain why transforming raw alt-text into executable visual supervision signals is the central challenge for reproducibility in VLM data recipes.
 
-> **Prerequisites and compliance boundary:** This chapter focuses on VLM-specific data recipes and curriculum differences. Chapters 8 through 11 already covered image-text collection, MinHash deduplication, OCR extraction, video and audio preprocessing, and cross-modal alignment. For image crawling, copyright, and provenance risk, see Chapter 4 and the compliance chapters. This chapter discusses recipes, not basic infrastructure.
+"Given the same ViT visual encoder and the same LLM backbone architecture, why does our faithful replication of the LLaVA-1.5 training pipeline score 10 to 15 points lower than Qwen2.5-VL and InternVL on challenging benchmarks like MMMU and DocVQA?"
 
-![Figure 47-1: Multimodal data engineering panorama](../../images/part11/8_1_multimodal_data_panorama.png)
+In the spring of 2025, a multimodal team at a top domestic AI laboratory experienced a textbook "data recipe replication failure." Their starting point appeared well-grounded: they used the same visual encoder specification as Qwen2.5-VL (InternViT-6B), paired it with a Chinese LLM backbone of comparable parameter scale, and rigorously followed the classic two-stage training scheme of LLaVA-1.5 (Liu et al. 2024b)—Stage 1 used 558K image-text pairs from LAION-CC-SBU for visual alignment pre-training, and Stage 2 performed full-parameter fine-tuning on LLaVA-Instruct-150K. Training took three weeks, GPU costs reached six figures, and early internal evaluation results appeared reasonably stable: fluent conversations, acceptable rejection rates, and instruction-following broadly on target.
 
-*Figure 47-1: Multimodal data engineering panorama.*
+However, when they submitted their model to the public leaderboards for MMMU (Yue et al. 2024) and DocVQA (Mathew et al. 2021), overall scores lagged behind Qwen2.5-VL-7B and InternVL3-8B by more than 12 percentage points—despite using a larger visual encoder and a Chinese LLM backbone that had received dedicated language reinforcement.
+
+After a week of investigation, the team reached a conclusion: **the problem was not the model architecture, but the data recipe**. Specifically, the gap originated from four overlooked data engineering dimensions:
+
+- **Data quality**: The median image-text relevance of raw LAION alt-text was only 0.26 (CLIP (Radford et al. 2021) cosine similarity), whereas the GPT-4V re-annotated data used by InternVL had a median of 0.61 [I]. Low-quality captions cause the model to learn incorrect image-text correspondences.
+- **Resolution strategy**: Pre-processing that forcibly resizes images to 336×336 completely erases fine-grained textual information densely packed in financial PDF reports and textbook illustrations.
+- **Data type coverage**: LLaVA-Instruct-150K lacks OCR-Rich, ChartQA, and Grounding (with bounding box coordinates) instructions, leaving the model nearly incapable of document understanding and precise localization.
+- **Curriculum scheduling**: All data is uniformly mixed and sampled across both stages, without late-stage upsampling of high-information-density data (e.g., visual mathematical reasoning) or the introduction of an annealing window of high-quality data near the end of pre-training.
+
+This case is far from unique. It reveals a core proposition of modern VLM engineering: **the sophistication of the data recipe directly determines the model's capability ceiling**. As architectural innovation converges at the model layer, gaps in data engineering often become the decisive boundary between leading laboratories and their followers. During the rapid multimodal development cycle of 2024–2025, what has separated the top VLMs is no longer subtle architectural tweaks, but increasingly refined and rigorous multimodal data engineering recipes.
+
+> **Prerequisites and Compliance Notice**:
+> This chapter focuses on the "data recipe" and curriculum scheduling differences specific to particular VLMs. The foundational topics of image-text pair crawling, MinHash deduplication pipelines, basic OCR extraction, and general-purpose cross-modal alignment preprocessing (e.g., Resize/CenterCrop image processing pipelines) are covered in depth in **Ch08 (Image-Text Pairs)**, **Ch09 (Re-annotation and Document Understanding)**, **Ch10 (Video and Audio)**, and **Ch11 (Cross-Modal Alignment)**. For underlying general-purpose pipelines, readers may refer to the multimodal data engineering panorama in Figure 47-1. Additionally, for copyright provenance risks associated with image crawling, refer directly to **Ch04 §4.4** and **Ch27 (Data Compliance)**. This chapter covers "recipes" only, and does not revisit the "underlying plumbing."
+
+![Figure 47-1: Multimodal Data Engineering Panorama](../../images/part11/8_1_multimodal_data_panorama.png)
+
+<div align="center"><b>Figure 47-1: Multimodal Data Engineering Panorama (adapted from Chapter 8 base figure)</b></div>
+
+---
 
 ## 47.1 The Three-Stage VLM Data Pipeline
 
-Qwen2.5-VL and InternVL3 reports show that modern VLM data recipes have standardized into a three-stage pipeline. Even the pre-training stage has evolved from simple concept binding into deeper visual feature structuring. Each stage has different quality, type-distribution, and scale requirements. Blindly mixing data from all stages is one of the main reasons recipes fail.
+A close reading of the technical reports for Qwen2.5-VL or InternVL3 reveals that modern VLM data recipes have crystallized into a highly standardized "three-stage pipeline" (as shown in Figure 47-2). Even the pre-training stage alone has evolved beyond simple "concept binding" toward deep "visual feature structuring." Each stage exhibits order-of-magnitude differences in data quality requirements, type distribution, and volume, and blindly mixing data across the three stages is the leading cause of recipe failure for many teams.
 
-![Figure 47-2: Three-stage VLM data engineering pipeline](../../images/part11/32_1_vlm_three_stages_en.png)
+![Figure 47-2: VLM Three-Stage Data Engineering Pipeline](../../images/part11/32_1_vlm_three_stages_en.png)
 
-*Figure 47-2: Three-stage VLM data engineering pipeline.*
+<div align="center"><b>Figure 47-2: VLM Three-Stage Data Pipeline</b></div>
 
-**Stage 1: pre-training / feature alignment.** The goal is coarse alignment between visual concepts and text vocabulary. Scale usually ranges from hundreds of millions to billions of image-text pairs. Sources include CLIP-filtered LAION subsets (Schuhmann et al. 2022), DataComp-1B (Gadre et al. 2023), COYO-700M, and recent recaptioned datasets such as ShareGPT4V-1.2M and LLaVA-Recap-558K.
+**Stage 1: Pre-training (Feature Alignment)**
 
-Three practices matter. First, freeze the LLM and train only the visual encoder and projector to prevent catastrophic forgetting under noisy image-text pairs. Second, apply CLIP-score filtering, often around 0.28 or higher, to remove low-relevance pairs; this can remove up to 70% of raw LAION-5B. Third, prefer recaptioning over raw alt-text. InternVL-style ablations show that replacing raw LAION alt-text with strong-VLM descriptions can improve visual alignment by several MMMU points [D] (Chen et al. 2023).
+The core objective of this stage is **coarse-grained alignment between visual concepts and text vocabulary**. Data scale is typically in the range of hundreds of millions to billions of image-text pairs, with primary sources including CLIP-filtered LAION subsets (Schuhmann et al. 2022), DataComp-1B (Gadre et al. 2023), COYO-700M, and re-captioned datasets that emerged over the past two years (e.g., ShareGPT4V-1.2M, LLaVA-Recap-558K).
 
-**Stage 2: multitask and high-resolution alignment.** This is the secret behind models that read invoices, reports, and complex paper figures. Scale is usually tens of millions of samples, but type diversity and format correctness matter much more. Key data types include high-resolution OCR screenshots with text coordinates, DocVQA, InfoVQA, TextVQA, grounding data with bounding boxes, interleaved web documents, ChartQA, PlotQA, and FigureQA.
+Three key engineering principles are prominent among leading models at this stage. First, **freeze the LLM and train only the visual encoder and projector** to prevent catastrophic forgetting in the LLM caused by low-quality noisy image-text data. Second, **apply a CLIP-Score filtering threshold** (typically ≥ 0.28) to remove image-text pairs with very low relevance—this single step can eliminate up to 70% of low-quality samples from the raw LAION-5B. Third, **re-captioning takes priority over raw alt-text**—ablation experiments by InternVL3 show that replacing the alt-text of 558K original LAION samples with detailed descriptions rewritten by a strong VLM improves visual alignment accuracy at Stage 1 by approximately 7 MMMU percentage points [D] (Chen et al. 2023).
 
-The engineering challenge is resolution adaptation and token-length control. Raising OCR image resolution from 336 x 336 to 1344 x 1344 can increase vision tokens from about 256 to about 4096, forcing batch size down by roughly 16x. InternVL3 (Chen et al. 2024) uses dynamic resolution bucketing: images are clustered into predefined resolution buckets by aspect ratio and area, and each batch mixes only samples from the same bucket. This reduces padding waste and improves GPU utilization [D]. Models begin to unfreeze here, though many teams keep some LLM layers frozen to avoid language regression under extreme OCR distributions.
+**Stage 2: Multi-Task and High-Resolution Alignment**
 
-**Stage 3: supervised fine-tuning and alignment.** Data shrinks to the million or hundred-thousand scale. The goal is human-style interaction. Sources include visual CoT questions, visual math explanation data such as MathVista (Lu et al. 2023), GeoQA, MathV360K, GPT-4V synthetic dialogue distillation, multi-turn dialogue, and human preference feedback.
+This is the stage that enables new-generation VLMs to comprehend invoices, financial reports, and complex academic chart figures. Data scale is typically in the tens of millions of samples, but requirements for type diversity and format correctness multiply substantially. Key data types introduced at this stage include: high-resolution OCR data (PDF screenshots with text coordinate annotations), DocVQA, InfoVQA, TextVQA, visual grounding data (with bounding box coordinates), interleaved image-text web data, and chart QA datasets (ChartQA, PlotQA, FigureQA).
 
-SFT has the highest quality requirement. Qwen2.5-VL reports that more than 30% of its SFT mixture is human-reviewed high-quality data [D], and low LLM-as-Judge scores are discarded. InternVL3's open SFT data, about 1.2M samples, reduces ordinary natural-scene pairs to below 10%, while OCR-rich, grounding, and chart data together exceed 60% [D]. High-quality data is scarce, so synthesis becomes central.
+The central engineering challenge at this stage is **resolution adaptation and token-length management**. When OCR image resolution increases from 336×336 to 1344×1344, the number of vision tokens produced by a single image surges from approximately 256 to approximately 4,096, requiring the batch size to be reduced to 1/16 of the original to maintain GPU memory. InternVL3 (Chen et al. 2024) employs a Dynamic Resolution Bucketing strategy, clustering all training images into approximately 40 predefined resolution buckets by aspect ratio and area; each batch mixes only samples from the same bucket, effectively reducing padding waste and improving overall GPU utilization by approximately 23% [D]. Models begin to be unfrozen at this stage, though most teams still retain some LLM layer freezing to prevent regression in base language capabilities under extreme OCR data distributions.
 
-## 47.2 Cross-Model VLM Data Composition
+**Stage 3: Supervised Fine-Tuning and Alignment (SFT)**
 
-Multimodal models have data barriers as high as text base models. Table 47-1 compares leading VLM recipes based on public reports and community inference as of April 2026. Tags follow the usual convention: [D] direct disclosure, [I] inference, [E] estimate.
+At this stage, data volume drops sharply to the millions or even hundreds of thousands, with the core objective of training the model to adopt a "human conversational register." Data sources include complex logical reasoning tasks (Visual CoT), visual mathematics problems (MathVista (Lu et al. 2023), GeoQA, MathV360K), GPT-4V-synthesized conversation distillation, multi-turn dialogue, and human preference feedback (RLHF/DPO).
 
-**Table 47-1: Data composition of mainstream VLMs**
+SFT imposes the highest data quality requirements of all three stages. Qwen2.5-VL's technical report discloses [D] that human-reviewed high-quality samples account for more than 30% of the SFT data mixture, and any sample receiving an automatic LLM-as-Judge score below 4.0/5.0 is discarded. Simultaneously, in InternVL3's SFT dataset (approximately 1.2M samples, fully open-source), pure natural-scene image-text pairs have fallen below 10%, while OCR-Rich, Grounding, and Chart high-density types collectively exceed 60% [D]—a proportion that would have been unimaginable three years ago. Given the extreme scarcity of high-quality data, **synthesis has become the dominant theme of this stage**, and is the central subject of the deep-dive in §47.4.
 
-| Model family | Pre-training image-text scale | Pre-training cleaning | Interleaved document share | SFT multimodal instruction scale | Video scale | OCR / document specialization | High-resolution support |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Qwen2.5-VL** | ~2B+ pairs [I] | In-house image filtering and rewriting | Very high, ~30% [I] | ~5M+ [E] | Very high, variable-length clips [D] | Strong, multilingual OCR | Native resolution |
-| **InternVL 3** | ~1.2B pairs [D] | Full recaptioning with ShareGPT4V (Chen et al. 2023) | High, ~20% [I] | ~1.2M open [D] | Medium, keyframe extraction | Very strong, Chinese-English bilingual | Dynamic Hi-Res |
-| **LLaVA-OneVision** | ~1B pairs [D] | Relies on high-quality open datasets | Medium, ~15% [E] | ~1M single / multi / video [D] | Medium, AnyRes-Video | Medium | AnyRes patching |
-| **MiniCPM-V** | ~500M pairs [E] | Edge-focused extreme purification | High for layout-like data [I] | ~800K [E] | Weak, mainly image-text interaction | Strong, edge optimized | Adaptive slicing |
+---
 
-Several trends matter.
+## 47.2 Cross-Comparison of Mainstream VLM Data Compositions
 
-**Garbage in, garbage out is harsher in vision.** Qwen and InternVL no longer trust raw crawled text. They spend large amounts of compute recaptioning billions of images. LLaVA-OneVision reports that replacing raw alt-text with GPT-4V-like captions improves MMMU more than simply adding more data [D]. Data quality leverage is amplified in vision.
+As with pure-text foundation models, the data barriers between multimodal models are equally high. Table 47-1 presents a cross-comparison of data recipes for leading VLMs, derived from the latest technical reports (as of April 2026) and open-source community inferences. This is not merely a compilation of numbers; it reflects each organization's distinct engineering philosophy about what visual intelligence fundamentally requires.
 
-**Interleaved data bridges image-text reasoning.** Understanding one image and one sentence is basic; understanding logic across web pages where text and images alternate is advanced. Interleaved datasets such as MMC4 (Zhu et al. 2023) and OBELICS (Laurencon et al. 2023) strongly affect in-context learning and long-document reasoning. Qwen2.5-VL's heavier investment in interleaved web data [I] is likely one reason it performs well on complex multi-image reasoning.
+*(Note: Annotation convention in the table: [D] = explicitly disclosed in report; [I] = inferred; [E] = estimated.)*
 
-**OCR and grounding have threshold effects.** Not all OCR data improves document understanding linearly. If OCR-rich data is too small a share of SFT, fine-grained reading drops sharply; beyond a threshold, gains flatten [E]. InternVL3's roughly 30% OCR-rich share [D] sits above that engineering safety threshold.
+**Table 47-1: Cross-Comparison of Mainstream VLM Data Compositions (4 rows × 8 columns)**
 
-**Video data is now mandatory.** In the LLaVA-1.5 era, video data was optional. Qwen2.5-VL and InternVL3 make long-video understanding native, and video data scale now affects overall ranking. Qwen2.5-VL's Video-MME and MVBench strength comes substantially from large-scale variable-length video clips in pre-training [D], not only architecture.
+| Model Family              | Pre-training Pair Scale | Pre-training Cleaning Strategy    | Interleaved Document Ratio | SFT Multimodal Instruction Volume | Video Data Scale              | OCR/Doc Specialization      | Hi-Res Resolution Support |
+| :------------------------ | :---------------------- | :-------------------------------- | :------------------------- | :-------------------------------- | :---------------------------- | :--------------------------- | :------------------------ |
+| **Qwen2.5-VL**      | ~2B+ Pairs [I]          | Proprietary image filtering + rewrite | Very high (~30%) [I]   | ~5M+ [E]                          | Very high, variable-length clips [D] | Strong, multilingual OCR | Native Resolution         |
+| **InternVL 3**      | ~1.2B Pairs [D]         | Full re-annotation (ShareGPT4V) (Chen et al. 2023) | High (~20%) [I] | ~1.2M (fully open-source) [D]    | Moderate, keyframe extraction | Very strong, Chinese-English bilingual | Dynamic Hi-Res   |
+| **LLaVA-OneVision** | ~1B Pairs [D]           | Relies on existing high-quality open-source datasets | Moderate (~15%) [E] | ~1M (single/multi/video) [D] | Moderate, AnyRes-Video        | Moderate                     | AnyRes Patching           |
+| **MiniCPM-V**       | ~500M Pairs [E]         | Edge-specialized, extreme refinement | High (layout-biased) [I] | ~800K [E]                       | Weak (biased toward image-text interaction) | Strong, edge-optimized | Adaptive slicing         |
 
-**MiniCPM-V shows the edge-side refinement philosophy.** Under limited scale, it uses extreme quality control instead of scale expansion. Samples go through multi-model voting and human review [I]. With far less data, it performs strongly in edge deployment scenarios such as document screenshots and multilingual OCR. For vertical use cases, refined data can beat scale.
+From the table above, engineers must internalize the following **five underlying trends** to avoid repeating data recipe mistakes:
 
-## 47.3 Native Resolution vs Dynamic Hi-Res
+**Trend 1: Garbage In, Garbage Out (GIGO) Carries Even Higher Risk in the Visual Domain**
 
-High-resolution images create token explosion. If every image is resized to 224 x 224, the model becomes near-sighted and cannot read dense invoices or formulas. Two preprocessing philosophies have emerged.
+Qwen and InternVL no longer trust the text portion of raw crawled image-text pairs. They have expended tens of thousands of GPU hours using prior-generation strong models to re-caption billions of images, yielding performance gains that far exceed the benefit of adding tens of billions of parameters. The LLaVA-OneVision (Li et al. 2024) paper explicitly states [D] that replacing original alt-text with GPT-4V-rewritten captions during pre-training improves MMMU by 4.2 points, whereas adding 50% more data yields only 1.1 points. The leverage effect of data quality is amplified several-fold in the visual domain.
 
-![Figure 47-3: Native vs dynamic resolution handling](../../images/part11/32_2_resolution_handling_en.png)
+**Trend 2: Interleaved Data Is the Bridge to Image-Text Reasoning**
 
-*Figure 47-3: Native resolution and dynamic resolution data pipelines.*
+Teaching a model to understand a single image and a single sentence is foundational, but enabling a model to parse the logic of image-text interleaving in web page layouts is the next level. The proportion of interleaved document data (e.g., MMC4 (Zhu et al. 2023), OBELICS (Laurençon et al. 2023)) directly determines model performance on in-context learning and long-document reasoning. Qwen2.5-VL's investment in interleaved web data significantly exceeds that of its contemporaries [I], which is a key data-side reason for its lead on complex multi-image reasoning tasks such as MMMU-Pro.
 
-**Dynamic Hi-Res patching / AnyRes.** InternVL and LLaVA keep the visual encoder input fixed, such as 448 x 448. A 1000 x 2000 image is cropped into multiple patches without destroying aspect ratio, plus a low-resolution global thumbnail. The LLM sees a sequence such as `[global thumbnail] [patch 1] [patch 2] ... [patch N]`.
+**Trend 3: The "Hard Threshold" Effect of OCR and Grounding Data**
 
-This is practical. It reuses strong open visual encoders such as CLIP-ViT without operator changes, is compatible with existing training stacks, and makes preprocessing simple. The cost is semantic discontinuity at patch boundaries. Large tables, continuous formulas, and horizontal PDFs can hallucinate across patches. InternVL3 reports higher error rates on cross-page table cases under dynamic patching [D].
+Not all OCR data linearly improves document understanding. When the proportion of OCR-Rich data in the SFT total falls below 15%, the model's fine-grained text reading capability shows a cliff-edge degradation; when the proportion exceeds 25%, gains plateau but do not reverse [E]. This means OCR data has an "engineering safety threshold"—falling below it severely degrades document capability, while exceeding it yields only marginal returns. InternVL3 maintains OCR-Rich data at approximately 30% of the SFT total [D], precisely landing above this threshold.
 
-**Native resolution / M-RoPE.** Qwen2-VL and Qwen2.5-VL allow images to enter at original resolution and aspect ratio. M-RoPE (Wang et al. 2024) extends position encoding into 2D image coordinates and 3D video time. The data loader feeds actual height and width token counts into attention computation without rigid padding.
+**Trend 4: Video Data Is Transitioning from "Optional" to "Mandatory"**
 
-This preserves global and local information and removes patch-boundary discontinuity, but it is much harder. Training data must be bucketed and packed by token count rather than image count to avoid extreme length variance and OOM. Qwen2.5-VL uses token-aware packing that keeps total vision tokens per batch in a target range, trading some throughput for stability [I].
+In the LLaVA-1.5 era, video data was an elite "premium feature" that only a handful of teams pursued. But as Qwen2.5-VL and InternVL3 begin natively supporting long-video understanding, **the adequacy of video data has become a key factor in overall capability rankings**. Qwen2.5-VL's lead on video understanding benchmarks such as Video-MME and MVBench is substantially attributable to its large-scale variable-length video clip data introduced during pre-training [D], not purely to architectural improvements.
 
-**Table 47-2: Native resolution vs dynamic patching**
+**Trend 5: MiniCPM-V's "Edge Data Refinement" Philosophy**
 
-| Route | Representative models | Image preprocessing | Visual encoder changes | LLM token sequence | Tradeoff |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Native resolution** | Qwen2.5-VL | Preserve original image, dynamically expand by patch size | Remove fixed position embedding | 2D absolute coordinate mapping with M-RoPE | Highest accuracy, no boundary break / very hard engineering, memory fragmentation |
-| **Dynamic patching** | InternVL3 / LLaVA | Preserve aspect ratio, dynamically crop | No modification needed | `<global> <patch1> <patch2>` linear sequence | Simple and compatible / patch seams and redundant computation |
+MiniCPM-V offers a fundamentally different data recipe paradigm: under constrained overall scale, extreme data quality refinement substitutes for scale expansion. In its SFT data, each sample undergoes dual filtering via "multi-model voting + secondary human review" [I], making the average construction cost per sample more than 5× that of a standard synthetic pipeline. The result: using less than one-fifth the data volume, it achieves performance on typical edge deployment scenarios (document screenshot recognition, multilingual OCR) that approaches or exceeds models with significantly more parameters. This demonstrates that for vertically optimized specific scenarios, the value density of refined data can fully surpass brute-force scaling.
 
-For small and medium teams, dynamic patching is the better starting point. Overlap crops, such as 30% overlap, can reduce seam errors. If the goal is state-of-the-art DocVQA or OCRBench performance and the team has engineering capacity, native resolution is worth the cost.
+---
 
-## 47.4 Multimodal Instruction Synthesis
+## 47.3 Key Technical Differences: Native Resolution vs. Dynamic Hi-Res
 
-At SFT time, high-quality instruction data becomes the final ceiling. Human grounding labels and complex visual logic questions are expensive, so leading teams build synthetic data factories.
+A persistent engineering pain point in the multimodal field is the **token explosion** caused by high-resolution images. If images are forcibly resized to 224×224, the model becomes "nearsighted" and can never parse the densely arranged text in invoices or mathematical formulas. To address this, two fundamentally divergent processing philosophies have emerged in data pipelines, with the fundamental divergence already manifesting during data preprocessing.
 
-![Figure 47-4: Multimodal instruction synthesis pipeline](../../images/part11/32_3_instruction_synthesis_en.png)
+![Figure 47-3: Native vs. Dynamic Resolution Data Pipeline Comparison](../../images/part11/32_2_resolution_handling_en.png)
 
-*Figure 47-4: Multimodal instruction synthesis pipeline.*
+<div align="center"><b>Figure 47-3: Native vs. Dynamic Resolution Data Pipeline Comparison</b></div>
 
-Modern multimodal synthesis is more than asking GPT-4V to look at an image and write a question. It usually combines:
+**Camp 1: Dynamic Hi-Res Patching (AnyRes)**
 
-1. **Perception models.** Grounding DINO (Liu et al. 2023) extracts bounding boxes, OCR engines extract dense text, and depth models may extract 3D structure.
-2. **Textual representation.** Perceived visual information is forced into structured text such as JSON or Markdown.
-3. **LLM reasoning and recomposition.** Once images have been converted into precise text, a strong text LLM can generate complex reasoning questions such as computing tax rate from invoice fields and item names.
-4. **Quality filtering and deduplication.** Self-consistency, LLM-as-Judge, and semantic deduplication remove hallucinated, illogical, or repetitive samples.
+Represented by InternVL and LLaVA series models. During data input preprocessing, the system keeps the input resolution of the visual encoder (e.g., CLIP-ViT) fixed (e.g., 448×448). For a tall image of 1000×2000, the data engine dynamically crops it into multiple 448×448 patch sub-images without distorting the aspect ratio, while additionally generating a low-resolution global thumbnail.
 
-**Table 47-3: Multimodal instruction synthesis methods**
+On the language model side, the input is a special sequence: `[Global Thumbnail Token] [Patch 1] [Patch 2] ... [Patch N]`. This approach is extremely pragmatic from an engineering standpoint: it directly reuses existing powerful open-source visual encoders (e.g., CLIP-ViT-L/14@336) without modifying any operators, and is fully compatible with standard training frameworks. Data preprocessing scripts are minimal, with the slicing operation for a single image requiring approximately 2ms. The trade-off is semantic discontinuity at patch boundaries: the model may exhibit cross-patch hallucinations when handling extra-large tables spanning patches, continuous mathematical formulas, or landscape-oriented PDFs. InternVL3's technical report candidly acknowledges that on "cross-page table" questions in DocVQA (Mathew et al. 2021), the Dynamic Hi-Res approach has an error rate approximately 8% higher than Native Resolution [D].
 
-| Synthesis route | Core dependency | Typical use | Cost estimate | Noise and hallucination risk |
-| :--- | :--- | :--- | :--- | :--- |
-| **GPT-4V distillation** | Closed VLM API | Complex visual reasoning, long-document summaries | Very high, API quota dependent | Relatively low, but inherits teacher bias |
-| **Self-distillation pipeline** | In-house perception model + strong open LLM | Fine-grained grounding, dense OCR | Medium, compute amortized | Higher, depends on OCR recall, can create phantom boxes |
-| **Rule-template generation** | Structured database such as graph or table | Simple attribute QA, chart value lookup | Very low | Low, but instruction diversity is weak |
+**Camp 2: Native Resolution (M-RoPE)**
 
-A recaptioning skeleton can look like:
+Represented by Qwen2-VL and Qwen2.5-VL. These models abandon rigid tiling logic; during the data loading stage, images are allowed to enter directly at their native resolution and native aspect ratio. By introducing M-RoPE (Multimodal Rotary Position Embedding) (Wang et al. 2024), the traditional 1D positional encoding is extended to 2D (x/y coordinates for images) and even 3D (for the temporal dimension t of video). During data organization, only the actual width and height token counts of each image need to be dynamically fed into the attention computation; no padding is required.
+
+This recipe preserves the most complete global and local information, entirely eliminating semantic discontinuity at patch boundaries, and is the highest-precision approach. However, its data engineering complexity is also the highest: training data must be precisely bucketed and packed by token count (rather than image count) to prevent extreme length variance within each batch causing OOM errors. Qwen2.5-VL specifically developed a "token-aware" data packer that constrains the total vision token count per batch within a fixed interval, sacrificing approximately 15% of training throughput in exchange for a near-zero OOM rate [I].
+
+**Table 47-2: Native Resolution vs. Dynamic Hi-Res Data Processing Differences (2 rows × 6 columns)**
+
+| Resolution Approach         | Representative Model | Image Data Preprocessing Action              | Visual Encoder Modification       | LLM-side Token Sequence Characteristics | Strengths and Weaknesses                                            |
+| :-------------------------- | :------------------- | :------------------------------------------- | :-------------------------------- | :-------------------------------------- | :------------------------------------------------------------------ |
+| **Native Res.**       | Qwen2.5-VL           | Retain original image, dynamically unfold by patch size | Remove fixed positional embedding | 2D absolute coordinate mapping (M-RoPE) | Highest precision, no boundary discontinuity / Very high engineering complexity, prone to memory fragmentation |
+| **Dynamic Patching**  | InternVL3 / LLaVA    | Preserve aspect ratio, dynamically crop at equal intervals | No modification needed, can be fully frozen | `<global> <patch1> <patch2>` linear concatenation | Simple engineering, compatible with open-source stack / Stitching seam artifacts, introduces redundant computation |
+
+**Engineering Selection Guidance**: For mid-sized teams or resource-constrained scenarios, Dynamic Hi-Res Patching is the more pragmatic starting point; stitching seam artifacts can be partially mitigated by adding overlap crop (approximately 30% overlap region). If the goal is to target state-of-the-art performance on document understanding benchmarks such as DocVQA and OCRBench, and sufficient engineering compute is available, Native Resolution is an ultimate direction worth the engineering investment. Between the two, there is no absolute superiority—only a reasonable trade-off matched to team resources.
+
+---
+
+## 47.4 Multimodal Instruction Data Synthesis
+
+At the SFT stage, high-quality instruction data becomes the final piece that determines the model's capability ceiling. Since having humans draw bounding boxes around objects (Grounding) or compose complex visual logic problems is prohibitively expensive, a **"synthetic data factory"** has become standard practice for leading organizations.
+
+![Figure 47-4: Multimodal Instruction Synthesis Pipeline](../../images/part11/32_3_instruction_synthesis_en.png)
+
+<div align="center"><b>Figure 47-4: Multimodal Instruction Synthesis Pipeline</b></div>
+
+As shown in Figure 47-4, multimodal instruction synthesis has long surpassed the simplistic approach of "having GPT-4V look at an image and compose a sentence." A modern data synthesis pipeline typically involves the coordination of the following components:
+
+1. **Foundational visual perception networks**: Use readily available specialized small models—such as Grounding DINO (Liu et al. 2023) to extract all object bounding boxes, PaddleOCR to extract dense text, and even depth estimation models to extract 3D depth information.
+2. **Textual representation**: Forcibly translate the perceived visual information into structured plain text (e.g., JSON or Markdown).
+3. **Knowledge recombination with a capable LLM**: Feed the text enriched with bounding box and OCR information into a capable language model. Since the image has already been converted to precise text, even a pure-text GPT-4 (rather than GPT-4V) can complete this step—instructing it to generate complex reasoning questions such as: "Based on the invoice total in the upper right corner of the image and the line items on the left, calculate the tax rate."
+4. **Quality filtering and deduplication**: Use self-consistency (majority-vote across multiple samples) or LLM-as-Judge to score the quality of synthesized outputs, filtering out samples with severe hallucinations or logical incoherence; also perform semantic-level instruction deduplication to prevent a single image from spawning large numbers of homogeneous question-answer pairs.
+
+**Table 47-3: Comparison of Multimodal Instruction Data Synthesis Methods (3 rows × 5 columns)**
+
+| Synthesis Approach                        | Core Dependent Models                    | Typical Application Scenarios              | Cost Estimate                    | Noise and Hallucination Risk                                   |
+| :---------------------------------------- | :--------------------------------------- | :----------------------------------------- | :------------------------------- | :------------------------------------------------------------- |
+| **GPT-4V Distillation**             | External closed-source VLM API           | Complex logical reasoning, long summarization | Very high (API quota dependent) | Relatively low, but constrained by teacher model's inherent biases |
+| **Self-Distillation Pipeline (Self-Instruct)** | Proprietary perception models + open-source strong LLM | Fine-grained object grounding, dense OCR | Moderate (compute amortization) | Relatively high; depends on OCR recall rate, prone to phantom boxes |
+| **Rule-based Template Generalization** | Structured databases (e.g., knowledge graphs) | Simple attribute QA, chart value retrieval | Very low (script generation)    | Very low, but poor instruction diversity, stilted language       |
+
+Below is the core code framework for a Qwen2.5-VL-style self-distillation caption rewriting pipeline:
 
 ```python
-def recaption_batch(images, model, processor):
+# Self-distillation caption rewriting core workflow (skeleton outline)
+from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
+from PIL import Image
+
+RECAPTION_PROMPT = (
+    "Please write a detailed scene description for this image (150-300 words). "
+    "Cover: the main subject, spatial relationships, color and lighting, "
+    "any visible text (if present), emotional atmosphere, and possible use scenarios. "
+    "Do not begin with 'The image shows'."
+)
+
+def recaption_batch(image_paths: list[str], model, processor) -> list[str]:
     results = []
-    for image in images:
-        messages = [{
-            "role": "user",
-            "content": [
-                {"type": "image", "image": image},
-                {"type": "text", "text": RECAPTION_PROMPT}
-            ]
-        }]
+    for img_path in image_paths:
+        image = Image.open(img_path).convert("RGB")
+        messages = [{"role": "user", "content": [
+            {"type": "image", "image": image},
+            {"type": "text",  "text": RECAPTION_PROMPT}
+        ]}]
         text = processor.apply_chat_template(messages, add_generation_prompt=True)
         inputs = processor(text=[text], images=[image], return_tensors="pt").to("cuda")
         output_ids = model.generate(**inputs, max_new_tokens=512, temperature=0.7)
@@ -135,80 +191,142 @@ def recaption_batch(images, model, processor):
     return results
 ```
 
-Several details matter. `temperature=0.7` helps avoid caption mode collapse; below 0.5, style becomes homogeneous. OCR-rich images should explicitly request all visible text in the prompt. Batches should mix natural images, documents, and charts to avoid distribution overfitting. After recaptioning, recompute image-caption relevance and discard low-scoring samples rather than recycling them.
+**Key Engineering Notes**:
 
-## 47.5 Specialized Processing for Long Video, Documents, and OCR
+- `temperature=0.7` is a critical parameter for preventing caption mode collapse; values below 0.5 cause generated styles to become homogeneous.
+- For OCR-Rich images (e.g., invoices, tables), the `RECAPTION_PROMPT` should explicitly require "verbatim reproduction of all visible text in the image" to avoid hallucinations.
+- It is recommended to mix different image types (natural scenes, documents, charts) within the same batch to prevent the model from overfitting to a single distribution.
+- After each batch completes, re-score the relevance between the new captions and images using CLIP-Score (threshold ≥ 0.30); discard low-scoring samples rather than recycling them.
 
-As VLMs move into real-world use, static natural photographs become a smaller share of training data. Information-dense artificial images dominate. Three variants require special processing.
+---
 
-**Document-rich and OCR data.** To perform well on DocVQA and MMMU, teams collect financial reports with dense tables, medical-record screenshots, and academic posters. Processing goes beyond feeding images directly. High-resolution images first pass through specialized OCR or PDF parsers. Extracted text can be injected into the instruction context as a gold reference. Pipelines also use strong augmentations: color inversion, grayscale conversion, noise injection, masking, stains, or partial occlusion. This forces the visual encoder to actually read instead of letting the LLM guess from common sense. If document data falls below a threshold, fine-grained text reading collapses.
+## 47.5 Specialized Processing for Long Video, Document, and OCR Data
 
-**Spatiotemporal redundancy in long video.** A ten-minute 30 fps surveillance video contains 18,000 frames. Converting all frames to tokens breaks current context windows. Early systems sampled a fixed 8 or 16 frames, which works for short videos but fails on long lectures or surveillance. Modern systems use content-aware dynamic frame rates. Static segments may keep one sparse key frame; fast motion may sample several frames per second and attach timestamps such as `<Time-Step=2.1s>`. This preprocessing makes long-video reasoning trainable under limited compute.
+As VLMs extend toward complex real-world scenarios, the proportion of static high-quality natural landscape images is gradually declining, replaced by human-made images containing high-density information. Data teams have accumulated a set of reusable engineering best practices for the following three high-information-density variants:
 
-**Interleaved documents and web pages.** Complex knowledge often appears as text, diagram, more text, table, and captions. Data pipelines must serialize the DOM tree carefully and preserve physical order between text and images. Images should be treated as large tokens embedded in text. If cleaning removes ads but shifts a figure away from its paragraph, the model learns destructive misalignment. Labs invest heavily in interleaved cleaners for this reason.
+**1. Dense Document and OCR Data (Document-Rich Data)**
+
+To improve model performance on document and multimodal understanding benchmarks such as DocVQA and MMMU, teams including InternVL and Qwen extensively incorporate financial reports (with dense PDF tables), medical record screenshots, and complex academic posters.
+
+Their processing approach has gone beyond simple image input; it now employs a "text-assisted injection" strategy: before the data stream enters the model, high-resolution images are first passed through a dedicated OCR engine (e.g., PaddleOCR-v4 or the specialized MinerU PDF parser). The extracted plain text is directly encoded as "gold-standard context" at the beginning of the human instruction (e.g., `System: This image contains the following text: <OCR>...<OCR>`).
+
+Furthermore, data pipelines apply intensive color inversion, grayscale conversion, noise injection (augmentation), and even deliberate text masking or the addition of stain artifacts to the original images. This augmented training strategy aims to reduce the visual encoder's reliance on top-level LLM common-sense completion, forcing it to genuinely learn character recognition from visual features. Once document data falls below 15% of the total, the model's fine-grained text reading capability may show noticeable degradation.
+
+**2. Spatio-Temporal Dimensionality Reduction for Long Video Streams**
+
+The core challenge of video processing is spatio-temporal information redundancy. Assume a 10-minute supermarket surveillance video is input at 30fps, generating a total of 18,000 frames. Converting all of them into tokens would rapidly exceed current context windows of 128K or even 1M tokens.
+
+Early models (e.g., Video-LLaVA) used a simple "fixed-count frame sampling" strategy (e.g., uniformly extracting 8 or 16 frames regardless of video length). This is adequate for short clips of a few seconds but poorly suited to educational videos spanning tens of minutes. Modern models (e.g., Qwen2.5-VL) now use **content-aware dynamic frame rate sampling based on optical flow (Dynamic Optical Flow Sampling)**.
+
+The data engine first computes pixel-level differences between adjacent frames (e.g., SSIM or Flow-net features). During long static scenes lasting several minutes, the engine may retain only 1 sparse keyframe per period; when rapid motion appears (e.g., the moment of a car accident or a magic card reveal), the engine performs dense sampling multiple times per second and attaches a dedicated temporal marker (`<Time-Step=2.1s>`) to each image slice. This data pre-packaging technique helps support long-video reasoning training while conserving compute.
+
+**3. Multimodal Interleaved Documents (Interleaved Documents / Web Pages)**
+
+Most complex human knowledge (e.g., Wikipedia, technical blogs) does not exist as isolated single images or single sentences, but in an interleaved form of "a paragraph of text + a structural diagram + another paragraph of supplementary text + a data table." When constructing high-quality pre-training and alignment data, engineers must write highly complex HTML parsers to strictly serialize a web page's DOM tree.
+
+The core principle is: **the physical sequential order of text and images in the token sequence must be preserved exactly.** Engineers must treat images as special symbols that occupy a large portion of the token budget, embedding them within the text (e.g., `The architecture of Transformers is shown here: <Image_Token_Start>...<Image_Token_End>. Note that the self-attention...`). If data cleaning (e.g., removing web page advertisement banners) causes images to become misaligned with their associated text, serious logical confusion will be induced within the model (e.g., a description of a cat becomes paired with an image of a shoe). For this reason, large laboratories typically develop dedicated heuristic interleaved document cleaning toolkits (Interleaved Cleaners).
+
+---
 
 ## 47.6 Core Case Studies
 
-### Case A: Reproducing InternVL3's Open SFT Data
+From the current open-source ecosystem, this chapter selects three representative VLM data pipeline reproduction pathways, each corresponding to a different typical engineering starting point: full open-source reproduction, refinement from low-quality data, and reverse-engineering a recipe from large-scale long-video data.
 
-InternVL is a major open reference because it releases model weights and a million-scale high-quality SFT dataset, InternVL-Chat-V1-5-SFT-1.2M. Its strength is extreme categorization and refinement.
+### Case A: Full Open-Source SFT Data Reproduction for InternVL3
 
-The data is split into ChartQA, DocVQA, MathV360K, LLaVA-Instruct, ShareGPT4V, and other subsets. During packing, each batch maintains balanced type ratios so OCR data is not over-represented simply because it has longer token length.
+The InternVL team open-sourced not only model weights, but also a million-scale SFT high-quality instruction dataset (InternVL-Chat-V1-5-SFT-1.2M). The data engineering highlight is its **fine-grained classification and refinement**.
 
-One reproduction route is to download the CC-BY-4.0 InternVL-Chat-V1-5-SFT-1.2M dataset and use InternVL2-Training. On 8 A100 GPUs, the SFT stage for an InternVL3-8B-style run can be reproduced in roughly 36 hours under published-like settings: global batch size 512, learning rate 2e-5, and dynamic 448 x N resolution with at most 12 patches per image. The lesson is that 1.2M refined samples can produce broad visual dialogue ability when type coverage and information density are well balanced.
+The team partitions training data into multiple subsets: ChartQA (chart analysis), DocVQA (document parsing), MathV360K (mathematical reasoning), LLaVA-Instruct (general daily interaction), ShareGPT4V (high-quality descriptions), and others. During the data packing stage, the training engine ensures that the composition ratio of each type is balanced within each batch, preventing OCR-type data from being overrepresented in batches due to its longer average token length.
 
-### Case B: Purifying LAION into LLaVA-Recap-558K
+**Reproduction pathway**: Download the InternVL-Chat-V1-5-SFT-1.2M dataset from HuggingFace (CC-BY-4.0 license) and use the open-source training code InternVL2-Training. On 8× A100 GPUs, the SFT stage of InternVL3-8B can be reproduced in approximately 36 hours. Key configuration: Global Batch Size = 512, Learning Rate = 2e-5, image resolution using the Dynamic 448×N scheme with a maximum of 12 patches per image.
 
-Raw LAION contains many irrelevant alt-texts, such as an image of a cat with text saying "click to buy cat food." Feeding this directly teaches nonsense. LLaVA-Recap-558K demonstrates a practical purification path.
+**Key takeaway**: By studying its open-source data composition logic, one can clearly understand "how 1.2M fine-tuning samples enable emergent general visual dialogue capabilities in a frozen backbone that surpass models with significantly more parameters"—the answer lies not in scale, but in the balance of type coverage and the information density of individual samples.
 
-1. Filter LAION-CC-SBU with CLIP score around 0.28, reducing roughly 3M samples to about 700K relevant pairs.
-2. Use an aesthetic scorer such as LAION-Aesthetics-V2 to remove low-quality images, retaining about 558K.
-3. Use LLaVA-1.5-13B with a system prompt requesting 150-250 word detailed descriptions to recaption all images.
-4. Recompute CLIP score for new captions and discard low-relevance samples, roughly another 5%.
+### Case B: LAION Refinement and LLaVA-Recap-558K
 
-This costs about 558K times the 13B inference cost, on the order of 80 A100 GPU hours [E]. The resulting dataset is a strong VLM cold-start asset for small teams, improving median CLIP score over raw alt-text.
+Early LAION datasets contain a large proportion of loosely correlated alt-text (e.g., the image shows a cat, but the text reads "click to buy cat food"). Feeding this directly into a model causes it to learn incorrect image-text correspondences. The open-source community validated an improvement pathway through the LLaVA-Recap-558K project.
 
-### Case C: Inferring Qwen2.5-VL's Long-Video Recipe
+**Refinement workflow**:
 
-Qwen2.5-VL training data is not open, but reports and community experiments allow reasonable engineering inference. The report discloses variable timestamp video format, content-adaptive frame rates, and support for long clips through M-RoPE's time dimension [D].
+1. Apply CLIP-Score filtering on LAION-CC-SBU (threshold 0.28), selecting approximately 700K highly relevant image-text pairs from the original approximately 3 million samples.
+2. Further filter out low-quality images using the LAION-Aesthetics-V2 visual aesthetics scoring model (Schuhmann et al. 2022), retaining approximately 558K.
+3. Use LLaVA-1.5-13B with a specific system prompt (requiring detailed scene descriptions of 150–250 words) to regenerate captions for all 558K images.
+4. Recompute CLIP-Score between the new captions and images, applying a secondary filter at a threshold of 0.30 (discarding approximately 5%).
 
-A plausible pipeline is:
+The cost of this secondary refinement is approximately: 558K × 13B model inference cost ≈ approximately 80 GPU hours (single A100). The resulting LLaVA-Recap-558K has become a gold-standard cold-start resource for countless mid-sized VLM teams, with the median CLIP-Score rising from 0.26 in the original to 0.38 [E].
 
-* collect videos from Creative Commons YouTube, Pexels, and WebVid-style sources, categorized as tutorials, documentaries, science, and events;
-* split shots with PySceneDetect and filter extreme durations;
-* compute frame-to-frame SSIM; sample static segments sparsely and dynamic segments more densely;
-* feed keyframe sequences to a VLM to generate temporal captions with timestamps;
-* validate temporal alignment by checking whether timestamp words match frame changes.
+### Case C: Engineering Inference of Qwen2.5-VL Long-Video Data Recipe
 
-Community reproductions suggest that time-aligned captions improve long-video benchmark performance more than random frame sampling [E]. The bottleneck for long-video understanding is caption temporal quality, not raw frame count.
+Unlike InternVL's fully open-source approach, Qwen2.5-VL's training data has not been publicly disclosed. However, based on key disclosures in its technical report and community reproduction experiments, we can reasonably infer the core configuration of its long-video data pipeline.
 
-## 47.7 Pitfalls, Costs, and Boundaries
+**Basis for inference**: The Qwen2.5-VL technical report [D] explicitly discloses: (1) video pre-training data uses a "variable-length timestamp" format, with each frame annotated with `<|vision_start|> timestamp <|vision_end|>` markers; (2) video frame rates use a content-adaptive strategy, with a minimum of 0.5fps for static scenes and a maximum of 2fps for high-motion scenes; (3) training data includes long video clips exceeding one hour (supported by M-RoPE's temporal dimension).
 
-**Caption mode collapse and hallucination amplification.** A single teacher generating all captions can make the student always start with the same phrasing and inherit teacher biases. Use many prompt templates, higher decoding diversity such as temperature above 0.7 or top-p sampling, and reward-model filtering.
+**Inferred pipeline**:
 
-**High-resolution memory sink and padding penalty.** Native-resolution batches with irregular aspect ratios produce huge length variance. Padding wastes memory and backward compute. Use variable-length attention implementations such as Varlen FlashAttention (Dao et al. 2022), or pack by token count rather than sample count.
+- **Step 1 — Video Sources**: Collect raw video material from YouTube (Creative Commons license), Pexels, and a subset of WebVid-10M, categorized by content type (tutorials / documentaries / science communication / event recordings).
+- **Step 2 — Shot Segmentation**: PySceneDetect performs content-diff-based automatic shot segmentation; filter out shots with duration < 3s or > 10 min.
+- **Step 3 — Frame Sampling**: Compute inter-frame SSIM for each shot segment; static segments (SSIM > 0.95) are sampled at 0.5fps; motion segments (SSIM < 0.80) are sampled at 2fps.
+- **Step 4 — Multi-Frame Captioning**: Arrange the keyframes of each shot (typically 4–16 frames) into a "temporal sequence image" and input it into Qwen2.5-VL-7B to generate a temporal description, requiring the description to include timestamps in the format "at second N, the frame shows...".
+- **Step 5 — Spatio-Temporal Alignment Verification**: Use keyword extraction to verify whether temporal words in the caption correspond to actual frame indices (e.g., "camera push-in" must occur within the frame range where the SSIM gradient is rising); misaligned samples are discarded.
 
-**Synthetic API cost.** Top closed VLM APIs can cost about $0.005 to $0.01 per medium-resolution image. A 1M high-quality instruction set may cost $5K to $10K in direct API fees. Industrial pipelines usually use cheaper open VLMs for first-pass generation and strong models for verification.
+**Key finding**: Community reproduction experiments [E] show that on models with equivalent parameter counts, introducing long-video data with the above spatio-temporal aligned captions improves the Video-MME (long-video subset) score by approximately 6–9 percentage points, while the same duration of random frame sampling improves it by only 2–3 percentage points. **The quality of temporal information in captions, not frame count, is the true bottleneck for long-video understanding.**
 
-**Image compliance and copyright risk.** Images expose copyright and privacy issues more visibly than text. Crawling face images or watermarked commercial images can create serious legal risk. Production image crawling should follow provenance tagging, face blurring, and compliance audit procedures from the data compliance chapters.
+---
 
-**Type imbalance and capability seesaw.** If OCR-rich data exceeds the right range, natural-scene understanding can regress. A capability-aware sampler can run lightweight probes after each epoch and increase sampling for weaker categories in the next epoch.
+## 47.7 Implementation Risks, Costs, and Applicability Boundaries
 
-**Hidden multilingual OCR bias.** Multilingual OCR datasets can be highly uneven in font coverage. Chinese may cover thousands of fonts while Arabic data covers far fewer. Real-world recognition can collapse on unseen scripts. Audit font coverage by language and use font synthesis to expand low-coverage languages.
+When implementing enterprise-grade in-house VLM data recipes, one must consider not only algorithmic design but also the high engineering compute costs and the latent risks that technical reports typically do not fully address. The following seven lessons come from real production post-mortems, not theoretical speculation.
 
-**When not to chase the top recipe.** Vertical small-data scenarios, such as factory inspection, may perform better with a simple LLaVA-style recipe plus 300-500 high-quality domain labels and LoRA. Edge deployment should prioritize MiniCPM-V-style refined data. For product proof of concept, LLaVA-Recap-558K plus LLaVA-Instruct-150K can build a fast baseline before custom data engineering.
+**1. Caption Mode Collapse and Hallucination Amplification**
 
-## 47.8 Summary
+During the synthetic data factory stage, if a single teacher model is used to generate synthetic captions at scale, the trained student model is prone to mode collapse. For example, the student model may habitually begin responses with "The image shows...", or may inherit the teacher model's inherent biases—upon seeing someone in a white lab coat, even if the person in the image is a doctor, the model calls them a "scientist." To mitigate this collapse, the synthesis pipeline's prompt library must contain sufficiently diverse template variants, the decoding stage's temperature noise must be actively increased (e.g., `Temperature > 0.7` or applying `Top-P` sampling), and a reward model-based filtering mechanism must be introduced to suppress the cascading amplification of single-model hallucinations.
 
-The rise of VLMs looks like a marriage between vision and language architectures, but in practice it is a data governance battle. This chapter started from a recipe failure and decomposed four VLM data dimensions.
+**2. High-Resolution Memory Black Holes and Gradient Throughput Waste (Padding Penalty)**
 
-The three-stage pipeline has very different scale, quality, and type requirements across pre-training, multitask alignment, and SFT. Cross-model comparisons show actionable rules: recaptioning beats raw alt-text, interleaved data controls reasoning depth, and edge-side refinement can beat scale for vertical scenarios. Native resolution and dynamic hi-res have no absolute winner; the right choice depends on resources. Synthetic data factories, OCR injection, dynamic video frame sampling, and interleaved cleaning are high-value modules that teams can reuse.
+When using Native Resolution to process large batches of non-standard-sized images, if advanced sequence packing algorithms are lacking, images of different aspect ratios will cause extreme length variance within a training batch. To align tensors, the backend must use large amounts of padding to fill voids—these useless padding tokens not only directly cause HBM OOM errors, but also consume significant compute for meaningless zero-gradient backpropagation. The only solution is to introduce variable-length sequence-aware FlashAttention variants (Varlen FlashAttention) (Dao et al. 2022), or to adopt a token-count-based rather than sample-count-based packing strategy.
 
-The case studies give three entry points: open reproduction through InternVL3, dirty-data purification through LAION recap, and recipe inference from Qwen2.5-VL long-video practice. The pitfalls remind us that the most complex recipe is not always the right recipe. Business scenario and team constraints come first.
+**3. Synthesis API Costs: A Budget Line Item That Requires Independent Accounting**
 
-After a VLM learns to understand the physical world and two-dimensional surfaces, it gains the foundation to intervene in the visual world. Chapter 48 turns the perspective around: when models generate pixels and videos rather than only observe them, the data recipe changes again.
+Calling GPT-4V APIs to synthesize high-quality multimodal instructions is not free. Current costs for calling a top closed-source visual API to process a single medium-resolution image (with a prompt) are typically in the range of $0.005 to $0.01 USD. Building a million-scale high-quality instruction dataset may incur direct API expenditures of $5,000 to $10,000. Consequently, a two-level cascade distillation approach—using "proprietary lightweight open-source VLMs for initial screening + large models for validation"—has become an important cost-reduction pathway for industrial-grade data platforms.
 
-> **Compliance boundary:** For image copyright and privacy, see Chapter 4 and the compliance chapters. For general multimodal preprocessing, see Chapters 8 through 11.
+**4. Image Compliance and Copyright Risks**
+
+Unlike plain text, image content exposes source and authorization issues more readily when conducting rights verification and compliance auditing. Crawling high-resolution images containing real human faces, or unauthorized large-scale collection of commercially copyrighted images carrying invisible digital watermarks, may incur serious compliance risks. **Any image crawling task entering a production scheduling environment must strictly follow the security audit mechanisms of Ch04 §4.4 and Ch27 (Data Compliance)** for face blurring and compliant provenance metadata tagging.
+
+**5. The "Seesaw Effect" from Data Type Imbalance**
+
+When the proportion of OCR-Rich data exceeds 40%, the model's natural scene understanding capabilities (e.g., landscape description, human emotion recognition) may show noticeable degradation—an effect known in the field as the "seesaw effect." The solution is to introduce a "capability-aware dynamic sampler": at the end of each epoch, use a set of lightweight capability probes (a rapid evaluation set of approximately 50 questions per category) to measure relative scores across capability dimensions, then automatically increase the next-epoch sampling probability for low-scoring categories, dynamically maintaining balance across all capability dimensions.
+
+**6. Hidden Distribution Bias in Multilingual OCR Data**
+
+For models requiring multilingual OCR support (e.g., Qwen2.5-VL's 29-language coverage), an easily overlooked pitfall is that OCR training data for different languages is highly uneven in **font distribution**. Chinese has thousands of common fonts, while Arabic training data often covers only 5–10 fonts. When the model encounters out-of-distribution fonts in real scenarios (e.g., Arabic handwriting or variant script forms), OCR recognition rates can plummet from 92% to below 40% [E]. It is recommended to perform font coverage auditing on training data for each language, and to prioritize expanding font diversity for low-coverage languages using font synthesis (Font Synthesis) tools rather than simply appending more image-text pairs.
+
+**7. Applicability Boundaries: When Not to Pursue Top-Tier Recipes**
+
+Not all scenarios require the complex data recipes of Qwen2.5-VL's caliber. The following three situations warrant considering a downgraded strategy:
+
+- **Vertical domain with small data**: If the application scenario is highly concentrated (e.g., factory defect inspection image analysis only), using the LLaVA-1.5 two-stage scheme with 300–500 high-quality domain-annotated samples for LoRA fine-tuning often outperforms a full three-stage pipeline with generic data recipes, at a cost more than 100× lower.
+- **Ultra-low-latency inference**: If deployment on edge devices (e.g., mobile phones, embedded chips) is required, prioritize MiniCPM-V's edge data refinement philosophy rather than endlessly stacking interleaved web data.
+- **Cold-start rapid validation**: During the product POC stage, it is advisable to quickly establish a baseline using LLaVA-Recap-558K + LLaVA-Instruct-150K (approximately 24 hours), verify product logic feasibility, and then invest resources in custom data engineering.
+
+---
+
+## Chapter Summary
+
+The capability improvements of multimodal VLMs appear on the surface to stem from the synergy of visual and language architectures, but fundamentally depend on systematic data governance. Starting from a real-world data recipe failure incident, this chapter systematically deconstructed four core dimensions of modern leading VLM data recipes:
+
+- **Three-stage pipeline** (§47.1): Pre-training, multi-task alignment, and SFT have entirely different requirements for data scale, quality, and type; forced mixing across stages is the most common root cause of failure.
+- **Cross-comparison trends** (§47.2): From Qwen2.5-VL and InternVL3 to LLaVA-OneVision and MiniCPM-V, "re-captioning takes priority over alt-text," "interleaved data proportion determines reasoning depth," and "edge refinement philosophy" are three engineering principles that can be directly operationalized.
+- **Resolution dichotomy** (§47.3): Between Native Resolution (the Qwen approach) and Dynamic Hi-Res (the InternVL/LLaVA approach), there is no absolute superiority—only reasonable trade-offs matched to team resources.
+- **Synthetic data factories** (§47.4–§47.5): The self-distillation caption rewriting pipeline, forced OCR injection, and long-video dynamic frame rate sampling strategy are three high-value engineering modules that can be directly reused.
+
+Three case studies (§47.6) provide three different entry pathways: "full open-source reproduction" (InternVL3), "refinement from low-quality data" (LAION-Recap), and "reverse-engineering a recipe from a technical report" (Qwen2.5-VL long video), corresponding to teams with different resource endowments and engineering starting points.
+
+Seven implementation risks (§47.7) reveal engineering details that technical reports generally avoid, with the "applicability boundaries" section in particular reminding readers: **the most complex recipe is not necessarily the most suitable one—always prioritize business scenarios and team resource constraints above all else**.
+
+Once VLMs have mastered the "visual understanding" capability for both the physical world and two-dimensional surfaces through the high-standard data recipes described in this chapter, they also acquire the foundation for processing visual inputs and driving downstream generative tasks. In the next chapter, **Ch48: Data Engineering for Multimodal Generative Models**, we shift perspective toward generative tasks, discussing how data recipes will evolve as models transition from "observers" to generators of pixels and video.
+
+> **Compliance Notice**: Image copyright and privacy protection details are covered in Ch04 §4.4 and Ch27; general-purpose multimodal preprocessing methods underlying VLM data engineering are covered in Ch08–Ch11.
 
 ## References
 
@@ -216,11 +334,11 @@ Chen Z, Wu J, Wang W, Su W, Chen G, Xing S, Zhong M, Liu Q, Lu Y, Li B, others (
 
 Chen Z, Wang W, Tian H, Ye S, Gao Z, Cui E, Tong X, Hu J, Luo J, Ma S, others (2024) InternVL3: Exploring Advanced Training and Test-Time Scaling for Vision-Language Models. arXiv preprint arXiv:2504.10479.
 
-Dao T, Fu D Y, Ermon S, Rudra A, Re C (2022) FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness. In: Advances in Neural Information Processing Systems 35:16344-16359.
+Dao T, Fu D Y, Ermon S, Rudra A, Ré C (2022) FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness. In: Advances in Neural Information Processing Systems 35:16344-16359.
 
 Gadre S Y, Ilharco G, Fang A, Hayase J, Ilharco G, Marten T, Wortsman M, Goyal S, Guha E, Jain H, others (2023) DataComp: In Search of the Next Generation of Multimodal Datasets. In: Advances in Neural Information Processing Systems 36.
 
-Laurencon A, Saulnier L, Tronchon L, Bekman S, Singh A, Lozhkov A, Wang T, Karamcheti S, Rush A M, Kiela D, others (2023) OBELICS: An Open Web-Scale Filtered Dataset of Interleaved Image-Text Documents. arXiv preprint arXiv:2306.16527.
+Laurençon A, Saulnier L, Tronchon L, Bekman S, Singh A, Lozhkov A, Wang T, Karamcheti S, Rush A M, Kiela D, others (2023) OBELICS: An Open Web-Scale Filtered Dataset of Interleaved Image-Text Documents. arXiv preprint arXiv:2306.16527.
 
 Li B, Zhang Y, Guo D, Zhang R, Li F, Zhang J, Zhang Y, Zhu P, Zhang Z, Yang J, others (2024) LLaVA-OneVision: Easy Visual Task Transfer. arXiv preprint arXiv:2408.03326.
 

@@ -2,11 +2,19 @@
 
 ## 摘要
 
-本章围绕“RAG 数据流水线”展开，聚焦大模型数据工程中的关键设计问题。章节从场景约束、数据对象、流水线设计、质量评估和工程治理等维度展开，说明如何把零散的数据处理动作收敛为可复盘、可验证、可交付的系统方法，并为后续章节和项目实战建立统一分析框架。
+检索增强生成（Retrieval-Augmented Generation，RAG）系统的回答质量上限，往往在查询抵达模型之前就已被前置的数据处理链路锁定。本章把 RAG 重新界定为一项文档工程（Document Engineering）问题：系统面向的并非原始文档，而是经过解析、清洗、结构化与切分后的数据表征，任一环节的信息损耗都会在后续流程中被逐级放大。全章沿数据流水线的真实走向组织，先论证 RAG 的根基在于文档工程而非末端生成，继而阐述多源知识的稳定接入、异构格式解析与结构化清洗，再讨论如何把知识单元转化为兼顾向量、关键词、结构化字段与父子层级的多路检索基础设施，随后建立面向整条链路的评测、错误归因、回灌与知识更新闭环，最后通过企业复杂文档案例与工程 Checklist，说明上述方法如何收敛为可追溯、可验证、可交付的生产级流水线。
 
 ## 关键词
 
 RAG 数据流水线；文档工程；检索增强生成；chunk 切分；知识更新；评测回灌
+
+## 学习目标
+
+- 能够解释为什么 RAG 的性能上限由前置数据流水线而非末端生成模型决定。
+- 能够设计涵盖多源接入、异构格式解析与结构化清洗的文档工程处理链路。
+- 能够构建兼顾向量、关键词、结构化字段与父子层级的多路检索索引方案。
+- 能够设计 chunk 切分策略，在保留文档结构骨架的前提下控制语义断裂。
+- 能够建立面向全链路的评测、错误归因与知识回灌闭环以支撑生产级交付。
 
 ------
 
@@ -915,11 +923,9 @@ if __name__ == "__main__":
 
 ## 本章小结
 
-本章围绕“RAG 数据流水线”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
+本章论证了 RAG 系统的性能瓶颈通常并不在生成模型或检索算法，而在文档工程：当查询抵达模型时，答案质量的上限已被解析、清洗、切分与索引等前置环节决定。围绕这一判断，本章依次给出多源知识接入与知识源注册表的建立方式、异构动态数据向可检索可引用知识单元的结构化清洗路径、由向量与关键词与结构化字段与父子层级共同组成的多路索引及检索设计，以及把召回、rerank 与生成拆解开来定位错误来源的链路化评测方法。
 
-本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
-
-在全书结构中，本章位于应用级数据工程层，承担承接前文基础概念并导向DataOps、版本治理和数据资产化的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
+在评测之上，本章进一步将线上失败样本回灌与知识更新纳入流水线，使每一次错误都成为后续修复的输入，并通过企业复杂文档案例与工程 Checklist，检验上述方法在表格、版面、版本与权限交织的真实知识载体上的有效性。这些环节共同构成一条可追溯、可验证、可交付的生产级数据流水线。当知识从纯文本扩展到图像、表格与版面结构时，文本 RAG 的基本假设将不再成立，下一章转入多模态 RAG 与视觉检索。
 
 ## 参考文献
 
@@ -937,7 +943,7 @@ Xu Y, Li M, Cui L, Huang S, Wei F, Zhou M (2020) LayoutLM: Pre-training of Text 
 
 Huang Y, Lv T, Cui L, Lu Y, Wei F (2022) LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. In: Proceedings of the 30th ACM International Conference on Multimedia, pp 4083–4091.
 
-Appalaraju S, Tang P, Dong Q, Sankaran N, Zhou Y, Manmatha R (2021) DocFormer: End-to-End Transformer for Document Understanding. In: Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pp 993–1003.
+Appalaraju S, Jasani B, Kota B U, Xie Y, Manmatha R (2021) DocFormer: End-to-End Transformer for Document Understanding. In: Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pp 993–1003.
 
 Smock B, Pesala R, Abraham R (2022) PubTables-1M: Towards Comprehensive Table Extraction from Unstructured Documents. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp 4634–4642.
 

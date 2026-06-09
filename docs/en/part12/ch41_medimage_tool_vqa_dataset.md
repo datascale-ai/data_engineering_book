@@ -76,7 +76,7 @@ ROI also prevents questions from becoming pure text medical QA. “What organ do
 
 At the same time, local evidence can create **localization leakage**. If the question says “the boxed region” or “inside the mask,” the model does not learn active localization. Good questions imply the need for local observation without exposing bbox or mask.
 
-### Question and Option Design
+### 41.4.1 Question and Option Design
 
 A good medical image VQA question should satisfy three conditions: it is tied to a concrete image region, it does not leak annotation position, and its options differ by observable visual evidence.
 
@@ -84,7 +84,7 @@ The question should not be general medical knowledge or a broad modality/organ l
 
 Medical questions should also avoid asking for clinical treatment or diagnosis. Multiple-choice answers can select the option that best matches image appearance, but explanations should not expand into patient advice.
 
-### Observation Image Lifecycle
+### 41.4.2 Observation Image Lifecycle
 
 Observation images are not ordinary illustrations. They are derived from the original image and returned to the model as new inputs.
 
@@ -212,7 +212,7 @@ to be only artifact.
 
 Tool arguments must be structured. Tool returns must become new multimodal input, not a text note saying “already zoomed.” The final answer should consume the observation. The trajectory should avoid diagnostic claims and stay within the option-comparison task.
 
-### Three-Layer Reading of a Sample
+### 41.7.1 Three-Layer Reading of a Sample
 
 Each record can be read at three layers:
 
@@ -222,7 +222,7 @@ Each record can be read at three layers:
 
 All three layers must work. If the question is good but evidence is missing, it is ordinary VQA. If evidence exists but behavior ignores the observation, it is VQA with extra annotations. If behavior is complete but the question is text-answerable, the tool call becomes formal decoration.
 
-### Difference from Ordinary Chain-of-Thought
+### 41.7.2 Difference from Ordinary Chain-of-Thought
 
 Tool trajectories are sometimes confused with chain-of-thought data. Both include intermediate process, but the training meaning differs. Ordinary CoT unfolds in text. Tool trajectories include external actions and environment feedback: the model calls a tool, receives a new observation, then continues. It does not merely “think in more detail”; it sees something new.
 
@@ -367,7 +367,7 @@ The fifth layer is **human review**. High-risk or low-confidence samples enter a
 
 Review results should not be only pass/fail. Better categories are `passed`, `revise`, `downgrade`, and `discard`, with reasons written back into version records.
 
-### Evaluation Protocol
+### 41.10.1 Evaluation Protocol
 
 Accuracy is only the first layer. A complete evaluation should cover:
 
@@ -380,7 +380,7 @@ Aggregate accuracy can be misleading because option distribution is imbalanced. 
 
 The evaluation principle is: answer correctness is only the first layer; reasonable behavior is the full target.
 
-### Data Cards and Version Notes
+### 41.10.2 Data Cards and Version Notes
 
 Medical image tool-use data contains images, region evidence, tool trajectories, answers, and safety boundaries, so it needs a data card and version notes (Gebru et al. 2021).
 
@@ -412,13 +412,13 @@ The basic principles are:
 - evaluate behavior, not only final answers
 - add safety boundaries and human review in high-risk domains
 
-### Migrating the Pattern
+### 41.12.1 Migrating the Pattern
 
 The same structure can be migrated to document QA with page-region zoom, chart QA with subchart localization, remote sensing with region retrieval, or industrial inspection with defect zoom. What changes is the evidence object and tool boundary. Medical data uses ROI, mask, and bbox; document data may use page regions, table cells, and OCR coordinates; chart data may use axes, legends, and curve segments.
 
 The core remains stable: define evidence objects, define tool actions, and write returned observations into multi-turn samples.
 
-### Connection with Other Chapters
+### 41.12.2 Connection with Other Chapters
 
 This chapter connects Part 3's multimodal cleaning and grounding, Part 6's Tool-Use and Agent data, Part 10's discussion of data engineering agents, Part 11's privacy and compliance boundary, and Part 13/14's training recipes and project practice. Its real topic is not only medical images, but how data engineering should record evidence, action, feedback, and risk when models actively gather visual evidence.
 

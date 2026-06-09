@@ -1,4 +1,4 @@
-# 第11章 跨模态对齐与融合
+# 第11章：跨模态对齐与融合
 
 ## 摘要
 
@@ -24,9 +24,9 @@
 
 ## 11.1 问题场景：多模态对齐失败与物理意义
 
-### 11.1.1 当高成本训练换来“幻视”与“幻听”
+### 11.1.1 高成本多模态训练中的跨模态对齐失效问题
 
-以下为匿名化复合案例，成本、周期和故障表现用于说明风险类型。截至 2026-06，实际训练成本取决于模型规模、GPU 单价、训练时长和数据权重。某多模态大模型（MM-LLM）早期预训练中，模型在观看一段“厨房里正在煎牛排”的静音视频时，生成了“锅里在滋滋作响”的文本描述，甚至通过 Audio 编码器输出了不相关的动物叫声音频。经过三周排查，团队发现根因在于：底层数据管道在拼装“视频+文本+音频”时，只做了粗略时间轴对齐，没有进行语义特征绑定，导致“厨房场景”被随机耦合到环境背景库中的不相关声音。
+以下为匿名化复合案例，成本、周期和故障表现用于说明风险类型。截至 2026-06，实际训练成本取决于模型规模、GPU 单价、训练时长和数据权重。某多模态大模型（MM-LLM）早期预训练中，模型在观看一段“厨房里正在煎牛排”的静音视频时，生成了“锅里在滋滋作响”的文本描述；在带音频生成或检索分支的评测中，还会关联到与画面无关的动物叫声。经过三周排查，团队发现根因在于：底层数据管道在拼装“视频+文本+音频”时，只做了粗略时间轴对齐，没有进行语义特征绑定，导致“厨房场景”被随机耦合到环境背景库中的不相关声音。
 
 ### 11.1.2 模态鸿沟与异构空间挑战
 
@@ -79,22 +79,22 @@
 
 #### 2. 片段级（Segment-level / Meso-alignment）：连续时间序列映射
 
-这是第10章重点讨论的层级。这个级别引入了**长度的跨模态不等量换算**：一段 3.5 秒钟的视频可能包含 105 帧连续画面，同时伴随 3.5 秒的音频信号；转换到文本侧时，可能只对应一句简短描述，例如 `"The white car drives down the street."`。
+这是第10章重点讨论的层级。这个级别引入了**长度的跨模态不等量换算**：例如按 30fps 采样，一段 3.5 秒钟的视频可能包含约 105 帧连续画面，同时伴随 3.5 秒的音频信号；转换到文本侧时，可能只对应一句简短描述，例如 `"The white car drives down the street."`。
 
-105 个视觉画面如何对应 7 个英文单词？数据工程师往往运用耗费算力的 DTW（Dynamic Time Warping，动态时间规整）或复杂的基于注意力图的软关联系统去切割它。需要注意的是，标准 DTW (Sakoe and Chiba 1978) 的时间与空间复杂度均为 O(N×M)——对于长达 4500 帧 × 6200 词的片段，内存需求可超过 90GB，因此生产环境中通常配合 **FastDTW** (Salvador and Chan 2007) 近似算法（线性复杂度）并将片段限制在 60 秒以内（详见 §11.6.4 的 OOM 案例）。在这一层对齐中，允许少量的前后滞后浮动时间容错（通常设置 Sakoe-Chiba 带宽为 ±0.3–1.0 秒），但绝不容忍"因果倒置"式的前后时序序列混乱。
+105 个视觉画面如何对应 7 个英文单词？数据工程师往往运用耗费算力的 DTW（Dynamic Time Warping，动态时间规整）或复杂的基于注意力图的软关联系统去切割它。需要注意的是，标准 DTW (Sakoe and Chiba 1978) 的时间与空间复杂度均为 O(N×M)：当帧序列和词序列都很长时，矩阵内存会随二者乘积快速膨胀。因此生产环境中通常配合 **FastDTW** (Salvador and Chan 2007) 近似算法（线性复杂度），并根据内存预算限制片段长度或执行降采样（详见 §11.6.4 的 OOM 案例）。在这一层对齐中，允许少量的前后滞后浮动时间容错，但容错窗口必须基于任务类型和人工回放校准，绝不容忍"因果倒置"式的前后时序序列混乱。
 
 #### 3. 文档级（Document-level / Macro-alignment）：长上下文交错融合
 
 当模型已经能处理短图文对和短视频片段之后，还需要进一步面对长上下文、多页文档和多轮图文引用场景。
 
-这里的对象不再是孤立片段，而是几十页甚至上百页的说明书、论文、研报、网页归档，或由长视频切分得到的连续帧序列。数据制作的重点也不再只是局部坐标，而是在 100K 乃至 1M Token 的训练窗口中，将图、文、声信号按可解释规则进行**交错排序（Interleaved Ordering）**。这样模型才能在长距离上下文中利用前文图例、表格结构或音视频线索，完成后续页面或片段的指代与推理。
+这里的对象不再是孤立片段，而是几十页甚至上百页的说明书、论文、研报、网页归档，或由长视频切分得到的连续帧序列。数据制作的重点也不再只是局部坐标，而是在长上下文训练窗口中（例如 100K 乃至 1M Token 级别的探索场景），将图、文、声信号按可解释规则进行**交错排序（Interleaved Ordering）**。这样模型才能在长距离上下文中利用前文图例、表格结构或音视频线索，完成后续页面或片段的指代与推理。
 
-**表11-1：三层异构对齐策略、成本特征与适用任务**
+*表11-1：三层异构对齐策略、成本特征与适用任务。来源：本书整理，成本特征为相对描述，实际方案需按模态类型、序列长度和标注预算评估。*
 
 | 对齐粒度 | 主要手段与特征表达 | 数据构建开销 | 典型适用任务 |
 | :--- | :--- | :--- | :--- |
 | **对象级 (Object-level)** | 人工或模型辅助标注 BBox，并建立区域与词汇的坐标映射。 | 高，依赖细粒度标注、复核和局部视觉推理。 | Region Grounding、医学影像区域定位、工业缺陷检测。 |
-| **片段级 (Segment-level)** | 时间轴对齐算法；通过双塔打分（如 CLIP Score 或 CLAP Score）进行片段级过滤。 | 中到高，依赖解码、特征抽取、矩阵匹配和抽检。 | Action Recognition、Video Captioning、Voice Translation。 |
+| **片段级 (Segment-level)** | 时间轴对齐算法；通过双塔打分（如 CLIP Score (Radford et al. 2021) 或 CLAP Score (Wu et al. 2023)）进行片段级过滤。 | 中到高，依赖解码、特征抽取、矩阵匹配和抽检。 | Action Recognition、Video Captioning、Voice Translation。 |
 | **文档级 (Document-level)** | 版面提取引擎（如 Nougat）与长上下文交错排序流。 | 高，依赖长上下文调度、版面重建和跨页一致性检查。 | 多页财报问答、研报审读、长文档多模态检索。 |
 
 ## 11.3 跨模态融合工程流水线：表示、配比与难负样本
@@ -107,7 +107,7 @@
 
 在合成训练流时，JSON 样本通常不会直接存放大规模浮点矩阵，而是采用显式占位符模式。代码清单11-1展示了一个多模态 JSONL Schema 的示意片段。
 
-**代码清单11-1：多模态融合样本 JSONL Schema 示例**
+*代码清单11-1：多模态融合样本 JSONL Schema 示例。字段为说明性样例，生产环境应补充来源、许可证、模态校验、占位符版本和审核状态。*
 
 ```json
 {
@@ -125,27 +125,28 @@
 
 ### 11.3.2 多模态样本配比（Data Mixing）：控制能力遗忘
 
-如果训练数据中 90% 都是图文对，模型就会慢慢退化，丧失了纯文本逻辑推理的能力。这种现象被称为**跨模态遗忘（Cross-modal Catastrophic Forgetting）**。因此，样本配比（Data Mixing）是模型能否成功的关键工程决策。
+如果训练数据长期被单一模态或单一任务类型主导，模型可能在其他能力上退化。例如，过度强调图文对齐而缺少高质量纯文本和复杂指令数据，可能削弱语言推理、代码和数学能力。这类现象可被视为跨模态训练中的能力遗忘风险。因此，样本配比（Data Mixing）是模型能否成功的关键工程决策。
 
-在生产环境中，多模态样本配比应通过消融实验（Ablation Study）确定。以下比例为截至 2026-06 的示例性参数，实际配置需要根据模型阶段、任务目标和验证集表现重新校准：
-- **纯文本保留池（20%~30%）**：保留高质量数学、代码和逻辑推理纯文本（如第一篇提到的 Mini-C4 精选语料），降低跨模态训练对语言推理能力的侵蚀。
-- **粗粒度图文对齐（40%~50%）**：海量的广域图文样本（如 LAION-5B 提纯版），用来构建最基础的世界实体认知词典。
-- **细粒度与交错数据（10%~20%）**：高成本的 BBox 对应图、多图交错长文档、OCR 结构树。这类数据有助于提升空间定位、文档理解和复杂图文推理能力。
-- **合成微调对话（10%）**：由 GPT-4V 生成的多轮多模态对话，用于将基础对齐能力转化为人类习惯的问答格式。
+在生产环境中，多模态样本配比应通过消融实验（Ablation Study）确定。公开技术报告通常不会披露可复用的完整配方，因此更稳健的做法是按能力维度设计配比并持续校准：
+
+- **纯文本保留池**：保留高质量数学、代码和逻辑推理纯文本，降低跨模态训练对语言推理能力的侵蚀。
+- **粗粒度图文对齐**：使用广域图文样本（如 LAION-5B、DataComp 提纯集或授权图库）构建基础世界实体认知词典。
+- **细粒度与交错数据**：加入 BBox 对应图、多图交错长文档、OCR 结构树，以提升空间定位、文档理解和复杂图文推理能力。
+- **合成微调对话**：使用经过质检的多轮多模态对话，把基础对齐能力转化为人类习惯的问答格式；生成模型、提示词和人工抽检结果必须入库留痕。
 
 ### 11.3.3 难负样本（Hard Negatives）挖掘与质控策略
 
-在对比学习对齐（Contrastive Alignment）中，如果模型总是区分简单样本对（例如“猫”和“狗”），能力提升会很快进入边际递减阶段。难负样本的作用，是为模型提供语义接近但关键属性不同的样本对，使其学习更细粒度的视觉、文本和时序差异。
+在对比学习对齐（Contrastive Alignment）中（Dufumier et al. 2025（ICLR）指出，有效的多模态对比学习应同时对齐共享特征、各模态独特特征及协同特征，而非仅优化共享信息），如果模型总是区分简单样本对（例如“猫”和“狗”），能力提升会很快进入边际递减阶段。难负样本的作用，是为模型提供语义接近但关键属性不同的样本对，使其学习更细粒度的视觉、文本和时序差异。
 
 **难负样本的五大核心挖掘手段：**
 
 1. **极小微差替换法（Subtle Replacement Mining）**：将正样本图片"一只蓝色的杯子放在木桌上"原样保留，从海量句库中找出只改变一个关键修饰词的文本——"一只**黑色**的杯子放在木桌上"——并将其作为负类，使 Vision Encoder 更关注颜色细节。
-2. **跨模态属性错位法（Cross-modal Attribute Swap）**：在图片级进行局部语义改写。通过 Inpainting 模型将图片中的"红苹果"改写为"绿苹果"，同时保留原始正向文本。错位样本促使 Cross-attention 层学习视觉区域与文字描述的绑定关系。
+2. **跨模态属性错位法（Cross-modal Attribute Swap）**：在图片级进行局部语义改写。通过基于潜在扩散模型的 Inpainting 方法（Rombach et al. 2022）将图片中的"红苹果"改写为"绿苹果"，同时保留原始正向文本。错位样本促使 Cross-attention 层学习视觉区域与文字描述的绑定关系。
 3. **批内在线最难负样本挖掘法（In-Batch Online Hard Negative Mining, OHNM）** (Chen et al. 2020)：在每个训练批次内部动态计算所有样本两两之间的相似度，挑选出相似度最高但语义不匹配的样本对。OHNM 无需构建静态数据库，而是让模型实时决定"最有训练价值的困难样本"。
 4. **时序扰动法（Temporal Perturbation，适用于视频-文本）**：将视频字幕与相邻时间窗口（如前后 3 秒）的画面错位配对。例如正样本是「`<00:03-00:06>` 运动员起跑」，负样本则是文本错配到「`<00:10-00:13>` 运动员冲线」。这类样本用于强化模型对时间因果关系的辨别能力。
 5. **大模型合成难负样本法（LLM-Generated Synthetic Hard Negatives）**：调用 LLM 输入正向描述，要求生成"语义极相近但含关键事实错误"的对抗文本。相比词典替换，此法多样性高，是业界主流的规模化生产方式。
 
-**表11-2：五种难负样本挖掘策略对比**
+*表11-2：五种难负样本挖掘策略对比。来源：本书整理，策略效果需通过人工复核、训练稳定性和下游跨模态评测共同验证。*
 
 | 挖掘策略 | 生成方式 | 适用粒度 | 主要优势 | 主要风险 |
 | :--- | :--- | :--- | :--- | :--- |
@@ -163,7 +164,7 @@
 
 跨模态评测不仅要看单一模态的质量，更要看模态之间的映射关系是否稳定。表11-3列出常见指标及其对应的治理动作。
 
-**表11-3：核心评价指标、误差来源与治理动作映射表**
+*表11-3：核心评价指标、误差来源与治理动作映射表。来源：本书整理，指标解释和治理动作应按模型架构、任务类型和数据版本校准。*
 
 | 评估指标（Metric） | 物理含义与业务映射 | 风险阈值与误差来源 | 治理动作 |
 | :--- | :--- | :--- | :--- |
@@ -174,32 +175,33 @@
 
 ### 11.4.2 成本约束与对齐预算治理
 
-跨模态对齐成本较高。以截至 2026-06 的示例性估算口径，计算一亿对图文的 CLIP Score 可能需要数千美元级 GPU 算力，千万级视频片段的 DTW 对齐则可能达到数十万美元级预算；实际成本取决于硬件单价、视频长度、分辨率、特征模型和并发策略。数据工程师必须建立**成本核算模型**：在对象级对齐中，优先使用低成本启发式规则过滤，将 GPT-4V 或高维矩阵计算（如 CLIP/SigLIP）留给高价值候选样本。盲目全量计算会使预算迅速失控。
+跨模态对齐成本较高。实际成本取决于硬件单价、视频长度、分辨率、特征模型、并发策略、缓存命中率和失败重试次数。数据工程师必须建立**成本核算模型**：在对象级对齐中，优先使用低成本启发式规则过滤，将强 VLM 或高维矩阵计算（如 CLIP/SigLIP）留给高价值候选样本。盲目全量计算会使预算迅速失控。
 
-## 11.5 匿名化复合案例与章节衔接
+## 11.5 案例与章节衔接
 
 作为本篇的收尾，以下三个匿名化复合案例用于说明跨模态对齐工程中常见的错误模式。案例中的机构、规模、成本与结果均已做泛化处理，仅用于呈现风险类型和排查路径。
 
-### 11.5.1 案例一：医疗多模态问答中的部位错配（匿名化复合案例）
+### 11.5.1 案例一：医疗多模态问答中的部位错配
 某医疗影像问答项目将胸部 X 光片与医嘱文本进行对齐训练，离线指标初期表现较好，但上线前抽检发现模型会把左肺区域的正常阴影错误解释为右肺病灶。
 **根因与复盘**：数据增强管线允许 X 光片进行水平翻转，却没有同步更新 BBox、左右方位文本和医学方向元数据。这导致对象级空间关系被系统性污染。修复方案包括禁用高风险镜像增强、补充 `orientation` 元数据校验，并对左右方位相关样本建立专项抽检集。
 
-### 11.5.2 案例二：长视频检索中的片段错位（匿名化复合案例）
+### 11.5.2 案例二：长视频检索中的片段错位
 某长视频检索系统在训练后出现音画错配：画面记录的是人员跨越围栏的片段，模型却关联到数小时后室内谈话的音频内容。
-**根因与复盘**：在 11.2 节的片段级对齐环节，分布式处理流程使用了弱一致性元数据存储，导致超过 12,000 个视频片段的音频指针发生 Offset By One Bug。微小的索引位移使多个后续音频片段被接到错误画面上。修复方案是将关键时间戳写入强一致性存储，并在片段入库前执行音画相似度抽检。
+**根因与复盘**：在 11.2 节的片段级对齐环节，分布式处理流程使用了弱一致性元数据存储，导致一批视频片段的音频指针发生 Offset By One Bug。微小的索引位移使多个后续音频片段被接到错误画面上。修复方案是将关键时间戳写入强一致性存储，并在片段入库前执行音画相似度抽检。
 
-### 11.5.3 案例三：自动驾驶路口样本的语义错配（匿名化复合案例）
+### 11.5.3 案例三：自动驾驶路口样本的语义错配
 某自动驾驶视觉语言模型在路况视频评估中出现固定模板输出：只要画面中出现交通灯，模型就倾向于生成“绿灯，车辆正常通行”的文本。
 **根因与复盘**：追溯训练数据发现，外部采购的数据集中存在大量批量复制的路口描述模板，红灯、黄灯和绿灯样本均被标为“车辆在绿灯路口正常行驶”。这导致模型学习到错误捷径（Shortcut Learning）。修复方案是引入跨模态幻觉检测器，并重新构造同一路口红灯、黄灯、绿灯的难负样本对。
 
 ### 11.5.4 跨模态融合与对齐工程检查清单
 
 在将多模态数据集推送给训练集群前，建议逐项核对：
+
 - [ ] **对齐防泄漏**：是否确保数据增强（如翻转、裁剪）时，对应的文本描述（如左右关系）和 BBox 坐标同步更新了？
 - [ ] **时序锚点核验**：音视频片段切分后，是否抽检过绝对时间戳（Global Timestamps）没有发生偏移倒挂？
 - [ ] **负样本难度分布**：是否检查了 In-batch 负样本的相似度分布？阈值是否过高导致了真阳性被误杀（False Negatives）？
 - [ ] **格式哨兵完整性**：JSONL 里的占位符 `<IMG_TK>` 是否被错误地 HTML 转义了？是否每一段都带有 `<\|image_start\|>`？
-- [ ] **数据配比安全网**：训练包里是否保留了至少 20% 的纯文本高质语料以防止跨模态遗忘？
+- [ ] **数据配比安全网**：训练包里是否保留了高质量纯文本、代码或数学语料，以监控并缓解跨模态遗忘？
 
 ### 11.5.5 第三篇小结与第四篇衔接
 
@@ -221,7 +223,7 @@
 
 代码清单11-2展示了对齐 Loss 发散的匿名化错误日志示例。
 
-**代码清单11-2：对齐 Loss 发散错误日志示例**
+*代码清单11-2：对齐 Loss 发散错误日志示例。日志内容为匿名化示例，用于说明排障模式而非公开事故复现。*
 
 ```bash
 [WARNING] node-001.storage-backend.local:
@@ -233,6 +235,7 @@ Cross-Modal Feature Match Score dropped from 0.89 to 0.00000000003.
 ```
 
 **[根因与修复]**：
+
 - **根因**：极少量含啸叫噪声或纯黑屏的异常样本进入批次，触发交叉注意力层权重的零除法极化；伪负样本（Noisy Negatives）同时干扰对比损失。
 - **修复**：①在融合节点前加高通余弦裁切滤波器，强制对特征向量做 Norm Clipping（L2 norm 上限为 10）；②从难负样本池中撤出所有损坏样本（CLIP-Score < 0.1 或音频 SNR < 5dB）；③启用梯度裁剪 `max_norm=1.0` 防止极端梯度传播。
 
@@ -240,11 +243,11 @@ Cross-Modal Feature Match Score dropped from 0.89 to 0.00000000003.
 
 ### 11.6.2 BBox 坐标系翻转导致对象级对齐大规模失效 [ERR_CROSS_MDL_OBJ_FLIP_002]
 
-**[故障现象]**：对象级（Object-level）对齐准确率指标 R@1 在某一数据批次导入后从 0.82 骤降至 0.31，推理时出现大规模左右空间方向错误（"左"说成"右"，"左肺病灶"标注到右肺）。
+**[故障现象]**：对象级（Object-level）对齐准确率指标 R@1 在某一数据批次导入后显著下降，推理时出现大规模左右空间方向错误（"左"说成"右"，"左肺病灶"标注到右肺）。
 
 代码清单11-3展示了 BBox 坐标翻转的匿名化错误日志示例。
 
-**代码清单11-3：BBox 坐标翻转错误日志示例**
+*代码清单11-3：BBox 坐标翻转错误日志示例。日志内容为匿名化示例，生产环境应记录坐标系约定和转换版本。*
 
 ```bash
 [ERROR] grounding_eval_worker_05:
@@ -255,6 +258,7 @@ Suspected data augmentation mirror flip applied AFTER bbox annotation.
 ```
 
 **[根因与修复]**：
+
 - **根因**：数据增强管线中随机水平翻转（HorizontalFlip）在图像翻转后未同步更新 BBox 的 x 坐标（应将 `x1` 替换为 `W - x2`，`x2` 替换为 `W - x1`）；医疗影像 X 光胶片还额外存在物理扫描仪镜像输出问题。
 - **修复**：①所有涉及几何变换的数据增强操作强制绑定 BBox 同步变换（使用 Albumentations 框架的 `BboxParams`）；②对医疗影像增加物理方向元数据字段校验（`metadata.orientation`）；③在流入训练前加 BBox-Text 一致性检测（检查 BBox 内区域的 CLIP 向量与标注文本余弦距离）。
 
@@ -266,17 +270,18 @@ Suspected data augmentation mirror flip applied AFTER bbox annotation.
 
 代码清单11-4展示了难负样本污染的匿名化错误日志示例。
 
-**代码清单11-4：难负样本污染错误日志示例**
+*代码清单11-4：难负样本污染错误日志示例。日志内容为匿名化示例，负样本策略应通过人工复核和下游评测校准。*
 
 ```bash
 [WARN] hard_negative_miner_worker_2:
-False negative rate in batch 3421: 38.7% (threshold: < 5%).
-Positive pairs incorrectly tagged as hard negatives: 8,240 / 21,300.
-CLIP cross-modal similarity threshold set too aggressively: 0.92, too many true positives excluded.
-Contrastive loss variance: 4.82 (expected < 0.8). Training instability detected.
+False negative rate in current batch exceeds project threshold.
+Positive pairs incorrectly tagged as hard negatives.
+CLIP cross-modal similarity threshold set too aggressively; too many true positives excluded.
+Contrastive loss variance exceeds historical baseline. Training instability detected.
 ```
 
 **[根因与修复]**：
+
 - **根因**：Hard Negative 挖掘的相似度阈值（0.92）过高，大量真正的正样本对被错误分类为难负样本，产生"假负例污染（False Negative Contamination）"。
 - **修复**：①将阈值从 0.92 降至 0.75，并引入两阶段判断：先用 CLIP 做粗过滤，再用人工规则（如图文是否有词汇级别共现）做精筛；②限制每批次 Hard Negative 占比不超过正样本数的 2 倍；③部署独立的 False Negative 检测器，定期抽样人工审核。
 
@@ -284,22 +289,23 @@ Contrastive loss variance: 4.82 (expected < 0.8). Training instability detected.
 
 ### 11.6.4 DTW 时间规整内存溢出导致片段级对齐管线停摆 [ERR_CROSS_MDL_DTW_OOM_004]
 
-**[故障现象]**：处理超过 90 秒的长视频片段时，DTW 对齐计算进程因内存耗尽被 OOM Killer 终止，对齐管线暂停并积压大量待处理任务。
+**[故障现象]**：处理长视频片段时，DTW 对齐计算进程因内存耗尽被 OOM Killer 终止，对齐管线暂停并积压大量待处理任务。
 
 代码清单11-5展示了 DTW 内存溢出的匿名化错误日志示例。
 
-**代码清单11-5：DTW 内存溢出错误日志示例**
+*代码清单11-5：DTW 内存溢出错误日志示例。日志内容为匿名化示例，窗口大小和下采样策略应按序列长度与内存预算设定。*
 
 ```bash
 [FATAL] dtw_alignment_worker_08: Killed (signal 9).
-DTW matrix allocation failed: requested 94.3 GB for sequence lengths (4500, 6200).
-MemoryError: Cannot allocate ndarray of shape (4500, 6200) dtype float32.
-Queue depth at crash: 14,382 pending segments. Estimated loss: 890h of aligned audio-visual data.
+DTW matrix allocation exceeded worker memory budget for an overlong video-text segment.
+MemoryError: cannot allocate full pairwise alignment matrix under current limits.
+Queue depth at crash exceeded the incident response threshold; affected segments were quarantined.
 ```
 
 **[根因与修复]**：
-- **根因**：标准 DTW 的时间和空间复杂度均为 O(N×M)，对 4500 帧 × 6200 词的长片段分配矩阵高达 94GB；未对输入序列长度做限制。
-- **修复**：①强制将超过 60 秒的片段切割为 30 秒子段后再做 DTW；②使用 FastDTW（线性复杂度近似算法）替代标准 DTW；③为每个 DTW worker 设置最大内存配额（32GB），超限后触发降采样而非直接 OOM。
+
+- **根因**：标准 DTW 的时间和空间复杂度均为 O(N×M)，当帧序列和词序列过长时会分配巨大的对齐矩阵；未对输入序列长度做限制。
+- **修复**：①按内存预算和回放质量要求将长片段切割为更短子段后再做 DTW；②使用 FastDTW（线性复杂度近似算法）替代标准 DTW；③为每个 DTW worker 设置最大内存配额，超限后触发降采样而非直接 OOM。子段长度和内存配额应由压测决定，并写入运行手册。
 
 ---
 
@@ -309,7 +315,7 @@ Queue depth at crash: 14,382 pending segments. Estimated loss: 890h of aligned a
 
 代码清单11-6展示了 Placeholder 解析失败的匿名化错误日志示例。
 
-**代码清单11-6：Placeholder 解析失败错误日志示例**
+*代码清单11-6：Placeholder 解析失败错误日志示例。日志内容为匿名化示例，生产环境应固定占位符语法并进行训练前解析校验。*
 
 ```bash
 [ERROR] multimodal_dataloader_worker_3:
@@ -320,14 +326,15 @@ Affected batch: 256 samples. Training step 28,441 aborted.
 ```
 
 **[根因与修复]**：
+
 - **根因**：JSONL 打包脚本在写入多模样本时，对包含特殊字符（`<`、`>`、`|`）的 Placeholder 进行了 HTML 转义（`&lt;` 等），导致 Tokenizer 无法识别哨兵 Token；部分样本还遗漏了 `<|image_start|>` 前缀。
-- **修复**：①在 JSONL 序列化时对 Placeholder 字段使用 `ensure_ascii=False` 且跳过 HTML 转义；②在 DataLoader 的 `__getitem__` 中加断言，确保每条多模样本包含成对的 `<|image_start|>...<|image_end|>` 哨兵；③建立格式校验器（Linter），在入库前 100% 扫描所有 JSONL 文件的 Placeholder 完整性。
+- **修复**：①在 JSONL 序列化时对 Placeholder 字段使用 `ensure_ascii=False` 且跳过 HTML 转义；②在 DataLoader 的 `__getitem__` 中加断言，确保每条多模样本包含成对的 `<|image_start|>...<|image_end|>` 哨兵；③建立格式校验器（Linter），在入库前扫描 JSONL 文件的 Placeholder 完整性。
 
 ---
 
 ### 11.6.6 高频错误速查表
 
-**表11-4：跨模态对齐高频错误类型与修复策略**
+*表11-4：跨模态对齐高频错误类型与修复策略。来源：本书整理，错误类型和修复策略为匿名化工程模式归纳。*
 
 | 错误代号 | 错误类型 | 核心触发条件 | 一句话修复策略 |
 | :--- | :--- | :--- | :--- |
@@ -341,11 +348,9 @@ Affected batch: 256 samples. Training step 28,441 aborted.
 
 ## 本章小结
 
-本章围绕“跨模态对齐与融合”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
+作为第三篇的收束章节，本章论证单模态各自清洗并不能自动带来跨模态推理能力：若图像、文本、音频之间缺少语义、空间或时间的刚性绑定，对比学习会强化错误关联，引发跨模态幻觉。为解决异构空间的模态鸿沟，本章建立对象级、片段级和文档级三级对齐框架——对象级以 BBox 与词汇做坐标锚固，片段级用 DTW/FastDTW 在不等长的帧、波形与文字间做时序映射，文档级在长上下文窗口内对图文声信号交错排序。工程实现上，本章用占位符与特征路径解耦统一表示，按消融实验确定多模态配比以抑制跨模态遗忘，并系统梳理了五类难负样本挖掘手段及其假负例风险。
 
-本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
-
-在全书结构中，本章位于多模态数据工程层，承担承接前文基础概念并导向SFT、偏好和跨模态对齐的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
+质量侧本章给出跨模态召回率、时序连续性、幻觉率（CHAIR）和蕴含冲突率等指标与对应治理动作，并以部位错配、片段错位和路口语义错配三个复盘，说明几何增强、弱一致性存储和模板化标注如何污染对齐关系。至此多模态数据工程已从"样本是否干净"推进到"模态间是否具有可验证的监督关系"；下一篇将转向 SFT、偏好与人类反馈等指令对齐数据系统。
 
 ## 参考文献
 
@@ -353,7 +358,6 @@ Chen T, Kornblith S, Norouzi M, Hinton G (2020) A Simple Framework for Contrasti
 
 Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: ICML 2021, pp 8748-8763.
 
-Rombach R, Blattmann A, Lorenz D, Esser P, Ommer B (2022) High-Resolution Image Synthesis with Latent Diffusion Models (Stable Diffusion). In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 10684-10695.
 
 Sakoe H, Chiba S (1978) Dynamic Programming Algorithm Optimization for Spoken Word Recognition (DTW). IEEE Transactions on Acoustics, Speech, and Signal Processing 26(1):43-49.
 
@@ -362,3 +366,5 @@ Salvador S, Chan P (2007) Toward Accurate Dynamic Time Warping in Linear Time an
 van den Oord A, Vinyals O, Kavukcuoglu K (2017) Neural Discrete Representation Learning (VQ-VAE). Advances in Neural Information Processing Systems 30.
 
 Wu Y, Chen K, Zhang T, Hui Y, Berg-Kirkpatrick T, Dubnov S (2023) Large-Scale Contrastive Language-Audio Pretraining with Feature Fusion and Keyword-to-Caption Augmentation (CLAP). In: IEEE International Conference on Acoustics, Speech and Signal Processing, pp 1-5.
+
+Dufumier B, Castillo-Navarro J, Tuia D, Thiran J P (2025) What to Align in Multimodal Contrastive Learning? In: Proceedings of the 13th International Conference on Learning Representations. arXiv preprint arXiv:2409.07402.

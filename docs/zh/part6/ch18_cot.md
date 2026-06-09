@@ -1,8 +1,8 @@
-# 第18章 思维链与推理数据工程
+# 第18章：思维链与推理数据工程
 
 ## 章前导读
 
-随着大模型从“会回答”走向“会推理、会调用工具、会进行多轮协作”，数据工程的重点也在发生变化；CoT 与 ReAct 等工作分别把中间推理步骤、推理—行动交错轨迹引入了大模型任务求解范式 (Yao et al. 2023b)。过去，很多数据工作主要围绕结果展开，关注模型是否给出正确答案；但在推理模型与 Agent 系统中，仅有结果监督已经不足以支撑真实任务。模型是否会分步思考、是否能正确使用工具、是否能在多轮交互中保持状态一致并利用记忆，正在成为新的关键问题。
+随着大模型从“会回答”走向“会推理、会调用工具、会进行多轮协作”，数据工程的重点也在发生变化；思维链（Chain-of-Thought，CoT）与推理-行动框架（ReAct） 等工作分别把中间推理步骤、推理—行动交错轨迹引入了大模型任务求解范式 (Yao et al. 2023b)。过去，很多数据工作主要围绕结果展开，关注模型是否给出正确答案；但在推理模型与 Agent 系统中，仅有结果监督已经不足以支撑真实任务。模型是否会分步思考、是否能正确使用工具、是否能在多轮交互中保持状态一致并利用记忆，正在成为新的关键问题。
 
 因此，本篇聚焦“会想、会用工具、会记忆”的新型数据问题，讨论数据工程如何从结果监督升级到过程监督与轨迹监督；过程监督在数学推理任务中的作用，已经在 PRM800K 与过程奖励模型相关研究中被系统比较 (Lightman et al. 2024)。这里的数据已经从单轮问答对，逐渐扩展为推理过程、工具调用链路、交互状态和记忆演化等更复杂的结构。数据质量的衡量标准，也不再只是答案是否正确，而要进一步关注过程是否合理、执行是否成功、状态是否稳定。
 
@@ -10,7 +10,7 @@
 
 ## 摘要
 
-本章围绕“思维链与推理数据工程”展开，聚焦大模型数据工程中的关键设计问题。章节从场景约束、数据对象、流水线设计、质量评估和工程治理等维度展开，说明如何把零散的数据处理动作收敛为可复盘、可验证、可交付的系统方法，并为后续章节和项目实战建立统一分析框架。
+推理数据工程的核心对象，是答案背后的求解过程，而非孤立的最终结果。本章针对数学、逻辑、代码等高约束推理任务，论述为何仅依赖结果监督（outcome supervision）会掩盖逻辑跳步、伪解释与幻觉步骤等过程缺陷，进而误导对模型能力的判断。在表示层面，本章比较思维链（Chain-of-Thought，CoT）、草稿纸（scratchpad）、思维程序（Program-of-Thought，PoT）与思维树（Tree-of-Thought，ToT）四类轨迹形式的可读性、可验证性与成本差异，强调表示方式的选择应服从后续验证需求，并区分线性轨迹与分支轨迹、显式状态与隐式状态、轨迹长度与轨迹密度。在质量层面，本章建立由规则验证、执行验证、单元测试与裁判模型构成的多层自动验证体系，将错误细分为算术错误、逻辑跳步、伪解释、幻觉步骤、规则越权与状态漂移等类型，并落实到步骤级标签与过程质量评分；过程奖励模型（Process Reward Model，PRM）所代表的过程监督正是其训练目标。最后，本章借助难度分桶与课程学习（curriculum learning）组织正例、反例、纠错与自反思样本，把推理数据从零散堆积推进为可持续迭代的数据课程。
 
 某团队希望训练一个能够根据 issue 描述、报错日志和仓库上下文自动生成补丁的大模型，于是从真实开源仓库中收集了大量“问题描述—代码差异—测试结果”样本。为了提高数据质量，团队没有只保留最终补丁，还让模型为每个补丁生成一段解释性推理，说明它如何定位 bug、为什么修改这些文件、修改后为什么能够通过测试。随后，数据管线用单元测试作为主要验收标准：只要补丁能够让失败测试转为通过，样本就被标记为高质量正例，进入后续训练集。
 
@@ -29,6 +29,13 @@
 ## 关键词
 
 思维链与推理数据工程；推理数据；工具调用；Agent 记忆；多轮交互
+
+## 学习目标
+
+- 能够解释仅依赖结果监督为何会掩盖逻辑跳步、伪解释与幻觉步骤，进而误导对模型推理能力的判断。
+- 能够对比思维链、草稿纸、思维程序与思维树四类轨迹表示的可读性、可验证性与成本，并依据验证需求选择表示方式。
+- 能够构建由规则验证、执行验证、单元测试与裁判模型组成的多层自动验证体系，并将错误细分为算术错误、逻辑跳步、伪解释、幻觉步骤等类型落实到步骤级标签。
+- 能够借助难度分桶与课程学习组织正例、反例、纠错与自反思样本，把推理数据推进为可持续迭代的数据课程。
 
 ## 18.1 为什么只看最终答案会掩盖推理缺陷
 
@@ -100,7 +107,7 @@ CoT (Wei et al. 2022) 强调自然语言形式的逐步解释。它最符合人�
 
 scratchpad (Nye et al. 2021) 更接近草稿纸式的中间记录。它通常只保留中间变量、关键计算、局部判断和必要标记，不会把所有思路都展开成完整自然语言。这种形式在算术、多步符号运算和短链逻辑中非常有效，因为它能以更短的篇幅承载更高密度的有效信息。相比 CoT，scratchpad 往往更适合自动化处理，也更容易与中间状态对齐。但它的问题在于，一旦设计过于简略，就可能失去足够的语义锚点，导致人工检查困难，甚至影响模型学习跨步骤依赖。
 
-Program-of-Thought (Chen et al. 2023) 更进一步，它把中间推理表达成可执行的程序片段、伪代码、表达式序列或其他形式化中间表示；PAL 则进一步强调让语言模型生成程序化中间步骤，再由 Python 等运行时完成求解 (Gao et al. 2023)。对于数学计算、符号变换、程序分析等任务，这种方式的价值非常突出，因为很多中间步骤都可以被执行器或规则系统直接验证。这样一来，原本依赖人工判断的大量工作，就有机会被结构化工具接管。它最大的优势是强可验证性，但代价也较高：表示 schema 必须足够规范，任务本身也需要允许一定程度的形式化表达。
+Program-of-Thought (Chen et al. 2023) 更进一步，它把中间推理表达成可执行的程序片段、伪代码、表达式序列或其他形式化中间表示；序辅助语言模型（Program-Aided Language Models，PAL） 则进一步强调让语言模型生成程序化中间步骤，再由 Python 等运行时完成求解 (Gao et al. 2023)。对于数学计算、符号变换、程序分析等任务，这种方式的价值非常突出，因为很多中间步骤都可以被执行器或规则系统直接验证。这样一来，原本依赖人工判断的大量工作，就有机会被结构化工具接管。它最大的优势是强可验证性，但代价也较高：表示 schema 必须足够规范，任务本身也需要允许一定程度的形式化表达。
 
 Tree-of-Thought (Yao et al. 2023a) 将推理过程从单一线性链扩展为多个候选分支，并显式记录分支选择、回退与比较过程。对于复杂规划、搜索式推理和需要权衡多个候选解的任务，这类表示非常有价值，因为真实求解过程本来就常常伴随着试探、放弃和重选。但这类表示的构造与使用成本也最高。它不仅要求记录“最后怎么做”，还要记录“曾经还可能怎么做”，并对这些分支进行某种评价。因此，若任务本身不需要多分支探索，强行使用 tree 结构只会增加噪声与成本。
 
@@ -169,11 +176,11 @@ Tree-of-Thought (Yao et al. 2023a) 将推理过程从单一线性链扩展为多
 
 这意味着，表示设计时就应同时考虑哪些部分可以规则验证，哪些可以执行验证，哪些需要裁判模型，哪些必须保留人工抽检。例如，若数学步骤采用显式动作标签和中间表达式，那么规则程序就更容易检查合法性；若代码样本显式分离“原因分析”和“代码变更”，就更容易判断分析与实现是否一致；若逻辑样本记录了前提引用关系，就更容易识别跨步跳推。
 
-从工程上讲，推理轨迹的结构化程度，实际上决定了自动化验证的上限。轨迹越混杂、越自由、越依赖隐含理解，验证成本就越高；轨迹越清晰、越字段化、越显式，后续质控就越容易稳定运行。因此，一个成熟的数据系统从来不会把表示方式当成单纯的书写风格问题，而会把它视为整个推理数据管线的基础设施。
+从工程上讲，推理轨迹的结构化程度，实际上决定了自动化验证的上限。轨迹越混杂、越自由、越依赖隐含理解，验证成本就越高；轨迹越清晰、越字段化、越显式，后续质控就越容易稳定运行。因此，一个成熟的数据系统从来不会把表示方式当成单纯的书写风格问题，而会把它视为整个推理数据管线的基础设施。常见的推理样本类型及其表示形式、适用任务与优劣对比如表 18-1 所示。从样本构造到自动验证、错误分类再回流训练的整体流程则如图 18-1 所示。
 
 
 
-*表 18-1：推理样本类型与适用任务表*
+**表 18-1：推理样本类型与适用任务表**
 | 推理样本类型 | 主要表示形式 | 适用任务 | 优势 | 局限 |
 |---|---|---|---|---|
 | 答案型样本 | 问题 + 最终答案 | 简单问答、分类、低推理深度任务 | 成本低、吞吐高 | 无法暴露过程缺陷 |
@@ -305,7 +312,7 @@ if __name__ == "__main__":
 
 验证结果若只停留在“通过”或“失败”，其价值仍然有限。真正能支撑过程监督和后续训练的是步骤级标签，也就是把质量信息落实到具体中间步骤上。一个推理样本不应只是整题正确或整题错误，而应尽可能标明每一步是正确、可疑、错误、冗余、跳步、不可验证，还是已在后续被修正。只有当错误被定位到步骤，后续的训练、过滤和纠偏才可能更有针对性。
 
-步骤级标签的意义首先在于，它让样本从整体黑盒变成可定位的过程对象；过程监督研究直接将反馈落实到中间步骤，而非只给最终答案奖励 (Lightman et al. 2024)。团队可以知道究竟是哪个局部位置最容易出错，哪类动作最容易失败，哪类任务在什么阶段更容易发生跳步或幻觉。其次，步骤级标签能支撑更灵活的训练策略。有错误的样本不一定都要整体丢弃。若一个长样本中前面大部分过程都可靠，只有局部一步出错，那么它仍然可能具有很高价值。团队可以只屏蔽错误步骤、构造局部纠错任务，或把该样本改造成“错误识别—修正”型训练数据。
+步骤级标签的意义首先在于，它让样本从整体黑盒变成可定位的过程对象；过程监督研究直接将反馈落实到中间步骤，而非只给最终答案奖励 (Lightman et al. 2024)。如图 18-2 所示，过程监督标签会把正确、可疑、错误等判定逐步附着到每一个中间步骤上。团队可以知道究竟是哪个局部位置最容易出错，哪类动作最容易失败，哪类任务在什么阶段更容易发生跳步或幻觉。其次，步骤级标签能支撑更灵活的训练策略。有错误的样本不一定都要整体丢弃。若一个长样本中前面大部分过程都可靠，只有局部一步出错，那么它仍然可能具有很高价值。团队可以只屏蔽错误步骤、构造局部纠错任务，或把该样本改造成“错误识别—修正”型训练数据。
 
 过程质量评分则是在步骤标签之上，对整条轨迹进行更综合的评价。一个样本的过程质量，通常不止取决于最终是否答对，还取决于局部正确性、一致性、完整性、可验证性、冗余度、解释与行为对齐程度等多个维度。数学任务中，局部合法性和链条完整性尤为重要；代码任务中，行为验证和修复理由一致性更关键；逻辑任务中，前提覆盖和规则适用性通常更重要。通过质量评分，团队可以在“是否保留”之外再增加“优先级”维度，让训练更多吸收那些真正稳定、清晰、可复用的高质量过程。
 
@@ -317,7 +324,7 @@ if __name__ == "__main__":
 ![图18-2：过程监督标签示意图](../../images/part6/图18_2.png)
 *图18-2：过程监督标签示意图*
 
-例如，一个样本最终答错，但前面九成步骤都正确，且最后一步错误清晰可纠，那么它对训练局部修正能力和过程稳健性仍然很有价值。相反，一个样本最终答对，但中间充满跳步、伪解释和隐含幻觉，那么它虽然在结果上通过，却未必值得高分。换句话说，过程评分必须敢于把“答对但过程差”的样本压低，也要敢于把“答错但过程主体优良”的样本与普通失败样本区分开来。只有这样，评分体系才不会反过来强化结果导向的旧习惯。
+例如，一个样本最终答错，但前面九成步骤都正确，且最后一步错误清晰可纠，那么它对训练局部修正能力和过程稳健性仍然很有价值。相反，一个样本最终答对，但中间充满跳步、伪解释和隐含幻觉，那么它虽然在结果上通过，却未必值得高分。换句话说，过程评分必须敢于把“答对但过程差”的样本压低，也要敢于把“答错但过程主体优良”的样本与普通失败样本区分开来。只有这样，评分体系才不会反过来强化结果导向的旧习惯。针对不同错误类型的典型表现、常见成因与推荐纠偏动作，可参照表 18-2 进行系统化处置。
 
 
 
@@ -327,7 +334,7 @@ if __name__ == "__main__":
 
 
 
-*表 18-2：错误类型与纠偏动作表*
+**表 18-2：错误类型与纠偏动作表**
 | 错误类型 | 典型表现 | 常见成因 | 推荐纠偏动作 |
 |---|---|---|---|
 | 算术错误 | 计算结果错误、符号抄错、代入失误 | 基础计算不稳、轨迹过长导致局部出错 | 用执行器复算，替换错误步骤并回放后续链条 |
@@ -573,7 +580,7 @@ Wang, X., Wei, J., Schuurmans, D., et al. (2023). Self-Consistency Improves Chai
 
 Zhou, D., Schärli, N., Hou, L., et al. (2023). Least-to-Most Prompting Enables Complex Reasoning in Large Language Models. International Conference on Learning Representations. arXiv:2205.10625.
 
-Yao, S., Yu, D., Zhao, J., et al. (2023). Tree of Thoughts: Deliberate Problem Solving with Large Language Models. Advances in Neural Information Processing Systems, 36, 11809–11822. arXiv:2305.10601.
+Yao, S., Yu, D., Zhao, J., et al. (2023a). Tree of Thoughts: Deliberate Problem Solving with Large Language Models. Advances in Neural Information Processing Systems, 36, 11809–11822. arXiv:2305.10601.
 
 Chen, W., Ma, X., Wang, X., & Cohen, W. W. (2023). Program of Thoughts Prompting: Disentangling Computation from Reasoning for Numerical Reasoning Tasks. Transactions on Machine Learning Research. arXiv:2211.12588.
 
@@ -585,11 +592,11 @@ Cobbe, K., Kosaraju, V., Bavarian, M., et al. (2021). Training Verifiers to Solv
 
 Lightman, H., Kosaraju, V., Burda, Y., et al. (2024). Let’s Verify Step by Step. International Conference on Learning Representations. arXiv:2305.20050.
 
-Hendrycks, D., Burns, C., Kadavath, S., et al. (2021). Measuring Mathematical Problem Solving With the MATH Dataset. Advances in Neural Information Processing Systems Datasets and Benchmarks Track. arXiv:2103.03874.
+Hendrycks, D., Burns, C., Kadavath, S., et al. (2021a). Measuring Mathematical Problem Solving With the MATH Dataset. Advances in Neural Information Processing Systems Datasets and Benchmarks Track. arXiv:2103.03874.
 
 Bengio, Y., Louradour, J., Collobert, R., & Weston, J. (2009). Curriculum Learning. Proceedings of the 26th Annual International Conference on Machine Learning, 41–48.
 
-Shinn, N., Cassano, F., Berman, E., et al. (2023). Reflexion: Language Agents with Verbal Reinforcement Learning. Advances in Neural Information Processing Systems, 36. arXiv:2303.11366.
+Shinn, N., Cassano, F., Gopinath, A., et al. (2023). Reflexion: Language Agents with Verbal Reinforcement Learning. Advances in Neural Information Processing Systems, 36. arXiv:2303.11366.
 
 Madaan, A., Tandon, N., Gupta, P., et al. (2023). Self-Refine: Iterative Refinement with Self-Feedback. Advances in Neural Information Processing Systems, 36. arXiv:2303.17651.
 
@@ -597,7 +604,7 @@ Zheng, L., Chiang, W.-L., Sheng, Y., et al. (2023). Judging LLM-as-a-Judge with 
 
 Liu, Y., Iter, D., Xu, Y., et al. (2023). G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment. Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing, 2511–2522. arXiv:2303.16634.
 
-Hendrycks, D., Basart, S., Kadavath, S., et al. (2021). Measuring Coding Challenge Competence With APPS. Advances in Neural Information Processing Systems Datasets and Benchmarks Track. arXiv:2105.09938.
+Hendrycks, D., Basart, S., Kadavath, S., et al. (2021b). Measuring Coding Challenge Competence With APPS. Advances in Neural Information Processing Systems Datasets and Benchmarks Track. arXiv:2105.09938.
 
 Chen, M., Tworek, J., Jun, H., et al. (2021). Evaluating Large Language Models Trained on Code. arXiv:2107.03374.
 
@@ -613,4 +620,4 @@ Monperrus, M. (2018). Automatic Software Repair: A Bibliography. ACM Computing S
 
 Nijkamp, E., Pang, B., Hayashi, H., et al. (2023). CodeGen: An Open Large Language Model for Code with Multi-Turn Program Synthesis. International Conference on Learning Representations. arXiv:2203.13474.
 
-Yao, S., Zhao, J., Yu, D., et al. (2023). ReAct: Synergizing Reasoning and Acting in Language Models. International Conference on Learning Representations. arXiv:2210.03629.
+Yao, S., Zhao, J., Yu, D., et al. (2023b). ReAct: Synergizing Reasoning and Acting in Language Models. International Conference on Learning Representations. arXiv:2210.03629.
