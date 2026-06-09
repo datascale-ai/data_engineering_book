@@ -63,7 +63,7 @@ Each infographic uses whatever mixed layout the original creator used, such as �
 
 ### 40.2.4 Question Types
 
-The subquestions cover 13 reasoning types: value extraction, category recognition, summation, averaging, maximum/minimum lookup, counting, ranking, ratio solving, trend analysis, difference calculation, anomaly identification, conditional reasoning, and visual reasoning.
+The subquestions cover 13 reasoning types: value, categorization, sum, average, median, extrema, count, ranking, proportion, trend, difference, anomaly, assuming, visual, condition, calculation, and other.
 
 Questions within one infographic are randomly mixed across types, creating chains such as “maximum lookup + difference calculation + conditional reasoning” or “counting + ratio calculation + visual reasoning.” Extraction questions focus on reading; calculation questions combine multiple values; conditional questions use legends and filters; visual questions use symbols and visual context.
 
