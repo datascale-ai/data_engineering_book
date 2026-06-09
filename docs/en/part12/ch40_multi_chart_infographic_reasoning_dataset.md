@@ -47,7 +47,7 @@ The dataset samples across 28 vertical fields covering public life, industry, re
 
 Multi-domain design reduces overfitting to a single theme. Chart conventions, legends, and domain abbreviations differ across fields, raising the difficulty of visual-context reasoning.
 
-![Figure 40-1: Domain distribution in the multi-chart infographic reasoning dataset](../../images/part12/ch40_domain_en.png)
+![Figure 40-1: Domain distribution in the multi-chart infographic reasoning dataset](../../images/part12/ch40_domain_en_new.png)
 
 *Figure 40-1. Distribution of domain coverage in the Multi-Chart Infographic Reasoning Dataset, spanning 28 fine-grained domains.*
 
@@ -57,7 +57,7 @@ The dataset contains more than 20 common visualization styles, including bar cha
 
 Each infographic uses whatever mixed layout the original creator used, such as “map + tabular + stacked bar + pictogram” or “pie + ranking card + line.” Different chart types store data differently: tables use rows and columns, maps use geographic regions, pictograms use icon counts, and line charts use temporal sequences. The model must adapt reading rules across formats and then aggregate across them.
 
-![Figure 40-2: Chart type distribution](../../images/part12/ch40_chart_en.png)
+![Figure 40-2: Chart type distribution](../../images/part12/ch40_chart_en_new.png)
 
 *Figure 40-2. Distribution of sub-chart types in the Multi-Chart Infographic Reasoning Dataset, covering 23 distinct chart categories.*
 
@@ -67,7 +67,7 @@ The subquestions cover 13 reasoning types: value, categorization, sum, average, 
 
 Questions within one infographic are randomly mixed across types, creating chains such as “maximum lookup + difference calculation + conditional reasoning” or “counting + ratio calculation + visual reasoning.” Extraction questions focus on reading; calculation questions combine multiple values; conditional questions use legends and filters; visual questions use symbols and visual context.
 
-![Figure 40-3: Question type distribution](../../images/part12/ch40_question_en.png)
+![Figure 40-3: Question type distribution](../../images/part12/ch40_question_en_new.png)
 
 *Figure 40-3. Distribution of sub-question types in the Multi-Chart Infographic Reasoning Dataset, comprising 13 question categories.*
 
@@ -127,7 +127,7 @@ Each infographic includes one question that cannot be answered from the image. T
 
 The dataset construction process has four core stages: collecting and filtering real compound infographics, manually partitioning subchart regions, designing layered question chains, and cross-checking answers. No synthetic charts are generated. Large models can help propose questions, but humans verify and revise them.
 
-![Figure 40-5: Multi-chart infographic dataset construction pipeline](../../images/part12/ch40_pipeline_en.png)
+![Figure 40-5: Multi-chart infographic dataset construction pipeline](../../images/part12/ch40_pipeline_en_new.png)
 
 *Figure 40-5. Overview of the four-stage data construction pipeline for the Multi-Chart Infographic Reasoning Dataset.*
 
