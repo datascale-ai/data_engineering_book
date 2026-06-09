@@ -79,6 +79,8 @@ StructBill-CN contains **2,300 high-resolution bill images** across **six busine
 
 Using public academic sources is a deliberate compliance choice. A publishable benchmark should be built on public sources, while real private production data should enter only through a governed production process. This public benchmark / private production split is a baseline principle for high-risk document data engineering.
 
+**Code and data resources.** The StructBill-CN dataset, schema definitions, annotation tools, and SRPO training code are available at [github.com/vanvan6992/StructBill-CN](https://github.com/vanvan6992/StructBill-CN). The SRPO algorithm implementation (including MindSpore-based GRPO and SCL-Reward) is available at [github.com/Yuefeng-Zou/SRPO_CODE](https://github.com/Yuefeng-Zou/SRPO_CODE). 
+
 ### 38.2.2 Task Definition
 
 Given a document image $X$ and a schema $S=\{K,T,C\}$, where $K$ is the set of global key fields, $T$ is the table definition, and $C$ is the set of deterministic constraints, the goal is to learn a policy that generates a structured sequence $Y$ maximizing $P(Y\,|\,X,S)$.
@@ -149,6 +151,36 @@ This “constraints as relationships, not fields” design lets the same JSON se
 
 In this small sample, `key_information` and `Fee_List` are structure. The row-level and document-level arithmetic equations are logic constraints. Both must be annotated, validated, and evaluated.
 
+**Code Example 1: Schema definition as a Python dataclass.** The following snippet shows how the schema $S=\{K, T, C\}$ is represented programmatically. Each business document type corresponds to one `Schema` instance. The three constraint fields (`price_field`, `qty_field`, `amount_field`) plus `total_field` encode the arithmetic rules $C$ without modifying the JSON output format.
+
+```python
+from dataclasses import dataclass, field
+from typing import List, Optional
+
+@dataclass
+class Schema:
+    """Business schema S = {K, T, C} for one document type."""
+    root_keys: List[str]                        # K: required global key fields
+    table_key: Optional[str] = None             # T: line-item table key in JSON
+    row_fields: List[str] = field(default_factory=list)
+    price_field: Optional[str] = None           # ┐
+    qty_field: Optional[str] = None             # │ C: deterministic
+    amount_field: Optional[str] = None          # │    constraint fields
+    total_field: Optional[str] = None           # ┘
+    anti_hallucination: bool = True
+
+# Example: medical expense list schema
+expense_schema = Schema(
+    root_keys=["Hospital_Name", "Invoice_No", "Total_Cost"],
+    table_key="Fee_List",
+    row_fields=["Item_Name", "Unit_Price", "Quantity", "Amount"],
+    price_field="Unit_Price",
+    qty_field="Quantity",
+    amount_field="Amount",
+    total_field="Total_Cost",
+)
+```
+
 ### 38.3.4 Field Types, Annotation Rules, and Metrics
 
 *Table 38-2: Field type, annotation rule, and metric mapping*
@@ -189,6 +221,56 @@ StructBill-CN uses a multi-stage pipeline whose goal is to preserve semantic con
 
 *Figure 38-3: Logic-consistency validation. The same gate is reused during construction to block inconsistent labels and during evaluation/training to score model output.*
 
+**Code Example 2: Logic-consistency validation gate.** This function implements the structure gate ($I_{gate}$), row-level check (Row-ACR), and document-level check (Doc-ACR) from Figure 38-3. The same code is reused in both the construction pipeline (to block inconsistent labels) and the evaluation pipeline (to score model outputs). It takes the `Schema` defined in Code Example 1.
+
+```python
+import json
+from typing import Tuple
+
+def validate_logic(pred_text: str, schema: Schema, eps: float = 0.01
+                   ) -> Tuple[bool, float, float]:
+    """Logic-consistency gate.
+
+    Returns (gate_pass, row_acr, doc_acr).
+    Reused in construction (block bad labels) and evaluation (score outputs).
+    """
+    # ── Structure gate (I_gate) ──
+    try:
+        obj = json.loads(pred_text)
+    except json.JSONDecodeError:
+        return False, 0.0, 0.0                    # invalid JSON → gate fails
+
+    ki = obj.get("key_information", {})
+    if any(k not in ki for k in schema.root_keys):
+        return False, 0.0, 0.0                    # missing required keys
+
+    rows = obj.get(schema.table_key, []) if schema.table_key else []
+
+    # ── Row-level: |unit_price × quantity − amount| < ε ──
+    ok, checked = 0, 0
+    row_amounts = []
+    for r in rows:
+        u, q, a = r.get(schema.price_field), r.get(schema.qty_field), r.get(schema.amount_field)
+        if u is None or q is None or a is None:
+            continue
+        u, q, a = float(u), float(q), float(a)
+        checked += 1
+        if abs(u * q - a) < eps:
+            ok += 1
+        row_amounts.append(a)
+
+    row_acr = ok / checked if checked else 1.0
+
+    # ── Document-level: |Σ amounts − total_cost| < ε ──
+    total = ki.get(schema.total_field)
+    if total is not None and row_amounts:
+        doc_acr = 1.0 if abs(sum(row_amounts) - float(total)) < eps else 0.0
+    else:
+        doc_acr = 1.0
+
+    return True, row_acr, doc_acr
+```
+
 **7. Version split.** The dataset uses an 8:2 train-test split. In practice, the split should preserve the six schema distributions, reserve true cross-layout test samples, and attach data fingerprints and statistics to each version.
 
 ### 38.4.1 Lineage and Metadata
@@ -214,6 +296,41 @@ These metrics must coexist. F1 says whether fields were found, but not whether n
 Academic metrics tend to be positive: how much is correct. Production monitoring often needs the negative view: how much violates constraints. From the gate in Section 38.4, we can derive **SCVR (Schema Constraint Violation Rate)**: the proportion of outputs that fail the structure gate or logic validation. SCVR complements Row-ACR and Doc-ACR by answering how many records cannot be inserted directly, including structural failures.
 
 SCVR adds no new labels. It reuses the existing structure and logic validation flow.
+
+**Code Example 3: Batch SCVR computation.** Using `validate_logic` from Code Example 2, the following function computes SCVR and companion metrics over a batch of model predictions. It requires no additional labels beyond the existing schema and arithmetic constraints.
+
+```python
+def compute_scvr(predictions: list, schema: Schema,
+                 eps: float = 0.01) -> dict:
+    """Compute SCVR and companion metrics over a prediction batch.
+
+    SCVR = proportion of records that fail the structure or logic gate
+           (i.e., cannot be directly ingested into a database).
+    """
+    n = len(predictions)
+    violations = 0
+    row_acrs, doc_acrs = [], []
+
+    for pred_text in predictions:
+        gate, row_acr, doc_acr = validate_logic(pred_text, schema, eps)
+        if not gate:
+            violations += 1               # structure or hallucination failure
+        else:
+            row_acrs.append(row_acr)
+            doc_acrs.append(doc_acr)
+
+    scvr = violations / n if n else 0.0
+    return {
+        "scvr": scvr,
+        "ingestible_rate": 1.0 - scvr,    # complement: can go to DB directly
+        "mean_row_acr": sum(row_acrs) / len(row_acrs) if row_acrs else 0.0,
+        "mean_doc_acr": sum(doc_acrs) / len(doc_acrs) if doc_acrs else 0.0,
+    }
+
+# Example usage:
+# metrics = compute_scvr(model_outputs, expense_schema)
+# print(f"SCVR={metrics['scvr']:.1%}, ingestible={metrics['ingestible_rate']:.1%}")
+```
 
 ### 38.5.2 Engineering Conventions for Reproducible Evaluation
 
@@ -244,7 +361,7 @@ This chapter does not detail the model. From the data-consumption perspective:
 - **Training use.** SRPO first uses the data for SFT warm start so the model can output legal JSON, then uses GRPO (Shao et al., 2024) with group sampling and SCL-Reward. The reported configuration is SFT for 10 epochs, learning rate 1e-5, batch size 128; GRPO group size G=8, reward coefficients $\lambda=0.4$ and $\gamma=0.6$; hardware 8 x NVIDIA A800 (80GB).
 - **Qualitative effect.** The source material reports that standard SFT saturates near 84% on logic scores, while adding logic reward improves Row/Doc-ACR by about 10 percentage points. The point is that logic annotation turns arithmetic consistency into an optimizable target.
 
-Hungarian matching (Kuhn, 1955) is used for row-level one-to-one alignment because generated row order may differ from ground truth or include missing/spurious rows. That, in turn, requires each row to contain sufficiently discriminative fields such as item name, unit price, and quantity. Algorithm design and annotation rules must be co-designed.
+Hungarian matching is used for row-level one-to-one alignment because generated row order may differ from ground truth or include missing/spurious rows. That, in turn, requires each row to contain sufficiently discriminative fields such as item name, unit price, and quantity. Algorithm design and annotation rules must be co-designed.
 
 ### 38.6.2 What the Dataset Is Suitable For
 
@@ -366,7 +483,3 @@ Smock, B., Faucon-Morin, V., Sokolov, M., et al. (2025). PubTables-v2: A New Lar
 Wang, W., Gao, Z., Gu, L., et al. (2025). InternVL3.5: Advancing Open-Source Multimodal Models in Versatility, Reasoning, and Efficiency. *arXiv preprint arXiv:2508.18265*.
 
 Zhang, J., Liu, Y., Wu, Z., et al. (2025). MonkeyOCR v1.5 Technical Report: Unlocking Robust Document Parsing for Complex Patterns. *arXiv preprint*.
-
-
-
-SRPO code: https://github.com/Yuefeng-Zou/SRPO_CODE
