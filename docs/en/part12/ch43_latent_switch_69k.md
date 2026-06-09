@@ -26,7 +26,7 @@ First, long CoT carries a high token cost. Derivations in mathematics, code, and
 
 Latent-Switch-69K emerged against this backdrop. It is neither a simple "shorter CoT dataset" nor a collection of Long-CoT samples summarized and directly used for SFT. It serves [LaTER](https://github.com/TioeAre/LaTER)-style latent-then-explicit reasoning systems: the model first passes through a bounded latent reasoning interval, completing high-level planning and compressed thinking in continuous hidden states, then switches back to visible text and uses a shorter explicit CoT for symbolic verification, before generating the final answer. The data engineering objective therefore shifts: samples must answer not only "what is the answer" but also "which content is appropriate for the hidden planning budget and which content still needs to serve as visible verification supervision."
 
-![Figure 43-1: Latent-Switch-69K Construction Pipeline](../../images/part12/ch43_latent_switch_pipeline.png)
+![Figure 43-1: Latent-Switch-69K Construction Pipeline](../../images/part12/ch43_latent_switch_pipeline.svg)
 
 *Figure 43-1: Latent-Switch-69K distills reasoning traces from Dolci-Think-SFT-32B into solution intuitions, compressed CoT, latent budgets, student sequences, and mask-aligned SFT records.*
 
@@ -71,11 +71,112 @@ The fourth group is supervision fields, including `prompt_mask`, `latent_interna
 
 The starting point for constructing Latent-Switch-69K is reasoning traces sampled from Dolci-Think-SFT-32B. These original traces, understood as source reasoning traces, contain the question, one or more assistant outputs, a possible ground truth or extractable answer, and source and metadata. The construction process does not directly filter for short answers; instead, it first decomposes long traces into two complementary objectives: a high-level problem-solving intent and a shorter explicit verification chain.
 
+The following pedagogical example shows the simplest way to extract source traces: load Dolci-Think-SFT-32B from Hugging Face, shuffle it with a fixed random seed, select a batch of records, and normalize the conversations into the minimum fields required for subsequent distillation. In the production LaTER pipeline, `sample_Dolci-Think-SFT-32B.py` reads local Parquet shards and applies source-stratified reservoir sampling to prevent simple random sampling from shifting the proportions of different data sources.
+
+```python
+from datasets import load_dataset
+
+
+def first_message(messages, role):
+    return next(
+        (item["content"] for item in messages if item.get("role") == role),
+        "",
+    )
+
+
+def last_message(messages, role):
+    return next(
+        (item["content"] for item in reversed(messages) if item.get("role") == role),
+        "",
+    )
+
+
+dataset = load_dataset("allenai/Dolci-Think-SFT-32B", split="train")
+sample_size = min(2000, len(dataset))
+sampled = dataset.shuffle(seed=42).select(range(sample_size))
+
+source_traces = []
+for row in sampled:
+    messages = row.get("messages", [])
+    source_traces.append(
+        {
+            "record_id": row.get("id"),
+            "source_dataset": row.get("source", row.get("dataset", "unknown")),
+            "problem": first_message(messages, "user"),
+            "source_cot": last_message(messages, "assistant"),
+        }
+    )
+```
+
 The first stage is extracting the solution intuition. The data construction prompt asks the teacher to extract only key insights—neither writing a short CoT nor directly providing the final answer. This field should describe "the high-level plan for solving this problem," for example which equations to set up, which state space to enumerate, which data structure to use for a coding problem, or which causal relationship to isolate for a science question. Its granularity sits between a label and a full derivation: more specific than a domain label, yet more compressed than step-by-step reasoning. The core value of this approach is extracting the planning signal from Long-CoT that can be internalized, providing the basis for the subsequent latent budget.
 
 The second stage is generating a compressed explicit CoT. The teacher continues solving the problem conditioned on the original question and the solution intuition, producing a shorter reasoning process and a final answer. Because the teacher already has the high-level plan, it does not need to re-expand the full exploration process or repeat invalid branches from the original trace. Each retained sample therefore contains four main components: problem, intuition, compressed CoT, and final answer. Unlike ordinary summarization, the goal of the compressed CoT is not to "shorten the original text" but to retain sufficient visible verification paths so that the model, after latent reasoning, can still complete symbolic checks using text.
 
-![Figure 43-3: Comparison of Original CoT, Compressed CoT, and Latent Placeholders](../../images/part12/ch43_cot_latent_comparison.png)
+The following minimal implementation connects the two stages through an OpenAI-compatible API. The first stage requests only a JSON-formatted `correct_insight`; the second stage continues from the problem and that intuition, recording the hidden reasoning returned by the API as `distilled_cot` and the visible content as the final answer. The API key, endpoint, and teacher model are all read from environment variables.
+
+```python
+import asyncio
+import json
+import os
+
+from openai import AsyncOpenAI
+
+
+client_kwargs = {"api_key": os.environ["OPENAI_API_KEY"]}
+if os.getenv("OPENAI_BASE_URL"):
+    client_kwargs["base_url"] = os.environ["OPENAI_BASE_URL"]
+
+client = AsyncOpenAI(**client_kwargs)
+teacher_model = os.environ["TEACHER_MODEL"]
+
+
+async def call_teacher(system_prompt, user_prompt):
+    response = await client.chat.completions.create(
+        model=teacher_model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        extra_body={"thinking": {"type": "enabled"}},
+    )
+    message = response.choices[0].message
+    reasoning = getattr(message, "reasoning_content", None)
+    content = message.content or ""
+
+    # Some compatible APIs place reasoning inside the visible content.
+    if not reasoning and "<think>" in content and "</think>" in content:
+        reasoning, content = content.split("<think>", 1)[1].split("</think>", 1)
+    return (reasoning or "").strip(), content.strip()
+
+
+async def distill_one(problem, source_cot):
+    _, insight_json = await call_teacher(
+        "Return valid JSON with one field named correct_insight. "
+        "Give only the high-level solution plan, without the final answer "
+        "or a complete chain of thought.",
+        f"Problem:\n{problem}\n\nReference reasoning:\n{source_cot}",
+    )
+    intuition = json.loads(insight_json)["correct_insight"]
+
+    distilled_cot, answer = await call_teacher(
+        "Continue from the supplied solution intuition. Keep the reasoning "
+        "compact, verify the key steps, and give the final answer.",
+        f"Problem:\n{problem}\n\nSolution intuition:\n{intuition}",
+    )
+    return {
+        "problem": problem,
+        "solution_intuition": intuition,
+        "distilled_cot": distilled_cot,
+        "answer": answer,
+    }
+
+
+record = asyncio.run(
+    distill_one(source_traces[0]["problem"], source_traces[0]["source_cot"])
+)
+```
+
+![Figure 43-3: Comparison of Original CoT, Compressed CoT, and Latent Placeholders](../../images/part12/ch43_cot_latent_comparison.svg)
 
 *Figure 43-3: The extensive visible reasoning in the source trace is split into two types of signal: solution intuition is used to estimate the latent budget, and the compressed CoT is used for explicit verification and answer supervision.*
 
@@ -122,6 +223,60 @@ $$
 $$
 
 Here $(l_1,\dots,l_m)$ are latent placeholder positions, $(t_1,\dots,t_n)$ are the distilled explicit CoT tokens, and $(a_1,\dots,a_r)$ are the final answer tokens. In the code implementation, latent placeholders can be filled with repeated `latent_pad_token` entries; however, during training these positions are not treated as ordinary language targets. In the model's forward pass, the input embeddings at placeholder positions are replaced by recurrent latent states produced by a latent projector. In other words, these positions have token boundaries and a defined length in the sequence, but they are semantically hidden computation slots.
+
+The record-rendering function below mirrors the core logic of `build_sft_record` in LaTER's `preprocess.py`. It first uses the student tokenizer to measure the solution intuition, clips approximately \(L/2\) latent steps to the allowed range, and then stores both the structured fields and the rendered assistant sequence. The example uses `<|endoftext|>` as the placeholder token; an actual training pipeline must ensure that it exactly matches the `latent_pad_token` configured for the tokenizer and model.
+
+```python
+import os
+
+from transformers import AutoTokenizer
+
+
+tokenizer = AutoTokenizer.from_pretrained(os.environ["STUDENT_TOKENIZER"])
+
+
+def build_sft_record(problem, intuition, distilled_cot, answer):
+    intuition_tokens = tokenizer.encode(intuition, add_special_tokens=False)
+    n_latent_steps = min(128, max(1, len(intuition_tokens) // 2))
+    latent_pad_token = "<|endoftext|>"
+    latent_placeholder = latent_pad_token * n_latent_steps
+
+    assistant_content = (
+        f"<latent_think>{latent_placeholder}</latent_think>"
+        f"<think>{distilled_cot}</think>{answer}"
+    )
+    return {
+        "messages": [
+            {"role": "user", "content": problem},
+            {"role": "assistant", "content": assistant_content},
+        ],
+        "assistant_cot": distilled_cot,
+        "assistant_answer": answer,
+        "solution_intuition": intuition,
+        "n_latent_steps": n_latent_steps,
+        "latent_pad_token": latent_pad_token,
+        "state_align_reference_messages": [
+            {
+                "role": "user",
+                "content": f"Problem:\n{problem}\n\nSolution intuition:\n{intuition}",
+            },
+            {
+                "role": "assistant",
+                "content": f"<think>{distilled_cot}</think>{answer}",
+            },
+        ],
+    }
+
+
+sft_record = build_sft_record(
+    record["problem"],
+    record["solution_intuition"],
+    record["distilled_cot"],
+    record["answer"],
+)
+```
+
+Production preprocessing additionally filters samples according to compression ratio and field completeness and records the loss weights for the CoT and answer. More importantly, the rendered record must still be passed to the data loader to relocate special-token spans and construct supervision masks. Concatenating this string alone does not make the sample safe for training.
 
 Below is a pedagogical, simplified sample sequence. It is intended only to illustrate the schema and mask relationships and is not an actual training sample from the dataset.
 
@@ -176,7 +331,7 @@ $$
 
 Here $\mathcal{S}_{prompt}$ denotes positions in the user prompt and the context preceding the assistant prefix, and $\mathcal{S}_{lat}^{int}$ denotes the interior placeholder positions between `<latent_think>` and `</latent_think>`. Tokens set to `-100` are not directly fitted by ordinary CE. This avoids an erroneous objective: requiring the model to predict a specific fixed text token at latent interior positions. For LaTER, the value of latent interior positions lies not in outputting `<|endoftext|>` tokens but in allowing the model to execute a number of hidden state updates.
 
-![Figure 43-5: Supervision Mask Schematic](../../images/part12/ch43_supervision_mask.png)
+![Figure 43-5: Supervision Mask Schematic](../../images/part12/ch43_supervision_mask.svg)
 
 *Figure 43-5: Prompt and latent interior tokens are masked from ordinary CE; latent boundaries, explicit CoT, answers, and end tokens are controlled by different weights and masks.*
 
