@@ -1,4 +1,4 @@
-# 第1章 大模型时代的数据变革
+# 第1章：大模型时代的数据变革
 
 ## 摘要
 
@@ -8,7 +8,7 @@
 
 大模型数据工程；Scaling Laws；数据质量；数据飞轮；基准污染；数据基础设施；模型训练生命周期
 
-**学习目标**
+## 学习目标
 
 - 理解大模型研发从模型中心转向数据中心的主要原因。
 - 区分训练指标、评测指标和业务指标之间的常见脱钩方式。
@@ -20,12 +20,12 @@
 在系统性地讨论大模型数据工程体系之前，先看一个匿名化复合案例。该案例综合了公开技术报告、社区复盘和工业项目中反复出现的共性问题，用来说明低质量数据如何在训练、评测和上线阶段逐层放大。
 
 ### 1.1.1 场景引入：当算力投入未能转化为有效能力
-假设你是一家人工智能（AI）创业公司的数据负责人。随着公司融资到位，团队刚刚花费三个月时间，利用数百台服务器组成的分布式爬虫集群，从公网爬取并集成了近 50TB 的中文网页语料、1TB 的 GitHub 开源代码以及 500GB 的 Reddit 讨论数据。团队信心满满地启动了千卡 A100 集群，利用 Megatron-LM 框架开始预训练一个 7B 参数的基座模型。整个算法和工程团队在基础设施搭建（如 RDMA 网络调优）、并行训练策略（3D 混合并行架构）和算力节点容错调度上，投入了极大的精力。
+以下为匿名化复合场景，用于说明数据质量问题的工程排查路径；其中参数规模、算力配置和故障现象综合了一线项目中常见模式，不对应任何具体公开事件。某 AI 创业公司数据团队在完成融资后，花费三个月时间，利用数百台服务器组成的分布式爬虫集群，从公网爬取并集成了近 50TB 的中文网页语料、1TB 的 GitHub 开源代码以及 500GB 的 Reddit 讨论数据。团队随后启动千卡 A100 集群，利用 Megatron-LM 框架预训练一个约 70B 参数量级的基座模型。整个算法和工程团队在基础设施搭建（如 RDMA 网络调优）、并行训练策略（3D 混合并行架构）和算力节点容错调度上，投入了大量精力。
 
-然而，机器全速运转两周后，危机出现了。在监控面板上，Loss（交叉熵损失）曲线在降到 2.1 附近时突然“躺平”，甚至出现了小幅震荡向上的反常现象。不仅如此，在研发团队进行早期的 Checkpoint 评估（Interactive Evaluation）时，模型输出表现出令人担忧的怪异感：
+然而，训练运行约两周后，监控面板开始出现异常。在 Loss（交叉熵损失）曲线接近阶段性平台期时，下降趋势明显放缓，并伴随小幅震荡。在研发团队进行早期的 Checkpoint 评估（Interactive Evaluation）时，模型输出也出现了多类质量问题：
 
 1. **垃圾内容注入**：当给定的 Prompt 是关于“如何保养汽车”时，模型顺畅地生成了前两句专业说明，随即话锋一转，输出了一段与主题毫无关联的低质 SEO 推广文案——这是训练语料中混入大量商业引流页面所留下的“记忆残留”。
-2. **“复读机”死循环**：当模型生成 Python 代码时，在写完第一个 `def` 函数后，它仿佛陷入了无限循环，开始大量重复 `\n\n\n\n\n` 或 `return return return` 直至达到最大序列长度。
+2. **重复生成**：当模型生成 Python 代码时，在写完第一个 `def` 函数后，开始大量重复 `\n\n\n\n\n` 或 `return return return`，直至达到最大序列长度。
 3. **强背诵弱推理**：给模型输入一道简单的鸡兔同笼变形题，它居然一字不差地默写出了某年 GMAT 考试的长篇阅读原题以及尾部的版权声明，而面对简单的 3 位数加法却一错再错。
 
 在紧急叫停训练的复盘会议上，团队分歧严重。算法工程师怀疑是学习率预热（Warmup）步数不够或 AdamW 优化器参数设置不当；分布式计算工程师怀疑是少量异常设备导致通信梯度同步出现 NaN 并污染全局权重；数据工程师则在抽检最近一次输入批次后发现，低质 SEO 页面、重复模板代码和公开题库内容在训练样本中占比异常。这个结论改变了排障方向：问题不只是模型如何训练，而是训练数据是否具备可学习的信号。
@@ -80,9 +80,9 @@ $$
 然而，在 Scaling Laws 发布初期，行业中存在一个重要认知偏差。许多团队优先追求扩大参数量（例如发布千亿甚至万亿参数规模的大模型，如早期 175B 参数的 GPT-3 (Brown et al. 2020) 以及后续追随者），并倾向于把模型规模直接等同于性能。
 但到了 2022 年，DeepMind 的一篇名为《Training Compute-Optimal Large Language Models》（即著名的 Chinchilla 论文）(Hoffmann et al. 2022) 的研究打破了这一幻觉。
 
-DeepMind 研究团队进行了严格控制变量的计算最优（Compute-Optimal）实验。结果显示：参数量为 70B（700 亿）的 Chinchilla 模型，在使用约 1.4T（1.4 万亿）Tokens 训练数据后，多项评测结果超过了此前参数量更大的 280B Gopher 模型 (Rae et al. 2021)。
+DeepMind 研究团队进行了严格控制变量的计算最优（Compute-Optimal）实验。结果显示：参数量为 70B（700 亿）的 Chinchilla 模型，在使用约 1.4T（1.4 万亿）Tokens 训练数据后，多项评测结果超过了此前参数量更大的 280B Gopher 模型 (Rae et al. 2021)。两类模型在参数量与训练数据资源上的对比如表 1-1 所示。
 
-**表 1-1：DeepMind 旧范式模型与新范式模型数据资源对比**
+*表1-1：DeepMind 旧范式模型与新范式模型数据资源对比。来源：基于 Rae et al. (2021) 与 Hoffmann et al. (2022) 公开论文信息整理。*
 
 | 模型代号（发布方） | 参数量 $N$ | 投入训练数据的 Token 数 $D$ | 训练算力消耗占比估计 | 推理侧表现特征 |
 | :--- | :--- | :--- | :--- | :--- |
@@ -90,11 +90,11 @@ DeepMind 研究团队进行了严格控制变量的计算最优（Compute-Optima
 | **Chinchilla** (Hoffmann et al. 2022) | **70B** | **1.4T Tokens** | 同等控制变量 | 参数量较小，在多项综合评测中取得更优结果 |
 
 Chinchilla 法则指出：过去行业内的许多模型处于**训练不足（Under-trained）**状态。若想获取计算预算下的最大收益，模型参数量和训练数据所需的 Token 数，应当以大致相同的比例同步增加。一个常用经验口径是：
-> **模型每增加 1 个参数，通常需要配套约 20 个高质量 Token 的训练数据。**
+> **在 Chinchilla 计算最优近似口径下，模型每增加 1 个参数，通常需要配套约 20 个高质量 Token 的训练数据。**
 
-这意味着，如果某团队计划研发 7B 级别的开源基座模型，其高质量训练语料规模通常需要达到约 140B Tokens 以上。若追求更高小模型性能，例如 LLaMA 3 8B，其训练数据规模达到约 15T Tokens (Dubey et al. 2024)。需要注意的是，这已远超 Chinchilla 最优点（约 160B Tokens），属于 Meta 刻意采用的过训练（Over-training）策略：用更多数据换取更低的推理部署成本，使小模型在同等推理预算下获得更强能力。这种趋势推动团队把注意力从单纯寻找模型结构创新，转向如何持续供给高质量训练数据。
+这意味着，如果某团队计划研发 7B 级别的开源基座模型，按 20 tokens/parameter 的粗略计算最优口径，其高质量训练语料规模通常需要达到约 140B Tokens 以上。若追求更高小模型性能，例如 LLaMA 3 8B，其训练数据规模达到约 15T Tokens (Grattafiori et al. 2024)。需要注意的是，这远超按上述口径粗略推算的 Chinchilla 最优点（约 160B Tokens），属于 Meta 刻意采用的过训练（Over-training）策略：用更多数据换取更低的推理部署成本，使小模型在同等推理预算下获得更强能力。这种趋势推动团队把注意力从单纯寻找模型结构创新，转向如何持续供给高质量训练数据。
 
-### 1.2.2 质量的逆袭：Phi 系列极端实验与合成数据的曙光
+### 1.2.2 高质量数据与合成数据：Phi 系列的启示
 在规模扩张之外，微软研究院的 Phi 系列工作提供了另一条重要路径：通过高度筛选和合成的高质量数据，提升小参数模型在特定任务上的能力表现。
 
 微软发布的 Phi-1 模型参数量仅为 1.3B，训练数据规模约为 7B Tokens。尽管规模远小于许多开源代码模型，Phi-1 在 HumanEval (Chen et al. 2021) 等代码评测上取得了具有竞争力的结果。
@@ -104,9 +104,9 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
 当训练数据具有更高信息密度、更少噪声和更清晰的任务结构时，小模型也可能在特定能力上获得显著提升。这说明，合成数据（Synthetic Data）和专家知识蒸馏不是规模扩张的替代品，但可以成为提高数据效率和降低训练成本的重要手段。
 
 ### 1.2.3 核心基石：规模、质量与多样性的工程权衡
-从上述研究脉络可以看到，在大模型数据工程范式下，真正制约模型能力边界的不是单一维度，而是**规模（Scale）、质量（Quality）与多样性（Diversity）**之间的组合权衡。三者在有限预算和有限时间内很难同时达到最优，每一项的极端化通常会带来另外两项或工程成本上的代价。
+从上述研究脉络可以看到，在大模型数据工程范式下，真正制约模型能力边界的不是单一维度，而是**规模（Scale）、质量（Quality）与多样性（Diversity）**之间的组合权衡。三者在有限预算和有限时间内很难同时达到最优，每一项的极端化通常会带来另外两项或工程成本上的代价。表 1-2 给出了规模、质量与多样性三个维度在数据处理手段、直接收益与主要约束上的成本约束矩阵。
 
-**表 1-2：大模型数据工程中规模、质量与多样性的成本约束矩阵**
+*表1-2：大模型数据工程中规模、质量与多样性的成本约束矩阵。来源：本书整理，基于公开研究脉络与工程实践归纳。*
 
 | 核心维度 | 主要数据处理手段 | 直接收益 | 主要约束 |
 | :--- | :--- | :--- | :--- |
@@ -117,9 +117,9 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
 由于无法同时把规模、质量和多样性推到极致，数据工程负责人需要在预算、训练目标、上线时间和风险边界之间做权衡。成熟的数据设计不是简单地扩大语料，而是在三个变量之间找到可解释、可复现、可迭代的平衡点。
 
 ### 1.2.4 传统 AI 生命周期链路与 LLM 数据管线的主要差异
-对于长期从事推荐系统、搜索排序或工业视觉任务的工程团队来说，转向大语言模型训练时常会遇到方法论迁移困难。传统数据仓库和机器学习流水线主要处理结构化表格、日志特征和有限标签空间，而大模型训练面对的是非结构化文本、代码、文档、多模态长序列和开放式生成目标。因此，许多传统 ETL 经验仍然有价值，但不能直接替代面向 LLM 的数据清洗、去重、污染检测、配比、版本管理和训练 I/O 优化。
+对于长期从事推荐系统、搜索排序或工业视觉任务的工程团队来说，转向大语言模型训练时常会遇到方法论迁移困难。传统数据仓库和机器学习流水线主要处理结构化表格、日志特征和有限标签空间，而大模型训练面对的是非结构化文本、代码、文档、多模态长序列和开放式生成目标。因此，许多传统 ETL 经验仍然有价值，但不能直接替代面向 LLM 的数据清洗、去重、污染检测、配比、版本管理和训练 I/O 优化。两类数据体系在核心数据类型、物理体量与质量风控博弈点上的差异如表 1-3 所示。
 
-**表 1-3：传统机器学习数据链路与大语言模型原生数据体系对照**
+*表1-3：传统机器学习数据链路与大语言模型原生数据体系对照。来源：本书整理，基于传统数据平台与 LLM 数据管线的工程差异归纳。*
 
 | 对比维度 | 传统机器学习数据流水线（以推荐系统为例） | 大语言模型原生数据体系 |
 | :--- | :--- | :--- |
@@ -138,45 +138,47 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
 
 在 LLM 研发体系中，角色的融合与接口定义的清晰变得前所未有的重要。此时不再是单向移交数据的流水线，而是必须构建首尾相连的"**数据飞轮（Data Flywheel）**"。
 
-所谓数据飞轮，指的是一个持续自我强化的数据闭环：模型上线后，前端用户的交互行为（如对回答的赞/踩、修改建议、放弃率等）会被采集记录；这些在线负反馈数据经过数据工程师的清洗、标注和结构化处理，转化为下一轮 RLHF (Ouyang et al. 2022) 的偏好对比集；新的偏好数据进入对齐阶段训练出更好的模型；更好的模型再次部署，产生更高质量的在线反馈数据。
+所谓数据飞轮，指的是一个持续自我强化的数据闭环：模型上线后，前端用户的交互行为（如对回答的赞/踩、修改建议、放弃率等）会被采集记录；这些在线负反馈数据经过数据工程师的清洗、标注和结构化处理，转化为下一轮 RLHF (Ouyang et al. 2022) 的偏好对比集；新的偏好数据进入对齐阶段训练出更好的模型；更好的模型再次部署，产生更高质量的在线反馈数据。这一职责重构与角色闭环关系如图 1-1 所示。
 
 ![图1-1：大模型时代数据工程职责重构图，展示平台、数据、算法、标注、产品与合规角色之间的闭环接口](../../images/part1/data_engineering_roles_1775830393574.png)
 
-*图1-1：大模型时代数据工程职责重构图。来源：本书自绘。该图展现了从平台架构、数据采集到模型微调验证再到产研迭代的角色飞轮闭环。*
+*图1-1：大模型时代数据工程职责重构图。来源：本书自绘。该图展现了从平台架构、数据采集到模型微调验证再到产研迭代的角色飞轮闭环；Alt text：大模型时代数据工程职责重构图，展示平台、数据、算法、标注、产品与合规角色之间的闭环接口。*
 
-这个飞轮得以高速运转的前提，是每个角色之间存在**清晰、可执行的数据交接 SLA（服务级别协议）**。否则，一旦某个接口模糊（例如"产品侧说反馈数据给数据团队，但格式和字段没有约定"），飞轮就会在最脆弱的环节停滞。
+这个飞轮得以高速运转的前提，是每个角色之间存在**清晰、可执行的数据交接 SLA（服务级别协议）**。否则，一旦某个接口模糊（例如"产品侧说反馈数据给数据团队，但格式和字段没有约定"），飞轮就会在最脆弱的环节停滞。表 1-4 将这种协作关系展开为六类常见角色、上下游接口和可验收交付物，便于团队在立项阶段形成统一责任边界。
 
-**表 1-4：六大 LLM 项目核心角色与数据接口职责定义表**
+*表1-4：六大 LLM 项目核心角色与数据接口职责定义表。来源：本书整理，基于 LLM 项目协作接口与数据治理实践归纳。*
 
 | 角色 | 核心数据职责 | 向上游索取的数据 | 向下游交付的数据 | 关键 SLA 指标 |
 | :--- | :--- | :--- | :--- | :--- |
-| **平台架构师 / MLOps** | 建设并运维底层算力调度、分布式文件系统（如 Lustre / HDFS）、训练集群稳定性 | 数据工程师提交的数据包路径、格式规范、大小预估 | 稳定的 GPU/TPU 训练集群访问接口、DataLoader 优化建议 | 训练任务故障率 < 0.5%；数据加载不成为 GPU 利用率瓶颈（利用率 > 85%） |
-| **大模型数据工程师** | 原始语料采集（爬虫/API）、多阶段清洗（去重、去噪、脱敏）、数据配比与混合采样、数据版本管理 | 算法团队的领域权重配比需求、安全合规的黑名单规则、标注团队的 SFT 样本反馈 | 通过质量评分卡验收的 Parquet/JSONL 格式数据包；数据血缘文档 | 每批次数据包的清洁度评分 ≥ 0.85；交付 SLA：提出需求后 T+3 个工作日内完成新语料接入 |
-| **算法 / 预训练研究员** | 设计 Tokenizer 词表、制定训练数据配比策略（Data Mixture Recipe）、关注 Loss 曲线与 Eval 基准变化 | 清洗后的标准化数据包；数据集统计报告（领域分布、去重率、PPL 分布） | 数据配比权重需求文档；新增的 Eval 套件定义；消融实验结论（某类数据对哪个基准有多大提升） | 消融实验周期 ≤ 2 周出结论；关键领域数据增量需求提前 2 周提出 |
-| **AI 标注 / 提示词专家** | 设计符合人类偏好的 SFT 样本指令集、制定 RLHF 打分规范、精编 RAG 知识库 Q&A | 数据工程师提供的原始文本供筛选；算法团队的模型弱点报告（哪类指令失效） | 高质量的（Prompt, Response）对；偏好打分集（chosen/rejected）；RAG 标准评测集 | SFT 样本日产量 ≥ 500 条（专家级）或每轮标注一致性 κ > 0.7 |
-| **模型产品 / 应用层** | 收集线上真实用户反馈、定义业务场景覆盖需求、提供线上异常监控代理指标 | 算法团队提供的模型 API 及性能报告；数据团队提供的覆盖度分析 | 线上负样本（用户负反馈、修改后的回答）；新场景的数据需求规格书；线上幻觉异常 case 汇总报告 | 线上异常 case 的汇总周期：每周一次；新场景数据需求描述在提出后 1 周形成书面规格 |
-| **安全与合规专员** | 源语料版权溯源审计、PII 个人隐私数据监控、毒性内容与偏见评估拦截 | 所有即将入库语料的来源元信息（URL、抓取时间戳、许可证类型）；SFT 样本的最终版本 | 版权合规评估报告；PII 过滤规则集更新；毒性/偏见评估分数；合规通过的 Green-light 证明 | 每批数据的合规审查 ≤ 5 个工作日；高风险来源数据的预警发出时间 < 24小时 |
+| **平台架构师 / MLOps** | 建设并运维底层算力调度、分布式文件系统（如 Lustre / HDFS）、训练集群稳定性 | 数据工程师提交的数据包路径、格式规范、大小预估 | 稳定的 GPU/TPU 训练集群访问接口、DataLoader 优化建议 | 以项目基线定义训练稳定性、I/O 等待时间和 GPU 利用率目标 |
+| **大模型数据工程师** | 原始语料采集（爬虫/API）、多阶段清洗（去重、去噪、脱敏）、数据配比与混合采样、数据版本管理 | 算法团队的领域权重配比需求、安全合规的黑名单规则、标注团队的 SFT 样本反馈 | 通过质量评分卡验收的 Parquet/JSONL 格式数据包；数据血缘文档 | 每批数据需提供质量评分、抽检记录、血缘记录和交付时间承诺 |
+| **算法 / 预训练研究员** | 设计 Tokenizer 词表、制定训练数据配比策略（Data Mixture Recipe）、关注 Loss 曲线与 Eval 基准变化 | 清洗后的标准化数据包；数据集统计报告（领域分布、去重率、PPL 分布） | 数据配比权重需求文档；新增的 Eval 套件定义；消融实验结论（某类数据对哪个基准有多大提升） | 消融实验周期和数据增量需求应写入项目排期，而不是口头约定 |
+| **AI 标注 / 提示词专家** | 设计符合人类偏好的 SFT 样本指令集、制定 RLHF 打分规范、精编 RAG 知识库 Q&A | 数据工程师提供的原始文本供筛选；算法团队的模型弱点报告（哪类指令失效） | 高质量的（Prompt, Response）对；偏好打分集（chosen/rejected）；RAG 标准评测集 | 标注吞吐、专家复核率和一致性指标需由任务难度与领域风险共同确定 |
+| **模型产品 / 应用层** | 收集线上真实用户反馈、定义业务场景覆盖需求、提供线上异常监控代理指标 | 算法团队提供的模型 API 及性能报告；数据团队提供的覆盖度分析 | 线上负样本（用户负反馈、修改后的回答）；新场景的数据需求规格书；线上幻觉异常 case 汇总报告 | 线上异常汇总和新场景需求应形成固定节奏的书面交付物 |
+| **安全与合规专员** | 源语料版权溯源审计、PII 个人隐私数据监控、毒性内容与偏见评估拦截 | 所有即将入库语料的来源元信息（URL、抓取时间戳、许可证类型）；SFT 样本的最终版本 | 版权合规评估报告；PII 过滤规则集更新；毒性/偏见评估分数；合规通过的 Green-light 证明 | 高风险来源、敏感数据和公开发布数据需设置独立审查与阻断机制 |
 
-**数据飞轮的完整时序：一次典型的迭代周期（约 4-6 周）**
+**数据飞轮的完整时序：一次教学性示例**
+
+下面的时序用于说明角色接口和交付物关系，数字仅为便于阅读的项目管理口径，不代表公开项目的实测收益。真实项目必须以预注册的评测集、灰度分流和统计检验报告为准。
 
 ```
 [T+0  周] 算法团队在评测中发现模型对长篇法律问答存在系统性幻觉缺陷
               ↓
-[T+0  周] 产品团队从线上收集用户对相关 case 的踩踏和修改记录（负反馈 3,200 条）
+[T+0  周] 产品团队从线上收集用户对相关 case 的踩踏和修改记录（形成一批负反馈样本）
               ↓
 [T+1  周] 数据工程师接收负反馈数据，清洗成标准 JSONL 格式，分类整理为"事实性错误"和"格式问题"
               ↓
-[T+1  周] 标注专家挑选 800 条事实性错误 case，并为每条写出质量更高的 chosen 答案
+[T+1  周] 标注专家挑选高置信事实性错误 case，并为每条写出质量更高的 chosen 答案
               ↓
-[T+2  周] 安全合规审查 800 条 SFT 数据（无版权来源风险、无 PII 泄露）→ 通过
+[T+2  周] 安全合规审查新增 SFT 数据（无版权来源风险、无 PII 泄露）→ 通过
               ↓
-[T+2  周] 数据工程师将 800 条成对的（rejected, chosen）数据打包，追加写入偏好对比数据库
+[T+2  周] 数据工程师将成对的（rejected, chosen）数据打包，追加写入偏好对比数据库
               ↓
-[T+3  周] 算法团队使用新增的 800 条偏好数据进行 DPO (Rafailov et al. 2023) 微调（3 × A100，约 12 小时）
+[T+3  周] 算法团队使用新增偏好数据进行 DPO (Rafailov et al. 2023) 微调，并记录训练配置与数据版本
               ↓
-[T+4  周] 新模型版本在法律问答基准上提升 +8.3%，上线灰度 10% 流量
+[T+4  周] 新模型版本在冻结评测集和人工盲测中达到上线门槛，进入小流量灰度
               ↓
-[T+5  周] 产品团队确认幻觉 case 复现率降低 76% → 全量发布，进入下一轮飞轮
+[T+5  周] 产品团队确认关键问题样本复现率下降且无新增高风险回归 → 扩大发布，进入下一轮飞轮
 ```
 
 以上就是一个最小可行数据飞轮（MVP Data Flywheel）的完整时序。没有这种级别的角色分工与 SLA 约束，飞轮会在某个环节出现信息失真或时间拖延，最终使模型迭代周期从数周延长到数月。
@@ -190,7 +192,7 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
 3. **数据治理与版本控制工程**：像 Git 控制代码版本一样，用 LakeFS 或 DVC 管理 TB 乃至 PB 级别的数据集版本。每一次数据过滤规则的修改、每一次领域配比权重的调整，都应当形成一个可追溯的数据版本提交（commit）。这是数据工程区别于"数据搬运"的根本体现——当模型训练出问题时，必须能够"git bisect"般地将低质量数据的源头精确定位到某次配比调整或某一批爬取数据。
 4. **大语言模型生态嗅觉与工具链整合**：熟悉各类主流开源数据集（如 The Pile (Gao et al. 2020)、RefinedWeb (Penedo et al. 2023)、FineWeb-Edu (Lozhkov et al. 2024)、Dolma (Soldaini et al. 2024)、DCLM-Baseline (Li et al. 2024)），了解各数据集的内容偏向与局限；同时能熟练使用 Data-Juicer (Chen et al. 2024)、datatrove (Penedo et al. 2024)、dolma-toolkit 等专为 LLM 逻辑设计的数据处理工具框架，而非用通用 ETL 工具生搬硬套。
 
-**表 1-5：LLM 数据工程师与传统 ML 数据工程师能力边界对照表**
+*表1-5：LLM 数据工程师与传统 ML 数据工程师能力边界对照表。来源：本书整理，基于岗位能力边界与工具链演进归纳。*
 
 | 能力维度 | 传统 ML 数据工程师 | LLM 数据工程师 |
 | :--- | :--- | :--- |
@@ -207,11 +209,11 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
 
 ## 1.4 全生命周期地图与十四篇制导读
 
-理解上述范式变革后，需要用一个全局地图来定位大模型数据工程的主要问题域。本书以系统工程视角将知识结构组织为十四篇。
+理解上述范式变革后，需要用一个全局地图来定位大模型数据工程的主要问题域。本书以系统工程视角将知识结构组织为十四篇。全书十四篇制的生命周期地图如图 1-2 所示。
 
 ![图1-2：全书十四篇制生命周期地图，展示从总论、预训练、多模态、对齐、应用、平台、合规到项目实战的知识结构](../../images/part1/data_lifecycle_map_1775830407042.png)
 
-*图1-2：全书十四篇制生命周期地图。来源：本书自绘。该图以基础设施为底座，串联预训练、多模态、对齐、应用、平台治理、合规与项目实战。*
+*图1-2：全书十四篇制生命周期地图。来源：本书自绘。该图以基础设施为底座，串联预训练、多模态、对齐、应用、平台治理、合规与项目实战；Alt text：全书十四篇制生命周期地图，展示从总论、预训练、多模态、对齐、应用、平台、合规到项目实战的知识结构。*
 
 
 ### 1.4.1 十四篇制如何覆盖各阶段痛点
@@ -223,8 +225,15 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
     * **第五篇（合成数据工程）**讨论如何用强模型、规则验证和数据审计构建可控的合成数据工厂。
     * **第六篇（推理与 Agent 数据工程）**关注 CoT、Tool-Use、Agent 记忆和多轮交互数据。
 5. **第七篇（应用级数据工程）**：讨论 RAG、多模态检索、在线反馈和知识更新。
-6. **第八至第十一篇（平台、资产与合规治理）**：覆盖 DataOps、数据版本、可观测性、数据资产、数据契约、隐私合规和联邦学习。
-7. **第十二至第十四篇（专项数据集、项目与开源实战）**：用专项数据集和项目流水线展示从数据集设计到工程落地的完整路径。
+6. **第八至第十一篇（系统、资产、Agent 与合规治理）**：
+    * **第八篇（DataOps、版本追踪与实验治理）**讨论数据版本、实验追踪、可观测性和质量门禁。
+    * **第九篇（数据资产、数据产品与数据契约）**讨论数据目录、元数据治理、数据产品化、契约和内部数据市场。
+    * **第十篇（智能化数据工程与 Data Engineering Agent）**讨论数据工程 Agent 如何参与采集、清洗、标注、评测和安全协同。
+    * **第十一篇（隐私合规与数据安全）**讨论隐私保护、合规审计、联邦学习和安全边界。
+7. **第十二至第十四篇（专项数据集、开源配方与项目案例）**：
+    * **第十二篇（专项数据集与数据工程实践）**用具体数据对象验证前文方法。
+    * **第十三篇（开源大模型数据工程配方与范式）**抽象预训练、后训练、推理强化学习和多模态模型的数据配方。
+    * **第十四篇（项目案例研究）**通过端到端项目展示从数据集设计到工程交付的完整路径。
 
 ---
 
@@ -238,9 +247,9 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
 
 **路线 B：传统机器学习背景转型者。** 具有推荐系统、搜索排序或传统机器学习经验的读者，应在第一篇完成范式迁移后，重点阅读第二篇（文本预训练数据工程）和第四篇（指令微调与偏好数据）。这一路线有助于把结构化特征工程经验迁移到非结构化语义清洗、去重、污染检测和样本设计中。
 
-**路线 C：全栈 LLM Data 专家。** 需要主导数据工程决策的读者，可以按“第一篇基础框架 → 第二、三篇数据获取与处理 → 第四至第六篇对齐与推理数据 → 第七篇应用级数据工程 → 第八、九、十一篇平台与治理 → 第十三、十四篇项目实战”的顺序阅读。该路线强调从数据来源、质量评估、平台接口到合规审计的端到端能力。
+**路线 C：全栈 LLM Data 专家。** 需要主导数据工程决策的读者，可以按“第一篇基础框架 → 第二、三篇数据获取与处理 → 第四至第六篇对齐与推理数据 → 第七篇应用级数据工程 → 第八至第十一篇平台、资产、Agent 与合规治理 → 第十二至第十四篇专项数据集、开源配方与项目案例”的顺序阅读。该路线强调从数据来源、质量评估、平台接口到合规审计的端到端能力。
 
-**表 1-6：各类型读者的章节优先级建议（1=低，5=高）**
+*表1-6：各类型读者的章节优先级建议（1=低，5=高）。来源：本书整理，评分为阅读路径建议而非实测评价。*
 
 | 篇章 | 平台/MLOps 工程师 | 转型机器学习工程师 | 全栈 LLM Data 专家 |
 | :--- | :---: | :---: | :---: |
@@ -253,7 +262,10 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
 | 第七篇 RAG 应用级数据栈 | 3 | 5 | 5 |
 | 第八篇 DataOps 平台 | 5 | 3 | 5 |
 | 第九篇 数据资产与数据契约 | 4 | 3 | 5 |
+| 第十篇 数据工程 Agent | 4 | 3 | 5 |
 | 第十一篇 隐私与合规 | 4 | 3 | 5 |
+| 第十二篇 专项数据集实践 | 3 | 4 | 5 |
+| 第十三篇 开源数据配方 | 3 | 4 | 5 |
 | 第十四篇 项目实战 | 4 | 4 | 5 |
 
 ### 1.5.2 避免本位主义的常见误区
@@ -279,21 +291,11 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
 
 ---
 
-**本章小结**
+## 本章小结
 
 本章以一个匿名化复合案例开篇，说明数据质量问题会在训练、评测和业务上线之间持续放大。随后，本章结合 Scaling Laws 与 Chinchilla 法则，论证数据规模、质量和多样性共同决定模型能力边界，并通过对比表格揭示传统 AI 数据链路与大模型原生数据体系之间的差异。最后，本章定义了六类核心角色、数据交接 SLA、数据飞轮和差异化阅读路径，为后续章节讨论质量框架、基础设施和具体数据流水线奠定基础。
 
 **数据工程不是简单的数据搬运，而是影响大模型能力边界、成本结构和风险治理的核心系统。** 带着这一认知，下一章将为整个体系建立统一的质量标准与治理语言。
-
----
-
-## 本章小结
-
-本章围绕“大模型时代的数据变革”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
-
-本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
-
-在全书结构中，本章位于基础框架层，承担承接前文基础概念并导向文本与多模态数据处理的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
 
 ## 参考文献
 
@@ -305,7 +307,7 @@ Rae J W, Borgeaud S, Cai T, Millican K, Hoffmann J, Song F, Aslanides J, Henders
 
 Brown T B, Mann B, Ryder N, Subbiah M, Kaplan J D, Dhariwal P, Neelakantan A, Shyam P, Sastry G, Askell A, Agarwal S, Herbert-Voss A, Krueger G, Henighan T, Child R, Ramesh A, Ziegler D, Wu J, Winter C, Hesse C, Chen M, Sigler E, Litwin M, Gray S, Chess B, Clark J, Berner C, McCandlish S, Radford A, Sutskever I, Amodei D (2020) Language Models are Few-Shot Learners. Advances in Neural Information Processing Systems 33:1877-1901.
 
-Dubey A, Jauhri A, Pandey A, Khandelwal A, Al-Dahle A, Letman A, Mathur A, Schelten A, Yang A, Fan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
+Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
 
 Gunasekar S, Zhang Y, Aneja J, Mendes C C T, Del Giorno A, Gopi S, Javaheripi M, Kauffmann P, de Rosa G, Saarikivi O, Salim A, Shah S, Behl H S, Wang X, Bubeck S, Eldan R, Kalai A T, Lee Y T, Li Y (2023) Textbooks Are All You Need. arXiv preprint arXiv:2306.11644.
 
@@ -313,21 +315,21 @@ Li Y, Bubeck S, Eldan R, Del Giorno A, Gunasekar S, Lee Y T (2023) Textbooks Are
 
 Gao L, Biderman S, Black S, Golding L, Hoppe T, Foster C, Phang J, He H, Thite A, Nabeshima N, Presser S, Leahy C (2020) The Pile: An 800GB Dataset of Diverse Text for Language Modeling. arXiv preprint arXiv:2101.00027.
 
-Penedo G, Malartic Q, Hesslow D, Cojocaru R, Cappelli A, Beguier A, Allal L B, Pannier B, Launay J (2023) The RefinedWeb Dataset for Falcon LLM: Outperforming Curated Corpora with Web Data, and Web Data Only. arXiv preprint arXiv:2306.01116.
+Penedo G, Malartic Q, Hesslow D, Cojocaru R, Cappelli A, Alobeidli H, Pannier B, Almazrouei E, Launay J (2023) The RefinedWeb Dataset for Falcon LLM: Outperforming Curated Corpora with Web Data, and Web Data Only. arXiv preprint arXiv:2306.01116.
 
-Lozhkov A, Ben Allal L, von Werra L, Wolf T (2024) FineWeb-Edu: the finest collection of educational content the web has to offer. Hugging Face Blog. https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu.
+Lozhkov A, Ben Allal L, von Werra L, Wolf T (2024) FineWeb-Edu: the finest collection of educational content the web has to offer. Hugging Face dataset. <https://huggingface.co/datasets/HuggingFaceFW/fineweb-edu>.
 
-Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur A, Bogin B, Chen X, Dumas G, Elazar Y, Hofmann V, Jha A H, Kumar S, Lucy L, Lyu X, Lambert N, Magnusson I, Morrison J, Muennighoff N, Naik A, Nam G, Peters M E, Ravichander A, Richardson L, Shen Z, Strubell E, Subramani N, Tafjord O, Walsh N, Zettlemoyer L, Smith N A, Hajishirzi H, Beltagy I, Groeneveld D, Dodge J, Lo K (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.
+Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur R, Bogin B, Chandu K, Dumas L, Elazar Y, Hofmann V, Jha A H, Kumar S, Lucy L, Lyu X, Lambert N, Magnusson I, Morrison J, Muennighoff N, Naik A, Nam G, Peters M E, Ravichander A, Richardson L, Shen Z, Strubell E, Subramani N, Tafjord O, Walsh N, Zettlemoyer L, Smith N A, Hajishirzi H, Beltagy I, Groeneveld D, Dodge J, Lo K (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.
 
-Li J, Zhang Y, Yu H, Ma X, Chen Y, Jiang H, Dang K, Goyal T, Keh S, Sherborn M, others (2024) DataComp-LM: In search of the next generation of training sets for language models. arXiv preprint arXiv:2406.11794.
+Li J, Fang A, Smyrnis G, Ivgi M, Jordan M, Gadre S, Bansal H, Guha E, Keh S, Arora K, Garg S, Xin R, Muennighoff N, Heckel R, Mercat J, Chen M, others (2024) DataComp-LM: In search of the next generation of training sets for language models. arXiv preprint arXiv:2406.11794.
 
 Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.
 
 Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.
 
-Chen J, Yan X, Lin D, Qu X, Wang Y, Huang X, Zhao Z, Yu T, Zhang Z, Li H, Zheng Y, Xu R, Zhu J, Qiu X (2024) Data-Juicer: A One-Stop Data Processing System for Large Language Models. In: Proceedings of the ACM SIGMOD International Conference on Management of Data, pp 4436-4449.
+Chen D, Huang Y, Ma Z, Chen H, Pan X, Ge C, Gao D, Xie Y, Liu Z, Gao J, Li Y, Ding B, Zhou J (2024) Data-Juicer: A One-Stop Data Processing System for Large Language Models. In: Proceedings of the ACM SIGMOD International Conference on Management of Data, Companion Volume, pp 120-134.
 
-Penedo G, Kydlíček H, Anthony L, Hajos M, Sutawika L, Fourmague H, Nguyen H, de Werra L, Wolf T (2024) datatrove: large scale data processing. Hugging Face Open Source Library. https://github.com/huggingface/datatrove.
+Penedo G, Kydlíček H, Cappelli A, Wolf T, Sasko M (2024) DataTrove: large scale data processing. Software repository. <https://github.com/huggingface/datatrove>.
 
 Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S, Slama K, Ray A, Schulman J, Hilton J, Kelton F, Miller L, Simens M, Askell A, Welinder P, Christiano P F, Leike J, Lowe R (2022) Training Language Models to Follow Instructions with Human Feedback. Advances in Neural Information Processing Systems 35:27730-27744.
 

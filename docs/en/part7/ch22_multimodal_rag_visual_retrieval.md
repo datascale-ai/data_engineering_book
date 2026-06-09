@@ -1,179 +1,168 @@
 # Chapter 22: Multimodal RAG and Visual Retrieval
 
-As RAG systems have expanded from text-centric scenarios such as enterprise knowledge Q&A, policy retrieval, and document assistants into financial-report analysis, contract review, product-manual understanding, invoice processing, medical-imaging reports, and Q&A over complex-layout documents, a new problem has come to the fore: real-world knowledge does not always exist as plain text. A large amount of critical information is hidden inside images, tables, charts, screenshots, flowcharts, layout structures, and visual regions. If a system continues to follow the text-RAG playbook, simply parsing documents into strings and then chunking, embedding, and retrieving, it will easily fail systematically in complex knowledge scenarios.
+## Abstract
 
-The fundamental assumption of text RAG is that knowledge can be turned into text and that retrieval plus generation over that text is sufficient for Q&A. In multimodal scenarios, this assumption does not always hold. For example, a key trend in a financial report may be conveyed in a line chart; the operating steps in a product manual may depend on the position of a button in a screenshot; the seals and annotations on a scanned contract may exist only as images; and the judgment basis in a medical-examination report may emerge from the combined relationship between an image region and its textual description. In such cases, OCR can extract only part of the text and cannot fully express visual structure, spatial relationships, or image–text alignment.
+Real-world knowledge does not always exist in plain text: trends in financial reports are embedded in line charts, the steps in a manual depend on button positions in screenshots, and the signatures and annotations in contracts exist as image regions. When Retrieval-Augmented Generation (RAG) expands from text-centric scenarios to such visually complex documents, simply flattening documents into character strings via Optical Character Recognition (OCR) discards visual structure, spatial relationships, and image-text alignment information, leading to systematic failures. This chapter frames the core task of multimodal RAG not as appending OCR to text RAG, but as fundamentally redefining knowledge units, indexing strategies, and evidence organization. The chapter first analyzes why text RAG cannot cover visual knowledge, then discusses how visual chunking and object modeling organize pages, regions, tables, and images into locatable and citable knowledge assets, before explaining the implementation of cross-modal indexing, retrieval, and reranking. It concludes by establishing evaluation, error attribution, and online failure-sample replenishment mechanisms for visual retrieval, providing a methodological foundation for applications such as complex enterprise document understanding and financial report analysis.
 
-The core task of multimodal RAG is therefore not "adding OCR to text RAG," but redefining what counts as a knowledge unit and how indexing and evidence organization are designed. The system needs to understand the relationships among pages, regions, objects, tables, images, and text, and to organize this multimodal information into knowledge assets that are retrievable, locatable, citable, and verifiable. In other words, the problem that multimodal RAG is solving is not "how to convert images into text," but "how to bring visual knowledge into the retrieval-and-generation loop."
 
-This chapter focuses on multimodal RAG and visual retrieval. It centers on why text RAG cannot cover visual knowledge, how visual chunks and object models should be designed, how cross-modal indexing, retrieval, and reranking work, and how evaluation, error attribution, and the backfilling of online failure samples continually improve system capability on complex documents. This chapter also lays a methodological foundation for the subsequent projects on multimodal financial-report assistants, complex enterprise-document retrieval, and document understanding.
+As RAG systems progressively expand from text-centric scenarios—enterprise knowledge Q&A, policy retrieval, and document assistants—to financial report analysis, contract review, product manual comprehension, invoice processing, medical imaging reports, and complex-layout document Q&A, a new problem has come to the fore: real-world knowledge does not always exist in plain text. A large volume of critical information is hidden in images, tables, charts, screenshots, flowcharts, layout structures, and visual regions. If the system still follows a text-RAG paradigm—parsing documents into character strings, then chunking, vectorizing, and retrieving—it will readily suffer systematic failures in complex knowledge scenarios.
+
+The fundamental assumption of traditional text RAG is that knowledge can be converted into text and that Q&A can be completed through text retrieval and generation. In multimodal scenarios, however, this assumption does not always hold. For example, key trends in a financial report may be encoded in a line chart; the operating steps in a product manual may depend on button positions in a screenshot; signatures and annotations in a scanned contract may exist as image regions; and the basis for a judgment in a medical examination report may arise from the combined relationship between image regions and textual descriptions. In these cases, OCR can extract only part of the text and cannot fully express visual structure, spatial relationships, or image-text alignment information.
+
+Therefore, the core task of multimodal RAG is not simply adding OCR to text RAG, but redefining knowledge units, indexing strategies, and evidence organization. The system must understand the relationships among pages, regions, objects, tables, images, and text, and organize this heterogeneous information into knowledge assets that are retrievable, locatable, citable, and verifiable. In other words, multimodal RAG does not address "how to convert images to text" but rather "how to bring visual knowledge into the retrieval-and-generation loop."
+
+This chapter focuses on multimodal RAG and visual retrieval, emphasizing why text RAG cannot cover visual knowledge, how to design visual chunks and object models, how to implement cross-modal indexing, retrieval, and reranking, and how to continuously improve system capability in complex document scenarios through evaluation, error attribution, and online failure-sample replenishment. This chapter also provides the methodological foundation for subsequent projects on multimodal financial report assistants, complex enterprise document retrieval, and document understanding.
+
+## Keywords
+
+Multimodal RAG; Visual Retrieval; Visual Chunk; Cross-modal Indexing; Error Attribution; Data Replenishment
+
+## Learning Objectives
+
+- Be able to explain why text RAG and OCR cannot cover visual knowledge such as charts, layouts, and interfaces.
+- Be able to distinguish the processing priorities for document layout knowledge, chart numerical knowledge, and interface/scene object knowledge.
+- Be able to design visual chunk and object modeling methods that make pages, regions, tables, and images locatable and citable.
+- Be able to construct cross-modal indexing, retrieval, and reranking pipelines to recall multimodal evidence.
+- Be able to establish evaluation, error attribution, and online failure-sample replenishment mechanisms for visual retrieval.
 
 ---
 
 ## 22.1 Why Text RAG Cannot Cover Visual Knowledge
 
-### 22.1.1 From Readable Text to Understandable Pages
+### 22.1.1 From Readable Text to Comprehensible Pages
 
-In Chapter 21 we discussed how a RAG data pipeline is organized around document engineering: from raw-document ingestion, parsing, and structured cleaning, to chunk construction, indexing, retrieval, evaluation, and feedback. For text-dominant knowledge bases, this pipeline can already solve a large number of practical problems. However, when knowledge appears in the form of complex pages, charts, images, or layout structures, relying solely on text extraction quickly runs into clear bottlenecks.
+In Chapter 21, we discussed how the RAG data pipeline revolves around document engineering: from raw document ingestion, parsing, and structured cleaning, to chunk construction, indexing, retrieval, evaluation, and feedback. For knowledge bases that are primarily text-based, this pipeline can already solve a large number of practical problems. However, when knowledge appears in the form of complex pages, charts, images, or layout structures, relying solely on text extraction encounters clear bottlenecks (Xu et al. 2020; Huang et al. 2022).
 
-The core processing unit in text RAG is the text segment. The system typically first parses the document into text, then splits chunks based on paragraphs or semantic boundaries, and finally retrieves relevant content via vector search and keyword search. The implicit premise is that the original knowledge can be largely converted into linear text. But knowledge in complex documents is often non-linear: it is spatial, structured, and cross-modal.
+The core processing unit of text RAG is the text chunk. The system typically first parses a document into text, then segments it into chunks based on paragraph or semantic boundaries, and finally retrieves relevant content via vector search and keyword search. The implicit premise of this approach is that raw knowledge can be converted into linear text with reasonable completeness. However, knowledge in complex documents is often non-linear—it is spatial, structured, and cross-modal. For instance, in a financial report, information such as "revenue growth," "gross margin decline," and "cash flow changes" is typically not expressed within a single paragraph but is distributed across body text, tabular data, bar charts, line charts, and footnotes. Extracting only the body text may miss chart trends; extracting only tables may lose interpretive context; OCR-ing chart labels alone cannot capture curve trends. To answer the user question "What are the main reasons for the company's declining profit margin in Q2?", the system must simultaneously retrieve textual explanations, key financial tables, and relevant charts—not just a single text passage. Similarly, in a product operation manual, a step might say "click the Advanced Settings button in the upper right corner," but the actual button position, icon appearance, and interface layout exist in a screenshot. If the system extracts only text, it can obtain the phrase "Advanced Settings button" but cannot understand where the button is on the page, nor can it answer questions like "In which area is the Advanced Settings button?" or "What other options are next to that button?" The answers to these questions reside in the visual layout, not in text alone.
 
-For instance, in a financial report, information such as "revenue growth," "declining gross margin," and "cash-flow changes" is often not expressed by a single paragraph but distributed across body text, tabular data, bar charts, line charts, and footnotes. Extracting body text alone may lose chart trends; extracting tables alone may lose interpretive context; running OCR over chart text alone cannot capture curve dynamics. For a user question like "what were the main reasons for the decline in the company's Q2 profit margin," the system must retrieve textual explanations, key financial tables, and related charts simultaneously, rather than recalling a single paragraph.
-
-As another example, a step in a product-operation manual may say "click the Advanced Settings button in the upper right," while the actual position, icon shape, and surrounding layout of that button exist only in a screenshot. If the system extracts only text, it may obtain the phrase "Advanced Settings button" but cannot understand where the button sits on the page, and it cannot answer "where is the Advanced Settings button" or "what other options are next to that button." The answer lies in the visual layout, not just in the text.
-
-Multimodal RAG therefore requires us to shift from a "readable text" perspective to an "understandable page" perspective. A page is no longer just a text container; it is a knowledge structure jointly composed of text blocks, image blocks, table blocks, chart regions, layout relationships, and visual objects. The system must process not only textual content but also the spatial, referential, and semantic relations among these elements.
+Therefore, multimodal RAG first requires a perspective shift from "readable text" to "comprehensible pages." A page is no longer merely a container for text but a knowledge structure composed of text blocks, image blocks, table blocks, chart regions, layout relationships, and visual objects. What the system must process includes not only textual content but also the spatial relationships, reference relationships, and semantic relationships among these elements.
 
 ---
 
 ### 22.1.2 OCR Is Not Visual Understanding
 
-A common misconception in multimodal RAG projects is treating OCR as a substitute for visual understanding. The role of OCR is to recognize text in images; it solves the problem "what does the text in this image say." Visual understanding, however, must solve a more complex set of problems: where these texts are located, which visual elements they relate to, which table, chart, or region they belong to, what relationships exist among them, and how they jointly support an answer.
+In multimodal RAG projects, a common misconception is treating OCR as a substitute for visual understanding. The role of OCR is to recognize the text within images; it answers the question "What text is in the image?" Visual understanding, however, must address more complex questions: Where is that text located? Which visual elements is it associated with? Which table, chart, or region does it belong to? What relationships exist among these elements? And how do they jointly support an answer? (Kim et al. 2022; Mathew et al. 2021). Consider a scanned financial report: OCR can recognize text and numbers on the page—for example, "Revenue," "Gross Margin," "2023," "2024," "15.6%"—but having these strings is insufficient to answer questions. The system must also know which row and column a given number belongs to, what its unit is, whether it comes from a merged cell, whether it is subject to footnote constraints, and whether it corresponds to a trend in a specific chart. If OCR output is naively concatenated into text, the original visual structure is destroyed and the model sees only a jumbled string.
 
-Take a scanned financial report as an example. OCR can recognize words and numbers on the page, such as "Revenue," "Gross Margin," "2023," "2024," "15.6%," and so on. But these tokens alone are not enough to answer questions. The system must also know which row and column a given number belongs to, what its unit is, whether it comes from a merged cell, whether it is constrained by a footnote, and whether it corresponds to a particular chart trend. If OCR output is simply concatenated into text, the original visual structure is destroyed and the model sees only a jumble of strings.
+Similarly, for chart-based knowledge, OCR can recognize axis labels and legend text, but it is difficult to directly understand curve trends, bar comparisons, area changes, or outliers. If a user asks "Which quarter had the fastest revenue growth?", the answer may not be text that appears explicitly on the page but must be inferred from the shape of the chart. In this case, the system needs visual region detection, chart type identification, data extraction, and cross-modal alignment capabilities—not just OCR.
 
-Similarly, for chart-type knowledge, OCR can recognize axis labels and legend entries but struggles to directly understand curve trends, bar comparisons, area changes, or outliers. If a user asks "in which quarter was revenue growth fastest," the answer is often not literally written on the page but must be inferred from the chart's visual form. The system therefore needs visual-region detection, chart-type recognition, data extraction, and cross-modal alignment, not just OCR.
+For screenshot-based knowledge, OCR is equally insufficient. The buttons, menus, input fields, icons, and tooltips in a software interface collectively constitute operational semantics. Whether a button is clickable, which region it belongs to, and which input field it is associated with are typically determined by visual layout. OCR can recognize button labels but cannot fully express interaction relationships. If the system relies solely on OCR, it may report the button name but cannot guide the user through the operation.
 
-For screenshot-type knowledge, OCR is likewise insufficient. Buttons, menus, input fields, icons, and tooltips in a software interface jointly form operational semantics. Whether a button is clickable, which region it belongs to, and which input field it is associated with are usually determined by the visual layout. OCR can recognize the button's label but cannot fully express interaction relationships. If the system relies on OCR alone, it may produce the button name yet fail to guide the user through the operation.
+Therefore, in multimodal RAG, OCR is only a foundational capability, not a complete solution. True visual understanding must simultaneously handle four categories of information: textual content, visual regions, spatial layout, and cross-modal relationships. Only when this information is organized into a unified knowledge representation can the system stably answer questions in complex document and visual scenarios.
 
-In multimodal RAG, OCR is therefore only a foundational capability, not a complete solution. Genuine visual understanding requires handling at least four types of information simultaneously: textual content, visual regions, spatial layout, and cross-modal relationships. Only when this information is organized into a unified knowledge representation can the system answer questions reliably over complex documents and visual scenes.
+![Figure 22-1: The Capability Boundary Between OCR and Visual Understanding](../../images/part7/图22_1zh.png)
 
-![Figure 22-1: Capability boundary between OCR and visual understanding](../../images/part7/图22_1.png)
-
-*Figure 22-1: Capability boundary between OCR and visual understanding*
+*Figure 22-1: The Capability Boundary Between OCR and Visual Understanding*
 
 
 
 ---
 
-### 22.1.3 Three Typical Forms of Visual Knowledge
+### 22.1.3 Three Canonical Forms of Visual Knowledge
 
-To understand the data-engineering challenges of multimodal RAG, it helps to first divide visual knowledge into three categories: document-layout knowledge, chart-numeric knowledge, and interface/scene-object knowledge. Different categories impose different requirements on parsing, chunking, indexing, and evaluation.
+To understand the data engineering challenges of multimodal RAG, and drawing reference from benchmarks ranging from DocVQA and InfographicVQA to ChartQA (Mathew et al. 2021; Mathew et al. 2022; Masry et al. 2022), we can first classify visual knowledge into three categories: document layout knowledge, chart numerical knowledge, and interface/scene object knowledge. Different types of visual knowledge impose different requirements on parsing, chunking, indexing, and evaluation.
 
-The first category is document-layout knowledge. It appears mainly in PDFs, scanned documents, contracts, reports, manuals, and invoices. Its defining feature is that knowledge depends on page layout and structural hierarchy. The relationship between a heading and its body text, between a table and its footnotes, between a figure caption and its image, and between a phrase like "as shown in the table below" and the table that follows all fall under document-layout knowledge. For this category, the system's priority is not recognizing individual objects but restoring page structure and reading order.
+The first category is document layout knowledge. It exists primarily in PDFs, scanned documents, contracts, reports, manuals, and invoices. Its defining characteristic is that knowledge depends on page layout and structural hierarchy. For example, the relationships between headings and body text, between tables and footnotes, between figure captions and images, and between the phrase "as shown in the following table" and the subsequent table all constitute document layout knowledge. For this type of knowledge, the system's priority is not to identify individual objects but to recover page structure and reading order.
 
-The second category is chart-numeric knowledge. It appears in earnings reports, experimental reports, business dashboards, market analyses, and statistical charts. Its defining feature is that knowledge is not expressed as sentences but encoded visually, through bar heights, line-chart trends, color groupings, axis ticks, and legend mappings. For this category, the system must convert charts into structured data or chart-semantic descriptions; otherwise, accurate Q&A is hard to support.
+The second category is chart numerical knowledge. It exists in financial reports, experimental reports, business dashboards, market analysis reports, and statistical charts. Its defining characteristic is that knowledge is not expressed directly in sentences but through visual encoding—for example, bar heights, line trends, color groupings, axis scales, and legend mappings. For this type of knowledge, the system must convert charts into structured data or chart semantic descriptions; otherwise, it is difficult to support precise question answering.
 
-The third category is interface and object knowledge. It appears in software screenshots, operating manuals, industrial images, product photos, and on-site photographs. Its defining feature is that knowledge depends on object positions, visual attributes, and spatial relationships. Expressions like "the button in the upper-right corner," "the red warning icon," "the Submit button below the form," or "the port on the left side of the device" can only be understood with reference to the visual region. For this category, the system needs object detection, region description, and visual-object alignment.
+The third category is interface and object knowledge. It exists in software screenshots, operation manuals, industrial images, product photographs, and on-site photos. Its defining characteristic is that knowledge depends on object position, visual attributes, and spatial relationships. Expressions such as "upper-right button," "red warning icon," "submit button below the form," and "port on the left side of the device" can only be understood in conjunction with visual regions. For this type of knowledge, the system needs object detection, region description, and visual object alignment.
 
-*Table 22-1: Main forms of visual knowledge and their processing focus*
+*Table 22-1: Major Forms of Visual Knowledge and Their Processing Priorities*
 
-| Visual knowledge type            | Common sources                                | Core information                                              | Processing focus                                          |
-| -------------------------------- | --------------------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------- |
-| Document-layout knowledge        | PDFs, scans, contracts, reports               | Heading hierarchy, paragraphs, tables, captions, page numbers | Layout parsing, reading order, region localization        |
-| Chart-numeric knowledge          | Earnings reports, statistical reports, dashboards | Axes, legends, trends, numerical relations                | Chart recognition, data extraction, trend description     |
-| Interface and object knowledge   | Software screenshots, manuals, product images | Buttons, icons, regions, object relations                     | Object detection, region description, spatial relations   |
-| Image–text association knowledge | Mixed image–text documents, manuals           | Body references, captions, visual evidence                    | Image–text alignment, captions, citation binding          |
+| Visual Knowledge Type      | Common Sources                              | Core Information                                         | Processing Priority                                  |
+| -------------------------- | ------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------- |
+| Document Layout Knowledge  | PDFs, scanned documents, contracts, reports | Heading hierarchy, paragraphs, tables, captions, page numbers | Layout parsing, reading order, region localization   |
+| Chart Numerical Knowledge  | Financial reports, statistical reports, business dashboards | Axes, legends, trends, numerical relationships       | Chart recognition, data extraction, trend description |
+| Interface & Object Knowledge | Software screenshots, operation manuals, product images | Buttons, icons, regions, object relationships       | Object detection, region description, spatial relationships |
+| Image-Text Association Knowledge | Mixed image-text documents, manuals    | Body references, image captions, visual evidence         | Image-text alignment, captions, reference binding    |
 
-This table shows that multimodal RAG is not a single task but a set of data-engineering problems centered on organizing visual knowledge. Different categories of visual knowledge require different processing strategies. If a system applies the same OCR-plus-text-chunking recipe to all visual knowledge, it will keep hitting its limits in real-world scenarios.
-
----
-
-### 22.1.4 Typical Failure Modes of Text RAG on Visual Scenarios
-
-When text RAG is applied directly to multimodal documents or visual-knowledge scenarios, the common failure modes fall into four categories: missed reads, misreads, mislocalization, and broken evidence chains.
-
-A missed read means the system fails to capture key information at all. For example, a key metric in a financial report lives in an image-based table; OCR quality is poor or the parser ignores the image region, so the information never enters the knowledge base. Even with otherwise normal retrieval, the system cannot recall knowledge that does not exist in the index.
-
-A misread means the system captures the information but interprets its structure or meaning incorrectly. For instance, when a table is flattened into linear text, the system may associate a number with the wrong field; chart-axis ticks may be misread, leading to incorrect trend judgments; the reading order of a multi-column page may be scrambled, splicing together two unrelated paragraphs. Misreads are more dangerous than missed reads because the system will produce plausible-looking answers from incorrect evidence.
-
-Mislocalization means the system knows the relevant content exists but cannot pin down the exact page or visual region. For instance, the system answers "this data comes from Figure 3" but cannot say which curve, bar, or table cell within Figure 3 it refers to. This reduces verifiability and makes users distrust the system.
-
-A broken evidence chain means the connection between text and visual evidence is lost. For example, the body text states "as shown in Figure 4, the model's performance degrades under high load," but after parsing the body-text chunk and the Figure 4 image chunk are not linked. The system may recall the body text but not the image; or it may recall the OCR text of the image but fail to associate it with the body-text explanation. In either case, the model cannot use the evidence as a whole.
-
-What these failure modes share is that the original knowledge has not entirely disappeared—it has simply not entered the retrieval system in the right structure. They reinforce the point that the key to multimodal RAG is not bolting on a vision model but redesigning the data representation, indexing, and evidence organization of visual knowledge.
+This table illustrates that multimodal RAG is not a single task but a set of data engineering problems centered on visual knowledge organization. Different visual knowledge types require different processing strategies. If a system applies the same OCR-plus-text-chunking pipeline to all visual knowledge, its limitations will be continuously exposed in real-world scenarios.
 
 ---
 
-### 22.1.5 A Paradigm Shift from Text Chunks to Visual Chunks
+### 22.1.4 Typical Failure Modes of Text RAG in Visual Scenarios
 
-The basic unit of text RAG is the text chunk; in multimodal RAG, this unit must be extended to the visual chunk. A visual chunk is not simply a single image; it is a knowledge unit equipped with a visual region, text content, spatial position, semantic description, source information, and citation anchors.
+When text RAG is applied directly to multimodal documents or visual knowledge scenarios, the most common failure modes fall into four categories: missed detection, misreading, mislocalization, and evidence fragmentation.
 
-In a financial-report PDF, for example, a visual chunk can be a full page, a table region, a chart, a footnote area, or a body paragraph combined with the chart it refers to. For a software-operation manual, a visual chunk can be a screenshot region together with its accompanying explanation. For a scanned contract, a visual chunk can be a seal area, an annotation area, or a table region.
+Missed detection means the system entirely fails to capture critical information. For example, key metrics in a financial report are located in an image-based table; poor OCR quality or a parser that ignores image regions means this information never enters the knowledge base. Even if retrieval functions normally when the user asks a question, the system cannot recall knowledge that does not exist in the index.
 
-A visual chunk should contain at least the following information: the image or page region itself, region coordinates, OCR text, a visual description, associated text, the page it belongs to, the chapter path, the content type, permission information, and citation anchors. For chart-type chunks, it should also include the chart type, axes, legend, extracted data, and a trend summary. For table-type chunks, it should include row–column structure, units, and notes.
+Misreading means the system captured information but the structure or meaning is incorrect. For example, after a table is flattened into linear text, the system associates a value with the wrong field; axis scales in a chart are recognized incorrectly, causing a trend judgment to be wrong; the reading order of a multi-column page is scrambled, causing two unrelated paragraphs to be concatenated. Misreading is more dangerous than missed detection because the system generates plausible-sounding answers based on incorrect evidence.
 
-This means the schema of knowledge units in multimodal RAG is more complex than in text RAG. It must support not only text retrieval but also image retrieval, region localization, cross-modal reranking, and answer traceability. At generation time, the system must tell the model not only "what this text says" but also "what this visual region represents, which texts it relates to, and where the user can verify it."
+Mislocalization means the system knows relevant content exists but cannot precisely locate it on the page or visual region. For example, the system responds "this data comes from Figure 3" but cannot identify which curve, which bar, or which table cell within Figure 3. This reduces the verifiability of the answer and makes it difficult for users to trust the system.
 
-From this perspective, the fundamental change in multimodal RAG is that the knowledge unit expands from a one-dimensional text fragment to a two- or even multi-dimensional evidence object. This requires data engineering to upgrade from "text chunking" to "page modeling" and "visual-object modeling."
+Evidence fragmentation means the link between text and visual evidence is lost. For example, the body text reads "As shown in Figure 4, model performance degrades under high load," but after parsing the body text chunk and the Figure 4 image chunk are not bound together. The system may recall the body text without recalling the image, or may recall OCR text from the image without associating the body text explanation. In this situation the model cannot make full use of the evidence.
+
+The common thread among these failure modes is that the raw knowledge has not entirely disappeared, but it has not entered the retrieval system with the correct structure. They further confirm that the key challenge of multimodal RAG is not simply adding a visual model, but redesigning the data representation, indexing, and evidence organization of visual knowledge.
+
+---
+
+### 22.1.5 The Paradigm Shift from Text Chunks to Visual Chunks
+
+The basic unit of text RAG is the text chunk, while the basic unit of multimodal RAG must be extended to the visual chunk. The development of visually-grounded language pretraining models demonstrates that treating page regions, visual patches, and text tokens collectively as modelable objects is an important technical foundation for moving from text chunks to visual chunks (Huang et al. 2022; Lee et al. 2023). A visual chunk is not simply a single image but a knowledge unit that carries a visual region, textual content, spatial position, semantic description, provenance information, and a citation anchor. For example, in a financial report PDF, a visual chunk can be an entire page, a table region, a chart, a footnote region, or a combination of a body paragraph and its corresponding chart. For a software operation manual, a visual chunk can be a screenshot region and its corresponding explanatory text. For a scanned contract, a visual chunk can be a signature region, an annotation region, or a table region.
+
+A visual chunk should contain at minimum the following information: the image or page region itself, region coordinates, OCR text, visual description, associated text, the page it belongs to, the chapter path, content type, permission information, and a citation anchor. For chart-type chunks, it should also include chart type, axes, legend, extracted data, and a trend summary. For table-type chunks, it should include row-column structure, units, and remarks.
+
+This means the knowledge unit schema of multimodal RAG will be more complex than that of text RAG. It must support not only text retrieval but also image retrieval, region localization, cross-modal reranking, and answer provenance. In the generation phase, the system must inform the model not only "what this passage says" but also "what this visual region represents, which texts it is related to, and where the user can verify it."
+
+From this perspective, the fundamental change in multimodal RAG is the expansion of knowledge units from one-dimensional text fragments to two-dimensional or even multi-dimensional evidence objects. It requires data engineering to upgrade from "text chunking" to "page modeling" and "visual object modeling."
 
 ---
 
 ### 22.1.6 Section Summary
 
-This section discussed why traditional text RAG cannot fully cover visual knowledge. The fundamental reason is that a large portion of real-world knowledge does not exist as linear text but is embedded in page layouts, chart structures, screenshot regions, object positions, and image–text relations. OCR can extract text from images, but it cannot replace visual understanding because it cannot fully restore spatial structure, visual relationships, or cross-modal semantics.
+This section discussed why traditional text RAG cannot fully cover visual knowledge. The fundamental reason is that a large volume of real-world knowledge does not exist in linear text form but is embedded in page layouts, chart structures, screenshot regions, object positions, and image-text relationships. Although OCR can extract text from images, it cannot substitute for visual understanding because it cannot fully recover spatial structure, visual relationships, and cross-modal semantics.
 
-The core challenge of multimodal RAG is to organize visual knowledge into knowledge units that are retrievable, locatable, citable, and verifiable. This requires the system to move from text chunks to visual chunks, from text-only indexes to cross-modal indexes, and from "finding relevant text" to "finding usable visual evidence."
+The core challenge facing multimodal RAG is to organize visual knowledge into knowledge units that are retrievable, locatable, citable, and verifiable. This requires the system to move from text chunks to visual chunks, from pure-text indexes to cross-modal indexes, and from "finding relevant text" to "finding usable visual evidence."
 
-The next section discusses visual chunks and object modeling, focusing on how page-level, region-level, object-level, and table-level chunks should be designed, and how bounding boxes, layout, captions, and OCR text can be organized into a unified multimodal knowledge representation.
+The next section will further discuss visual chunk and object modeling, focusing on how page-level, region-level, object-level, and table-level chunks should be designed, and how bounding boxes, layout structures, captions, and OCR text can be organized into a unified multimodal knowledge representation.
 
 ---
 
 ## 22.2 Visual Chunks and Object Modeling
 
-### 22.2.1 Basic Concepts and Challenges of Visual Chunks
+### 22.2.1 The Basic Concepts and Challenges of Visual Chunks
 
-In a multimodal RAG system, how to understand and process visual information is a critical engineering question. Traditional text RAG systems build retrievable knowledge units by splitting documents into multiple text fragments (chunks) that typically rely on structured textual content such as paragraphs, tables, or sentences. In visual scenarios, however, knowledge does not always appear as simple text fragments—especially in settings that contain images, tables, charts, QR codes, complex layouts, or scanned documents.
+In multimodal RAG systems, understanding and processing visual information is a critically important engineering problem. Traditional text RAG systems build retrievable knowledge units by splitting documents into multiple text fragments (chunks) that typically rely on structured textual content such as paragraphs, tables, or sentences (Xu et al. 2020; Appalaraju et al. 2021). In visual scenarios, however, knowledge does not always appear in simple text fragments—especially in environments containing images, tables, charts, QR codes, complex layouts, or scanned documents.
 
-Visual-information processing is therefore not just about extracting text from images (i.e., OCR); it also means understanding the structure of the image itself, the spatial relationships among objects, and effectively aligning and fusing these visual elements with textual information. This leads to the concept of a "visual chunk." A visual chunk is a basic visual unit extracted from an image—it may be a chart region, a picture, a table, or any visual object with semantic meaning. Like a text chunk, a visual chunk should carry its semantic content, position information, and associated textual content, so that downstream retrieval, generation, and verification can use it reliably.
+Therefore, processing visual information goes beyond extracting the text in an image (i.e., OCR); it requires understanding the structure of the image itself, the spatial relationships among objects, and effectively aligning and fusing these visual elements with textual information. This gives rise to the concept of the visual chunk. A visual chunk refers to a basic visual unit extracted from an image; it may be a chart region, a photograph, a table, or any visually meaningful object. Analogous to traditional text chunks, visual chunks should contain the semantic information they carry, positional information, associated textual information, and more, to support subsequent retrieval, generation, and verification. The core characteristics of a visual chunk include the following types:
 
-#### Core characteristics of visual chunks
+- **Diversity**: Visual chunks can take the form of images, charts, tables, flowcharts, etc., and contain multiple types of visual objects.
 
-- **Diversity**: A visual chunk can be a picture, chart, table, flowchart, and so on, containing many kinds of visual objects.
+- **Spatial Relationships**: Visual chunks have spatial positional relationships, such as chart axes, object positions within images, and row-column arrangements in tables.
 
-- **Spatial relations**: Visual chunks have spatial relations to one another—chart axes, object positions in an image, the row–column arrangement of tables, and so on.
+- **Text Association**: Many visual chunks contain content related to text, such as the headers and data in tables, and the labels and trends in charts.
 
-- **Text association**: Many visual chunks contain content related to text, such as the title and data of a table, or the labels and trends of a chart.
-
-- **Cross-modal alignment**: Visual chunks need to be aligned with the corresponding text to form a joint cross-modal representation suitable for downstream retrieval and generation.
+- **Cross-modal Alignment**: Visual chunks must be aligned with their corresponding text to form a joint cross-modal representation, facilitating subsequent retrieval and generation tasks.
 
   ------
 
-  
 
-### 22.2.2 Methods for Generating and Modeling Visual Chunks
 
-In a real RAG system, generating visual chunks involves several key steps: object detection, region segmentation, OCR extraction, and semantic labeling of visual regions. These steps work together so the system can identify the important visual elements in an image and create appropriate knowledge-unit representations for them.
+### 22.2.2 Visual Chunk Generation and Modeling Methods
 
-#### Object detection and region segmentation
+In practical RAG systems, generating visual chunks involves several key steps, primarily including object detection and region segmentation, OCR extraction, and semantic annotation of visual regions (Ren et al. 2015; He et al. 2017; Kirillov et al. 2023). These steps work in concert to help the system identify the important visual elements in an image and create appropriate knowledge unit representations for them.
 
-Object detection is an important computer-vision task in multimodal systems: it identifies different objects in an image and assigns class labels. In a RAG system, object detection is typically used to identify visual regions such as charts, pictures, text boxes, and flowcharts.
+Object Detection is an important computer vision task in multimodal systems; it can identify different objects in an image and assign category labels to them. In RAG systems, object detection is typically used to identify visual regions in images such as charts, photographs, text boxes, and flowcharts. Region Segmentation further refines the work of object detection: it not only identifies objects but can also delineate their boundaries and determine the precise position of each object. Through region segmentation, the system can extract different regions from an image and align each region with its corresponding text or metadata.
 
-Region segmentation refines object detection: it not only identifies objects but also delineates their boundaries, marking precise positions. With region segmentation, the system can extract distinct regions from an image and align each region with its corresponding text or metadata.
+OCR technology is mainly used to extract textual content from images, helping the system understand the text information within visual regions. In multimodal RAG systems, OCR does not merely extract raw characters from images but performs text extraction in conjunction with image structure, position, and context. For example, in an image of a financial statement table, OCR recognizes the data in the table and combines it with the table's row-column relationships to form structured tabular data. After OCR extraction, the system must also clean and normalize the textual content, including removing noise characters, correcting recognition errors, and fixing formatting issues. Furthermore, the OCR-extracted text must be aligned with other visual elements in the image to ensure correct matching between text and visual regions.
 
-#### OCR extraction and text extraction
+To make visual chunks more semantically meaningful, the system must also add appropriate labels and metadata to each visual region. These labels typically include the image category, the function of the region, and its relationship to associated text. For chart-type visual chunks, labels might include "axis," "trend line," and "legend"; for table-type visual chunks, labels might include "row header," "column header," and "value cell."
 
-OCR is primarily used to extract textual content from images, helping the system understand the text inside visual regions. In a multimodal RAG system, OCR is not just character-level extraction—it combines image structure, position, and context to extract text. For example, in a financial-statement table image, OCR will recognize the numbers in the table and combine them with the row–column relations of the table to produce structured tabular data.
-
-After OCR extraction, the system also needs to clean and normalize the text: remove noise characters, correct recognition errors, fix formatting issues. In addition, OCR output must be aligned with other visual elements in the image to ensure that text and visual regions match correctly.
-
-#### Semantic labeling of visual regions
-
-To make visual chunks more semantic, the system must add appropriate labels and metadata to each visual region. These labels typically include the image category, the region's function, and the relations to text. For chart-type visual chunks, labels may include "axis," "trend line," and "legend"; for table-type visual chunks, they may include "row header," "column header," and "value cell."
-
-Introducing these labels and metadata not only helps the system understand the content of each visual region but also benefits downstream retrieval and generation. For instance, when a user asks "how does the company's revenue trend look," the system can use labels to identify chart regions related to revenue and return them as evidence to the generation model so that it produces an accurate answer.
+The introduction of these labels and metadata not only helps the system understand the content of each visual region but also facilitates subsequent retrieval and generation tasks. For example, when a user asks "How has the company's revenue changed over time?", the system can use the labels to identify the chart region associated with revenue and return it as evidence to the generation model, thereby generating an accurate answer.
 
 ---
 
-### 22.2.3 Cross-Modal Alignment: Joint Representation of Text and Vision
+### 22.2.3 Cross-modal Alignment: Joint Representation of Text and Vision
 
-Cross-modal alignment is one of the core tasks in a multimodal RAG system: the system must effectively combine and align visual and textual information to produce accurate knowledge representations. Cross-modal alignment is not just concatenating images and text—it is about understanding their relations, interactions, and shared semantics.
+Cross-modal alignment is one of the core tasks in multimodal RAG systems; it requires the system to effectively combine and align visual information with textual information to provide accurate knowledge representations. Cross-modal alignment typically relies on a shared representation space for text and images. Works such as CLIP, ALIGN, and BLIP-2 have provided important foundations for text-vision joint representation and cross-modal retrieval (Radford et al. 2021; Jia et al. 2021; Li et al. 2023); its core objective is not merely to concatenate images and text, but to understand the relationships, interactions, and shared semantics between them.
 
-#### Methods for aligning text with visual elements
+One common alignment approach is position-based alignment. In this approach, the system uses position information of the OCR-extracted text to match text with regions in the image. For example, for a financial statement image, the system can use the row-column information of the table text to map OCR-extracted text to each cell region in the image. Another approach is semantics-based alignment. In this approach, the system considers not only the positional relationship between text and visual regions but also their semantic similarity. For example, in a report containing sales data and a trend chart, the system can identify the semantic association between the text "sales revenue" and the "sales revenue trend" in a line chart, thereby combining them into a complete visual chunk.
 
-A common alignment method is position-based alignment. Here, the system uses the position information of OCR-extracted text to match it with regions in the image. For a financial-statement image, for instance, the system can use the row–column information of table text to correspond OCR text with each cell region.
+The joint representation of text and visual information is the ultimate goal of cross-modal alignment. Through joint representation, the system can process text and visual data simultaneously and provide integrated information at query time. For example, during retrieval, a user can simultaneously ask "What is the sales trend for Q1 2024?" and "In which chart is the sales data shown?" The system must, through joint representation, first identify the relevant sales trend chart in the image, then extract the description of the sales data from the text, and finally generate a complete answer. Joint representation typically employs multimodal embeddings, mapping text and visual information into the same vector space. In this space, the relationships between textual and visual elements are represented as distances or similarities between vectors, making cross-modal queries and retrieval more efficient.
 
-Another method is semantic-based alignment. Here, the system considers not only the positional relations between text and visual regions but also their semantic similarity. For example, in a report that contains sales data and a trend chart, the system can identify the semantic link between the text "sales" and the "sales trend" represented in the line chart, and combine them into a complete visual chunk.
+![Figure 22-2: Joint Representation and Alignment of Text and Visual Elements](../../images/part7/图22_2zh.png)
 
-#### Joint representation and multimodal retrieval
-
-Joint representation of text and visual information is the ultimate goal of cross-modal alignment. With joint representation, the system can process textual and visual data simultaneously and return integrated information at query time. For instance, when retrieving, a user may simultaneously ask "how did sales trend in Q1 2024" and "which chart contains the sales data." The system must, through joint representation, first identify the relevant sales-trend chart from images and then extract the sales-data description from text, producing a complete final answer.
-
-Joint representation usually relies on multimodal embeddings that map text and visual information into the same vector space. In this space, relations between textual and visual elements are represented by vector distances or similarities, making cross-modal querying and retrieval more efficient.
-
-![Figure 22-2: Joint representation and alignment of textual and visual elements](../../images/part7/图22_2.png)
-
-*Figure 22-2: Joint representation and alignment of textual and visual elements*
+*Figure 22-2: Joint Representation and Alignment of Text and Visual Elements*
 
 
 
@@ -181,384 +170,412 @@ Joint representation usually relies on multimodal embeddings that map text and v
 
 ### 22.2.4 Indexing and Retrieval Strategies for Visual Chunks
 
-In a multimodal RAG system, indexing and retrieving visual chunks differ significantly from traditional text RAG. Visual chunks rely not only on textual semantics but also on image content, chart trends, and spatial relations. The indexing strategy must therefore handle visual features, textual features, and metadata features, and support cross-modal retrieval.
+In multimodal RAG systems, the retrieval and indexing of visual chunks differ significantly from traditional text RAG. Visual chunks depend not only on the semantic information of text but must also account for image content, chart trends, spatial relationships, and more. Therefore, the indexing strategy for visual chunks must handle visual features, textual features, and metadata features, and support cross-modal retrieval (Radford et al. 2021).
 
-#### Cross-modal indexing: joint indexing of text and vision
+Cross-modal indexing refers to indexing text and visual information together and creating a comprehensive index entry for each visual chunk. This entry contains not only textual content but also visual features (such as chart trends, table data cells, and image categories) as well as metadata (such as chart type, image dimensions, and chart title). In this way, the system can consider both text and visual information simultaneously during retrieval, resulting in better matching of user queries (Lee et al. 2023). A common approach to cross-modal indexing is to embed text and images separately into the same vector space and retrieve by computing the similarity between text and visual vectors. The advantage of this approach is its flexibility in handling information from different modalities and providing rich context for each query.
 
-Cross-modal indexing means indexing text and visual information together and creating a unified index entry for each visual chunk. The entry contains not only text content but also visual features (chart trends, table data cells, image categories) and metadata (chart type, image size, chart title, etc.). The system can then consider both textual and visual information during retrieval, producing better matches for user queries.
-
-A common cross-modal indexing approach embeds text and images into the same vector space and retrieves by computing similarity between text and visual vectors. Its advantage is that it can flexibly handle information from different modalities and provide rich context for each query.
-
-#### Multimodal retrieval: precise queries combining images and text
-
-Multimodal retrieval uses both text and visual information at query time. For example, a user may input "how did sales trend in Q1 2024" along with a chart image; the system must recognize the chart content and match it with related sales-data descriptions to produce an accurate answer. To achieve this, the system must process textual and visual queries simultaneously and map both into the same retrieval space.
-
-The key to multimodal retrieval is designing an efficient cross-modal matching mechanism so that text and visual information complement each other during retrieval. In practice, the system may first recall relevant content via text retrieval and then refine via image retrieval, finally combining text and images to produce the answer.
+Multimodal retrieval refers to simultaneously using text and visual information during a query. For example, a user can input the query "What is the sales trend for Q1 2024?" along with a chart; the system must recognize the chart content and match it with the relevant sales data description to generate an accurate answer. To achieve this, the system must process both text queries and visual queries simultaneously and map them into the same retrieval space. The key to multimodal retrieval is designing an efficient cross-modal matching mechanism so that text and visual information can complement each other during retrieval. In practice, the system can first retrieve relevant content based on text search, then refine the results through image retrieval, and finally generate an answer by combining text and images.
 
 ---
 
 ### 22.2.5 Evaluation and Optimization of Visual Chunks
 
-Evaluation and optimization are key to keeping a multimodal RAG system stable over the long run. In multimodal scenarios, evaluation must focus not only on retrieval accuracy but also on the alignment between visual chunks and text, information completeness, and the credibility of the final generated output.
+Evaluation and optimization are key steps for ensuring the long-term stable operation of a multimodal RAG system. In multimodal scenarios, evaluation must focus not only on the accuracy of retrieval results but also on the alignment between visual chunks and text, information completeness, and the credibility of final generated results—consistent with the emphasis that RAGAS and document VQA benchmarks place on evidence availability (Es et al. 2024; Mathew et al. 2021). Common metrics for evaluating multimodal RAG systems include:
 
-#### Evaluation metrics: accuracy and usability
+- **Precision & Recall**: Evaluates system performance in visual and text retrieval.
+- **Context Completeness**: Checks whether the system has provided a complete evidence chain and background information.
+- **Generation Accuracy**: Evaluates whether the generated answer is based on correct evidence and is factually accurate.
+- **Cross-modal Consistency**: Checks whether text and visual information are correctly aligned and whether key information is lost during generation.
 
-Common metrics for evaluating a multimodal RAG system include:
-
-- **Precision and Recall**: assess the system's performance on visual and text retrieval.
-- **Context Completeness**: check whether the system provides a complete evidence chain and background information.
-- **Generation Accuracy**: assess whether the generated answer is based on correct evidence and is factually accurate.
-- **Cross-modal Consistency**: check whether text and visual information are correctly aligned and whether any key information is lost during generation.
-
-#### Optimization strategy: continuous improvement based on evaluation feedback
-
-Optimization of a multimodal RAG system depends on evaluation feedback. The system should continually improve the generation and modeling of visual chunks based on evaluation results. For example, when a chart trend in a visual chunk is inconsistent with the textual description, the system should adjust the chart-recognition and trend-analysis models; when text–visual alignment is weak, the joint-representation method should be improved. In this way, the system can gradually enhance its cross-modal retrieval and generation capabilities as real-world usage evolves.
+Optimization of multimodal RAG systems must rely on evaluation feedback. The system should continuously optimize the visual chunk generation and modeling process based on evaluation results. For example, when the chart trends in a visual chunk are inconsistent with the text description, the system needs to adjust the chart recognition and trend analysis models; when the alignment between visual and text is low, the system needs to improve the joint representation method for text and vision. In this way, the system can gradually improve its cross-modal retrieval and generation capabilities as real-world usage scenarios evolve.
 
 ---
 
 ### 22.2.6 Section Summary
 
-This section discussed the generation and modeling of visual chunks in multimodal RAG systems. Through object detection, region segmentation, OCR extraction, and semantic labeling of visual regions, the system can transform images into semantically meaningful visual chunks that provide a solid foundation for downstream retrieval, generation, and traceability. Generating visual chunks depends not only on recognizing image content but also on cross-modal alignment between images and text, which enables accurate multimodal retrieval and generation.
+This section primarily discussed the generation and modeling of visual chunks in multimodal RAG systems. Through object detection, region segmentation, OCR extraction, and semantic annotation of visual regions, the system can transform images into semantically meaningful visual chunks, providing a reliable foundation for subsequent retrieval, generation, and traceability. The generation of visual chunks relies not only on recognizing image content but also on cross-modal alignment between images and text, thereby enabling precise multimodal retrieval and generation.
 
-This section also explored cross-modal indexing and retrieval strategies and how evaluation and optimization continually improve system stability and reliability. As multimodal capabilities grow stronger, RAG systems will be able to handle complex documents, reports, charts, images, and tables more comprehensively, producing higher-quality answers.
-
----
-
-## 22.3 Cross-Modal Indexing, Retrieval, and Reranking
-
-### 22.3.1 Cross-Modal Indexing and Joint Spaces
-
-In a multimodal RAG system, the goal of cross-modal indexing is to manage and retrieve visual and textual data through an effective indexing mechanism. Unlike traditional text RAG, which indexes only text, cross-modal retrieval must handle the relationship between images and text and store/index this information through a joint representation. To achieve this, the system typically embeds images and text into a shared embedding space.
-
-#### Embedding space for images and text
-
-An image–text embedding space is a high-dimensional vector space into which both textual and image features are mapped. In this space, similar textual and visual information receive similar vector representations, so matching and retrieval can be performed by computing distance or similarity between vectors. To produce cross-modal embeddings, dual-stream networks or multimodal embedding models are usually employed.
-
-For instance, text can be encoded by a pretrained language model (such as BERT or RoBERTa) into a vector representing its semantics, while an image can be encoded by a vision model (such as ResNet or ViT) into a vector representing its visual features. The system then maps these two modalities' embedding vectors into the same shared space through joint training or alignment.
-
-#### Advantages of joint spaces
-
-The advantage of a joint space is that it provides a unified framework for cross-modal retrieval. In this space, both images and text are represented as vectors, and similarity computations enable matching. For example, given a text query "Q1 2024 sales growth," the system can simultaneously retrieve, in the joint space, relevant text passages and charts and return the most relevant images and text as results.
-
-In addition, joint spaces support cross-modal reranking. In a multimodal query, a user may supply both an image and text; the system computes similarity between text and image in the joint space and reorders the combined results to improve retrieval precision.
+This section also explored cross-modal indexing and retrieval strategies in multimodal RAG systems, as well as how continuous evaluation and optimization can improve system stability and reliability. As multimodal capabilities are enhanced, RAG systems will be able to more comprehensively handle complex documents, reports, charts, images, tables, and other multimodal information, delivering higher-quality answers.
 
 ---
 
-### 22.3.2 Visual Recall, Text Recall, and Cross-Modal Reranking
+## 22.3 Cross-modal Indexing, Retrieval, and Reranking
 
-In cross-modal retrieval, visual recall, text recall, and cross-modal reranking are three crucial stages. The system first extracts query-relevant content via visual and text recall, and then refines the ordering through cross-modal reranking, improving the relevance and accuracy of retrieval results.
+### 22.3.1 Cross-modal Indexing and Joint Space
 
-#### Visual recall and text recall
+In multimodal RAG systems, the goal of cross-modal indexing is to manage and retrieve visual and textual data through an effective indexing mechanism. Unlike traditional text RAG systems that rely solely on textual information for indexing, cross-modal retrieval must handle the relationships between image and text data and store and index this information through a joint representation. To achieve this, systems typically embed images and text into a shared embedding space (Radford et al. 2021; Jia et al. 2021).
 
-Visual recall means retrieving the images most relevant to a given query from a corpus of images. Typically, visual recall is performed by computing similarity between the image embeddings of all images in the library and the query image vector. Image embeddings can be extracted by a vision model (such as ResNet or ViT) and matched against the query's image vector to recall the most relevant images.
+Specifically, the embedding space of images and text refers to a high-dimensional vector space into which the features of text and images are mapped. In this space, similar text and visual information will have nearby vector representations, enabling matching and retrieval by computing distances or similarities between vectors. To achieve cross-modal embedding of images and text, Dual-Stream Networks or Multimodal Embedding Models are typically employed. For example, text can be encoded by a pretrained language model (such as BERT or RoBERTa) to produce a vector representing text semantics, while images can be encoded by a visual model (such as ResNet or ViT) to produce a vector representing image features. The system then maps these two different-modality embedding vectors into the same shared space through joint training or alignment methods.
 
-Text recall is analogous, except that the recalled data is text. Given a textual query, the system computes similarity between the query's text vector and text vectors in the document library to recall relevant passages or documents. Text embeddings are usually encoded by pretrained language models (such as BERT or GPT) and matched against text vectors in the corpus.
+The advantage of the joint space is that it provides a unified framework for cross-modal retrieval. In this space, image and text information are represented as vectors and can be matched by computing their similarities. For example, a user can provide a text query "Q1 2024 sales growth," and the system can simultaneously retrieve both text passages and charts related to the query in the joint space, returning the most relevant images and text as results. Furthermore, the joint space can support cross-modal reranking. In multimodal queries, where a user may provide both images and text, the system computes similarities between text and images through the joint space and reranks the combined relevant images and text, thereby improving retrieval precision.
+
+---
+
+### 22.3.2 Visual Recall, Text Recall, and Cross-modal Reranking
+
+In cross-modal retrieval, Visual Retrieval, Text Retrieval, and Cross-modal Reranking are three critically important stages. The system must first use visual recall and text recall to extract relevant content for the query, and then apply cross-modal reranking algorithms to refine the ranking of these results, thereby improving the relevance and accuracy of retrieval results.
+
+#### 1. Visual Recall and Text Recall
+
+Visual recall refers to image-based retrieval in response to a given query—finding the images most relevant to the query. Visual recall is typically accomplished by computing the similarity between an image's embedding vector and all image vectors in the image repository. Image embedding vectors can be extracted from images using visual models (such as ResNet or ViT) and then matched against the query's image vector to recall the most relevant images.
+
+Text recall is similar to visual recall, except that it recalls text data. Given a text query, the system retrieves relevant text passages or documents by computing the similarity between the query text vector and the text vectors in the document repository. Text embedding vectors are typically encoded by a pretrained language model (such as BERT or GPT) and then matched against text vectors in the document repository.
 
 
 
-*Table 22-2: Comparison between visual recall and text recall*
+*Table 22-2: Comparison of Visual Recall and Text Recall*
 
-| Feature                   | Visual recall                                          | Text recall                                                |
-| ------------------------- | ------------------------------------------------------ | ---------------------------------------------------------- |
-| Primary information type  | Image content, image features, visual patterns         | Semantic content, vocabulary, text passages                |
-| Feature-extraction method | CNNs, vision transformers (ViT)                        | Word embeddings, sentence embeddings (BERT, RoBERTa)       |
-| Retrieval method          | Similarity between image embeddings and the query image | Similarity between text embeddings and the query text     |
-| Cross-modal fusion        | Visual feature extraction matched to the query         | Semantic extraction associated with text                   |
+| Characteristic          | Visual Recall                                    | Text Recall                                         |
+| ----------------------- | ------------------------------------------------ | --------------------------------------------------- |
+| Primary Information Type | Image content, image features, visual patterns  | Semantic content, vocabulary, text passages         |
+| Feature Extraction Method | Convolutional neural networks (CNN), vision transformers (ViT) | Word embeddings, sentence embeddings (BERT, RoBERTa) |
+| Retrieval Method        | Similarity computation between image embedding and query image | Similarity computation between text embedding and query text |
+| Cross-modal Fusion      | Based on visual information extraction and query matching | Based on semantic information extraction and text association |
 
-#### Cross-modal reranking
+#### 2. Cross-modal Reranking
 
-Cross-modal reranking refines the results of visual and text recall through a second-stage ordering. In multimodal queries, users typically supply both a text query and an image query, and the system must determine the most relevant answer based on both modalities.
+Cross-modal reranking refers to performing a secondary ranking of recalled results on top of visual recall and text recall. This approach extends the paradigm of using neural models to rerank initial recall results from text retrieval (Nogueira and Cho 2019) into multimodal scenarios where visual signals are additionally incorporated. In multimodal queries, users typically provide both text queries and image queries; the system must determine the most relevant answers based on the results from both modalities.
 
-Cross-modal reranking primarily relies on image and text embeddings in the joint space. In the initial recall stage, the system recalls text and images separately and uses their union as the candidate set. In the cross-modal reranking stage, the system feeds the image and text embeddings into a reranking model and orders the candidates by their joint similarity. This way, the system can balance the relevance of images and text and improve the accuracy of retrieval results.
+Cross-modal reranking relies primarily on the image and text embedding vectors in the joint space. During the initial recall phase, the system first performs recall separately for text and images and treats the recalled results as a candidate set. During the cross-modal reranking phase, the system inputs the image and text embedding vectors together into a reranking model and sorts them according to their mutual similarities. Through this approach, the system can comprehensively account for the relevance of both images and text, improving the accuracy of retrieval results.
 
-![Figure 22-3: Cross-modal retrieval and reranking flow](../../images/part7/图22_3.png)
+![Figure 22-3: Cross-modal Retrieval and Reranking Pipeline](../../images/part7/图22_3zh.png)
 
-*Figure 22-3: Cross-modal retrieval and reranking flow*
+*Figure 22-3: Cross-modal Retrieval and Reranking Pipeline*
 
 
 
 ---
 
-### 22.3.3 Retrieval Strategies for Complex Documents, Multi-Page Reports, and Chart Q&A
+### 22.3.3 Retrieval Strategies for Complex Documents, Multi-page Reports, and Chart Q&A
 
-When dealing with complex documents, multi-page reports, or chart-based Q&A tasks, traditional text RAG faces serious difficulties. Because such documents contain multiple modalities (text, tables, images, charts), how to retrieve and generate efficiently is one of the core problems of multimodal RAG. The system must design dedicated retrieval strategies to support efficient fusion of multimodal information.
+When processing complex documents, multi-page reports, or Q&A tasks involving charts, traditional text RAG systems typically face challenges (Masry et al. 2022; Liu et al. 2023a; Liu et al. 2023b). Because these documents contain information from multiple modalities (e.g., text, tables, images, and charts), efficient retrieval and generation represent core challenges for multimodal RAG systems. To address this, systems require specialized retrieval strategies to support efficient multimodal information fusion.
 
-#### Retrieval strategies for complex documents
+#### Retrieval Strategies for Complex Documents
 
-Complex documents (long documents, reports, contracts, and so on) usually contain large amounts of information with complex hierarchical structure. In a multimodal RAG system, retrieving such documents requires effectively fusing multimodal information across text, charts, images, and tables. A layered retrieval strategy is advisable: first retrieve text content, and then, based on the textual context, look further into charts and images for related evidence. This narrows the retrieval scope and improves efficiency.
+Complex documents (such as long documents, reports, and contracts) typically contain large amounts of information with complex hierarchical structures. When retrieving such documents in a multimodal RAG system, the system must effectively fuse different modalities of information including text, charts, images, and tables. To this end, the system should adopt a hierarchical retrieval strategy: first retrieve on textual content, then, based on the context of the retrieved text, search for relevant evidence in charts and images. In this way, the system can progressively narrow the retrieval scope and improve retrieval efficiency.
 
-#### Retrieval strategies for multi-page reports and chart Q&A
+#### Retrieval Strategies for Multi-page Reports and Chart Q&A
 
-Multi-page reports and chart-based Q&A typically require the system to process multiple pages and chart data simultaneously. The system must implement cross-modal alignment between image regions and text and combine information at the page, region, and chart levels for retrieval. During querying, the system can intelligently identify relevant pages, charts, and table regions based on the query context and provide answers quickly.
+Multi-page report and chart Q&A tasks typically require the system to simultaneously process content across multiple pages as well as data within charts. To address this problem, the system must implement cross-modal alignment between image regions and text, and retrieve by combining information from page-level, region-level, and chart-level chunks. During a query, the system can intelligently identify pages, charts, and table regions relevant to the query based on the user question's context, and quickly provide an answer.
 
-For chart-Q&A tasks, the system must pay special attention to the relationship between charts and text. For example, in a financial report a passage may describe a data trend shown in a chart; the system must align chart and text and use data points from the chart to generate the final answer. This requires processing images and text simultaneously and effectively fusing the relevant information across both.
+For chart Q&A tasks, the system must pay particular attention to the relationship between charts and text. For example, in a financial report, a body text passage may describe data trends shown in a chart; the system must align the chart and text and, in combination with the data points in the chart, generate the final answer. This requires the system to simultaneously process images and text and effectively fuse the relevant information from both.
 
-#### Joint retrieval of tabular and chart data
+#### Joint Retrieval of Tabular and Chart Data
 
-In complex documents that contain both tables and charts, joint retrieval of tabular and chart data is especially important. Traditional text retrieval systems often ignore data points and trends in charts, but chart-Q&A systems must design cross-modal indexing and retrieval to support joint retrieval of tabular and chart data. At query time, the system needs to combine numerical data and textual descriptions from tables and charts to generate accurate answers.
+When processing complex documents containing both tables and charts, jointly retrieving tabular data and chart data becomes especially important. Traditional text retrieval systems typically ignore data points and trends in charts, while chart Q&A systems require specially designed cross-modal indexing and retrieval strategies to support joint retrieval of tabular and chart data. At query time, the system must combine numerical data and textual descriptions from both tables and charts to generate accurate answers.
 
 ---
 
 ### 22.3.4 Section Summary
 
-This section explored key issues in cross-modal retrieval, including image embeddings, text embeddings, and the construction of joint spaces. By embedding text and images into the same vector space, the system can process multimodal queries jointly and retrieve efficiently. We also introduced the flow of visual recall, text recall, and cross-modal reranking, and how joint-space and reranking strategies can boost retrieval relevance and accuracy.
+This section explored key issues in cross-modal retrieval, including image embeddings, text embeddings, and the construction of a joint space. By embedding text and images into the same vector space, the system can simultaneously process multimodal queries and perform efficient retrieval. We also introduced the pipeline for visual recall, text recall, and cross-modal reranking, as well as how to improve the relevance and accuracy of retrieval results through joint space and reranking strategies.
 
-For retrieval strategies in complex documents, multi-page reports, and chart Q&A, the system must combine text, charts, tables, and image modalities through layered and joint retrieval to provide accurate answers. Looking ahead, cross-modal retrieval will play a major role in complex documents, financial reports, medical imaging, and other multimodal scenarios.
+In retrieval strategies for complex documents, multi-page reports, and chart Q&A, the system must combine multiple modalities of information—text, charts, tables, and images—and provide accurate answers through hierarchical and joint retrieval strategies. In the future, cross-modal retrieval technology will play an important role in processing multimodal scenarios such as complex documents, financial reports, and medical images.
 
 
 
 ---
 
-## 22.4 Evaluation, Error Attribution, and Data Backfill
+## 22.4 Evaluation, Error Attribution, and Data Replenishment
 
-### 22.4.1 Why Evaluating Multimodal RAG Cannot Rely on Answer Correctness Alone
+### 22.4.1 Why Multimodal RAG Evaluation Cannot Focus Only on Whether the Answer Is Correct
 
-In text-RAG projects, many teams put evaluation emphasis on "whether the answer is correct"—using manual scoring, rule-based comparison, or an LLM judge to determine final-answer correctness. While incomplete, this approach usually covers the main issues in pure-text scenarios. In multimodal RAG, however, focusing solely on the final answer easily masks structural defects inside the system.
+In text RAG projects, many teams place the emphasis of evaluation on "whether the answer is correct"—for example, using human scoring, rule-based comparison, or an LLM-as-judge to determine whether the final response is correct. This approach, though incomplete, can more or less cover the main issues in pure-text scenarios. In multimodal RAG scenarios, however, focusing solely on the final answer readily masks structural defects within the system.
 
-The reason is that multimodal-RAG failures are typically layered. A wrong final answer may stem from a visual region not being detected, from OCR misreading characters, from a visual chunk never entering the index, from correct candidate recall but cross-modal reranking pushing a distractor chart to the top, or from improperly assembled evidence at generation time. If we only look at "right/wrong," we cannot tell whether the system is stuck at parsing, indexing, retrieval, localization, or generation, and we cannot optimize purposefully.
+The reason for this phenomenon is that failures in multimodal RAG tend to occur in layers. A final incorrect answer may stem from a visual region not being recognized, from OCR misreading a character, from a visual chunk not entering the index, from a correctly recalled candidate being overridden by an interfering chart during cross-modal reranking, or from incorrect evidence assembly in the answer generation phase. If we only look at "right/wrong," we cannot determine whether the system stalled at parsing, indexing, retrieval, localization, or generation—and naturally we cannot optimize with precision. More importantly, multimodal systems frequently produce answers that "look approximately correct but cite the wrong evidence." For example, a user asks "What are the main reasons for the company's gross margin decline in Q2 2024?" The system's textual explanation is close to the correct answer, but the cited chart's page number is wrong, or it confuses the data regions of Q2 and Q3. If evaluation only measures semantic similarity, it may incorrectly judge this as correct; but in real business contexts, such a response cannot pass an audit and cannot build user trust.
 
-More importantly, multimodal systems frequently produce answers that "look about right but cite the wrong evidence." If a user asks "what were the main reasons for the company's Q2 2024 gross-margin decline," the system's text explanation may approximate the correct answer, but the cited chart page may be wrong, or Q2 and Q3 data regions may be confused. If evaluation only checks semantic similarity, such cases may be falsely marked correct; but in real business use, these answers cannot pass an audit and cannot build user trust.
+Therefore, multimodal RAG evaluation must be upgraded from single-point answer assessment to chain-level evidence assessment. We typically decompose this into four layers: the first is the parsing layer, which focuses on whether pages, regions, tables, and charts have been correctly identified; the second is the retrieval layer, which focuses on whether relevant pages or regions have been recalled; the third is the localization layer, which focuses on whether the system can anchor the answer to the correct visual evidence; and the fourth is the generation layer, which focuses on whether the response is faithful to recalled evidence, complete, and verifiable. Only by observing all four layers simultaneously will system optimization have actionable leverage.
 
-Evaluation of multimodal RAG must therefore be upgraded from single-point answer assessment to chain-level evidence assessment. We typically split this into four layers: the parsing layer, focusing on whether pages, regions, tables, and charts are correctly identified; the retrieval layer, focusing on whether relevant pages or regions are recalled; the localization layer, focusing on whether the system can anchor answers to the correct visual evidence; and the generation layer, focusing on whether the answer is faithful to the recalled evidence, complete, and verifiable. Only by observing all four layers simultaneously can optimization gain traction.
+From an engineering perspective, this is equivalent to decomposing final answer quality into a multi-stage quality funnel. For each stage, separate metrics must be defined, separate datasets constructed, and the upstream-downstream dependencies recorded. In this way, the team can answer three key questions: First, at which stage is the problem most prominently exposed? Second, is this problem a universal defect or does it only appear in certain document types, chart types, or question formulations? Third, will fixing the current problem introduce new side effects?
 
-From an engineering perspective, this is equivalent to decomposing final-answer quality into a multi-stage quality funnel. For each stage, separate metrics, datasets, and dependency tracking must be defined. With these in place, the team can answer three key questions: in which stage is the problem most visible; whether this issue is a general defect or concentrated in certain document types, chart types, or question phrasings; and whether fixing the current problem will introduce new side effects.
-
-For convenience, we can organize the core multimodal-RAG metrics into a joint scoring framework. Let retrieval hit rate be $R_k$, localization accuracy $L$, answer accuracy $A$, and evidence consistency $E$. The overall system score can be written as:
+To facilitate implementation, we can organize the core evaluation metrics for multimodal RAG into a joint scoring framework. Let the retrieval hit rate be $R_k$, the localization accuracy be $L$, the answer accuracy be $A$, and the evidence consistency be $E$; then the overall system score can be written as:
 
 $$
 S_{\text{mm-rag}}=\alpha R_k+\beta L+\gamma A+\delta E,\quad \alpha+\beta+\gamma+\delta=1
 $$
 
-The point of this formula is not to summarize the system into a single number but to remind us that no high-level metric improvement should come at the cost of low-level verifiability. For example, some generation optimizations may make answers more fluent on the surface, but if evidence consistency drops, the system actually regresses in high-risk scenarios.
+The significance of this formula is not to give the system a single final score, but to remind us that an improvement in any high-level metric should not come at the cost of sacrificing lower-level verifiability. For example, certain generation optimizations may make answers appear superficially more fluent, but if evidence consistency decreases, the system's usability in high-risk scenarios is actually regressing.
 
-*Table 22-3: A layered view of multimodal-RAG evaluation*
+It is important to note that $R_k$, $L$, $A$, and $E$ come from different evaluation layers and their raw values do not naturally share the same measurement scale, nor are they necessarily comparable across different datasets. For example, localization accuracy may depend on the granularity of bounding box annotations, evidence consistency may depend on human review standards, and answer accuracy may be influenced by the difficulty distribution of questions. Therefore, before using the weighted sum above, each metric must first be calibrated and normalized, with explicit statistical definitions, sample distributions, human calibration standards, and confidence intervals. Weights and metrics must be determined according to business risk, dataset distribution, and human calibration; cross-metric comparisons are invalid without normalization. This formula is better suited for version-to-version comparison and bottleneck analysis on the same evaluation set with the same statistical definitions, rather than being interpreted as an absolute score that can be directly compared across scenarios.
 
-| Evaluation layer   | Focus                                       | Typical problems                                          | Representative metrics                                      |
-| ------------------ | ------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------- |
-| Parsing layer      | Pages, regions, objects, tables, charts     | Missed boxes, wrong boxes, OCR misreads, broken structure | Region recall, OCR character accuracy, table-reconstruction rate |
-| Retrieval layer    | Page- and region-level candidate sets       | Missing relevant evidence, strong negative interference   | Hit@k, MRR, nDCG, cross-modal recall coverage               |
-| Localization layer | bbox, page number, chart cell               | Wrong page, wrong region, mislocalized chart element      | IoU, grounding accuracy, page localization                  |
-| Generation layer   | Final answer and cited evidence             | Hallucination, wrong citations, incomplete answers        | Answer accuracy, faithfulness, citation F1                  |
+*Table 22-3: A Layered Perspective on Multimodal RAG Evaluation*
 
-This table stresses the necessity of layered decomposition. For multimodal RAG, no single metric captures the full system picture. Especially in enterprise deployments, teams that pursue only answer correctness may obtain pretty numbers on demo data, but once they encounter complex-layout PDFs, scanned reports, or mixed image–text documents, fragile evidence chains quickly surface.
+| Evaluation Layer | Focus                                 | Typical Issues                                        | Representative Metrics                                      |
+| ---------------- | ------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------- |
+| Parsing Layer    | Pages, regions, objects, tables, charts | Missed detection, incorrect detection, OCR misreading, structural fragmentation | Region recall rate, OCR character accuracy, table reconstruction rate |
+| Retrieval Layer  | Page-level and region-level candidate sets | Relevant evidence not recalled, strong interference from negative samples | Hit@k, MRR, nDCG, cross-modal recall coverage rate          |
+| Localization Layer | BBoxes, page numbers, chart cells    | Wrong page number, wrong region, wrong chart element localization | IoU, Grounding Accuracy, Page Localization                  |
+| Generation Layer | Final response and cited evidence     | Hallucination, incorrect evidence citation, incomplete answer | Answer Accuracy, Faithfulness, Citation F1                  |
 
-### 22.4.2 Core Metrics: Hit Rate, Localization Accuracy, and Answer Accuracy
+This table emphasizes the necessity of layered decomposition. For multimodal RAG, no single metric can replace a full system picture. Especially during enterprise deployment, if a team pursues only answer accuracy, it may achieve impressive results on demonstration data, but once the system encounters complex-layout PDFs, scanned reports, or mixed image-text documents, the fragility of the evidence chain will be rapidly exposed.
 
-In practice, the three most commonly tracked metric families are visual-retrieval hit rate, localization accuracy, and answer accuracy. They correspond, respectively, to "did we find it," "did we pinpoint it," and "did we answer correctly," and they form the backbone of a multimodal evaluation system.
+### 22.4.2 The Core Metric Framework: Hit Rate, Localization Accuracy, and Answer Accuracy
 
-The first is the visual-retrieval hit rate. Given a question, it measures whether the system recalls the page, region, or chart containing the correct evidence into the top $k$ candidates. Unlike in text RAG, the "correct evidence" in multimodal RAG is not necessarily a paragraph—it could be a chart region, a screenshot, or a set of table cells. Therefore, the unit of annotation for Hit@k must be agreed upon in advance: page level, region level, or object level. If the annotation granularity is inconsistent, the metric will be distorted.
+In practice, the three most commonly tracked metric categories are visual retrieval hit rate, localization accuracy, and answer accuracy (Ren et al. 2015; Mathew et al. 2021). They correspond respectively to the three questions "Was it found?", "Was it found precisely?", and "Was the answer correct?"—forming the backbone of a multimodal evaluation framework.
 
-A common definition is:
+First is the visual retrieval hit rate. It focuses on whether, given a question, the system can recall the page, region, or chart containing the correct evidence into the top $k$ candidates. Unlike text RAG, the "correct evidence" in multimodal RAG is not necessarily a paragraph—it may be a chart region, a screenshot, or a set of table cells. Therefore, the annotation unit for Hit@k must be agreed upon in advance: whether it is page-level, region-level, or object-level. If the annotation granularity is inconsistent, the metric will be distorted.
+
+A common definition is as follows:
 
 $$
 \text{Hit@}k=\frac{1}{N}\sum_{i=1}^{N}\mathbb{I}\left(\exists c \in C_i^{(k)},\ c \in G_i\right)
 $$
 
-Here $C_i^{(k)}$ denotes the top-$k$ candidates recalled for the $i$-th question, and $G_i$ denotes its gold-evidence set. A hit is recorded if at least one of the top-$k$ candidates falls into the gold set. For multi-evidence questions, one can additionally compute Evidence Recall—the proportion of necessary evidence that is recalled.
+where $C_i^{(k)}$ denotes the top $k$ candidates recalled for the $i$-th question and $G_i$ denotes the golden evidence set for that question. If at least one candidate among the top $k$ falls within the golden set, the question is counted as a hit. For multi-evidence questions, Evidence Recall can be further computed—i.e., what proportion of necessary evidence has been recalled.
 
-The second is localization accuracy, which measures whether the system anchors the correct evidence to the right region. For visual Q&A this metric is essential, because many use cases are not satisfied with "knowing which page" the answer is on but require the system to indicate "which column of the chart," "which cell of the table," or "which button in the screenshot." Localization accuracy is usually based on the intersection-over-union:
+Second is localization accuracy. It focuses on whether the system anchors the correct evidence to the correct region. For visual Q&A, this metric is critically important because many business applications are not satisfied with knowing "which page the answer is on" but require the system to point to "which column of the chart," "which cell of the table," or "which button in the screenshot." Localization accuracy is typically computed based on Intersection over Union (IoU):
 
 $$
 \text{IoU}(B_p,B_g)=\frac{|B_p \cap B_g|}{|B_p \cup B_g|}
 $$
 
-When the IoU between the predicted box $B_p$ and the gold box $B_g$ exceeds a threshold $\tau$, the localization is deemed correct. For page-level evidence, the threshold can be loose; for object-level or cell-level evidence, it is usually stricter. Furthermore, in chart-understanding scenarios, one can design an element-grounding accuracy that requires the model to simultaneously hit the legend, the axes, and the target data series.
+When the predicted bounding box $B_p$ and the golden bounding box $B_g$ have an IoU greater than the threshold $\tau$, the localization is considered successful. For page-level evidence, the threshold can be relatively lenient; for object-level or table cell-level evidence, a stricter threshold is typically required. Furthermore, in chart understanding scenarios, element grounding accuracy can be designed—for example, requiring the model to simultaneously identify the legend, axis, and target data series.
 
-The third metric family is answer accuracy. It measures whether the final output meets business requirements. Superficial semantic similarity is not enough here: we must distinguish factual correctness, evidence consistency, unit correctness, condition correctness, and temporal correctness. For instance, "revenue grew 12%" and "net profit grew 12%" may look similar to a language model but mean very different things in business. "2023" and "2024" differ by just one digit yet may cause serious errors. Answer accuracy therefore usually combines rule-based checks, manual review, and LLM judging.
+The third category of metrics is answer accuracy. It measures whether the final output satisfies business requirements. Surface-level semantic similarity alone is insufficient; the evaluation must distinguish factual correctness, evidence consistency, unit correctness, conditional correctness, and temporal correctness. For example, "revenue growth of 12%" and "net profit growth of 12%" may appear quite similar to a language model, but their business implications are entirely different. Likewise, "2023" versus "2024" differ by only one number yet can cause serious errors. Therefore, answer accuracy typically requires a combination of rule-based verification, human review, and LLM-as-judge methods.
 
-In many projects we further split "answer accuracy" into two layers: strict accuracy, which requires correctness in facts, units, page numbers, and objects; and utility accuracy, which only requires the main conclusion and the recommended business action to be correct. This way, the team sees both strict reliability and user-facing usability, avoiding the misleading optimization that comes from a single overly-narrow metric.
+In many projects, "answer accuracy" is further decomposed into two levels: one is strict accuracy, which requires that the facts, units, page numbers, and objects all be correct; the other is utility accuracy, which requires only that the main conclusions and business action recommendations be correct. The advantage of this decomposition is that the team can observe both the strict reliability of the system and the user-level usability, avoiding misguided optimization caused by an overly narrow metric definition.
 
-*Table 22-4: Definitions and use cases for key evaluation metrics*
+*Table 22-4: Definitions and Applicable Scenarios for Key Evaluation Metrics*
 
-| Metric                  | Core question        | Granularity                  | Common threshold or judgment              | Use case                                       |
-| ----------------------- | -------------------- | ---------------------------- | ----------------------------------------- | ---------------------------------------------- |
-| Hit@k                   | Did we find it       | Page level, region level     | Whether any top-k candidate is gold       | Recall evaluation, index comparison            |
-| Evidence Recall         | Is evidence complete | Multi-evidence questions     | Fraction of required evidence recalled    | Image–text Q&A, complex chart Q&A              |
-| IoU / Grounding Acc.    | Did we pinpoint it   | Region or object level       | IoU > 0.5 / 0.7 etc.                      | bbox, table cells, button localization         |
-| Answer Accuracy         | Did we answer right  | Final answer                 | Rule check + human / LLM judge            | End-to-end evaluation                          |
-| Citation Faithfulness   | Is evidence right    | Answer and citation          | Whether citations actually support answer | Compliance Q&A, report Q&A, audit scenarios    |
-| Time/Cost per Question  | Is it worth shipping | End-to-end pipeline          | Latency, tokens, GPU cost                 | Production-environment optimization            |
+| Metric Name            | Core Question   | Applicable Granularity  | Common Threshold or Determination Method     | Applicable Scenario                            |
+| ---------------------- | --------------- | ----------------------- | -------------------------------------------- | ---------------------------------------------- |
+| Hit@k                  | Was it found?   | Page-level, region-level | Whether the golden evidence exists in the top k candidates | Recall evaluation, index comparison            |
+| Evidence Recall        | Is evidence complete? | Multi-evidence questions | Proportion of necessary evidence recalled    | Image-text joint Q&A, complex chart Q&A        |
+| IoU / Grounding Acc.   | Was it found precisely? | Region-level, object-level | IoU > 0.5 / 0.7, etc.                       | BBox, table cell, button localization          |
+| Answer Accuracy        | Was the answer correct? | Final response          | Rule-based verification + human/LLM judging  | End-to-end evaluation                          |
+| Citation Faithfulness  | Was the evidence correct? | Response and citations  | Whether citations genuinely support the conclusion | Compliance Q&A, report Q&A, audit scenarios   |
+| Time/Cost per Question | Is it worth deploying? | End-to-end pipeline    | Latency, token count, GPU cost               | Production environment optimization            |
 
-In real systems these metrics do not move independently. Boosting candidates from top-20 to top-100 may significantly raise Hit@100 but increase rerank pressure and latency, so final answer accuracy may not improve in lockstep. Conversely, slimming candidates to chase low latency may hurt recall on complex chart questions. Evaluation metrics must therefore be interpreted alongside the pipeline structure, not in isolation.
+In real systems, these metrics often do not change independently. For instance, increasing the recall candidate set from top 20 to top 100 may noticeably increase Hit@100, but the reranking burden grows, latency rises, and answer accuracy does not necessarily improve in tandem. Conversely, if we compress the candidate count to pursue low latency, complex chart Q&A recall may suffer. Therefore, evaluation metrics must not be interpreted in isolation but analyzed together with the pipeline structure.
 
-![Figure 22-4: The multimodal-RAG evaluation funnel](../../images/part7/图22_4.png)
+![Figure 22-4: Multimodal RAG Evaluation Funnel](../../images/part7/图22_4zh.png)
 
-*Figure 22-4: The multimodal-RAG evaluation funnel*
-
-
-
-### 22.4.3 Error Attribution: Missed Reads, Misreads, Mislocalization, and Chart-Understanding Failures
-
-With layered metrics in place, the next step is to build an actionable error-attribution system. Error attribution does not mean simply recording "wrong"; it means stably mapping errors to engineering causes that can be fixed. In multimodal RAG, the four most common top-level error categories are missed reads, misreads, mislocalization, and chart-understanding failures.
-
-Missed reads are the most fundamental and common problem. They mean the correct evidence never enters the candidate set. Missed reads can occur at multiple points: the page-parsing stage may skip an entire image-page; layout analysis may fail to draw a box around a table; image slicing may be too coarse, so fine-grained objects do not become their own chunks; some visual chunks may be filtered out during indexing; query rewriting may be too text-biased, leading to insufficient visual-candidate recall. The typical symptom is: the user's question clearly corresponds to a particular chart or table in the document, but the chart/table is simply not among the candidates.
-
-Misreads mean evidence enters the system but its content is misinterpreted. For example, OCR reads "8.5%" as "3.5%"; table headers are misaligned, so "operating profit" is associated with "operating revenue"; a caption is bound to the wrong adjacent image; in multi-column layouts, the left and right columns are spliced together. Such issues are especially common in scans, low-resolution images, and complex-layout documents. The danger of misreads is that the system tends to produce internally consistent but factually wrong answers—often harder to detect than a plain "I don't know."
-
-Mislocalization is a high-frequency error unique to multimodal scenarios. The system may know the relevant information is on a certain page but highlight the wrong region to the user; it may locate the correct chart but treat the wrong data series as evidence; in interface-screenshot scenarios, it may treat explanatory text above a button as the button itself. Mislocalization commonly occurs when bbox granularity is poorly designed, layout models are unstable, or region-level rerank training is insufficient. It directly affects explainability, because once the evidence position shown to the user does not match the answer, trust evaporates.
-
-Chart-understanding failures are a higher-order problem. They may not stem from OCR or localization errors but from the model itself being unable to correctly extract trends, comparison relations, outliers, or multi-series mappings. For example, the system can recognize the legend "North America" and "APAC" and identify the y-axis scale, but when asked "which region had the fastest year-over-year growth," it still picks the wrong series. This indicates the failure lies not in text extraction but in chart-semantic modeling.
-
-To turn these phenomena into stable engineering assets, we typically design an error-coding table (Table 22-5). Each failing sample is given at least three tags: a top-level error type, a specific sub-cause, and a fix priority. The top-level type supports macro-level statistics, the sub-cause guides model or rule fixes, and the priority helps the team plan iterations. For instance, missed reads can be subdivided into "not sliced," "sliced but not indexed," and "indexed but not recalled"; misreads can be subdivided into "OCR character error," "header misalignment," and "caption-binding error"; chart-understanding failures can be subdivided into "axis misparsing," "legend misalignment," and "trend-description error."
-
-*Table 22-5: Example error-attribution coding for multimodal RAG*
-
-| Top-level type              | Sub-cause                          | Typical symptom                                            | Priority fix direction                                       |
-| --------------------------- | ---------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------ |
-| Missed read                 | Region not segmented               | The correct chart never appears in the candidate set       | Tune layout detection, add region-level chunks               |
-| Missed read                 | Weak visual recall                 | Page recalled but chart region missing                     | Strengthen visual embeddings, introduce hard negatives       |
-| Misread                     | OCR error                          | Wrong digits, units, or column headers                     | Replace OCR model, add post-processing rules                 |
-| Misread                     | Structural-binding error           | Caption / footnote / image–text relations mismatched       | Layout-relation modeling, adjacency-graph optimization       |
-| Mislocalization             | Inappropriate bbox granularity     | Highlight region too large or shifted to a neighbor        | Refine region hierarchy, train grounding models              |
-| Chart-understanding failure | Wrong axis/legend/trend extraction | Chart is visible but comparisons and conclusions are wrong | Augment chart-Q&A data, introduce structured extraction      |
-
-Once a team genuinely begins error attribution, an important lesson emerges: many problems that look like "the model isn't smart enough" are actually defects in data-structure definitions. For example, if chart chunks do not separately store legend, axes, series, and similar metadata, even a strong model can only guess relations from pixels and OCR text. Error attribution, in other words, is not just an evaluation task—it is a reverse check on whether data engineering provides the model with usable evidence structures.
-
-![Figure 22-5: The closed loop from error attribution to repair actions](../../images/part7/图22_5.png)
-
-*Figure 22-5: The closed loop from error attribution to repair actions*
+*Figure 22-4: Multimodal RAG Evaluation Funnel*
 
 
 
-### 22.4.4 From Online Failure Samples to Backfill Datasets
+### 22.4.3 Error Attribution for Missed Detection, Misreading, Mislocalization, and Chart Understanding Failures
 
-The end goal of evaluation and attribution is not a pretty analysis report; it is continuous system improvement. The most critical improvement asset for multimodal RAG is usually not a one-shot all-purpose benchmark but a backfill dataset continuously accumulated from real online failures. Only online samples truly cover complex layouts, long-tail charts, low-resolution scans, enterprise-private templates, and authentic user phrasings.
+With layered metrics in place, the next step is to establish an actionable error attribution framework. Error attribution is not simply recording "it was wrong" but stably mapping errors to fixable engineering causes. For multimodal RAG, the four most common first-level error types are: missed detection, misreading, mislocalization, and chart understanding failure.
 
-A mature failure-sample backfill workflow typically has six steps. First, online logging: the system records user questions, recalled candidates, cited evidence, final answers, user feedback, and human corrections. Second, failure screening: rules or human review pick out wrong answers, wrong evidence, mislocalized cases, and "user-correction-after-follow-up" samples. Third, error labeling: tag according to the attribution system above and add gold evidence. Fourth, sample reconstruction: turn failure samples into data items suitable for training and evaluation, including the question, document, bbox, chart structure, gold answer, and negative samples. Fifth, dataset ingestion: bring them into versioned management of the backfill dataset. Sixth, targeted training and regression testing.
+Missed detection is the most fundamental and common problem. It means that the correct evidence never entered the candidate set. Missed detection can occur at multiple points: the page parsing phase fails to capture an entire page of images; the layout analysis phase fails to bound a table; image slicing at too coarse a granularity means fine-grained objects are not individually chunked; certain visual chunks are filtered out during indexing; query rewriting is too text-oriented, resulting in insufficient recall of visual candidates. The typical symptom of missed detection is: the user's question clearly corresponds to a chart or table in the document, but the system's returned candidates do not contain it at all.
 
-The most overlooked step is "sample reconstruction." Many teams pour raw logs directly into training and find only modest gains. The reason is that raw logs typically contain only natural-language questions and model outputs—they are not automatically high-quality supervised data. To make failure samples truly useful, their structural fields must be filled in: correct page, correct visual region, chart type, target cell, temporal condition, unit, business theme, failure reason, and so on. Only then can a sample serve retriever, rerank, grounding, and generation alignment alike.
+Misreading means that evidence entered the system but its content was interpreted incorrectly. For example, OCR misreads "8.5%" as "3.5%"; table column headers are misaligned, causing "operating profit" to be associated with "operating revenue"; figure captions are incorrectly bound to adjacent images; content from the left and right columns of a multi-column layout is concatenated into a single passage. These issues are especially common in scanned documents, low-resolution images, and complex-layout documents. The danger of misreading is that the system will often produce self-consistent but incorrect answers—harder to detect than "I don't know."
 
-Another value of online failure samples is constructing hard negatives. For visual retrieval, the hardest negatives are usually not totally unrelated images but regions that "look very similar but answer the wrong question": different-quarter bar charts in the same earnings report, different-region screenshots in the same templated report, similar tables on adjacent pages. Systematically introducing such high-confusion negatives often boosts production performance more than blindly enlarging the generic dataset.
+Mislocalization is a high-frequency error unique to multimodal scenarios. The system may know that relevant information is on a certain page yet highlight the wrong region to the user; it may find the correct chart but use the wrong data series as evidence; or in interface screenshot scenarios it may mistake explanatory text above a button for the button itself. Mislocalization commonly occurs in systems where bounding box granularity is poorly designed, the layout model is unstable, or region-level rerank training is insufficient. It directly impacts explainability, because when users see evidence positions that are inconsistent with the answer, they immediately lose trust.
 
-In data engineering, the backfill dataset is best maintained incrementally and versioned rather than repeatedly overwritten. Each sample should record at minimum the document source, question type, modality type, gold evidence, error label, repair status, and first-seen time. With this, the team can answer: whether a class of error has dropped significantly in a new version; whether a model upgrade fixed old issues while introducing new ones; which business templates are underrepresented in the current training set.
+Chart understanding failure is a higher-level problem. It does not necessarily originate from OCR or localization errors but may stem from the model's inability to correctly extract trends, comparative relationships, outliers, or multi-series mappings. For example, the system can identify the legend entries "North America" and "APAC" and recognize the vertical axis scales, yet still selects the wrong series when answering "Which region had the fastest year-over-year growth?" This indicates that the failure point is not in text extraction but in chart semantic modeling.
 
-For repair priority, we usually consider not only frequency but also business risk and repair cost. A "minor page-offset" error that occurs 10 times a month is clearly less risky than a "wrong unit on a financial metric" that occurs twice a month. We can define a priority function:
+To systematically convert these phenomena into engineering assets, we typically design an error coding table (Table 22-5) where each failure sample is tagged with at least three labels: first-level error type, specific sub-cause, and repair priority. First-level types are for macro-level statistics; sub-causes guide model or rule repairs; and priority helps the team schedule iteration order. For example, missed detection can be subdivided into "not sliced," "sliced but not indexed," and "indexed but not recalled"; misreading can be subdivided into "OCR character error," "header misalignment," and "caption binding error"; chart understanding failure can be subdivided into "axis misparse," "legend mapping error," and "trend description error."
+
+*Table 22-5: Example Error Attribution Coding for Multimodal RAG*
+
+| First-level Type        | Second-level Cause            | Typical Symptom                               | Priority Repair Direction                                        |
+| ----------------------- | ----------------------------- | --------------------------------------------- | ---------------------------------------------------------------- |
+| Missed detection        | Region not segmented          | Correct chart absent from candidate set       | Adjust layout detection, add region-level chunks                 |
+| Missed detection        | Weak visual recall            | Page recalled, but chart region not recalled  | Strengthen visual embedding, add hard negatives                  |
+| Misreading              | OCR error                     | Numbers, units, column headers recognized incorrectly | Replace OCR model, add post-processing correction rules    |
+| Misreading              | Structure binding error       | Caption, footnote, image-text relationship mismatch | Layout relationship modeling, adjacency graph optimization  |
+| Mislocalization         | Inappropriate bbox granularity | Highlighted region too large or overlaps adjacent region | Refine region hierarchy, train grounding model           |
+| Chart understanding failure | Legend/axis/trend extraction error | Chart visible but correct comparisons/inferences unavailable | Add chart Q&A data, introduce structured extraction   |
+
+When a team genuinely begins performing error attribution, they discover something very important: many problems that seem like "insufficient model intelligence" are actually caused by deficiencies in data structure design. For example, if a chart chunk does not separately store metadata such as legend, axis, and series, even the strongest model can only guess relationships from pixels and OCR text. In other words, error attribution is not just evaluation work—it is also a reverse check on whether data engineering has provided the model with sufficiently usable evidence structures.
+
+![Figure 22-5: The Closed Loop from Error Attribution to Repair Actions](../../images/part7/图22_5zh.png)
+
+*Figure 22-5: The Closed Loop from Error Attribution to Repair Actions*
+
+
+
+### 22.4.4 From Online Failure Samples to Replenishment Datasets
+
+The ultimate purpose of evaluation and attribution is not to produce an impressive analysis report but to drive continuous system improvement. The key improvement asset for multimodal RAG is typically not a one-time large-scale comprehensive benchmark set, but rather a replenishment dataset that is continuously accumulated from real online failures. Only online samples truly cover complex layouts, long-tail charts, low-resolution scans, enterprise-proprietary templates, and real user question formulations. Building hard negatives and replenishment datasets from these failure samples is an important practice for continuous improvement of retrieval systems and machine learning systems, and is also consistent with the fundamental requirements of data closed-loop governance in production machine learning (Sculley et al. 2015; Huyen 2022).
+
+A mature failure sample replenishment pipeline typically consists of six steps. Step one: online log retention. The system records user questions, recalled candidates, cited evidence, final responses, user feedback, and human correction results. Step two: failure filtering. Through rules or human review, select samples that were answered incorrectly, cited incorrect evidence, mislocalized, or were "user-corrected after follow-up." Step three: error annotation. Apply labels according to the attribution framework defined earlier and supplement with golden evidence. Step four: sample reconstruction. Transform failure samples into data entries suitable for training and evaluation, including questions, documents, bounding boxes, chart structures, golden answers, and negative samples. Step five: data ingestion. Incorporate into replenishment dataset version management. Step six: targeted training and regression testing.
+
+The most easily overlooked step in this pipeline is "sample reconstruction." Many teams feed raw online logs directly to the training pipeline and then find that performance improvement is limited. The reason is that raw logs typically contain only natural language questions and model outputs—they do not naturally constitute high-quality supervised data. For failure samples to truly be usable, their structural fields must be supplemented—for example, correct page numbers, correct visual regions, chart types, target cells, temporal conditions, units, business topics, and failure causes. Only in this way can a sample be used for both the retriever and for reranking, grounding, and generation alignment.
+
+Another value of online failure samples is the ability to construct hard negatives. For visual retrieval, the hardest negative samples are usually not completely irrelevant images but regions that "look very similar but give the wrong answer." Examples include quarterly bar charts from the same financial report, screenshot regions from the same-template report in different sections, and similar tables on adjacent pages. Systematically incorporating these highly confusable negative samples into the training set tends to improve production results far more than blindly expanding general-purpose data.
+
+In data engineering, the replenishment dataset is best managed with incremental versioning rather than repeated overwriting. Each sample should record at minimum: document source, question type, modality type, golden evidence, error label, repair status, and date first encountered. Only then can the team answer: Has a certain error type significantly decreased in a new version? Has a model upgrade fixed old problems while introducing new ones? Which business templates are under-covered in the current training set?
+
+For replenishment priority, we typically consider not just frequency of occurrence but also business risk and difficulty of repair. A "slight page offset" occurring 10 times per month versus a "wrong unit on a financial metric" occurring 2 times per month—the latter is clearly higher risk. A priority function can be defined as:
 
 $$
 P_{\text{repair}} = \lambda_1 f + \lambda_2 r + \lambda_3 v - \lambda_4 c
 $$
 
-where $f$ is failure frequency, $r$ is business risk, $v$ is the business value involved, and $c$ is repair cost. This function helps the team focus limited resources on issues that are "high-risk, high-value, and fixable" rather than being pulled around by noisy samples.
+where $f$ represents failure frequency, $r$ represents business risk, $v$ represents the business value involved, and $c$ represents repair cost. This function helps the team allocate limited resources to problems that are "high-risk, high-value, and repairable," rather than being driven by noise samples.
 
 
 
-### 22.4.5 Evaluation-Set Design and Continuous Regression Mechanisms
+### 22.4.5 Evaluation Set Design and Continuous Regression Mechanisms
 
-For backfill to yield stable returns, evaluation sets must also evolve in step. A common pitfall is keeping a single static offline set, with each model iteration "grinding scores" on the same data, eventually overfitting and failing to generalize on complex online questions. This is even less appropriate for multimodal RAG, since page templates, chart styles, scan quality, and user phrasings all change over time.
+For replenishment to produce stable returns, the evaluation set must evolve in parallel. A common misconception is that a team has only one static offline set on which the model repeatedly "improves its score," ultimately leading to poor generalization on complex online problems. Multimodal RAG is even less suited to this approach because page templates, chart styles, scan quality, and user question formulations are all continuously changing.
 
-A more sensible design is layered evaluation sets. The first layer is a foundational-capability set covering OCR, table parsing, chart extraction, bbox alignment, and other low-level capabilities. The second layer is a pipeline set covering page recall, region recall, cross-modal rerank, and evidence assembly. The third layer is a business set covering financial reports, policy documents, product manuals, screenshot Q&A, and other realistic scenarios. The foundational set diagnoses model components, the pipeline set validates data-engineering changes, and the business set determines whether the system is truly usable.
+A more reasonable design approach is to adopt a layered evaluation set. The first layer is the foundational capability set, covering low-level capabilities such as OCR, table parsing, chart extraction, and bounding box alignment. The second layer is the pipeline set, covering page recall, region recall, cross-modal reranking, and evidence assembly. The third layer is the business set, covering real-world scenarios such as financial reports, policy documents, product manuals, and screenshot Q&A. The foundational set is used for diagnosing model components; the pipeline set is used for verifying data engineering improvements; and the business set is used for judging whether the system is truly usable.
 
-For regression, each model or index version upgrade should run at least three regression suites: a full benchmark regression to confirm no clear degradation; an error-cluster regression that specifically watches whether previously high-frequency failure modes have improved; and a near-line incremental-sample regression to verify whether the system handles the latest templates and phrasings. Running only an overall average score can easily produce the illusion of "1 point improvement overall, while losing 8 points on the most important business scenario."
+For regression mechanisms, every model or index version upgrade should run at least three types of regression: first, a full benchmark regression to confirm there is no significant degradation; second, an error cluster regression specifically observing whether previously high-frequency failure patterns have improved; and third, a near-online new sample regression verifying that the system can cover the latest document templates and question formulations. If only the overall average score is tracked, it is easy to encounter the illusion of "overall improvement of 1 point, but key business scenarios regressed by 8 points."
 
-In addition, multimodal scenarios must carefully maintain consistency between slicing and evidence versions. If a PDF is re-parsed and the slicing changes, the bboxes, chunk_ids, and in-page coordinates in the old evaluation set may become invalid. If the evaluation foundation is not synchronized with the index version, "false errors" arise: the system actually answered correctly, but the annotation baseline is out of date. Evaluation-data versions must therefore be co-managed with parser, index, and chart-extraction versions.
+Additionally, multimodal scenarios should pay particular attention to consistency between chunk and evidence versions. Suppose a PDF has been re-parsed once and its page slicing method has changed; the bounding boxes, chunk IDs, and page-level coordinates in the old evaluation set may then be invalid. If the evaluation foundation is not synchronized with the index version, "pseudo-errors" will appear where "the system actually answered correctly, but the annotation baseline has expired." Therefore, the version numbers of evaluation data must be managed together with the parser version, index version, and chart extraction version.
 
-A practical engineering approach is to decouple storage of "question – document – evidence": the question set is maintained separately, document-parsing results are versioned separately, and evidence annotations refer to stable anchors. This structure reduces the chance that minor layout changes invalidate the entire evaluation set, and it scales better for long-term operation.
+In engineering practice, a useful approach is to store "question–document–evidence" in a decoupled manner: the question set is maintained separately, document parsing results are versioned independently, and evidence annotations are referenced through stable anchors. This structure reduces the risk of an entire evaluation set becoming obsolete due to minor layout changes and is better suited for long-term operations.
 
 ### 22.4.6 Section Summary
 
-This section addressed evaluation, error attribution, and data backfill for multimodal RAG. Unlike text RAG, multimodal systems cannot focus solely on final answer correctness; they must observe all four layers—parsing, retrieval, localization, and generation. Visual-retrieval hit rate, localization accuracy, and answer accuracy form the basic metric skeleton, while missed reads, misreads, mislocalization, and chart-understanding failures form the most common attribution framework.
+This section covered evaluation, error attribution, and data replenishment for multimodal RAG. Unlike text RAG, multimodal systems cannot focus solely on whether the final answer is correct; they must simultaneously observe four layers: parsing, retrieval, localization, and generation. Visual retrieval hit rate, localization accuracy, and answer accuracy form the most basic metric backbone, while missed detection, misreading, mislocalization, and chart understanding failure constitute the most common error attribution framework.
 
-More importantly, evaluation does not end at scoring; it should form a sustainable data-backfill loop. Only by reliably converting online failures into high-quality training and regression assets can the system gradually adapt to the long-tail complexity of real enterprise documents. The next section, from case studies and design patterns, will summarize reusable designs for multimodal RAG in scenarios such as financial-report assistants and complex enterprise-document retrieval.
+More importantly, the endpoint of evaluation is not to produce a score but to form a sustainable data replenishment closed loop. Only by stably converting online failure samples into high-quality training and regression assets can the system progressively adapt to the long-tail complexity of real enterprise documents. The next section will further summarize, from a case study and patterns perspective, reusable designs for multimodal RAG in scenarios such as financial report assistants and complex-layout enterprise document retrieval.
 
 ---
 
-## 22.5 Cases and Design Patterns
+## 22.5 Case Studies and Pattern Summary
 
-### 22.5.1 Why Case Summaries Matter More Than Single-Point Techniques
+### 22.5.1 Why Case Summaries Are More Valuable Than Point Solutions
 
-At the end of Chapter 22, we have discussed the problem definition of multimodal RAG, the design of visual chunks, cross-modal retrieval, and evaluation and backfill. The next more deployment-oriented question is: when these capabilities reach real business scenarios, how should they be combined? Which parts must be rebuilt? Which can be reused? And which design patterns, validated in practice, deserve to be distilled into templates?
+Reaching the final section of Chapter 22, we have already discussed the problem definition of multimodal RAG, visual chunk design, cross-modal retrieval, and evaluation and data replenishment. The next question to answer is more deployment-oriented: when these capabilities truly enter a business scenario, how should they be combined? Which parts must be rebuilt? Which parts can be reused? Which patterns have been validated in practice and are most worth crystallizing as templates?
 
-This is exactly the value of "Cases and Patterns." For engineering teams, single-point technical conclusions are rarely enough to deliver a complete system. We may know that we need both page-level and region-level chunks and that visual recall plus rerank is required, but this does not directly translate to a shippable system. What ultimately decides success is how these components combine around business goals and how trade-offs are made among cost, latency, accuracy, and explainability.
+This is the value of the "case studies and pattern summary" section. For engineering teams, isolated technical conclusions are often insufficient to support complete deployment. For instance, we know that page-level and region-level chunks are needed, and we know that visual recall and reranking are needed, but this does not directly translate into a deployable system. What truly determines success or failure is usually how these technical components are combined into a pipeline oriented around business objectives, and how tradeoffs are made among cost, latency, accuracy, and explainability.
 
-From experience, multimodal RAG has at least three common deployment paths. The first is "page-primary, region-secondary" document Q&A, suitable for complex PDFs, policy documents, and scanned materials. The second is "chart- and table-centric" analytical Q&A, suitable for financial reports, business analysis, and experimental reports. The third is "screenshot- and object-centric" operational assistance, suitable for product manuals, software onboarding, and interface Q&A. All three paths share underlying multimodal capabilities but differ markedly in slicing granularity, index organization, evaluation criteria, and interaction modes.
+From experience, multimodal RAG has at least three common deployment paths. The first is the "page-primary, region-supplementary" document Q&A path, suitable for complex PDFs, policy documents, and scanned materials. The second is the "chart and table centric" analytical Q&A path, suitable for financial reports, business analysis, and experimental reports. The third is the "screenshot and object centric" operational assistance path, suitable for product manuals, software guides, and interface Q&A. The three paths share the same underlying multimodal capabilities but differ notably in slicing granularity, index organization, evaluation standards, and interaction patterns.
 
-The point of case summaries is therefore not to showcase "what a particular project achieved" but to distill projects into transferable patterns. A good pattern summary should answer four questions: what is the real unit of knowledge in this scenario; where does retrieval most often fail; what special evidence-organization requirements does generation impose; and if we transfer this approach to another business, which components can be reused and which must be re-annotated and retrained.
+Therefore, the purpose of a case summary is not simply to showcase "what a project accomplished" but to abstract projects into transferable patterns. A good pattern summary should answer four questions: What is the true knowledge unit in the scenario? Where is retrieval most likely to fail? What special requirements does the generation phase place on evidence organization? If this approach is transferred to another business, which components can be directly reused and which must be re-annotated and retrained?
 
-### 22.5.2 Case Study: Financial-Report Assistant
+### 22.5.2 The Financial Report Assistant Case
 
-The financial-report assistant is one of the most typical and revealing scenarios for multimodal RAG. Its challenge lies not in document volume but in scattered knowledge, heterogeneous evidence, and the analytical intent of typical user questions. An "explanatory" question often requires the system to use body-text analysis, financial tables, quarterly charts, footnotes, and cross-page metric comparisons all at once.
+The financial report assistant is one of the most typical scenarios for multimodal RAG—and one that most readily exposes system limits. The challenge is not an extremely large volume of documents, but rather that knowledge is scattered, evidence is heterogeneous, and user questions typically carry strong analytical intent. An "explanatory" question often requires the system to simultaneously leverage body text analysis, financial tables, quarterly charts, note disclosures, and cross-page metric comparisons (Masry et al. 2022; Liu et al. 2023b).
 
-Take the question "what were the main reasons for the company's Q2 2024 gross-margin decline" as an example. An ideal system must do at least five things: first, identify retrieval anchors such as "gross margin," "Q2," and "decline reasons"; second, locate the management-discussion paragraph in the body text; third, find the corresponding quarterly data in tables or charts; fourth, verify that this evidence is consistent in timing and definition; and fifth, assemble the quantitative and qualitative evidence into a citable answer. A failure at any step yields an answer that looks plausible but is unreliable.
+Taking the user question "What are the main reasons for the company's gross margin decline in Q2 2024?" as an example, an ideal system must complete at least five tasks. First, identify the retrieval anchors: "gross margin," "Q2," and "causes of decline." Second, locate the management discussion and analysis passage in the body text. Third, find the corresponding quarterly data in a table or chart. Fourth, confirm that these evidence items are consistent in temporal terms and definitional scope. Fifth, assemble quantitative evidence and qualitative explanation into a citable answer. If any one step goes wrong, the answer may be superficially plausible but fundamentally unreliable.
 
-The most effective modeling approach for a financial-report assistant is generally not to treat the annual report as one long document, but to split it into three cooperating types of evidence: textual explanatory evidence, numerical tabular evidence, and chart-trend evidence. The textual evidence answers "why," the tabular evidence answers "how much," and the chart evidence answers "does the trend hold." On the retrieval side, the system can first use text retrieval to pinpoint the topical passage, then use the metric names, periods, and chart numbers in that passage to reverse-trigger region-level table/chart recall.
+The most effective modeling approach for a financial report assistant is typically not to treat an entire annual report as a "long document" but to decompose it into three categories of collaborative evidence: body text explanatory evidence, numerical table evidence, and chart trend evidence. Body text evidence answers "why"; table evidence answers "how much"; chart evidence answers "whether the trend holds." At the retrieval pipeline level, the system can first use text retrieval to identify the main theme passage, then use the metric names, time periods, and chart numbers appearing in those passages to trigger region-level table/chart recall in reverse.
 
-A key pattern here is "text-guided vision," rather than relying solely on visual embeddings. The reason is that chart styles in financial reports are heavily templated; pure image similarity easily confuses adjacent quarters, similar metrics, or charts from the same template. Extracting anchors such as "gross margin," "Q2," "cost pressure," and "product-mix change" from the body text and using them to narrow the visual search space substantially improves accuracy.
+A key pattern in such systems is "text-guided vision"—rather than relying purely on visual embeddings to solve all problems. The reason is that chart styles in financial reports are highly templated; relying solely on image similarity easily confuses adjacent quarters, similar metrics, or same-template charts. By extracting anchors such as "gross margin," "Q2," "cost pressure," and "product mix changes" from the body text and then using these anchors to narrow the visual search space, accuracy can typically be significantly improved.
 
-Another lesson: financial-report assistants must handle units, definitions, and time dimensions explicitly. Year-over-year growth, sequential growth, percentage-point changes, hundred-million-yuan, and million-yuan may all coexist. Recall based only on textual similarity easily concatenates evidence with mismatched definitions. The visual chunks in financial-report scenarios should therefore carry structured metadata such as reporting period, currency, unit, metric alias, chart number, and page range.
+Another lesson is that the financial report assistant must explicitly handle units, definitional scope, and time dimensions. For example, "year-over-year growth," "quarter-over-quarter growth," "percentage point change," "billion yuan," and "million yuan" can all be used interchangeably. If the system retrieves solely based on text similarity, it easily assembles evidence with inconsistent definitional scopes. Therefore, visual chunks in financial report scenarios are best annotated with structured metadata such as reporting period, currency, unit, metric alias, chart number, and page range.
 
-*Table 22-6: Evidence-organization pattern in a financial-report assistant*
+*Table 22-6: Evidence Organization Patterns in the Financial Report Assistant*
 
-| Evidence type                | Main question answered  | Typical source                                  | Retrieval strategy                                  | Role in generation                                  |
-| ---------------------------- | ----------------------- | ----------------------------------------------- | --------------------------------------------------- | --------------------------------------------------- |
-| Textual explanatory evidence | Why                     | MD&A, risk disclosure                           | Text retrieval + topic expansion                    | Generate qualitative explanation                    |
-| Tabular numerical evidence   | How much                | Income statement, segment tables, notes         | Structured table retrieval + region localization    | Provide numbers, units, YoY/QoQ references          |
-| Chart-trend evidence         | Does the trend hold     | Quarterly charts, operational dashboards        | Chart-region recall + cross-modal rerank            | Support trend conclusions and visual citations      |
+| Evidence Type           | Primary Question Answered | Typical Source                     | Retrieval Strategy                              | Role in Generation                              |
+| ----------------------- | ------------------------- | ---------------------------------- | ----------------------------------------------- | ----------------------------------------------- |
+| Body text explanatory evidence | Why                | Management discussion, risk disclosures | Text retrieval + topic expansion             | Generate qualitative explanation                |
+| Table numerical evidence | How much               | Income statement, segment table, notes | Structured table retrieval + region localization | Provide numerical values, units, YoY/QoQ basis |
+| Chart trend evidence    | Whether the trend holds   | Quarterly charts, business dashboards | Chart region recall + cross-modal reranking   | Support trend inference and visual citation     |
 
-For answer generation, financial scenarios should avoid letting the model freely summarize. A safer approach is template-based evidence assembly: first the conclusion sentence, then the data sentence, then the source sentence. This has two benefits: it lowers the chance of mixing different quarters or definitions; and it makes it easy to display page numbers, table titles, or chart numbers in the answer, improving audit traceability.
+In the answer generation phase, financial scenarios should not allow the model to "freely summarize"; a more reliable approach is to use evidence template-based assembly. For example: first output the conclusion statement, then the data statement, and finally the evidence source statement. This has two advantages: first, it reduces the probability of the model mixing different quarters or definitional scopes; second, it facilitates displaying page numbers, table titles, or chart numbers in the response, improving audit traceability.
 
-### 22.5.3 Case Study: Retrieval over Complex-Layout Enterprise Documents
+### 22.5.3 The Complex-Layout Enterprise Document Retrieval Case
 
-Unlike financial reports, the core difficulty in retrieving over complex-layout enterprise documents is not chart understanding but extremely complex page structure, inconsistent templates, and questions that depend on relationships within a page rather than on isolated text fragments. Typical documents include bidding documents, scanned contracts, policy manuals, product-compliance materials, technical specs, and image–text mixed SOPs.
+Complex-layout enterprise document retrieval relies on capabilities such as heading hierarchy, table boundary detection, footnote binding, and region localization—exactly what models such as the LayoutLM family and DocFormer focus on (Xu et al. 2020; Appalaraju et al. 2021; Huang et al. 2022). Unlike financial reports, the core difficulty of complex-layout enterprise document retrieval is not necessarily chart understanding, but rather that page structure is extremely complex, document templates are non-standardized, and many questions depend on "relationships within a page" rather than a single text fragment. Typical documents include procurement/tendering files, scanned contracts, policy manuals, product compliance materials, technical specifications, and mixed image-text SOPs.
 
-The most common problem in such scenarios: users ask "whether a certain condition holds" or "where a certain requirement appears," and the answer is scattered across tables, footnotes, appendices, and body text. In a bidding document, for instance, the "bid bond amount" may appear once in body text, once in a table, and once in a footnote. In a contract, "liability for breach" may be interleaved across many clauses across pages and may reference annotated or sealed pages. If the system simply slices documents into ordinary text paragraphs, evidence breakage becomes common.
+The most common challenge in this scenario is: the user asks "whether a certain condition is satisfied" or "where a certain requirement appears," and the answer is often scattered across tables, footnotes, appendices, and body text. For example, "bid bond amount" in a tendering document may appear in one place in the body text, one place in a table, and one place in a footnote; "liability for breach of contract" in a contract may be interspersed across multiple pages of clauses with annotations or signature page references. If the system still cuts documents into ordinary text passages, evidence fragmentation will occur frequently.
 
-The most important thing in this scenario is therefore not a stronger generation model but more stable page modeling. The system must restore heading hierarchies, table boundaries, image–text adjacency, header/footer filtering rules, and cross-page continuity. Often the most valuable engineering improvement is not swapping in a stronger vision model but adding layout-relation fields to chunks: "previous/next-page continuation," "table-title ownership," "footnote binding region," "same-clause cross-page anchor," and so on.
+Therefore, the most important aspect for this type of document retrieval is not a more powerful generation model, but more robust page modeling. The system needs to restore heading hierarchy, table boundaries, image-text adjacency relationships, header/footer filtering rules, and cross-page continuation relationships. Often, the most valuable engineering improvement is not swapping in a stronger visual model but adding layout relationship fields to chunks, such as "continues from/to previous/next page," "table heading attribution," "footnote binding region," and "same-clause cross-page anchor."
 
-These systems also need to emphasize "localization verifiability." Enterprise users often want not just the answer but also "from which page, which clause, which table cell did you draw this conclusion." Therefore, in complex-layout retrieval, page numbers, clause numbers, table titles, region screenshots, and highlight positioning often matter as much as the answer itself. Without localization, multimodal retrieval is merely a fancier Q&A system, not a knowledge tool usable for business decisions.
+Such systems also require special emphasis on "localization verifiability." Enterprise users often want to know not just the answer but "on which page, in which clause, in which table cell did you derive this conclusion." Therefore, in complex-layout retrieval scenarios, page number, clause number, table title, region screenshot, and highlighted localization are often just as important as the answer itself. Without localization capability, multimodal retrieval is merely a fancier Q&A system rather than a knowledge tool usable for business decision-making.
 
-A useful pattern is "two-stage answering": first the conclusion, then evidence localization. For example: "This policy requires outsourcing vendors to pass an annual review. The evidence is located on page 14 section 4.2 and the 'review cycle' row of the following table." Such structure is friendly to users—it lowers comprehension cost while preserving a verification entry point.
+In practice, one effective pattern is the "two-part answer": first give the conclusion, then give the evidence localization. For example: "This policy requires outsourced vendors to pass an annual review. Evidence is located on page 14, section 4.2, in the 'Review Period' row of the subsequent table." This answer structure is particularly user-friendly because it both reduces the cognitive burden and preserves a verification entry point.
 
-### 22.5.4 One-to-One Mapping with P05
+### 22.5.4 Mapping to the P05 Project
 
-Within the project system of this book, the methodology in Chapter 22 is not isolated; it directly underpins the data and pipeline design of later project practice. When mapped onto the P05 family of multimodal knowledge assistants, the methodology decomposes into six deliverable modules: document ingestion and parsing, visual-chunk construction, cross-modal indexing, retrieval orchestration, evidence-grounded generation and citation, and the evaluation–backfill loop.
+Within the project framework of this book, the methodology of Chapter 22 does not exist in isolation—it directly provides the data and pipeline design foundation for subsequent project work. If mapped to a project analogous to the P05 multimodal knowledge assistant in Part 14 of this book, it can be roughly decomposed into six deliverable modules: document ingestion and parsing, visual chunk construction, cross-modal indexing, retrieval orchestration, evidence generation and citation, and evaluation-replenishment closed loop. Readers can first understand the data objects, indexing, and evaluation methods of multimodal RAG in this chapter, and then consult the corresponding project chapter for the P05 project's end-to-end structure, implementation steps, and deliverable organization.
 
-The value of this mapping is that project teams do not need to start from scratch to understand what "multimodal" means—they can translate Chapter 22's methods directly into engineering tasks. For instance, 22.2 corresponds to data-layer schema design; 22.3 corresponds to online retrieval orchestration; 22.4 corresponds to the evaluation and operations loop; 22.5 abstracts these into project templates. This significantly reduces situations where "every technique seems understood but the project never comes together."
+The significance of this mapping is that project teams do not need to start from scratch to understand what "multimodal" means; they can directly translate the methods of Chapter 22 into engineering to-dos. For example, Section 22.2 corresponds to data layer schema design; Section 22.3 corresponds to online retrieval orchestration; Section 22.4 corresponds to the evaluation and operations closed loop; and Section 22.5 abstracts all these modules into project templates. This significantly reduces the situation of "understanding all the technology but never being able to assemble the project."
 
-Refining further into deliverables, we can write the key P05 builds as pattern cards. Each card contains: target scenario, input document types, primary knowledge unit, recommended slicing granularity, index keys, retrieval order, core metrics, and backfill mechanism. The value of pattern cards is that different business teams can reuse them directly and tailor them as needed, without reinventing the method each time.
+If we further refine down to deliverables, we can write the key build items of P05 as pattern cards. Each card contains: target scenario, input document types, primary knowledge unit, recommended slicing granularity, index key, retrieval order, core metrics, and replenishment mechanism. The value of pattern cards is that different business teams can directly reuse and customize them as needed, rather than reinventing the approach each time.
 
-A common engineering formula for assessing whether a pipeline design is worth shipping is the following. Let the improvement in answer accuracy be $\Delta A$, the improvement in evidence verifiability be $\Delta E$, latency cost be $T$, and per-question cost be $C$; then we define a deployment-utility function:
+A common engineering formula is to evaluate whether a particular pipeline design is worth deploying. Let the answer accuracy gain be $\Delta A$, the evidence verifiability gain be $\Delta E$, the latency cost be $T$, and the per-query cost be $C$; a deployment utility function can then be defined as:
 
 $$
 U_{\text{deploy}} = \eta_1 \Delta A + \eta_2 \Delta E - \eta_3 T - \eta_4 C
 $$
 
-This function reminds us that multimodal solutions should not stack every model "for technical sophistication"; they should pursue the best balance among accuracy, explainability, and cost. For a system that handles only a few screenshot Q&As, an elaborate chart-extraction pipeline may be unnecessary; for a financial-report assistant, the business gain from evidence verifiability easily justifies higher inference cost.
+This function reminds us that multimodal solutions should not pile up all models in pursuit of "technical sophistication," but should instead seek the optimal balance among accuracy, explainability, and cost. For example, for a system with only a small number of screenshot Q&A tasks, it may not be necessary to introduce a complex chart extraction pipeline; whereas for a financial assistant, the business returns from evidence verifiability are sufficient to justify higher inference costs.
 
-*Table 22-7: Mapping Chapter 22 methods to P05 project modules*
+*Table 22-7: Mapping from Chapter 22 Methods to P05 Project Modules*
 
-| Chapter 22 method module                    | P05 build item                            | Key deliverables                                          | Main acceptance metrics                            |
-| ------------------------------------------- | ----------------------------------------- | --------------------------------------------------------- | -------------------------------------------------- |
-| Visual chunks and object modeling           | Multimodal data schema                    | Page chunks, region chunks, chart chunks, table chunks    | Parsing completeness, structural consistency       |
-| Cross-modal indexing and retrieval          | Retrieval service and rerank service      | Vector index, keyword index, candidate combiner           | Hit@k, MRR, region-level recall                    |
-| Evidence localization and answer generation | Citation and highlighting components      | Page numbers, bboxes, screenshots, highlight anchors      | Citation faithfulness, IoU                         |
-| Evaluation and error attribution            | Quality-operations backend                | Evaluation set, error labels, failure-sample warehouse    | Answer accuracy, error-cluster downtrend           |
-| Data backfill                               | Training data pipeline                    | Hard negatives, versioned backfill samples                | Per-version gain, online-fix coverage              |
+| Chapter 22 Method Module          | P05 Corresponding Build Item        | Key Deliverables                                         | Primary Acceptance Metrics                            |
+| --------------------------------- | ----------------------------------- | -------------------------------------------------------- | ----------------------------------------------------- |
+| Visual chunk & object modeling    | Multimodal data schema              | Page blocks, region blocks, chart blocks, table blocks   | Parse completeness rate, structural consistency       |
+| Cross-modal indexing & retrieval  | Retrieval service & rerank service  | Vector index, keyword index, candidate merger            | Hit@k, MRR, region-level recall rate                 |
+| Evidence localization & answer generation | Citation & highlight component | Page numbers, bboxes, screenshots, highlight anchors    | Citation Faithfulness, IoU                            |
+| Evaluation & error attribution    | Quality operations backend          | Evaluation set, error labels, failure sample repository  | Answer Accuracy, error cluster decline trend          |
+| Data replenishment                | Training data pipeline              | Hard negatives, replenishment sample versions            | Version iteration gains, online repair coverage rate  |
 
-### 22.5.5 Reusable Design Patterns and Anti-Patterns
+### 22.5.5 Reusable Design Patterns and Anti-patterns
 
-After repeated validation across multiple projects, we can distill multimodal-RAG experience into several stable patterns. The first is "page-level coarse recall + region-level fine localization." It applies to almost all complex-document scenarios because it balances recall efficiency with evidence explainability. The second is "text-guided vision": narrow the visual search space first via topical text anchors, then perform region-level comparison—especially useful for financial reports and manuals. The third is "structured metadata first": store page numbers, chapters, chart numbers, units, time ranges, and object categories explicitly at index time rather than hoping the generation model will figure them out on the fly.
+After repeated validation across multiple projects, we can summarize the experience of multimodal RAG into several stable patterns. The first is "coarse page-level recall + fine region-level localization." This applies to nearly all complex document scenarios because it balances recall efficiency with evidence explainability. The second is "text-guided vision," which means using text topic anchors to narrow the visual retrieval scope before performing region-level comparison—particularly suited for financial reports and manuals. The third is "metadata-first," which means explicitly storing page numbers, chapter numbers, chart identifiers, units, time ranges, and object categories at indexing time, rather than placing all hope on the generation model to understand these on the fly.
 
-A particularly important pattern is "evidence before answer." The pipeline is organized around evidence first; language polishing comes second. For high-risk scenarios, fluency is not the first priority; whether the evidence is true, verifiable, and highlightable is what really decides shippability.
+There is also a very important pattern called "evidence before answer." This means the system pipeline is organized first around evidence, and only afterward around linguistic expression and polish. For high-risk businesses, whether the response is eloquent is not the top priority; whether the evidence is authentic, verifiable, and highlightable to the user is what truly determines whether the system can be deployed.
 
-Correspondingly, there are several high-frequency anti-patterns. The most typical is "treating OCR as multimodal." This causes persistent failures on charts, interface screenshots, and complex layouts. The second is "page-only indexing." It is simple to implement, but with high information density per page, the model struggles to focus on the target region during generation. The third is "offline-only evaluation, no online backfill." Such systems perform well in demos but quickly drown in long-tail errors when they meet real enterprise templates.
+Corresponding to these patterns, there are also several high-frequency anti-patterns. The most typical anti-pattern is "treating OCR as multimodal." This causes the system to continuously fail on charts, interface screenshots, and complex-layout scenarios. The second anti-pattern is "indexing only at page level." While whole-page indexing is simple to implement, once a page has high information density, the model during generation has great difficulty focusing precisely on the target region. The third anti-pattern is "offline evaluation only, no online replenishment." Such systems often perform well during prototype validation but quickly suffer continuous failures in enterprise real-world templates due to accumulating long-tail errors.
 
-*Table 22-8: Reusable patterns and common anti-patterns in multimodal RAG*
+*Table 22-8: Reusable Patterns and Common Anti-patterns for Multimodal RAG*
 
-| Type         | Name                                                      | Applicability or consequence                          | Note                                                 |
-| ------------ | --------------------------------------------------------- | ----------------------------------------------------- | ---------------------------------------------------- |
-| Pattern      | Page-level coarse recall + region-level fine localization | Balances efficiency and explainability                | Find the page first, then the box; fits complex docs |
-| Pattern      | Text-guided vision                                        | Improves accuracy on similar charts and screenshots   | Use textual anchors to narrow visual candidates      |
-| Pattern      | Structured metadata first                                 | Reduces unit/time/definition confusion                | Preserve page, chart number, unit at index time      |
-| Anti-pattern | Treating OCR as multimodal                                | Frequent failure on charts and layouts                | Only reads characters; cannot grasp visual structure |
-| Anti-pattern | Page-only indexing                                        | Evidence granularity too coarse, confusing generation | Mislocalization is especially common on dense pages  |
-| Anti-pattern | No online backfill                                        | Long-tail issues never converge                       | High offline scores but unstable production quality  |
+| Type         | Name                                          | Effect or Consequence                               | Explanation                                                     |
+| ------------ | --------------------------------------------- | --------------------------------------------------- | --------------------------------------------------------------- |
+| Pattern      | Coarse page-level recall + fine region-level localization | Balances efficiency and explainability | Find the page first, then find the bounding box—suitable for complex documents |
+| Pattern      | Text-guided vision                            | Improves accuracy in similar-chart and similar-screenshot scenarios | Use text anchors to narrow visual candidate range        |
+| Pattern      | Metadata-first                                | Reduces unit, temporal, and definitional confusion  | Preserve page numbers, chart numbers, units, etc. at index time |
+| Anti-pattern | Treating OCR as multimodal                    | Frequent failures on charts and layout problems     | Can read characters but cannot understand visual structure      |
+| Anti-pattern | Indexing only at page level                   | Evidence granularity too coarse, generation easily confused | Particularly prone to mislocalization on high-density pages |
+| Anti-pattern | No online replenishment                       | Long-tail problems do not converge                  | Offline score high but production quality unstable              |
 
-From an organizational perspective, reusable patterns offer another practical benefit: they help product, algorithm, data, and engineering teams build a shared vocabulary. Once everyone understands what "page-level coarse recall + region-level fine localization" means and what "evidence before answer" means, many project debates shift from abstract concepts to verifiable design choices, and progress accelerates significantly.
+From an organizational collaboration perspective, reusable patterns also have a practical value: they help product, algorithm, data, and engineering teams build a shared vocabulary. Once all stakeholders understand what "coarse page-level recall + fine region-level localization" means and what "evidence before answer" means, many project debates will shift from abstract concepts to verifiable designs, significantly improving execution efficiency.
 
 
 
 ### 22.5.6 Section Summary
 
-This section revisited the deployment of multimodal RAG from the perspectives of cases and patterns. The financial-report assistant emphasizes the cooperation among three kinds of evidence—textual explanation, tabular numbers, and chart trends. Retrieval over complex-layout enterprise documents emphasizes restoring page structure, clause localization, and verifiable answers. The mapping to P05 further translates Chapter 22's methodology into project-delivery modules.
+This section reviewed the deployment methodology of multimodal RAG from the perspective of case studies and patterns. The financial report assistant emphasizes the collaboration of three evidence types: textual explanations, table numerical data, and chart trends. Complex-layout enterprise document retrieval emphasizes page structure recovery, clause localization, and verifiable answers. The mapping to P05 further translates the methodology of Chapter 22 into project deliverable modules.
 
-What deserves the most distillation are the cross-project reusable patterns: page-level coarse recall with region-level fine localization, text-guided vision, structured metadata first, and evidence before answer. The opposing anti-patterns are treating OCR as multimodal, page-only indexing, and the lack of online backfill. With these patterns in hand, teams can not only build a demonstrable multimodal Q&A system but also gradually grow a multimodal-RAG platform that is verifiable, operable, and continuously improvable in real business use.
+More worth crystallizing are the cross-project reusable patterns: coarse page-level recall and fine region-level localization, text-guided vision, metadata-first, and evidence before answer. Against these patterns stand the anti-patterns: treating OCR as multimodal, indexing only at page level, and lacking online replenishment. By mastering these patterns, teams can not only build a demonstrable multimodal Q&A system but also progressively construct a multimodal RAG platform that is verifiable, operable, and continuously optimizable in real business contexts.
+
+------
+
+## Chapter Summary
+
+This chapter established that when knowledge is hidden in images, tables, charts, and layout structures, text RAG—which flattens documents into character strings—discards visual structure and image-text alignment information; therefore, the key to multimodal RAG lies in reconstructing knowledge units, indexing strategies, and evidence organization. Toward this end, the chapter presented a design for visual chunks and object modeling that organizes pages, regions, tables, and images into locatable, citable, and verifiable knowledge assets, and explained how cross-modal indexing, retrieval, and reranking bring visual evidence into the recall-and-generation loop.
+
+At the evaluation level, the chapter decomposed visual retrieval errors into parsing, localization, recall, ranking, and generation stages for attribution, and used online failure sample replenishment to continuously improve system capability in complex document scenarios. These methods collectively form the data engineering foundation for multimodal financial report assistants and complex enterprise document retrieval applications. After deployment, real users and a continuously evolving knowledge environment will keep generating new failure signals; the next chapter transitions to the online feedback loop and knowledge updates.
+
+## References
+
+Xu Y, Li M, Cui L, Huang S, Wei F, Zhou M (2020) LayoutLM: Pre-training of Text and Layout for Document Image Understanding. In: Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining, pp 1192–1200.
+
+Huang Y, Lv T, Cui L, Lu Y, Wei F (2022) LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. In: Proceedings of the 30th ACM International Conference on Multimedia, pp 4083–4091.
+
+Appalaraju S, Jasani B, Kota B U, Xie Y, Manmatha R (2021) DocFormer: End-to-End Transformer for Document Understanding. In: Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pp 993–1003.
+
+Kim G, Hong T, Yim M, Nam J, Park J, Yim J, Hwang W, Yun S, Han D, Park S (2022) OCR-free Document Understanding Transformer. In: Proceedings of the European Conference on Computer Vision (ECCV), pp 498–517.
+
+Mathew M, Karatzas D, Jawahar C V (2021) DocVQA: A Dataset for VQA on Document Images. In: Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV), pp 2200–2209.
+
+Mathew M, Bagal V, Tito R, Karatzas D, Valveny E, Jawahar C V (2022) InfographicVQA. In: Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV), pp 1697–1706.
+
+Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, Krueger G, Sutskever I (2021) Learning Transferable Visual Models From Natural Language Supervision. In: Proceedings of the 38th International Conference on Machine Learning (ICML), pp 8748–8763.
+
+Jia C, Yang Y, Xia Y, Chen Y-T, Parekh Z, Pham H, Le Q, Sung Y-H, Li Z, Duerig T (2021) Scaling Up Visual and Vision-Language Representation Learning With Noisy Text Supervision. In: Proceedings of the 38th International Conference on Machine Learning (ICML), pp 4904–4916.
+
+Li J, Li D, Savarese S, Hoi S (2023) BLIP-2: Bootstrapping Language-Image Pre-training with Frozen Image Encoders and Large Language Models. In: Proceedings of the 40th International Conference on Machine Learning (ICML), pp 19730–19742.
+
+Lee K, Joshi M, Turc I, Hu H, Liu F, Eisenschlos J, Khandelwal U, Shaw P, Chang M-W, Toutanova K (2023) Pix2Struct: Screenshot Parsing as Pretraining for Visual Language Understanding. In: Proceedings of the 40th International Conference on Machine Learning (ICML), pp 18893–18912.
+
+Masry A, Long D X, Tan J Q, Joty S, Hoque E (2022) ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. In: Findings of the Association for Computational Linguistics: ACL 2022, pp 2263–2279.
+
+Liu F, Piccinno F, Krichene S, Pang C, Lee K, Joshi M, Altun Y, Collier N, Eisenschlos J M (2023a) MatCha: Enhancing Visual Language Pretraining with Math Reasoning and Chart Derendering. In: Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics, pp 12756–12770.
+
+Liu F, Eisenschlos J M, Piccinno F, Krichene S, Pang C, Lee K, Joshi M, Chen W, Collier N, Altun Y (2023b) DePlot: One-shot Visual Language Reasoning by Plot-to-Table Translation. In: Findings of the Association for Computational Linguistics: ACL 2023, pp 10381–10399.
+
+Ren S, He K, Girshick R, Sun J (2015) Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks. In: Advances in Neural Information Processing Systems 28, pp 91–99.
+
+He K, Gkioxari G, Dollár P, Girshick R (2017) Mask R-CNN. In: Proceedings of the IEEE International Conference on Computer Vision (ICCV), pp 2961–2969.
+
+Kirillov A, Mintun E, Ravi N, Mao H, Rolland C, Gustafson L, Xiao T, Whitehead S, Berg A C, Lo W-Y, Dollár P, Girshick R (2023) Segment Anything. In: Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pp 4015–4026.
+
+Nogueira R, Cho K (2019) Passage Re-ranking with BERT. arXiv preprint arXiv:1901.04085.
+
+Es S, James J, Espinosa-Anke L, Schockaert S (2024) RAGAS: Automated Evaluation of Retrieval Augmented Generation. In: Proceedings of the 18th Conference of the European Chapter of the Association for Computational Linguistics: System Demonstrations, pp 150–158.
+
+Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503–2511.
+
+Huyen C (2022) Designing Machine Learning Systems: An Iterative Process for Production-Ready Applications. O'Reilly Media.

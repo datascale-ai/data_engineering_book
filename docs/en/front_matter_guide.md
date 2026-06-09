@@ -114,12 +114,12 @@ The most reliable way to use the book is therefore not to read all prose continu
 
 The book provides Chinese, English, and Japanese editions. This is not for decorative completeness; it serves real collaboration scenarios, including cross-university cooperation, cross-team communication, international project documentation, course reuse, and open-source community distribution.
 
-For most readers, the Chinese edition should be treated as the canonical mainline because it is the most complete and receives structural updates first. The English and Japanese editions are best used for external communication, terminology mapping, and auxiliary reading.
+For source-level alignment, the Chinese edition should be treated as the canonical mainline because it receives structural decisions first. The English edition is the synchronized translated web edition for English readers; the Japanese edition remains a separate incremental entry point.
 
 Use the multilingual editions with these principles:
 
-- Use the Chinese edition for deep reading, note-taking, and project planning.
-- Use the English edition for external presentation, bilingual course material, and cross-team terminology alignment.
+- Use the Chinese edition when checking source wording, structural decisions, and publication scope.
+- Use the English edition for English reading, external collaboration, bilingual course material, and terminology alignment.
 - Use the Japanese edition as an additional entry point for readers who need it, while watching its synchronization status.
 - If editions diverge, treat the current Chinese structure as authoritative.
 

@@ -1,90 +1,118 @@
 # Chapter 20: Agent Memory and Multi-Turn Interaction Data
 
-In long-horizon, multi-turn, task-oriented agent data engineering, the hard part is not making single-turn QA longer. The hard part is making the model preserve task identity, state consistency, and behavioral stability across turns. A useful agent must remember long-term user preferences, track intermediate task progress, handle local dependencies in the current context, and continue correctly after interruption, switching, and recovery.
+## Abstract
 
-This chapter treats memory as a data object that can be structured, trained, tested, and governed. Multi-turn interaction is not casual chatting; it is a state-transition process around task progress. We discuss the nature of multi-turn trajectories, session segmentation and state representation, memory write/update/recall, replay testing and failure analysis, and data patterns for AI assistants, customer-service agents, and office agents.
+The data engineering challenge for long-horizon, multi-turn, task-oriented agents does not lie in stitching single-turn question-and-answer pairs into longer sequences, but in enabling a model to sustain task identity, state consistency, and behavioral stability across turns. This chapter defines multi-turn data as a state trajectory jointly shaped by state modeling, memory management, feedback loops, and temporal decay—rather than a dialogue-length problem—and explains why state dependencies, role drift, and task interruptions make it impossible to reduce this problem to next-turn response prediction. At the segmentation and representation level, the chapter distinguishes three nested units—session, episode, and task thread—argues for segmentation based on state continuity rather than physical time, and structures dialogue state, user preferences, and task progress as minimal closed-loop units of the form pre-state—trigger—action—post-state, with explicit modeling of interruption, switching, and resumption scenarios. On the memory side, the chapter defines stability, reusability, confirmability, and low-risk criteria for memory writes; distinguishes the context window, short-term memory, and long-term memory; presents the layered hierarchy of instantaneous context, working memory, session summaries, and long-term preferences together with their migration rules; and introduces temporal decay, conflict decay, and usage decay to advance summarization, conflict resolution, and recall from similarity matching toward utility-based judgment. Finally, through multi-turn replay evaluation, state-drift evaluation, and memory-dependency evaluation, the chapter attributes "remembering the wrong things" and "forgetting the important things" to actionable data-pipeline stages—writing, recall, decay, and thread recovery—and proposes four categories of red-line tests: thread contamination, error persistence, recovery failure, and feedback invalidation.
 
-## 20.1 Why Multi-Turn Trajectories Cannot Be Reduced to "A Few More Rounds of Dialogue"
 
-### State Dependency, Role Drift, and Task Interruption in Multi-Turn Dialogue
+In the data engineering of long-horizon, multi-turn, task-oriented agents, the genuinely difficult part is never "stitching single-turn question-and-answer pairs into longer sequences." The real challenge is enabling a model to continuously maintain task identity, state consistency, and behavioral stability across turns. An agent capable of completing complex tasks must simultaneously remember the user's long-term preferences and track the intermediate progress of the current task; it must handle local dependencies within the current context while continuing along the correct trajectory after a task is interrupted, switched, or resumed. Consequently, multi-turn data is no longer merely a dialogue-length problem; it becomes a data problem jointly shaped by state modeling, memory management, feedback loops, and temporal decay.
 
-Single-turn data asks whether the input is understood and the output is correct. Multi-turn data asks whether the current turn remains coherent with all previous turns as part of one task process. Each response is a local action inside a state chain.
+For teams building data for long-horizon, multi-turn, task-oriented agents, the core objective of this chapter is not to teach models to "chat for more turns," but to establish an interaction-trajectory structure that allows models to work stably across turns. This structure encompasses at least four fundamental dimensions: first, the ability to represent what task is currently underway, at what stage, and what information is still missing; second, the ability to distinguish which information should be written into long-term memory versus which should be retained only in short-term context; third, the ability to update state in response to user feedback, tool execution results, and external environment changes; and fourth, the ability to discover through replay evaluation and failure attribution whether the system is "remembering the wrong things" or "forgetting things it should have remembered."
 
-Many systems can "talk for a long time" in demos while still failing tasks. They preserve language continuity but not task continuity. Language continuity means the conversation reads smoothly. Task continuity means every action respects prior constraints, current progress, and future goals.
+Accordingly, the "memory" discussed in this chapter is a training target that can be formalized, structured, and evaluated—not an abstract capability label. And the "multi-turn interaction" discussed here refers to the state-transition process unfolding around task advancement, not conversational companionship. With this in mind, we will successively address the nature of multi-turn trajectories, session segmentation and state representation, memory write and recall strategies, replay testing and failure post-mortems, and typical data-organization patterns in AI assistants, customer-service agents, and workplace agents.
 
-State dependency includes parameter dependency, stage dependency, and result dependency. A date confirmed in turn one may determine a tool parameter in turn six. A task may not legally proceed until a prior confirmation is complete. A tool observation may force the agent to update the plan.
+## Keywords
 
-Role drift is another risk. A task executor may slowly become a general explainer. A cautious workflow agent may start making unsupported assumptions. Multi-turn samples should label not only whether a turn sounds right, but whether it preserves the correct role: executor, coordinator, confirmer, explainer, waiter, or recovery actor.
+Agent memory and multi-turn interaction data; reasoning data; tool calling; agent memory; multi-turn interaction
 
-Task interruption makes the problem harder. Users switch topics, insert new tasks, pause work, and return hours later. A mature dataset must include interruption, switching, suspension, and recovery, not only smooth linear completion.
+## Learning Objectives
 
-### Differences Among Long-Term Memory, Short-Term Memory, and Context Window
+- Explain why multi-turn data is jointly shaped by state modeling, memory management, feedback loops, and temporal decay, and cannot be reduced to next-turn response prediction.
+- Distinguish the three nested units—session, episode, and task thread—segment them by state continuity, and structure dialogue state as a minimal closed-loop unit of the form pre-state—trigger—action—post-state.
+- Define the stability, reusability, confirmability, and low-risk criteria for memory writes; distinguish the context window, short-term memory, and long-term memory; and design temporal decay, conflict decay, and usage decay rules.
+- Design multi-turn replay evaluation, state-drift evaluation, and memory-dependency evaluation to attribute "remembering the wrong things" and "forgetting the important things" to actionable data-pipeline stages—writing, recall, decay, and thread recovery.
 
-Context window, short-term memory, and long-term memory are different layers.
+## 20.1 Why Multi-Turn Trajectories Cannot Be Reduced to "More Turns of Dialogue"
 
-The context window is the text currently visible to the model. It answers what the model can see, not what should be kept. A larger window does not automatically produce better consistency because it also contains irrelevant dialogue, failed attempts, and noise.
+### State Dependencies, Role Drift, and Task Interruptions in Multi-Turn Dialogue
 
-Short-term memory is the current task working set. It stores confirmed slots, unfinished steps, recent tool failures, current blockers, and waiting conditions. It serves the active thread and should decay when the task ends.
+The central concern of single-turn data is typically "whether the input is reasonable and the output is correct," whereas the central concern of multi-turn data is "whether the input and output of the current turn jointly constitute a coherent task process together with all preceding turns." Under this framing, no individual turn exists as an isolated sample; instead, every turn is embedded in a state chain and constitutes a local action within it. A model that has learned only to answer locally, without learning to locate itself within a state chain, will readily produce multi-turn outputs that read fluently on the surface but execute incorrectly as a whole. Many systems appear capable of "sustaining long conversations" during demonstrations, yet once a task becomes even slightly more complex, a fundamental problem emerges: they maintain linguistic continuity without having achieved task continuity. Linguistic continuity requires that responses read smoothly; task continuity requires that every action remains consistent with prior constraints, current progress, and subsequent goals. The two are not equivalent, and in real agent scenarios the latter is clearly more important.
 
-Long-term memory stores information that remains useful across sessions and tasks: stable preferences, recurring work patterns, project background, and durable constraints. It should be extracted, summarized, conflict-resolved, and time-aware. It should not become a raw history warehouse.
+State dependency is the first major challenge of multi-turn task-oriented agents. Information provided by the user in turn 1 may not actually determine a particular tool parameter until turn 6; an intermediate result that seems irrelevant at first glance may become the only valid reference point when the task is later resumed. If data annotation records only the text of each turn without explicitly marking task variables, progress checkpoints, and waiting conditions, the model is forced to infer state from surface linguistic patterns during training—a practice that severely undermines stability in complex tasks (Young et al. 2013; Budzianowski et al. 2018). More importantly, state dependencies frequently extend beyond "the previous turn influencing the next," manifesting instead as cross-step, cross-subtask, and cross-tool-call dependency chains. For example, a user first specifies "retain only English terminology," then requests that a report abstract be generated, and then requests that an email draft be exported. The "English terminology" constraint is never restated in every turn, yet it should continuously govern the writing style of the abstract, the file format, and the email phrasing. If such constraints are not preserved as state fields in the samples, the model will tend to retain only the explicit linguistic traces of the most recent turns in long conversations while discarding the task constraints that genuinely carry the highest priority.
 
-If these layers are confused, systems remember temporary facts forever and forget stable preferences after the current window closes.
+From a data-engineering perspective, state dependencies comprise at least three categories. The first category is parameter dependency: information that was confirmed earlier—time, object, format, permissions, location, and so on—remains operative in subsequent actions. The second category is phase dependency: only after a particular step is completed does the next step become legally valid—for instance, the system should not proceed to the ordering or reimbursement stage until the user has confirmed the budget. The third category is result dependency: tool observations, external retrieval results, or user feedback retroactively modify the current task state, compelling the model to revise its plan (Yao et al. 2023; Shinn et al. 2023). Most multi-turn system failures do not arise because the system completely failed to understand a particular turn's text, but because it did not correctly handle the ordering among these three categories of dependencies. It may have remembered the parameters but ignored phase gates; it may have executed an action but failed to update state in response to the result. The system thus appears locally reasonable but is globally misaligned.
 
-### Why Multi-Turn Supervision Is Not Only "Next Reply"
+Role drift is the second category of problems. Role drift refers to the model gradually departing from its original task identity over the course of multi-turn interaction—this is not a simple change in tone. For instance, a model that should act as a "task-execution agent" begins to regress into a "generic explainer" as interaction lengthens; a model that should continuously advance a pending workflow instead begins to generate broad recommendations in the next turn; a model that should maintain careful constraints has its behavioral boundaries shifted by the user's phrasing over a long context. From a data-engineering perspective, this means that multi-turn samples cannot be labeled solely on the basis of "whether this turn answered correctly"; they must also be labeled on "whether this turn continued the correct role and objective."
 
-Predicting the next reply is necessary but insufficient. Task-oriented agents must also learn current state, memory write decisions, whether to call tools, whether to wait, whether to switch threads, and where to resume.
+Role drift is dangerous precisely because it typically appears gradually rather than abruptly. The model starts by executing the task, but as the conversation lengthens it progressively drifts toward the response patterns it finds more familiar and easier to generate—explaining background, offering principled advice, restating user intent, producing emotional responses, or even wandering into irrelevant extensions. For a pure chat product, such drift may not always be high-risk; but for a task-oriented agent, it means the execution chain has been severed. A system that should be "continuing to process" begins "discussing how to process"; a system that should be "updating state based on records" begins "vaguely advising users to provide more information"; a system that should be "respecting tool-call boundaries" begins "fabricating plausible results." Role annotation in multi-turn data should therefore not merely describe the system's persona or tone, but should describe its operational stance—that is, whether the system currently plays the role of executor, coordinator, confirmor, explainer, waiter, or recoverer.
 
-Multi-turn supervision should include three layers: reply supervision, state supervision, and process supervision. Reply supervision checks the local text. State supervision checks how the internal state changes. Process supervision checks whether the action creates a sustainable causal chain for later recovery.
+Task interruption further complicates the problem. In real systems, task progress is not always linearly continuous: users will jump topics, insert new questions, request pausing, and return hours later to continue. A mature multi-turn agent dataset must explicitly include such interruption–switch–resumption trajectories; it cannot assume that all tasks are completed in a single linear sequence. The truly difficult challenge for a model is not executing the same task continuously across five turns, but being able to resume the correct thread after an interruption without mixing the state of different tasks.
 
-Without state and process supervision, long conversations remain long text samples rather than agent trajectories.
+The additional difficulty of interruptions is that they change the state space itself, rather than merely requiring the system to "remember where it left off." A task that was in "awaiting confirmation" before an interruption enters a "suspended" state after it; when a new task is inserted, the currently active thread changes; when the user returns to the old task, the system must not only restore the original thread but also determine whether the old state is still valid. For example, prices, inventory levels, or time windows that were pending confirmation may have been invalidated by changes in the external environment. In other words, resumption after an interruption is not a simple replay of old content; it requires performing a validity check on top of the old state. If data never presents this type of change, models will interpret resumption as "reciting where things left off" and will be unable to understand it as "restoring an executable state under current conditions."
 
-### Common Incorrect Labeling Patterns in Multi-Turn Data
+### Differences Between Long-Term Memory, Short-Term Memory, and the Context Window
 
-The first mistake is concatenating a dialogue into one long sample without labeling state changes. This preserves order but loses the important events: information collection, action execution, waiting, branching, recovery, and thread switching.
+Many teams building multi-turn data mistakenly treat "a longer context" as equivalent to "the model having memory." In reality, the context window, short-term memory, and long-term memory represent three distinct levels of the problem (Liu et al. 2024a; Wang et al. 2023).
 
-The second mistake is labeling only the final outcome. A booking task may succeed after confirmations, conflict handling, user correction, and fallback. If only the final success is preserved, the model cannot learn how to repair.
+The context window is fundamentally the range of text currently visible. It answers "what can the model see in this turn" but does not answer "what information should be retained long-term." The fact that information has been placed in the context does not mean it will be used stably; a longer context does not naturally lead to better cross-turn consistency (Liu et al. 2024a). When the context window contains historical dialogue, tool observations, user preferences, and also irrelevant small talk and failed attempts all at once, the model faces a high-noise, weakly structured input space. The context window more closely resembles a temporary whiteboard: things can be written on it, but that does not mean everything written carries equal importance, nor that the system can automatically know what should be retained and what should be ignored. Many systems' "long-context capabilities" appear impressive in demonstrations but in practice merely capture surface associations within a large block of text. Once cross-turn constraint inheritance, removal of outdated information, and conflict resolution are involved, simply expanding the window is no longer sufficient (Liu et al. 2024a; Packer et al. 2023).
 
-The third mistake is treating user feedback as ordinary conversation. "Not that file," "move it to next week," or "use the previous format" are state-update signals.
+Short-term memory more closely resembles the "working set of the current task." It typically stores information that is temporarily valid during the current task execution—parameters already confirmed in this turn, sub-steps not yet completed, the reason a tool call failed in the previous turn, slots still awaiting user input, and so on. The key characteristic of short-term memory is not long retention but serving the current thread; it therefore emphasizes temporal consistency and intra-task relevance. Short-term memory is not a mechanical cache of all adjacent context; it should selectively retain only the information that must be preserved to advance the current task. For example, a tool call may return ten fields, but only the status code, the failure reason, and the identifier required for the next step need to enter short-term memory; the remaining fields can remain in the observation record without being carried into subsequent reasoning. Without this filtering, the short-term memory layer is rapidly filled with noise, leaving the system in a situation where it has "saved a great deal" but cannot locate the most critical variables when recovery is needed.
 
-The fourth mistake is missing decay and invalidation. Not every mentioned fact stays true. Temporary intent, one-time preference, denied information, and superseded variables need expiration or override rules.
+Long-term memory corresponds to information that remains valid across sessions and tasks—stable user preferences, fixed constraints, habitual work patterns, long-term project background, and so on (Wang et al. 2023; Park et al. 2023). Long-term memory should not become a "repository of historical dialogue"; it should be a high-value information set that has been extracted, generalized, conflict-resolved, and judged for timeliness. In other words, long-term memory should consolidate information that will still be helpful in the future and whose risks are manageable into a structured form, rather than leaving old content intact (Wang et al. 2023). The engineering challenge of long-term memory lies in balancing stability with revisability. On one hand, it must be stable enough to prevent the system from repeatedly asking users to restate their preferences; on the other hand, it cannot be so rigid as to be non-updatable, because if a user's habits change or the task context shifts, an old preference becomes an incorrect constraint. Long-term memory is therefore best understood as a "low-frequency but overridable persistent state," not as a "permanently immutable table of facts."
 
-The fifth mistake is treating memory writes as invisible system implementation. Memory write, update, and recall should appear as trainable events.
+Once the boundaries among these three are blurred, both data annotation and training objectives fall into confusion. Writing a short-term state into long-term memory causes the model to "remember things that should have expired"; storing long-term preferences only in the current context causes the model to "forget them next time." The first problem that multi-turn data engineering must therefore solve is how to place information at different levels into the correct containers—not simply how to make trajectories longer. More specifically, teams need to be clear: the context window is the carrying layer, short-term memory is the execution layer, and long-term memory is the reuse layer. The carrying layer is responsible for making information visible to the model; the execution layer is responsible for advancing the task; the reuse layer is responsible for making cross-session consistency possible. If these three layers are conflated, the model will over-persist in places where it should not, and will frequently lose information in places where it should maintain stable inheritance.
 
-The sixth mistake is treating mixed-task dialogue as one thread. Real users run parallel tasks. Without thread IDs and active-thread labels, models learn to merge unrelated states.
+### Why Multi-Turn Supervision Targets More Than "Next-Turn Response"
+
+From the standpoint of training objectives, multi-turn task-oriented agents should not be reduced to "given history, predict the next-turn response." This target is necessary for learning pure linguistic continuity, but far from sufficient for learning agent capabilities. A truly useful multi-turn system learns not only what to say next, but also how to assess the current state, whether to write to memory, whether to invoke a tool, whether to wait for feedback, whether to switch threads, and—when resuming a task—from which stage to restart (Yao et al. 2023; Shinn et al. 2023).
+
+Put differently, the supervision target of multi-turn data should expand from "surface text generation" to the complete closed loop of "state–decision–action" (Young et al. 2013; Shinn et al. 2023). If training samples contain only the natural language of users and assistants, without state snapshots, memory-change records, task-progress fields, and tool-observation summaries, then what the model learns is primarily linguistic co-occurrence patterns rather than cross-turn execution logic (Williams et al. 2013; Budzianowski et al. 2018; Packer et al. 2023). This is why many models perform naturally in casual conversation but become brittle in task settings: they are skilled at generating "plausible utterances" in a single turn, but not at maintaining "a plausible trajectory."
+
+Multi-turn supervision should therefore cover at least three levels. The first level is response supervision: whether the content generated in this turn is reasonable. The second level is state supervision: how system state should change after this turn. The third level is process supervision: whether this turn's action forms a sustainable causal chain with future recovery. Without the latter two levels, multi-turn data, however long, amounts to nothing more than extended dialogue and cannot naturally translate into stronger agent trajectories.
+
+### Common Errors in Multi-Turn Data Annotation
+
+The most common problem in multi-turn data is concatenating an entire conversation directly into a long sample without annotating the state changes within it. Although this approach preserves the surface-level sequence, it discards the transition points that truly determine task quality: which turns are collecting information, which are executing actions, which are waiting for feedback, which signal a task fork, and which signal the resumption of an old thread. This "long-text" processing approach offers some benefit for language modeling but provides limited support for state learning in task-oriented multi-turn agents. More concretely, this annotation approach assumes that "sequence itself implies structure," but in practice sequence can tell the model only what came before what—it cannot tell the model the semantic role of each turn. A post-failure explanation, a user digression, and a thread resumption may all appear to be ordinary sentences at the text surface, yet their meanings within the state machine are entirely different. If the annotation layer does not make these differences explicit, the model is left to guess using highly unreliable linguistic heuristics.
+
+A second common error is annotating only the final result without annotating the intermediate decision rationale. A ticket-booking or expense-reimbursement task may ultimately succeed, but along the way it may have passed through multiple critical nodes: parameter confirmation, time conflicts, failure rollback, and user corrections. If the data only shows the model "it succeeded in the end," the model cannot learn how to recover after a failure or when to pause and request confirmation before proceeding. Many teams have a habitual bias when constructing data: they prefer to retain "clean, successful trajectories" and delete confirmation and correction steps that appear redundant, believing this produces tidier samples. In reality, it is precisely these intermediate steps that constitute the genuine capabilities of a multi-turn agent. A model that has never learned to handle rollback and replanning will readily collapse when a user says "that's not the right version"—no matter how well it performed on successful training samples.
+
+The third error is treating user feedback as ordinary conversational material rather than as a state-update signal (Shinn et al. 2023). When a user says "not that file," "change the time to next week," or "use the format from last time," this is not limited to the text level; it constitutes an explicit revision to the current task state and memory contents. If this is not structured at annotation time, the trained model will tend to treat feedback as supplementary small talk and will be unable to reliably execute closed-loop corrections. In practice, feedback turns are often the most valuable data points, because they directly expose the deficiencies of the system's previous state and provide an explicit correction direction. If this category of signals is treated as ordinary dialogue, the system will never truly develop the ability to "update itself after being corrected."
+
+The fourth error is the absence of decay and expiration mechanisms (Zhong et al. 2024). Many datasets default to treating any information once it appears as permanently valid—a default that is almost certainly wrong in real systems. Task intermediate variables, one-off intents, transient preferences, and information that has subsequently been negated should all carry decay or override rules. Multi-turn data that lacks temporal management will ultimately train models that "retain a little of everything but do not know which entry is still valid" (Zhong et al. 2024). This problem is especially severe in long-horizon tasks because the longer the task, the more stale states accumulate. If the data contains no samples of the type "this information has expired," models will naturally tend to treat all historical context as available evidence.
+
+The fifth error is treating memory writes as an uninterpretable state. Many samples present the result that "the model later remembered something" without presenting how it decided to write, to which layer it wrote, what its confidence was, or when it would be overridden. The model is then left to infer the mechanism from the outcome, making the training signal very weak. For multi-turn agents, memory writes, memory updates, and memory recalls should all become observable, annotatable training targets rather than silently occurring within the system implementation.
+
+The sixth error is treating multi-task interleaved conversations as single-threaded. Real conversations frequently contain parallel threads, but if annotation does not separately distinguish thread IDs, active threads, and suspended threads, the model will form a false assumption during training: all new turns belong by default to the one primary task. Such data will systematically undermine the model's ability to handle digressions, switches, and resumptions. A common manifestation after deployment is that when the user changes topics even slightly, the system blends old and new tasks together—unable to correctly continue the old task or cleanly start a new one.
 
 ## 20.2 Session Segmentation and State Representation
 
-### Dividing Session, Episode, and Task Thread
+### The Distinction Between Session, Episode, and Task Thread
 
-A `session` is a continuous interaction container. It is time-oriented and can contain several topics or tasks.
+When building trainable, evaluable multi-turn data, the first step is to define the trajectory-segmentation units. The coarsest-grained unit is the session, which typically represents a relatively continuous interaction container holding several turns of user–agent exchange. A session focuses on temporal continuity of interaction, but it does not naturally equate to a complete task, since the same session may contain multiple concurrent topics or even multiple independent task threads. A session resembles a "time box": it indicates that these interactions occurred during the same continuous period of use, but it does not guarantee that they belong to the same process at the goal level. Using sessions directly as training samples is convenient, but it frequently introduces confusion about task boundaries.
 
-An `episode` is a task-oriented process with a start, progress path, and completion, suspension, or failure. It is the best unit for multi-turn training and replay evaluation.
+More appropriate for task modeling than the session is the episode. An episode emphasizes a relatively complete process unfolding around a clearly defined objective, and typically carries markers for start, progression, end, or interruption. An episode can be completed within a single session or can be resumed across multiple sessions. For data-engineering teams, the episode is the core unit of multi-turn training and replay evaluation, because it most closely corresponds to a "task-execution trajectory." The value of the episode lies in providing a operational closed-loop boundary for the data: what counts as task start, what counts as task completion, what counts as midpoint suspension, and what counts as pausing due to insufficient external conditions. Without the episode, teams struggle to define when state is initialized, when short-term memory is cleared, and when task success or failure is settled.
 
-A `task_thread` is a finer task line inside an episode or session. It is useful when users interleave tasks, such as editing a resume, replying to an email, and scheduling a meeting in the same conversation.
+Below the episode is the task thread. It represents a finer-grained task thread suitable for modeling multi-task interleaving, digression-style switching, and mid-stream resumption. For example, a user preparing a resume suddenly inserts "help me reply to an email," then returns to the resume thread. Without the task-thread concept, the system will easily mix the email context into the resume task, or lose the original progress upon resumption. The value of the task thread lies precisely in helping data teams model "multiple goal lines within the same conversation segment" separately. A thread need not always be a complete episode; it can be a sub-thread within a larger task, or a temporary detour that exists briefly and ends quickly. But as long as it has independent state and an independent recovery point, it deserves to be handled as a separate thread.
 
-Session answers "what happened in one continuous interaction." Episode answers "what task process is this." Thread answers "which task line is active and what state does it hold."
+Thus: the session answers "this is a segment of continuous interaction"; the episode answers "this is a task process"; the task thread answers "where this task line currently stands." Only by separating these three layers can multi-turn data avoid inherent confusion during segmentation. More precisely, these three layers are not three parallel labels but form a nested structure: the session is the outer container, the episode is the task closed-loop unit, and the thread is the active line of reasoning within that process. If a dataset retains only one of these layers, capability expression will be incomplete. Only when all three are present simultaneously can the system know that it is in a sustained conversation, that it is within a particular task closed loop, and which thread within that closed loop is currently active.
 
-### Session Segmentation Should Center on State Continuity
+### Session Segmentation Should Be Anchored in State Continuity
 
-Segmentation should follow state continuity rather than turn count or time gap. If the next turn must inherit task variables from the previous turn, it belongs to the same state trajectory. If it shares only long-term user preference but not current task variables, it is probably a new episode or thread.
+When constructing data in practice, many teams instinctively segment conversations by turn count, time interval, or message block—for example, cutting every 10 turns, opening a new session after a 30-minute gap, or treating a user's page visit as a single segment. These rules are engineering-friendly, but they provide only weak boundaries and cannot substitute for state boundaries. The primary concern of a multi-turn agent is "whether state is still continuous," not "how long the interaction has lasted."
 
-Useful segmentation signals include new goal, task completion, thread suspension, old-task recovery, tool failure, re-planning, and explicit user correction.
+State continuity means that the current turn still builds on the task variables, goals, and progress of the preceding segment. If 20 consecutive turns all revolve around the same pending task, they may still constitute a single episode at the task level even if there are time gaps in between; conversely, even if two messages appear back to back, if the user has already clearly switched goals, they may not belong to the same task process. The truly effective segmentation principle should therefore center on state-transition events rather than physical time. Examples of reliable segmentation signals include: the user initiating a new goal, an old goal being completed, a thread being suspended, an old task being resumed, or re-planning being triggered after a tool failure.
 
-### Structured Representation of Dialogue State, User Preference, and Task Progress
+From an annotation perspective, session segmentation is best based on the judgment "whether state can be inherited." If the next turn must inherit the task variables of the previous turn, they belong to the same state trajectory; if the next turn shares only the user's long-term preferences without sharing the current task variables, it more likely marks the start of a new episode or a new thread. This segmentation approach is more complex than segmenting by turn count, but it more accurately reflects the essence of agent learning, because what the model ultimately learns is how to maintain and transfer state—not how to make predictions over fixed-length text blocks.
 
-Task-oriented agents need structured state rather than only natural-language context.
+### Structured Representation of Dialogue State, User Preferences, and Task Progress
 
-Dialogue-state fields describe current control position: active thread, pending confirmations, last action result, waiting-for-user, waiting-for-tool, and conflict flags.
+Multi-turn task-oriented agents cannot rely solely on natural-language context to implicitly maintain state; they require structured representations (Young et al. 2013; Budzianowski et al. 2018). At minimum, three categories of fields should be explicitly modeled: dialogue state fields, user preference fields, and task progress fields (Young et al. 2013; Budzianowski et al. 2018).
 
-User-preference fields describe stable behavior-shaping choices: output format, default language, tone, tool preference, approval habit, naming convention, or risk boundary.
+Dialogue state fields describe the position of the current turn within the interaction flow—for example, the currently active thread, pending confirmation items, the result of the most recent action, whether user input is awaited, and whether conflicting information exists (Young et al. 2013). These fields determine whether the model's next step is to continue execution, request clarification, or switch threads. The essence of dialogue state lies in encoding control over interaction flow, not in re-describing text. For instance, both "waiting_for_user_confirmation" and "waiting_for_tool_result" indicate that the system should not rashly advance, but the subsequent actions they call for are entirely different: the former should design a response around the user's supplementary information, while the latter should avoid redundant execution and prepare to process the observation result. Without this distinction, the model conflates many semantically different forms of "waiting."
 
-Task-progress fields describe what has been completed, what remains, what is blocked, and what the last valid action was. They are essential for "continue where we left off."
+User preference fields describe the more stable selection tendencies that hold across tasks—output style, format preferences, default tool choices, common time expressions, sensitivity boundaries, approval habits, and so on (Park et al. 2023). This information should not require the user to declare it anew each time, making it appropriate for long-term memory or the persistent preference layer. The key here is that preference fields are not primarily about "what the user likes" but about "which stable tendencies will materially alter system decisions." For example, "prefers concise responses" affects generation length; "default to summarizing in tables" affects output format; "default email tone is formal" affects writing style; "default to not using external search" affects tool selection. Only preferences that alter the behavioral path in this way are worth becoming structured fields; otherwise, the long-term memory layer will be filled with operationally meaningless information.
 
-These fields should not be merged into one undifferentiated dictionary. They update, decay, and override differently.
+Task progress fields describe what stage a task has been completed to, what sub-steps remain, which dependencies have been satisfied, which resources are ready, and where the current bottleneck lies. For complex agents, progress fields are the key to task-resumption capability. Without explicit progress, "continue where we left off" amounts to a vague instruction from the model's perspective. A mature progress representation typically includes not just a stage label but at minimum: completed steps, pending steps, current blockers, and the most recently valid action. Only then can the system determine—upon resumption—whether to continue execution, first verify the old state, or first request missing information.
 
-### Minimal Closed-Loop Unit of State Representation
+It is worth noting that these three categories of fields must not be naively merged. User preferences are not the same as current task state, and task progress is not the same as the current dialogue action. Mixing them into an undifferentiated state dictionary may appear to "store everything," but during training it actually makes it harder for the model to learn information hierarchy. Worse, mixed representations also cause update-logic confusion: a user correction may need to modify only task fields without overriding long-term preferences; a long-term preference update should not reset current task progress. The true value of structured representation lies not only in making information "storable," but in making different types of information subject to different update, recall, and decay rules.
 
-A trainable multi-turn step needs a minimal closed loop: before-state, trigger, decision action, observation when present, and after-state.
+### The Minimal Closed-Loop Unit of State Representation
+
+For multi-turn data to be truly trainable, state representation must go beyond "having a few fields" and further define a minimal closed-loop unit. The minimal closed-loop unit is the smallest structure a model must observe and output to complete one multi-turn decision. For task-oriented agents, this loop typically comprises four parts: the current state snapshot, the triggering input, the decision action, and the updated state.
+
+**Code Example: The Pre-State—Trigger—Action—Post-State Structure for Multi-Turn Samples (Minimal Closed Loop)**
+
+The example below uses a "meeting scheduling" thread to illustrate: the trigger in this turn is the user providing a timezone; the action is a calendar tool call; the post-state updates `pending_slots` and `last_action_result`.
 
 ```json
 {
@@ -93,17 +121,23 @@ A trainable multi-turn step needs a minimal closed loop: before-state, trigger, 
   "before_state": {
     "active_state": "collecting_info",
     "pending_slots": ["timezone"],
-    "confirmed": {"date": "2026-04-29", "duration_min": 90}
+    "confirmed": {"date": "2026-04-29", "duration_min": 90},
+    "memory_refs": ["pref_language=zh"]
   },
-  "trigger": {"type": "user_message", "text": "Use Shanghai time."},
+  "trigger": {"type": "user_message", "text": "Use Shanghai timezone."},
   "action": {
     "type": "tool_call",
     "name": "calendar_search",
     "arguments": {
       "start_time": "2026-04-29T13:00:00",
       "end_time": "2026-04-29T18:00:00",
-      "timezone": "Asia/Shanghai"
+      "timezone": "Asia/Shanghai",
+      "mode": "freebusy"
     }
+  },
+  "tool_observation": {
+    "status": "ok",
+    "conflicts": [{"start": "2026-04-29T15:00:00", "end": "2026-04-29T15:30:00"}]
   },
   "after_state": {
     "active_state": "waiting_for_user_confirmation",
@@ -113,46 +147,55 @@ A trainable multi-turn step needs a minimal closed loop: before-state, trigger, 
 }
 ```
 
-This format makes replay possible. The team can inspect where state first drifted, which memory was written incorrectly, and which recovery step failed.
+The current state snapshot tells us what the system currently knows, what it is doing, and what it lacks. The triggering input may be a new user message, a tool observation, or a feedback signal. The decision action encompasses generating a response, invoking a tool, writing to memory, switching threads, suspending a task, and so on. The updated state records the changes that should occur internally in the system after this step. Only by linking these four parts together does the data truly form a "observe–decide–update" learning unit. If a sample contains only triggering input and response text without pre- and post-states, the model learns only "how to follow one sentence with another," not "how to advance a task given a state."
 
-### Data Modeling for Interruption, Switching, and Recovery
+This minimal closed-loop unit also serves an important secondary purpose: it endows multi-turn data with natural replayability. Once every step has a pre-state and a post-state, teams can check during replay testing whether state has transitioned correctly, where drift began, at which step an error was written into memory, and at which step the state was not updated after feedback. Without this layer, multi-turn data can still be used for training, but diagnosis becomes very difficult.
 
-Interruption samples should record the task node where interruption happened, unfinished state, frozen fields, and fields that must be revalidated during recovery. Prices, inventory, time windows, and external document versions may age while a task is suspended.
+### Data Modeling for Interruption, Switching, and Resumption Scenarios
 
-Switching samples should show the old thread entering suspended state and the new thread receiving its own state container. Long-term preferences can be shared, but temporary parameters must not leak.
+Interruption, switching, and resumption are the segments of multi-turn agent data that most fully capture real-world complexity (Packer et al. 2023). Many datasets retain only "smooth progression" trajectories during sampling, with the result that the first problem to emerge after deployment when the model faces real users is insufficient resumption capability.
 
-Recovery samples should show how the agent reconstructs executable state. Recovery is not "repeat the last message." It is reactivation with unfinished slots, recent errors, validated assumptions, and next-step options.
+Interruption scenarios require that the data explicitly mark: at which task node the interruption occurred, which states were not yet completed at the time of interruption, which information should be frozen after the interruption, and which should continue to be monitored. For example, if a user has not yet confirmed an amount in the expense reimbursement workflow and then switches to handling a meeting notification, the "pending confirmation amount" should be retained as an incomplete state rather than being mistakenly recorded as completed. More specifically, interruption does not mean all state is frozen as-is. Some state will continue to age during the interruption—prices, inventory levels, time windows, external document versions, and so on; other state should remain unchanged—long-term user preferences, confirmed identity information, and completed steps. Interruption annotation is therefore best able to distinguish "statically inheritable state" from "state requiring re-verification upon resumption."
 
-![Figure 20-1: Multi-turn agent state transition graph](../../images/part6/图20_1_zh.png)
+Switching scenarios require the system to identify which thread the current turn belongs to and which fields should be locally deactivated after the switch. A well-designed data sample demonstrates: when switching to a new task, the original thread does not disappear but enters a suspended state; the new thread receives an independent state container; long-term preferences shared by both threads remain reusable, but temporary parameters must not cross-contaminate each other. The most error-prone aspect here is the boundary between shared and exclusive information. For example, a user's default language preference can be shared across threads, but "the recipient of this email" clearly should not be treated as a current variable when the system switches to the "revise resume" thread. Without this boundary awareness, the system will produce serious cross-contamination in multi-thread scenarios.
 
-*Figure 20-1: Multi-turn agent state transition graph*
+Resumption scenarios require the model to know not only "what was done previously" but also "where to continue from" (Zhong et al. 2024). This means resumption must reconstruct an executable state, not merely retrieve a piece of old text. High-quality data labels the resumption process as a state-transition event: transitioning from suspended state to active state, carrying the incomplete slots, most recent errors, confirmed parameters, and next-action suggestions from the previous turn. The key to resumption is not "remembering the past" but "acting again with the past in hand." Resumption samples should therefore explicitly show: what checks the system performed upon resumption, which conditions it confirmed still held, which conditions it found needed updating, and only then whether it decided to continue execution or first confirm with the user.
+
+At a deeper level, interruption, switching, and resumption together constitute the most important state-transition training set for multi-turn agents, because these scenarios collectively expose three core capabilities: thread isolation, state compression, and recovery planning. Thread isolation determines whether the system can avoid mixing threads. State compression determines whether the system can retain critical information even after a long conversation. Recovery planning determines whether the system can avoid blindly replaying old content upon task restart and instead achieve correct continuation. Many teams view these three capabilities as "something to polish after deployment," but from a data perspective they must be explicitly represented in the training set and cannot be left to chance for the model to learn on its own.
+
+For a more intuitive illustration, Figure 20-1 shows a multi-turn state-transition diagram. The diagram should not merely depict a generic sequential flow, but should highlight forks, suspensions, resumptions, and failure-rollback relationships within state transitions. That is, the diagram should take the form of a state network graph capturing task-thread switching and memory layer influence, rather than a "left-to-right pipeline." This allows readers to see intuitively that the complexity of multi-turn agents does not stem from "more turns" but from "more states, more transitions, and more recovery paths."
+
+![Figure 20-1: Multi-Turn Agent State Transition Diagram](../../images/part6/图20_1.png)
+
+*Figure 20-1: Multi-Turn Agent State Transition Diagram*
+
 
 ## 20.3 Memory Write, Update, and Recall
 
-### What Should Enter Memory and What Should Stay Only in Context
+### Which Information Should Enter Memory and Which Should Only Remain in Context
 
-The first rule of memory is: remember only information that will be useful in the future and is safe to retain. More memory is not automatically better. Many systems fail because they remember too much, too early, and too long.
+The primary principle of a memory system should be "record only information that will be useful in the future and whose risks are manageable"—not "record as much as possible." Not everything that appears in a conversation is worth writing into memory. A mature data specification must set a threshold for "writing." Many teams fall into a trap when building agent memory early on: a trap that feels natural on the surface but is genuinely dangerous in practice—"since it might be useful later, let's store it first." Real engineering experience points in exactly the opposite direction: memory systems fail not because they record too little, but because they "record too much, too early, and for too long." Once the write threshold is too low, the system rapidly accumulates large amounts of unconfirmed, low-value, time-sensitive, or highly ambiguous information, ultimately making the noise in the recall phase far outweigh the benefit.
 
-Long-term memory is appropriate for stable, reusable, clearly bounded information, such as preferred output format, recurring workflow, durable project background, and stable constraints.
+Information suitable for entering long-term memory typically exhibits strong stability, cross-task reuse value, and relatively clear semantic boundaries (Wang et al. 2023; Park et al. 2023). Examples include long-term output format preferences, fixed work habits, long-term project background, stable constraint conditions, and recurrently appearing selection patterns. Relying on temporary context for this type of information every time incurs repeated confirmations and higher interaction costs, making it worth extracting and persisting (Zhong et al. 2024). Importantly, "suitable for long-term memory" does not simply mean "the user has mentioned it many times"; it more precisely means that the information will reliably influence system behavior in future tasks. For example, a user's long-standing habit of using a particular document structure, a preference for a particular language output, or a default workflow for a particular tool will all continuously alter subsequent planning and generation processes—making them genuinely worth entering long-term memory.
 
-Short-term context is appropriate for current-task variables, temporary candidates, one-time tool observations, and pending decisions. These should decay after the episode or thread ends.
+Information that belongs only in short-term context is typically strongly bound to the current task or carries obvious temporal constraints. Examples include the temporary time of this meeting, a particular field awaiting revision in the current table, the short-term observation returned by the current tool call, and candidate options still awaiting confirmation. This information should generally decay quickly after the task is completed or the thread ends, to avoid contaminating subsequent tasks. The defining characteristic of short-term information is that its importance is highly contingent on the current thread—this does not mean it is "unimportant." Once the task ends or the conversation switches to a new episode, this information can transform from "a necessary variable for advancing the task" into "a stale trace that disrupts judgment." The short-term context layer therefore more closely resembles a workbench during task execution; it must not function as a long-term storage area.
 
-Some information should not be remembered at all: denied assumptions, casual one-time remarks, unconfirmed guesses, and low-value details.
+There is also a category of information that should not enter memory at all, nor even be retained in state for long: information that has been explicitly negated by the user, one-off conversational content, unconfirmed speculation, and low-value details that will not help in the future. For data teams, the truly difficult discipline lies in rigorously refusing to record what should not be recorded—not only in finding what can be recorded. Especially in multi-turn task-oriented agents, the better the system's apparent "memory," the more important it is to restrain the impulse to write. Once unconfirmed speculation, casual verbal expressions, or one-time preferences are written into the long-term layer, every future confident retrieval of that content will amplify the error into a structural bias.
 
-### Criteria for Memory Writes
+### Criteria for Determining Memory Writes
 
-Memory writes should be governed by four criteria.
+To transform memory writes from experiential behavior into trainable, auditable data actions, teams typically need to specify a set of write-determination criteria. The first criterion is stability: whether the information will likely hold across turns and tasks (Wang et al. 2023). The second is reusability: whether the information will significantly reduce future interaction costs or improve task success rates (Wang et al. 2023; Park et al. 2023). The third is confirmability: whether the information has been explicitly confirmed by the user, reliably returned by a tool, or supported by multi-turn consistent evidence (Schick et al. 2023; Shinn et al. 2023). The fourth is low risk: whether retaining the information incorrectly would cause significant adverse side effects.
 
-Stability asks whether the information is likely to hold across future turns and tasks. Reusability asks whether it will reduce future interaction cost or improve success. Confirmability asks whether it was explicitly confirmed by the user, reliably returned by a tool, or supported by repeated evidence. Risk asks whether retaining it incorrectly would cause harm.
+This means that a memory write is fundamentally a decision action, not merely a storage action (Zhong et al. 2024). After each turn of interaction, the system faces a judgment: is this piece of information only currently visible content, or is it structured knowledge that should be leveraged persistently? If this judgment is entirely invisible in the data and occurs only inside the system implementation as uninterpretable state, the model will find it very hard to learn a stable write boundary. Conversely, if training samples explicitly show "why this was written," "to which layer it was written," "what its confidence is," and "when it needs re-verification," the model is more likely to learn to manage memory with the discipline of a well-designed data system rather than hoarding text like a mechanical cache.
 
-A memory write is a decision action, not merely storage. Training samples should show why something is written, to which layer, with what confidence, and under what expiration policy.
+**Code Example: A Long-Term Preference Memory Write Record (with Confidence and Decay Policy)**
 
 ```json
 {
   "memory_event": "upsert",
   "memory_id": "pref_format_table_first",
   "key": "preference_format",
-  "value": {"default": "table first, then summary", "language": "en"},
+  "value": {"default": "table first, then summary", "language": "zh"},
   "evidence": {
     "source": "user_confirmed",
     "episode_id": "ep_0009",
@@ -163,280 +206,300 @@ A memory write is a decision action, not merely storage. Training samples should
     "policy": "time_decay",
     "half_life_days": 60,
     "override_on_conflict": true
-  }
+  },
+  "created_at": "2026-04-24"
 }
 ```
 
-### Relationship Between Memory Writes and Task Closure
+### The Relationship Between Memory Writes and the Task Closed Loop
 
-Memory writing belongs inside the task loop. The agent should first understand what role the information played in the current task, then decide whether it has cross-task value.
+At a deeper level, memory writes are not an add-on function external to the task workflow; they are an integral part of the task closed loop. When a system writes a memory entry, it is in fact preparing for future state recovery, plan continuation, and personalized execution (Wang et al. 2023). For example, when a user explicitly states in this turn "in the future, always keep English column names in tables for me," this is not only a condition for the current response; it also pre-embeds a behavioral constraint for multiple future tasks. If the system fails to extract it, future tasks will depend on random context collisions; if the system writes it too early or too broadly in an unstable form, it may generate long-term misdirection.
 
-If memory writes happen too early, the system may turn temporary statements into durable facts. If they happen too late or not at all, users must repeatedly provide stable preferences.
+Memory writes are therefore best understood as occurring after "state update" and before "task completion." That is, the system should first understand what role the current information plays in this turn's task, then decide whether it has cross-turn value. This ordering matters because only by first understanding the information's task role can one judge whether it is worth persisting. Otherwise, the system easily mistakes freshly mentioned, semantically prominent information for high-value memory while overlooking the stable constraints that will truly determine whether subsequent tasks succeed.
 
-### Memory Layers, Long-Term Preferences, and Data Decay
+### Memory Hierarchy, Long-Term Preferences, and Data Decay
 
-A practical memory hierarchy includes instantaneous context, working memory, session summary, and long-term preference.
+To prevent the memory system from becoming a disorganized historical repository, real engineering practice typically requires a layered design (Wang et al. 2023). A memory hierarchy suitable for task-oriented agents can be organized into at least four layers: the instantaneous context layer, the working memory layer, the session summary layer, and the long-term preference layer (Wang et al. 2023).
 
-Instantaneous context supports local generation. Working memory maintains current-task variables and progress. Session summary compresses an episode for later recovery. Long-term preference stores cross-episode information that influences future behavior.
+The instantaneous context layer carries the linguistic environment surrounding the current input and serves the model's local generation. It has small capacity, updates quickly, and is noisy; it is ill-suited to bear responsibility for long-term consistency. The working memory layer maintains critical variables and progress state for the current task and is the core container for multi-turn task advancement. The session summary layer stores a compressed representation of a given episode for cross-window continuation and subsequent recovery. The long-term preference layer consolidates information that remains stably valid across episodes, forming the foundation for long-term personalization and low-friction interaction. This layered design answers three distinct questions: what this turn needs to see, what this task needs to persistently retain, and what future tasks should inherit. If these three questions share the same container, update and cleanup rules become very hard to keep consistent.
 
-Long-term preference should be operational, not a vague user profile. Useful examples include default language, document structure, terminology choices, approval order, file-naming habits, and recurring tool workflows.
+Long-term preferences are not the same as a "user profile." In the context of this chapter, they emphasize behavioral tendencies and stable settings that have direct practical utility for task execution—preferred document structure, commonly used terminology, default output language, approval order, file naming conventions, and so on. They should be oriented as much as possible toward task usability, not generalized into vague personality descriptions. In other words, the value of long-term preferences lies not in making the system "appear to understand the user," but in enabling the system to "confirm less often and continue working more reliably." If the preference layer is filled with broad descriptions rather than actionable fields, this memory layer will be hard to produce real engineering benefit in practice.
 
-Decay is mandatory. Time decay lowers confidence over time. Conflict decay lowers old memory when new evidence arrives. Usage decay demotes memory that is never recalled or verified. Datasets should include memory overwrite, downgrade, and archive examples, not only successful writes.
+Data decay is an essential addition to this layered architecture (Zhong et al. 2024). Even if a piece of information was once valid, that does not mean it will be correct forever. Short-term task variables should expire quickly after task completion; session summaries should be compressed or replaced as new summaries are generated; even long-term preferences should be updatable, overridable, or reducible in confidence. A memory system without decay will gradually degrade from "helping the model work stably" into "burdening the model with increasingly stale noise." The significance of decay is not only in deleting old information; it also lies in maintaining the usability density of the memory layer in a continuously changing interaction environment. Only when most retained information is still valid does recall truly add value.
 
-### Migration Rules Between Memory Layers
+From a data-engineering perspective, decay should be reflected along at least three dimensions: temporal decay, conflict decay, and usage decay (Zhong et al. 2024). Temporal decay means that confidence in information naturally decreases over time. Conflict decay means that when new evidence arrives, the weight of old memory decreases. Usage decay means that information that has not been recalled or verified for an extended period gradually becomes marginal. This mechanism should not be a post-deployment patch; it should be reflected at the training and annotation stages. That is, the dataset should contain not only samples of "successful write" but also samples of "memory overwritten," "memory down-weighted," and "memory archived due to prolonged non-verification." Otherwise, the model will tend to treat writes as irreversible actions, which is entirely incompatible with the dynamic management that real systems require.
 
-Layers need migration rules. A piece of information may move from visible context to working memory, from working memory to session summary, and from repeated session evidence to long-term preference.
+### Migration Rules Among Memory Layers
 
-For example, "give me the Chinese version first for this report" is probably working memory. Repeated preference across tasks, such as "default to Chinese first and preserve English terms," may become long-term preference.
+A layered design with layers but no migration rules will still easily degrade into a collection of static repositories. What truly matters is how information migrates from the instantaneous context into working memory, how working memory is abstracted into session summaries, and how it is promoted to long-term preferences when conditions are met. This migration process itself should become a data-modeling target.
 
-Migration depends on reuse value and evidence strength, not on surface wording.
+For example, a user requesting "please give me the Chinese version of this report first" in one task is more likely only to enter working memory; if the user repeatedly expresses "default to Chinese first, then English terminology" across multiple tasks, the system has more reason to promote this to a long-term preference. Similarly, an error code returned by a failed tool call should normally remain at the working memory and log layer to support same-session recovery; but if multiple turns of interaction persistently indicate that a particular tool is unstable under certain conditions, this pattern information might be abstracted to a higher layer as an experiential constraint on future planning. The layer assigned thus depends on the information's cross-time reuse value and verification strength—not on what the information "looks like."
 
-### Long-Term Preferences Should Converge Gradually, Not Be Written Once
+### Long-Term Preferences Must Converge Gradually, Not Be Written in One Step
 
-A one-time statement is often context, not a durable preference. Users may say "make it brief" because they are in a hurry. A true long-term preference appears across tasks and survives conflict resolution.
+Many system designs interpret long-term preferences as "the user said it once, so remember it." This approach appears efficient from an engineering standpoint but is in fact high-risk. Long-term preferences typically emerge gradually across multiple turns, tasks, and scenarios and are rarely stably determined by a single declaration. A user saying "give me the brief version first" today may simply be in a hurry; but if the user exhibits a similar choice in multiple subsequent tasks, that comes closer to a genuine long-term preference.
 
-Long-term preference records should maintain evidence count, last verification time, applicable scope, confidence, and override rules. This turns memory formation into gradual convergence rather than a single irreversible write.
+Long-term preferences are therefore better modeled as a progressively converging structure rather than a one-time write. The system can maintain evidence counts, most recent verification time, applicable scenario scope, and confidence level for each preference. "Forming a long-term preference" is thereby transformed from an instantaneous decision into a process driven by repeated observation, conflict correction, and cross-task validation. If data can explicitly represent this convergence process, models are more likely to learn to manage long-term memory cautiously rather than arbitrarily.
 
-### Memory Summaries, Conflict Resolution, and Timeliness Management
+### Memory Summarization, Conflict Resolution, and Timeliness Management
 
-Summaries are the middle layer that converts noisy dialogue into reusable state. A good summary captures goal, progress, confirmed constraints, open questions, and likely recovery point. It is not a literary conversation digest.
+Summarization is a critical intermediate layer in multi-turn memory writing (Park et al. 2023). Raw conversations are typically verbose, ambiguous, and noisy with rhetorical artifacts—they are unsuitable as direct long-term memory units. A high-quality summary extracts structure oriented toward future usability: who proposed what stable preferences, where the current task has been completed, which conclusions have been confirmed, and which remain pending. It cannot merely compress words. The value of summarization lies in converting the surface-level coherence of language into inheritable coherence at the state level. Without summarization, long-horizon multi-turn systems are forced to repeatedly search through large volumes of raw text; with summarization, the system can reconstruct the task mainline within a limited context and limited compute budget.
 
-Conflict resolution makes memory trustworthy. Latest explicit user correction should override older preference. High-confidence tool observation should override model guess. Confirmed information should override unconfirmed information.
+Conflict resolution determines whether the memory system is trustworthy (Shinn et al. 2023). In real interactions, users will change their statements, revise preferences, retract decisions, and external tools may also produce results inconsistent with prior entries. If data does not include explicit conflict annotation, models will tend to retain both old and new information simultaneously, causing mutual interference during recall. Qualified multi-turn data should explicitly represent conflict types, source priority, and override rules—for example: "explicit user correction takes priority over old preferences," "latest successful tool result overrides the previous failed-attempt inference," and "confirmed information takes priority over unconfirmed information." The most important point here is that conflict is a normal condition in multi-turn systems, not an anomaly. User expressions change, external environments change, tool returns change, and even task goals may change. A memory system that cannot handle conflict may appear to have "retained a great deal," but in practice it cannot form a stable decision foundation.
 
-Timeliness turns memory from a static database into a dynamic state system. Each memory should record source, write time, last verification time, scope, confidence, and invalidation condition.
+Timeliness management transforms memory from a static database into a dynamic system with lifespans and confidence levels. In data organization, each memory entry can be annotated with its source, write timestamp, most recent verification time, applicable scope, confidence level, and expiration conditions. Recall then ceases to perform only semantic similarity matching and instead shifts to a composite judgment of "semantic relevance × state validity × temporal fit" (Lewis et al. 2020; Asai et al. 2024). That is, the system asks not only "does this memory look like what I am searching for" but also "is this memory still a valid basis for the current situation." This design is especially critical for task-oriented agents, because the root cause of many errors is precisely "remembering something that has already expired," not "remembering nothing at all."
 
-### Granularity Control for Memory Summaries
+### Granularity Control for Memory Summarization
 
-A summary that is too detailed becomes a compressed transcript. A summary that is too abstract cannot support recovery. The right granularity is determined by recovery cost.
+The quality of a summary does not increase with more detail, nor does it depend on being as short as possible. If a summary is too detailed, it reverts to a compressed conversation record and cannot serve quickly for retrieval and recovery. If a summary is too abstract, it loses the critical variables required for task resumption. For task-oriented agents, a summary is better conceived as a structured "recovery interface" rather than a literary "conversation overview." It should answer at minimum: what is the current goal of this task; what has been completed; which constraints have been confirmed; what is the current blocker; and which step is most likely needed to reconnect on the next resumption.
 
-For task agents, a useful summary should answer: what is the current goal, what is complete, what constraints are confirmed, what is blocked, and where should the system resume next time?
+Accordingly, summary granularity should be determined by recovery cost. The more information resumption requires, the more complex the thread, and the longer the task, the more structured the summary should be; for simple, short tasks, it can be lighter. When teams do not control summary granularity, two extremes commonly arise: either summaries are written out like full chat transcripts and provide no help for quick recovery, or summaries reduce to a single sentence such as "the user is handling a reimbursement matter," which is almost entirely insufficient to support subsequent execution.
 
-### Priority System for Conflict Resolution
+### A Priority System for Conflict Resolution
 
-A practical priority order is: latest explicit user instruction, high-confidence tool observation, confirmed information, task-local constraint, long-term preference, model inference.
+Conflict resolution requires not only "knowing there is a conflict" but also a priority system. Generally: the most recent explicit user instruction takes priority over old preferences; high-confidence tool observations take priority over model inference; confirmed information takes priority over unconfirmed information; immediate in-task constraints take priority over general long-term preferences. These rules may seem simple, but without repeatedly representing them in data the model will struggle to learn them stably.
 
-If the long-term preference says "answer in Chinese" but the current episode says "use English this time," the current episode wins. If an old state says a document is available but a fresh tool result says it was deleted, the tool result wins.
+For example, if the user's long-term preference is "default output in Chinese," but in the current episode explicitly requests "use English throughout this time," the system should not continue to output Chinese based on the long-term preference. If it does, the priority system has not been established. Similarly, if the model has inferred based on old state that a certain field likely still holds, but the most recent tool query shows that condition has changed, the tool observation should override the model inference. When multi-turn data explicitly shows this override process, the model is more likely to develop robust conflict-resolution habits and avoid averaging across conflicting sources. The memory layer hierarchy for task-oriented agents and its update and override flow under different information sources are shown in Figure 20-2.
 
-![Figure 20-2: Memory layers and update flow for task-oriented agents](../../images/part6/图20_2_zh.png)
+![Figure 20-2: Memory Layering and Update Flow for Task-Oriented Agents](../../images/part6/图20_2.png)
 
-*Figure 20-2: Memory layers and update flow for task-oriented agents*
+*Figure 20-2: Memory Layering and Update Flow for Task-Oriented Agents*
 
-### Recall Hit Rate, Wrong Recall, and Forgetting Strategy
+### Recall Hit Rate, Erroneous Recall, and Forgetting Strategies
 
-Memory quality is not only whether something is recalled. It is whether the right thing is recalled at the right time with the right weight.
+When evaluating a memory system, it is insufficient to ask only "whether there was a recall." One must ask "whether the right things were recalled, at the right moment, with the right weight" (Lewis et al. 2020). Recall hit rate is therefore only the most superficial metric. More important questions are: did the recalled information genuinely serve the current task; did it advance state and prevent state contamination; did recalling too much obscure the truly important clues? For multi-turn agents, recall has already moved beyond a pure retrieval problem and is closer to a decision-support problem (Lewis et al. 2020; Asai et al. 2024). If what the system recalls does not help the current thread plan its next step more accurately, even semantically relevant content may constitute an "empty hit."
 
-Wrong recall can be worse than no recall because the model acts confidently on false context. Examples include applying a previous project's naming convention to the current project, using an expired constraint, or treating a one-time request as a permanent preference.
+Erroneous recall is an exceptionally destructive form of failure in multi-turn agents. It is more dangerous than "remembering nothing," because the model proceeds to execute the task carrying what appears to be a reasonable but actually incorrect basis. Examples include applying file-naming conventions from a previous project to the current one, treating an already-expired constraint as still valid, or mistaking a user's one-time verbal expression for a long-term preference. Erroneous recall often leads the model to commit errors with high confidence, making it imperative to tag these instances separately in replay tests. In particular, in multi-thread and cross-session scenarios, erroneous recall easily manifests as "cross-thread false confidence": the system appears to remember many details, but those details belong to another task, another time, or another context.
 
-Forgetting is part of memory engineering. A good agent should forget low-value, low-confidence, or expired information, and recover by asking or retrieving when needed.
+Forgetting strategies are part of memory engineering, not a system defect (Zhong et al. 2024). An ideal multi-turn agent does not pursue perfect retention but knows what to forget, when to forget, and how to recover through supplementary questions or re-retrieval after forgetting. In other words, forgetting should not be defined as "information disappearing" but as "the system proactively controlling its dependence on low-value or low-confidence information." From this perspective, the forgetting strategy is as important as the write strategy. The former decides what should be carried toward the future; the latter decides what should no longer influence the future. Together they constitute the boundary of the memory layer.
 
-### Recall Should Consider Usability, Not Only Similarity
+### Recall Is Not Just About Similarity—It Is About Usability
 
-Semantic similarity alone is insufficient. The best memory is the one still valid and useful for the current state transition.
+Many teams naturally understand memory recall as a form of semantic matching: the content most similar to the current input is retrieved from past records. This approach is workable in simple scenarios but falls far short for task-oriented agents. The most valuable recall target is not necessarily the text most similar to the current input—it is more likely the valid information most able to support the current state transition. That is, the goal of recall is to find "old state that still holds now and can help make a decision," not "old words that look the most relevant."
 
-Recall should consider active thread, expiry, source confidence, task-progress match, and whether a newer version exists. Otherwise a semantically similar memory may be actionably wrong.
+Recall modules in engineering are therefore better designed around "usability" rather than pure "similarity." At minimum, they should consider the current task thread, information validity period, source confidence, match with current progress, and whether a more recent version exists. Only then will recall results avoid being semantically similar but behaviorally wrong.
 
-## 20.4 Replay Testing and Failure Review
+## 20.4 Replay Testing and Failure Post-Mortems
 
 ### Multi-Turn Replay Evaluation, State-Drift Evaluation, and Memory-Dependency Evaluation
 
-Multi-turn agents should be evaluated through replay, not only static benchmark answers. Replay evaluation runs a full interaction in order and checks whether the model takes state-consistent actions at key nodes.
+Evaluation of multi-turn agents cannot rely solely on accuracy rates on static benchmarks, because many problems are revealed only during trajectory replay (Liu et al. 2024b). Multi-turn replay evaluation refers to replaying a complete interaction process—real or simulated—in chronological order and observing whether the model can take actions consistent with the task state at each critical checkpoint (Liu et al. 2024b). It focuses on process continuity rather than terminal correctness alone. For single-turn systems, local correctness is often sufficient to support overall evaluation; but in multi-turn systems, a locally plausible error at one step may be amplified through memory writes, state contamination, and erroneous recovery into a systematic failure across multiple subsequent turns. The true value of replay evaluation lies in its ability to see how errors propagate along the trajectory.
 
-State-drift evaluation tests whether the model gradually leaves the original goal or role during long interaction. It asks whether the agent stayed on track, not only whether it eventually finished.
+State-drift evaluation specifically examines whether the model deviates from the original task goal or role identity during long-horizon interaction (Liu et al. 2024b). A common phenomenon is that the model performs well in the first few turns, but as the interaction lengthens and information becomes more complex, it gradually loses track of the current thread's goal, or begins to cross-contaminate between different threads. The value of state-drift evaluation lies in isolating this "slow divergence" from the overall success rate and measuring it independently. It asks not only "was the task ultimately completed" but also "was the system on the correct track throughout the period before completion?" Many systems ultimately complete tasks only because the user repeatedly corrected the system rather than because the system maintained stable state on its own.
 
-Memory-dependency evaluation creates cases that require historical memory even when the current window does not repeat it. This separates long-context reading from true memory use.
+Memory-dependency evaluation focuses on whether the system has genuinely learned to use memory. Many models perform adequately on short trajectories because they can still rely on local context; once task resumption depends on old preferences or prior state, they begin to fail. Evaluation sets should therefore deliberately design scenarios that must depend on historical memory without explicit re-presentation in the current window, in order to distinguish "reading a long context" from "using memory"—two fundamentally different capabilities (Liu et al. 2024a; Wang et al. 2023). The former is more akin to a language-processing capability; the latter is a genuine cross-turn execution capability. For long-horizon task-oriented agents, the latter is clearly closer to what deployment actually requires.
+
+**Code Example: A Simplified Rule for Detecting "Thread Contamination" in Replay Evaluation**
+
+If the state fields of one thread suddenly contain exclusive fields from another thread—for instance, the `recipient` field from the mail thread appearing in the resume thread—this is typically a cross-thread signal. The script below demonstrates how to perform this check on a replay log.
 
 ```python
+from typing import Dict, List
+
+
 THREAD_FIELDS = {
-    "mail": {"recipient", "subject", "body"},
-    "resume": {"resume_file", "target_role", "bullet_style"},
+    "t_mail": {"recipient", "subject", "body"},
+    "t_resume": {"resume_file", "target_role", "bullet_style"},
 }
 
 
-def detect_thread_contamination(events):
+def detect_contamination(events: List[Dict]) -> List[Dict]:
     findings = []
-    for event in events:
-        thread_id = event["thread_id"]
-        state_keys = set(event.get("after_state", {}))
-        for other_thread, exclusive_fields in THREAD_FIELDS.items():
-            if other_thread == thread_id:
+    for e in events:
+        tid = e["thread_id"]
+        state = e.get("after_state", {})
+        keys = set(state.keys())
+        # Record as contamination if exclusive fields from another thread are detected
+        for other_tid, fields in THREAD_FIELDS.items():
+            if other_tid == tid:
                 continue
-            leaked = state_keys & exclusive_fields
+            leaked = keys & fields
             if leaked:
-                findings.append({
-                    "event_id": event.get("id"),
-                    "thread_id": thread_id,
-                    "leaked_fields": sorted(leaked),
-                })
+                findings.append({"event_id": e.get("id"), "thread_id": tid, "leaked_fields": sorted(leaked)})
     return findings
+
+
+if __name__ == "__main__":
+    replay = [
+        {"id": "e1", "thread_id": "t_resume", "after_state": {"resume_file": "a.docx", "recipient": "x@y.com"}},
+        {"id": "e2", "thread_id": "t_mail", "after_state": {"recipient": "x@y.com", "subject": "hi"}}
+    ]
+    print(detect_contamination(replay))
 ```
 
-### The Basic Unit of Replay Evaluation Should Be State Transition, Not Reply
+### The Basic Unit of Replay Evaluation Should Be State Transition, Not Response
 
-If each turn is scored only as text, replay evaluation collapses back into single-turn evaluation. Agent replay should score whether the before-state was read correctly, the action was legal, and the after-state was updated correctly.
+If multi-turn evaluation continues to score each turn's response individually, it easily reverts to a single-turn mindset. Agent replay evaluation is better anchored in "whether the state transition is correct" as its basic unit. That is, each step should be evaluated not only on whether the response is correct, but also on whether the current state was read correctly, whether the correct action was selected, and whether the subsequent state was correctly updated. This evaluation approach is more complex than pure text scoring, but it more accurately reflects the actual working mechanism of the system.
 
-A response may sound natural while resuming the wrong thread or treating expired variables as valid. That should fail.
+For example, in a scenario involving resumption after interruption, the response may read naturally on the surface, yet if the system resumed the wrong thread, treated an expired variable as still valid, or failed to perform necessary verification before resumption, that step should not be considered successful. Multi-turn agent evaluation should therefore focus on "transition units composed jointly of language, state, and action" rather than on pure "linguistic fragments."
 
-### Why Long-Horizon Drift Is More Dangerous Than Local Error
+### Why Long-Horizon Drift Is More Dangerous Than Local Errors
 
-Local errors are often visible and repairable. Long-horizon drift accumulates gradually. The system may begin with a small deviation, write the wrong state, then plan on top of it. By the time users notice, the error is embedded in several intermediate states.
+Local errors are typically easy for users to identify and easy for the system to correct in the next turn; long-horizon drift is different. It often accumulates slowly across many turns, being continuously rationalized along the way. The system may deviate only slightly from the task focus at first, then continue planning and writing to memory on the basis of that incorrect state, ultimately producing a systematic divergence across the entire trajectory. By that point, even if the user identifies the problem, the cost of recovery is high—because the error has already been embedded in multiple intermediate states.
 
-Replay tests should actively search for trajectories that remain linguistically smooth while drifting semantically.
+State-drift evaluation should therefore focus not only on terminal failure samples but should proactively seek trajectories that "appear natural throughout yet gradually go off course." This type of error most effectively reflects the deep stability problems of a multi-turn system, because it demonstrates that the system's problem lies not in inability to answer but in the inability to continuously maintain who it is, what it is doing, and where it should go next.
 
-### Error Attribution for "Remembering the Wrong Thing" and "Forgetting the Important Thing"
+### Error Attribution for "Remembering the Wrong Things" and "Forgetting the Important Things"
 
-"Remembering the wrong thing" usually points to a write-policy, conflict-resolution, or recall-ranking problem. The system may store an unconfirmed guess, turn a one-time remark into durable preference, or fail to overwrite old evidence.
+The two most common and most worth distinguishing categories of failure in multi-turn failure analysis are "remembering the wrong things" and "forgetting the important things."
 
-"Forgetting the important thing" may come from recall failure, excessive decay, poor summary, or thread-switching that lost key slots.
+"Remembering the wrong things" typically indicates problems with the write strategy, conflict resolution, or recall ordering. The system may have written an unconfirmed guess as fact, consolidated a one-time expression into a long-term preference, or failed to correctly override old information when new information arrived. The danger of this class of errors is its persistence: once an error enters memory, it may recur across multiple subsequent tasks. More problematic, this type of error tends to appear internally self-consistent within the system. As long as the memory layer does not realize it is wrong, it will continue to treat that erroneous entry as a legitimate basis in all subsequent planning and generation.
 
-Failure review should ask whether the problem happened at write, update, recall, decay, or recovery.
+"Forgetting the important things" may stem from recall failure, excessive decay, loss of state summaries, or failure to retain critical slots during task switching. This class of error may surface as model carelessness, but in most cases it originates from incomplete data structure. If training samples never explicitly teach the model which information is most critical at resumption time, the model will find it very difficult to learn this from linguistic patterns alone. Compared to "remembering the wrong things," "forgetting the important things" is often more immediately perceptible to users, because the system will exhibit obvious gaps, repeated questions, or continuation from an incorrect stage.
 
-### Failure Review Should Move From Outcome Attribution to Process Attribution
+Failure post-mortems should therefore not stop at "this turn was answered incorrectly" but should continue to ask: did the error originate in writing, updating, recall, decay, or thread recovery; is it a deficiency in state representation or a deficiency in supervision targets; is it a missing resumption scenario in the samples or a missing negative and conflict examples in the samples? Only by attributing errors to actionable data-pipeline stages does a post-mortem acquire genuine engineering value. Otherwise, teams will misclassify many structural problems as "the model itself is not strong enough" and miss the opportunity to improve the data system.
 
-Outcome attribution asks why the final answer failed. Process attribution asks where the first wrong state entered the trajectory.
+### Failure Post-Mortems Should Move from Outcome Attribution to Process Attribution
 
-For example, a wrong email after recovery might trace back to an old thread not being suspended, a missing attachment validation, or a long-term preference overriding a task-specific instruction.
+A representative real-world case is the 2012 Knight Capital automated-trading incident. Knight Capital was operating a long-evolved stock order-routing system called SMARS, which contained code for an old feature called Power Peg that was no longer in use but had never been fully removed; the relevant code had persisted in the production environment for an extended period. When the company updated the same order-routing system to connect with the New York Stock Exchange's new Retail Liquidity Program, it reused a flag that had been associated with the old feature. The problem was that when the new code was deployed to multiple servers, one server did not complete the update. As a result, the same batch of orders was interpreted differently on different servers: most servers processed them under the new logic, while the server that missed the update triggered the old Power Peg logic. The system ultimately issued a large volume of abnormal orders to the market in a short period of time, causing massive losses (Securities and Exchange Commission, 2013). The key lesson from this incident lies not in any single line of code but in the fact that "old state not cleaned up, deployment state inconsistent, and alert feedback not routed into effective handling" together produced a broken tool chain. For multi-turn agents, this incident offers a direct lesson: if long-term memory, tool state, version changes, and feedback alerts are not unified into a replayable, verifiable state closed loop, the system may continue executing tasks on the surface while in reality advancing at high speed down an incorrect state path.
 
-Only process attribution tells the team which data, labels, or tests to add.
+Many teams habitually work backward from the final error result during failure reviews—asking, for example, "why did this task not complete" or "why was this response wrong." This approach is necessary but insufficient for multi-turn agents. More critical is process attribution: finding the node where the error first entered the trajectory—was it introduced during writing, amplified during recall, did it take the wrong thread at resumption, or was state not updated after feedback; was it a state representation defect or a supervision target defect; was it that resumption scenarios were missing from the samples, or that negative and conflict examples were absent (Shinn et al. 2023; Liu et al. 2024b)?
 
-### Red-Line Tests Before Multi-Turn Interaction Goes Online
+The value of process attribution lies in decomposing a superficially complex final failure into a set of fixable data problems. For example, a resumption failure ultimately manifests as the system generating the wrong version of an email, but the true causes may be: the old thread was not correctly suspended, the most recent attachment was not verified upon resumption, and a long-term preference overrode the current special requirement. Only by identifying these intermediate nodes can a team determine what type of data to supplement, which annotation specifications to revise, and which categories of red-line tests to add.
 
-Multi-turn agents need stricter pre-launch red-line tests than single-turn systems.
+### Red-Line Tests for Multi-Turn Interaction Before Deployment
 
-Critical red lines include thread contamination, wrong memory persistence, recovery failure, and feedback failure. These break user trust because they make the system feel uncontrollable.
+Before a multi-turn agent is deployed, it must undergo more rigorous red-line testing than a single-turn model. The "red lines" here refer to systemic errors that must never recur in multi-turn execution—not product-experience details.
 
-Red-line tests should be extracted from real failure logs and become part of the data flywheel.
+The first category of red lines is thread contamination: state or memory from one task thread erroneously permeates another thread. The second is error persistence: the model writes a one-time error as a long-term fact and continues to rely on it in subsequent interactions. The third is recovery failure: the model is unable to reconstruct correct progress even when it clearly knows the user wants to continue an old task. The fourth is feedback invalidation: the user has explicitly corrected the model, yet the system does not update state and continues advancing along the old trajectory. The reason these four categories are treated as red lines is not that they appear occasionally, but that whenever they appear they directly undermine the user's basic trust in the system's controllability.
 
-### Typical High-Risk Scenarios Red-Line Tests Should Cover
+Such tests cannot be designed by human intuition alone; they must be systematically derived from real failure logs. That is, the red-line test set itself should become part of the multi-turn data engineering closed loop: online failures enter the attribution system, attribution results feed back into test templates, and test failures in turn feed back into training and annotation specifications. Only then does the feedback loop go beyond "collecting opinions" to "continuously converting online failures into learnable data." From an engineering standpoint, red-line tests should cover as broadly as possible the high-cost, high-propagation, hard-to-recover error types, because even if these errors occur infrequently in aggregate, they are sufficient to determine whether the system is truly ready for deployment.
 
-High-risk scenarios include rapid task switching, strong user correction, cross-session recovery, time-sensitive tasks with stale state, permission boundary changes, and memory conflicts.
+### Typical High-Risk Scenarios That Red-Line Tests Should Cover
 
-These are not edge cases in real use. They are common pressure points for task-oriented agents.
+To prevent red-line tests from remaining at the level of principled rhetoric, teams typically need to construct systematic samples around several high-risk scenarios. First is the multi-thread parallel scenario: the user switches tasks frequently within a short period, testing whether the system maintains thread isolation. Second is the strong-feedback correction scenario: the user corrects the system for several consecutive turns, observing whether the system truly updates state and avoids reverting to the old plan after a surface apology. Third is the cross-session resumption scenario: critical information is no longer present in the current window, and the system must rely on summaries and memory to complete resumption. Fourth is the high-time-sensitivity task scenario: some old state has already expired, testing whether the system performs validity checks before resumption.
 
-### Table: Multi-Turn Failure Modes and Detection Actions
+These scenarios matter because they represent high-frequency stress points that multi-turn agents will readily encounter once they enter real usage environments—they are not edge cases. If the model repeatedly fails at these points, no amount of high accuracy on static question-answering benchmarks can conceal the systemic shortfall. Table 20-1 summarizes common multi-turn failure patterns along with their typical manifestations, likely root causes, and corresponding detection actions.
 
-| Failure mode | Typical symptom | Likely root cause | Detection action |
+
+**Table 20-1: Multi-Turn Failure Patterns and Detection Actions**
+| Failure Pattern | Typical Manifestation | Likely Root Cause | Detection Action |
 |---|---|---|---|
-| State drift | Long conversation leaves original goal | Missing state fields or weak trajectory supervision | Replay long tasks and compare goal consistency |
-| Thread contamination | Task A parameters enter task B | Unclear thread segmentation | Construct parallel-thread tests |
-| Wrong write | Guess or one-time fact enters long-term memory | Low write threshold | Audit memory-write events |
-| Wrong recall | Expired or irrelevant memory is used | Ranking ignores time and confidence | Add expired distractors to evaluation |
-| Critical forgetting | Recovery loses key slots | Poor summary or missing recovery state | Test interruption and recovery |
-| Feedback failure | User correction does not update state | Feedback treated as text only | Mark correction turns and inspect after-state |
-| Over-persistence | Short-term fields survive task end | Missing TTL or decay | Check task-close cleanup |
-| Over-forgetting | Stable preference is not reused | Weak long-term extraction | Cross-session preference tests |
-| Wrong recovery | Agent remembers task but resumes wrong step | Missing progress field | Evaluate stage localization |
+| State Drift | Deviates from original task goal as conversation lengthens | Missing state fields; weak trajectory supervision | Run long-horizon replay and compare goal consistency at key checkpoints |
+| Thread Contamination | Parameters from task A leak into task B | Unclear thread segmentation; shared state container too broad | Construct parallel-thread samples and verify field isolation after thread switching |
+| Erroneous Write | Writes guesses, misunderstandings, or one-time information into long-term memory | Write threshold too low; confirmation mechanism absent | Manually audit write events and spot-check high-risk fields |
+| Erroneous Recall | Retrieves stale or irrelevant historical information | Recall ranking considers only similarity, not recency or confidence | Design evaluations that require valid memory and include stale distractors |
+| Critical Forgetting | Loses core constraints or progress when resuming a task | Poor summary quality; recovery state not structured | Run interruption–resumption tests and measure retention rate of critical slots |
+| Feedback Failure | System continues executing the old plan after user correction | Feedback not treated as a state-update signal | Tag explicit correction turns and verify whether subsequent state is updated |
+| Excessive Persistence | Short-term information continues to be active in subsequent tasks | Missing decay mechanism; TTL rules absent | Verify that short-term fields are promptly deactivated after task completion |
+| Excessive Forgetting | Stable preferences cannot be reused across sessions | Insufficient long-term preference extraction; excessive decay | Run cross-session task tests and measure stable-preference recall rate |
+| Recovery Error | Recalls old task but resumes from the wrong step | Missing progress fields; recovery logic overly text-based | Evaluate stage-localization accuracy in "resume previous task" scenarios |
 
-*Table 20-1: Multi-turn failure modes and detection actions*
+## 20.5 Cases and Connections
 
-## 20.5 Cases and Continuity
+### Multi-Turn Data Cases for AI Assistants, Customer-Service Agents, and Workplace Agents
 
-### Multi-Turn Data Cases for AI Assistants, Customer-Service Agents, and Office Agents
+Multi-turn data in AI assistant scenarios typically places the greatest emphasis on long-term preferences and lightweight task resumption. Writing assistants, research assistants, and learning assistants, for example, are primarily challenged by maintaining continuity of user preferences, consistency of project background, and stability of task structure across multiple interactions—not merely by producing good single-turn answers. For this type of agent, the long-term preference layer and the session summary layer are usually especially critical. A research assistant, for example, does not simply answer each question independently; it needs to know the overarching topic the user is continuously pursuing, the user's preferred terminology and expression style, which reference materials have been confirmed as valid, and which arguments are still being refined. Precisely for this reason, AI assistant data should not consist only of "question–answer" fragments; it should collect trajectories of "continuously revising, supplementing, reviewing, and resuming work around an ongoing project."
 
-AI assistants emphasize long-term preferences and lightweight task recovery. They need continuity across writing, research, study, and revision tasks.
+Customer-service agents place greater emphasis on episode completeness and auditable feedback loops (Young et al. 2013; Budzianowski et al. 2018). Customer-service tasks typically follow a more explicit state machine: issue intake, identity verification, information collection, solution confirmation, issue resolution, escalation and transfer, follow-up closure, and so on (Young et al. 2013; Budzianowski et al. 2018). The key to multi-turn data in this context is ensuring that every user feedback genuinely updates the ticket status rather than only receiving a "polite response" from the model. Customer-service multi-turn data is therefore very well suited to the introduction of explicit state-transition annotation and failure-recovery templates. A mature customer-service agent cannot merely "deliver standard scripted responses"; it must also map each confirmation, negation, supplement, and escalation request from the conversation onto the internal state machine and continue advancing along the updated state in subsequent turns.
 
-Customer-service agents emphasize episode completeness, state-machine transitions, and auditable feedback. User correction must update ticket state, not merely trigger polite language.
+Workplace agents are more complex still, since they typically involve long-horizon task advancement across tools, documents, and threads (Yao et al. 2023; Liu et al. 2024b). A user may simultaneously be handling meeting scheduling, document editing, email replies, and table updates. In this context, multi-turn capability requires not only "remembering what was said" but also maintaining multiple task threads stably and—when needed—integrating long-term preferences, current progress, tool observations, and user feedback. Workplace agents most effectively expose the true level of a multi-turn system's state-representation and memory-layer design, because they involve not only language generation but also task scheduling, tool-result interpretation, cross-document referencing, and resumptive workflows. A workplace agent without robust state management will readily exhibit superficial busyness—touching every task a little but completing none of them.
 
-Office agents are the most complex because they involve tools, documents, schedules, emails, and multiple threads. They expose whether the system can keep task containers separate and recover after interruption.
+### Data Priorities in AI Assistant Scenarios
 
-### Data Focus in AI Assistant Scenarios
+For AI assistants, multi-turn data should typically focus on two things: the gradual formation of long-term preferences, and the continuous compression and reconstruction of project background. These systems accompany users through long-term topics rather than one-off transactions. Users will not exhaustively re-state background every time, nor re-configure output style from scratch at every turn. If the system cannot build a stable background model across multiple interactions, it will be unable to "work continuously" in any meaningful sense.
 
-AI assistants should focus on gradual preference formation and project-background summarization. Users often continue long-term themes without restating background.
+Accordingly, this type of data should include a large number of scenarios such as "continue the previous task," "apply the earlier framework," and "revise based on the feedback from last turn," with explicit annotation of which content is being carried over long-term and which is adjusted only for the current turn. Models trained this way are more likely to function as genuine long-term assistants rather than as single-turn question-answering machines that restart from zero each time.
 
-Datasets should include "continue last task," "use the previous structure," and "revise based on last feedback" cases, with clear labels for durable preference versus current-episode instruction.
+### Data Priorities in Customer-Service Agent Scenarios
 
-### Data Focus in Customer-Service Agent Scenarios
+Data priorities in customer-service scenarios lean more toward state-machine completeness and traceable failure recovery. Customer-service tasks are closely tied to process compliance, information completeness, and user corrections. The multi-turn value in this context does not manifest in linguistic richness but in whether each step correctly writes the right information into the right ticket state, whether the system promptly corrects course after a user correction, and whether sufficient context is preserved when escalation or transfer is required.
 
-Customer-service data should emphasize state-machine completeness and failure recovery. Typical stages include intake, identity verification, information collection, solution confirmation, escalation, and closure.
+Customer-service data is therefore particularly well suited to explicit episode segmentation and state-node annotation. Compared with AI assistants, customer-service agents tend to rely less on vague long-term preferences and more heavily on clearly defined process nodes and precise state transitions. When data can make these process nodes explicit, models are more likely to maintain stability and auditability after deployment.
 
-Every confirmation, denial, correction, and escalation should map to an internal state update.
+### Data Priorities in Workplace Agent Scenarios
 
-### Data Focus in Office Agent Scenarios
+Workplace agent scenarios are well suited to testing a system's multi-turn task-handling capability. In this setting, thread switching, interruption recovery, tool coordination, long-term preferences, and state compression are nearly all present simultaneously. A user may—within a single continuous conversation—need to revise a document, schedule a meeting, and draft an email drawing on table data. Without clear thread management and state-container partitioning, the system will almost inevitably produce cross-contamination.
 
-Office-agent data should emphasize parallel threads, cross-tool observations, cross-session recovery, and long-term preferences that affect execution path.
+Workplace agent data should therefore particularly emphasize multi-thread parallelism, cross-tool observation write-back, cross-session recovery, and the effect of long-term preferences on execution paths. This type of data can train models not only to "do more things" but to "stay organized under complex, mixed conditions."
 
-The dataset should deliberately mix document editing, calendar work, email drafting, and spreadsheet updates so thread isolation can be learned and tested.
+### Coupling Points with Retrieval-Augmented Generation (RAG), Feedback Loops, and Privacy Governance
 
-### Coupling With RAG, Feedback Loops, and Privacy Governance
+Multi-turn agent memory does not exist in isolation; it is naturally coupled with retrieval augmentation, feedback loops, and privacy governance. First, long-term memory cannot replace RAG (Lewis et al. 2020). Memory is more appropriate for preserving information related to user and task continuity, while external knowledge, document facts, and time-sensitive content should still be obtained preferably through retrieval (Lewis et al. 2020; Asai et al. 2024). If the boundary between the two is unclear, the system will mistakenly write external knowledge into internal memory, or entrust to retrieval information that should be stably retained as a preference. From an engineering perspective, memory answers "what has happened to this user / in this task previously," while RAG answers "what are the most current facts in the external world / current documents." Confusing the two typically results in a system that misremembers both the user and the world.
 
-Memory is naturally coupled with RAG, feedback loops, and privacy governance.
+Second, feedback loops are the foundation for the continuous evolution of multi-turn data (Shinn et al. 2023; Liu et al. 2024b). User corrections, tool failures, human reviews, and online logs are all important inputs for state updates and data re-production; they must not be treated as appendages external to the system. A mature multi-turn data engineering system should be able to convert high-value failures from online interactions into training samples, test cases, and annotation-rule revisions—rather than leaving feedback at the level of post-hoc analysis. Feedback loops are thus not only an operational mechanism; they are also a mechanism for forming data assets. Without this loop, even the best multi-turn design will gradually diverge from real usage scenarios.
 
-Memory is best for user preferences, task continuity, and interaction history. RAG is best for external facts, documents, and time-sensitive knowledge. Feedback loops convert user corrections, tool failures, and logs into new training and test data. Privacy governance decides what may be stored, for how long, and under which usage boundary.
+Finally, privacy governance determines which memories can be retained, for how long, and at what granularity of use. For task-oriented agents, the higher the memory value, the more demanding the governance requirements tend to be. Data teams must therefore not conflate "can we remember this" with "should we remember this." Memory field design, desensitization strategies, expiration cleanup, and auditability are all unavoidable components of multi-turn data engineering. Especially when systems integrate information across sessions, tools, and tasks, privacy questions shift from the static concern of "is a particular field sensitive" to the dynamic concern of "which combinations of retained memories may create new risk exposure."
 
 ### Boundary Modeling Between Multi-Turn Memory and RAG
 
-A stable rule is: external, fast-changing, source-sensitive facts should be retrieved; user-specific, task-continuity, and interaction-cost-reducing information may be remembered.
+In practice, many teams treat "knowledge mentioned in past conversations" as part of memory, which easily creates a grey area: which content should remain in internal memory, and which should be retrieved on demand when needed? A robust principle is: for information oriented toward the external world—likely to change rapidly and requiring traceable sources—prefer retrieval; for information oriented toward user habits, task continuity, and interaction-cost optimization—prefer memory. This way the system avoids relying on stale internal caches when faced with factual questions, while also avoiding the need to re-search and re-confirm from scratch when faced with personalization questions.
 
-If a model learns to remember the world, it will store stale facts. If it relies on retrieval for stable preferences, it will repeatedly ask the user for the same thing.
+This boundary has a direct impact on multi-turn data design. If data consistently leads the model to write external facts into long-term memory, the model will gradually learn to "remember the world." What is more needed in real deployment is "remembering the user, remembering the task, remembering the state"—with world knowledge supplied by an external retrieval mechanism whose update capability is much stronger.
 
-### Feedback Loops Should Change State, Not Only Answers
+### Feedback Loops Are Primarily About Changing State, Not Just Changing the Answer
 
-In single-turn systems, feedback often rewrites an answer. In multi-turn agents, feedback should update state. "Not this file" should update the target file. "Use the old version" should change the version field. "The approver is Wang" should update the workflow.
+In single-turn systems, user feedback typically only causes the model to reorganize its answer; but in multi-turn agents, feedback should first be treated as a state-correction signal (Shinn et al. 2023). That is, when a user says "not that file," "use the original version," or "the approver is now Professor Wang," these statements require the system to modify internal state, re-sort plans, and if necessary override old memory—not merely rephrase the output. If the system only treats feedback as a semantic supplement at the text level without translating it into a state-level update, it cannot truly form a closed loop.
 
-Feedback samples should therefore include before-state, correction, after-state, and next action.
+Feedback samples should therefore carry greater weight in multi-turn data. They train models not only to "understand corrections" but also to "revise internal state based on corrections." For task-oriented agents, the latter is usually more critical than the former.
 
-### Privacy Governance as a Reverse Constraint on Memory Design
+### The Reverse Constraints of Privacy Governance on Memory Design
 
-Privacy governance should shape memory design from the beginning. An item may be useful but unsuitable for long-term storage. A memory may be technically recallable but not allowed in every context.
+Privacy governance should not be viewed as an add-on constraint after the memory system is built; it should from the outset constrain field design and write strategies in reverse (Carlini et al. 2021). Even if a piece of information is valuable from a task perspective, that does not mean it is appropriate to retain long-term; even if a memory is technically recallable, that does not mean it should be used in all contexts. Especially when systems support long-term personalization, it is even more necessary to prevent unbounded expansion of the memory layer through field-level permissions, usage restrictions, expiration deletion, and traceable auditing (Carlini et al. 2021).
 
-Field-level permissions, purpose limitation, expiry, deletion, and auditability must be part of memory schema design.
+Accordingly, multi-turn data engineering must specify not only write content, write method, and recall timing, but also whether information is allowed to be persisted, for how long it can be retained, and in which scenarios it can be used. When these questions are absent, memory systems can easily transform from "infrastructure that enhances user experience" into "accumulating containers that amplify risk."
 
-### Table: Session Fields and Memory Fields
+To support practical data modeling, Table 20-2 provides a set of foundational field designs:
 
-| Field category | Example field | Meaning | Recommended layer | Decay |
+
+**Table 20-2: Session Fields and Memory Fields**
+| Field Category | Example Field Name | Description | Recommended Layer | Decayable |
 |---|---|---|---|---|
-| Session | `session_id` | Continuous interaction container | Session | No |
-| Session | `episode_id` | Task process identifier | Episode | No |
-| Session | `task_thread_id` | Parallel task-thread identifier | Thread | No |
-| Session | `active_state` | Current state such as planning, acting, waiting | Working memory | Yes |
-| Session | `pending_slots` | Key missing or unconfirmed information | Working memory | Yes |
-| Session | `last_action_result` | Summary of recent action or tool result | Working memory | Yes |
-| Session | `interruption_flag` | Whether the task is suspended | Working memory | Yes |
-| Session | `progress_stage` | Current task phase and completion | Working memory or summary | Yes |
-| Memory | `preference_language` | Stable language preference | Long-term preference | Slow decay |
-| Memory | `preference_format` | Output structure, file format, terminology habit | Long-term preference | Slow decay |
-| Memory | `stable_constraints` | Durable rules or approval order | Long-term preference | Slow decay |
-| Memory | `project_background` | Ongoing project context | Summary or long-term preference | Update decay |
-| Memory | `rejected_memory` | Explicitly denied or invalidated information | Conflict layer | Fast decay or archive |
-| Memory | `memory_confidence` | Confidence and verification status | Metadata | Yes |
-| Memory | `last_verified_at` | Last verification or use time | Metadata | No |
-| Memory | `ttl_or_decay_policy` | Lifecycle rule | Metadata | No |
-
-*Table 20-2: Session fields and memory fields*
+| Session field | session_id | Identifier for a single continuous interaction container | session | No |
+| Session field | episode_id | Identifier for a single task episode | episode | No |
+| Session field | task_thread_id | Identifier for a parallel task thread | thread | No |
+| Session field | active_state | Current active state, e.g., planning / acting / waiting | Working memory | Yes |
+| Session field | pending_slots | Key information still awaiting user confirmation or input | Working memory | Yes |
+| Session field | last_action_result | Summary of the most recent action or tool result | Working memory | Yes |
+| Session field | interruption_flag | Whether the task is currently interrupted or suspended | Working memory | Yes |
+| Session field | progress_stage | Current task stage and completion ratio | Working memory / Session summary | Yes |
+| Memory field | preference_language | User's long-term language or expression preference | Long-term preference | Slow decay permitted |
+| Memory field | preference_format | User's preferred output structure, file format, and terminology | Long-term preference | Slow decay permitted |
+| Memory field | stable_constraints | Cross-task stable constraints, e.g., fixed rules, approval order | Long-term preference | Slow decay permitted |
+| Memory field | project_background | Long-term project background and ongoing research topics | Session summary / Long-term preference | Updatable decay |
+| Memory field | rejected_memory | Information that has been explicitly negated or invalidated | Conflict record layer | Should decay quickly or be archived |
+| Memory field | memory_confidence | Confidence level and verification status of the memory entry | Memory metadata | Yes |
+| Memory field | last_verified_at | Timestamp of most recent verification or use | Memory metadata | No |
+| Memory field | ttl_or_decay_policy | Lifecycle or decay policy | Memory metadata | No |
 
 ## Chapter Summary
 
-The core of multi-turn agent data engineering is not making conversations longer. It is organizing interaction into state trajectories that can be learned, recovered, and evaluated. What determines long-horizon agent quality is not only language generation, but state representation, memory layering, feedback loops, and decay rules.
+The key to data engineering for multi-turn agents is not making conversations longer, but organizing interaction processes into state trajectories that are learnable, resumable, and evaluable. The true ceiling of a multi-turn system is determined not only by language generation quality, but also by the clarity of state representation, the definition of memory layers, the soundness of feedback loops, and the robustness of decay mechanisms.
 
-This chapter covered four major design problems: how to segment session, episode, and task thread; how to represent dialogue state, task progress, and long-term preference; how to define memory write, update, recall, and forgetting; and how to use replay evaluation, failure attribution, and red-line tests to turn online failures into data assets.
+From a data perspective, multi-turn systems must solve at least four core problems: first, how to make reasonable segmentation among sessions, episodes, and task threads; second, how to represent dialogue state, task progress, and long-term preferences in distinct layers; third, how to establish clear rules for memory writes, updates, recalls, and forgetting; and fourth, how to continuously convert online problems into data assets through replay evaluation, failure attribution, and red-line testing.
 
-Long-term memory is not an extended context window. State transition is not a side effect of natural-language continuity. Only when multi-turn interaction is treated as a process driven by state, memory, and feedback can teams build reliable long-horizon task agents.
+This chapter particularly emphasizes that long-term memory must not be treated as an extended version of the context window, and state transitions must not be treated as a by-product of natural-language continuity (Liu et al. 2024a). Only when a team views multi-turn interaction as a process jointly driven by "state–memory–feedback" can it truly construct a high-quality data system suitable for long-horizon, multi-turn, task-oriented agents. Whatever the next step—combining this system with RAG, tool-call trajectories, or human-feedback data—the same thread of thinking should continue: transforming the model's cross-turn stability from an uninterpretable superficial capability into an engineerable, trainable, and diagnosable engineering object.
 
 ## References
 
-Asai A, Wu Z, Wang Y, Sil A, Hajishirzi H (2024) Self-RAG: Learning to Retrieve, Generate, and Critique Through Self-Reflection.
+Young, S., Gašić, M., Thomson, B., & Williams, J. D. (2013). *POMDP-Based Statistical Spoken Dialog Systems: A Review*. Proceedings of the IEEE, 101(5), 1160–1179. https://doi.org/10.1109/JPROC.2012.2225812
 
-Budzianowski P, Wen T-H, Tseng B-H, Casanueva I, Ultes S, Ramadan O, Gasic M (2018) MultiWOZ: A Large-Scale Multi-Domain Wizard-of-Oz Dataset for Task-Oriented Dialogue Modelling. In: EMNLP, pp 5016-5026.
+Williams, J. D., Raux, A., Ramachandran, D., & Black, A. (2013). *The Dialog State Tracking Challenge*. Proceedings of the SIGDIAL 2013 Conference, 404–413.
 
-Carlini N, Tramer F, Wallace E, Jagielski M, Herbert-Voss A, Lee K, Roberts A, Brown T, Song D, Erlingsson U, Oprea A, Raffel C (2021) Extracting Training Data from Large Language Models. In: USENIX Security Symposium.
+Budzianowski, P., Wen, T.-H., Tseng, B.-H., et al. (2018). *MultiWOZ - A Large-Scale Multi-Domain Wizard-of-Oz Dataset for Task-Oriented Dialogue Modelling*. Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing, 5016–5026.
 
-Lewis P, Perez E, Piktus A, Petroni F, Karpukhin V, Goyal N, Kuttler H, Lewis M, Yih W-T, Rocktaschel T, Riedel S, Kiela D (2020) Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. In: NeurIPS.
+Yao, S., Zhao, J., Yu, D., et al. (2023). *ReAct: Synergizing Reasoning and Acting in Language Models*. International Conference on Learning Representations.
 
-Liu N F, Lin K, Hewitt J, Paranjape A, Bevilacqua M, Petroni F, Liang P (2024) Lost in the Middle: How Language Models Use Long Contexts. Transactions of the Association for Computational Linguistics 12:157-173.
+Schick, T., Dwivedi-Yu, J., Dessì, R., et al. (2023). *Toolformer: Language Models Can Teach Themselves to Use Tools*. Advances in Neural Information Processing Systems, 36.
 
-Packer C, Wooders S, Lin K, Fang V, Patil S, Stoica I, Gonzalez J E (2023) MemGPT: Towards LLMs as Operating Systems.
+Liu, N. F., Lin, K., Hewitt, J., et al. (2024a). *Lost in the Middle: How Language Models Use Long Contexts*. Transactions of the Association for Computational Linguistics, 12, 157–173. https://doi.org/10.1162/tacl_a_00638
 
-Park J S, O'Brien J C, Cai C J, Morris M R, Liang P, Bernstein M S (2023) Generative Agents: Interactive Simulacra of Human Behavior. In: UIST.
+Packer, C., Wooders, S., Lin, K., et al. (2023). *MemGPT: Towards LLMs as Operating Systems*. arXiv:2310.08560.
 
-Schick T, Dwivedi-Yu J, Dessi R, et al. (2023) Toolformer: Language Models Can Teach Themselves to Use Tools. In: NeurIPS.
+Wang, W., Dong, L., Cheng, H., et al. (2023). *Augmenting Language Models with Long-Term Memory*. Advances in Neural Information Processing Systems, 36.
 
-Shinn N, Cassano F, Gopinath A, Narasimhan K, Yao S (2023) Reflexion: Language Agents with Verbal Reinforcement Learning.
+Zhong, W., Guo, L., Gao, Q., et al. (2024). *MemoryBank: Enhancing Large Language Models with Long-Term Memory*. Proceedings of the AAAI Conference on Artificial Intelligence, 38(17), 19724–19731. https://doi.org/10.1609/aaai.v38i17.29946
 
-Wang W, Dong L, Cheng H, et al. (2023) Augmenting Language Models with Long-Term Memory. In: NeurIPS.
+Park, J. S., O'Brien, J. C., Cai, C. J., et al. (2023). *Generative Agents: Interactive Simulacra of Human Behavior*. Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology.
 
-Williams J D, Raux A, Ramachandran D, Black A (2013) The Dialog State Tracking Challenge. In: SIGDIAL, pp 404-413.
+Lewis, P., Perez, E., Piktus, A., et al. (2020). *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks*. Advances in Neural Information Processing Systems, 33, 9459–9474.
 
-Yao S, Zhao J, Yu D, Du N, Shafran I, Narasimhan K, Cao Y (2023) ReAct: Synergizing Reasoning and Acting in Language Models. In: ICLR.
+Asai, A., Wu, Z., Wang, Y., et al. (2024). *Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection*. International Conference on Learning Representations.
 
-Young S, Gasic M, Thomson B, Williams J D (2013) POMDP-Based Statistical Spoken Dialog Systems: A Review. Proceedings of the IEEE 101(5):1160-1179.
+Shinn, N., Cassano, F., Gopinath, A., et al. (2023). *Reflexion: Language Agents with Verbal Reinforcement Learning*. Advances in Neural Information Processing Systems, 36.
 
-Zhong W, Guo L, Gao Q, Ye H, Wang Y (2024) MemoryBank and Long-Term Memory Mechanisms for LLM Agents.
+Liu, X., Yu, H., Zhang, H., et al. (2024b). *AgentBench: Evaluating LLMs as Agents*. International Conference on Learning Representations.
+
+Carlini, N., Tramèr, F., Wallace, E., et al. (2021). *Extracting Training Data from Large Language Models*. USENIX Security Symposium.
+
+Securities and Exchange Commission. 2013. *In the Matter of Knight Capital Americas LLC: Order Instituting Administrative and Cease-and-Desist Proceedings, Release No. 70694*. U.S. Securities and Exchange Commission.

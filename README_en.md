@@ -5,7 +5,7 @@
 
 **English | [中文](README.md) | [日本語](README_ja.md)**
 
-> **Version note:** The Chinese edition is the current 2026 Springer mainline, frozen at 14 parts, 48 chapters, 15 project case studies, and 3 appendices, with front matter and an afterword in the site edition. The English edition is being synchronized with a quality-first translation workflow; the documentation site includes an English edition status page.
+> **Version note:** The Chinese edition is the current 2026 Springer mainline, frozen at 14 parts, 48 chapters, 15 project case studies, and 7 appendices (A–G), with front matter and an afterword in the site edition. The English edition is being synchronized with a quality-first translation workflow; the documentation site includes an English edition status page.
 
 ## Introduction
 
@@ -36,7 +36,7 @@ Beyond in-depth theoretical explanations, the Chinese mainline includes **15 end
 ## Table of Contents
 
 ```
-📖 14 Parts, 48 Chapters + 15 Project Case Studies + 3 Appendices
+📖 14 Parts, 48 Chapters + 15 Project Case Studies + 7 Appendices (A–G)
 │
 ├── Part 1: Overview & Infrastructure (Ch01-Ch03)
 ├── Part 2: Text Pre-training Data Engineering (Ch04-Ch07)

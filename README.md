@@ -5,7 +5,7 @@
 
 **[English](README_en.md) | 中文 | [日本語](README_ja.md)**
 
-> **版本说明**：中文版是当前 2026 Springer 出版主线，结构冻结为 14 篇、48 章、15 个实战项目与 3 个附录。英文版和日文版仍在跟进翻译，站点中会保留翻译状态说明页。
+> **版本说明**：中文版是当前 2026 Springer 出版主线，结构冻结为 14 篇、48 章、15 个实战项目与 7 个附录（A–G）。英文版和日文版仍在跟进翻译，站点中会保留翻译状态说明页。
 
 ## 简介
 
@@ -39,7 +39,7 @@
 ## 目录结构
 
 ```
-📖 全书十四篇，48章 + 15个实战项目 + 3个附录
+📖 全书十四篇，48章 + 15个实战项目 + 7个附录（A–G）
 │
 ├── 第一篇：总论与基础设施（第1-3章）
 ├── 第二篇：文本预训练数据工程（第4-7章）
@@ -126,6 +126,20 @@ mkdocs build
 ```
 
 生成的静态文件位于 `site/` 目录。
+
+### 导出 Springer 16K LaTeX 样稿
+
+导出脚本需要本机可用 `tectonic`；使用 `--split --compile` 合并分篇 PDF 时还需要 `pdfunite`。图片完整性校验依赖 Pillow。
+
+```bash
+# 生成完整中文书稿 LaTeX，不立即编译 PDF
+python scripts/export_zh_book_latex.py
+
+# 按篇编译并合并 16K 审校 PDF（推荐）
+python scripts/export_zh_book_latex.py --split --compile
+```
+
+输出文件位于 `output/pdf/`。若只需抽样验证，可使用 `--limit 3 --compile` 或 `--only part1/ --split --compile`。
 
 ### 验证发布与项目
 
