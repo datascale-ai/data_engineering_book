@@ -1,4 +1,6 @@
-# Data Engineering for Large Models: Architecture, Algorithms & Projects
+# Data Engineering for Large Foundation Models
+
+## A Handbook
 
 [![GitHub Pages](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://datascale-ai.github.io/data_engineering_book/en/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)

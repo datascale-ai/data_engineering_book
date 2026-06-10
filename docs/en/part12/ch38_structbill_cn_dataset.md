@@ -117,7 +117,7 @@ Hierarchical JSON is used because it maps directly to real database schema: glob
 
 The three schema parts map to the final JSON as follows: $K$ becomes the global `key_information` object, $T$ becomes the `Fee_List` array and its row fields, and $C$ becomes validation relationships attached to numeric fields rather than visible JSON nodes.
 
-![ch38_Figure_38-1](..\..\images\part12\ch38_Figure_38-1_en.png)
+![ch38_Figure_38-1](../../images/part12/ch38_Figure_38-1_en.png)
 
 *Figure 38-1: Schema-to-JSON mapping. Key fields and table structure become visible JSON nodes; constraints remain verifiable relationships attached to numeric fields.*
 
@@ -196,7 +196,7 @@ This table acts as a contract between annotation rules and evaluation scripts.
 
 StructBill-CN uses a multi-stage pipeline whose goal is to preserve semantic content and business-logic topology while creating traceable quality gates.
 
-![ch38_Figure_38-2](..\..\images\part12\ch38_Figure_38-2_en.png)
+![ch38_Figure_38-2](../../images/part12/ch38_Figure_38-2_en.png)
 
 
 
@@ -214,7 +214,7 @@ StructBill-CN uses a multi-stage pipeline whose goal is to preserve semantic con
 
 **6. Logic consistency validation.** The core step checks whether annotations are arithmetically self-consistent: row by row, unit price x quantity approximately equals amount; at document level, line-item amounts approximately sum to total. Tolerance $\varepsilon$ absorbs OCR and floating-point noise.
 
-![ch38_Figure_38-3](..\..\images\part12\ch38_Figure_38-3_en.png)
+![ch38_Figure_38-3](../../images/part12/ch38_Figure_38-3_en.png)
 
 *Figure 38-3: Logic-consistency validation. The same gate is reused during construction to block inconsistent labels and during evaluation/training to score model output.*
 

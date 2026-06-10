@@ -1,6 +1,6 @@
 # English Translation Style Guide
 
-This guide is the editorial baseline for the English edition of *Data Engineering for Large Models: Architecture, Algorithms & Projects*. It is not part of the reader-facing table of contents; it exists to keep chapter translations, navigation labels, captions, and project pages consistent.
+This guide is the editorial baseline for the English edition of *Data Engineering for Large Foundation Models: A Handbook*. It is not part of the reader-facing table of contents; it exists to keep chapter translations, navigation labels, captions, and project pages consistent.
 
 ## Editorial Goals
 

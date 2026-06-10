@@ -1,4 +1,6 @@
-# Data Engineering for Large Models: Architecture, Algorithms & Projects
+# Data Engineering for Large Foundation Models
+
+## A Handbook
 
 ## Full Table of Contents
 

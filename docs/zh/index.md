@@ -2,7 +2,7 @@
 
 ## 全书目录概览
 
-本书当前中文主线采用 2026 Springer 尺寸版结构，正文覆盖 48 章、15 个端到端项目与 7 个附录（A–G）。为降低跨篇阅读门槛，本版在前置部分新增统一的缩写表，并为每一篇补充了分册目录页。
+本书当前中文主线采用 2026 Springer 尺寸版结构，正文覆盖 51 章、15 个端到端项目与 7 个附录（A–G）。为降低跨篇阅读门槛，本版在前置部分新增统一的缩写表，并为每一篇补充了分册目录页。
 
 - [缩写表](abbreviations.md)
 - [序言](preface.md)
@@ -138,17 +138,20 @@
 - [第41章：MedImage-ToolVQA 医学图像工具调用数据工程](part12/ch41_medimage_tool_vqa_dataset.md)
 - [第42章：VoiceStyleControl 可控语音交互数据工程](part12/ch42_voice_style_control_dataset.md)
 - [第43章：Latent-Switch-69K 隐式/显式推理数据工程](part12/ch43_latent_switch_69k.md)
+- [第44章：FineWeb 预训练语料数据工程](part12/ch44_fineweb_redpajama_dclm.md)
+- [第45章：Dolma 预训练语料透明账本](part12/ch45_dolma_olmo_transparent_corpus.md)
+- [第46章：LAION-5B 图文候选池与筛选通道](part12/ch46_laion_datacomp_image_text.md)
 
 ## 第十三篇：开源大模型数据工程配方与范式
 
 第十三篇聚焦开源大模型的数据配方、训练范式与工程化组织方式，覆盖预训练、后训练、推理强化学习、VLM、T2I/T2V 等关键方向。
 
 - [本篇目录](part13/index.md)
-- [第44章：LLM 预训练数据工程实战：从配方到落地](part13/ch44_pretrain_recipes.md)
-- [第45章：LLM 后训练数据工程实战：SFT 与偏好对齐](part13/ch45_posttrain_recipes.md)
-- [第46章：推理模型与 RL 数据工程：R1 / QwQ 范式](part13/ch46_rl_reasoning_data.md)
-- [第47章：多模态大模型（VLM）数据配方：从预训练到视觉对齐](part13/ch47_vlm_data_recipes.md)
-- [第48章：多模态生成模型数据工程：T2I 与 T2V 数据流水线](part13/ch48_t2i_t2v.md)
+- [第47章：LLM 预训练数据工程实战：从配方到落地](part13/ch47_pretrain_recipes.md)
+- [第48章：LLM 后训练数据工程实战：SFT 与偏好对齐](part13/ch48_posttrain_recipes.md)
+- [第49章：推理模型与 RL 数据工程：R1 / QwQ 范式](part13/ch49_rl_reasoning_data.md)
+- [第50章：多模态大模型（VLM）数据配方：从预训练到视觉对齐](part13/ch50_vlm_data_recipes.md)
+- [第51章：多模态生成模型数据工程：T2I 与 T2V 数据流水线](part13/ch51_t2i_t2v.md)
 
 ## 第十四篇：项目案例研究
 

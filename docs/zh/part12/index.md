@@ -20,6 +20,9 @@
 - [第41章：MedImage-ToolVQA 医学图像工具调用数据工程](ch41_medimage_tool_vqa_dataset.md)
 - [第42章：VoiceStyleControl 可控语音交互数据工程](ch42_voice_style_control_dataset.md)
 - [第43章：Latent-Switch-69K 隐式/显式推理数据工程](ch43_latent_switch_69k.md)
+- [第44章：FineWeb 预训练语料数据工程](ch44_fineweb_redpajama_dclm.md)
+- [第45章：Dolma 预训练语料透明账本](ch45_dolma_olmo_transparent_corpus.md)
+- [第46章：LAION-5B 图文候选池与筛选通道](ch46_laion_datacomp_image_text.md)
 
 ## 阅读顺序
 
@@ -28,6 +31,8 @@
 第41章和第42章分别进入医学图像工具调用与可控语音交互，适合连接第六篇的 Agent 数据、第十篇的 Data Engineering Agent 和第十一篇的隐私合规。
 
 第43章收束到隐式/显式推理切换和推理轨迹压缩，向后衔接第十三篇的推理模型、RL 数据工程和第十四篇的 R1 推理飞轮案例。
+
+第44章至第46章进入开放预训练语料和图文候选池，分别讨论 FineWeb、Dolma 和 LAION/DataComp 的数据来源、处理链路、透明度、许可边界和发布形态，为第十三篇的模型数据配方提供更具体的数据资产参照。
 
 ## 统一检查口径
 
