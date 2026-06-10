@@ -230,16 +230,7 @@ $$
 
 MinHash 用多个哈希函数近似这个相似度。FineWeb 论文说明其去重参数为 5-grams、112 个哈希函数，拆成 14 个 bucket，每个 bucket 8 个 hash；任一 bucket 的 8 个 MinHash 相同即可判为重复候选。DataTrove 示例脚本中的 `MinhashConfig` 也对应 `n_grams=5`、`num_buckets=14`、`hashes_per_bucket=8`。
 
-```mermaid
-flowchart TD
-  A["主处理输出 JSONL"] --> B["MinhashDedupSignature<br>计算 5-gram MinHash 签名"]
-  B --> C["MinhashDedupBuckets<br>按 bucket 聚合候选重复"]
-  C --> D["MinhashDedupCluster<br>生成 remove_ids"]
-  D --> E["MinhashDedupFilter<br>删除重复文档"]
-  E --> F["TokensCounter<br>统计去重前后 token"]
-  F --> G["PIIFormatter<br>匿名化邮箱和公网 IP"]
-  G --> H["deduped_output<br>发布前数据分片"]
-```
+![图41-1 FineWeb MinHash 去重和 PII 处理流程](../../images/part12/ch41_01_fineweb_minhash_pii_flow.png)
 
 *图41-1 FineWeb MinHash 去重和 PII 处理流程。Source: original illustration based on Hugging Face DataTrove `examples/fineweb.py` and FineWeb dataset card.*
 
@@ -249,16 +240,7 @@ flowchart TD
 
 这个结果对工程实践很重要。去重不是数学上越彻底越好，而是要看它如何改变数据分布。全局去重会让新旧 crawl 之间的时间分布、站点覆盖和重复簇结构发生复杂变化；如果只看“删除了多少重复”，可能误删更有价值的样本，保留低质量长尾。
 
-```mermaid
-flowchart LR
-  A["候选策略"] --> B["固定抽样 token"]
-  B --> C["训练同构 ablation 模型"]
-  C --> D["lighteval 固定任务评测"]
-  D --> E{"聚合得分是否提升"}
-  E -->|提升| F["保留策略并冻结参数"]
-  E -->|不提升| G["回退或重设阈值"]
-  G --> A
-```
+![图41-2 FineWeb 数据处理选择的消融评估回路](../../images/part12/ch41_02_fineweb_ablation_loop.png)
 
 *图41-2 FineWeb 数据处理选择的消融评估回路。Source: original illustration based on FineWeb paper Section 3.1.*
 

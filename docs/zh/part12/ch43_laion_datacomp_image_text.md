@@ -71,14 +71,7 @@ LAION-5B 的公开形态不是把所有图片文件集中托管起来，而是�
 
 图文候选池也应分通道建模。LAION-5B 论文列出的 Parquet 元数据字段包括 64 位整数 id、图片 URL、文本、图片高宽、图文 embedding 的余弦相似度，以及 NSFW 和水印检测分数。工程团队在复用这类语料时，通常还需要补充下载、hash、授权线索和撤回状态等治理字段。
 
-```mermaid
-flowchart LR
-  A["文本通道<br>text / language / text_hash"] --> E["图文候选记录"]
-  B["视觉通道<br>URL / size / image_hash / download_status"] --> E
-  C["对齐通道<br>clip_model / clip_score / embedding_id"] --> E
-  D["风险通道<br>NSFW / watermark / toxicity / license_hint"] --> E
-  E --> F["训练视图 / 评测视图 / 治理视图"]
-```
+![图43-1 LAION-5B 图文候选记录的多通道 schema](../../images/part12/ch43_01_laion_multichannel_schema.png)
 
 *图43-1 LAION-5B 图文候选记录的多通道 schema。Source: original illustration based on LAION-5B paper and LAION dataset-spec.*
 
@@ -199,15 +192,7 @@ $$
 
 可控语音数据需要同时验收语义、风格和音频质量；LAION-5B 类图文数据也需要同时验收文本、视觉、对齐、风险和复现性。单独看 CLIP 分数不够，单独看人工抽检也不够。质量系统应把自动指标与人工复核组合成闭环，问题样本进入重下载、重过滤、降权、隔离或剔除队列。
 
-```mermaid
-flowchart LR
-  A["候选池元数据"] --> B["通道化质量检查"]
-  B --> C["问题样本队列"]
-  C --> D["重下载 / 重过滤 / 降权 / 剔除"]
-  D --> E["冻结训练视图"]
-  E --> F["固定协议评测"]
-  F --> C
-```
+![图43-2 图文候选池质量评估与闭环修复](../../images/part12/ch43_02_laion_quality_datacomp_loop.png)
 
 *图43-2 图文候选池质量评估与闭环修复。Source: original illustration based on LAION-5B paper and DataComp benchmark design.*
 

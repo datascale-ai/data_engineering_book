@@ -71,14 +71,7 @@ The final training sample is not a direct copy of the Web trace, but a structure
 
 Image-text candidate pools should also be modeled by channel. The Parquet metadata fields listed in the LAION-5B paper include a 64-bit integer id, image URL, text, image height and width, cosine similarity between image and text embeddings, and NSFW and watermark-detection scores. When reusing such corpora, engineering teams usually need to add governance fields such as download status, hash, authorization hints, and removal status.
 
-```mermaid
-flowchart LR
-  A["Text channel<br>text / language / text_hash"] --> E["Image-text candidate record"]
-  B["Visual channel<br>URL / size / image_hash / download_status"] --> E
-  C["Alignment channel<br>clip_model / clip_score / embedding_id"] --> E
-  D["Risk channel<br>NSFW / watermark / toxicity / license_hint"] --> E
-  E --> F["Training view / Evaluation view / Governance view"]
-```
+![Figure 43-1 Multi-channel schema for LAION-5B image-text candidate records](../../images/part12/ch43_01_laion_multichannel_schema.png)
 
 *Figure 43-1 Multi-channel schema for LAION-5B image-text candidate records. Source: original illustration based on the LAION-5B paper and LAION dataset-spec.*
 
@@ -199,15 +192,7 @@ where $c$ is the filtering configuration, $r$ is the sampling random seed, and $
 
 Controllable speech data must validate semantics, style, and audio quality simultaneously; LAION-5B-like image-text data must likewise validate text, vision, alignment, risk, and reproducibility simultaneously. Looking only at CLIP scores is insufficient, and so is looking only at manual sampling. The quality system should combine automatic metrics with human review in a closed loop, sending problematic samples into redownload, refiltering, downweighting, isolation, or removal queues.
 
-```mermaid
-flowchart LR
-  A["Candidate-pool metadata"] --> B["Channelized quality checks"]
-  B --> C["Problem-sample queue"]
-  C --> D["Redownload / refilter / downweight / remove"]
-  D --> E["Freeze training view"]
-  E --> F["Evaluate with fixed protocol"]
-  F --> C
-```
+![Figure 43-2 Image-text candidate-pool quality evaluation and closed-loop repair](../../images/part12/ch43_02_laion_quality_datacomp_loop.png)
 
 *Figure 43-2 Image-text candidate-pool quality evaluation and closed-loop repair. Source: original illustration based on the LAION-5B paper and DataComp benchmark design.*
 

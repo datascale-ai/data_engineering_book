@@ -196,14 +196,7 @@ Dolma Toolkit 文档把数据整理概括为四个动作：tag、dedup、mix、t
 
 数据来源 Dolma Toolkit documentation README。
 
-```mermaid
-flowchart LR
-  A["Source card<br>origin / license / cutoff"] --> B["Taggers<br>quality and risk evidence"]
-  B --> C["Deduplication<br>keep / remove evidence"]
-  C --> D["Mixer<br>sample proportion"]
-  D --> E["Tokenization<br>seen-token accounting"]
-  E --> F["Training manifest<br>run-level evidence"]
-```
+![图42-1 Dolma 透明语料证据链](../../images/part12/ch42_01_dolma_evidence_chain.png)
 
 *图42-1 Dolma 透明语料证据链。Source: original illustration based on AllenAI Dolma Toolkit documentation.*
 
@@ -225,15 +218,7 @@ $$
 
 当 $\Delta_s$ 在代码任务、科学问答或长文本任务上明显变化时，数据团队才能把能力变化回溯到 source mix，而不是泛泛归因于“模型参数”。
 
-```mermaid
-flowchart TD
-  A["Source statistics<br>tokens / documents / cutoff"] --> B["Sample proportion"]
-  B --> C["Seen tokens by source"]
-  C --> D["Training run"]
-  D --> E["Checkpoint evaluation"]
-  E --> F["Source-level diagnosis"]
-  F --> B
-```
+![图42-2 Dolma source mix 与训练诊断回路](../../images/part12/ch42_02_dolma_source_mix_diagnosis.png)
 
 *图42-2 Dolma source mix 与训练诊断回路。Source: original illustration based on Dolma dataset card and OLMo training use.*
 
