@@ -1,4 +1,4 @@
-# Project 13: Multimodal Instruction Factory
+# Project 13: Qwen-VL Multimodal Instruction Factory
 
 ## Abstract
 

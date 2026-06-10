@@ -100,7 +100,7 @@ A core design principle of SparseTable-Bench is to represent each table image as
 
 The `[EMPTY_CELL]` token here is not ordinary text; it is a placeholder expressing "structure exists, content is absent." It decouples a cell's structural identity from its semantic content: even if the corresponding image region contains no readable characters, that position still has row-column coordinates, a bounding box, and contextual relationships. For sparse tables, this placeholder prevents the model from treating blank regions as non-existent during generation, thereby reducing the probability of column collapse and left-shift errors. Figure 39-2 summarizes the synchronized relationship among the three supervision signals — HTML, text, and bounding boxes — within the same table sample.
 
-![Figure 39-2: Structural diagram of the three supervision signals in a table sample](../../images/part12/ch39_02_supervision_schema.png)
+![Figure 39-2: Three synchronized supervision signals in a table sample](../../images/part12/ch39_02_supervision_schema_en.png)
 
 From a data engineering perspective, the sample schema of STB includes at least the following fields and validation rules.
 
@@ -121,7 +121,7 @@ It is important to note that the specific notation for the empty-cell token must
 
 The construction of SparseTable-Bench can be organized into four stages: table collection, structure extraction, spatial annotation, and sparse topology augmentation. These four stages are not a simple serial file transformation; rather, they involve repeated validation of consistency among structure, text, and geometry, as illustrated in Figure 39-1.
 
-![Figure 39-1: SparseTable-Bench four-stage construction pipeline diagram](../../images/part12/ch39_01_stb_pipeline.png)
+![Figure 39-1: Four-stage SparseTable-Bench construction pipeline](../../images/part12/ch39_01_stb_pipeline_en.png)
 
 ### 39.4.1 Table Collection
 
@@ -147,7 +147,7 @@ The sparse topology augmentation stage is used to construct pressure tests and s
 
 The construction pipeline should ultimately produce three types of auditable artifacts: standard training/validation/test samples, STB-Mask-Stress pressure test samples, and data documentation recording the data version, source domains, split strategies, and transformation script hashes. Without this metadata, a benchmark easily becomes single-use experimental material, unable to support subsequent model iteration and cross-study comparison.
 
-## 39.5 How Empty Cells and Sparse Layouts Undermine the Reliability of Conventional Evaluation
+## 39.5 How Empty Cells and Sparse Layouts Induce Structural Errors
 
 The core difficulty of sparse tables is not simply "too much whitespace, so too little information." Whitespace itself carries structural meaning. A blank region may represent an empty cell, an entire column of missing values, the area occupied by a spanning cell, or merely typographic whitespace on the page. If a model cannot distinguish among these cases, structural hallucinations will occur.
 
@@ -155,18 +155,19 @@ One typical error is empty-column skipping. Suppose a table truly has three colu
 
 Another error is cascading misalignment. Table recognition typically generates output autoregressively; if a single empty `<td>` is missed earlier, all subsequent cells in that row shift left. If this error occurs in a multi-level header, the effect extends to multiple rows and multiple fields. Conventional average scores may show only a slight drop, but the actual business meaning has been completely distorted.
 
-A third error is metric interpretation distortion. If a benchmark does not explicitly annotate empty cells, models that delete empty positions are not penalized; if only text matching is computed, structural misalignment may be concealed; if only the HTML tree is examined without inspecting bounding boxes, a model may generate a topologically correct structure that does not spatially correspond to the image. STB preserves HTML, text, and bounding boxes simultaneously precisely to reduce these blind spots.
+These structural errors are further reflected in evaluation results. In sparse tables, missing empty positions, column shifts, and erroneous filling of empty cells change the number of HTML nodes, node order, and row-column expansion relationships. They therefore usually reduce TEDS or TEDS-S. STB preserves HTML, text, and bounding boxes simultaneously so that score drops can be traced back to inspectable data objects rather than remaining only at the aggregate-metric level.
 
-Errors in sparse tables can be classified into four types.
+Errors in sparse tables can be classified into five types.
 
 | Error Type | Manifestation | Primary Cause | Observation Method in STB |
 |---|---|---|---|
 | Missing empty position | Empty `<td>` not generated; column count decreases | Empty cells lack visual text anchors | `[EMPTY_CELL]` recall, TEDS-S, row-column expansion check |
 | Column left-shift / right-shift | Non-empty content placed in adjacent column | Intermediate empty column skipped or merged | HTML matrix alignment, bbox-to-column-index consistency |
+| Empty-cell filling | Model generates nonexistent text in empty positions | Contextual completion or overly strong language prior | `[EMPTY_CELL]` precision, cell-text inspection |
 | Incorrect merging relationships | `rowspan`/`colspan` missing or mislabeled | Sparse region boundaries are weak; header levels are complex | Structure tree edit, merge-area coverage check |
 | Spatial drift | HTML structure parses correctly but bboxes do not align | Model learned sequences only, lacking geometric supervision | Cell bbox IoU, row-column geometric alignment check |
 
-These errors demonstrate that the value of SparseTable-Bench is not simply being "a harder dataset," but rather converting the unstable and difficult-to-interpret components of conventional evaluation into supervision objects that are annotatable, computable, and attributable.
+These errors demonstrate that the value of SparseTable-Bench is not simply providing a more difficult dataset, but transforming structural failure modes in sparse tables into supervision objects that are annotatable, computable, and attributable.
 
 ## 39.6 STB-Mask-Stress: A Pressure Test for Information-Deficient Conditions
 
@@ -174,7 +175,7 @@ STB-Mask-Stress is the robustness evaluation split within SparseTable-Bench, ded
 
 Figure 39-3 illustrates the basic workflow of STB-Mask-Stress, from column-level occlusion generation to evaluation interpretation.
 
-![Figure 39-3: STB-Mask-Stress occlusion generation and evaluation workflow](../../images/part12/ch39_03_mask_stress_flow.png)
+![Figure 39-3: STB-Mask-Stress occlusion generation and evaluation workflow](../../images/part12/ch39_03_mask_stress_flow_en.png)
 
 The occlusion strategy of STB-Mask-Stress is column-aware. The workflow can be summarized as follows.
 
@@ -197,6 +198,8 @@ SparseTable-Bench uses Tree-Edit-Distance-based Similarity (TEDS) and its struct
 
 These two metrics are appropriate for cross-model comparison, but must not be interpreted mechanically. Especially for sparse table datasets such as STB, metric differences often correspond to different error sources.
 
+In extremely sparse tables or tables with many empty cells, lower TEDS/TEDS-S scores usually originate from structural prediction errors. Numerous empty positions weaken visible text anchors. A model may fill nonexistent content into empty cells, skip empty columns, or assign neighboring-column content to the wrong column position. Once these errors enter the HTML output, the number of `<td>` nodes, node order, and row-column expansion relationships change, ultimately reducing TEDS or TEDS-S. TEDS-S further focuses on structural topology and empty-cell positions, making it especially useful for exposing such row-column alignment errors.
+
 | Metric Pattern | Possible Interpretation | Conclusion That Should Not Be Drawn | Supplementary Check |
 |---|---|---|---|
 | TEDS high, TEDS-S high | Structure and text are broadly stable | Does not imply bboxes are necessarily correct | Cell bbox IoU, row-column geometric alignment |
@@ -205,7 +208,7 @@ These two metrics are appropriate for cross-model comparison, but must not be in
 | Standard set high, Mask-Stress low | Depends on visible text anchors; poor resistance to sparseness | Does not imply the model is unusable in ordinary scenarios | Statistics broken down by occlusion pattern: body/header/random |
 | Mask-Stress TEDS-S high but TEDS low | Topology well preserved, occluded text unrecoverable | Cannot require the model to recover invisible content from nothing | Confirm that occluded text has been synchronously removed from targets |
 
-The scope of TEDS/TEDS-S can be summarized in three points.
+When interpreting TEDS/TEDS-S in STB, three types of information should be considered together.
 
 First, TEDS is a mixed metric of structure and text. It is appropriate for assessing how closely the final HTML output approximates the reference, but when scores drop, it is necessary to disaggregate the causes — text misrecognition, tag-tree errors, or cell ordering misalignment. For sparse tables, the same TEDS decrease may represent entirely different risks.
 

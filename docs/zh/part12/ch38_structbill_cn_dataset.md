@@ -84,6 +84,8 @@ StructBill-CN 共包含 **2,300 张**高分辨率票据图像，覆盖 **6 类�
 
 需要强调的是，这里所有图像均来自公开学术数据集，这是一个**数据合规上的有意选择**：把可发布的 benchmark 建立在公开来源之上，把真实私有数据留到生产部署阶段再按合规流程接入（详见 §38.6 的隐私与审计讨论）。这种「公开基准 / 私有生产」的分层，本身就是高风险文档数据工程的一个基本原则。
 
+**代码与数据资源。** StructBill-CN 数据集、schema 定义、标注工具和 SRPO 训练代码见 [github.com/vanvan6992/StructBill-CN](https://github.com/vanvan6992/StructBill-CN)。SRPO 算法实现（含 MindSpore 版 GRPO 与 SCL-Reward）见 [github.com/Yuefeng-Zou/SRPO_CODE](https://github.com/Yuefeng-Zou/SRPO_CODE)。
+
 ### 38.2.2 任务定义
 
 形式上，给定一张文档图像 $X$ 与一份 schema 定义 $S=\{K, T, C\}$，其中 $K$ 是待抽取的全局键字段集合，$T$ 是表结构定义，$C$ 是确定性约束规则。目标是学习一个策略，使生成的结构化序列 $Y$ 在给定 $X$ 与 $S$ 条件下最大化后验概率 $P(Y\,|\,X, S)$。
@@ -126,18 +128,7 @@ StructBill-CN 的每个样本，把一张票据图像与一份预定义 schema �
 
 schema 的三个部分 $\{K, T, C\}$ 与最终的层级 JSON 一一对应：$K$ 落到全局 `key_information` 对象，$T$ 落到 `Fee_List` 数组及其行内字段，$C$ 则不直接成为字段，而是作为「校验关系」贴附在数值字段之上。结构关系如图 38-1。
 
-```mermaid
-flowchart LR
-  S["Schema S = 三元组 K, T, C"] --> K["K：全局键字段"]
-  S --> T["T：表结构定义"]
-  S --> C0["C：确定性约束规则"]
-  K --> J1["key_information<br>Hospital_Name<br>Invoice_No<br>Total_Cost"]
-  T --> J2["Fee_List 数组<br>Item_Name / Unit_Price<br>Quantity / Amount"]
-  C0 --> J3["逻辑绑定<br>单价 × 数量 = 金额<br>Σ 金额 = 总额"]
-  J1 --> O[("层级 JSON 输出")]
-  J2 --> O
-  J3 -. 校验 .-> O
-```
+![Figure 38-1](../../images/part12/ch38_Figure_38-1.png)
 
 *图 38-1：Schema 到层级 JSON 的结构示意 —— 键字段与表结构构成可见的 JSON 节点；约束规则不是节点，而是贴附在金额、总额等数值字段上的可验证关系。*
 
@@ -175,6 +166,33 @@ flowchart LR
 
 这个样本框很小，但它把本章的闭环讲清楚了：`key_information` 与 `Fee_List` 是**结构**，注释里的等式是**逻辑约束**，两者都要被标注、被校验、被评测。后文的流水线、质检与指标，全部围绕「如何让这个 JSON 既结构合法又算术自洽」展开。
 
+**代码示例 1：Schema 的 Python 数据类定义。** 下面的代码展示了 schema $S=\{K, T, C\}$ 的程序化表示。每种业务文档类型对应一个 `Schema` 实例；三个约束字段（`price_field`、`qty_field`、`amount_field`）加上 `total_field` 在不改变 JSON 输出格式的前提下编码了算术规则 $C$。
+
+```python
+@dataclass
+class Schema:
+    """单种业务文档的 schema 定义 S = {K, T, C}。"""
+    root_keys: List[str]                        # K：全局必填键字段
+    table_key: Optional[str] = None             # T：JSON 中的行项目表键名
+    row_fields: List[str] = field(default_factory=list)
+    price_field: Optional[str] = None           # ┐
+    qty_field: Optional[str] = None             # │ C：确定性
+    amount_field: Optional[str] = None          # │    约束字段
+    total_field: Optional[str] = None           # ┘
+    anti_hallucination: bool = True
+
+# 示例：医疗费用清单 schema
+expense_schema = Schema(
+    root_keys=["Hospital_Name", "Invoice_No", "Total_Cost"],
+    table_key="Fee_List",
+    row_fields=["Item_Name", "Unit_Price", "Quantity", "Amount"],
+    price_field="Unit_Price",
+    qty_field="Quantity",
+    amount_field="Amount",
+    total_field="Total_Cost",
+)
+```
+
 ### 38.3.4 字段类型、标注规则与评测指标的对应关系
 
 不同字段类型的标注规则与评测方式并不相同。把它们对齐成表，是后续标注规范与评测脚本的"契约"，也是新标注员上手的速查表。
@@ -197,18 +215,7 @@ flowchart LR
 
 StructBill-CN 通过一条多阶段流水线构建，核心诉求是**同时保留语义内容与业务逻辑拓扑**，并在每一步设置可回溯的质量门禁。整体数据流如图 38-2。
 
-```mermaid
-flowchart TD
-  A["① 原始票据图像采集<br>CHIP-2022 / SIBR-Med"] --> B["② 图像去噪与质量分级<br>去重 / 倾斜校正 / 分辨率过滤"]
-  B --> C1["③ Schema 设计<br>全局键 K + 表结构 T + 约束 C"]
-  C1 --> D["④ 层级 JSON 标注<br>全局 KV + 嵌套 line-item"]
-  D --> E["⑤ Schema 对齐校验<br>必填键 / 类型 / 结构合法性"]
-  E --> F["⑥ 逻辑一致性校验<br>行级乘积 / 文档级求和"]
-  F --> G{"质检门禁通过?"}
-  G -->|否| D
-  G -->|是| H["⑦ 版本切分<br>Train : Test = 8 : 2"]
-  H --> I[("可训练 / 可评测<br>可复查数据资产")]
-```
+![Figure 38-2](../../images/part12/ch38_Figure_38-2.png)
 
 *图 38-2：StructBill-CN 数据构建流水线 —— 关键设计是第 ⑥ 步与质检门禁：未通过逻辑一致性校验的样本会回流到标注阶段重做，而不是直接进入训练集。*
 
@@ -226,20 +233,56 @@ flowchart TD
 
 **⑥ 逻辑一致性校验。** 这是 StructBill-CN 区别于普通抽取数据集的核心步骤——**对标注本身做算术自洽性检查**：逐行验证「单价 × 数量 ≈ 金额」，并验证「明细金额之和 ≈ 总额」（均带容差 $\varepsilon$ 以吸收 OCR 浮点误差）。校验流程见图 38-3。只有当标注本身算术自洽时，它才能作为可靠的逻辑监督信号；否则后续基于该数据训练的奖励信号就是"脏"的。
 
-```mermaid
-flowchart TD
-  P["输入：标注或预测 JSON"] --> G1{"JSON 可解析?"}
-  G1 -->|否| X["结构门禁失败<br>I_gate = 0，奖励归零"]
-  G1 -->|是| G2{"Schema 合规?"}
-  G2 -->|否| X
-  G2 -->|是| G3{"是否捏造表行?"}
-  G3 -->|是| X
-  G3 -->|否| R1["行级校验<br>每行 u * q ≈ a ?"]
-  R1 --> R2["文档级校验<br>sum of a ≈ T ?"]
-  R2 --> SC["输出一致性得分"]
-```
+![Figure 38-3](../../images/part12/ch38_Figure_38-3.png)
 
 *图 38-3：逻辑一致性校验流程 —— 同一套门禁逻辑在两处复用：构建期用于拦截不自洽的标注，评测/训练期用于给模型输出打一致性分（即 §38.6 的 SCL-Reward 中的结构门禁 $I_{gate}$ 与逻辑奖励 $R_{logic}$）。这种"构建即评测"的复用，是保证训练目标与评测口径一致的关键工程手段。*
+
+**代码示例 2：逻辑一致性校验门禁。** 下面的函数实现了图 38-3 中的结构门禁（$I_{gate}$）、行级检查（Row-ACR）与文档级检查（Doc-ACR）。它在构建流水线中拦截不自洽的标注，在评测流水线中给模型输出打分——同一份代码、两处复用。输入的 `Schema` 来自代码示例 1。
+
+```python
+def validate_logic(pred_text: str, schema: Schema, eps: float = 0.01
+                   ) -> Tuple[bool, float, float]:
+    """逻辑一致性校验门禁。
+
+    返回 (gate_pass, row_acr, doc_acr)。
+    构建期拦截坏标注、评测期给模型输出打分——同一份代码两处复用。
+    """
+    # ── 结构门禁 (I_gate) ──
+    try:
+        obj = json.loads(pred_text)
+    except json.JSONDecodeError:
+        return False, 0.0, 0.0                    # 非法 JSON → 门禁失败
+
+    ki = obj.get("key_information", {})
+    if any(k not in ki for k in schema.root_keys):
+        return False, 0.0, 0.0                    # 缺少必填键
+
+    rows = obj.get(schema.table_key, []) if schema.table_key else []
+
+    # ── 行级校验：|单价 × 数量 − 金额| < ε ──
+    ok, checked = 0, 0
+    row_amounts = []
+    for r in rows:
+        u, q, a = r.get(schema.price_field), r.get(schema.qty_field), r.get(schema.amount_field)
+        if u is None or q is None or a is None:
+            continue
+        u, q, a = float(u), float(q), float(a)
+        checked += 1
+        if abs(u * q - a) < eps:
+            ok += 1
+        row_amounts.append(a)
+
+    row_acr = ok / checked if checked else 1.0
+
+    # ── 文档级校验：|Σ 金额 − 总额| < ε ──
+    total = ki.get(schema.total_field)
+    if total is not None and row_amounts:
+        doc_acr = 1.0 if abs(sum(row_amounts) - float(total)) < eps else 0.0
+    else:
+        doc_acr = 1.0
+
+    return True, row_acr, doc_acr
+```
 
 **⑦ 版本切分。** 数据集按训练 : 测试 = **8:2** 切分。工程实践上建议：切分时保证 6 类 schema 在两侧的分布可控、留出真正的跨布局测试样本；并可从训练集再切出一个小验证子集用于调参，但不污染测试集。每一个版本都应带上数据指纹与统计快照，接入数据版本与实验追踪体系。
 
@@ -272,6 +315,41 @@ StructBill-CN 的评测沿三个维度展开——**抽取准确率、结构质�
 学术指标偏正向（"对了多少"），但生产监控更关心负向（"违反了多少"）。可以从 §38.4 的门禁逻辑直接派生一个**Schema 约束违反率**：在一批输出中，未通过结构门禁或逻辑校验的样本占比。它本质上是结构门禁 $I_{gate}$ 与一致性校验的"不通过率"，与 Doc-ACR/Row-ACR 互补——前者回答"算术错没错"，SCVR 回答"包括结构在内一共有多少条不可直接入库"。这个指标不需要新增标注，只需复用图 38-3 的校验流程，因此非常适合做线上数据质量看板与回归门禁。
 
 SCVR 是本章为工程监控目的给出的派生指标定义（不引入任何新的数据事实或数值），其判定逻辑完全复用原始材料中的结构门禁与逻辑校验。
+
+**代码示例 3：批量计算 SCVR。** 基于代码示例 2 的 `validate_logic`，下面的函数在一批模型预测上计算 SCVR 及其伴随指标。它不需要额外标注，只复用已有的 schema 与算术约束。
+
+```python
+def compute_scvr(predictions: list, schema: Schema,
+                 eps: float = 0.01) -> dict:
+    """在一批模型预测上计算 SCVR 及伴随指标。
+
+    SCVR = 未通过结构或逻辑门禁的记录占比
+          （即不可直接入库的比例）。
+    """
+    n = len(predictions)
+    violations = 0
+    row_acrs, doc_acrs = [], []
+
+    for pred_text in predictions:
+        gate, row_acr, doc_acr = validate_logic(pred_text, schema, eps)
+        if not gate:
+            violations += 1               # 结构或幻觉门禁失败
+        else:
+            row_acrs.append(row_acr)
+            doc_acrs.append(doc_acr)
+
+    scvr = violations / n if n else 0.0
+    return {
+        "scvr": scvr,
+        "ingestible_rate": 1.0 - scvr,    # 补数：可直接入库的比例
+        "mean_row_acr": sum(row_acrs) / len(row_acrs) if row_acrs else 0.0,
+        "mean_doc_acr": sum(doc_acrs) / len(doc_acrs) if doc_acrs else 0.0,
+    }
+
+# 使用示例：
+# metrics = compute_scvr(model_outputs, expense_schema)
+# print(f"SCVR={metrics['scvr']:.1%}, 可入库率={metrics['ingestible_rate']:.1%}")
+```
 
 ### 38.5.2 可复现评测的工程约定
 
@@ -327,6 +405,28 @@ SCVR 是本章为工程监控目的给出的派生指标定义（不引入任何
 **人在回路。** 抽取结果用于理赔、审计、入库等下游决策时，必须保留人工复核环节；模型定位是**辅助工具**，不是自动决策器。
 
 **可审计性。** 每条记录应可回溯到：源图像版本、schema 版本、标注人/复核人、逻辑校验结论。结合 §38.5 的 SCVR 与错误归因表，形成"谁、在哪个版本、为什么改"的审计链路。
+
+**脱敏风控：本基准的合规状态与生产扩展的字段级去标识化方案。** 有必要把"本基准数据本身"与"方法论向私有数据扩展"两件事严格区分开来。
+
+就基准数据而言，StructBill-CN 所采用的全部图像**均来自公开学术数据集**——CHIP-2022 与 SIBR-Med，两者在原始发布时已由数据集提供方完成去标识化处理，StructBill-CN 不额外接入任何受保护健康信息（PHI）。这是一个刻意的合规设计：把可公开发布的基准建立在已授权的公开来源之上，从源头消除 PHI 泄露风险。
+
+就生产扩展而言，当本章的方法论被应用于真实私有票据/病历数据时，必须在数据进入流水线的最早阶段执行字段级脱敏。下表给出医疗费用文档中各类敏感字段的具体遮盖规则，供生产部署时作为去标识化规范的起点。
+
+*表 38-4：医疗费用文档字段级去标识化规则（面向生产扩展）*
+
+| 敏感字段类型       | 示例          | 遮盖规则                                                     | 说明                                                         |
+| ------------------ | ------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 患者姓名           | 张某某        | 完全替换为占位符 `<NAME>` 或不可逆 hash                      | PHI 核心字段，必须完全去除                                   |
+| 身份证号 / 社保号  | 110108…       | 完全替换或仅保留末 4 位                                      | 直接标识符，不可保留全文                                     |
+| 联系电话           | 138…          | 完全替换或仅保留末 4 位                                      | 直接标识符                                                   |
+| 住址               | 北京市朝阳区… | 脱敏至省/市级，删除街道与门牌号                              | 准标识符，保留粗粒度地理信息即可                             |
+| 医院名称           | 示例医院      | **公开基准中保留**（公共机构信息）；私有部署可选匿名化       | 通常不构成个人隐私                                           |
+| 发票号 / 流水号    | 4700852972    | **公开基准中保留**（去关联后无隐私风险）；私有部署中替换为序列化伪 ID | 去关联后风险可控                                             |
+| 金额 / 单价 / 数量 | 54.76 / 1.00  | **保留原值**——算术约束校验（P×Q=A / Σ=T）依赖真实数值        | 若高风险场景要求金额脱敏，可对全单做等比例缩放后**重算一致性**以保证逻辑约束不被破坏 |
+| 诊断 / 项目名称    | 青霉素注射液  | **公开基准中保留**（医学术语非个人信息）；涉及高度敏感疾病（如 HIV / 精神类）时替换为上位类目 | 视敏感程度分级处理                                           |
+| 日期               | 2024-01-15    | 整单偏移固定随机天数（保持行间时序关系）                     | 偏移而非删除，以保留业务时序语义                             |
+
+该表有一个工程上常被忽视的要点：**金额字段的脱敏与逻辑约束之间存在张力**。如果把金额随机扰动，行级「单价 × 数量 = 金额」与文档级「Σ 明细 = 总额」将被破坏，导致后续 SCL-Reward 的逻辑校验信号变"脏"。推荐做法是：对全单金额做**等比例缩放**（即乘以一个统一的随机因子），再重新计算并写回 `Total_Cost`，从而在脱敏的同时保持算术自洽。这一操作必须在 §38.4 第⑥步（逻辑一致性校验）之前完成，并在血缘元数据中记录缩放因子，以便审计回溯。
 
 ### 38.6.4 不该滥用到哪里
 
@@ -393,6 +493,22 @@ Zhang, N., Chen, M., Bi, Z., et al. (2022). CBLUE: A Chinese Biomedical Language
 
 Zhong, X., ShafieiBavani, E., and Jimeno Yepes, A. (2020). Image-based Table Recognition: Data, Model, and Evaluation. *arXiv preprint arXiv:2011.13534*. 
 
+Bai, S., Cai, Y., Chen, R., et al. (2025a). Qwen3-VL Technical Report. *arXiv preprint*.
 
+ChatDOC (2025). OCRFlux-3B: A Multimodal Large Language Model for Document Parsing. *Hugging Face Model Card*.
 
-注：SRPO算法代码：https://github.com/Yuefeng-Zou/SRPO_CODE
+Cui, C., Sun, T., Liang, S., et al. (2025). PaddleOCR-VL: Boosting Multilingual Document Parsing via a 0.9B Ultra-Compact Vision-Language Model. *arXiv preprint*.
+
+Guo, D., Yang, D., Zhang, H., et al. (2025). DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. *arXiv preprint arXiv:2501.12948*.
+
+Hunyuan Vision Team, Lyu, P., Wan, X., et al. (2025). HunyuanOCR Technical Report. *arXiv preprint*.
+
+Li, Y., Yang, G., Liu, H., Wang, B., and Zhang, C. (2025a). Dots.OCR: Multilingual Document Layout Parsing in a Single Vision-Language Model. *arXiv preprint*.
+
+Poznanski, J., Soldaini, L., and Lo, K. (2025). olmOCR 2: Unit Test Rewards for Document OCR. *arXiv preprint arXiv:2510.19817*.
+
+Smock, B., Faucon-Morin, V., Sokolov, M., et al. (2025). PubTables-v2: A New Large-Scale Dataset for Full-Page and Multi-Page Table Extraction. *arXiv preprint arXiv:2512.10888*.
+
+Wang, W., Gao, Z., Gu, L., et al. (2025). InternVL3.5: Advancing Open-Source Multimodal Models in Versatility, Reasoning, and Efficiency. *arXiv preprint arXiv:2508.18265*.
+
+Zhang, J., Liu, Y., Wu, Z., et al. (2025). MonkeyOCR v1.5 Technical Report: Unlocking Robust Document Parsing for Complex Patterns. *arXiv preprint*.

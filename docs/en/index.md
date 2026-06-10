@@ -171,6 +171,6 @@ This part connects acquisition, cleaning, synthesis, RAG, agents, DataOps, priva
 - [Project 10: End-to-End LLM Data Flywheel](part14/p10_flywheel.md)
 - [Project 11: Mini-DeepSeek Pre-training Reproduction](part14/p11_mini_deepseek.md)
 - [Project 12: R1 Reasoning Flywheel](part14/p12_r1_reasoning_flywheel.md)
-- [Project 13: Multimodal Instruction Factory](part14/p13_multimodal_instruction_factory.md)
+- [Project 13: Qwen-VL Multimodal Instruction Factory](part14/p13_multimodal_instruction_factory.md)
 - [Project 14: Video Generation Dataset: From Video Sources to a T2V Training Pipeline](part14/p14_video_generation.md)
 - [Project 15: Building an Enterprise Semantic Data Assistant with DataAgent](part14/p15_dataagent_semantic_nl2sql_agent.md)

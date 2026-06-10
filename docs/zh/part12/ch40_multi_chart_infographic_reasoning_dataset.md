@@ -53,37 +53,37 @@
 
 ### 40.2.2 全维度领域覆盖分布（28 大细分领域）
 
-为保障数据集评测结果具备算法通用化验证能力，样本素材跨行业抓取，一共覆盖28个细分垂直领域，全面覆盖民生、产业、科研、文娱、经济四大板块，细分领域清单如下：商业、科技、美妆健康、金融理财、市场营销、人文人口、职场就业、社交媒体、教育、餐饮食品、交通运输、计算机与互联网、零售购物、法律法务、体育运动、动物学、能源、环境环保、影视娱乐、房地产、旅游、孕婴育儿、生活方式、家居园艺、工业制造、自然科学、政治历史。
+为保障数据集评测结果具备算法通用化验证能力，样本素材跨行业抓取，一共覆盖28个细分垂直领域，全面覆盖民生、产业、科研、文娱、经济四大板块，细分领域清单如下：动物，商业，职业与就业，家居与园艺，计算机与互联网，工业，法律法务，生活方式，教育，能源，娱乐，环境，金融理财，饮食，健康美妆，孕产与育儿，市场营销，政治与历史，人文社会，房地产，购物，科学，社交媒体，体育，科技，交通以及旅行。
 
 多领域的设计，可以规避数据集领域单一带来的模型过拟合问题，防止模型仅在单一主题样本上拟合最优，在陌生行业信息图上推理失效；多样化领域下图表表达习惯、图例规范、专业缩写各不相同，进一步拔高视觉上下文推理任务难度，贴近落地场景多变性。
 
-![图 40-1：多图表信息图推理数据集领域覆盖分布](../../images/part12/ch40_domain.png)
+![图 40-1：多图表信息图推理数据集领域覆盖分布](../../images/part12/ch40_domain_new.png)
 
 *图 40-1：多图表信息图推理数据集领域覆盖分布。该数据集具体包含28个细分领域。*
 
 ### 40.2.3 子图表全类型清单与布局特征
 
-数据集内嵌子图摒弃单一柱状、折线局限，囊括23 种业界主流可视化图表样式，完整清单：圆环图、饼图、径向图、径向条形图、气泡图、表格图、色块图、卡片指标图、排名卡片图、排行榜图、地图热力图、树形图、层级矩形树图、普通柱状图、3D 柱状图、堆叠柱状图、分组柱状图、甘特图、折线图、时间轴图、散点图、象形统计图、和弦图。
+该数据集包含20 余种常见可视化图表类型，包括：柱状图、地图图、表格图、卡片图、环形图、饼图、气泡图、排名图、堆叠柱状图、折线图、分组柱状图、象形图、树形图、排名卡片图、和弦图、树状图、径向图、径向柱状图、瓦片图、甘特图、散点图、3D 柱状图以及时间轴图表。
 
 单张复合信息图内部采用随机组合排布逻辑：无固定子图搭配规则，创作者原生排版是什么组合，数据集即保留什么组合，出现 “地图 + 表格 + 堆叠柱状 + 象形图”“饼图 + 排名卡片 + 折线时序图” 等任意混搭形式，也是跨图表聚合任务的天然来源。不同图表数据存储逻辑差异化：表格以行列结构化存储数值、地图依托地理分区标注指标、象形图以图标数量表征统计量、时序折线按年份排布变化数据，模型需要适配多格式数据读取规则，再跨格式汇总数据。
 
-![图 40-2：多图表信息图推理数据集子图表类型分布](../../images/part12/ch40_chart.png)
+![图 40-2：多图表信息图推理数据集子图表类型分布](../../images/part12/ch40_chart_new.png)
 
 *图 40-2：多图表信息图推理数据集子图表类型分布。该数据集具体包含23个子图表类型。*
 
 ### 40.2.4 子问题全题型清单与组合特征
 
-数据集配套子问题脱离单一抽取题型限制，囊括 13 类主流推理设问类型，完整清单：数值提取、类别识别、求和运算、均值计算、极值查找、数量统计、位次排序、占比求解、趋势分析、差值运算、异常识别、条件推理、视觉推理。
+数据集配套子问题脱离单一抽取题型限制，囊括 17 类主流推理设问类型，涵盖数值、分类、求和、均值、中位数、极值、计数、排名、占比、趋势、差值、异常值、假设、可视化、条件、计算及其他类型。
 
 单张信息图内部采用题型随机组合设计逻辑：无固定题型搭配规则，每组问题随机选配多种推理类型，形成 “极值提取 + 差值运算 + 条件推理”、“数值统计 + 占比计算 + 视觉推理” 等多元混搭设问形式，是多步跨图推理任务的设计根基。不同题型推理逻辑差异化：提取类侧重图表定点读数、计算类依托多源数值列式运算、条件类结合图例与限定条件筛选数据、视觉类依靠符号与图文上下文推导结论，模型需要适配多类型推理范式，再串联多步骤完成综合作答。
 
-![图 40-3：多图表信息图推理数据集子问题类型分布](../../images/part12/ch40_question.png)
+![图 40-3：多图表信息图推理数据集子问题类型分布](../../images/part12/ch40_question_new.png)
 
 *图 40-3：多图表信息图推理数据集子问题类型分布。该数据集具体包含13个子问题类型。*
 
 ### 40.2.5 三大核心任务标准化定义
 
-- 跨图表数据聚合：将分散在整图不同物理分区、不同类型子图表内的异构数据，按照问题限定的筛选条件完成归类、汇总、合并，打破子图物理分割边界，建立跨视图数据关联。例如鲨鱼案例中，各县历史袭击数（Radial Chart）、各州十年累计袭击数（Map Chart and Table Chart）、意外致死数据（Bar Chart）分属三个分区，聚合两类分区数据才能完成州际差值计算。该任务是本数据集区别于传统 ChartQA 最核心的标志。
+- 跨图表数据聚合：将分散在整图不同物理分区、不同类型子图表内的异构数据，按照问题限定的筛选条件完成归类、汇总、合并，打破子图物理分割边界，建立跨视图数据关联。例如鲨鱼案例中，各县历史袭击数（Radial Chart）、各州十年累计袭击数（Map Chart and Tabular Chart）、意外致死数据（Bar Chart）分属三个分区，聚合两类分区数据才能完成州际差值计算。该任务是本数据集区别于传统 ChartQA 最核心的标志。
 - 多步骤串行运算：子问题按照前后依赖链式排布，前序问题输出答案作为后序问题的计算输入参数，需要依次执行查找、提取、加减、求差、平均、占比等串行算术操作，单条最终答案无法一步算出。鲨鱼样本子问题完整呈现该特征：问题 1 极值查找锁定县域→问题 2 依托县域所属州调取全州总量→问题 3 双州数值做差值运算，三步环环相扣。
 - 视觉与上下文推理：综合图例符号、图标标记、页面注释、自然语言正文信息完成非数值类推理，关键信息不直接以数字形式展示在坐标轴中。如样本中 2018 马萨诸塞州致命鲨鱼袭击物种答案（大白鲨），数据来源是图标图例标注（致命袭击图标 + 鲨鱼物种备注），无法通过纯数字读取获得，必须结合视觉符号 + 文本备注综合推导。
 
@@ -101,7 +101,7 @@
 
 - 子图 A（Radial Chart）：美国历史累计鲨鱼袭击县域排行榜；关键数据：沃卢西亚（佛罗里达州）累计 343 起，为全美县域极值。该子图用于回答极值类问题（子问题 1）。
 - 子图 B（Map Chart）：美国近 10 年各州鲨鱼袭击汇总统计；关键数据：佛罗里达州 242 起、夏威夷 71 起；支撑子问题 2、子问题 3 数值来源。
-- 子图 C（Table Chart）：美国近 10 年各州鲨鱼袭击汇总统计；关键数据：2018年发生在马萨诸塞州的致命鲨鱼袭击品种为大白鲨；支撑子问题 4 数值来源。
+- 子图 C（Tabular Chart）：美国近 10 年各州鲨鱼袭击汇总统计；关键数据：2018年发生在马萨诸塞州的致命鲨鱼袭击品种为大白鲨；支撑子问题 4 数值来源。
 - 子图 D（Bar Chart）：全美年均意外死亡人数统计；关键数据：坠床年均致死 450 人、猫无致死案例；支撑子问题 5、子问题 6 作答。
 
 ### 40.3.2 链式子问题全链路拆解
@@ -143,7 +143,7 @@
 
 本数据集从原始素材到最终标注数据集落地分为四大标准化工序：原始信息图爬取筛选→多子图区域人工划分→链式问题分层设计→答案人工核验标注。全流程无自动生成图表，保障样本真实度，此外利用大模型辅助生成问答，并依托人工完成校验。
 
-![图 40-5：多图标信息图推理数据集四阶段构建流水线图](../../images/part12/ch40_pipeline.png)
+![图 40-5：多图标信息图推理数据集四阶段构建流水线图](../../images/part12/ch40_pipeline_new.png)
 
 *图 40-5：多图标信息图推理数据集四阶段构建流水线图。*
 
@@ -224,12 +224,20 @@
 
 ## 参考文献
 
-1. Masry, A., Long, D. X., Tan, J. Q., Joty, S., & Hoque, E. (2022). ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. ACL 2022.
-2. Methani, N., Ganguly, P., Khapra, M. M., & Kumar, P. (2020). PlotQA: Reasoning over Scientific Plots. WACV 2020.
-3. Kahou, S. E., Michalski, V., Atkinson, A., Kádár, Á., Trischler, A., & Bengio, Y. (2017). FigureQA: An Annotated Figure Dataset for Visual Reasoning. arXiv:1710.07300.
-4. Kafle, K., Price, B., Cohen, S., & Kanan, C. (2018). DVQA: Understanding Data Visualizations via Question Answering. CVPR 2018.
-5. Mathew, M., Karatzas, D., & Jawahar, C. V. (2021). DocVQA: A Dataset for VQA on Document Images. WACV 2021.
-6. Masry, A., Islam, M. S., Ahmed, M., Bajaj, A., Kabir, F., Kartha, A., ... & Joty, S. (2025, July). Chartqapro: A more diverse and challenging benchmark for chart question answering. In Findings of the Association for Computational Linguistics: ACL 2025 (pp. 19123-19151).
-7. Xie, T., Lin, M., Liu, M., Ye, Y., Chen, C., & Liu, S. (2026). Infochartqa: A benchmark for multimodal question answering on infographic charts. Advances in Neural Information Processing Systems, 38.
-8. Foroutan, N., Romanou, A., Ansaripour, M., Eisenschlos, J. M., Aberer, K., & Lebret, R. (2025, July). Wikimixqa: a multimodal benchmark for question answering over tables and charts. In Findings of the Association for Computational Linguistics: ACL 2025 (pp. 24941-24958).
-9. Zhu, Z., Jia, M., Zhang, Z., Li, L., & Jiang, M. (2025, April). MultiChartQA: Benchmarking vision-language models on multi-chart problems. In Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) (pp. 11341-11359).
+Masry, A., Long, D. X., Tan, J. Q., Joty, S., & Hoque, E. (2022). ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. ACL 2022.
+
+Methani, N., Ganguly, P., Khapra, M. M., & Kumar, P. (2020). PlotQA: Reasoning over Scientific Plots. WACV 2020.
+
+Kahou, S. E., Michalski, V., Atkinson, A., Kádár, Á., Trischler, A., & Bengio, Y. (2017). FigureQA: An Annotated Figure Dataset for Visual Reasoning. arXiv:1710.07300.
+
+Kafle, K., Price, B., Cohen, S., & Kanan, C. (2018). DVQA: Understanding Data Visualizations via Question Answering. CVPR 2018.
+
+Mathew, M., Karatzas, D., & Jawahar, C. V. (2021). DocVQA: A Dataset for VQA on Document Images. WACV 2021.
+
+Masry, A., Islam, M. S., Ahmed, M., Bajaj, A., Kabir, F., Kartha, A., ... & Joty, S. (2025, July). Chartqapro: A more diverse and challenging benchmark for chart question answering. In Findings of the Association for Computational Linguistics: ACL 2025 (pp. 19123-19151).
+
+Xie, T., Lin, M., Liu, M., Ye, Y., Chen, C., & Liu, S. (2026). Infochartqa: A benchmark for multimodal question answering on infographic charts. Advances in Neural Information Processing Systems, 38.
+
+Foroutan, N., Romanou, A., Ansaripour, M., Eisenschlos, J. M., Aberer, K., & Lebret, R. (2025, July). Wikimixqa: a multimodal benchmark for question answering over tables and charts. In Findings of the Association for Computational Linguistics: ACL 2025 (pp. 24941-24958).
+
+Zhu, Z., Jia, M., Zhang, Z., Li, L., & Jiang, M. (2025, April). MultiChartQA: Benchmarking vision-language models on multi-chart problems. In Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) (pp. 11341-11359).
