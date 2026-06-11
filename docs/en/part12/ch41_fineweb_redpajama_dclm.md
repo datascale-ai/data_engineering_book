@@ -230,7 +230,7 @@ $$
 
 MinHash approximates this similarity with multiple hash functions. The FineWeb paper states that its deduplication parameters are 5-grams and 112 hash functions, split into 14 buckets with 8 hashes per bucket; if the 8 MinHash values in any bucket match, the pair is considered a duplicate candidate. The `MinhashConfig` in the DataTrove example script also corresponds to `n_grams=5`, `num_buckets=14`, and `hashes_per_bucket=8`.
 
-![Figure 41-1 FineWeb MinHash deduplication and PII-processing flow](../../images/part12/ch41_01_fineweb_minhash_pii_flow.png)
+![Figure 41-1 FineWeb MinHash deduplication and PII-processing flow](../../images/part12/ch41_01_fineweb_minhash_pii_flow.svg)
 
 *Figure 41-1 FineWeb MinHash deduplication and PII-processing flow. Source: original illustration based on Hugging Face DataTrove `examples/fineweb.py` and the FineWeb dataset card.*
 
@@ -240,7 +240,7 @@ Intuitively, global deduplication seems more thorough: put all 96 crawls togethe
 
 This result matters for engineering practice. Deduplication is not mathematically better simply because it is more exhaustive; what matters is how it changes the data distribution. Global deduplication can alter the time distribution, site coverage, and duplicate-cluster structure across old and new crawls in complex ways. If one looks only at "how much duplication was removed," valuable samples may be removed while low-quality long-tail samples remain.
 
-![Figure 41-2 FineWeb data-processing-choice ablation loop](../../images/part12/ch41_02_fineweb_ablation_loop.png)
+![Figure 41-2 FineWeb data-processing-choice ablation loop](../../images/part12/ch41_02_fineweb_ablation_loop.svg)
 
 *Figure 41-2 FineWeb data-processing-choice ablation loop. Source: original illustration based on FineWeb paper Section 3.1.*
 

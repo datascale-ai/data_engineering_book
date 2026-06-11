@@ -230,7 +230,7 @@ $$
 
 MinHash 用多个哈希函数近似这个相似度。FineWeb 论文说明其去重参数为 5-grams、112 个哈希函数，拆成 14 个 bucket，每个 bucket 8 个 hash；任一 bucket 的 8 个 MinHash 相同即可判为重复候选。DataTrove 示例脚本中的 `MinhashConfig` 也对应 `n_grams=5`、`num_buckets=14`、`hashes_per_bucket=8`。
 
-![图41-1 FineWeb MinHash 去重和 PII 处理流程](../../images/part12/ch41_01_fineweb_minhash_pii_flow.png)
+![图41-1 FineWeb MinHash 去重和 PII 处理流程](../../images/part12/ch41_01_fineweb_minhash_pii_flow.svg)
 
 *图41-1 FineWeb MinHash 去重和 PII 处理流程。Source: original illustration based on Hugging Face DataTrove `examples/fineweb.py` and FineWeb dataset card.*
 
@@ -240,7 +240,7 @@ MinHash 用多个哈希函数近似这个相似度。FineWeb 论文说明其去�
 
 这个结果对工程实践很重要。去重不是数学上越彻底越好，而是要看它如何改变数据分布。全局去重会让新旧 crawl 之间的时间分布、站点覆盖和重复簇结构发生复杂变化；如果只看“删除了多少重复”，可能误删更有价值的样本，保留低质量长尾。
 
-![图41-2 FineWeb 数据处理选择的消融评估回路](../../images/part12/ch41_02_fineweb_ablation_loop.png)
+![图41-2 FineWeb 数据处理选择的消融评估回路](../../images/part12/ch41_02_fineweb_ablation_loop.svg)
 
 *图41-2 FineWeb 数据处理选择的消融评估回路。Source: original illustration based on FineWeb paper Section 3.1.*
 

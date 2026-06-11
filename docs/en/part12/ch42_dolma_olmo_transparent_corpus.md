@@ -196,7 +196,7 @@ Dolma Toolkit documentation summarizes data organization as four actions: tag, d
 
 Source: Dolma Toolkit documentation README.
 
-![Figure 42-1 Dolma transparent-corpus evidence chain](../../images/part12/ch42_01_dolma_evidence_chain.png)
+![Figure 42-1 Dolma transparent-corpus evidence chain](../../images/part12/ch42_01_dolma_evidence_chain.svg)
 
 *Figure 42-1 Dolma transparent-corpus evidence chain. Source: original illustration based on AllenAI Dolma Toolkit documentation.*
 
@@ -218,7 +218,7 @@ $$
 
 When $\Delta_s$ changes clearly on code tasks, scientific QA, or long-context tasks, the data team can trace capability changes back to source mix instead of vaguely attributing them to "model parameters."
 
-![Figure 42-2 Dolma source mix and training-diagnosis loop](../../images/part12/ch42_02_dolma_source_mix_diagnosis.png)
+![Figure 42-2 Dolma source mix and training-diagnosis loop](../../images/part12/ch42_02_dolma_source_mix_diagnosis.svg)
 
 *Figure 42-2 Dolma source mix and training-diagnosis loop. Source: original illustration based on the Dolma dataset card and OLMo training use.*
 
