@@ -79,7 +79,7 @@ The purpose is to establish a stable correspondence between visual regions and t
 
 This is the level emphasized in Chapter 10. It introduces **unequal-length cross-modal conversion**: a 3.5-second video segment may contain 105 frames and 3.5 seconds of audio, but correspond to only one short sentence such as `"The white car drives down the street."`
 
-How do 105 visual frames correspond to 7 English words? Data engineers often use compute-intensive DTW (Dynamic Time Warping) or complex attention-map-based soft association to cut the sequence. Standard DTW (Sakoe and Chiba 1978) has time and space complexity of O(N x M). For a segment of 4500 frames by 6200 words, memory demand can exceed 90 GB. Production systems therefore commonly use **FastDTW** (Salvador and Chan 2007), a linear-complexity approximation, and limit segments to under 60 seconds; see the OOM case in Section 11.6.4. This alignment layer allows small temporal tolerance, often using a Sakoe-Chiba band of +/-0.3 to 1.0 seconds, but it must not tolerate causal reversal or time-order confusion.
+How do 105 visual frames correspond to 7 English words? Data engineers often use compute-intensive DTW (Dynamic Time Warping) or complex attention-map-based soft association to cut the sequence. Standard DTW (Sakoe and Chiba 1978) has time and space complexity of O(N x M): when both the frame sequence and word sequence are long, matrix memory grows rapidly with their product. Production systems therefore commonly use **FastDTW** (Salvador and Chan 2007), a linear-complexity approximation, and limit segment length or downsample according to memory budget; see the OOM case in Section 11.6.4. This alignment layer allows small temporal tolerance, but the tolerance window must be calibrated by task type and manual playback, and it must not tolerate causal reversal or time-order confusion.
 
 #### 3. Document-level / macro-alignment: long-context interleaved fusion
 
@@ -87,7 +87,7 @@ After a model can handle short image-text pairs and short video segments, it sti
 
 Here the object is no longer an isolated segment, but a manual, paper, research report, webpage archive, or continuous frame sequence from a long video. The data-production focus shifts from local coordinates to **interleaved ordering** across a 100K or even 1M-token training window. Images, text, and audio signals must be ordered by interpretable rules so the model can use earlier figures, table structures, or audio-video clues for reference and reasoning later in the context.
 
-**Table 11-1: Three heterogeneous alignment strategies, cost characteristics, and tasks**
+*Table 11-1: Three heterogeneous alignment strategies, cost characteristics, and applicable tasks. Source: compiled by the authors; cost characteristics are relative descriptions, and actual solutions should be evaluated according to modality type, sequence length, and annotation budget.*
 
 | Alignment granularity | Main method and feature expression | Data construction cost | Typical tasks |
 | :--- | :--- | :--- | :--- |
@@ -105,7 +105,7 @@ The LLM backbone usually interfaces through discrete token sequences, so image, 
 
 In synthetic training streams, JSON samples usually do not directly store massive floating-point matrices. Instead, they use explicit placeholders. Listing 11-1 shows a multimodal JSONL schema fragment.
 
-**Listing 11-1: Multimodal fusion sample JSONL schema**
+*Listing 11-1: Multimodal fusion sample JSONL Schema example. Fields are illustrative; production environments should add source, license, modality validation, placeholder version, and review status.*
 
 ```json
 {
@@ -124,18 +124,18 @@ This JSONL schema is a foundation for fusion training data. It decouples text an
 
 ### 11.3.2 Multimodal Data Mixing: Controlling Capability Forgetting
 
-If 90% of the training data consists of image-text pairs, the model may gradually degrade and lose pure-text logical reasoning ability. This is **cross-modal catastrophic forgetting**. Data mixing is therefore a key engineering decision.
+If training data is dominated by a single modality or task type for too long, the model may degrade on other capabilities. For example, overemphasizing image-text alignment while lacking high-quality pure-text and complex instruction data may weaken language reasoning, code, and mathematical ability. This can be viewed as capability forgetting risk in cross-modal training. Data mixing is therefore a key engineering decision.
 
-In production, the mix should be determined through ablation studies. The following ratios are illustrative parameters as of 2026-06 and must be recalibrated according to model stage, task goal, and validation-set performance:
+In production, the mix should be determined through ablation studies. Public technical reports usually do not disclose complete reusable recipes, so a more robust approach is to design mixtures by capability dimension and continuously calibrate them:
 
-- **Pure-text retention pool (20%-30%)**: high-quality math, code, and logical reasoning text, such as the Mini-C4 refined corpus mentioned in Part I, to reduce erosion of language reasoning by multimodal training.
-- **Coarse image-text alignment (40%-50%)**: broad image-text samples such as refined LAION-5B to build a basic world-entity vocabulary.
-- **Fine-grained and interleaved data (10%-20%)**: high-cost BBox-corresponding images, multi-image interleaved long documents, and OCR structure trees. These improve spatial localization, document understanding, and complex image-text reasoning.
-- **Synthetic finetuning dialogue (10%)**: multi-turn multimodal dialogue generated by GPT-4V or similar models to convert basic alignment ability into human-friendly QA behavior.
+- **Pure-text retention pool**: retain high-quality mathematical, code, and logical-reasoning text to reduce erosion of language reasoning by multimodal training.
+- **Coarse image-text alignment**: use broad image-text samples, such as LAION-5B, DataComp refined subsets, or licensed image libraries, to build a basic world-entity vocabulary.
+- **Fine-grained and interleaved data**: add BBox-corresponding images, multi-image interleaved long documents, and OCR structure trees to improve spatial localization, document understanding, and complex image-text reasoning.
+- **Synthetic finetuning dialogue**: use quality-checked multi-turn multimodal dialogue to convert basic alignment ability into a human-friendly QA format; the generation model, prompts, and human spot-check results must be logged.
 
 ### 11.3.3 Hard-Negative Mining and Quality Control
 
-In contrastive alignment, if a model only distinguishes easy pairs such as "cat" and "dog," progress quickly reaches diminishing returns. Hard negatives provide semantically similar samples with key differences, forcing the model to learn fine-grained visual, textual, and temporal distinctions.
+In contrastive alignment (Dufumier et al. 2025 (ICLR) argue that effective multimodal contrastive learning should align shared features, modality-specific features, and synergistic features rather than optimizing shared information alone), if a model only distinguishes easy pairs such as "cat" and "dog," progress quickly reaches diminishing returns. Hard negatives provide semantically similar samples with key differences, forcing the model to learn fine-grained visual, textual, and temporal distinctions.
 
 **Five core hard-negative mining methods**
 
@@ -145,7 +145,7 @@ In contrastive alignment, if a model only distinguishes easy pairs such as "cat"
 4. **Temporal perturbation for video-text**: misalign video subtitles with adjacent time windows, such as pairing the positive text `<00:03-00:06> the athlete starts running` with the video window `<00:10-00:13> the athlete crosses the finish line.` This strengthens the model's ability to distinguish temporal causality.
 5. **LLM-generated synthetic hard negatives**: provide a positive description to an LLM and ask it to generate adversarial text that is semantically similar but contains key factual errors. Compared with dictionary replacement, this approach is more diverse and is a common scalable production method.
 
-**Table 11-2: Five hard-negative mining strategies**
+*Table 11-2: Comparison of five hard-negative mining strategies. Source: compiled by the authors; strategy effects should be validated jointly through manual review, training stability, and downstream cross-modal evaluations.*
 
 | Strategy | Generation method | Granularity | Main advantage | Main risk |
 | :--- | :--- | :--- | :--- | :--- |
@@ -163,7 +163,7 @@ Cross-modal fusion data is expensive to build and should not enter training with
 
 Cross-modal evaluation must look beyond single-modality quality and measure whether mappings between modalities are stable. Table 11-3 lists common metrics and governance actions.
 
-**Table 11-3: Core metrics, error sources, and governance actions**
+*Table 11-3: Core evaluation metrics, error sources, and governance-action mapping. Source: compiled by the authors; metric interpretation and governance actions should be calibrated according to model architecture, task type, and data version.*
 
 | Metric | Physical meaning and business mapping | Risk threshold and error source | Governance action |
 | :--- | :--- | :--- | :--- |
@@ -174,7 +174,7 @@ Cross-modal evaluation must look beyond single-modality quality and measure whet
 
 ### 11.4.2 Cost Constraints and Alignment Budget Governance
 
-Cross-modal alignment is expensive. As an illustrative estimate as of 2026-06, computing CLIP Score for 100 million image-text pairs may require thousands of dollars of GPU compute, while DTW alignment for tens of millions of video segments can reach hundreds of thousands of dollars. Real cost depends on hardware price, video length, resolution, feature model, and concurrency. Data engineers must build a **cost accounting model**: in object-level alignment, use low-cost heuristics first, and reserve GPT-4V or high-dimensional matrix computation such as CLIP/SigLIP for high-value candidates. Blind full computation quickly loses budget control.
+Cross-modal alignment is expensive. Real cost depends on hardware price, video length, resolution, feature model, concurrency strategy, cache hit rate, and failed-retry count. Data engineers must build a **cost accounting model**: in object-level alignment, use low-cost heuristics first, and reserve strong VLMs or high-dimensional matrix computation such as CLIP/SigLIP for high-value candidates. Blind full computation quickly loses budget control.
 
 ## 11.5 Anonymized Composite Cases and Transition
 
@@ -190,7 +190,7 @@ A medical-image QA project aligned chest X-rays with physician-order text. Offli
 
 A long-video retrieval system developed audio-video mismatches after training: the image showed a person climbing over a fence, but the model associated it with indoor conversation audio from hours later.
 
-**Root cause and postmortem**: during segment-level alignment in Section 11.2, the distributed workflow used weakly consistent metadata storage, causing audio pointers for more than 12,000 video segments to suffer an offset-by-one bug. A tiny index shift attached subsequent audio segments to the wrong video clips. The fix was to write key timestamps into strongly consistent storage and run audio-video similarity sampling before segment ingestion.
+**Root cause and postmortem**: during segment-level alignment in Section 11.2, the distributed workflow used weakly consistent metadata storage, causing audio pointers for a batch of video segments to suffer an offset-by-one bug. A tiny index shift attached subsequent audio segments to the wrong video clips. The fix was to write key timestamps into strongly consistent storage and run audio-video similarity sampling before segment ingestion.
 
 ### 11.5.3 Case 3: Semantic Mismatch in Autonomous-Driving Intersection Samples
 
@@ -206,7 +206,7 @@ Before sending a multimodal dataset to the training cluster, review the followin
 - [ ] **Temporal-anchor validation**: after audio-video segmentation, have global timestamps been sampled to ensure there is no offset or reversal?
 - [ ] **Negative-sample difficulty distribution**: has the similarity distribution of in-batch negatives been checked? Is the threshold so high that true positives are killed as false negatives?
 - [ ] **Format sentinel integrity**: are placeholders such as `<IMG_TK>` in JSONL accidentally HTML-escaped? Does every segment contain `<|image_start|>`?
-- [ ] **Data-mix safety net**: does the training package retain at least 20% high-quality pure-text data to prevent cross-modal forgetting?
+- [ ] **Data-mix safety net**: does the training package retain high-quality pure-text, code, or mathematical corpora to monitor and mitigate cross-modal forgetting?
 
 ### 11.5.5 Part III Summary and Bridge to Part IV
 
@@ -226,7 +226,7 @@ Perception is only the first step. A pretrained model still needs explicit instr
 
 Listing 11-2 shows an anonymized alignment-loss divergence log.
 
-**Listing 11-2: Alignment loss divergence log**
+*Listing 11-2: Alignment loss divergence error log example. The log content is anonymized and is intended to illustrate troubleshooting patterns rather than reproduce a public incident.*
 
 ```bash
 [WARNING] node-001.storage-backend.local:
@@ -246,7 +246,7 @@ Cross-Modal Feature Match Score dropped from 0.89 to 0.00000000003.
 
 **Symptom**: after one data batch is imported, object-level alignment R@1 drops from 0.82 to 0.31, and inference shows large-scale left/right direction errors, such as "left" becoming "right" or a left-lung lesion being marked on the right lung.
 
-**Listing 11-3: BBox coordinate flip log**
+*Listing 11-3: BBox coordinate flip error log example. The log content is anonymized; production environments should record coordinate-system conventions and conversion versions.*
 
 ```bash
 [ERROR] grounding_eval_worker_05:
@@ -265,7 +265,7 @@ Suspected data augmentation mirror flip applied AFTER bbox annotation.
 
 **Symptom**: after introducing hard-negative mining, Recall@5 falls instead of rising. Loss variance becomes abnormal, and the model loses the ability to distinguish near-synonyms and semantically similar sentences.
 
-**Listing 11-4: Hard-negative contamination log**
+*Listing 11-4: Hard-negative contamination error log example. The log content is anonymized; negative-sample strategies should be calibrated through manual review and downstream evaluation.*
 
 ```bash
 [WARN] hard_negative_miner_worker_2:
@@ -284,7 +284,7 @@ Contrastive loss variance: 4.82 (expected < 0.8). Training instability detected.
 
 **Symptom**: when processing video segments longer than 90 seconds, DTW alignment workers are killed by the OOM killer, the alignment pipeline pauses, and pending tasks accumulate.
 
-**Listing 11-5: DTW memory overflow log**
+*Listing 11-5: DTW memory overflow error log example. The log content is anonymized; window size and downsampling strategy should be set according to sequence length and memory budget.*
 
 ```bash
 [FATAL] dtw_alignment_worker_08: Killed (signal 9).
@@ -302,7 +302,7 @@ Queue depth at crash: 14,382 pending segments. Estimated loss: 890h of aligned a
 
 **Symptom**: after entering multimodal token-mixed batches, the embedding layer throws an index-out-of-range error. Some image placeholders are parsed as text tokens, interrupting batch training.
 
-**Listing 11-6: Placeholder parsing failure log**
+*Listing 11-6: Placeholder parsing failure error log example. The log content is anonymized; production environments should freeze placeholder syntax and run pre-training parsing validation.*
 
 ```bash
 [ERROR] multimodal_dataloader_worker_3:
@@ -319,7 +319,7 @@ Affected batch: 256 samples. Training step 28,441 aborted.
 
 ### 11.6.6 Frequent Error Quick Reference
 
-**Table 11-4: Frequent cross-modal alignment errors and fixes**
+*Table 11-4: Frequent cross-modal alignment error types and remediation strategies. Source: compiled by the authors; error types and remediation strategies are anonymized engineering patterns.*
 
 | Error code | Error type | Trigger | One-line fix |
 | :--- | :--- | :--- | :--- |
@@ -333,17 +333,15 @@ Affected batch: 256 samples. Training step 28,441 aborted.
 
 ## Chapter Summary
 
-This chapter organized the core issues, workflows, and acceptance criteria for cross-modal alignment and fusion in large-model systems. It places concepts, data objects, quality signals, and engineering delivery in a unified narrative so readers can determine which links must be explicitly recorded and which outputs require sampling, evaluation, or audit.
+As the closing chapter of Part III, this chapter argued that cleaning each modality separately does not automatically create cross-modal reasoning ability: if images, text, and audio lack rigid semantic, spatial, or temporal bindings, contrastive learning reinforces false associations and triggers cross-modal hallucination. To address the heterogeneity gap, the chapter established a three-level alignment framework across object, segment, and document levels. Object-level alignment anchors BBox coordinates to words; segment-level alignment uses DTW/FastDTW to map unequal-length frames, waveforms, and text; document-level alignment interleaves image, text, and audio signals within long-context windows. In engineering implementation, placeholders and feature paths decouple representations, ablation studies determine multimodal mixing to suppress cross-modal forgetting, and five hard-negative mining methods expose their false-negative risks.
 
-The methods in this chapter should be evaluated according to data source, business objective, model capability, cost budget, and compliance requirements. For scenarios involving sensitive information, cross-system calls, automated decisions, or public release, human review, version freezing, access control, and rollback mechanisms should be preserved rather than extrapolating illustrative workflows into production commitments.
-
-Within the book, this chapter belongs to the multimodal data-engineering layer and connects earlier concepts to SFT, preference data, and cross-modal alignment. Readers can combine its framework with the figures, references, and appendix checklists to turn the methods into reproducible, inspectable, and deliverable engineering workflows.
+On the quality side, this chapter mapped cross-modal recall, temporal continuity, hallucination rate (CHAIR), and entailment conflict rate to governance actions. Through three postmortems, it showed how geometric augmentation, weakly consistent storage, and templated annotations can pollute alignment relationships through body-side mismatch, segment offset, and intersection semantic mismatch. At this point, multimodal data engineering has moved from "are the samples clean" to "do modalities have verifiable supervision relationships"; the next part turns to instruction-alignment data systems such as SFT, preference data, and human feedback.
 
 ## References
 
 Chen T, Kornblith S, Norouzi M, Hinton G (2020) A Simple Framework for Contrastive Learning of Visual Representations (SimCLR). In: Proceedings of the 37th International Conference on Machine Learning, pp 1597-1607.
 
-Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell S, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: ICML 2021, pp 8748-8763.
+Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: ICML 2021, pp 8748-8763.
 
 Rombach R, Blattmann A, Lorenz D, Esser P, Ommer B (2022) High-Resolution Image Synthesis with Latent Diffusion Models (Stable Diffusion). In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 10684-10695.
 
@@ -354,3 +352,5 @@ Salvador S, Chan P (2007) Toward Accurate Dynamic Time Warping in Linear Time an
 van den Oord A, Vinyals O, Kavukcuoglu K (2017) Neural Discrete Representation Learning (VQ-VAE). Advances in Neural Information Processing Systems 30.
 
 Wu Y, Chen K, Zhang T, Hui Y, Berg-Kirkpatrick T, Dubnov S (2023) Large-Scale Contrastive Language-Audio Pretraining with Feature Fusion and Keyword-to-Caption Augmentation (CLAP). In: IEEE International Conference on Acoustics, Speech and Signal Processing, pp 1-5.
+
+Dufumier B, Castillo-Navarro J, Tuia D, Thiran J P (2025) What to Align in Multimodal Contrastive Learning? In: Proceedings of the 13th International Conference on Learning Representations. arXiv preprint arXiv:2409.07402.

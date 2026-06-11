@@ -26,6 +26,10 @@ Chapter 8 establishes the asset view of static image-text samples, including ima
 
 This part connects backward to the text pre-training pipeline in Part 2 and forward to instruction alignment and preference data in Part 4. In other words, Part 3 answers whether the model can see, hear, and align different modalities; Part 4 then asks how the model should act under human instructions and preferences.
 
+## Terminology Conventions
+
+This part uses "multimodal data engineering" to refer to the collection, cleaning, re-captioning, alignment, and packaging of signals such as images, text, video, audio, and documents. Image-text pairs, document samples, audio/video clips, and cross-modal fusion samples should be described separately rather than collapsed into generic "data." In this part, "alignment" specifically means binding semantic, temporal, spatial, and structural relationships between modalities; it is not the same as the later value or preference alignment discussed in model alignment.
+
 ## Part Contents
 
 - [Chapter 8: Image-Text Pair Data Engineering](ch08_multimodal_image.md)

@@ -1,14 +1,11 @@
-# Data Engineering for Large Foundation Models
+# Data Engineering for Large Models: Architecture, Algorithms, and Project Practice
 
-## A Handbook
+## Full Table of Contents Overview
 
-## Full Table of Contents
-
-The Chinese 2026 Springer edition is the canonical mainline of this book, covering 14 parts, 48 chapters, 15 project case studies, and 4 appendices, with front matter and an afterword in the site edition. The English edition follows the same structure and is being brought into release quality in batches: existing complete English chapters are preserved, missing chapters are translated against the Chinese mainline, and the website navigation is checked with each batch.
+The current Chinese mainline uses the 2026 Springer-size publication structure. The main text covers 51 chapters, 15 end-to-end projects, and 7 appendices (A-G). To reduce friction when reading across parts, this edition adds a unified abbreviation table in the front matter and provides a contents page for each part.
 
 - [Abbreviations](abbreviations.md)
 - [Preface](preface.md)
-- [English Edition Status](translation-status.md)
 - [Front-Matter Guide: Book Structure, Reading Paths, and Edition Notes](front_matter_guide.md)
 - [Part 1: Overview and Infrastructure](part1/index.md)
 - [Part 2: Text Pre-training Data Engineering](part2/index.md)
@@ -27,8 +24,12 @@ The Chinese 2026 Springer edition is the canonical mainline of this book, coveri
 - [Appendix A: Tools and Frameworks Quick Reference](appendix_a_tools_and_frameworks_quick_reference.md)
 - [Appendix B: Compliance and Release Checklist](appendix_b_compliance_and_release_checklist.md)
 - [Appendix C: Cost Estimation and Resource Templates](appendix_c_cost_estimation_and_resource_templates.md)
+- [Appendix D: From Paper to Implementation Guide](appendix_d_paper_to_implementation_guide.md)
+- [Appendix E: Common Data-Engineering Bug Debugging Manual](appendix_e_common_bug_debugging_manual.md)
+- [Appendix F: Terminology and Chinese-English Mapping](appendix_f_terminology_and_chinese_english_mapping.md)
 - [Appendix G: MindSpore Overview and Acknowledgments](appendix_g_mindspore_note.md)
-- [Afterword](afterword.md)
+
+## Part-by-Part Contents
 
 ## Part 1: Overview and Infrastructure
 
@@ -156,7 +157,7 @@ This part focuses on data recipes, training paradigms, and engineering organizat
 - [Chapter 47: VLM Data Recipes: From Pre-training to Visual Alignment](part13/ch47_vlm_data_recipes.md)
 - [Chapter 48: Multimodal Generative Model Data Engineering: T2I and T2V Data Pipelines](part13/ch48_t2i_t2v.md)
 
-## Part 14: Hands-on Projects
+## Part 14: Project Case Studies
 
 This part connects acquisition, cleaning, synthesis, RAG, agents, DataOps, privacy, data flywheels, open-source model reproduction, video-generation data pipelines, and enterprise semantic data agents into runnable projects.
 
@@ -176,3 +177,13 @@ This part connects acquisition, cleaning, synthesis, RAG, agents, DataOps, priva
 - [Project 13: Qwen-VL Multimodal Instruction Factory](part14/p13_multimodal_instruction_factory.md)
 - [Project 14: Video Generation Dataset: From Video Sources to a T2V Training Pipeline](part14/p14_video_generation.md)
 - [Project 15: Building an Enterprise Semantic Data Assistant with DataAgent](part14/p15_dataagent_semantic_nl2sql_agent.md)
+
+## Appendices
+
+- [Appendix A: Tools and Frameworks Quick Reference](appendix_a_tools_and_frameworks_quick_reference.md)
+- [Appendix B: Compliance and Release Checklist](appendix_b_compliance_and_release_checklist.md)
+- [Appendix C: Cost Estimation and Resource Templates](appendix_c_cost_estimation_and_resource_templates.md)
+- [Appendix D: From Paper to Implementation Guide](appendix_d_paper_to_implementation_guide.md)
+- [Appendix E: Common Data-Engineering Bug Debugging Manual](appendix_e_common_bug_debugging_manual.md)
+- [Appendix F: Terminology and Chinese-English Mapping](appendix_f_terminology_and_chinese_english_mapping.md)
+- [Appendix G: MindSpore Overview and Acknowledgments](appendix_g_mindspore_note.md)

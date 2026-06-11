@@ -52,7 +52,7 @@ where $\tau_{\ell}$ can be set by language or subset. This filtering improves im
 
 The LAION-5B paper reports 5.85B CLIP-filtered image-text pairs, including approximately 2.32B English pairs, 2.26B multilingual pairs, and 1.27B pairs with uncertain language. This split matters because language identification, CLIP models, filtering thresholds, and downstream tasks all affect sample value.
 
-*Table 46-1 Public Subset Structure of LAION-5B*
+*Table 43-1 Public Subset Structure of LAION-5B*
 
 | Subset | Scale | Text-language Form | Engineering Meaning | Typical Use |
 | --- | ---: | --- | --- | --- |
@@ -82,7 +82,7 @@ flowchart LR
 
 *Figure 43-1 Multi-channel schema for LAION-5B image-text candidate records. Source: original illustration based on the LAION-5B paper and LAION dataset-spec.*
 
-*Table 46-2 Image-text Candidate Record Schema*
+*Table 43-2 Image-text Candidate Record Schema*
 
 | Channel | Typical Fields | Source or Generation Method | Engineering Use |
 | --- | --- | --- | --- |
@@ -122,7 +122,7 @@ Channelized modeling locates failure sources. If generated text does not match t
 
 LAION-5B construction can be divided into six stages: extract candidates from Common Crawl, download and parse images, identify language, compute image-text similarity, add risk labels, and publish metadata and indexes. This process is more like rendering Web traces into structured image-text records than simply downloading images.
 
-*Table 46-3 LAION-5B Construction Flow*
+*Table 43-3 LAION-5B Construction Flow*
 
 | Stage | Input | Processing Action | Output | Corresponding Channel |
 | ---: | --- | --- | --- | --- |
@@ -211,7 +211,7 @@ flowchart LR
 
 *Figure 43-2 Image-text candidate-pool quality evaluation and closed-loop repair. Source: original illustration based on the LAION-5B paper and DataComp benchmark design.*
 
-*Table 46-4 Quality-evaluation Metrics for Image-text Candidate Pools*
+*Table 43-4 Quality-evaluation Metrics for Image-text Candidate Pools*
 
 | Channel | Core Question | Automatic Metrics | Human-review Focus | Handling of Failed Samples |
 | --- | --- | --- | --- | --- |
@@ -237,7 +237,7 @@ This formula shifts the question from "do samples look clean" to "under the same
 
 Risks in image-text data are easier for the public to perceive and harder to fully automate. Images may contain faces, children, license plates, home environments, medical images, identity documents, trademarks, artworks, and watermarks. Even if the caption does not contain PII, the image itself may leak privacy. A public URL does not mean authorization is clear; a high CLIP score does not mean the content is safe; and a low NSFW score does not mean risk is zero.
 
-*Table 46-5 Risk-control Checklist for LAION-5B-like Image-text Data*
+*Table 43-5 Risk-control Checklist for LAION-5B-like Image-text Data*
 
 | Risk Type | Trigger Scenario | Control Measures | Audit Evidence |
 | --- | --- | --- | --- |
@@ -248,7 +248,7 @@ Risks in image-text data are easier for the public to perceive and harder to ful
 | Faces and privacy | Personal photos, medical images, identity documents | Face detection, privacy labels, removal channel | Removal ledger |
 | Evaluation contamination | Benchmark images or answers enter the candidate pool | Image hash, caption n-gram, URL-overlap checks | Eval isolation report |
 
-Table 46-5 turns risk governance into data gates. High-risk samples should not be handled only by post-training safety strategies; they should be isolated, downweighted, or removed during candidate-pool filtering. For generative-model training, watermark, copyright, face, and child-related risks require especially conservative handling.
+Table 43-5 turns risk governance into data gates. High-risk samples should not be handled only by post-training safety strategies; they should be isolated, downweighted, or removed during candidate-pool filtering. For generative-model training, watermark, copyright, face, and child-related risks require especially conservative handling.
 
 When enterprises reuse LAION-5B methods internally, they should first retain five kinds of evidence:
 

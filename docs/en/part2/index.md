@@ -24,6 +24,10 @@ Chapter 4 answers where data comes from and whether it can be used, focusing on 
 
 This part grounds the quality framework from Part 1 in the production flow of text pre-training corpora and provides a comparison baseline for multimodal data engineering in Part 3. Many issues that look like "text cleaning" problems, such as source licensing, deduplication, contamination, packaging, and evaluation, become even more complex in image, video, and audio settings.
 
+## Terminology Conventions
+
+This part uses "pre-training corpus" to refer to text data assets before they enter foundation-model training, "data source" to refer to corpus origins and their licensing boundaries, and "cleaning, deduplication, and decontamination" to distinguish quality filtering, duplicate control, and benchmark-contamination removal. When discussing tokens, tokenization, serialization, and efficient loading, the purpose should be understood as converting text assets into inputs that training systems can consume stably, not reducing data engineering to file processing.
+
 ## Part Contents
 
 - [Chapter 4: Data Sources, Acquisition, and Copyright](ch04_data_sources.md)

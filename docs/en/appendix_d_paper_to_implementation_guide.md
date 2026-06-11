@@ -55,6 +55,8 @@ State clearly:
 - Masking and authorization status.
 - Train, validation, test, or evaluation split strategy.
 
+For paper reproductions that depend on external corpora, public webpages, or third-party data, the data and input template should also explicitly record source licenses, attribution information, and traceability evidence. Large-scale data-provenance audits have shown that missing these fields makes later reuse, release, and compliance judgment very fragile (Longpre et al. 2023).
+
 ### D.4.3 Architecture and Implementation Template
 
 State clearly:
@@ -73,8 +75,6 @@ State clearly:
 - The baseline.
 - The success criterion.
 - Which results require review.
-
-For reproduction projects that will enter continuous maintenance or release, acceptance should not say only "the metric reaches the paper's level." The ML Test Score offers a way to decompose production readiness across data, model, infrastructure, and monitoring, and can be used as a reference when designing acceptance tables (Breck et al. 2017).
 
 ### D.4.5 Risk and Reproduction Template
 
@@ -377,7 +377,7 @@ Engineering conversion is not always worth doing. Before starting, evaluate ROI.
 | Reuse benefit | Whether reusable modules, processes, or teaching materials remain |
 | Transfer benefit | Whether it can transfer to other tasks, courses, or projects |
 
-If ROI exists only in paper scores but not in engineering cost, the method is better kept at the research-prototype layer rather than forced into product delivery.
+If ROI exists only in paper scores but not in engineering cost, the method is better kept at the research-prototype layer rather than forced into product delivery. Recent benchmarks and surveys in data-centric AI also remind teams that many gains do not come from "switching to a larger model," but from more controllable data selection, quality improvement, provenance, and continuous maintenance (Mazumder et al. 2023; Zha et al. 2023; Longpre et al. 2023).
 
 ## D.26 Evidence Worth Preserving in the Appendix
 
@@ -393,12 +393,12 @@ These materials let later readers know not only what was built, but why this des
 
 ## References
 
-Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28.
+Kapoor S, Narayanan A (2023) Leakage and the reproducibility crisis in machine-learning-based science. Patterns 4(9):100804.
 
-Breck E, Cai S, Nielsen E, Salib M, Sculley D (2017) The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction. In: Proceedings of the IEEE International Conference on Big Data, pp 1123-1132.
+Kreuzberger D, Kuhl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879.
 
-Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12): 86-92.
+Longpre S, Mahari R, Lee A, et al. (2023) The Data Provenance Initiative: A Large Scale Audit of Dataset Licensing and Attribution in AI. arXiv preprint arXiv:2310.16787.
 
-Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229.
+Mazumder M, Banbury C, Yao X, et al. (2023) DataPerf: Benchmarks for Data-Centric AI Development. In: Advances in Neural Information Processing Systems 36, Datasets and Benchmarks Track.
 
-Pushkarna M, Zaldivar A, Kjartansson O (2022) Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 1776-1826.
+Zha D, Bhat Z P, Lai K-H, Yang F, Jiang Z, Zhong S, Hu X (2023) Data-centric Artificial Intelligence: A Survey. arXiv preprint arXiv:2303.10158.

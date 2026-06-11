@@ -18,6 +18,10 @@ CHINESE_RE = re.compile(r"[\u4e00-\u9fff]")
 LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 FENCED_BLOCK_RE = re.compile(r"```[\s\S]*?```|~~~[\s\S]*?~~~")
 LINK_TARGET_RE = re.compile(r"(?<!!)\[[^\]]+\]\([^)]+\)|!\[[^\]]*\]\([^)]+\)")
+ALLOW_CHINESE_TEXT = {
+    Path("translation-style-guide.md"),
+    Path("appendix_f_terminology_and_chinese_english_mapping.md"),
+}
 
 
 @dataclass
@@ -100,7 +104,7 @@ def audit_file(path: Path, findings: list[Finding]) -> None:
     if PLACEHOLDER in text:
         findings.append(Finding("placeholder", path, "translation placeholder remains"))
 
-    if path.name != "translation-style-guide.md":
+    if path.relative_to(EN_ROOT) not in ALLOW_CHINESE_TEXT:
         text_without_link_targets = LINK_TARGET_RE.sub("", text_without_code)
         match = CHINESE_RE.search(text_without_link_targets)
         if match:

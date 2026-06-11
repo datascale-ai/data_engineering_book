@@ -18,7 +18,7 @@ Data cleaning; deduplication; MinHash; PII redaction; benchmark decontamination;
 
 ## Opening: A Dataset That "Looked Clean" — Why Did the Model Start Repeating Itself?
 
-The following is an anonymized composite case study. After completing the careful data collection described in Chapter 4, a team launched pretraining for a 7B-parameter Chinese base model. The training process was remarkably stable — the loss curve descended smoothly, GPU utilization remained above 90%, and every metric met expectations. Then the first benchmark evaluation results arrived, and the team discovered a puzzling phenomenon: during continuation tasks, the model repeatedly generated identical sentences, sometimes repeating the same sentence three or four times within a single response. Even stranger, given a simple trigger phrase, the model could recite the complete template of a product description from a major e-commerce platform, word for word.
+The following is an anonymized composite case study. After completing the data collection described in Chapter 4, a team launched pretraining for a Chinese base model. On the surface, training was stable: the loss curve descended smoothly, and GPU utilization reached the project baseline. Then the first benchmark evaluation results arrived, and the team discovered a puzzling phenomenon: during continuation tasks, the model repeatedly generated identical sentences, sometimes repeating the same sentence many times within a single response. Even stranger, given a simple trigger phrase, the model could recite the complete template of a product description from a major e-commerce platform, word for word.
 
 This is a classic case of **overfitting caused by data repetition**. During the investigation, engineers discovered that the training data contained a corpus of product descriptions from a large e-commerce platform that had been crawled dozens of times through different URL paths. This caused the same product description format to appear tens of thousands of times in the training set. Although URL-based exact deduplication had been applied at data ingestion time, the content's URLs differed (different product URLs, archived URLs for the same product crawled at different times), so exact deduplication completely failed to catch this problem.
 
@@ -52,21 +52,21 @@ Faced with the problems above, industrial practice has demonstrated that no sing
 
 ![Figure 5-1: Overview Flowchart of the Cleaning and Decontamination Pipeline](../../images/part2/cleaning_pipeline_overview.png)
 
-*Figure 5-1: Overview Flowchart of the Cleaning and Decontamination Pipeline — A multi-stage quality gate refines raw corpus (100%) to final training corpus (approximately 15–25%), with each stage annotated with typical filter retention rates. Source: original illustration; Alt text: Overview flowchart of the cleaning and decontamination pipeline, showing the sequential relationship among rule-based filtering, model scoring, deduplication, PII redaction, decontamination, and manual spot-checks.*
+*Figure 5-1: Overview Flowchart of the Cleaning and Decontamination Pipeline — A multi-stage quality gate gradually refines raw corpus into candidate training corpus. The proportions in the figure are illustrative only; real retention rates depend on source quality, filtering thresholds, and compliance requirements. Source: original illustration from this book; Alt text: overview flowchart of the cleaning and decontamination pipeline, showing the sequential relationship among rule-based filtering, model scoring, deduplication, PII redaction, decontamination, and manual spot-checks.*
 
 ### 5.2.1 The First Gate: Rule-Based Filtering
 
-Rule-Based Filtering is the first line of defense in the cleaning pipeline and the most cost-effective stage. Based on a set of quantifiable heuristic rules, it rapidly eliminates 40–60% of obviously low-quality documents without running any model.
+Rule-Based Filtering is the first line of defense in the cleaning pipeline and the most cost-effective stage. Based on a set of quantifiable heuristic rules, it rapidly eliminates obviously low-quality documents without running any model. The filtering proportion depends on source quality and cannot be reused across projects.
 
-**Language identification** is the essential starting point for cleaning multilingual corpora. The FastText multilingual identification model (Joulin et al. 2017) (`lid.176.bin`, supporting 176 languages) is a common engineering choice, offering high accuracy for Chinese identification at processing speeds of hundreds of thousands of documents per second. In practice, the confidence threshold should be set above 0.8; mixed-language documents below this threshold (such as technical blog posts mixing Chinese and English) can be retained and handled separately rather than discarded directly.
+**Language identification** is the essential starting point for cleaning multilingual corpora. The FastText multilingual identification model (Joulin et al. 2017) (`lid.176.bin`, supporting 176 languages) is a common engineering choice. In practice, confidence thresholds should be calibrated through manual spot checks; low-confidence mixed-language documents (such as technical blog posts mixing Chinese and English) can be retained and handled separately rather than discarded directly.
 
-**Length and character ratio filtering** forms the most basic rule set. Typical thresholds: minimum document length of 200 characters (overly short content is usually navigation bars or tag text), maximum document length of 100,000 characters (excessively long documents may be multi-page content that has been merged and requires segmentation); special characters (non-alphanumeric characters) not exceeding 30% of total characters; digit characters not exceeding 30% (used to identify log and data table content).
+**Length and character ratio filtering** forms the most basic rule set. The typical approach is to set project thresholds for minimum document length, maximum document length, special-character ratio, and digit-character ratio. Overly short content is usually navigation bars or tag text; overly long documents may be merged multi-page content and require segmentation. Logs, code, and data tables should use independent thresholds to avoid being mistakenly removed by general-text rules.
 
-**Duplicate line ratio filtering** specifically targets "template noise" — many low-quality web pages repeat navigation bars, copyright notices, and advertisement areas multiple times on the same page, resulting in a large number of identical lines within the document. If the proportion of duplicate lines exceeds 30%, the document can be treated as a low-quality candidate for further review or direct discarding.
+**Duplicate line ratio filtering** specifically targets "template noise" — many low-quality web pages repeat navigation bars, copyright notices, and advertisement areas multiple times on the same page, resulting in a large number of identical lines within the document. If the duplicate-line ratio exceeds the project threshold, the document can be treated as a low-quality candidate, triggering further review or direct discarding.
 
 Listing 5-1 shows a sample implementation of a multi-rule heuristic quality filter.
 
-**Listing 5-1: Sample Code for Multi-Rule Heuristic Quality Filtering**
+*Listing 5-1: Example code for multi-rule heuristic quality filtering. Thresholds are demonstration configurations; production environments should calibrate them by language, source, and manual spot-check results.*
 
 ```python
 import re
@@ -106,17 +106,17 @@ class HeuristicQualityFilter:
 
 Rule-based filtering can quickly eliminate "obviously" low-quality content, but it is generally powerless against a passage that is grammatically correct and well-formatted yet is essentially meaningless keyword stuffing or SEO filler text. This is where **Model-Based Filtering** is needed — using trained scoring models to make finer-grained judgments about the linguistic quality of documents.
 
-**Perplexity Filtering** is the most widely adopted model-based filtering method. Computing perplexity with a **KenLM (Heafield 2011) n-gram language model** (rather than a neural network model) quantifies text quality: high-quality news and encyclopedia text typically has perplexity in the range of 100–300; ordinary fluent web text falls in the range of 200–500; garbled text, machine translations, and keyword-stuffed low-quality content often exceeds 500. It is worth noting that lower perplexity is not always better — text with extremely low perplexity (below 50) may be highly homogeneous boilerplate (such as legal clauses or product descriptions with nearly fixed formats), which also warrants additional attention. (Note: if a neural network reference model such as LLaMA-7B is used to compute perplexity instead, the PPL values for the same text will be significantly smaller, falling in the 20–150 range; see Chapter 7, Section 7.3.1. Thresholds from these two approaches must not be mixed.)
+**Perplexity Filtering** is the most widely adopted model-based filtering method. Computing perplexity with a **KenLM (Heafield 2011) n-gram language model** (rather than a neural network model) can quantify text quality, but PPL thresholds must be bound to the corpus used to train KenLM, the tokenization method, and the target language: high-quality news, encyclopedias, ordinary web pages, garbled text, and advertisement stuffing all exhibit different distributions. Production systems should first establish per-source baselines on manually confirmed samples, then set blocking waterlines through percentiles or Z-score anomaly detection. It is worth noting that lower perplexity is not always better: abnormally low perplexity may indicate highly homogeneous boilerplate text, such as nearly fixed-format legal clauses or product descriptions, and also deserves attention. (Note: if a neural-network reference model is used to compute perplexity, the numeric distribution changes; thresholds from the two approaches must not be mixed.)
 
-**Quality Classifiers** are the advanced technique adopted by representative datasets such as RefinedWeb (Penedo et al. 2023) and Dolma (Soldaini et al. 2024): a fastText or lightweight BERT classifier is fine-tuned on a human-annotated dataset of high-quality versus low-quality documents, casting quality scoring as a supervised binary or five-class classification problem. This approach has a significant advantage in covering quality issues that "neither rules nor perplexity can detect, but humans can judge," at the cost of some manual annotation effort to build the training set.
+**Quality Classifiers** are the advanced technique adopted by representative datasets such as RefinedWeb (Penedo et al. 2023) and Dolma (Soldaini et al. 2024). Note that empirical research by Nait Saada et al. (2025) shows classifier filtering effectively performs "domain selection" rather than "absolute quality" selection, so it must be verified through manual spot checks. The method fine-tunes a fastText or lightweight BERT classifier on a human-annotated dataset of high-quality versus low-quality documents, casting quality scoring as a supervised binary or five-class classification problem. This approach has a significant advantage in covering quality issues that "neither rules nor perplexity can detect, but humans can judge," at the cost of some manual annotation effort to build the training set.
 
 ### 5.2.3 Three-Stage Collaboration: Appropriate Division of Labor Among Rules, Models, and Humans
 
 From a practical cost-effectiveness perspective, the appropriate division of labor among the three methods is:
 
-**Rule-based filtering** handles the largest volume and most obvious problems (over 60% of raw data), operating at extremely high speed and very low cost, but with a higher false positive rate (both false negatives and false positives can occur); it is suited for the "broad filtering" first stage.
+**Rule-based filtering** handles the largest volume and most obvious problems, operating at extremely high speed and very low cost, but with a higher error rate (both false negatives and false positives can occur); it is suited for the "broad filtering" first stage.
 
-**Model-based filtering** handles the remaining ambiguous cases after rule filtering (approximately 15–25% of raw data), with higher precision than rules but slower speed and higher cost (requiring model inference); it is suited for the "fine filtering" second stage with medium precision requirements.
+**Model-based filtering** handles the remaining ambiguous cases after rule filtering, with higher precision than rules but slower speed and higher cost (requiring model inference); it is suited for the "fine filtering" second stage with medium precision requirements.
 
 **Manual spot-checks** do not process every record but instead serve as "quality audits" through sampled verification of cleaning results: randomly sampling 500–1,000 records per batch for human review by data engineers, identifying systemic errors (such as a category of valuable content being erroneously discarded by rules), and feeding findings back into iterative optimization of rules and models. This is the critical closure point of the quality feedback loop.
 
@@ -198,10 +198,12 @@ The goal of Fuzzy Deduplication is to identify document pairs whose "similarity 
 
 Listing 5-3 shows a sample implementation of MinHash LSH fuzzy deduplication. In production environments, the bucket structure should be persisted to distributed storage or a stream processing framework.
 
-**Listing 5-3: Sample Code for MinHash LSH Fuzzy Deduplication**
+*Listing 5-3: Example code for MinHash LSH fuzzy deduplication. This snippet illustrates the algorithm structure; production environments should persist bucket structures, candidate pairs, and review results to distributed storage.*
 
 ```python
-import hashlib, numpy as np
+import hashlib
+import re
+import numpy as np
 from typing import Set
 
 class MinHashLSH:
@@ -218,33 +220,48 @@ class MinHashLSH:
         self.b = rng.integers(0, 2**31, num_hashes)
         self.p = (1 << 31) - 1              # Mersenne prime
         self.buckets = [{} for _ in range(num_bands)]
+        self.shingles_by_doc = {}
+        self.signatures_by_doc = {}
+
+    def stable_hash(self, value: str) -> int:
+        digest = hashlib.blake2b(value.encode("utf-8"), digest_size=8).digest()
+        return int.from_bytes(digest, "big") % self.p
 
     def ngrams(self, text: str) -> Set[int]:
-        t = text.lower().replace(' ', '')
-        # Note: use hashlib rather than the built-in hash(), since the built-in hash()
-        # is affected by PYTHONHASHSEED and is not reproducible across processes,
-        # which would cause signature inconsistencies in distributed deduplication.
-        def stable_hash(s: str) -> int:
-            return int.from_bytes(hashlib.md5(s.encode('utf-8')).digest()[:8], 'big')
-        return {stable_hash(t[i:i+self.ngram]) % self.p for i in range(len(t)-self.ngram+1)}
+        t = re.sub(r"\s+", "", text.lower())
+        if len(t) < self.ngram:
+            return {self.stable_hash(t)} if t else set()
+        return {self.stable_hash(t[i:i+self.ngram]) for i in range(len(t)-self.ngram+1)}
 
     def signature(self, shingles: Set[int]) -> np.ndarray:
+        if not shingles:
+            return np.full(self.num_hashes, self.p, dtype=np.int64)
         sig = np.full(self.num_hashes, np.inf)
         for s in shingles:
             h = (self.a * s + self.b) % self.p
             sig = np.minimum(sig, h)
         return sig.astype(np.int64)
 
+    def jaccard(self, a: Set[int], b: Set[int]) -> float:
+        return len(a & b) / max(len(a | b), 1)
+
     def insert(self, doc_id: str, text: str) -> list[str]:
-        """Insert a document and return the list of candidate duplicate document IDs."""
-        sig = self.signature(self.ngrams(text))
+        """Insert a document and return duplicate IDs confirmed by true Jaccard similarity."""
+        shingles = self.ngrams(text)
+        sig = self.signature(shingles)
         candidates = set()
         for i in range(self.num_bands):
             band_key = tuple(sig[i*self.rows:(i+1)*self.rows])
             if band_key in self.buckets[i]:
                 candidates.update(self.buckets[i][band_key])
             self.buckets[i].setdefault(band_key, []).append(doc_id)
-        return list(candidates)
+        duplicates = [
+            other_id for other_id in candidates
+            if self.jaccard(shingles, self.shingles_by_doc[other_id]) >= self.threshold
+        ]
+        self.shingles_by_doc[doc_id] = shingles
+        self.signatures_by_doc[doc_id] = sig
+        return duplicates
 ```
 
 ### 5.3.4 Semantic Deduplication: Embedding Similarity Beyond Literal Matching
@@ -253,7 +270,7 @@ Both exact hash deduplication and N-gram-based MinHash LSH are fundamentally cap
 
 In practice, a lightweight embedding model (such as `BGE-M3` or `text2vec`) is used to encode each document as a dense vector, and an Approximate Nearest Neighbor (ANN) index is built using a vector database (such as Milvus or FAISS). If the cosine similarity between two document vectors exceeds 0.95, they are identified as highly semantically homogeneous content and deduplicated — even if their literal content is completely different.
 
-Since computing embeddings requires significant GPU inference compute, the industry typically treats it as the **last stage of the deduplication pipeline**: hash deduplication and MinHash first eliminate 90% of the redundancy at extremely low cost, and then semantic deduplication is applied to the remaining high-value corpus, achieving a balance between computational cost and deduplication precision.
+Since computing embeddings requires significant GPU inference compute, the industry typically treats it as the **last stage of the deduplication pipeline**: hash deduplication and MinHash first filter obvious redundancy at extremely low cost, and then semantic deduplication is applied to the remaining high-value corpus, achieving a balance between computational cost and deduplication precision.
 
 ### 5.3.5 The Dual Risks of Deduplication: Over- and Under-Deduplication
 
@@ -392,38 +409,38 @@ The quality feedback loop is designed around **human-audit-driven rule iteration
 
 *Figure 5-2: Quality Filtering Funnel and Spot-Check Feedback Loop — The funnel on the left shows the data retention rate at each stage; the feedback loop on the right shows how manual spot-checks drive continuous iterative optimization of filtering rules. Source: original illustration; Alt text: Quality filtering funnel and spot-check feedback loop diagram, showing the cyclic relationship among rule-based filtering, model scoring, deduplication, manual spot-checks, and rule write-back.*
 
-After each cleaning batch is completed, the following "quality snapshot" procedure is executed on a fixed schedule: randomly sample 500 records for manual annotation by data engineers (OK / noise / missed PII / erroneously discarded high-quality content / near-duplicate slippage), tally the occurrence rate of each error type, and trace which filtering step caused the error (false positive or false negative). When the error rate for any category exceeds 5% for two consecutive batches, a review and update of the corresponding rule or model threshold must be triggered. This mechanism transforms the cleaning pipeline from a "one-time engineering artifact" into a "continuously iterating quality engine."
+After each cleaning batch is completed, the following "quality snapshot" procedure is executed on a fixed schedule: randomly sample a batch of records for manual annotation by data engineers (OK / noise / missed PII / erroneously discarded high-quality content / near-duplicate slippage), tally the occurrence rate of each error type, and trace which filtering step caused the error (false positive or false negative). When the error rate for any category exceeds the project waterline for multiple consecutive batches, a review and update of the corresponding rule or model threshold must be triggered. This mechanism transforms the cleaning pipeline from a "one-time engineering artifact" into a "continuously iterating quality engine."
 
 ---
 
 ## 5.7 Common Defects, Detection Methods, and Cost Reference
 
-**Table 5-1: Common Defects, Detection Methods, and Cost Matrix**
+*Table 5-1: Common defects, detection methods, and cost matrix. Source: compiled by the authors; detection cost is a relative description of engineering complexity, and actual cost depends on data scale, model calls, and infrastructure configuration.*
 
 | Defect Type | Typical Manifestation | Detection Method | Cost of Miss | Recommended Threshold/Tool |
 | :--- | :--- | :--- | :--- | :--- |
-| **HTML/noise residue** | Tags such as `<div>`, CSS, and JS code mixed into body text | Special character ratio > 0.15; regex rules | Model outputs garbled text/tags | Special character ratio < 0.15 |
-| **Wrong language** | Content outside the target language mixed in | FastText language identification (confidence > 0.8) | Model learns wrong language distribution | Confidence ≥ 0.8 |
-| **Low information density** | SEO keyword stuffing, ad copy, meaningless repetition | KenLM PPL > 500; quality classifier | Model generates hollow, padded text | PPL ∈ [100, 500] |
+| **HTML/noise residue** | Tags such as `<div>`, CSS, and JS code mixed into body text | Special-character ratio percentiles; regex rules | Model outputs garbled text/tags | Calibrate the project waterline on manually confirmed samples |
+| **Wrong language** | Content outside the target language mixed in | FastText language identification and confidence distribution | Model learns wrong language distribution | Set confidence waterlines by target language and source |
+| **Low information density** | SEO keyword stuffing, ad copy, meaningless repetition | KenLM PPL distribution; quality classifier | Model generates hollow, padded text | Establish PPL percentile baselines on the target corpus |
 | **Exact duplicates** | Same document crawled multiple times | SHA-256 hash global deduplication | Model overfits specific content | Keep only 1 per identical hash |
-| **Near-duplicates** | Same article republished on different sites (slightly modified) | MinHash LSH (Jaccard similarity) | "Broken-record" effect; poor generalization | Retain if Jaccard < 0.8 |
+| **Near-duplicates** | Same article republished on different sites (slightly modified) | MinHash LSH (Jaccard similarity) | "Broken-record" effect; poor generalization | Choose the Jaccard duplicate waterline through ablation experiments |
 | **PII leakage** | Phone numbers, ID cards, emails, API keys | Regex rules + NER model + manual spot-check | Post-deployment privacy incident | Zero tolerance; manual review |
-| **Benchmark contamination** | Test set questions mixed into training set | 13-gram comparison against evaluation sets | Inflated benchmark scores; integrity risk | Quarantine if overlap rate > 0.5 |
-| **Low lexical diversity** | Extremely low Type-Token Ratio (boilerplate text) | TTR < 0.1 | Model vocabulary use becomes rigid | TTR ≥ 0.1 |
+| **Benchmark contamination** | Test set questions mixed into training set | 13-gram comparison against evaluation sets | Inflated benchmark scores; integrity risk | Isolate high-overlap samples and review manually |
+| **Low lexical diversity** | Extremely low Type-Token Ratio (boilerplate text) | TTR distribution anomaly | Model vocabulary use becomes rigid | Set TTR baselines by language and content type |
 
-**Table 5-2: Impact Comparison of Cleaning Actions on Training Outcomes**
+*Table 5-2: Impact comparison of cleaning actions on training outcomes. Source: compiled by the authors; impact directions are engineering-experience summaries, and specific gains must be validated through same-configuration training or proxy-model experiments.*
 
-Note: The improvement magnitudes in Table 5-2 are engineering experience examples as of June 2026. Actual gains depend on corpus structure, model scale, evaluation sets, cleaning thresholds, and training configuration, and should not be treated as fixed commitments applicable across projects.
+Note: Table 5-2 is used to illustrate the correspondence between cleaning actions and risk-mitigation directions. It does not provide fixed cross-project gains. Actual effects depend on corpus structure, model scale, evaluation sets, cleaning thresholds, and training configuration, and should be validated through ablation experiments.
 
-| Cleaning Action | Typical Model Symptoms When Skipped | Possible Gains When Fully Applied (Examples) | Cost/Timeline |
+| Cleaning Action | Typical Model Symptoms When Skipped | Risk-Mitigation Direction When Fully Applied | Cost/Timeline |
 | :--- | :--- | :--- | :--- |
 | Language filtering | Model mixes languages; Chinese responses interspersed with English | Improved language consistency | CPU, hours |
-| Heuristic rule filtering | Model output is format-disordered (HTML tags / ad slogans) | Output fluency improved by 5–10% | CPU, hours |
-| PPL perplexity filtering | Model tends to generate hollow, padded content | Improved information density; user satisfaction +8% | CPU + small model, days |
-| MinHash fuzzy deduplication | "Broken-record" phenomenon; high repetition rate in generated content | Generation diversity improved by 20–40% | Distributed CPU, days |
+| Heuristic rule filtering | Model output is format-disordered (HTML tags / ad slogans) | Reduces format noise and template-text contamination | CPU, hours |
+| PPL perplexity filtering | Model tends to generate hollow, padded content | Improves corpus information density and isolates garbled or machine-generated junk | CPU + small model, days |
+| MinHash fuzzy deduplication | "Broken-record" phenomenon; high repetition rate in generated content | Reduces over-reinforcement of repeated samples in the probability distribution | Distributed CPU, days |
 | PII redaction | Post-deployment privacy leakage incidents; model recites user information | Privacy compliance achieved; legal risks avoided | CPU + GPU NER, days |
 | Benchmark decontamination | Inflated benchmark scores; real user experience misaligned with benchmarks | Evaluation integrity achieved; real-world performance more predictable | CPU, hours |
-| Quality-stratified sampling | High- and low-quality data at equal weight dilutes the effect of high-quality data | Benchmark scores improved by 3–7% at the same compute budget | No additional compute cost |
+| Quality-stratified sampling | High- and low-quality data at equal weight dilutes the effect of high-quality data | Lets limited training budget be spent more on high-value samples | No additional compute cost |
 
 ---
 
@@ -433,11 +450,11 @@ All of the following cases are anonymized composite case studies. Data scales, p
 
 ### Case Study 1: Knowledge Loss from Over-Cleaning — The Cost of "Over-Tuning the Threshold" (Anonymized Composite Case)
 
-**Background**: After completing the first round of 7B model pretraining, a team planned to upgrade their data cleaning pipeline with the goal of further improving the "purity" of training data. The team raised the standards of their heuristic filtering rules: minimum document length increased from 200 to 800 characters, PPL threshold lowered from 500 to 150, and MinHash similarity threshold lowered from 0.85 to 0.6. After processing, the corpus shrank from 500 GB to 120 GB.
+**Background**: After completing the first round of base-model pretraining, a team planned to upgrade its data cleaning pipeline with the goal of further improving the "purity" of training data. The team raised the standards of its heuristic filtering rules: the minimum document length increased significantly, the PPL threshold tightened substantially, and the MinHash similarity threshold also became more aggressive. After processing, the corpus size shrank noticeably.
 
 **T+0 (Problem discovered)**: The model trained on the new corpus showed a decline in general benchmark performance — especially in specialized domains such as medicine and law, where response quality was noticeably worse than the previous version. Engineers initially suspected training hyperparameter issues.
 
-**T+5 (Root cause identified)**: Differential analysis of the old and new corpora revealed that approximately 75% of specialized domain documents (such as medical science articles, legal regulations, and technical standards) had been eliminated by the over-cleaning: medical science articles had average document lengths of 400–700 characters, all below the new 800-character minimum threshold; legal text typically had PPL scores in the range of 150–200 (due to its highly standardized language), placing it exactly within the new threshold's filter range; the same legal statutes republished on different websites were largely deleted by the 0.6 MinHash threshold due to high content similarity, leaving the legal knowledge base incomplete.
+**T+5 (Root cause identified)**: Differential analysis of the old and new corpora revealed that a large number of specialized domain documents, such as medical science articles, legal regulations, and technical standards, had been eliminated by over-cleaning. Medical science articles are often short and dense, falling below the new minimum-length threshold; legal provisions use highly standardized language and may be misjudged by PPL filtering; the same regulatory content republished across different websites has high similarity and can be heavily deleted by aggressive MinHash thresholds, leaving the legal knowledge base incomplete.
 
 **Key lesson**: Cleaning thresholds should be **configured differentially by domain and content type**, not tuned globally. Specialized domain content (medical, legal, scientific) has high knowledge density, but its document characteristics (length distribution, linguistic regularity, content similarity) are fundamentally different from general web pages. Applying thresholds designed for general web pages to filter specialized content inevitably causes serious knowledge loss. The correct approach is to first classify the corpus by domain, then configure independent cleaning threshold parameters for each domain, and perform independent manual spot-check validation on the processing results for each domain.
 
@@ -449,7 +466,7 @@ All of the following cases are anonymized composite case studies. Data scales, p
 
 **T+0 (Risk confirmed)**: The security team immediately launched an investigation and confirmed that the model's output was highly consistent with the format of real keys, suspected to originate from hardcoded keys committed to a GitHub repository in the training data. Because the PII redaction pipeline only covered conventional types such as phone numbers, email addresses, and ID card numbers and had not included API keys in its detection scope, these keys had been fully learned during training.
 
-**T+1 (Emergency response)**: The security team notified the service providers owning the keys to perform emergency revocation, while taking the model offline for review. The investigation revealed approximately 8,400 GitHub commit records containing hardcoded API keys or passwords of various types, covering AWS, OpenAI, GitHub, database connection strings, and other types — none of which had been captured by the existing redaction pipeline.
+**T+1 (Emergency response)**: The security team notified the service providers owning the keys to perform emergency revocation, while taking the model offline for review. The investigation revealed a batch of code-corpus commit records containing hardcoded API keys or passwords, covering cloud-service keys, code-hosting platform tokens, database connection strings, and other types, none of which had been captured by the existing redaction pipeline.
 
 **T+7 (Fix completed)**: The data team added regex rules targeting API keys and passwords and other structured secrets (referencing GitGuardian's open-source ruleset), and also introduced tools specifically designed to detect secret leakage in code (such as truffleHog and detect-secrets) to perform a full re-scan and re-redaction of the code corpus.
 
@@ -465,11 +482,11 @@ After understanding all the technical modules in this chapter, a practical quest
 
 The lightweight solution focuses on "holding the baseline," filtering out the most harmful defects with minimal engineering investment:
 
-**Table 5-3: Minimum Viable Combination for the Lightweight Cleaning Solution**
+*Table 5-3: Minimum viable combination for the lightweight cleaning solution. Source: compiled by the authors; the combination is a starting recommendation, and production environments should extend it according to risk level, corpus source, and compliance requirements.*
 
 | Step | Implementation | Tools | Required? |
 |:--- |:--- |:--- |:--- |
-| Language filtering | FastText identification, confidence > 0.8 | fasttext | ★ Required |
+| Language filtering | FastText identification, confidence threshold calibrated by language | fasttext | ★ Required |
 | Rule-based filtering | Length, special characters, duplicate lines | Custom Python | ★ Required |
 | Exact deduplication | SHA-256 hash global deduplication | hashlib | ★ Required |
 | PII redaction | Regex rules (phone / email / ID card / API key) | re | ★ Required |
@@ -478,17 +495,17 @@ The lightweight solution focuses on "holding the baseline," filtering out the mo
 | MinHash deduplication | Optional (limited benefit at small data scale) | datasketch | ○ Optional |
 | Benchmark decontamination | Must be completed before formal training | Custom implementation | ★ Required |
 
-This combination can be developed in one week, covers the "must-have" baseline protections, and is suitable for the early experimental phase of a rapid launch. The trade-off is that a significant proportion of near-duplicate content and low-information-density documents will be missed, but this is acceptable for small-scale experiments.
+This combination can usually serve as a starting plan for the early experimental phase and covers the "must-have" baseline protections. The trade-off is that it will miss a considerable proportion of near-duplicate content and low-information-density documents, so it should not be directly extrapolated to formal pretraining data releases.
 
 ### 5.9.2 Standard Solution (4–10 Person Data Team, Data Scale 100 GB – 10 TB)
 
 The standard solution adds model scoring and fuzzy deduplication on top of the lightweight solution, covering the mainstream quality requirements of industrial practice:
 
-Building on the lightweight solution, the following are added: **KenLM perplexity filtering** (fit a 5-gram language model trained on the target language, filtering documents with PPL > 500); **MinHash LSH fuzzy deduplication** (Jaccard threshold 0.8, 128-dimensional signatures, 16 bands); **NER model-assisted PII detection** (spaCy Chinese model, covering PII types such as personal names, addresses, and organizations that are difficult to enumerate with rules); and **domain-stratified thresholds** (configure independent filtering parameters for special content types such as code and academic papers, preventing a unified threshold from erroneously discarding them). This solution typically requires 2–4 weeks of engineering implementation and some GPU resources for NER model batch inference; it can serve as a complete baseline solution for medium-sized teams.
+Building on the lightweight solution, the following are added: **KenLM perplexity filtering** (fit a 5-gram language model trained on the target language and set PPL percentile waterlines on manually confirmed samples); **MinHash LSH fuzzy deduplication** (determine Jaccard threshold, signature dimensions, and band count through sample review and proxy-training ablations); **NER model-assisted PII detection** (spaCy Chinese model or similar NER models, covering PII types such as personal names, addresses, and organizations that are difficult to enumerate with rules); and **domain-stratified thresholds** (configure independent filtering parameters for special content types such as code and academic papers, preventing a unified threshold from erroneously discarding them). The engineering cycle and GPU resources required by this solution depend on corpus scale, toolchain maturity, and review intensity; it can serve as a complete baseline solution for medium-sized teams.
 
 ### 5.9.3 Platform-Level Solution (10+ Person Data Platform Team, Data Scale > 10 TB)
 
-The platform-level solution targets industrial-scale large-volume data processing, introducing on top of the standard solution: **distributed processing architecture** (Ray Data or Spark on Kubernetes to fully distribute all steps, supporting horizontal scaling to tens or hundreds of nodes); **custom quality classifiers** (fine-tuning a BERT or fastText classifier on 10,000 human-annotated high/low quality samples, framing document quality judgment as a supervised classification task); **comprehensive evaluation set decontamination** (maintaining an N-gram fingerprint database covering all major evaluation sets, updated periodically); and **automated quality snapshot dashboards** (automatically generating quality reports after each cleaning batch, displaying key metrics such as per-stage filter rates, quality score distributions, and PII discovery rates). Building a complete platform-level solution typically takes 2–4 months, but once established, it can support the shared reuse of corpus quality infrastructure across all large model projects within the organization.
+The platform-level solution targets industrial-scale large-volume data processing, introducing on top of the standard solution: **distributed processing architecture** (Ray Data or Spark on Kubernetes to fully distribute all steps and support multi-node horizontal scaling); **custom quality classifiers** (fine-tune a BERT or fastText classifier on manually annotated high/low quality sample pairs, framing document quality judgment as a supervised classification task); **comprehensive evaluation set decontamination** (maintaining an N-gram fingerprint database covering all major evaluation sets, updated periodically); and **automated quality snapshot dashboards** (automatically generating quality reports after each cleaning batch, displaying key metrics such as per-stage filter rates, quality-score distributions, and PII discovery rates). The build cycle for a complete platform-level solution depends on team size, platform foundation, and compliance requirements; once established, it can support shared reuse of corpus quality infrastructure across all large model projects within the organization.
 
 ---
 
@@ -504,20 +521,22 @@ Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedin
 
 Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.
 
-Honnibal M, Montani I, Van Landeghem S, Boyd A (2020) spaCy: Industrial-strength Natural Language Processing in Python. Zenodo. https://doi.org/10.5281/zenodo.1212303.
+Honnibal M, Montani I, Van Landeghem S, Boyd A (2023) explosion/spaCy: v3.7.2: Fixes for APIs and requirements. Zenodo. <https://doi.org/10.5281/zenodo.1212303>.
 
 Indyk P, Motwani R (1998) Approximate Nearest Neighbors: Towards Removing the Curse of Dimensionality. In: Proceedings of the 30th Annual ACM Symposium on Theory of Computing, pp 604-613.
 
 Joulin A, Grave E, Bojanowski P, Douze M, Jegou H, Mikolov T (2017) FastText.zip: Compressing Text Classification Models. arXiv preprint arXiv:1612.03651.
 
-Penedo G, Kydlíček H, allal L B, Lozhkov A, Mitchell M, Raffel C, Von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.
+Penedo G, Kydlíček H, Ben Allal L, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.
 
 Penedo G, Malartic Q, Hesslow D, Cojocaru R, Cappelli A, Alobeidli H, Pannier B, Almazrouei E, Launay J (2023) The RefinedWeb Dataset for Falcon LLM: Outperforming Curated Corpora with Web Data Only. In: Advances in Neural Information Processing Systems 36.
 
-Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur C, Bogin B, Chandu K, Dumas L, Elazar Y, others (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.
+Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur R, Bogin B, Chandu K, Dumas L, Elazar Y, others (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.
 
 Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.
 
 Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Measuring Massive Multitask Language Understanding (MMLU). In: International Conference on Learning Representations.
 
 Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
+
+Nait Saada T, Bethune L, Klein M, Grangier D, Cuturi M, Ablin P (2025) The Data-Quality Illusion: Rethinking Classifier-Based Quality Filtering for LLM Pretraining. arXiv preprint arXiv:2510.00866.

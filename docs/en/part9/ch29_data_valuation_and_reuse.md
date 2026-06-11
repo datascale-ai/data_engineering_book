@@ -1,5 +1,21 @@
 # Chapter 29: Data Valuation and Reuse Mechanisms
 
+## Chapter Abstract
+
+Once data can be found and trusted, a sharper question appears: how much is this data actually worth? This chapter discusses valuation and reuse mechanisms for data assets. It first analyzes four illusions that often distort data value: scale, cost, model gain, and business value. It explains why data volume, acquisition cost, model metrics, and business outcomes are not equivalent, and uses scaling-law, data-pruning, and deduplication research to show that value depends on information density and quality rather than size. It then builds a metric system for data-asset value covering reuse rate, coverage, training gain, retrieval hits, labeling savings, risk reduction, and maintenance cost, unified through net value. It also draws on ideas such as Data Shapley to characterize the marginal contribution of an individual data asset. The chapter then explains how one data asset can be reused across pre-training, post-training, RAG, evaluation, and compliance paths, and records cross-path benefits through a full enterprise-domain corpus cost-benefit case. Finally, it provides practical governance tools such as a cost-benefit matrix, asset review card, and valuation pipeline.
+
+## Keywords
+
+Data asset valuation and reuse mechanisms; data assets; metadata governance; data products; data contracts
+
+## 29.0 Learning Objectives
+
+- Identify four common illusions in data valuation: scale, cost, model gain, and business value, and explain through scaling laws, data pruning, and deduplication why value depends on information density rather than size.
+- Build a value metric system covering reuse rate, coverage, training gain, retrieval hits, labeling savings, risk reduction, and maintenance cost, and unify them through net value.
+- Use ideas such as Data Shapley to characterize the marginal contribution of an individual data asset to model performance.
+- Design reuse paths for data assets across pre-training, post-training, RAG, evaluation, and compliance, and record cross-path benefits.
+- Use a cost-benefit matrix, asset review card, and valuation pipeline to support continuous governance of a data-asset portfolio.
+
 ## Chapter Guide
 
 Chapters 27 and 28 explained how to make data discoverable, understandable, and dependable through catalogs, metadata governance, data products, and data contracts. Once data can be found and trusted, a sharper question appears: how much is this data actually worth? What benefits does it create, what costs does it consume, and which assets deserve continued investment rather than merely looking large?
@@ -15,6 +31,8 @@ The chapter proceeds in four movements. First, it analyzes why data value is oft
 ### 29.1.1 Four Common Value Illusions
 
 Before defining good valuation, it is useful to name the bad shortcuts. The idea that information should be measured and managed as an asset is not new (Moody and Walsh 1999; Laney 2017), but in practice valuation often collapses into easy proxies. These proxies are dangerous because they look correlated with value in ordinary situations, which makes them feel like substitutes for valuation.
+
+The most common misjudgments can be summarized as four value illusions, corresponding to four different viewpoints across the data lifecycle. The first is the **scale illusion**: assuming that larger data volume means higher value and treating bytes, samples, or document counts as natural measures of value. The second is the **cost illusion**: assuming that data purchased or collected at higher cost must be more valuable, confusing input with output. The third is the **model-gain illusion**: assuming that any metric improvement caused by a dataset represents the asset's full value, equating local and short-term gains with durable asset value. The fourth is the **business-value illusion**: assuming that model-metric improvement automatically translates into equivalent business value. Table 29-1 summarizes these illusions and the reasons they fail.
 
 *Table 29-1: Four common illusions about data value*
 
@@ -53,19 +71,19 @@ The bridge from model metric to business result is even wider. A one-point accur
 
 ### 29.1.5 Section Summary
 
-This section identified four common errors: treating bytes as value, treating spending as output, treating local metric gains as total value, and treating model metrics as business results. The way out is an explicit multidimensional metric system that measures real contribution, reuse, cost, and risk instead of relying on one convenient proxy.
+This section identified four common ways data value is misjudged: the scale illusion treats bytes as value, the cost illusion treats input as output, the model-gain illusion treats local metric improvement as total value, and the business-value illusion treats model metrics as business results. Their common root is substituting easy-to-observe proxies for difficult-to-observe real value. Scaling laws, compute-optimal training, deduplication, and pruning all show that value depends on information density, quality, and relevance rather than scale; Shapley-style valuation and evaluation-reliability research remind us that model contribution must be measured in a comparable and trustworthy way. Escaping these illusions requires an explicit, multidimensional data-value metric system, which is the topic of the next section.
 
 ## 29.2 A Metric System for Data Asset Value
 
 ### 29.2.1 Why a Metric System Is Needed
 
-Single proxies fail because data value is multidimensional. The same asset may save labeling cost for one team, support a high-frequency retrieval scenario for another, and reduce compliance risk for a governance team. A useful metric system must satisfy three requirements:
+The previous section showed why single proxies are unreliable. Replacing them requires a multidimensional value metric system that measures different sides of data value separately and then combines them according to the decision context. Data value is inherently multifaceted: the same asset may save labeling cost for one team, support a high-frequency retrieval scenario for another, and reduce compliance risk for a governance team. No single scalar can capture all of these sides at once. A useful metric system must satisfy three requirements:
 
 - **Measurable.** Each metric needs a clear calculation boundary and data source.
 - **Comparable.** Metrics should support ranking and portfolio management across assets.
 - **Decision-oriented.** Metrics must help answer whether to continue investment, prioritize governance, expand reuse, or retire the asset.
 
-This chapter groups metrics into three views: usage-side value, benefit-side value, and risk/cost-side value.
+This chapter groups metrics into three complementary views: **usage-side value**, which measures the breadth and depth of consumption; **benefit-side value**, which measures performance gains and cost savings; and **risk/cost-side value**, which measures risk reduction and the cost of maintaining the asset. Together, these three views form the basis of net value. The following sections introduce the core metrics in these groups and summarize them in Section 29.2.6.
 
 ### 29.2.2 Usage Side: Reuse Rate and Coverage
 
@@ -95,6 +113,8 @@ Data also creates value by saving cost and reducing risk.
 
 **Risk reduction** measures how much the asset lowers compliance, factuality, or decision risk. A well-sanitized corpus with clear provenance and use boundaries can reduce privacy and licensing risk. An authoritative, traceable knowledge base can reduce incorrect or outdated RAG answers, which is especially valuable in finance, healthcare, and government. Risk value can be approximated as the reduction in expected loss: event probability multiplied by loss per event. Dataset documentation practices, such as Datasheets for Datasets, support this risk reduction by making composition, intended use, and limits explicit (Gebru et al. 2021).
 
+Labeling savings and risk reduction remind us that data value is not only "how much a metric rises." It also includes "how much less the organization spends" and "how much less risk the organization takes." A valuation that only looks at effect improvement while ignoring cost and risk is incomplete.
+
 ### 29.2.5 Risk and Cost Side: Maintenance Cost and Net Value
 
 Data assets require continuous maintenance. Ignoring that cost is another common valuation blind spot.
@@ -111,6 +131,8 @@ Here $V_{train}$, $V_{retrieval}$, $V_{label}$, and $V_{risk}$ represent trainin
 
 ### 29.2.6 Data Asset Value Metric Table
 
+Combining the preceding dimensions yields a data asset value metric table that can be used directly for evaluation and registration. Table 29-2 decomposes the abstract idea of "value" into concrete metrics that are measurable, comparable, and decision-oriented, and it marks each metric's view, calculation boundary, and main use.
+
 *Table 29-2: Data asset value metric table*
 
 | Metric | View | Calculation boundary | Main use |
@@ -124,11 +146,11 @@ Here $V_{train}$, $V_{retrieval}$, $V_{label}$, and $V_{risk}$ represent trainin
 | Maintenance cost | Cost | Continuing storage, update, and governance cost | Compute net value and identify negative assets |
 | Net value | Integrated | Multidimensional benefit times usage minus maintenance cost | Investment and retirement decisions |
 
-Weights differ by scenario. Pre-training teams may emphasize training gain and coverage. RAG teams may emphasize retrieval hits and maintenance cost. Regulated industries may give risk reduction dominant weight.
+The weights of these metrics differ by scenario. Pre-training teams may emphasize training gain and coverage. RAG teams may emphasize retrieval hits and maintenance cost. Regulated industries may give risk reduction dominant weight. The right use of the metric system is therefore not to add every metric mechanically, but to assign reasonable weights for the decision at hand and then rank or decide. Its purpose is to force evaluators to examine every side of value and avoid falling back into a single-proxy trap.
 
 ### 29.2.7 Section Summary
 
-This section decomposed "is this data valuable?" into measurable dimensions: reuse, coverage, training gain, retrieval hits, labeling savings, risk reduction, maintenance cost, and net value. The next question is how one asset can realize value across many paths.
+This section built a data asset value metric system from three complementary views: usage, benefit, and risk/cost. It defined core metrics such as reuse rate, coverage, training gain, retrieval hits, labeling savings, risk reduction, and maintenance cost, and integrated them through a net-value expression. The system turns the vague question "is this data valuable?" into a set of measurable, comparable, decision-oriented indicators. However, it mainly describes value in a given moment or scenario. The most important amplification mechanism of data value, cross-scenario reuse, requires a separate discussion. The next section follows the five paths of pre-training, post-training, RAG, evaluation, and compliance to explain how one asset can be reused repeatedly and how benefits on each path should be recorded.
 
 ## 29.3 Asset Reuse Paths
 
@@ -138,7 +160,7 @@ Data is non-rival. One team using it for training does not prevent another from 
 
 Many organizations fail to capture this value. Data is collected for one task, used once, then forgotten. Teams repeatedly collect overlapping data without knowing that similar assets already exist. To unlock reuse, two foundations are required: discoverability and trust from the previous chapters, and explicit recording of reuse paths and benefits.
 
-This section follows five typical large-model reuse paths: pre-training, post-training, RAG, evaluation, and compliance.
+This section follows five typical large-model reuse paths: pre-training, post-training, RAG, evaluation, and compliance. Ideally, the same high-quality domain data asset can be reused along all five paths and multiply its value. Figure 29-1 shows the overall structure of this multi-path reuse pattern.
 
 ![Multi-scenario data asset reuse paths](../../images/part9/ch29_fig01.png)
 
@@ -180,9 +202,9 @@ Evaluation reuse has one special constraint: it must not leak into training. Onc
 
 Compliance is often not described as reuse, but it creates repeatable value. A corpus with clear provenance, licensing boundaries, anonymization, and use records can pass its compliance work downstream to every reuse path.
 
-If a dataset has been reviewed and documented, pre-training, post-training, RAG, and evaluation consumers can inherit that conclusion instead of repeating review independently (Gebru et al. 2021). Conversely, unclear compliance forces every path to carry its own risk or repeat costly review. In regulated industries, compliance value can determine whether an asset can be used at all; a powerful but legally uncertain dataset may have negative net value.
+If a dataset has been strictly reviewed and documented, pre-training, post-training, RAG, and evaluation consumers can reuse its provenance, authorization, anonymization, and review evidence instead of repeating review independently (Gebru et al. 2021). This does **not** mean every downstream use can unconditionally inherit the same compliance conclusion. Compliance judgment usually depends on purpose, output audience, geography, authorization scope, and processing method. New uses, external sharing, cross-border transfer, training-time memorization, or changed authorization scope still require renewed review. This is the real value of compliance reuse: a one-time compliance investment is not a free pass, but a reusable evidence base and risk-reduction mechanism. Conversely, unclear compliance forces every path to carry its own risk or repeat costly review. In regulated industries, compliance value can determine whether an asset can be used at all; a powerful but legally uncertain dataset may have negative net value.
 
-Benefit records should include review cost avoided, legal and privacy risks reduced, and audit records preserved.
+Benefit records should include review cost avoided, concrete legal and privacy risks reduced, and whether use is fully recorded for audit. Compliance value is not an appendix to the other four paths; it is a value thread running through all of them.
 
 ### 29.3.7 Benefit Records and Attribution
 
@@ -190,17 +212,21 @@ The five paths form a value-amplification network. To manage it, organizations n
 
 This attribution depends on the infrastructure from Chapters 27 and 28: the data catalog gives each asset a stable identity, lineage records how the asset flows into downstream paths, and contracts define use boundaries. Without those foundations, attribution becomes manual, inaccurate, and unsustainable.
 
+Once cross-path attribution can be maintained automatically, the organization can see, often for the first time, which assets are repeatedly reused and amplified into core assets, and which assets merely sit in storage without creating a second round of value. That insight is the decision basis for the portfolio management in Section 29.5 and the review mechanism in Section 29.6.
+
 ### 29.3.8 Section Summary
 
-This section described five reuse paths. Pre-training is long-lived but hard to reverse. Post-training is small, targeted, and rich in labeling savings. RAG emphasizes freshness and updateability. Evaluation provides the measuring instrument and must avoid leakage. Compliance lets one review serve many downstream paths. Reuse is the value multiplier; attribution makes the multiplier governable.
+This section followed five paths: pre-training, post-training, RAG, evaluation, and compliance, explaining how one data asset can be reused repeatedly and how value on each path should be expressed and recorded. Pre-training reuse is long-lived but hard to reverse and has the strictest quality and compliance requirements. Post-training reuse is small, targeted, and rich in labeling savings. RAG reuse emphasizes freshness and updateability. Evaluation reuse provides an indispensable measuring instrument but must prevent leakage. Compliance reuse amortizes one review effort across paths. Reuse is the value multiplier; cross-path benefit records and attribution, supported by catalogs, lineage, and contracts, make that multiplier measurable and governable. The next section combines the metric system and reuse paths in a complete enterprise-domain corpus case.
 
 ## 29.4 Valuation Case: Enterprise Domain Knowledge Corpus
 
 ### 29.4.1 Case Background
 
-Consider a financial services company that has built an enterprise domain knowledge corpus named `fin_domain_corpus`. It contains internal compliance Q&A and customer-service dialogue, licensed industry research reports, and public financial regulations. After cleaning, deduplication, anonymization, and structuring, it is registered as a data product with a data contract.
+To make the metric system and reuse paths concrete, this section estimates value through a representative case. The case combines typical characteristics from multiple real projects, and the numbers are simplified for illustration.
 
-The corpus can potentially serve all five reuse paths: improving financial-domain capability in a base model, fine-tuning a financial Q&A assistant, supporting a customer-service RAG system, building financial evaluation sets, and lowering downstream compliance risk. The valuation question is whether the corpus deserves continued investment.
+Consider a financial services company that has built an enterprise domain knowledge corpus named `fin_domain_corpus`. It contains internal compliance Q&A and customer-service dialogue, licensed industry research reports, and public financial regulations. After unified cleaning, deduplication, anonymization, and structuring, it is registered as a data product with a data contract.
+
+The corpus can potentially serve all five reuse paths from Section 29.3: improving financial-domain capability in a base model, fine-tuning a financial Q&A assistant, supporting a customer-service RAG system, building financial evaluation sets, and lowering downstream compliance risk as an asset with clear compliance attributes. The valuation question is whether the corpus deserves continued investment. Answering it requires separately accounting for input, risk, and cross-path benefits, then integrating them as net value.
 
 ### 29.4.2 Input Cost Accounting
 
@@ -236,7 +262,7 @@ The corpus also reduces downstream risk because its provenance, review, anonymiz
 | Post-training | Training gain plus labeling savings | 70 | Q&A assistant alignment gain and avoided relabeling |
 | RAG | Retrieval hits | 90 | High-frequency customer-service RAG hits reduce agent time |
 | Evaluation | Risk reduction | 25 | Version decisions protected and regressions blocked |
-| Compliance | Risk reduction | 35 | Shared compliance conclusion lowers expected loss |
+| Compliance | Risk reduction | 35 | Downstream reuses compliance evidence and rechecks new purposes, lowering expected loss |
 
 The RAG path produces the highest annual benefit because queries are frequent and each hit saves operational work. Post-training follows because the corpus supplies both alignment gain and reusable labels. Pre-training benefit is smaller because the corpus is not large enough to move the base model substantially and licensing boundaries limit use. Evaluation and compliance mainly create risk-reduction value, which is essential in finance even when it does not raise a benchmark metric.
 
@@ -256,11 +282,13 @@ $$
 
 If the one-time acquisition cost of 200 is included, the asset nearly breaks even in year one and contributes about 190 RMB 10k of net value each year afterward. The asset is clearly worth continued investment.
 
-The more important conclusion is qualitative. Its high net value comes from cross-path reuse, not any single path. If the team looked only at pre-training, it might wrongly reject the asset. The maintenance budget for updates and compliance should not be cut, because those costs protect the two largest benefit paths: RAG freshness and compliance risk reduction. The evaluation must also be repeated periodically as regulations, user questions, and model capabilities change.
+The more important conclusion is qualitative. First, the asset's high net value comes from cross-path reuse, not any single path. If the team looked only at the RMB 300,000 benefit of pre-training, it would reach the opposite conclusion. This strongly confirms the central claim of Section 29.3: reuse is the value multiplier. Second, the update and compliance components of maintenance cost should not be cut. They are precisely what protect the timeliness value of RAG hits and the risk-reduction value of compliance; cutting them would directly destroy the two largest benefit paths. Third, valuation must be repeated periodically. Financial regulations, customer-service question distributions, and base-model capabilities all change, so today's high-value asset may decay as the environment changes.
+
+The case also tests the usefulness of the metric system itself. Because reuse rate, training gain, retrieval hits, labeling savings, risk reduction, and maintenance cost were measured separately, the team avoided misjudging the asset through the cost illusion ("we spent RMB 2 million, so it must be valuable") or the scale illusion ("the corpus is not large enough, so it is not valuable").
 
 ### 29.4.6 Section Summary
 
-The `fin_domain_corpus` case shows how input costs, risk, cross-path benefits, and maintenance cost combine into net value. The corpus costs about RMB 2 million to acquire and RMB 600,000 per year to maintain, but creates about RMB 2.5 million in annual benefit through five reuse paths. The case also demonstrates why valuation must include reuse, maintenance, and periodic reassessment.
+The `fin_domain_corpus` case shows how the metric system and reuse paths from the previous sections can be used to account for input, risk, cross-path benefits, and net value. The corpus costs about RMB 2 million to acquire and RMB 600,000 per year to maintain, but creates about RMB 2.5 million in annual benefit through five reuse paths and about RMB 1.9 million in annual net value. This high value depends heavily on cross-path reuse and continuous update and compliance investment. The core lesson is that looking at one path without reuse can severely underestimate value, looking at benefits without maintenance can overestimate value, and failing to reassess periodically lets outdated value judgments mislead decisions. Normalizing this kind of valuation and using it for portfolio management and ongoing review are the topics of the next two sections.
 
 ## 29.5 Cost-Benefit Matrix and Portfolio Decisions
 
@@ -268,41 +296,41 @@ The `fin_domain_corpus` case shows how input costs, risk, cross-path benefits, a
 
 Real organizations manage hundreds or thousands of data assets. Precise valuation for every asset is unnecessary and usually impossible. A more practical approach borrows from portfolio management: classify assets along two axes, value and cost/risk.
 
-The value axis combines benefit-side and usage-side metrics: how much benefit the asset creates and how widely it is reused. The cost/risk axis combines maintenance cost and inherent risk. The result is a cost-benefit matrix.
+The value axis combines benefit-side and usage-side metrics: how much benefit the asset creates and how widely it is reused. The cost/risk axis combines maintenance cost and inherent risk: how much it costs to keep the asset and how much risk it carries. Placing each asset on these two dimensions yields a cost-benefit matrix.
 
 ![Data asset cost-benefit matrix](../../images/part9/ch29_fig02.png)
 
 *Figure 29-2: Cost-benefit matrix*
 
-This matrix supports relative decisions without requiring exact monetary valuation for every asset.
+The advantage of this two-dimensional positioning is that it does not require the fine-grained monetary calculation used in Section 29.4 for every asset. A relative judgment of value level and cost/risk level is enough to quickly classify many assets into quadrants and apply differentiated management strategies.
 
 ### 29.5.2 Four Quadrant Strategies
 
-1. **High value, low cost: core assets.** These are the best assets: widely reused, high benefit, low maintenance cost, and manageable risk. They deserve protection, continued investment, and active recommendation for reuse.
+1. **High value, low cost: core assets.** These are the best assets: widely reused, high benefit, low maintenance cost, and manageable risk. They are the foundation of data infrastructure and deserve protection, continued investment, and active recommendation for reuse. After good governance, the `fin_domain_corpus` in Section 29.4 belongs to this quadrant. The governance focus is to keep these assets discoverable and dependable and encourage more downstream reuse.
 
-2. **High value, high cost: heavy-investment assets.** These assets create strong benefits but require expensive updates, review, or governance. The answer is not crude cost cutting, because that may destroy value. Teams should automate maintenance, reuse compliance work, and expand reuse to dilute cost. Only shrink them if cost reduction is impossible and benefit no longer covers cost.
+2. **High value, high cost: heavy-investment assets.** These assets create strong benefits but require expensive updates, review, or governance, such as a very effective corpus that must be updated frequently and undergo heavy compliance review. The answer is not crude cost cutting, because that may destroy value. Teams should automate maintenance, use incremental processing, reuse compliance work, and expand reuse to dilute cost. Only when cost reduction is impossible and benefit no longer covers cost should the asset be shrunk.
 
-3. **Low value, low cost: long-tail assets.** These assets do not create much current benefit but are cheap to keep. They can remain discoverable with minimal maintenance, because future scenarios may raise their value. They should not consume governance resources needed by core assets.
+3. **Low value, low cost: long-tail assets.** These assets do not create much current benefit but are cheap to keep and impose little burden. They can be retained with minimal maintenance for occasional future needs, but they should not consume governance resources needed by core assets. The main risk in this quadrant is misclassification: a currently low-value asset may jump in value when a future scenario appears. It should remain discoverable but does not need active maintenance.
 
-4. **Low value, high cost: negative assets.** These are the dangerous assets: low benefit with high cost or risk. They often survive because of the cost illusion: "we already spent so much." Correct handling is archive, decommission, or retire, after impact analysis. Cleaning negative assets is often one of the highest-ROI governance actions.
+4. **Low value, high cost: negative assets.** These are the assets that require the most vigilance: low benefit with high cost or risk. They are typical products of the cost illusion from Section 29.1.3 and the technical debt described in Section 29.2.5. They often survive because "we already spent so much," continuing to consume resources with little output (Sculley et al. 2015; Laney 2017). Correct handling is decisive disposal: archive, decommission, or retire, stop adding new investment, and complete impact analysis before shutdown. Identifying and cleaning negative assets is often one of the highest-ROI actions in data governance.
 
 ### 29.5.3 Using the Matrix for Portfolio Decisions
 
 The matrix turns separate asset evaluations into resource-allocation decisions. It helps answer which assets deserve governance resources, which assets quietly consume cost without output, and which valuable assets require cost-reduction programs to remain sustainable.
 
-A healthy portfolio protects and reuses core assets, optimizes heavy-investment assets, keeps long-tail assets cheaply discoverable, and retires negative assets. This balance is dynamic; assets move as their use, cost, and risk change.
+A healthy portfolio protects and reuses core assets, continuously optimizes heavy-investment assets, keeps long-tail assets cheaply discoverable, and retires negative assets in time. This balance is not achieved once and for all; assets move as their use, cost, and risk change. That is why a normal review mechanism is required.
 
 ### 29.5.4 Section Summary
 
-The cost-benefit matrix lifts valuation from individual assessment to portfolio management. It classifies assets as core, heavy-investment, long-tail, or negative assets and ties each class to a management strategy. Because quadrant position changes over time, valuation must become periodic.
+The cost-benefit matrix lifts valuation from individual assessment to portfolio management. With value and cost/risk as the two axes, it classifies assets as core, heavy-investment, long-tail, or negative assets and ties each class to a differentiated management strategy. Its value is that it can guide governance-resource allocation without precise monetary valuation for every asset: protect core assets, optimize heavy-investment assets, retain long-tail assets cheaply, and clean negative assets decisively. This portfolio view upgrades data governance from passive per-asset handling to global allocation. But an asset's quadrant position is not fixed; keeping portfolio management effective requires a mechanism that makes valuation periodic.
 
 ## 29.6 Asset Review Cards and Continuous Value Governance
 
 ### 29.6.1 Value Decays, So Valuation Must Be Periodic
 
-Data value is not static. Financial regulations become outdated, customer-service knowledge drifts away from real questions, and once-valuable labels may be replaced by better data. A one-time valuation at procurement or launch will drift out of date and eventually reproduce the illusions described earlier.
+Data value is not a static quantity that can be measured once and trusted forever. It decays over time and may also rise when a new scenario appears. Financial regulations become outdated, customer-service knowledge drifts away from real questions, and once-valuable labels may be replaced by better data. A one-time valuation at procurement or launch will drift out of date and eventually reproduce the illusions described earlier.
 
-The lightweight mechanism proposed here is an **asset review card**: a one-page periodic record of value, cost, risk, reuse, and recommended action.
+The final link in value governance is to turn valuation from a one-time action into a normal mechanism. The lightweight mechanism proposed here is an **asset review card**: a one-page periodic record of value, cost, risk, reuse, and recommended action. It condenses the tools introduced above, including value metrics, reuse paths, and the cost-benefit matrix, into an operational checklist.
 
 ![Data asset review card](../../images/part9/ch29_fig03.png)
 
@@ -322,11 +350,11 @@ A practical card should include five groups of information:
 
 The review cadence should match the speed of value decay. Highly time-sensitive assets, such as financial regulations, news corpora, and customer-service knowledge bases, require frequent reviews focused on RAG hit rate and staleness. Stable assets, such as foundational language corpora or durable domain knowledge, can be reviewed less frequently. Evaluation assets should be reviewed after major model or knowledge-base releases, with special attention to validity and leakage risk.
 
-Key decay signals include falling reuse rate, falling retrieval hit rate, rising maintenance cost with flat benefit, and compliance status changes. These signals should trigger deeper evaluation and possible movement between matrix quadrants.
+To decide whether value is decaying, compare the value metric snapshot with the previous review cycle and watch sensitive signals: falling reuse rate means downstream users are leaving; falling retrieval hit rate means content may be getting stale; rising maintenance cost with flat benefit means cost-effectiveness is worsening. These signals should trigger deeper evaluation and possible movement between matrix quadrants, such as downgrading a core asset, launching a heavy update, or beginning retirement assessment.
 
 ### 29.6.4 Section Summary
 
-The asset review card turns valuation into a continuing governance mechanism. It compresses metrics, reuse paths, portfolio position, risk, and actions into a periodic checklist. Continuous review is what keeps value governance aligned with reality.
+The asset review card upgrades valuation from a one-time action into continuous governance. Within one page, it gathers basic information, value metric snapshots, reuse path ledgers, cost-benefit position, and risks/actions, compressing all of this chapter's tools into a periodic checklist. Review cadence should match value-decay speed: time-sensitive assets need frequent review, stable assets can be reviewed less often, and evaluation assets should be reviewed with major version updates. By continuously tracking value trends, organizations can detect decay signals in time, adjust matrix positions and action strategies dynamically, and turn data value governance into a closed loop.
 
 ## 29.7 Engineering the Valuation Process
 
@@ -347,7 +375,7 @@ Without decision feedback, the pipeline is only another monitoring system.
 
 ### 29.7.2 Asset Registration: The Minimal Fact Table
 
-Many organizations cannot value data because they cannot answer basic questions: what is this asset, who owns it, who uses it, and can it be reused? Registration is the minimal fact table for valuation.
+The first step in valuation is not calculation; it is forming a unified asset fact. Many organizations cannot value data not because they lack complex algorithms, but because they cannot answer basic questions: what is this asset, who owns it, who uses it, and can it be reused? Registration is the minimal fact table for valuation. It should connect the data catalog, lineage system, permission system, quality monitoring, and cost bills. If the organization has established data products and data contracts, the registration table should also reference the corresponding product ID and contract version.
 
 *Table 29-5: Example fields for data asset registration*
 
@@ -364,7 +392,9 @@ Many organizations cannot value data because they cannot answer basic questions:
 | refresh_frequency | Update cadence | Maintenance cost and freshness-risk estimation |
 | expected_scenarios | Intended consumption scenarios | Baseline for later actual reuse |
 
-Mandatory fields can start small: `asset_id`, `owner`, `source_type`, `compliance_status`, and `refresh_frequency`. Registration should also avoid equating physical tables with assets. A data asset may include tables, files, vector indexes, label sets, documentation, and compliance records. The boundary should follow consumption semantics: what stable capability downstream users depend on.
+These fields do not need to be perfect on the first day. A realistic approach is to separate mandatory and optional fields. Mandatory fields ensure that an asset can be located, owned, and audited; optional fields can be filled as the asset enters more reuse scenarios. For valuation, the most important mandatory fields are `asset_id`, `owner`, `source_type`, `compliance_status`, and `refresh_frequency`. Without `asset_id`, benefits cannot be attributed. Without `owner`, reviews have no accountable party. Without `source_type` and `compliance_status`, reuse boundaries cannot be judged. Without `refresh_frequency`, maintenance cost and freshness risk cannot be estimated.
+
+Registration should also avoid equating physical tables with assets. A data asset may include tables, files, vector indexes, label sets, documentation, and compliance records. Conversely, one physical table may be an intermediate shared by multiple assets. Asset boundaries should follow consumption semantics, not storage objects: the stable capability that downstream users actually depend on.
 
 ### 29.7.3 Usage Collection: Making Reuse Observable
 
@@ -400,7 +430,9 @@ Benefit estimation often fails by pursuing false precision or refusing to estima
 
 For RAG assets, proxies include retrieval hits, lower human handoff rate, and shorter handling time. For post-training data, proxies include annotation cost avoided, alignment metric improvement, and review pass-rate improvement. For evaluation sets, proxies include blocked regression releases and reduced expected incident loss. For compliant corpora, proxies include review hours saved and lower violation probability.
 
-Benefits can first be graded as high, medium, or low, then monetized for high-benefit or high-cost assets when budget decisions require precision. Each estimate should include `confidence_level`. High confidence comes from A/B tests, real bills, automatic logs, and reproducible experiments. Medium confidence comes from stable historical statistics and cross-team confirmation. Low confidence comes from one-off interviews or subjective assumptions.
+Benefits can first be graded as high, medium, or low, then monetized for high-benefit or high-cost assets when budget decisions require precision. High benefit means the asset directly supports a core production path and is used frequently downstream. Medium benefit means the asset supports an important but non-core path, or is used less often but has high replacement cost. Low benefit means the asset is used occasionally or mainly for exploration, backup, and long-tail scenarios. This layered approach prevents governance resources from being spent on large numbers of low-risk, low-cost, low-dispute assets.
+
+Each estimate should include `confidence_level`. High confidence comes from A/B tests, real bills, automatic logs, and reproducible experiments. Medium confidence comes from stable historical statistics, sampling review, and cross-team confirmation. Low confidence comes from one-off interviews, subjective estimates, or inference without a control group. Valuation does not require every estimate to start as high confidence, but it does require teams to know which conclusions are reliable and which are temporary assumptions.
 
 ### 29.7.5 Cost Aggregation: Do Not Let Bills Hide Engineering Facts
 
@@ -408,7 +440,7 @@ Cost aggregation is an engineering problem as much as a finance problem. Storage
 
 Shared infrastructure requires allocation rules. They do not need to be perfect, but they must be stable, transparent, and explainable. Common rules allocate by storage volume, call count, compute time, sample count, or human hours. Critical assets can use separate ledgers.
 
-Cost records should distinguish reducible and irreducible cost. Historical purchases and past labeling are sunk. Future storage, updates, index rebuilds, monitoring, human review, and compliance maintenance are reducible. Retirement decisions should mainly depend on future reducible cost and future benefit.
+Cost records should distinguish reducible and irreducible cost. Historical purchases, historical cleaning, and past labeling are sunk and usually cannot be reduced. Future storage, updates, index rebuilds, monitoring, human review, and compliance maintenance are reducible. Retirement decisions should mainly depend on future reducible cost and future benefit. An asset that was expensive historically but has low future maintenance cost and still has long-tail reuse value may not need to be deleted. Conversely, an asset that was cheap historically but has rising future maintenance cost and no downstream benefit may be the more urgent negative asset.
 
 ### 29.7.6 Scoring and Grading: Making Valuation Executable
 
@@ -447,19 +479,23 @@ Ordinary monitoring asks what happened. Valuation also asks where resources shou
 | Decision feedback | Results affect catalog recommendation, maintenance priority, or retirement plans |
 | Periodic review | High-value and high-risk assets have a defined review cadence |
 
-Early pilots should focus on 10 to 20 high-reuse, high-cost, high-risk, or disputed assets rather than trying to cover everything.
+Early pilots should focus on 10 to 20 high-reuse, high-cost, high-risk, or disputed assets rather than trying to cover everything. These assets best test whether valuation actually improves decisions. After the pilot loop is validated, it can be expanded gradually to more domains.
 
 ### 29.7.9 Section Summary
 
-This section turned valuation into an engineering process: register assets, collect reuse, estimate benefit, aggregate cost, score value, and feed decisions back into governance. The goal is not exact monetary value on day one, but a growing base of reviewable value facts.
+This section turned the valuation method into an engineering process. A practical data valuation pipeline should start with asset registration, pass through usage collection, benefit estimation, cost aggregation, and value scoring, and finally feed results back into catalog, permission, quality, cost, and planning decisions. The key is not exact monetary value on day one, but continuous accumulation of reviewable value facts. With asset registration tables, reuse event logs, confidence levels, cost allocation rules, and grading mechanisms, data value becomes a governable object. Once the pipeline runs stably, data reuse is no longer only spontaneous behavior among teams; it becomes an organizational capability that the platform can observe, incentivize, and optimize.
 
 ## 29.8 Organizational Collaboration, Governance, and Anti-Patterns
 
 ### 29.8.1 Data Value Cannot Be Defined by One Team Alone
 
+Data valuation may look like the data team's job, but in reality it must be completed by multiple roles together.
+
 Data teams understand production, but not always business benefit. Business teams understand outcomes, but not always lineage, quality, and compliance. Algorithm teams understand model effects, but not always acquisition and maintenance cost. Compliance teams understand risk, but not always downstream reuse.
 
-If any one role defines value alone, the judgment becomes partial. Mature value governance therefore needs cross-role collaboration. It can start with a monthly data asset review focused only on assets with meaningful changes: fast-growing reuse, rising maintenance cost, changed compliance status, long-term nonuse with high cost, or new entry into a core production path. The input is valuation-pipeline facts. The output must be concrete governance action.
+If any one role defines value alone, the judgment becomes partial. Data teams may overvalue well-governed data nobody uses. Business teams may overvalue data that improves a short-term metric but is not sustainable. Algorithm teams may overvalue data that improves offline metrics but cannot be deployed compliantly. Compliance teams may undervalue data that can be safely reused after sufficient governance.
+
+Mature value governance therefore needs cross-role collaboration. It does not have to be complicated; it can start with a monthly data asset review focused only on assets with meaningful changes: fast-growing reuse, rising maintenance cost, changed compliance status, long-term nonuse with high cost, or new entry into a core production path. The input is valuation-pipeline facts. The output must be concrete governance action, so the meeting does not become general discussion.
 
 ### 29.8.2 RACI: Clarifying Responsibility for Value Decisions
 
@@ -477,13 +513,15 @@ RACI stands for Responsible, Accountable, Consulted, and Informed. It reduces am
 | Value grading | Data governance committee | Data lead | Business, algorithm, compliance, platform | Related teams |
 | Retirement decision | Data owner | Data domain lead | Downstream consumers, compliance team | Platform team |
 
-The table is not universal. The important point is that every action has an accountable owner; otherwise valuation remains a recommendation rather than a decision.
+The table is not universal; each organization can adjust it to its structure. The important point is that every action has an accountable owner. Without an accountable owner, valuation remains at the level of "recommendation." With one, the results can enter budgeting, scheduling, permission, maintenance, and retirement processes.
 
 ### 29.8.3 Incentives: Making Reuse More Attractive Than Rebuilding
 
 Reuse often loses to rebuilding because incentives point the wrong way. Reusing an asset may require communication, permission requests, contract reading, and field adaptation. Building a private copy can look faster in the short term. Teams are often rewarded for new delivery, not for avoiding duplicate construction. Asset owners carry maintenance responsibility but may not see credit for downstream reuse.
 
-A useful incentive mechanism makes reuse benefits visible to both producers and consumers. Producers should see how many downstream teams reuse their assets, what duplicate work was avoided, and which key scenarios were supported. Consumers should see the development, labeling, review, and maintenance cost they avoided by reusing. The platform can lower friction by showing quality grade, compliance status, example queries, recommended use, known consumers, SDKs, notebooks, RAG templates, evaluation scripts, and contract-change notifications.
+A useful incentive mechanism makes reuse benefits visible to both producers and consumers. Producers should see how many downstream teams reuse their assets, how much duplicate construction cost was avoided, and which key scenarios were supported. This can become evidence for data-team performance and resource requests. Consumers should see the development, labeling, review, and maintenance cost they avoided by reusing existing assets. This turns reuse from a "cumbersome process" into a provable efficiency gain.
+
+The platform can lower friction by showing "which projects already use this asset," quality grade, compliance status, example queries, and recommended use in the data catalog. For high-value assets, it can also provide standard SDKs, example notebooks, RAG integration templates, evaluation scripts, and data-contract change notifications. Data value is amplified continuously only when reuse is easier, more visible, and more recognized than rebuilding.
 
 ### 29.8.4 Anti-Pattern 1: Valuation Without Governance
 
@@ -497,15 +535,19 @@ Some organizations begin with dozens of indicators, complex weights, and predict
 
 Early scoring should be simple and explainable. A five-factor score using number of reuse paths, number of key scenarios, annual maintenance cost, compliance risk, and quality grade is often enough. More complex models can come later. Human review remains necessary: a low-scoring asset may support rare critical audits, and a high-scoring asset may be unusable if compliance boundaries are unclear.
 
+Value scoring is decision support, not a replacement for decision-making.
+
 ### 29.8.6 Anti-Pattern 3: Ignoring Version Differences
 
-Data assets change. A field change, anonymization-policy update, source replacement, or label-guideline revision can change value. If valuation binds only to the asset name, it mixes benefits and risks from different versions. A RAG knowledge base may have high hit rate in v1 and worse hit rate after a v2 chunking change. A corpus may be internal-research-only in v1 and commercially usable in v2 after licensing expansion. Reuse logs, benefit records, risk records, and cost records should all bind to versions.
+Data assets change. A field change, anonymization-policy update, source replacement, or label-guideline revision can change value. If valuation binds only to the asset name, it mixes benefits and risks from different versions. A RAG knowledge base may have high hit rate in v1 and worse hit rate after a v2 chunking change, and the issue may be invisible if only aggregate asset hit rate is tracked. A corpus may be internal-research-only in v1 and commercially usable in v2 after licensing expansion, so compliance reuse value would be underestimated without version distinction. Reuse logs, benefit records, risk records, and cost records should all bind to versions. Version governance is not a documentation detail; it is a prerequisite for valuation.
 
 ### 29.8.7 Anti-Pattern 4: Treating Compliance as Pure Cost
 
 Compliance review is often seen only as a delay. That misses the reuse value of clear provenance, authorization, anonymization, and use boundaries. A compliant asset can enter more downstream scenarios with less repeated review and lower expected loss. In large-model settings, where data can be solidified into model behavior, licensing boundaries, privacy protection, and traceability are even more important than in traditional analytics.
 
 Compliance status should therefore be part of the value metric system. Clear compliance is not just a cost; it is a value multiplier.
+
+Especially in large-model settings, once data enters training or post-training, it may be solidified into model capabilities. This makes authorization boundaries, privacy protection, and traceability more important than in traditional analytics. Assets with clear compliance should be explicitly marked in the catalog and recommended first for suitable downstream scenarios.
 
 ### 29.8.8 Anti-Pattern 5: Undervaluing Retirement
 
@@ -523,9 +565,13 @@ Organizations at different maturity levels should proceed differently:
 
 The stages can be summarized as visible, comparable, and optimizable. Rollout should not be packaged as one large platform transformation. Start with one domain, a few high-frequency assets, and real downstream consumers. Run the registration, collection, evaluation, review, and action loop. Then turn successful fields, metrics, and workflows into platform capability.
 
+This incremental approach lets the organization see concrete benefits early, such as reducing duplicate construction, discovering unmaintained critical dependencies, identifying high-cost low-benefit assets, or promoting a dataset that once served only one scenario into a shared asset. Value governance wins continued investment only by repeatedly producing these visible small wins.
+
+Data valuation maturity is therefore not created by a one-time policy release. It forms through repeated reviews, calibration, and organizational learning. Every reuse record, retirement decision, and cost attribution step moves the organization closer to managing data assets with facts.
+
 ### 29.8.10 Section Summary
 
-Data value governance is organizational, not merely analytical. It requires shared judgment across data, business, algorithm, platform, finance, and compliance roles. RACI clarifies responsibility, incentives make reuse rational, version governance keeps valuation accurate, compliance becomes a value enabler, and retirement keeps the portfolio healthy. Valuation closes the loop only when it affects catalog ranking, access approval, quality monitoring, budget allocation, and asset retirement.
+Data value governance is organizational, not merely analytical. It requires shared judgment across data, business, algorithm, platform, finance, and compliance roles. RACI clarifies responsibility, incentives make reuse more attractive than rebuilding, and retirement keeps the portfolio healthy. This section also discussed five anti-patterns: valuation without governance, overcomplicated scoring models, ignoring version differences, treating compliance as pure cost, and undervaluing retirement. Their common root is treating valuation as a set of metrics rather than as a governance mechanism that changes organizational behavior. Valuation closes the loop only when it affects catalog ranking, access approval, quality monitoring, budget allocation, and asset retirement.
 
 ## Chapter Summary
 
@@ -537,7 +583,9 @@ The chapter built a multidimensional metric system covering reuse rate, coverage
 
 The financial-domain corpus case demonstrated that valuation is practical. A corpus with about RMB 2 million in acquisition cost and RMB 600,000 in annual maintenance can create about RMB 2.5 million in annual cross-path benefit, mostly because it is reused and maintained. The cost-benefit matrix extends individual valuation into portfolio management. Asset review cards make valuation periodic.
 
-Finally, the chapter argued that valuation must be engineered and governed. Asset registration, usage collection, benefit estimation, cost aggregation, grading, and decision feedback turn data value into a manageable object. RACI, reuse incentives, version governance, compliance reuse, and retirement mechanisms ensure the metrics change behavior. Together with catalogs, products, and contracts, valuation completes the shift from passive data resource to active data asset.
+Finally, the chapter argued that valuation must be engineered and governed. Asset registration, usage collection, benefit estimation, cost aggregation, grading, and decision feedback create a sustainable valuation pipeline. RACI, reuse incentives, version governance, compliance reuse, and retirement mechanisms ensure that valuation results truly affect team behavior and resource allocation. In other words, data valuation is not a scoring sheet; it is a governance system that connects facts, metrics, responsibility, and decisions.
+
+Ultimately, data valuation and reuse aim to help an organization know its own data assets clearly: which assets deserve investment, which should be reused, and which should be retired. This continues the logic of the previous two chapters. If data catalogs solve whether data can be found and understood, and data products and contracts solve whether data can be relied on over time, then data valuation and reuse solve whether data is worth relying on and how that reliance can create the most value. From discoverable, to dependable, to measurable and value-generating, data completes its transformation from passive resource to active asset.
 
 ## References
 

@@ -52,7 +52,7 @@ If these three ledgers are disconnected, transparency degrades into "downloadabi
 
 Dolma is not a single static file, but a corpus asset with version evolution. The Hugging Face dataset card lists versions such as `v1`, `v1_5`, `v1_5-sample`, `v1_6`, `v1_6-sample`, and `v1_7`. Among them, `v1_7` is used to train OLMo 7B-v1.7 and introduces new sources, more quality filtering, and fuzzy deduplication.
 
-*Table 45-1 Public Dolma Versions and Uses*
+*Table 42-1 Public Dolma Versions and Uses*
 
 | Version | Release Date | Compressed Size | Dataset-card Description | Engineering Use |
 | --- | --- | ---: | --- | --- |
@@ -67,9 +67,9 @@ Source: Versions section of the Hugging Face `allenai/dolma` dataset card.
 
 ### 42.2.1 v1.6 Source Structure
 
-Dolma covers Web, code, papers, social media, books, and encyclopedic sources. To avoid mixing versions, Table 45-2 uses the coarse-grained statistics from the dataset card's v1.6 summary statistics. The v1.7 sources are more fine-grained, adding Refined Web, StarCoder, arXiv, StackExchange, Flan, OpenWebMath, Algebraic Stack, MegaWika, and other sources. Subsequent writing or experiments should explicitly state which version is used.
+Dolma covers Web, code, papers, social media, books, and encyclopedic sources. To avoid mixing versions, Table 42-2 uses the coarse-grained statistics from the dataset card's v1.6 summary statistics. The v1.7 sources are more fine-grained, adding Refined Web, StarCoder, arXiv, StackExchange, Flan, OpenWebMath, Algebraic Stack, MegaWika, and other sources. Subsequent writing or experiments should explicitly state which version is used.
 
-*Table 45-2 Dolma v1.6 Source Statistics*
+*Table 42-2 Dolma v1.6 Source Statistics*
 
 | Source | Document Type | UTF-8 Bytes | Documents | Unicode Words | Llama Tokens |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -84,7 +84,7 @@ Dolma covers Web, code, papers, social media, books, and encyclopedic sources. T
 
 Source: Hugging Face `allenai/dolma` dataset card, Summary Statistics v1.6. GB, M, and B follow the dataset-card convention.
 
-Table 45-2 should not be read only as a scale display. It reveals three engineering facts.
+Table 42-2 should not be read only as a scale display. It reveals three engineering facts.
 
 First, Dolma is a source mix, not a single Web dump. Common Crawl accounts for a large share, but code, papers, social media, books, and encyclopedic content all enter the corpus in different forms. Changes in model capability cannot be vaguely attributed to "more Web data."
 
@@ -134,7 +134,7 @@ The Dolma v1.7 dataset card lists both source token counts and sample proportion
 
 Transparent corpora do not end with packaging and uploading `text`. At least three layers of records are needed: an individual document record, a source card, and a training-version manifest. The document record supports training and location; the source card explains data origin and processing rules; the training manifest reproduces the data actually consumed by a model run.
 
-*Table 45-3 Dolma-like Transparent Corpus Record Schema*
+*Table 42-3 Dolma-like Transparent Corpus Record Schema*
 
 | Layer | Typical Fields | Source or Generation Method | Engineering Use |
 | --- | --- | --- | --- |
@@ -185,7 +185,7 @@ The Dolma GitHub repository states that Dolma is both a dataset and a toolkit. D
 
 Dolma Toolkit documentation summarizes data organization as four actions: tag, dedup, mix, and tokenize. They are not isolated scripts, but evidence-chain generators: tag records document attributes, dedup records what is retained and removed, mix records sampling proportions, and tokenize records the token convention that enters training.
 
-*Table 45-4 Dolma Toolkit Processing Actions and Evidence Outputs*
+*Table 42-4 Dolma Toolkit Processing Actions and Evidence Outputs*
 
 | Order | Action | Official Documentation Description | Evidence Output | Main Risk |
 | ---: | --- | --- | --- | --- |
@@ -239,7 +239,7 @@ flowchart TD
 
 ### 42.5.2 Diagnosis Checklist
 
-*Table 45-5 Dolma-like Transparent Corpus Evaluation and Diagnosis Table*
+*Table 42-5 Dolma-like Transparent Corpus Evaluation and Diagnosis Table*
 
 | Evaluation Question | Required Records | Metric or Evidence | Possible Action |
 | --- | --- | --- | --- |
@@ -251,7 +251,7 @@ flowchart TD
 
 ### 42.5.3 Common Failure Modes
 
-*Table 45-6 Common Failures and Repair Actions for Dolma-like Transparent Corpora*
+*Table 42-6 Common Failures and Repair Actions for Dolma-like Transparent Corpora*
 
 | Failure Mode | Symptom | Possible Root Cause | Governance Action |
 | --- | --- | --- | --- |

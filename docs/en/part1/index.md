@@ -15,6 +15,10 @@ After reading this part, readers should be able to:
 - Map common data issues to detectable quality indicators, governance actions, and rollback strategies.
 - Draft an initial AI-native data stack and cost-governance plan based on team scale and training goals.
 
+## Terminology Conventions
+
+This part uses "large-model data engineering" to refer to lifecycle activities around data for training, alignment, application, and governance. It uses "data lifecycle" to describe the continuous process of acquisition, cleaning, annotation, evaluation, launch, feedback, and retirement. It uses "AI-native data stack" to describe data infrastructure that serves large-model training and applications. The pre-training corpora, SFT data, preference data, RAG corpora, agent trajectories, and data products discussed in later parts should all be understood through this part's frameworks for data quality, cost governance, and risk boundaries.
+
 ## Chapter Relationships
 
 Chapter 1 introduces the book's core proposition: data quality, data scale, and data diversity jointly define the boundary of model capability. Chapter 2 answers the question "How do we judge whether data is usable?" and provides quality scorecards and governance gates. Chapter 3 answers "What infrastructure carries these governance actions?" and places the later chapters on cleaning, alignment, RAG, DataOps, and compliance into one architecture.

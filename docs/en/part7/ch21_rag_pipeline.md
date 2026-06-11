@@ -1,5 +1,21 @@
 # Chapter 21: The RAG Data Pipeline
 
+## Chapter Abstract
+
+The quality ceiling of a retrieval-augmented generation (RAG) system is often fixed by the upstream data-processing chain before the query ever reaches the model. This chapter reframes RAG as a document engineering problem: the system does not operate on raw documents, but on data representations that have been parsed, cleaned, structured, and chunked. Information loss in any stage is amplified downstream. The chapter follows the actual data pipeline: it first argues that RAG is grounded in document engineering rather than terminal generation; then explains stable multi-source knowledge ingestion, heterogeneous format parsing, and structured cleaning; then discusses how knowledge units become multi-route retrieval infrastructure combining vectors, keywords, structured fields, and parent-child hierarchy; then builds evaluation, error attribution, feedback, and knowledge-update loops for the whole chain; and finally uses an enterprise complex-document case and engineering checklist to show how these methods converge into a traceable, verifiable, deliverable production pipeline.
+
+## Keywords
+
+RAG data pipeline; document engineering; retrieval-augmented generation; chunking; knowledge update; evaluation feedback
+
+## 21.0 Learning Objectives
+
+- Explain why the performance ceiling of RAG is determined by the upstream data pipeline rather than the terminal generation model.
+- Design a document-engineering chain that covers multi-source ingestion, heterogeneous format parsing, and structured cleaning.
+- Build a multi-route retrieval index that combines vectors, keywords, structured fields, and parent-child hierarchy.
+- Design chunking strategies that preserve document structure while controlling semantic breaks.
+- Establish end-to-end evaluation, error attribution, and knowledge feedback loops for production delivery.
+
 ------
 
 ## Application-Level Data Engineering: An Introduction
@@ -26,7 +42,7 @@ Compared with traditional data processing, the RAG data pipeline has stronger st
 
 ### 21.1.1 The Nature of Problems in RAG Systems
 
-As RAG (Retrieval-Augmented Generation) is widely deployed in enterprise knowledge Q&A, document assistants, intelligent customer service, and industry knowledge systems, its performance bottlenecks gradually surface. Practice has shown that system performance is determined neither solely by the capability of the foundation model, nor merely by the choice of vector database or retrieval algorithm. In extensive deployment practice, even after introducing more powerful models and more advanced embedding techniques, the system output still exhibits significant and non-random fluctuations. This instability has clear structural characteristics: the system answers fluently for certain types of questions but exhibits systematic failure for others. Further analysis shows that such problems mostly originate in the early stages of the data-processing pipeline rather than at the model-inference stage. By the time a query arrives at the model, the upper bound on answer quality has already been locked in by the upstream data processing. The model is only responsible for reasoning over and expressing the given input; it does not have the ability to repair or reconstruct the underlying data.
+Related research shows that the gains from retrieval-augmented language models come not only from the generation model itself, but also depend heavily on whether retrieved external evidence can be stably ingested and effectively used (Guu et al. 2020; Izacard and Grave 2021). As RAG (Retrieval-Augmented Generation) is widely deployed in enterprise knowledge Q&A, document assistants, intelligent customer service, and industry knowledge systems, its performance bottlenecks gradually surface. Practice has shown that system performance is determined neither solely by the capability of the foundation model, nor merely by the choice of vector database or retrieval algorithm. In extensive deployment practice, even after introducing more powerful models and more advanced embedding techniques, the system output still exhibits significant and non-random fluctuations. This instability has clear structural characteristics: the system answers fluently for certain types of questions but exhibits systematic failure for others. Further analysis shows that such problems mostly originate in the early stages of the data-processing pipeline rather than at the model-inference stage. By the time a query arrives at the model, the upper bound on answer quality has already been locked in by the upstream data processing. The model is only responsible for reasoning over and expressing the given input; it does not have the ability to repair or reconstruct the underlying data.
 
 Against this backdrop, the simplistic understanding of RAG as merely "retrieval + generation" is an over-simplification. In real production environments, the model does not reason directly over raw documents — it reasons over data representations that have undergone multiple rounds of complex transformation. As shown in Figure 21-1, this transformation pipeline covers document parsing, cleaning and structuring, chunking, index construction, and more. Information loss or structural drift at any node will be amplified step by step downstream. Therefore, the core of building an effective system lies in deep understanding and optimization of the entire data-processing mechanism, not just on the final generation stage.
 
@@ -40,17 +56,17 @@ Against this backdrop, the simplistic understanding of RAG as merely "retrieval 
 
 ### 21.1.2 Definition and Engineering Meaning of Document Engineering
 
-Therefore, the primary task in building a production-grade RAG system is not blindly comparing embedding-model scores on evaluation leaderboards, but rather re-examining and firmly establishing the core position of Document Engineering throughout the entire pipeline.
+Recent document-intelligence research further shows that joint modeling of layout, visual, and textual information is an important foundation for understanding complex documents, not merely an auxiliary step attached to plain-text extraction (Kim et al. 2022). Therefore, the primary task in building a production-grade RAG system is not blindly comparing embedding-model scores on evaluation leaderboards, but rather re-examining and firmly establishing the core position of Document Engineering throughout the entire pipeline (Xu et al. 2020).
 
-Here we need to give a rigorous technical definition of document engineering. Document engineering is by no means the process of invoking a basic parsing library to brute-force convert PDFs or Word documents into plain text strings. It is the process of reducing the dimensionality of complex, unstructured or semi-structured human knowledge sources and reconstructing them into a machine-friendly data representation — one that can be stably represented in a high-dimensional vector space, accurately hit by retrieval engines, unambiguously understood by generative models, and traced and verified by end users. This process covers not only basic Optical Character Recognition (OCR) and text extraction, but more deeply involves layout analysis, document logical-tree reconstruction (e.g., chapter–subsection–paragraph hierarchy parsing), table relationship mapping, image-caption binding, and the systematic attachment of metadata such as timestamps, authors, and access-control classifications.
+Here we need to give a rigorous technical definition of document engineering. Document engineering is by no means the process of invoking a basic parsing library to brute-force convert PDFs or Word documents into plain text strings. It is the process of reducing the dimensionality of complex, unstructured or semi-structured human knowledge sources and reconstructing them into a machine-friendly data representation — one that can be stably represented in a high-dimensional vector space, accurately hit by retrieval engines, unambiguously understood by generative models, and traced and verified by end users. This process covers not only basic Optical Character Recognition (OCR) and text extraction, but more deeply involves layout analysis, document logical-tree reconstruction (e.g., chapter–subsection–paragraph hierarchy parsing), table relationship mapping, image-caption binding, and the systematic attachment of metadata such as timestamps, authors, and access-control classifications (Huang et al. 2022; Appalaraju et al. 2021).
 
 
 
 ### 21.1.3 The Decisive Role of Document Structure in Knowledge Expression
 
-In many RAG projects that fail to deliver their expected business value, the data preprocessing stage commonly suffers from paradigm-level defects. The typical practice is to feed massive heterogeneous documents directly into a parsing script, strip away all layout features to produce a plain-text stream, then mechanically slice it based on a hard-coded fixed threshold (e.g., 500 tokens), and finally feed it into an embedding model to build a vector index.
+Research on table extraction and long context likewise suggests that structural position, header relationships, and context position all significantly affect downstream information use (Smock, Pesala and Abraham 2022; Liu et al. 2024). In many RAG projects that fail to deliver their expected business value, the data preprocessing stage commonly suffers from paradigm-level defects. The typical practice is to feed massive heterogeneous documents directly into a parsing script, strip away all layout features to produce a plain-text stream, then mechanically slice it based on a hard-coded fixed threshold (e.g., 500 tokens), and finally feed it into an embedding model to build a vector index (Karpukhin et al. 2020).
 
-This pipeline-style processing has extremely high throughput, but it fundamentally ignores the essential laws of knowledge organization. Domain knowledge is not an unstructured linear pile of characters; its semantic density and logical rigor depend heavily on the native physical layout and contextual associations. For example:
+This pipeline-style processing has extremely high throughput, but it fundamentally ignores the essential laws of knowledge organization. Domain knowledge is not an unstructured linear pile of characters; its semantic density and logical rigor depend heavily on the native physical layout and contextual associations (Reimers and Gurevych 2019). For example:
 
 * **Policies and legal documents**: outline hierarchy directly determines the scope of application and prerequisites of subsequent clauses.
 * **Financial reports and technical manuals**: row headers, column headers, and merged cells in a table give specific business semantics to otherwise isolated numerical values.
@@ -71,7 +87,7 @@ If this structural skeleton is destroyed during parsing and chunking, even if ev
 
 ### 21.1.4 Mathematical Abstraction and System Constraints of the RAG Data Pipeline
 
-From the perspective of system control and information theory, the final output of RAG can be viewed as the terminal expression of the raw dataset after multiple nonlinear mappings. If we take the raw document set $D$ as the initial input, the full pipeline can be abstracted as the following composite function:
+From the perspective of explainable, modular knowledge ingestion, work such as REALM has explicitly incorporated retrieval into the language-model computation process, showing that RAG can be understood as a combined system of a data-transformation pipeline and a generation function (Guu et al. 2020). From the perspective of system control and information theory, the final output of RAG can be viewed as the terminal expression of the raw dataset after multiple nonlinear mappings. If we take the raw document set $D$ as the initial input, the full pipeline can be abstracted as the following composite function:
 
 $$
 Y = f_{LLM}(Q, R(I(S(C(P(D))))))
@@ -99,7 +115,7 @@ This abstraction reveals an engineering iron law: the system output $Y$ is separ
 
 ### 21.1.5 Error Accumulation Mechanisms and Error Decomposition in RAG
 
-Referring to the error-accumulation diagram of RAG, one can see that an answer existing in the original document does not mean it exists in a retrieval-reachable knowledge unit; an answer existing in a knowledge unit does not mean it can be recalled; an answer being recalled does not mean it enters the context in a complete, clear, and citable form. RAG failures are rarely the failure of a single module in isolation — they are the accumulation of multiple small information losses along the pipeline, eventually producing user-visible errors.
+Evaluation studies such as RAGAS and RAGTruth emphasize that RAG errors must be decomposed into different dimensions, including retrieval, context use, and generation faithfulness, rather than judged only by whether the final answer looks good or bad (Es et al. 2024; Niu et al. 2024). Referring to the error-accumulation diagram of RAG, one can see that an answer existing in the original document does not mean it exists in a retrieval-reachable knowledge unit; an answer existing in a knowledge unit does not mean it can be recalled; an answer being recalled does not mean it enters the context in a complete, clear, and citable form. RAG failures are rarely the failure of a single module in isolation — they are the accumulation of multiple small information losses along the pipeline, eventually producing user-visible errors.
 
 ![Figure 21-3: How RAG errors accumulate along the data pipeline](../../images/part7/图21_3.png)
 
@@ -107,7 +123,7 @@ Referring to the error-accumulation diagram of RAG, one can see that an answer e
 
 
 
-To enable quantitative intervention and control of system errors, we can decompose the "total error" of the RAG system into modular components:
+To enable quantitative intervention and control of system errors, we can decompose the "total error" of the RAG system into modular components. It should be noted that the following formula is a **diagnostic decomposition and engineering attribution framework** for helping teams identify whether problems may originate in parsing, structuring, chunking, retrieval, or generation. It does not mean that these error types are strictly independent in a statistical sense, nor does it imply that errors must be added together in a simple linear way:
 
 $$
 E_{total} = E_{parse} + E_{structure} + E_{chunk} + E_{retrieve} + E_{generate}
@@ -119,6 +135,8 @@ $$
 * **$E_{retrieve}$ (retrieval error)**: matching failures at the recall stage, based on either literal or semantic signals.
 * **$E_{generate}$ (generation error)**: logical errors or intrusion of the model's internal knowledge despite being given correct context.
 
+In real systems, these errors often exhibit correlation, coupling, and amplification effects. For example, losing table structure during parsing further increases chunking error, and chunking error in turn lowers retrieval-recall quality. If the retrieval stage recalls fragments with incomplete context, it may also induce faulty reasoning at the generation stage. Therefore, this formula is better suited for diagnosis and attribution, and should not be understood as a strict statistical model or a directly estimable linear error function.
+
 In typical RAG tuning practice, a huge amount of compute and engineering effort is poured into the latter two terms (e.g., fine-tuning embedding models, introducing complex hybrid retrieval, iterating system prompts). In real production environments, however, the first three errors ($E_{parse}, E_{structure}, E_{chunk}$) are usually the decisive bottlenecks of the system's performance ceiling. Especially when dealing with high-barrier data such as enterprise intranet knowledge bases, complex legal case files, or long medical research reports, if upstream document engineering is clearly flawed, the downstream engines are inevitably trapped in the "Garbage In, Garbage Out" predicament.
 
 
@@ -127,7 +145,7 @@ In typical RAG tuning practice, a huge amount of compute and engineering effort 
 
 From a more rigorous system-analysis perspective, the RAG data pipeline can be viewed as a **process of information compression and re-encoding**. The raw document $D$ usually contains information density far exceeding the model's context window, and the essence of the entire RAG pipeline is, under a limited context budget, to compress the raw information into a set of the most representative subsets.
 
-This process can be abstracted as:
+This process can be abstracted as (Manning, Raghavan and Schütze 2008):
 
 $$
 \mathcal{K}^* = \arg\max_{\mathcal{K} \subset D} I(\mathcal{K}; Q)
@@ -161,7 +179,7 @@ i.e., approximate matching based purely on vector similarity. This degradation i
 
 ### 21.1.7 Core Capabilities of Production-Grade Document Engineering
 
-A document-engineering pipeline that meets production-grade RAG standards must systematically address four core requirements:
+The way production-grade systems organize knowledge assets also echoes the technical-debt problem in machine-learning systems engineering: if data, dependencies, and monitoring are not governed, system complexity will continue to accumulate after launch (Huyen 2022). A document-engineering pipeline that meets production-grade RAG standards must systematically address four core requirements:
 
 1. **High-fidelity knowledge retention**: not only must text be lossless at the character level, but the document's topology (e.g., the table-of-contents tree), cross-modal mappings (e.g., the 2D table matrix), and logical coherence must be fully preserved.
 2. **Adaptive retrieval representation**: heterogeneous knowledge carriers require differentiated processing strategies. Long prospectuses, dense financial tables, FAQ pair libraries, and policy documents have completely different optimal chunking granularities and vectorization mechanisms — they cannot be unified with a single length threshold.
@@ -173,6 +191,8 @@ Without document engineering, RAG systems easily fall into a state of "surface u
 
 
 ### 21.1.8 The Bucket-Stave Effect: Data Determines the System Ceiling
+
+Retrieval benchmark research shows that retrieval models vary significantly across tasks and domains, and that the capability of a single model cannot replace data quality, index design, and evidence organization (Thakur et al. 2021).
 
 *Table 21-1: Typical issues in RAG document engineering and their system-level manifestations*
 
@@ -200,7 +220,7 @@ where:
 * $Q_{retrieval}$ represents the recall accuracy of the retrieval architecture and retrieval model;
 * $Q_{generation}$ represents the instruction-following and knowledge-synthesis ability of the generative LLM.
 
-This expression reveals the classic "bucket-stave" effect: when the underlying data quality $Q_{data}$ has significant defects, no matter how large the model or how complex the hybrid retrieval architecture, gains on overall system performance will exhibit a cliff-like diminishing return.
+This expression reveals the classic "bucket-stave" effect: when the underlying data quality $Q_{data}$ has significant defects, no matter how large the model or how complex the hybrid retrieval architecture, gains on overall system performance will exhibit a cliff-like diminishing return. It should be noted that $Q_{data}$, $Q_{retrieval}$, and $Q_{generation}$ are not naturally on the same scale. If a similar expression is used in engineering evaluation, the indicators must first be normalized to a common scale and their evaluation criteria made explicit. This formula is mainly used to explain bottleneck constraints and optimization priorities; it should not be used as an exact performance-prediction formula.
 
 
 
@@ -236,7 +256,7 @@ The core conclusion of this section can be summarized as: in a RAG system, data 
 
 ### 21.2.1 Multi-Source Knowledge Ingestion
 
-As discussed in the previous section, the reliability of a RAG system depends not only on the generative model or retrieval algorithm, but also on whether upstream document engineering is solid. This section focuses on the engineering reconstruction of the knowledge-supply pipeline, systematically explaining how raw materials are transformed through a rigorous process into structured knowledge units that are retrievable, citable, and governable. Specifically, the discussion covers defining knowledge sources, the standardization mechanisms for heterogeneous and dynamic data, and the formal construction of knowledge units.
+As discussed in the previous section, the reliability of a RAG system depends not only on the generative model or retrieval algorithm, but also on whether upstream document engineering is solid (Lewis et al. 2020; Borgeaud et al. 2022). This section focuses on the engineering reconstruction of the knowledge-supply pipeline, systematically explaining how raw materials are transformed through a rigorous process into structured knowledge units that are retrievable, citable, and governable. Specifically, the discussion covers defining knowledge sources, the standardization mechanisms for heterogeneous and dynamic data, and the formal construction of knowledge units.
 
 As shown in Table 21-2, the knowledge sources of an enterprise-grade RAG system are typically highly heterogeneous and dynamic. Policies, product manuals, FAQs, and financial reports are usually scattered across OA systems, internal wikis, and collaboration platforms in formats such as PDF, Word, Markdown, or web pages. These sources differ not only in format, but also in update frequency, permission boundaries, trustworthiness, and usage scenarios. In a production system, data ingestion is therefore by no means simple file movement; it is the construction of a continuous and traceable data channel. Its core value lies in transforming static files into dynamic assets, so that the system precisely knows each item's source, validity, maintainer, update time, and access permissions, thereby preventing knowledge staleness and version conflicts at the source. The "full-copy and one-time parsing" strategy commonly used in early projects is only suitable for prototype validation. Against the continuous policy revisions and product iterations in real business, the system must have incremental awareness and partial-rebuild capabilities. From an engineering perspective, data ingestion must solve three core problems: stable ingestion across data sources; metadata registration covering source, version, and permissions; and incremental update mechanisms based on change detection.
 
@@ -251,7 +271,7 @@ To this end, establishing a unified **knowledge source registry** is critical. A
 | Policy and regulatory documents   | PDF / Word                  | Hierarchy, clauses, versions, permissions            | Clauses detached from parent context; old versions mistakenly recalled    |
 | Product technical manuals         | HTML / Markdown / PDF       | Chapter paths, feature versions, code blocks         | Multiple coexisting versions; descriptions separated from examples        |
 | FAQ and customer-service KB       | DB / Excel / JSON           | Q&A pairs, tags, deduplication, unified phrasing     | Duplicate answers; inconsistent wording                                   |
-| Financial and business reports    | PDF / Excel                 | Table structure, units, calibration, notes           | Tables flattened; numerical semantics lost                                |
+| Financial and business reports    | PDF / Excel                 | Table structure, units, reporting caliber, notes     | Tables flattened; numerical semantics lost                                |
 | Meeting minutes and collab docs   | Word / Markdown / online    | Topics, conclusions, action items, owners            | Heavy colloquialism; facts mixed with opinions                            |
 | Scanned files and image documents | Image / Scanned PDF         | OCR, layout detection, manual sampling               | Recognition errors, missing characters, disordered reading flow           |
 
@@ -358,7 +378,7 @@ This enhancement does not modify the factual content of the original text; it si
 
 After parsing and cleaning, the system must split long documents into knowledge units suitable for retrieval — a process commonly called chunking. Compared to ingestion and parsing, chunking appears simple, but its impact on RAG system performance is enormous. Many systems that "can retrieve but answer poorly" have problems rooted in chunking strategy.
 
-Fixed-length chunking is the most common initial approach. For example, slice every 500 or 1000 tokens with some overlap. This approach is simple to implement, has high throughput, and is easy to parallelize. Its biggest flaw, however, is ignoring semantic boundaries. A rule clause, a table description, an operating step, or a case analysis may be cut between two chunks. If the model receives only half of either, it cannot understand the full meaning. A more reasonable approach is semantic-structure-based chunking. For policy documents, chunk by chapters, clauses, and sub-clauses; for product manuals, by feature modules and operating steps; for FAQs, treat the question, answer, and tags as a natural unit; for reports, bind the table, table title, units, notes, and related body text into one knowledge unit.
+Fixed-length chunking is the most common initial approach. For example, slice every 500 or 1000 tokens with some overlap. This approach is simple to implement, has high throughput, and is easy to parallelize. Its biggest flaw, however, is ignoring semantic boundaries. A rule clause, a table description, an operating step, or a case analysis may be cut between two chunks. If the model receives only half of either, it cannot understand the full meaning. A more reasonable approach is semantic-structure-based chunking. For policy documents, chunk by chapters, clauses, and sub-clauses; for product manuals, by feature modules and operating steps; for FAQs, treat the question, answer, and tags as a natural unit; for reports, bind the table, table title, units, notes, and related body text into one knowledge unit. Recent research on RAG for financial reports shows that chunking by document-element type is usually more beneficial for retrieval and Q&A quality than simple fixed-length chunking (Jimeno Yepes et al. 2024).
 
 ![Figure 21-6: How different chunking strategies affect semantic integrity](../../images/part7/图21_6.png)
 
@@ -380,7 +400,7 @@ During knowledge-unit construction, a quality-check mechanism should also be est
 
 ### 21.2.5 Engineering Challenges and Quality Assessment
 
-When ingestion, parsing, cleaning, and chunking are integrated into an end-to-end data pipeline, the central engineering challenge shifts from optimizing a single algorithm to ensuring the stability of the overall system. A production-grade RAG system must dynamically balance accuracy, cost, throughput, robustness, and governability. Compute consumption and processing efficiency are the first concern. Since complex-document parsing often involves expensive operations such as OCR, layout analysis, and vision-model inference, processing million-scale documents requires batch processing, concurrency scheduling, cache reuse, and incremental updates. Without these, data-update cycles become too long, and the knowledge base lags behind business changes. The robustness of the pipeline directly determines system availability. Real-world documents often include corrupted files, password protection, skewed scans, blurry images, and encoding anomalies. The engineering implementation must provide error isolation, error logging, automatic retry, and manual review workflows, ensuring local anomalies do not break the overall pipeline. Without quality-assessment mechanisms, all upstream effort can be neutralized. Relying only on task-execution status cannot reflect data health: a parsing task that appears successful may have already dropped all table structure, and the output text chunks may have completely severed semantic boundaries. The system thus needs multi-dimensional quality validation, quantifying parsing completeness, chunking reasonableness, and metadata correctness, ensuring that data entering the index has real knowledge value.
+When ingestion, parsing, cleaning, and chunking are integrated into an end-to-end data pipeline, the central engineering challenge shifts from optimizing a single algorithm to ensuring the stability of the overall system. A production-grade RAG system must dynamically balance accuracy, cost, throughput, robustness, and governability (Johnson, Douze and Jégou 2019). Compute consumption and processing efficiency are the first concern. Since complex-document parsing often involves expensive operations such as OCR, layout analysis, and vision-model inference, processing million-scale documents requires batch processing, concurrency scheduling, cache reuse, and incremental updates. Without these, data-update cycles become too long, and the knowledge base lags behind business changes. The robustness of the pipeline directly determines system availability. Real-world documents often include corrupted files, password protection, skewed scans, blurry images, and encoding anomalies. The engineering implementation must provide error isolation, error logging, automatic retry, and manual review workflows, ensuring local anomalies do not break the overall pipeline. Without quality-assessment mechanisms, all upstream effort can be neutralized. Relying only on task-execution status cannot reflect data health: a parsing task that appears successful may have already dropped all table structure, and the output text chunks may have completely severed semantic boundaries. The system thus needs multi-dimensional quality validation, quantifying parsing completeness, chunking reasonableness, and metadata correctness, ensuring that data entering the index has real knowledge value.
 
 From this perspective, the RAG data pipeline must establish a quality metrics system. Common metrics include ingestion success rate, source-data coverage, parsing failure rate, structure-reconstruction rate, OCR error rate, residual-noise rate, metadata completeness rate, chunk-length distribution, duplication rate, permission-label coverage, and traceability rate. These can be divided into automated metrics and human-sampled metrics. Automated metrics suit large-scale monitoring, e.g., length distribution, field-completeness, duplication, and parsing failure rate. Human sampling judges more complex semantic quality, e.g., whether tables are correct, whether chapter paths are accurate, and whether chunks are answerable.
 
@@ -404,7 +424,7 @@ The core conclusion of this section is: the goal of RAG data processing is not t
 
 ### 21.3.1 From Knowledge Units to Index Systems: The Engineering Foundation of RAG Retrieval
 
-In the previous section, we discussed how to transform raw documents into structurally clear, semantically complete, and traceable knowledge units through ingestion, parsing, cleaning, and semantic chunking. Once this step is complete, the RAG data pipeline enters a new stage: how to ensure that user questions can stably and accurately recall these knowledge units. If parsing and structured cleaning solve "how knowledge is correctly expressed," then indexing and retrieval strategies solve "how the system correctly finds the knowledge." The relationship between the two is not a simple sequence but a tightly coupled system: chunk granularity, metadata, structural fields, and table representations all directly affect index design; conversely, the capability boundaries of the index system constrain how data is organized in the upstream chunking and cleaning stages.
+In the previous section, we discussed how to transform raw documents into structurally clear, semantically complete, and traceable knowledge units through ingestion, parsing, cleaning, and semantic chunking. Once this step is complete, the RAG data pipeline enters a new stage: how to ensure that user questions can stably and accurately recall these knowledge units. If parsing and structured cleaning solve "how knowledge is correctly expressed," then indexing and retrieval strategies solve "how the system correctly finds the knowledge" (Thakur et al. 2021). The relationship between the two is not a simple sequence but a tightly coupled system: chunk granularity, metadata, structural fields, and table representations all directly affect index design; conversely, the capability boundaries of the index system constrain how data is organized in the upstream chunking and cleaning stages.
 
 Many early RAG projects treat indexing as a pure vectorization step: feed each chunk to an embedding model, write the vectors into a vector database, and perform similarity search against user queries. This is simple to implement and supports basic demos, but quickly hits bottlenecks in real business. The reason is that user questions are not always in direct semantic similarity with document fragments. Users may use colloquial expressions, ask combined questions, or query knowledge implicit in tables, versions, conditions, and context. If the index system has only one path, it struggles to handle these complex queries. In production-grade RAG, the index is not just a pile of vectors but a retrieval infrastructure designed around knowledge usage scenarios. It typically includes vector indexes, keyword indexes, structured-field indexes, metadata-filter indexes, and parent–child hierarchical indexes. Different indexes have different responsibilities, jointly forming the basis for multi-channel recall and reranking.
 
@@ -434,11 +454,11 @@ From engineering practice, parent–child and multi-granularity indexes are part
 
 ### 21.3.3 Vector Retrieval, Keyword Retrieval, Structured Retrieval, and Hybrid Retrieval
 
-In RAG systems, vector retrieval (dense retrieval) usually gets the most attention. Its advantage is capturing semantic similarity: even if the user does not use the same keywords as the document, related content may still be recalled. For example, when the user asks "How much can I reimburse for hotel during a business trip?", the system can recall fragments containing "accommodation standard," "travel expenses," and "city tier." This semantic generalization is a key advantage of dense retrieval over traditional keyword retrieval.
+In RAG systems, vector retrieval (dense retrieval) usually gets the most attention. Its advantage is capturing semantic similarity: even if the user does not use the same keywords as the document, related content may still be recalled. For example, when the user asks "How much can I reimburse for hotel during a business trip?", the system can recall fragments containing "accommodation standard," "travel expenses," and "city tier." This semantic generalization is a key advantage of dense retrieval over traditional keyword retrieval (Karpukhin et al. 2020; Reimers and Gurevych 2019).
 
 However, vector retrieval is not a silver bullet. It is good at semantic similarity but not at precise constraints. For information such as version numbers, dates, amounts, codes, proper nouns, and statute numbers, keyword retrieval (e.g., BM25 / sparse retrieval) or structured-field retrieval is usually more reliable. For example, if a user asks "How does Article 1.3 of the 2024 reimbursement policy stipulate this?", a vector-only system may recall semantically similar content from a different version; keyword and metadata filters are more precise at limiting the scope.
 
-To address this, keyword retrieval is introduced. Its strength is exact matching, especially for proper nouns, terminology, codes, product models, API names, and statute clauses; its weakness is insensitivity to expression variation. If the user does not use the exact terms from the document, keyword retrieval may miss.
+To address this, keyword retrieval represented by BM25 has been proposed and widely used (Robertson and Zaragoza 2009). Its strength is exact matching, especially for proper nouns, terminology, codes, product models, API names, and statute clauses; its weakness is insensitivity to expression variation. If the user does not use the exact terms from the document, keyword retrieval may miss.
 
 Unlike these two, structured retrieval relies mainly on metadata and structural fields. For example, filter by document type, business domain, update time, version number, permission level, chapter path, or content type. Structured retrieval may not directly answer a question, but it greatly narrows the search space and prevents mis-recall. For instance, when answering "the latest travel accommodation standard," the system should first filter for the valid version, currently effective date, and policies that the user has permission to access, and then do semantic retrieval.
 
@@ -464,7 +484,7 @@ In more mature systems, the retrieval strategy can even be dynamically chosen by
 
 After multi-source retrieval, the system typically has a set of candidate knowledge fragments. These candidates come from different retrieval channels — vector retrieval results, keyword retrieval results, structured-filter results, and context expanded via parent–child indexes. At this point, a new question arises: which candidates should enter the final context, which should be discarded, and which should rank higher?
 
-This is what reranking does. Reranking does not search across the full knowledge base; it makes more refined relevance judgments on the candidates from the recall stage. Compared to the dual-encoder models used in vector retrieval, rerankers usually use cross-encoders or LLM-based judgment, allowing them to see the user question and the candidate fragment simultaneously, and thus judge their match more accurately. For instance, if the user asks "Can probation-period employees apply for travel allowances?", vector retrieval may recall multiple fragments containing "travel allowance," "employee," and "application," but some only discuss full-time employees, some only the application process, and others the allowance standard. The reranker must determine which fragments actually capture the relationship between "probation-period employees" and "eligibility for travel allowances," rather than just sharing similar words.
+This is what reranking does. Reranking does not search across the full knowledge base; it makes more refined relevance judgments on the candidates from the recall stage (Nogueira and Cho 2019). Compared to the dual-encoder models used in vector retrieval, rerankers usually use cross-encoders or LLM-based judgment, allowing them to see the user question and the candidate fragment simultaneously, and thus judge their match more accurately. For instance, if the user asks "Can probation-period employees apply for travel allowances?", vector retrieval may recall multiple fragments containing "travel allowance," "employee," and "application," but some only discuss full-time employees, some only the application process, and others the allowance standard. The reranker must determine which fragments actually capture the relationship between "probation-period employees" and "eligibility for travel allowances," rather than just sharing similar words (Khattab and Zaharia 2020).
 
 The value of reranking is especially clear in complex questions. For simple factual queries, top-k vector retrieval may suffice; for multi-condition, comparative, rule-based, or cross-document questions, the initial recall often contains many "seemingly relevant but not actually answerable" fragments. Without reranking, these fragments enter the model context and interfere with generation, even inducing wrong conclusions.
 
@@ -548,7 +568,7 @@ RAG evaluation should follow a layered approach. The simplest method is to evalu
 
 Production-grade RAG systems thus typically need at least three layers of evaluation: retrieval, context, and generation.
 
-Retrieval-layer evaluation focuses on whether the system found the correct evidence. "Correct evidence" here is not merely "relevant text" but content that can support the answer. Traditional retrieval metrics such as Recall@k, Precision@k, and MRR still have value, but are insufficient in RAG settings, because a fragment may be semantically related yet inadequate to answer the question. For example, if the user asks "Can probation-period employees apply for travel allowances?", and the system recalls "travel allowance standards" but not "applicability restrictions," the result can be counted as relevant but not as answerable.
+Retrieval-layer evaluation focuses on whether the system found the correct evidence. "Correct evidence" here is not merely "relevant text" but content that can support the answer. Traditional retrieval metrics such as Recall@k, Precision@k, and MRR still have value, but are insufficient in RAG settings (Manning, Raghavan and Schütze 2008), because a fragment may be semantically related yet inadequate to answer the question. For example, if the user asks "Can probation-period employees apply for travel allowances?", and the system recalls "travel allowance standards" but not "applicability restrictions," the result can be counted as relevant but not as answerable.
 
 Context-layer evaluation focuses on whether the context sent to the model is complete, conflict-free, and citable. RAG systems do not pass all recalled results to the model; they must select evidence within a limited context window. Too many duplicates waste tokens; conflicting versions disturb model judgment; lacking source information makes even correct answers hard to verify. Context evaluation should therefore focus on evidence sufficiency, redundancy, conflict rate, and citation coverage.
 
@@ -634,7 +654,7 @@ Online feedback connects RAG to the real distribution of questions. By recording
 
 Knowledge updates and version governance determine whether a RAG system can remain trustworthy over time. Production-grade systems must support add, modify, deprecate, and rollback, handle version transitions, permission boundaries, and knowledge conflicts, and validate updates via regression testing.
 
-The core conclusion of this section: a RAG system is not a one-off Q&A tool that is "done" after launch; it is a closed-loop knowledge system that must be continuously evaluated, recycled, and updated. Only when user feedback flows back into the data, index, retrieval, and generation pipeline does the system become more reliable through real usage.
+The core conclusion of this section: a RAG system is not a one-off Q&A tool that is "done" after launch; it is a closed-loop knowledge system that must be continuously evaluated, fed back into the pipeline, and updated. Only when user feedback flows back into the data, index, retrieval, and generation pipeline does the system become more reliable through real usage.
 
 
 
@@ -644,11 +664,11 @@ The core conclusion of this section: a RAG system is not a one-off Q&A tool that
 
 In the previous sections, we have discussed the key stages of the RAG data pipeline from the perspectives of document engineering, data ingestion, structured cleaning, semantic chunking, index construction, hybrid retrieval, reranking, and evaluation/feedback. At this point, a complete engineering question arises: how do we judge whether these methods can actually support a production system?
 
-The most direct way is to apply them to real, complex document scenarios for validation. A RAG system performing well in plain-text scenarios does not mean it is production-ready. Real enterprise documents are rarely clean, flat, single-format text; they are complex knowledge carriers with heading hierarchies, tables, figures, footnotes, version notes, permission boundaries, and cross-page structures. Only when the system can handle such complex documents and stably return verifiable answers under real user questions can we say its data pipeline has production value.
+The most direct way is to apply them to real, complex document scenarios for validation. A RAG system performing well in plain-text scenarios does not mean it is production-ready. Real enterprise documents are rarely clean, flat, single-format text; they are complex knowledge carriers with heading hierarchies, tables, figures, footnotes, version notes, permission boundaries, and cross-page structures. Only when the system can handle such complex documents and stably return verifiable answers under real user questions can we say its data pipeline has production value (Sculley et al. 2015).
 
 Many RAG projects fail in subtle ways at the prototype stage. Teams may use a few simple FAQs or product manuals to complete a demo, and the system can answer basic questions like "How do I use this feature?" or "What materials are required for this process?" But once it enters enterprise knowledge bases, policy Q&A, financial-report interpretation, or operations manuals, issues quickly emerge: tables cannot be parsed correctly, chapter context is lost, old-version content is mis-recalled, answers lack citations, and follow-up answers are inconsistent.
 
-Production-grade RAG must therefore be end-to-end validated on complex document cases. This is not a standalone model test, but a test of whether the entire data pipeline can accomplish: correctly ingesting documents, recovering layout structure, organizing tables and body text into knowledge units, building indexes with metadata, recalling correct evidence for user questions, generating answers with citations, and feeding user feedback back into data updates.
+Production-grade RAG must therefore be end-to-end validated on complex document cases. This is not a standalone model test, but a test of whether the entire data pipeline can accomplish: correctly ingesting documents, recovering layout structure, organizing tables and body text into knowledge units, building indexes with metadata, recalling correct evidence for user questions, generating answers with citations, and feeding user feedback back into data updates (Huyen 2022).
 
 This section uses the example of an enterprise internal "Travel Expense Management Policy and Reimbursement Guide" document to show how to build a production-grade RAG data pipeline from complex documents, and provides an engineering checklist to help readers turn the methods above into a reusable implementation framework.
 
@@ -684,7 +704,7 @@ Such scenarios are highly suitable for stress-testing the completeness of a RAG 
 
 For these complex documents, the production-grade processing flow can be divided into six stages: data ingestion, document parsing, structured cleaning, knowledge-unit construction, indexing and retrieval, and evaluation/feedback.
 
-The first stage is data ingestion. The system needs to sync relevant materials from the enterprise document repository, financial systems, and FAQ database, and register information for each source. Policy files should record file name, version, effective date, issuing department, scope of application, and permission level; FAQ data should record question category, update time, owner, and review status; tables should record calibration, units, and source document.
+The first stage is data ingestion. The system needs to sync relevant materials from the enterprise document repository, financial systems, and FAQ database, and register information for each source. Policy files should record file name, version, effective date, issuing department, scope of application, and permission level; FAQ data should record question category, update time, owner, and review status; tables should record reporting caliber, units, and source document.
 
 The second stage is document parsing. For PDF policy files, the system must recognize headings, clauses, tables, page numbers, footnotes, and approval-flow diagrams. For tables, it must not only extract text but also preserve row/column structure, headers, units, and notes. For process diagrams, it should at least extract figure titles, captions, node names, and process order. If scanned files are involved, OCR with manual sampling is needed.
 
@@ -883,7 +903,7 @@ In early-stage projects, the checklist helps the team define the boundaries of a
 
 Through the travel-policy case, it is clear that the key to production-grade RAG is not a single algorithm but whether the entire pipeline is reusable. The complex-document case is just one concrete scenario, but the methods behind it transfer to other domains.
 
-In a legal KB, the complexity may be contracts: clauses, definition references, version differences, and applicability scope. In a medical KB, it may be clinical guidelines, drug labels, contraindications, and evidence levels. In an operations KB, it may be error codes, log patterns, resolution steps, and historical tickets. In financial reports, it may be tables, footnotes, metric calibration, and cross-period comparisons.
+In a legal KB, the complexity may be contracts: clauses, definition references, version differences, and applicability scope. In a medical KB, it may be clinical guidelines, drug labels, contraindications, and evidence levels. In an operations KB, it may be error codes, log patterns, resolution steps, and historical tickets. In financial reports, it may be tables, footnotes, metric definitions and reporting calibers, and cross-period comparisons.
 
 These scenarios look different on the surface, but the core pattern of the RAG data pipeline is the same: first identify the knowledge type, then design an appropriate parsing strategy; next build knowledge units with context and metadata; choose indexing and retrieval strategies based on question type; finally correct continuously through evaluation and feedback.
 
@@ -897,7 +917,7 @@ This reusability is precisely what brings RAG data engineering from project-base
 
 This section used an enterprise travel-policy Q&A system to show how the RAG data engineering methods discussed earlier can be applied to real complex-document scenarios. We saw that production-grade RAG faces not clean text but a complex knowledge system that includes policy clauses, tables, processes, versions, permissions, and citation relationships.
 
-In such scenarios, the simple "PDF-to-text → fixed-length chunking → vector store" approach can hardly support stable answers. The system must complete the upgrade from a document collection to a knowledge asset: recording source and version at ingestion, restoring structure and tables at parsing, completing metadata at cleaning, preserving semantic boundaries and citation anchors at knowledge-unit construction, supporting hybrid retrieval at indexing, and continuously recycling failure samples at evaluation.
+In such scenarios, the simple "PDF-to-text → fixed-length chunking → vector store" approach can hardly support stable answers. The system must complete the upgrade from a document collection to a knowledge asset: recording source and version at ingestion, restoring structure and tables at parsing, completing metadata at cleaning, preserving semantic boundaries and citation anchors at knowledge-unit construction, supporting hybrid retrieval at indexing, and continuously feeding failure samples back during evaluation.
 
 The knowledge-unit schema, code example, and engineering checklist provided in this section are intended to help readers turn abstract methods into actionable practice. The core idea can be summarized as: the reliability of production-grade RAG comes from governable data objects, not from loose text fragments.
 
@@ -905,5 +925,56 @@ The knowledge-unit schema, code example, and engineering checklist provided in t
 
 ## Chapter Summary
 
-This chapter introduced a complete closed loop covering document-engineering foundations, data ingestion and cleaning, indexing and retrieval, evaluation and feedback, and engineering case studies. Subsequent chapters will further extend to multimodal RAG and visual-retrieval scenarios, discussing how data engineering must continue to evolve when knowledge is no longer purely text but includes images, layout, charts, and visual objects.
+This chapter argued that the performance bottleneck of RAG systems usually lies not in the generation model or retrieval algorithm, but in document engineering: by the time a query reaches the model, the ceiling of answer quality has already been determined by upstream stages such as parsing, cleaning, chunking, and indexing. Around this judgment, the chapter successively introduced methods for multi-source knowledge ingestion and knowledge-source registry construction, structured cleaning paths that transform heterogeneous dynamic data into retrievable and citable knowledge units, multi-path indexing and retrieval designs composed of vectors, keywords, structured fields, and parent-child hierarchies, and pipeline-based evaluation methods that decompose recall, reranking, and generation to locate error sources.
 
+On top of evaluation, this chapter further incorporated online failure-sample feedback and knowledge updates into the pipeline, making every error an input to subsequent repair. It also used an enterprise complex-document case and an engineering checklist to verify these methods on real knowledge carriers where tables, layouts, versions, and permissions are intertwined. Together, these stages form a traceable, verifiable, and deliverable production-grade data pipeline. When knowledge expands from pure text to images, tables, and layout structures, the basic assumptions of text RAG no longer hold; the next chapter therefore turns to multimodal RAG and visual retrieval.
+
+## References
+
+Lewis P, Perez E, Piktus A, Petroni F, Karpukhin V, Goyal N, Küttler H, Lewis M, Yih W-t, Rocktäschel T, Riedel S, Kiela D (2020) Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. In: Advances in Neural Information Processing Systems 33, pp 9459–9474.
+
+Gao Y, Xiong Y, Gao X, Jia K, Pan J, Bi Y, Dai Y, Sun J, Wang M, Wang H (2023) Retrieval-Augmented Generation for Large Language Models: A Survey. arXiv preprint arXiv:2312.10997.
+
+Guu K, Lee K, Tung Z, Pasupat P, Chang M-W (2020) REALM: Retrieval-Augmented Language Model Pre-Training. In: Proceedings of the 37th International Conference on Machine Learning (ICML), pp 3929–3938.
+
+Izacard G, Grave E (2021) Leveraging Passage Retrieval with Generative Models for Open Domain Question Answering. In: Proceedings of the 16th Conference of the European Chapter of the Association for Computational Linguistics (EACL), pp 874–880.
+
+Kim G, Hong T, Yim M, Nam J, Park J, Yim J, Hwang W, Yun S, Han D, Park S (2022) OCR-free Document Understanding Transformer. In: European Conference on Computer Vision (ECCV).
+
+Xu Y, Li M, Cui L, Huang S, Wei F, Zhou M (2020) LayoutLM: Pre-training of Text and Layout for Document Image Understanding. In: Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining, pp 1192–1200.
+
+Huang Y, Lv T, Cui L, Lu Y, Wei F (2022) LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. In: Proceedings of the 30th ACM International Conference on Multimedia, pp 4083–4091.
+
+Appalaraju S, Jasani B, Kota B U, Xie Y, Manmatha R (2021) DocFormer: End-to-End Transformer for Document Understanding. In: Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pp 993–1003.
+
+Smock B, Pesala R, Abraham R (2022) PubTables-1M: Towards Comprehensive Table Extraction from Unstructured Documents. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pp 4634–4642.
+
+Liu N F, Lin K, Hewitt J, Paranjape A, Bevilacqua M, Petroni F, Liang P (2024) Lost in the Middle: How Language Models Use Long Contexts. Transactions of the Association for Computational Linguistics 12:157–173.
+
+Karpukhin V, Oğuz B, Min S, Lewis P, Wu L, Edunov S, Chen D, Yih W-t (2020) Dense Passage Retrieval for Open-Domain Question Answering. In: Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP), pp 6769–6781.
+
+Reimers N, Gurevych I (2019) Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. In: Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing, pp 3982–3992.
+
+Es S, James J, Espinosa-Anke L, Schockaert S (2024) RAGAS: Automated Evaluation of Retrieval Augmented Generation. In: Proceedings of the 18th Conference of the European Chapter of the Association for Computational Linguistics: System Demonstrations, pp 150-158.
+
+Niu C, Wu Y, Zhu J, Xu S, Shum K, Zhong R, Song J, Zhang T (2024) RAGTruth: A Hallucination Corpus for Developing Trustworthy Retrieval-Augmented Language Models. In: Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics (ACL), pp 10862-10878.
+
+Manning C D, Raghavan P, Schütze H (2008) Introduction to Information Retrieval. Cambridge University Press.
+
+Thakur N, Reimers N, Rücklé A, Srivastava A, Gurevych I (2021) BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of Information Retrieval Models. In: Proceedings of the Neural Information Processing Systems Track on Datasets and Benchmarks.
+
+Jimeno Yepes A, You Y, Milczek J, Laverde S, Li R (2024) Financial Report Chunking for Effective Retrieval Augmented Generation. arXiv preprint arXiv:2402.05131.
+
+Johnson J, Douze M, Jégou H (2019) Billion-scale similarity search with GPUs. IEEE Transactions on Big Data 7(3):535–547.
+
+Borgeaud S, Mensch A, Hoffmann J, Cai T, Rutherford E, Millican K, van den Driessche G B, Lespiau J-B, Damoc B, Clark A, de Las Casas D, Guy A, Menick J, Ring R, Hennigan T, Huang S, Maggiore L, Jones C, Cassirer A, Brock A, Paganini M, Irving G, Vinyals O, Osindero S, Simonyan K, Rae J W, Elsen E, Sifre L (2022) Improving language models by retrieving from trillions of tokens. In: Proceedings of the 39th International Conference on Machine Learning (ICML), pp 2206–2240.
+
+Robertson S, Zaragoza H (2009) The Probabilistic Relevance Framework: BM25 and Beyond. Foundations and Trends in Information Retrieval 3(4):333–389.
+
+Nogueira R, Cho K (2019) Passage Re-ranking with BERT. arXiv preprint arXiv:1901.04085.
+
+Khattab O, Zaharia M (2020) ColBERT: Efficient and Effective Passage Search via Contextualized Late Interaction over BERT. In: Proceedings of the 43rd International ACM SIGIR Conference on Research and Development in Information Retrieval, pp 39–48.
+
+Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503–2511.
+
+Huyen C (2022) Designing Machine Learning Systems: An Iterative Process for Production-Ready Applications. O'Reilly Media.

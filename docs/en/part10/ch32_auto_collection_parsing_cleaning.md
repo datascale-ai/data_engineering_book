@@ -10,6 +10,10 @@ This chapter starts from four common source types: web pages, PDFs, APIs, and co
 
 The chapter builds on Chapter 4's data acquisition, Chapter 5's cleaning and deduplication, Chapter 6's input pipelines, and Chapter 2's quality framework, upgrading traditional practice into agent-driven adaptive pipelines.
 
+## Keywords
+
+Automated collection; data parsing agents; cleaning-rule generation; quality filtering; human review; source-structure drift
+
 ## 32.0 Learning Objectives
 
 After reading this chapter, you should be able to:
@@ -380,9 +384,50 @@ Agent-generated cleaning rules need version management:
 - Keep complete change records: editor, time, content, and reason.
 - On rollback, roll back the rule and mark affected data batches for reprocessing.
 
+## Chapter Summary
+
+This chapter treated data-source drift as the central threat in automated collection and cleaning, and designed agents along a four-stage flow: collection, parsing, cleaning, and filtering. In collection, it abstracted web pages, APIs, documents, and databases into connection, extraction, and structuring layers, using adapters to encapsulate source differences while discussing task generation, failure retry, large-scale scheduling, and rate limiting. In parsing, the focus was exception detection and attribution, parser selection and repair-rule generation, and systematic handling of multimodal, multilingual, and encoding issues.
+
+The cleaning stage emphasized generating rule candidates from sampled defects, validating them in a sandbox, and producing diff reports before human-approved release, rather than allowing agents to rewrite production data directly. The quality-filtering stage routed data by quality uncertainty, defining human-review triggers, priorities, and timing requirements. The chapter also defined collection ethics and compliance boundaries, provenance and reproducibility requirements, and versioning and rollback for cleaning rules, so collection and cleaning agents can improve throughput while remaining auditable and reversible.
+
 ## References
 
-- Apache Nutch Documentation. https://nutch.apache.org/
-- PyMuPDF (fitz) Documentation. https://pymupdf.readthedocs.io/
-- Great Expectations: Data Quality Framework. https://greatexpectations.io/
-- crawlee: Web scraping and browser automation. https://crawlee.dev/
+Barbaresi A (2021) Trafilatura: A Web Scraping Library and Command-Line Tool for Text Discovery and Extraction. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics, pp 122-131.
+
+Blecher N, Cresci G, Ballas N, Bautista M (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.
+
+Carlini N, Tramer F, Wallace E, Jagielski M, Herbert-Voss A, Lee K, Roberts A, Brown T, Song D, Erlingsson U, Oprea A, Raffel C (2021) Extracting Training Data from Large Language Models. In: Proceedings of the 30th USENIX Security Symposium, pp 2633-2650.
+
+Chen J, Yan X, Lin D, Qu X, Wang Y, Huang X, Zhao Z, Yu T, Zhang Z, Li H, Zheng Y, Xu R, Zhu J, Qiu X (2024) Data-Juicer: A One-Stop Data Processing System for Large Language Models. In: Proceedings of the ACM SIGMOD International Conference on Management of Data, pp 4436-4449.
+
+Chowdhery A, Narang S, Devlin J, Bosma M, Mishra G, Roberts A, Barham P, Chung H W, Sutton C, Gehrmann S, Schuh P, Shi K, Tsvyashchenko S, Maynez J, Rao A, Barnes P, Tay Y, Shazeer N, Prabhakaran V, Reif E, Du N, Hutchinson B, Pope R, Bradbury J, Austin J, Isard M, Gur-Ari G, Yin P, Duke T, Levskaya A, Ghemawat S, Dev S, Michalewski H, Garcia X, Misra V, Robinson K, Fedus L, Zhou D, Ippolito D, Luan D, Lim H, Zoph B, Spiridonov A, Sepassi R, Dohan D, Agrawal S, Omernick M, Dai A M, Pillai T S, Pellat M, Lewkowycz A, Moreira E, Child R, Polozov O, Lee K, Zhou Z, Wang X, Saeta B, Diaz M, Firat O, Catasta M, Wei J, Meier-Hellstern K, Eck D, Dean J, Petrov S, Fiedel N (2022) PaLM: Scaling Language Modeling with Pathways. Journal of Machine Learning Research 24(240):1-113.
+
+Dodge J, Sap M, Marasovic A, Agnew W, Ilharco G, Groeneveld D, Mitchell M, Gardner M (2021) Documenting Large Webtext Corpora: A Case Study on the Colossal Clean Crawled Corpus. In: Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing, pp 1286-1305.
+
+Gao L, Biderman S, Black S, Golding L, Hoppe T, Foster C, Phang J, He H, Thite A, Nabeshima N, Presser S, Leahy C (2020) The Pile: An 800GB Dataset of Diverse Text for Language Modeling. arXiv preprint arXiv:2101.00027.
+
+Huang Y, Lv T, Cui L, Lu Y, Wei F (2022) LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. In: Proceedings of the 30th ACM International Conference on Multimedia, pp 4083-4091.
+
+Kim G, Hong T, Yim M, Nam J, Park J, Yim J, Hwang W, Yun S, Han D, Park S (2022) OCR-free Document Understanding Transformer. In: European Conference on Computer Vision, pp 498-517.
+
+Laurencon H, Saulnier L, Wang T, Akiki C, del Moral A V, Le Scao T, Von Werra L, Mou C, Gonzalez Ponferrada E, Nguyen H, Frohberg J, Sasko M, Lhoest Q, McMillan-Major A, Dupont G, Biderman S, Rogers A, Allal L B, De Toni F, Pistilli G, Nguyen O, Nikpoor S, Masoud M, Labbe S, Vial T, Reusch A, Yogatama D, Raffel C, Wolf T, BigScience Workshop (2022) The BigScience ROOTS Corpus: A 1.6TB Composite Multilingual Dataset. In: Advances in Neural Information Processing Systems 35, Datasets and Benchmarks Track.
+
+Lee K, Ippolito D, Nystrom A, Zhang C, Eck D, Callison-Burch C, Carlini N (2022) Deduplicating Training Data Makes Language Models Better. In: Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics, pp 8424-8445.
+
+Longpre S, Mahari R, Lee A, et al. (2023) The Data Provenance Initiative: A Large Scale Audit of Dataset Licensing and Attribution in AI. arXiv preprint arXiv:2310.16787.
+
+Nguyen T, et al. (2024) CulturaX: A Cleaned, Enormous, and Multilingual Dataset for Large Language Models in 167 Languages. In: Proceedings of the 2024 Joint International Conference on Computational Linguistics, Language Resources and Evaluation.
+
+Ortiz Suarez P J, Sagot B, Romary L (2020) A Monolingual Approach to Contextualized Word Embeddings for Mid-Resource Languages. In: Proceedings of the 12th Language Resources and Evaluation Conference, pp 1703-1714.
+
+Pfitzmann B, Auer C, Dolfi M, Nassar A S, Staar P (2022) DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis. In: Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 3743-3751.
+
+Penedo G, Kydlicek H, Allal L B, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. In: Advances in Neural Information Processing Systems 37, Datasets and Benchmarks Track.
+
+Penedo G, Malartic Q, Hesslow D, Cojocaru R, Cappelli A, Alobeidli H, Pannier B, Almazrouei E, Launay J (2023) The RefinedWeb Dataset for Falcon LLM: Outperforming Curated Corpora with Web Data Only. In: Advances in Neural Information Processing Systems 36.
+
+Raffel C, Shazeer N, Roberts A, Lee K, Narang S, Matena M, Zhou Y, Li W, Liu P J (2020) Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. Journal of Machine Learning Research 21(140):1-67.
+
+Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur A, Bogin B, Chen X, Dumas G, Elazar Y, Hofmann V, Jha A H, Kumar S, Lucy L, Lyu X, Lambert N, Magnusson I, Morrison J, Muennighoff N, Naik A, Nam G, Peters M E, Ravichander A, Richardson L, Shen Z, Strubell E, Subramani N, Tafjord O, Walsh N, Zettlemoyer L, Smith N A, Hajishirzi H, Beltagy I, Groeneveld D, Dodge J, Lo K (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.
+
+Wenzek G, Lachaux M-A, Conneau A, Chaudhary V, Guzman F, Joulin A, Grave E (2020) CCNet: Extracting High Quality Monolingual Datasets from Web Crawl Data. In: Proceedings of the 12th Language Resources and Evaluation Conference, pp 4003-4012.

@@ -17,7 +17,7 @@ AI-native data stack; data infrastructure; Ray Data; Apache Iceberg; object stor
 
 ## Opening Scenario: Risks When a Data Platform Lacks Governance
 
-You have just joined a Series B large-model startup as the head of data. During your first week, you audit the company's data infrastructure and discover that corpus data is scattered across more than 50 engineers' local disks. File formats include `.txt`, `.json`, `.csv`, and `.parquet`, with no unified standard. Every time new data is processed, engineers manually write Python scripts and run them on a single machine; a 500 GB file taking three days is normal. Three months earlier, an incorrect file path overwrote a critical SFT dataset, and that dataset had no backup or version record. The CEO asks: the company plans to begin its first 7B-model pretraining run in one month. Can the data platform support it?
+You have just joined a Series B large-model startup as the head of data. During your first week, you audit the company's data infrastructure and discover that corpus data is scattered across more than 50 engineers' local disks. File formats include `.txt`, `.json`, `.csv`, and `.parquet`, with no unified standard. Every time new data is processed, engineers manually write Python scripts and run them on a single machine; a 500 GB file taking three days is normal. Three months earlier, an incorrect file path overwrote a critical SFT dataset, and that dataset had no backup or version record. The CEO asks: the company plans to begin its first base-model pretraining run at the scale of tens of billions of parameters in one month. Can the data platform support it?
 
 This scenario is not an exaggerated edge case. In many fast-moving large-model teams, this is common during the early stage. Algorithms and model architectures usually receive the most attention, while data infrastructure is treated as work that can be postponed, until critical data is lost, the training cluster is bottlenecked by data I/O, or a compliance audit finds unclear training-data provenance. Only then does the team rush to build infrastructure.
 
@@ -53,13 +53,13 @@ The workload of an LLM data stack has a very different structure.
 
 In a traditional BI system, cost mainly means **storage cost** and **query compute cost**. In an LLM data system, four major cost categories create a multidimensional constraint.
 
-First is **compute cost** for GPU/TPU training clusters. As of 2026-06, a common public-cloud or rental-market estimate for one H100 GPU is roughly USD 3-4 per hour, and an 8-GPU node is roughly USD 25-30 per hour. Actual prices vary by region, contract, supply and demand, and cloud discount. A 7B model pretraining run may last hundreds of hours, with total compute cost reaching the million-RMB range. Any training interruption or restart caused by data issues is therefore expensive, which is why an LLM data stack must emphasize stability and rollback.
+First is **compute cost** for GPU/TPU training clusters. GPU cloud prices, rental prices, and self-built depreciation change rapidly with region, contract, supply and demand, model type, and utilization, so a manuscript should not hard-code unit prices. Engineering budgets should be calculated as "GPU hours x unit GPU-hour cost x effective-utilization loss." A pretraining or retraining run typically consumes a large number of GPU hours, which means that any training interruption or restart caused by data issues is expensive. This is the fundamental reason an LLM data stack must emphasize stability and rollback.
 
-Second is **data-processing cost**. PB-scale corpus cleaning can require hundreds of thousands of CPU core-hours for each full preprocessing run, costing tens of thousands to hundreds of thousands of dollars on public clouds. Reducing per-run cost through refined scheduling, such as Spot instances, and algorithmic optimization, such as approximate MinHash deduplication (Broder 1997) instead of exact deduplication, is a core engineering concern.
+Second is **data-processing cost**. Large-scale corpus cleaning tasks run on CPU or GPU clusters, and their cost is determined jointly by data scale, parsing complexity, deduplication algorithms, quality-model inference, failed retries, and intermediate-data write amplification. Reducing per-run cost through refined scheduling, such as Spot instances, and algorithmic optimization, such as approximate MinHash deduplication (Broder 1997) instead of full pairwise comparison, is a core engineering concern.
 
-Third is **annotation and human cost**. High-quality SFT samples often require human authors with professional backgrounds. A single annotator may produce only about 500-2,000 high-quality samples per month, while a mid-sized SFT project may need hundreds of thousands of samples. Annotation can easily become the largest single item in the data-engineering budget.
+Third is **annotation and human cost**. High-quality SFT, preference, and safety samples require annotators with professional backgrounds to write or review them manually. Unit cost depends on domain difficulty, sample length, QA ratio, rework rate, and regional labor prices. In high-risk domains such as medicine, law, and finance, expert review can easily become the largest single item in the data-engineering budget.
 
-Fourth is **storage cost**. As of 2026-06, active object storage such as S3 Standard is commonly priced around USD 0.023/GB/month, though actual prices vary by provider, region, discount, and access pattern. At that order of magnitude, 100 PB of warm data costs millions of dollars per month. Planning hot, warm, and cold tiers across the full data lifecycle, and avoiding active-tier charges for historical data that is no longer used, is an important cost-governance topic discussed further in Section 3.3.
+Fourth is **storage cost**. The prices of object storage, block storage, and archive storage vary with cloud provider, region, discount, access pattern, and retrieval fee. Budgets should distinguish hot data, intermediate artifacts, reproducible experiment snapshots, and long-term archive data, and should separately calculate capacity charges, request charges, cross-region traffic charges, and retrieval charges. Planning hot, warm, and cold tiers across the full data lifecycle, and avoiding active-tier charges for historical data that is no longer used, is an important cost-governance topic discussed further in Section 3.3.
 
 ---
 
@@ -69,7 +69,7 @@ After clarifying the fundamental difference between an AI-native data stack and 
 
 ![Figure 3-1: Five-layer architecture of an AI-native data stack](../../images/part1/ai_data_stack_architecture.png)
 
-*Figure 3-1: Five-layer architecture of an AI-native data stack. Source: drawn for this book. The figure shows how ingestion and access, processing orchestration, storage and indexing, evaluation operations, and governance and security layers jointly move data from raw corpus to trainable datasets.*
+*Figure 3-1: Five-layer architecture of an AI-native data stack. Source: original illustration from this book. The figure shows how ingestion and access, processing orchestration, storage and indexing, evaluation operations, and governance and security layers jointly move data from raw corpus to trainable datasets; Alt text: five-layer architecture of an AI-native data stack showing the data flow among ingestion and access, processing orchestration, storage and indexing, evaluation operations, and governance and security layers.*
 
 ### 3.2.1 Ingestion and Access Layer: Turning "Data Everywhere" into "Traceable Data"
 
@@ -117,7 +117,7 @@ The processing orchestration layer solves the core engineering problem: how to r
 
 Two mainstream industrial choices are **Apache Spark** (Zaharia et al. 2016) and **Ray Data** (Moritz et al. 2018). They differ fundamentally in design philosophy and use cases.
 
-**Table 3-1: Apache Spark vs. Ray Data**
+*Table 3-1: Core feature comparison of Apache Spark vs. Ray Data. Source: compiled by the authors based on public documentation of open-source frameworks and LLM data-processing practice.*
 
 | Dimension | Apache Spark | Ray Data |
 | :--- | :--- | :--- |
@@ -178,7 +178,7 @@ An LLM data stack must manage three very different kinds of data. Each has disti
 
 The three mainstream lakehouse formats each have their own appropriate scenarios.
 
-**Table 3-2: Lakehouse table format selection: Apache Iceberg vs. Delta Lake vs. Apache Hudi**
+*Table 3-2: Lakehouse table format selection comparison: Apache Iceberg vs. Delta Lake vs. Apache Hudi. Source: compiled by the authors based on public documentation of open-source projects and lakehouse architecture practice.*
 
 | Feature | Apache Iceberg | Delta Lake | Apache Hudi |
 | :--- | :--- | :--- | :--- |
@@ -189,11 +189,11 @@ The three mainstream lakehouse formats each have their own appropriate scenarios
 | **Schema evolution** | Supports add, rename, and delete columns | Supported | Supported |
 | **Recommended scenarios** | Multi-engine use and vendor-neutral teams | Teams deeply using the Databricks ecosystem | High-frequency upsert needs, such as real-time knowledge-base updates |
 
-For most LLM data-engineering scenarios, **Apache Iceberg** (Kinley and Li 2020) **+ S3** is the recommended combination because it is engine-neutral. It allows Spark for massive cleaning, DuckDB for lightweight exploration, and other engines without migrating data or being locked into one vendor.
+For LLM data-engineering scenarios that require multi-engine collaboration and object-storage scalability, **Apache Iceberg** (Apache Software Foundation 2024) **+ S3** is a common priority candidate because it is engine-neutral. It allows engineering teams to use Spark for massive cleaning, DuckDB for lightweight exploration, and other engines without migrating data or being locked into one vendor.
 
 **Vector data, or embeddings**, are the second storage need, mainly serving RAG. A vector database converts massive text chunks into high-dimensional dense vectors, builds indexes, and supports efficient approximate nearest-neighbor retrieval (Malkov and Yashunin 2020). Mainstream vector databases include Milvus, which is open source and suited for large distributed deployments; Qdrant, implemented in Rust and friendly for lightweight high-performance deployment; and Weaviate, which has built-in multimodal vector support and friendly schema management. The key selection factors are vector scale, such as below one million versus hundreds of millions; whether hybrid search is needed, combining dense vectors and BM25 sparse retrieval (Robertson and Zaragoza 2009); and whether the operations team can manage distributed systems.
 
-**Model checkpoints and experiment artifacts** are the third category. They include model weight files saved during training, often hundreds of GB, TensorBoard or W&B logs, tokenizer configuration, and related artifacts. These data are large and have uneven access frequency: frequent writes during training, mostly read-only afterward. Object storage is suitable as primary storage, with DVC (Data Version Control) (Ruslan et al. 2021) or MLflow Artifacts for version tracking.
+**Model checkpoints and experiment artifacts** are the third category. They include model weight files saved during training, often hundreds of GB, TensorBoard or W&B logs, tokenizer configuration, and related artifacts. These data are large and have uneven access frequency: frequent writes during training, mostly read-only afterward. Object storage is suitable as primary storage, with DVC (Data Version Control) (DVC 2024) or MLflow Artifacts for version tracking.
 
 ```bash
 # Use DVC to track a dataset version.
@@ -229,15 +229,15 @@ The cost structure of large-model data engineering is much more complex than tha
 
 LLM data-engineering cost can be decomposed into five main dimensions. Understanding the cost drivers of each dimension is the foundation of a reasonable budget.
 
-**Data acquisition cost** is the first. It includes crawler server rental and bandwidth, purchased commercial corpora such as professional databases in a domain, and API call fees for structured web content from services such as Diffbot or Apify. As of 2026-06, cloud Spot instances are usually much cheaper than on-demand instances, but discounts vary by region, instance type, and supply-demand conditions. For hundred-TB-scale acquisition tasks, crawling cost commonly falls in the tens to hundreds of thousands of RMB.
+**Data acquisition cost** is the first. It includes crawler server rental and bandwidth, purchased commercial corpora such as professional databases in a domain, and API call fees for structured web content from services such as Diffbot or Apify. Cloud Spot instances are usually cheaper than on-demand instances, but the discount varies with region, instance type, and supply-demand conditions; budgets should explicitly record the price source and effective date.
 
-**Data processing cost** is the second and is the easiest to underestimate. Based on common public-cloud price levels as of 2026-06, a complete hundred-TB corpus-cleaning pipeline, including parsing, filtering, deduplication, and quality scoring, may cost from thousands to tens of thousands of dollars on a managed cluster with Spot instances. The exact value depends on processing complexity, data scale, region pricing, and retries. If ML inference is used during processing, such as running a PPL classifier on GPUs, GPU instance cost is added.
+**Data processing cost** is the second and is the easiest to underestimate. The cost of a complete corpus-cleaning pipeline, including parsing, filtering, deduplication, and quality scoring, depends on processing complexity, data scale, regional pricing, retry count, and intermediate-result write amplification. If ML inference is used during processing, such as running a quality classifier on GPUs, GPU instance cost is added.
 
-**Annotation cost** is the third and often the largest single item in the data budget. High-quality SFT samples in professional domains such as medicine, law, and finance require experts with relevant background. As of 2026-06, depending on outsourcing, full-time experts, or platform labeling, the cost of a professional sample may range from several to more than ten dollars. General-domain SFT samples usually cost less per sample, but the required volume is larger. Actual cost must be recalculated based on annotation guidelines, sample length, QA ratio, and regional labor prices.
+**Annotation cost** is the third and often the largest single item in the data budget. High-quality SFT samples in professional domains such as medicine, law, and finance require experts with relevant backgrounds. Actual cost must be recalculated based on annotation guidelines, sample length, QA ratio, rework rate, regional labor prices, and confidentiality requirements.
 
-**Storage cost** is the fourth. Based on common public object-storage list prices as of 2026-06, active tiers such as S3 Standard are around USD 0.023/GB/month, so 100 TB of warm data costs about USD 2,300 per month. Actual pricing depends on provider, region, discount, and access pattern. Without hot/cold tier management, intermediate artifacts that are no longer used continue occupying active storage and accumulate long-term cost.
+**Storage cost** is the fourth. Actual pricing should be based on the cloud provider, region, discount, and access pattern. Without hot/cold tier management, intermediate artifacts that are no longer used continue occupying active storage and accumulate long-term cost.
 
-**Inference-service cost** is the fifth. It is incurred when strong models are called during data processing for quality evaluation, synthetic data generation, or automated annotation. As of 2026-06, commercial model APIs may cost from a few tenths of a dollar to several dollars per million input tokens, depending on model and provider. Scoring 100 million samples could cost hundreds of thousands of dollars or more in API fees alone, so sampling, cascaded evaluation, and caching must be planned.
+**Inference-service cost** is the fifth. It is incurred when strong models are called during data processing for quality evaluation, synthetic data generation, or automated annotation. Budgets should jointly estimate input tokens, output tokens, image/audio/video unit prices, retry rate, cache hit rate, and concurrency limits. When massive numbers of samples are scored for quality, API fees alone may become a major cost, so sampling, cascaded evaluation, and caching strategies must be planned.
 
 ### 3.3.2 Cost Accounting Before, During, and After Training
 
@@ -245,7 +245,7 @@ A more practical cost framework decomposes the training lifecycle into three sta
 
 In the **pre-training stage before model training**, data acquisition and processing dominate cost. The key budget decisions are target data scale, usually measured in tokens, and whether to build a processing cluster or use cloud Spot instances. For projects below roughly 10 billion tokens, cloud Spot instances, such as Ray on AWS Spot, are often the most cost-effective. For projects above hundreds of billions of tokens, dedicated CPU clusters, whether owned or leased, can reduce processing cost per token.
 
-During the **training stage**, compute cost dominates, but data I/O quality directly affects GPU utilization and therefore actual compute cost. A training job with 70% GPU utilization needs longer wall-clock time than one with 90% utilization for the same effective compute. Data I/O optimization therefore often has high ROI.
+During the **training stage**, compute cost dominates, but data I/O quality directly affects GPU utilization and therefore actual compute cost. If the training process waits for the DataLoader or remote storage for long periods, the same effective compute requires more wall-clock time. Data I/O optimization therefore often has high ROI.
 
 In the **post-training stage**, model evaluation, data-version archiving, and knowledge-base maintenance, such as RAG updates, become continuous costs. The focus is a clear data lifecycle strategy: datasets that enter official releases can move to infrequent-access storage; temporary intermediate datasets can have 30-day auto-deletion policies; only final datasets with clear labels and descriptions should be retained. Prices and retrieval fees for infrequent-access storage change quickly and should be checked against cloud-provider announcements after 2026-06.
 
@@ -255,13 +255,13 @@ When choosing among several data-quality improvement plans, engineers need a qua
 
 $$\text{Data Engineering ROI} = \frac{\Delta\text{Model Performance} \times \text{Model Business Value}}{\text{Data Processing Cost} + \text{Annotation Cost} + \text{Storage Cost}}$$
 
-For example, suppose spending RMB 500,000 adds 100,000 high-quality legal SFT samples. The model's user satisfaction in legal-consulting scenarios rises by 8%, and the business line has monthly revenue of RMB 5 million. In this case, the data investment can recover its cost within one month. This type of quantitative thinking is essential for avoiding a situation where data engineering "does a lot" without contributing to model capability.
+For example, if an investment in legal-domain SFT data brings a statistically significant improvement in user satisfaction and that improvement can be mapped to retention, conversion, or reduced manual review cost, the team can compare the incremental return against data acquisition, annotation, training, and launch costs to estimate the payback period. This type of quantitative thinking is essential for avoiding a situation where data engineering "does a lot" without contributing to model capability.
 
 Connecting planning, monitoring, evaluation, optimization, and postmortem into a continuous loop forms the **cost-governance loop** of a large-model team, as shown below.
 
 ![Figure 3-2: Training-data cost-governance loop](../../images/part1/cost_governance_loop.png)
 
-*Figure 3-2: Training-data cost-governance loop. Source: drawn for this book. The figure shows a cross-version iteration cycle that starts from budget planning, passes through cost monitoring, ROI evaluation, and optimization decisions, and returns to budget review.*
+*Figure 3-2: Training-data cost-governance loop. Source: original illustration from this book. The figure shows a cross-version iteration cycle that starts from budget planning, passes through cost monitoring, ROI evaluation, and optimization decisions, and returns to budget review; Alt text: training-data cost-governance loop showing the cycle of budget planning, cost monitoring, ROI evaluation, optimization decisions, and budget review.*
 
 ---
 
@@ -275,9 +275,9 @@ No data-stack architecture fits every team size and stage. By team scale and bus
 
 At this stage, the biggest engineering trap is **over-design**. Spending three months building an "industrial-grade" distributed data platform may leave the team two months behind in the right direction by the time the platform is ready. The correct startup strategy is to validate core hypotheses at minimum cost and introduce distributed capabilities only when real data volume reaches single-machine limits.
 
-The recommended lightweight stack is: **S3 / MinIO + Parquet** for storage, without Iceberg at first and with manual version directories; **DuckDB** for compute, usually enough for data below 100 GB on a single machine, plus Python pandas or polars; **DVC** for version control; and **Prefect** or **Dagster** for pipeline orchestration. This stack can usually be built in one to two weeks.
+The recommended lightweight stack is: **S3 / MinIO + Parquet** for storage, without Iceberg at first and with manual version directories; **DuckDB** for compute, suitable for single-machine or small-scale data exploration with friendly SQL syntax, plus Python pandas or polars; **DVC** for version control; and **Prefect** or **Dagster** for pipeline orchestration. The engineering setup time for this stack depends on team experience, permission workflows, and data-source complexity.
 
-DuckDB deserves special emphasis because it is often underestimated in startups. It can directly read and write Parquet files on S3 without downloading them locally, and it supports standard SQL syntax so engineers unfamiliar with PySpark can start quickly. Based on common cloud-host prices as of 2026-06, a high-end instance with 64 cores and 512 GB memory plus DuckDB is often sufficient to filter and aggregate a single 100 GB Parquet file in hours. Actual time and cost depend on region, instance discount, data format, compression, and query complexity.
+DuckDB deserves special emphasis because it is often underestimated in startups. It can directly read and write Parquet files on S3 without downloading them locally, and it supports standard SQL syntax so engineers unfamiliar with PySpark can start quickly. Actual time and cost depend on region, instance discount, data format, compression method, and query complexity; production use should be preceded by pressure testing on representative target-data samples.
 
 ### 3.4.2 Platform Construction for Mid-Sized Teams
 
@@ -297,7 +297,7 @@ The recommended large-team pattern centers on a **unified data platform**. At th
 
 An important lesson is that large-team data platforms should be built in **three stages**, not all at once. Stage 1, taking one to three months, should connect the core path: storage ingestion, basic cleaning operators, and version management, so data can flow in a controlled way. Stage 2, taking three to six months, should build observability: quality dashboards, experiment tracking, and alerting systems, turning the platform into a transparent system. Stage 3, after six months, should add more complex multi-tenant isolation, cross-project lineage insight, and resource quota management. Entering Stage 3 too early can make platform complexity exceed real needs and reduce core data-flow efficiency.
 
-**Table 3-3: Data-stack selection matrix for three team types**
+*Table 3-3: Quick selection matrix for data stacks across three team types. Source: compiled by the authors; setup cycles are empirical planning ranges, and actual cycles depend on team experience, permission workflows, and data-source complexity.*
 
 | Team size | Recommended storage | Recommended compute | Recommended orchestration | Recommended version management | Estimated build cycle |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -351,6 +351,16 @@ Robertson S, Zaragoza H (2009) The Probabilistic Relevance Framework: BM25 and B
 
 Malkov Y A, Yashunin D A (2020) Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs (HNSW). IEEE Transactions on Pattern Analysis and Machine Intelligence 42(4):824-836.
 
-Kinley J, Li R (2020) Iceberg: A Modern Table Format for Huge Analytic Datasets. In: Proceedings of the 2020 ACM SIGMOD International Conference on Management of Data, pp 2955-2962.
+Apache Software Foundation (2024) Apache Iceberg: Table Specification and Documentation. <https://iceberg.apache.org/spec/> (accessed 2024-11).
 
-Ruslan K, Barrak M, Shcherbatyi I, others (2021) DVC: Data Version Control - Git for Data and Models. In: Proceedings of the Workshop on MLOps Systems at MLSys 2021.
+DVC Team and Contributors (2024) DVC: Data Version Control - Git for Data & Models. Documentation: <https://dvc.org/doc>. Source repository: <https://github.com/iterative/dvc>.
+
+Penedo G, Kydlíček H, Ben Allal L, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.
+
+Together Computer (2023) RedPajama: An Open Dataset for Training Large Language Models. GitHub repository. <https://github.com/togethercomputer/RedPajama-Data>.
+
+Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. Advances in Neural Information Processing Systems 28:2503-2511.
+
+Longpre S, Mahari R, Chen A, Obeng-Marnu N, Sileo D, Brannon W, Muennighoff N, Khazam N, Kabbara J, Perisetla K, Wu X, Shippole E, Bollacker K, Wu T, Villa L, Pentland S, Hooker S (2024) The Data Provenance Initiative: A Large Scale Audit of Dataset Licensing & Attribution in AI. Nature Machine Intelligence 6(8):975-987.
+
+Chen D, Huang Y, Pan X, Jiang N, Wang H, Zhang Y, Ge C, Chen Y, Zhang W, Ma Z, Huang J, Lin W, Li Y, Ding B, Zhou J (2025) Data-Juicer 2.0: Cloud-Scale Adaptive Data Processing for and with Foundation Models. arXiv preprint arXiv:2501.14755.

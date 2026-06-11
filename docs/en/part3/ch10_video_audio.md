@@ -18,23 +18,23 @@ Video data; audio data; ASR; WhisperX; shot-boundary detection; temporal alignme
 
 After the processing chain from natural-language text in Parts I and II to static image-text parsing in Chapters 8 and 9, this chapter enters **temporal video and audio data engineering**.
 
-In training based on image-text pairs or frame snapshots, a model can learn object categories, scenes, and static relationships. It still struggles to understand the motion trajectory, sound-image synchronization, and temporal causality contained in an apple "falling from a table, rolling under a bed, and making an impact sound." To train models such as Sora (Brooks et al. 2024) or Gemini 1.5 Pro (Team et al. 2024), which can process long temporal input, one must build samples that express time, action, and sound association.
+In training based on image-text pairs or frame snapshots, a model can learn object categories, scenes, and static relationships. It still struggles to understand the motion trajectory, sound-image synchronization, and temporal causality contained in an apple "falling from a table, rolling under a bed, and making an impact sound." To train models such as Sora (Brooks et al. 2024) or Gemini 1.5 Pro (Gemini Team 2024), which can process long temporal input, one must build samples that express time, action, and sound association.
 
 That means the data-engineering problem expands from two-dimensional image-text data to time and audio dimensions. Cost, quality, and alignment difficulty all rise sharply.
 
 ## 10.1 Why Audio and Video Data Looks Abundant but Yields Few Usable Samples
 
-Architects new to multimodal projects often assume that the web's daily supply of YouTube and TikTok videos naturally forms a trainable data pool. In real pretraining preprocessing, however, a team may find that 1000 TB of raw video on disk yields less than 10 TB of high-quality samples suitable for training. This ratio is illustrative; actual yield depends on source license, content type, quality thresholds, and sampling standards.
+Architects new to multimodal projects often assume that the web's daily supply of public video naturally forms a trainable data pool. In real pretraining preprocessing, however, teams often find that only a portion of the raw video library can enter the training framework. The usable ratio depends on source licensing, content type, resolution, audio-video synchronization, quality thresholds, and sampling standards, and cannot be estimated directly from raw storage volume.
 
 The gap comes mainly from three sources.
 
 ### 10.1.1 The Dimensionality Problem: From 2D Space to 4D Spacetime
 
-For a pure image, even a high-resolution 4K AnyRes input is mainly a two-dimensional tensor: $(W \times H \times C)$. Video adds a time dimension: $(T \times W \times H \times C)$, where $T$ is the number of timesteps. A one-minute short video at 30 FPS produces 1,800 consecutive images. If CLIP Score or visual-token compression is computed on every frame, GPU memory and compute quickly exceed budget. Video data engineering must therefore design a strict **key-frame sampling** system that keeps only a small number of key frames and discards a large amount of redundant frames.
+For a pure image, even a high-resolution 4K AnyRes input is mainly a two-dimensional tensor: $(W \times H \times C)$. Video adds a time dimension: $(T \times W \times H \times C)$, where $T$ is the number of timesteps. A one-minute short video at 30 FPS produces 1,800 consecutive images. If CLIP Score or visual-token compression is computed on every frame, GPU memory and compute quickly exceed budget. Video data engineering must therefore design a strict **key-frame sampling** system that keeps only a small number of key frames and discards a large amount of redundant frames. Systematic experiments (Zohar et al. 2025, CVPR) show that FPS-style rate sampling significantly outperforms fixed-frame-count sampling on long-video understanding tasks, and that this conclusion is consistent across model scales.
 
 ### 10.1.2 Surface Richness: Useless Oversampling and High Modal Noise
 
-The disk may indeed contain 1000 TB, but 80% may be:
+The disk may indeed contain a large amount of video, but a substantial portion may be:
 
 1. **Static redundancy**: in a two-hour online lecture, one hour of video may show almost the same static slide background with a small face in the corner. Encoding thousands of nearly identical frames dilutes the training signal. This data adds little cognitive value and may reduce the effective sample ratio.
 2. **Background noise and audio-video separation**: many lifestyle vlogs contain wind noise, mechanical hum, or scenes where the video shows someone playing golf while the background audio is pop music. For a model that must learn physical causality, such as matching breaking-glass video to breaking-glass sound, this wild audio-video data provides false supervision.
@@ -69,7 +69,7 @@ The visual pipeline needs a fast detection node, such as dual-threshold color-hi
 
 2. **Adaptive subsampling**
 
-After slicing, a 20-second shot may be logically continuous but visually almost static. The factory deploys small models to continuously measure the displacement between the current frame and the last retained frame in dense visual features, such as DINOv2 (Oquab et al. 2023) embeddings. Only frames whose Euclidean distance exceeds a threshold are retained. A 20-second clip with 600 frames may be compressed to 10 key frames, reducing visual-side load by roughly 98% in an illustrative setup. The real ratio depends on frame rate, motion density, and threshold.
+After slicing, a 20-second shot may be logically continuous but visually almost static. The factory deploys small models to continuously measure the displacement between the current frame and the last retained frame in dense visual features, such as DINOv2 (Oquab et al. 2023) embeddings. Only frames whose Euclidean distance exceeds a preset threshold are retained. A slice that originally contains many adjacent frames is ultimately compressed into a smaller number of key frames. The compression ratio depends on frame rate, motion density, and threshold settings, and should be verified through sampled playback to ensure that key actions were not cut off.
 
 ### 10.2.2 Acoustic Separation: ASR, Denoising, and Speaker Diarization
 
@@ -85,7 +85,7 @@ For speech tracks, a common approach is to use open-source Whisper (Radford et a
 
 #### B. Denoiser layer
 
-Not every video has studio-grade isolation. Large amounts of field data contain strong wind noise or mechanical resonance. Demucs (Defossez et al. 2019) and deep-learning source-separation algorithms can separate background music, environmental noise, and vocals from reverberant spectra.
+Not every video has studio-grade isolation. Large amounts of field data contain strong wind noise or mechanical resonance. Demucs (Défossez et al. 2019) and deep-learning source-separation algorithms can separate background music, environmental noise, and vocals from reverberant spectra.
 
 #### C. Speaker diarization: who is speaking?
 
@@ -93,7 +93,7 @@ For podcasts or multi-person meeting videos, compressing all speech into a singl
 
 #### D. LLM-driven subtitle correction
 
-Raw ASR often misrecognizes specialized vocabulary in code, medicine, finance, and other domains. Industrial pipelines commonly add an LLM correction step after WhisperX output. A strong LLM receives timestamped raw ASR and a prompt such as "repair typos and punctuation according to context, but never change the original timestamps." This can reduce final word error rate. A drop from 15% to under 2% is an illustrative target; actual results depend on language, noise, domain vocabulary, and ASR model version.
+Raw ASR often misrecognizes specialized vocabulary in code, medicine, finance, and other domains. Industrial pipelines commonly add an LLM correction step after WhisperX output. A strong LLM receives timestamped raw ASR and a prompt such as "repair typos and punctuation according to context, but never change the original timestamps." This can reduce final word error rate. Concrete gains depend on language, noise, domain vocabulary, and ASR model version, and must be evaluated on a small sample with human-transcribed gold labels.
 
 ### 10.2.3 Multi-Track Temporal Alignment: Binding Subtitles, Speech, and Frames
 
@@ -115,7 +115,7 @@ Although Section 10.2 binds visual and audio tracks in time, these raw structure
 
 ### 10.3.1 Event Detection and Grounding
 
-A wild video should not contain only frames and ASR text. It also needs a description of physical-world action flow. Inside large pipelines, behavior-understanding video models such as LLaVA-Video (Zhang et al. 2024), Video-LLaMA (Damonlpsg et al. 2023), and similar side models are called asynchronously on aligned short clips.
+A wild video should not contain only frames and ASR text. It also needs a description of physical-world action flow. Inside large pipelines, behavior-understanding video models such as LLaVA-Video (Zhang et al. 2024), Video-LLaMA (Zhang H et al. 2023), and similar side models are called asynchronously on aligned short clips.
 
 These models should provide not only a one-sentence summary such as "a young man tries a backflip at a skate park and falls," but also **dynamic event tags** and **detailed temporal captions**:
 
@@ -133,7 +133,7 @@ One of the most serious alignment failures in long-temporal data is unrelated au
 
 Strict mismatch detection and review are therefore required.
 
-**Table 10-1: Temporal audio-video data defects and detection strategies**
+*Table 10-1: Temporal audio-video data defects and multi-layer detection/remediation strategies. Source: compiled by the authors; detection and remediation strategies are engineering patterns, and thresholds should be calibrated through sampled playback and downstream evaluation.*
 
 | Defect type and manifestation | Root cause | Detection and remediation | Severity |
 | :--- | :--- | :--- | :--- |
@@ -147,7 +147,7 @@ Strict mismatch detection and review are therefore required.
 
 Compared with pure-text processing, long-temporal multimodal pipelines sharply increase costs for cloud GPUs, object storage, network bandwidth, and decoding.
 
-In text processing, one 64-core CPU server can parse many Markdown files in a day. In video cleaning, reading 10,000 hours of HD MP4 and decoding them into tensors for feature extraction quickly consumes CPU, memory, PCIe, and storage bandwidth. This scale is illustrative; throughput depends on video codec, resolution, concurrency, and hardware.
+In text processing, Markdown or web-body parsing is usually far lighter than video decoding. In video cleaning, even at an illustrative scale such as 10,000 hours of HD MP4 files, reading and decoding video into tensors for feature extraction quickly consumes CPU, memory, PCIe, and storage bandwidth. This scale is illustrative; actual throughput depends on video codec, resolution, concurrency, and hardware.
 
 ### 10.4.1 Decoder Compute and I/O Bandwidth
 
@@ -168,28 +168,28 @@ To decide whether a decompressed video is worth sending to the next stage, we ne
 
 Data engineers need a clear view of unit cost at each layer.
 
-**Table 10-2: Long-temporal audio-video processing cost model and cost-reduction strategies**
+*Table 10-2: Long-temporal audio-video processing cost drivers and cost-reduction strategies. Source: compiled by the authors; cost drivers should be recalculated according to cloud pricing, hardware specifications, concurrency limits, and caching strategies.*
 
-Note: the cost shares in Table 10-2 are illustrative estimates as of 2026-06. Actual values depend on cloud pricing, GPU model, video resolution, sampled frame rate, ASR model, cache hit rate, and object-storage billing.
+Note: Table 10-2 does not provide universal cost shares, because actual bills depend on cloud pricing, GPU model, video resolution, sampled frame rate, ASR model, cache hit rate, and object-storage billing. A more robust engineering approach is to identify cost drivers first, then run small-batch stress tests in the target environment.
 
-| Processing stage | Resource profile | Estimated cloud-cost share | Cost-reduction strategy |
+| Processing stage | Resource profile | Cost drivers | Cost-reduction strategy |
 | :--- | :--- | :--- | :--- |
-| **1. Raw long-stream crawling and block download** | High-bandwidth network and massive object-storage block I/O. | 10% - 15% | Add edge caching gateways and preload fragments to fast NVMe near the GPU to avoid direct reads from slow storage. |
-| **2. Hardware decoding and intelligent frame extraction** | NVDEC module, GPU memory, and PCIe bandwidth pressure. | **45% - 50%**, illustrative core cost | Use DALI or DeepSpeed-UIO instead of Python OpenCV; combine dual-threshold HSV filtering to avoid useless frame decoding. |
-| **3. ASR and dense recaptioning with WhisperX/LLaVA** | High memory consumption and GPU-intensive inference. | 25% - 30% | Use INT8 quantized models and dynamic batching to reduce padding waste. |
-| **4. Sequence merge and package writing** | Backend NAS/S3 small-file concurrent write pressure. | < 10% | Use WebDataset TAR format and aggregate into GB-scale contiguous shards to reduce small-file overhead. |
+| **1. Raw long-stream crawling and block download** | High-bandwidth network and massive object-storage block I/O. | Cross-region traffic, object-storage request count, cache hit rate | Add edge caching gateways and preload fragments to fast NVMe near the GPU to avoid direct reads from slow storage. |
+| **2. Hardware decoding and intelligent frame extraction** | NVDEC hardware decoding module, GPU memory, and PCIe bandwidth pressure. | Resolution, codec, sampled frame rate, concurrent decoding lanes | Use DALI or hardware decoding instead of Python OpenCV; combine shot-boundary detection and key-frame filtering to avoid decoding useless frames. |
+| **3. ASR and dense recaptioning with WhisperX/LLaVA** | High memory consumption and GPU-intensive inference. | Audio duration, model size, batching efficiency, domain-correction strategy | Use quantized models and dynamic batching to reduce padding waste. |
+| **4. Sequence merge and package writing** | Backend NAS/S3 small-file concurrent write pressure. | Shard size, small-file count, checksums, and indexing strategy | Use WebDataset TAR format and aggregate into GB-scale contiguous shards to reduce small-file overhead. |
 
 ---
 
-## 10.5 Anonymized Composite Case and Chapter Summary
+## 10.5 Anonymized Composite Case
 
 ### 10.5.1 Postmortem of a Large-Scale Video Data Pipeline Failure
 
-The following is an anonymized composite case. Video hours, model parameters, and ratios are used only to illustrate risk. In one internal video project, a team accumulated more than 60,000 hours of HD mixed video. After three months of dataset construction, the result still fell short of expectations.
+The following is an anonymized composite case used to illustrate the risk profile of missing temporal calibration. In one internal video project, a team accumulated a large amount of HD mixed video material, but the dataset construction work ultimately fell short of expectations.
 
-The root cause was that the architecture skipped several critical temporal-calibration steps. The audio-feature separation interface had a roughly 30 ms reading offset bug. After hundreds of slice-and-merge operations, this offset accumulated so that in roughly 70% of later-stage slices, the actor's audio track systematically led or lagged lip motion and physical action. This ratio is an illustrative postmortem figure.
+The root cause was that the architecture skipped several critical temporal-calibration steps. The audio-feature separation interface had a reading offset bug. After multiple slicing and merging operations, this offset accumulated so that in later-stage slices, the actor's audio track systematically led or lagged lip motion and physical action.
 
-When this temporally misaligned data was used to train an 80B-parameter model, two weeks of training noticeably degraded audio-video association ability. In benchmarks, whenever the model saw a long-haired person waving, it produced an incorrect acoustic prediction.
+When this temporally misaligned data was used for model training, audio-video association ability noticeably degraded: in benchmark tests, whenever the model saw a specific human action, it produced an acoustic prediction unrelated to the image.
 
 This case reinforces the core conclusion of Chapter 1: **without strict data preprocessing, algorithmic investment cannot compensate for fundamental data defects**.
 
@@ -211,7 +211,7 @@ Video and audio pipelines solve slicing, transcription, and temporal synchroniza
 
 Listing 10-1 shows an example error log for S3 concurrent streaming overload.
 
-**Listing 10-1: S3 concurrent streaming overload error log**
+*Listing 10-1: S3 concurrent streaming overload error log example. The log content is anonymized; metrics and paths do not correspond to a public incident.*
 
 ```bash
 [FATAL] node-001.gpu-cluster.internal:
@@ -230,7 +230,7 @@ AVSync_Module: Subtitle timestamp [1.21s] completely drifts out of matched acous
 
 **Symptom**: when NVIDIA NVDEC decodes high-resolution 4K videos concurrently, GPU memory is exhausted, decoding stops, and training nodes are affected.
 
-**Listing 10-2: NVDEC concurrent decoding OOM log**
+*Listing 10-2: NVDEC concurrent decoding OOM log example. The log content is anonymized; hardware limits must be based on actual device specifications and stress-test results.*
 
 ```bash
 [FATAL] node-007.gpu-cluster.internal:
@@ -249,7 +249,7 @@ Decoder context invalidated. All queued frames dropped (estimated loss: 2.3TB).
 
 **Symptom**: when ASR is run on videos longer than 30 minutes, WhisperX timestamps drift in the second half, sometimes by 8-12 seconds, making audio-video alignment fail.
 
-**Listing 10-3: WhisperX timestamp drift log**
+*Listing 10-3: WhisperX timestamp drift error log example. The log content is anonymized; drift thresholds should be calibrated through sampled playback and downstream evaluation.*
 
 ```bash
 [WARN] whisperx_worker_3: Timestamp drift detected at segment 847.
@@ -265,9 +265,9 @@ Alignment quality score: 0.23 (threshold: 0.75). Segment rejected and quarantine
 
 ### 10.6.4 Diarization Crash: Memory Leak Causes OOM [TMP_ERR_CODE_4001]
 
-**Symptom**: when pyannote-audio (Bredin et al. 2023) diarization runs in bulk for a long time, process memory increases linearly by batch. After roughly four hours, the system OOM killer terminates the process and all processed results are lost.
+**Symptom**: when pyannote-audio (Bredin et al. 2020) diarization runs in bulk for a long time, process memory increases linearly by batch. After roughly four hours, the system OOM killer terminates the process and all processed results are lost.
 
-**Listing 10-4: Diarization memory-leak log**
+*Listing 10-4: Diarization memory-leak error log example. The log content is anonymized; memory watermarks and batch sizes should be stress-tested according to node configuration.*
 
 ```bash
 [ERROR] diarization_worker_12: Killed by OOM Killer (signal 9).
@@ -286,7 +286,7 @@ Unprocessed queue depth at crash: 3,421 audio segments (est. 68h audio).
 
 **Symptom**: in final packaging, multiple worker processes concurrently write to the same `.tar` shard, corrupting its structure. Training-time DataLoader then fails to parse it.
 
-**Listing 10-5: WebDataset shard corruption log**
+*Listing 10-5: WebDataset shard corruption error log example. The log content is anonymized; production environments should combine shard write locks, checksums, and retry strategies.*
 
 ```bash
 [ERROR] training_node_44: WebDataset TarReader failed on shard: /data/processed/shard_0023.tar
@@ -300,9 +300,9 @@ DataLoader worker 0: Pipe broken, resetting shard iterator. Skipping shard.
 - **Root cause**: no write lock or per-shard assignment; multiple processes write to one file, interleaving byte streams.
 - **Fix**: allocate an independent shard file per worker, named by `worker_id`; merge in the main process after writing or upload directly to S3; use `wids` (WebDataset Indexed Shards) instead of `.tar` when safe random writes and indexing are needed.
 
-### 10.6.6 Frequent Error Quick Reference
+## 10.6.6 Frequent Error Quick Reference
 
-**Table 10-3: Frequent audio-video pipeline errors and fixes**
+*Table 10-3: Frequent audio-video pipeline error types and remediation strategies. Source: compiled by the authors; error codes and remediation strategies are anonymized engineering patterns.*
 
 | Error code | Error type | Trigger | One-line fix |
 | :--- | :--- | :--- | :--- |
@@ -311,34 +311,34 @@ DataLoader worker 0: Pipe broken, resetting shard iterator. Skipping shard.
 | TMP_ERR_CODE_3XXX | ASR temporal drift | Long-video VAD incorrectly skips silence | Segment transcription and sliding-window timestamp validation |
 | TMP_ERR_CODE_4XXX | Diarization OOM | Pipeline object not released between batches | Subprocess isolation and explicit `gc.collect` per batch |
 | TMP_ERR_CODE_5XXX | Shard corruption | Multiple processes write one `.tar` | One shard per worker, then main-process merge |
-| TMP_ERR_CODE_6XXX | Audio-video mismatch hallucination | BGM mixed into training corpus | CLIP-style cross-modal cosine filtering below 0.3 |
+| TMP_ERR_CODE_6XXX | Audio-video mismatch hallucination | BGM mixed into training corpus | Set CLIP/SigLIP cross-modal cosine filtering watermarks according to the project baseline |
 | TMP_ERR_CODE_7XXX | Decoded frames out of order | ffmpeg seek precision issue | Put `-ss` before the input argument |
-| TMP_ERR_CODE_8XXX | Low-SNR audio track | Field noise exceeds 40 dB | Demucs separation and drop SNR < 15 dB |
+| TMP_ERR_CODE_8XXX | Low-SNR audio track | Field noise exceeds the project noise watermark | Demucs separation and task-specific SNR discard thresholds |
 
 ## Chapter Summary
 
-This chapter organized the core issues, workflows, and acceptance criteria for video and audio data engineering in large-model systems. It puts concepts, data objects, quality signals, and engineering delivery into one narrative so readers can determine which links must be recorded explicitly and which results require sampling, evaluation, or audit.
+This chapter extended data engineering from static image-text data to long-temporal data with time and audio dimensions. The core conclusion is that video and audio "look abundant but yield few usable samples": dimensionality grows from $(W{\times}H{\times}C)$ to $(T{\times}W{\times}H{\times}C)$, and static redundancy, audio-video separation, and decoding I/O bottlenecks make the truly usable share of raw material quite low. To address this, the chapter built a three-track parallel pipeline across visual, acoustic, and text streams: on the visual side, shot-boundary detection slices semantically continuous segments and DINOv2 feature displacement drives adaptive frame sampling; on the acoustic side, WhisperX transcription, Demucs denoising, speaker diarization, and LLM subtitle correction extract and clean speech; finally, temporal anchors lock subtitles, waveforms, and key frames onto the same timeline and package them as multi-track mixed JSONL samples.
 
-The methods in this chapter should be applied according to data source, business objective, model capability, cost budget, and compliance requirements. In scenarios involving sensitive data, cross-system calls, automated decisions, or public release, teams should keep human review, version freezing, access control, and rollback mechanisms rather than extrapolating illustrative workflows into production promises.
-
-Within the book, this chapter sits in the multimodal data-engineering layer, connecting prior fundamentals to SFT, preference data, and cross-modal alignment. Readers can combine the framework with figures, references, and appendix checklists to turn the chapter's methods into reproducible, inspectable, and deliverable engineering workflows.
+On this basis, the chapter added dense event labeling, audio-video mismatch detection, and engineering governance around decoding hardware (NVDEC/DALI), visual/acoustic quality scoring, and staged cost drivers. The anonymized postmortem of a 30 ms reading-offset accumulation showed how missing temporal alignment can damage training signals. The three-track samples in this chapter solve slicing and synchronization for long-temporal signals, but how images, text, audio, and video form stable correspondences in one semantic space still requires dedicated alignment and fusion design. That is the topic of the next chapter.
 
 ## References
 
 Bain M, Huh J, Han T, Zisserman A (2023) WhisperX: Time-Accurate Speech Transcription of Long-Form Audio. arXiv preprint arXiv:2303.00747.
 
-Bredin H, Gelly G, Lavechin M, Puy G, Herrero-Vela A, Rajot N, Eloff J P, Brignatz M, Laurent G, Kollovieh M (2023) pyannote.audio 2.1 Speaker Diarization Pipeline. In: IEEE International Conference on Acoustics, Speech and Signal Processing.
+Bredin H, Yin R, Coria J M, Gelly G, Korshunov P, Lavechin M, Fustes D, Titeux H, Bouaziz W, Gill M P (2020) pyannote.audio: Neural Building Blocks for Speaker Diarization. In: IEEE International Conference on Acoustics, Speech and Signal Processing, pp 7124-7128.
 
 Brooks T, Peebles B, Holmes C, DePue W, Guo Y, Jing L, Schnurr D, Taylor J, Luhman T, Luhman E, others (2024) Video Generation Models as World Simulators (Sora). OpenAI Technical Report.
 
-Damonlpsg (2023) Video-LLaMA: An Instruction-tuned Audio-Visual Language Model for Video Understanding. arXiv preprint arXiv:2306.02858.
-
-Defossez A, Usunier N, Bottou L, Bach F (2019) Music Source Separation in the Waveform Domain (Demucs). arXiv preprint arXiv:1911.13254.
+Défossez A, Usunier N, Bottou L, Bach F (2019) Music Source Separation in the Waveform Domain (Demucs). arXiv preprint arXiv:1911.13254.
 
 Oquab M, Darcet T, Moutakanni T, Vo H, Szafraniec M, Khalidov V, Fernandez P, Haziza D, Massa F, El-Nouby A, others (2023) DINOv2: Learning Robust Visual Features without Supervision. Transactions on Machine Learning Research.
 
 Radford A, Kim J W, Xu T, Brockman G, McLeavey C, Sutskever I (2023) Robust Speech Recognition via Large-Scale Weak Supervision (Whisper). In: Proceedings of the 40th International Conference on Machine Learning, pp 28492-28518.
 
-Team G, Anil R, Borgeaud S, Alayrac J B, Yu J, Soricut R, Schalkwyk J, Dai A M, Hauth A, Millican K, others (2024) Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context. arXiv preprint arXiv:2403.05530.
+Gemini Team (2024) Gemini 1.5: Unlocking multimodal understanding across millions of tokens of context. arXiv preprint arXiv:2403.05530.
 
 Zhang Y, Li Z, Liu C, Chen K, Ma L, Sun Y, Dou Q, Ouyang W, Yang M H, others (2024) Video Instruction Tuning with Synthetic Data (LLaVA-Video). arXiv preprint arXiv:2410.02713.
+
+Zhang H, Li X, Bing L (2023) Video-LLaMA: An Instruction-tuned Audio-Visual Language Model for Video Understanding. arXiv preprint arXiv:2306.02858.
+
+Zohar O, Wang X, Dubois Y, Mehta N, Xiao T, Hansen-Estruch P, Yu L, Wang X F, Juefei-Xu F, Zhang N, Yeung-Levy S, Xia X (2025) Apollo: An Exploration of Video Understanding in Large Multimodal Models. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. arXiv preprint arXiv:2412.10360.

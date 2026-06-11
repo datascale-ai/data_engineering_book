@@ -21,9 +21,9 @@ Before systematically discussing the LLM data engineering ecosystem, we examine 
 
 ### 1.1.1 Scenario: When Compute Investment Fails to Yield Effective Capability
 
-Suppose you are the data lead at an artificial intelligence (AI) startup. With funding secured, the team has just spent three months using a distributed web-crawling cluster of hundreds of servers to collect and integrate nearly 50 TB of Chinese web-page text, 1 TB of open-source GitHub code, and 500 GB of Reddit discussion data from the public internet. The team confidently launches a thousand-GPU A100 cluster and begins pretraining a 7B-parameter base model using the Megatron-LM framework. The algorithms and engineering teams have invested enormous effort in infrastructure setup (e.g., RDMA network tuning), parallel training strategies (a 3D hybrid-parallelism architecture), and fault-tolerant scheduling of compute nodes.
+The following anonymized composite scenario illustrates an engineering path for diagnosing data quality problems. Its parameter scale, compute configuration, and failure symptoms synthesize common patterns from front-line projects and do not correspond to any specific public event. Suppose you are the data lead at an artificial intelligence (AI) startup. With funding secured, the team has just spent three months using a distributed web-crawling cluster of hundreds of servers to collect and integrate nearly 50 TB of Chinese web-page text, 1 TB of open-source GitHub code, and 500 GB of Reddit discussion data from the public internet. The team then launches a thousand-GPU A100 cluster and begins pretraining a base model of approximately 70B parameters using the Megatron-LM framework. The algorithms and engineering teams have invested enormous effort in infrastructure setup (e.g., RDMA network tuning), parallel training strategies (a 3D hybrid-parallelism architecture), and fault-tolerant scheduling of compute nodes.
 
-After two weeks of full-speed training, however, a crisis emerges. On the monitoring dashboard, the loss curve (cross-entropy loss) flattens abruptly around 2.1 and even exhibits a slight upward oscillation. Moreover, during early checkpoint evaluations (interactive evaluation), the model's outputs show troubling anomalies:
+After roughly two weeks of training, however, anomalies begin to appear on the monitoring dashboard. As the loss curve (cross-entropy loss) approaches a temporary plateau, its downward trend slows noticeably and is accompanied by slight oscillation. Moreover, during early checkpoint evaluations (interactive evaluation), the model's outputs show several types of quality problems:
 
 1. **Garbage injection**: Given a prompt about "how to maintain a car," the model fluently generates two professional sentences, then abruptly shifts to producing irrelevant, low-quality SEO promotional copy—a "memory residue" of the commercial clickbait pages mixed into the training corpus.
 2. **Repetition loop**: When generating Python code, the model completes the first `def` function and then falls into an apparent infinite loop, mass-repeating `\n\n\n\n\n` or `return return return` until the maximum sequence length is reached.
@@ -87,7 +87,7 @@ In 2022, a DeepMind paper titled "Training Compute-Optimal Large Language Models
 
 The DeepMind team conducted rigorously controlled compute-optimal experiments. Their results showed that the 70B-parameter Chinchilla model, trained on approximately 1.4T tokens, outperformed the previously larger 280B-parameter Gopher model (Rae et al. 2021) on a wide range of evaluations. The contrast between the two model families in terms of parameter count and training data is presented in Table 1-1.
 
-**Table 1-1: Comparison of Data Resources Between DeepMind's Old-Paradigm and New-Paradigm Models**
+*Table 1-1: Comparison of Data Resources Between DeepMind's Old-Paradigm and New-Paradigm Models. Source: compiled from publicly available information in Rae et al. (2021) and Hoffmann et al. (2022).*
 
 | Model (Organization) | Parameter Count $N$ | Training Token Count $D$ | Estimated Training Compute (relative) | Inference-Side Characteristics |
 | :--- | :--- | :--- | :--- | :--- |
@@ -113,7 +113,7 @@ When training data has higher information density, less noise, and clearer task 
 
 The research trajectory described above reveals that, under the LLM data engineering paradigm, the true constraint on the capability frontier of a model is not a single dimension but the combined trade-off among **scale, quality, and diversity**. Within a limited budget and limited time, all three cannot be simultaneously maximized; pushing any one to an extreme typically incurs costs in the other two or in engineering overhead. Table 1-2 presents a cost-constraint matrix for all three dimensions, showing data processing methods, direct benefits, and primary constraints.
 
-**Table 1-2: Cost-Constraint Matrix for Scale, Quality, and Diversity in LLM Data Engineering**
+*Table 1-2: Cost-Constraint Matrix for Scale, Quality, and Diversity in LLM Data Engineering. Source: compiled by the authors based on public research trajectories and engineering practice.*
 
 | Core Dimension | Primary Data Processing Methods | Direct Benefits | Primary Constraints |
 | :--- | :--- | :--- | :--- |
@@ -127,7 +127,7 @@ Because it is impossible to simultaneously push scale, quality, and diversity to
 
 For engineering teams with long experience in recommendation systems, search ranking, or industrial computer vision, transitioning to LLM training often involves significant methodological friction. Traditional data warehouses and machine learning pipelines primarily handle structured tables, log features, and finite label spaces, whereas LLM training involves unstructured text, code, documents, multimodal long sequences, and open-ended generation objectives. Much of the traditional ETL experience remains valuable, but it cannot directly substitute for the LLM-specific work of data cleaning, deduplication, contamination detection, mixing, version management, and training I/O optimization. Table 1-3 highlights the differences between the two data paradigms in terms of core data types, physical volume, and quality-control challenges.
 
-**Table 1-3: Traditional Machine Learning Data Pipelines vs. LLM-Native Data Systems**
+*Table 1-3: Traditional Machine Learning Data Pipelines vs. LLM-Native Data Systems. Source: compiled by the authors based on engineering differences between traditional data platforms and LLM data pipelines.*
 
 | Comparison Dimension | Traditional ML Data Pipeline (e.g., recommendation systems) | LLM-Native Data System |
 | :--- | :--- | :--- |
@@ -150,41 +150,43 @@ The data flywheel refers to a continuously self-reinforcing data loop: after a m
 
 ![Figure 1-1: LLM-Era Data Engineering Role Restructuring Diagram, showing the closed-loop interfaces among platform, data, algorithms, annotation, product, and compliance roles](../../images/part1/data_engineering_roles_1775830393574.png)
 
-*Figure 1-1: LLM-Era Data Engineering Role Restructuring Diagram. Source: original illustration. The figure depicts the role flywheel loop spanning platform architecture, data collection, model fine-tuning and validation, and product-research iteration.*
+*Figure 1-1: LLM-Era Data Engineering Role Restructuring Diagram. Source: original illustration. The figure depicts the role flywheel loop spanning platform architecture, data collection, model fine-tuning and validation, and product-research iteration; Alt text: LLM-era data engineering role restructuring diagram showing the closed-loop interfaces among platform, data, algorithms, annotation, product, and compliance roles.*
 
 The prerequisite for this flywheel to operate at high speed is the existence of **clear, executable data handoff SLAs (service-level agreements)** between every pair of roles. Without them, any ambiguous interface—for example, "the product side says it will pass feedback data to the data team, but the format and field definitions are unspecified"—will stall the flywheel at its weakest link. Table 1-4 defines the data responsibilities, upstream/downstream deliverables, and key SLA metrics for the six core roles.
 
-**Table 1-4: Core Role and Data Interface Responsibility Definitions for Six LLM Project Roles**
+*Table 1-4: Core Role and Data Interface Responsibility Definitions for Six LLM Project Roles. Source: compiled by the authors based on LLM project collaboration interfaces and data governance practices.*
 
 | Role | Core Data Responsibilities | Data Inputs from Upstream | Data Deliverables to Downstream | Key SLA Metrics |
 | :--- | :--- | :--- | :--- | :--- |
-| **Platform Architect / MLOps** | Build and operate the underlying compute scheduling, distributed file systems (e.g., Lustre / HDFS), and training cluster stability | Data package paths, format specifications, and size estimates submitted by data engineers | Stable GPU/TPU training cluster access interface; DataLoader optimization recommendations | Training job failure rate < 0.5%; data loading must not bottleneck GPU utilization (utilization > 85%) |
-| **LLM Data Engineer** | Raw corpus collection (crawler/API), multi-stage cleaning (deduplication, denoising, de-identification), data mixing and sampling, data version management | Domain weight-distribution requirements from the algorithm team; security/compliance blocklist rules; SFT sample feedback from the annotation team | Quality-scorecard-validated Parquet/JSONL data packages; data lineage documentation | Cleanliness score per batch ≥ 0.85; delivery SLA: new corpus ingestion completed within T+3 business days of request |
-| **Algorithm / Pretraining Researcher** | Design tokenizer vocabulary; define training data mixing recipe; monitor loss curves and evaluation benchmark changes | Cleaned, standardized data packages; dataset statistics reports (domain distribution, deduplication rate, perplexity distribution) | Data mixing weight requirement documents; new evaluation suite definitions; ablation study conclusions (which data types improve which benchmarks by how much) | Ablation study cycle ≤ 2 weeks to conclusion; critical domain data increment requests submitted at least 2 weeks in advance |
-| **AI Annotation / Prompt Expert** | Design SFT instruction sets aligned with human preferences; define RLHF scoring rubrics; curate RAG knowledge-base Q&A pairs | Raw text from data engineers for selection; model weakness reports from the algorithm team (which instruction types fail) | High-quality (prompt, response) pairs; preference scoring sets (chosen/rejected); standard RAG evaluation sets | SFT sample daily throughput ≥ 500 items (expert level) or inter-annotator agreement κ > 0.7 per round |
-| **Model Product / Application Layer** | Collect real online user feedback; define business scenario coverage requirements; provide online anomaly monitoring proxy metrics | Model API and performance reports from the algorithm team; coverage analysis from the data team | Online negative samples (user negative feedback, edited responses); new scenario data requirement specifications; weekly summary report of online hallucination cases | Online anomaly case summary cycle: weekly; new scenario data requirement descriptions finalized in writing within 1 week of submission |
-| **Security & Compliance Specialist** | Source corpus copyright lineage auditing; PII monitoring; toxic content and bias assessment and filtering | Source metadata for all corpus to be ingested (URL, crawl timestamp, license type); final version of SFT samples | Copyright compliance assessment reports; updated PII filtering rule sets; toxicity/bias assessment scores; compliance green-light certification | Compliance review per data batch ≤ 5 business days; high-risk source data alerts issued within < 24 hours |
+| **Platform Architect / MLOps** | Build and operate the underlying compute scheduling, distributed file systems (e.g., Lustre / HDFS), and training cluster stability | Data package paths, format specifications, and size estimates submitted by data engineers | Stable GPU/TPU training cluster access interface; DataLoader optimization recommendations | Training stability, I/O wait time, and GPU utilization targets should be defined against the project baseline |
+| **LLM Data Engineer** | Raw corpus collection (crawler/API), multi-stage cleaning (deduplication, denoising, de-identification), data mixing and sampling, data version management | Domain weight-distribution requirements from the algorithm team; security/compliance blocklist rules; SFT sample feedback from the annotation team | Quality-scorecard-validated Parquet/JSONL data packages; data lineage documentation | Each batch should include quality scores, spot-check records, lineage records, and delivery-time commitments |
+| **Algorithm / Pretraining Researcher** | Design tokenizer vocabulary; define training data mixing recipe; monitor loss curves and evaluation benchmark changes | Cleaned, standardized data packages; dataset statistics reports (domain distribution, deduplication rate, perplexity distribution) | Data mixing weight requirement documents; new evaluation suite definitions; ablation study conclusions (which data types improve which benchmarks by how much) | Ablation study cycles and data-increment requirements should be written into the project schedule rather than agreed verbally |
+| **AI Annotation / Prompt Expert** | Design SFT instruction sets aligned with human preferences; define RLHF scoring rubrics; curate RAG knowledge-base Q&A pairs | Raw text from data engineers for selection; model weakness reports from the algorithm team (which instruction types fail) | High-quality (prompt, response) pairs; preference scoring sets (chosen/rejected); standard RAG evaluation sets | Annotation throughput, expert review rate, and agreement metrics should be determined jointly by task difficulty and domain risk |
+| **Model Product / Application Layer** | Collect real online user feedback; define business scenario coverage requirements; provide online anomaly monitoring proxy metrics | Model API and performance reports from the algorithm team; coverage analysis from the data team | Online negative samples (user negative feedback, edited responses); new scenario data requirement specifications; online hallucination anomaly case summary reports | Online anomaly summaries and new scenario requirements should become written deliverables on a fixed cadence |
+| **Security & Compliance Specialist** | Source corpus copyright lineage auditing; PII monitoring; toxic content and bias assessment and filtering | Source metadata for all corpus to be ingested (URL, crawl timestamp, license type); final version of SFT samples | Copyright compliance assessment reports; updated PII filtering rule sets; toxicity/bias assessment scores; compliance green-light certification | Independent review and blocking mechanisms should be established for high-risk sources, sensitive data, and publicly released data |
 
-**Full Timeline of the Data Flywheel: A Typical Iteration Cycle (~4–6 Weeks)**
+**Full Timeline of the Data Flywheel: An Instructional Example**
+
+The following timeline illustrates the relationship between role interfaces and deliverables. The numbers are used only as a readable project-management convention and do not represent measured gains from any public project. Real projects must rely on preregistered evaluation sets, canary traffic splits, and statistical test reports.
 
 ```
 [Week T+0] Algorithm team discovers through evaluation that the model has a systematic hallucination defect on long-form legal Q&A
               ↓
-[Week T+0] Product team collects user downvotes and edits on relevant cases from online traffic (3,200 negative feedback items)
+[Week T+0] Product team collects user downvotes and edits on relevant cases from online traffic, forming a batch of negative-feedback samples
               ↓
 [Week T+1] Data engineer receives negative feedback, cleans it into standard JSONL format, and categorizes it as "factual errors" vs. "formatting issues"
               ↓
-[Week T+1] Annotation experts select 800 factual-error cases and write higher-quality "chosen" answers for each
+[Week T+1] Annotation experts select high-confidence factual-error cases and write higher-quality "chosen" answers for each
               ↓
-[Week T+2] Security/compliance review of the 800 SFT examples (no copyright risk, no PII leakage) → Approved
+[Week T+2] Security/compliance review of the new SFT data (no copyright source risk, no PII leakage) → Approved
               ↓
-[Week T+2] Data engineer packages the 800 (rejected, chosen) pairs and appends them to the preference comparison database
+[Week T+2] Data engineer packages the paired (rejected, chosen) data and appends it to the preference comparison database
               ↓
-[Week T+3] Algorithm team uses the 800 new preference examples for DPO (Rafailov et al. 2023) fine-tuning (3 × A100, ~12 hours)
+[Week T+3] Algorithm team uses the new preference data for DPO (Rafailov et al. 2023) fine-tuning and records the training configuration and data version
               ↓
-[Week T+4] New model version achieves +8.3% improvement on the legal Q&A benchmark; deployed to 10% of traffic via canary release
+[Week T+4] New model version reaches the launch threshold on the frozen evaluation set and human blind test, then enters low-traffic canary release
               ↓
-[Week T+5] Product team confirms that hallucination case reproduction rate drops by 76% → Full rollout; next flywheel cycle begins
+[Week T+5] Product team confirms that key problem cases reproduce less often and no new high-risk regressions appear → Expand release and enter the next flywheel cycle
 ```
 
 The above is the complete timeline of a minimum viable data flywheel (MVP Data Flywheel). Without this level of role division and SLA constraints, the flywheel will experience information distortion or time delays at some stage, ultimately extending the model iteration cycle from weeks to months.
@@ -200,7 +202,7 @@ The modern **LLM data engineer** has differentiated from the intersection of tra
 
 Table 1-5 compares the capability boundaries of LLM data engineers and traditional ML data engineers across dimensions including core technology stack, data-volume experience, and quality assessment ability.
 
-**Table 1-5: Capability Boundary Comparison Between LLM Data Engineers and Traditional ML Data Engineers**
+*Table 1-5: Capability Boundary Comparison Between LLM Data Engineers and Traditional ML Data Engineers. Source: compiled by the authors based on role capability boundaries and toolchain evolution.*
 
 | Capability Dimension | Traditional ML Data Engineer | LLM Data Engineer |
 | :--- | :--- | :--- |
@@ -221,7 +223,7 @@ With the above paradigm shift in mind, a global map is needed to orient the read
 
 ![Figure 1-2: Full Fourteen-Part Lifecycle Map, showing the knowledge structure spanning general principles, pretraining, multimodal, alignment, applications, platform, compliance, and hands-on projects](../../images/part1/data_lifecycle_map_1775830407042.png)
 
-*Figure 1-2: Full Fourteen-Part Lifecycle Map. Source: original illustration. The figure uses infrastructure as its foundation, threading through pretraining, multimodal data, alignment, applications, platform governance, compliance, and hands-on projects.*
+*Figure 1-2: Full Fourteen-Part Lifecycle Map. Source: original illustration. The figure uses infrastructure as its foundation, threading through pretraining, multimodal data, alignment, applications, platform governance, compliance, and hands-on projects; Alt text: full fourteen-part lifecycle map showing the knowledge structure spanning general principles, pretraining, multimodal, alignment, applications, platform, compliance, and hands-on projects.*
 
 
 ### 1.4.1 How the Fourteen Parts Cover Pain Points at Each Stage
@@ -251,7 +253,7 @@ The remaining chapters of this book cover pretraining data, multimodal data, ali
 
 **Path C: Full-Stack LLM Data Expert.** Readers who need to lead data engineering decisions may read in the following order: "Part I foundational framework → Parts II and III data acquisition and processing → Parts IV–VI alignment and reasoning data → Part VII application-level data engineering → Parts VIII, IX, and XI platform and governance → Parts XIII and XIV hands-on projects." This path emphasizes end-to-end capabilities spanning data sourcing, quality assessment, platform interfaces, and compliance auditing. As shown in Table 1-6, different reader types exhibit markedly different reading priorities across the parts.
 
-**Table 1-6: Chapter Priority Recommendations by Reader Type (1 = Low, 5 = High)**
+*Table 1-6: Chapter Priority Recommendations by Reader Type (1 = Low, 5 = High). Source: compiled by the authors; scores are reading-path recommendations rather than measured evaluations.*
 
 | Part | Platform / MLOps Engineer | Transitioning ML Engineer | Full-Stack LLM Data Expert |
 | :--- | :---: | :---: | :---: |

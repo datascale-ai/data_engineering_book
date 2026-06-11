@@ -2,7 +2,7 @@
 
 ## Abstract
 
-This chapter addresses the challenges of continuous evaluation, version governance, and operational iteration for pre-training data after the cleaning phase is complete. The chapter opens with an anonymized composite case study illustrating that "cleaner" data does not necessarily yield better model performance, then establishes the foundational framework for Data Operations (DataOps): offline proxy metrics, representative sampling, quality dashboards, issue sample pools, version comparison, and upstream strategy write-back. The metrics section focuses on explaining the applicable boundaries of perplexity, type-token ratio, toxicity and PII density, benchmark contamination, and domain coverage, emphasizing that these are proxy signals only and must be combined with small-scale validator models and manual spot-checks. The latter half of the chapter covers 5 Whys root-cause retrospectives, weekly operational cadences, dashboard alerting, and pathways for reusing data assets in SFT and RAG pipelines. Readers should be able to extend data processing from a one-time delivery into a traceable, rollback-capable, auditable continuous operations system.
+This chapter addresses the challenges of continuous evaluation, version governance, and operational iteration for pre-training data after the cleaning phase is complete. The chapter opens with an anonymized composite case study illustrating that "cleaner" data does not necessarily yield better model performance, then establishes the foundational framework for Data Operations (DataOps): offline proxy metrics, representative sampling, quality dashboards, issue sample pools, version comparison, and upstream strategy write-back (for data lifecycle management in production machine learning, see Polyzotis et al. 2018; Whang et al. 2023; Liang et al. 2022). The metrics section focuses on explaining the applicable boundaries of perplexity, type-token ratio, toxicity and PII density, benchmark contamination, and domain coverage, emphasizing that these are proxy signals only and must be combined with small-scale validator models and manual spot-checks. The latter half of the chapter covers 5 Whys root-cause retrospectives, weekly operational cadences, dashboard alerting, and pathways for reusing data assets in SFT and RAG pipelines. Readers should be able to extend data processing from a one-time delivery into a traceable, rollback-capable, auditable continuous operations system (for the labor and organizational challenges of data work in AI teams, see Sambasivan et al. 2021; industrial DataOps platforms such as Data-Juicer 2.0 (Chen et al. 2025) provide 200+ operators and end-to-end rollback-capable operations).
 
 ## Keywords
 
@@ -72,7 +72,7 @@ The key mechanism for resolving evaluation latency is to design proxy metrics th
 
 The first question to address is "what to evaluate." At the scale of trillions of tokens, exhaustive full-corpus statistics are not only computationally expensive but typically unnecessary. The most fundamental technique is **stratified sampling**.
 
-In practice, documents are stratified by category (news, Wikipedia, domain-specific forums, code repositories), and a fixed-size data sandbox (e.g., a subset of 100 million tokens) is randomly sampled at 0.1% or 0.01% before data serialization. All offline analyses are performed on this subset; if the subset's distribution exhibits a pronounced anomaly, it signals that the entire batch carries elevated risk.
+In practice, documents are stratified by category (news, Wikipedia, domain-specific forums, code repositories), and a fixed-scale data sandbox is captured according to a stratified sampling strategy before data serialization. The sampling rate and token scale should not be hard-coded; they should be determined jointly by batch size, budget, confidence interval, and historical volatility, and recorded in the version notes for the current data release. All offline analyses are performed on this subset; if the subset's distribution exhibits a pronounced anomaly, it signals that the entire batch carries elevated risk.
 
 Evaluating a corpus typically encompasses the following four core dimensions (proxy metrics):
 
@@ -85,13 +85,13 @@ Throughout the long engineering lifecycle of pre-training, discussing "quality" 
 - **Validation method**: Use a mature but lightweight reference model (e.g., LLaMA-7B base, or a 1B validation model trained on clean data in early stages) to perform gradient-free forward passes on sampled batches.
 - **Mathematical essence**: Perplexity is fundamentally the exponential form of the cross-entropy loss ($PPL = e^{Loss}$). If the model finds a sentence "very common and expected," the PPL will be low; if it finds it "confusing or garbled," PPL will spike.
 - **Interpretation logic**: This is not a one-directional "lower is better" metric.
-  - **Very low (PPL < 5)**: Typically indicates boilerplate code, infinitely copied disclaimers, or SEO content left behind by over-aggressive deduplication. The model learns little new information from such data.
-  - **Very high (PPL > 500)**: Typically indicates format corruption, misaligned machine-translated text, or disordered character sequences.
-  - **Preferred range**: Using a neural network reference model (e.g., LLaMA-7B) as the baseline, high-quality text typically falls in the **PPL 20–150** range (news tends toward the narrower end; scientific literature is somewhat broader). Note: if an n-gram language model (such as KenLM, described in Section 5.2.1 of Chapter 5) is used as the reference, PPL values for the same text will be significantly larger (approximately 100–300 for news/encyclopedia text). The two reference types use different scales and their thresholds must not be conflated.
+  - **Low-percentile anomalies**: If the PPL for a given source remains concentrated in an extremely low range over time, it usually indicates boilerplate code, infinitely copied disclaimers, or SEO content left behind by over-aggressive deduplication. The model learns little new information from such data.
+  - **High-percentile anomalies**: If the PPL for a given source remains abnormally high over time, it usually indicates format corruption, misaligned machine-translated text, or disordered character sequences.
+  - **Preferred range**: PPL thresholds must be bound to the reference model, tokenizer, and corpus type. Value ranges computed by neural-network reference models and n-gram language models (such as KenLM, described in Section 5.2.1 of Chapter 5) must not be mixed. Production systems should first establish a baseline on manually confirmed clean samples, then use percentile ranges that deviate from that baseline as alerting conditions.
 
 Listing 7-1 shows a reference implementation for offline perplexity sampling computation.
 
-**Listing 7-1: Reference Code for Offline Perplexity Sampling Computation**
+*Listing 7-1: Example code for offline perplexity sampling computation. Production environments should fix the language model version, tokenization method, and sampling definition, and record batch-level distributions.*
 
 ```python
 # Pseudocode for a typical offline perplexity sampling computation (based on PyTorch and HuggingFace API)
@@ -121,11 +121,11 @@ def calculate_perplexity_batch(texts, cache_model_path="llama-1b-ref"):
 #### 2. Diversity Sparsity (Type-Token Ratio, TTR & Vocabulary Coverage)
 - **Detection objective**: Confirm whether the cleaning pipeline, due to overly aggressive threshold settings or excessively strict deduplication (MinHash), has permanently eliminated niche knowledge or specific long-tail vocabulary.
 - **Validation method**: Compute the ratio of unique word types (distinct word stems within the vocabulary) to the total token count in the document collection described above. TTR tends to be lower across long passages, so a windowed averaging algorithm must be applied (e.g., MATTR (Covington and McFall 2010)).
-- **Interpretation logic**: If the total number of non-repeated words computed from a 100-million-token document sandbox is fewer than 50,000, the dataset suffers from severe vocabulary diversity deficiency (likely stemming from large volumes of e-commerce filler content or machine-translation cycles). Over time, this tends to produce a mechanical, low-information response style in the trained model.
+- **Interpretation logic**: If the number of non-repeated words, MATTR, or domain-term coverage in the target document sandbox is significantly lower than the historical baseline for comparable sources, the dataset may suffer from serious vocabulary diversity deficiency (likely stemming from large volumes of e-commerce filler content or machine-translation cycles). Over time, this tends to produce a mechanical, low-information response style in the trained model.
 
 Listing 7-2 shows a reference implementation for offline Type-Token Ratio computation.
 
-**Listing 7-2: Reference Code for Offline Type-Token Ratio Computation**
+*Listing 7-2: Example code for offline Type-Token Ratio computation. This snippet illustrates a diversity proxy metric; production environments should interpret it by language, domain, and sample-length strata.*
 
 ```python
 # Pseudocode for a typical offline TTR (Type-Token Ratio) computation
@@ -145,20 +145,20 @@ def calculate_ttr(texts, tokenizer=None):
     return unique_types / total_tokens
 ```
 
-- **Advanced validation — Vocabulary Coverage**: Teams should compile a domain-specific vocabulary list (e.g., rare disease names, recently introduced niche code frameworks, or the complete roster of characters from a specific literary work). If the coverage of such targeted vocabulary in the sandbox falls below 5%, whitelist weights should immediately be added to the upstream crawlers for the corresponding domains.
+- **Advanced validation — Vocabulary Coverage**: Teams should compile a domain-specific vocabulary list (e.g., rare disease names, recently introduced niche code frameworks, or the complete roster of characters from a specific literary work). If the coverage of such targeted vocabulary in the sandbox is significantly lower than the historical baseline or the manually specified minimum coverage requirement, whitelist weights should be added to the upstream crawlers for the corresponding domains, and the next spot-check should verify whether noise has been introduced.
 
 #### 3. Toxicity and Adverse Leakage Rate (Toxicity & PII Density)
 - **Detection objective**: Directly relevant to the risk-control compliance baseline for commercial deployment. Checks the stability of residual rates for harmful content (hate speech, terrorism, abuse, soft pornography) and PII (personal identity, phone numbers, password tokens) after cleaning.
 - **Validation method**: This is the most computationally intensive part of the entire metric chain. It typically requires invoking a lightweight discriminator specifically fine-tuned for safety (such as an open-source offline variant of the Perspective API (Lees et al. 2022), or a 5-class discriminator trained on RoBERTa) to score sampled articles.
 - **Interpretation logic**:
   - Toxicity scores should not be evaluated solely by their mean; the **P99 or P99.9 percentile** must also be monitored.
-  - If the P99 percentile score in a sample exceeds the threshold (> 0.8), isolation and re-review must be triggered immediately.
+  - If the P99 percentile score in a sample exceeds the boundary, isolation and re-review must be triggered immediately; the specific threshold should be determined jointly by the safety discriminator's calibration set and the business risk level.
   - Additionally, the trigger rate for text containing patterns such as `sk-****` (API tokens) or `13[0-9]*` (mobile number signatures) should be monitored via regular expressions to confirm that the PII masking layer has not accidentally thrown errors during updates.
 
 #### 4. Domain Classification and Subpopulation Overlap
 - **Detection objective**: This is one of the most important high-risk metrics in data operations in recent years, also known as Benchmark Contamination Prevention. Teams must confirm that randomly crawled data does not contain the evaluation questions from official benchmarks (e.g., standard answers from GSM8K (Cobbe et al. 2021) or the original English text from MMLU (Hendrycks et al. 2021)). Contamination undermines evaluation reliability and research integrity.
 - **Validation method**: Hash all test set data from major benchmarks using N-gram (typically 13-gram or 15-gram) fingerprinting; then compute the intersection against sampled data pending ingestion.
-- **Interpretation logic**: The overlap ratio should be as close to zero as possible. If a batch of Wikipedia expansion packages triggers a 1% 13-gram overlap, this typically indicates that some open-source library or an individual's GitHub repository has been included in the current pipeline, necessitating targeted removal.
+- **Interpretation logic**: The overlap ratio should be as close to zero as possible. If a batch of corpus exhibits N-gram collisions with the evaluation set that are clearly above background noise, this typically indicates that some open-source library, mirror site, or individual's GitHub repository has republished evaluation content into the current pipeline, necessitating targeted removal.
 
 ### 7.2.3 Alignment Bias Between Proxy Metrics and True Model Performance
 
@@ -168,18 +168,18 @@ It is important to be vigilant: all offline metrics are merely "proxies" and do 
 
 Evaluation must never stop at merely "looking at metrics." A qualified evaluation report must culminate in concrete system governance actions. See the table below for reference:
 
-**Table 7-1: Evaluation Metric to Governance Action Mapping**
+*Table 7-1: Evaluation Metric to Governance Action Mapping. Source: compiled by the authors; metric thresholds and governance actions should be calibrated according to project goals, historical baselines, and manual review results.*
 
 | Metric Observation (Offline/Online) | Common Root Cause and Manifestation | Corresponding Governance Action |
 | :--- | :--- | :--- |
-| **Overall decline in sampled TTR (diversity)** | MinHash deduplication is overly aggressive, eliminating reasonable overlap in general domains | **Loosen the MinHash Jaccard threshold (e.g., 0.8→0.7); introduce domain-specific vocabulary protection** |
+| **Overall decline in sampled TTR (diversity)** | MinHash deduplication may be overly aggressive, eliminating reasonable overlap in general domains | **Raise the duplicate-decision threshold or switch to a stricter definition of duplication, and introduce domain-specific vocabulary protection** |
 | **Heavy tail expansion in the high-PPL segment** | Incomplete HTML tag cleaning; newly introduced data contains large volumes of garbled symbols | **Trace back high-PPL samples; add HTML element regex filters or strengthen language identification confidence thresholds** |
 | **Steep decline in code capability benchmarks** | Indentation and newlines were mechanically stripped during normalization | **Disable the global newline-merging rule; implement an independent parsing bypass for code domains** |
 | **Frequent repetition loops during pre-training** | The same page from a specific site was repeatedly packaged across different time-point snapshots | **Run full sequence-level SHA256 deduplication; block the source or configure strict penalty weights** |
 | **Large local oscillations in the loss function** | Severely malformed data with broken punctuation has been mixed in | **Retrieve the current shard by Batch ID; downweight anomalous data to a blacklist or filter it out** |
 | **Sharp rise in Toxicity** | Forum crawler sources (e.g., Reddit) have crawled illicit or sensitive subreddits | **Update the safety filtering model; expand the stopword list or NSFW discrimination feature set; perform historical retroactive cleanup** |
 
-This tightly coupled governance mapping enables teams to immediately translate raw data metrics into a roadmap for the next engineering optimization cycle.
+This governance mapping enables teams to translate data metrics into candidate routes for the next engineering optimization cycle; final actions still need to be confirmed through sample review and small-scale validation experiments.
 
 ---
 
@@ -189,9 +189,9 @@ For the evaluation described above to be effective, the organization must establ
 
 ### 7.3.1 Dataset Versioning and A/B Comparison from a DVC Perspective
 
-Analogous to code versioned with Git, for data lakes spanning multiple terabytes we must introduce DVC (Kuprieiev et al. 2020) (Data Version Control) or a similar immutable object management strategy based on SHA-backed mounts. In large-scale experiments, raw data must never be overwritten in place; any modification at a processing node should produce a completely new incremental version or a snapshot partitioned via Delta Lake.
+Analogous to code versioned with Git, for data lakes spanning multiple terabytes we must introduce DVC (DVC Team and Contributors 2024) (Data Version Control) or a similar immutable object management strategy based on SHA-backed mounts. In large-scale experiments, raw data must never be overwritten in place; any modification at a processing node should produce a completely new incremental version or a snapshot partitioned via Delta Lake.
 
-**A/B testing principles**: Each time a new pipeline adjustment is made (for example, newly incorporating 20 GB of data parsed from high-quality Reddit nodes with enhanced comment-tree filtering logic for that site), it should be validated before full rollout by allocating an equivalent compute budget (e.g., launching a set of parallel comparative 1B small-model training runs at a scale of 1B tokens). Only after both experimental models have completed evaluation on the core benchmark set and demonstrated that "mathematical or conversational empathy capabilities have improved significantly without meaningfully degrading general world knowledge metrics" should this strategy be deployed into the production version (e.g., upgrading from v2.1 to v2.2).
+**A/B testing principles**: Each time a new pipeline adjustment is made (for example, newly incorporating data parsed from high-quality Reddit nodes and enhancing filtering logic for that site's comment trees), it should be validated before full rollout by allocating equivalent compute to a small-scale parallel controlled training run. The scale of the control experiment should be determined by model size, training budget, and target evaluation sensitivity. Only after both experimental models have completed evaluation on the core benchmark set and demonstrated that the target capability reaches the preset release threshold without damaging general world-knowledge metrics should this strategy be deployed into the production version (e.g., upgrading from v2.1 to v2.2).
 
 ### 7.3.2 Building an Issue Sample Pool and Establishing a Traceability Loop
 
@@ -247,16 +247,16 @@ After establishing the facts, the team immediately executed a three-step respons
 
 This costly training interruption demonstrates that the data operations team must be able to trace from an anomalous batch back to the source document, parser version, and cleaning rule, and consolidate retrospective findings into automated checks.
 
-**Table 7-2: Version Iteration Log Template**
+*Table 7-2: Version Iteration Log Template. Source: compiled by the authors; the fields form a data-version retrospective template that production environments can extend according to auditing, experiment tracking, and permission workflows.*
 
 In a formal business iteration system, every data batch deployed to the main training cluster must be accompanied by a release log as rigorous as a software release note. The table below provides a benchmark log template from a production pipeline.
 
 | Evaluation Dimension | Version Log Field Example |
 | :--- | :--- |
 | **Basic information** | Version: v2.1 → v2.2; Operator: Zhang San (DataOps); Submission date: 2026-X-X |
-| **Main changes (Changelog)** | 1. Added 30 GB of medium-to-high quality StackOverflow Q&A (via new crawler integration).<br>2. Tightened MinHash threshold (0.85→0.8) for near-duplicate removal within the Chinese Wikipedia corpus.<br>3. Fixed a regex vulnerability that incorrectly stripped preceding paragraphs on `<p>` tags. |
-| **Scale change** | Expected net addition: 50 GB; actual net addition after cleaning and deduplication: 23 GB; total token count: 1.45T. |
-| **A/B evaluation highlights** | In the small-scale comparative experiment, HumanEval (code evaluation) pass rate improved by 4.1 points; all other general benchmarks fluctuated by no more than 0.3%, classified as a low-risk change. |
+| **Main changes (Changelog)** | 1. Expanded medium-to-high quality StackOverflow Q&A through a new crawler integration; the specific scale is recorded in the version report.<br>2. Adjusted the MinHash Jaccard threshold (for example, switching from a looser tier to a stricter tier) for same-source deduplication in the Chinese Wikipedia corpus.<br>3. Fixed a regex vulnerability that incorrectly stripped preceding paragraphs on `<p>` tags. |
+| **Scale change** | Record the expected added scale, the net added scale after cleaning and deduplication, and the cumulative token count; concrete values should be generated automatically by the data version report. |
+| **A/B evaluation highlights** | In the small-scale comparative experiment, the target capability evaluation reached the preset release threshold, and general benchmarks showed no significant regression; concrete values should be attached in the experiment report. |
 | **Known issues and anticipated risks** | After adding StackOverflow, some very outdated answers were incorporated. Time-based heuristic filtering of old posts has not yet been applied; planned for v2.3. |
 | **Final review conclusion** | √ Validation passed; approved for mounting into the v2.2 production main queue for pre-training consumption. |
 
@@ -273,7 +273,7 @@ An excellent quality dashboard should provide a top-down view of all metrics. It
 1. **Overall status overview**: Ingestion volume by domain source, current inventory balance, and percentage of tokens consumed.
 2. **Cleaning funnel yield rate**: Stage-by-stage retention metrics, such as the proportion blocked by language identification, the reject rate from heuristic filtering, and the removal rate from fuzzy deduplication. Any sudden drop or spike in any stage should be flagged with a red alert.
 3. **Safety risk baseline monitoring**: Records the number of PII or highly sensitive harmful documents detected and the blocking logs for each cycle.
-4. **Spot-check audit traffic lights**: Displays scoring trends from the weekly blind review of 1,000 randomly sampled corpus items, showing a moving average of fluency and correctness on a scale of 1 to 5.
+4. **Spot-check audit traffic lights**: Displays scoring trends from the weekly blind review of 1,000 randomly sampled corpus items, showing a moving average of fluency and correctness on a scale of 1 to 5 (for automated data validation frameworks, see Breck et al. 2019).
 
 ![Figure 7-2: Data Evaluation Feedback Loop](../../images/part2/data_evaluation_loop.png)
 
@@ -284,10 +284,10 @@ An excellent quality dashboard should provide a top-down view of all metrics. It
 If the dashboard is merely a static report requiring daily manual inspection, oversight gaps are inevitable. A mature large-model data factory requires not only a static dashboard but also an active blocking and alerting mechanism. This alerting architecture is typically built on a distributed stream-processing framework (such as Apache Flink or Spark Streaming) to achieve low-latency interception of anomalous data.
 
 **Tier 1: Data Drift Alerts**
-New web crawl data, cleaned data, and even synthetic data continuously enter the data lake each day. The system extracts sample sets daily to compute distributional entropy. If the frequency of a specific word type rises by 300% in the current day's batch (possibly because a domain crawler has entered a loop, repeatedly downloading redundant navigation bar tags), a `[P1-DataDrift]` alert is triggered in Slack or Feishu. The data stream is automatically suspended until an engineer manually logs into the dashboard to lift the hold. The 300% threshold is an example; production systems should be calibrated against historical distributions and business tolerance levels.
+New web crawl data, cleaned data, and even synthetic data continuously enter the data lake each day. The system extracts sample sets daily to compute distributional entropy. If the frequency of a specific word type makes an abnormal jump relative to the historical baseline in the current day's batch (possibly because a domain crawler has entered a loop, repeatedly downloading redundant navigation bar tags), a `[P1-DataDrift]` alert is triggered in Slack or Feishu. The data stream is automatically suspended until an engineer manually logs into the dashboard to lift the hold. Drift thresholds should be calibrated against historical distributions, business tolerance, and false-positive cost.
 
 **Tier 2: Cost and Latency Threshold Alerts**
-Data preprocessing also consumes large amounts of CPU resources. If the dashboard shows that the `FastText` or `regex filtering` node has maxed out its CPU cores and throughput has plummeted from the usual 2 GB/s to 100 MB/s, such an alert almost certainly indicates that a regex pattern with catastrophic backtracking is experiencing severe time-complexity explosion when processing an extremely long document—the classic ReDoS vulnerability. When this occurs, the scheduling system can directly terminate the timed-out process to protect the main pipeline from being blocked.
+Data preprocessing also consumes large amounts of CPU resources. If the dashboard shows that the `FastText` or `regex filtering` node has maxed out its CPU cores and data throughput has suddenly fallen sharply relative to the historical baseline, one common cause is that a regex pattern with catastrophic backtracking is experiencing severe time-complexity explosion when processing an extremely long document, which is the classic ReDoS vulnerability. When this occurs, the scheduling system can directly terminate the timed-out process to protect the main pipeline from being blocked.
 
 **Tier 3: Multimodal Anomaly Alerts (for Next-Generation Systems)**
 With the introduction of image-text multimodal data (see Chapter 8), the dashboard must also add monitoring for image broken-link rates and CLIP similarity extremes between text and images. If the proportion of semantically unrelated image-text pairs in a batch exceeds the threshold, a re-review should be triggered immediately.
@@ -299,7 +299,7 @@ Under an automated monitoring and review mechanism, the responsibilities of diff
 - The **Data Infrastructure team**'s north star metrics are stable throughput and cost per token (Cost_per_Token). They are responsible for providing downstream teams with high-speed, low-storage-I/O distributed storage architecture; if GPU utilization drops due to a `DataLoader` bottleneck, this team is responsible for diagnosis and resolution.
 - The **Data Ingestion (crawling and collection) team** focuses on acquisition breadth, coverage, and legal/copyright compliance. If PII or high-risk harmful samples escape into the training corpus, they bear responsibility for upstream root-cause investigation.
 - **Pre-training researchers**' primary focus is on which architecture (MoE vs. dense, MHA vs. GQA) and well-configured hyperparameters to use in order to fully utilize the hardware cluster, and whether the current data mixing ratio allows loss to decline strictly in accordance with scaling laws.
-- The **Data Quality Evaluation (DataOps/Evaluator) team**: maintains the quality dashboard and alerting pipeline, determines data mixing ratios (e.g., web pages : code : papers = 6:2:2), and uses the dashboard to assess whether ingested data meets quality standards. They must also combine model evaluation results to determine whether the data recipe is effective; if evaluation performance drops significantly in any phase, they should drive training suspension, sample tracing, and rule updates.
+- The **Data Quality Evaluation (DataOps/Evaluator) team**: maintains the quality dashboard and alerting pipeline, determines data mixing ratios (for example, the relative weights of web pages, code, papers, and other sources), and uses the dashboard to assess whether ingested data meets quality standards. They must also combine model evaluation results to determine whether the data recipe is effective; if evaluation performance drops significantly in any phase, they should drive training suspension, sample tracing, and rule updates.
 
 ---
 
@@ -313,8 +313,8 @@ If the evolution of a large model's data infrastructure relies solely on post-ho
 **Key workflow**:
 
 1. **Weekend pre-training inspection**: Review the total token count continuously fed into the main pre-training branch over the past weekend. Cross-check the `nvidia-smi` monitoring panel for GPU idle time caused by `DataLoader` stalls or storage I/O blockages (MFU below the warning threshold). If found, immediately log the I/O deficiency as the first priority item for the day.
-2. **Offline detection report review**: For the T-1 batch data most recently cleaned as of Sunday evening (typically two or three 10 GB test sandboxes after sampling), extract KenLM (Heafield 2011) perplexity (PPL), type-token ratio (TTR), and text length distribution histograms.
-3. **Metric anomaly alert investigation**: If the PPL mean suddenly rises above 500, this typically indicates that the most recently onboarded data source contains HTML residue that was not fully parsed. If the safety block rate (Toxicity Alert) doubles, it may be related to recently added community discussion sources. No conclusions are rushed in the meeting—only the anomalies requiring deep-dive investigation are identified.
+2. **Offline detection report review**: For the T-1 batch data most recently cleaned as of Sunday evening, extract KenLM (Heafield 2011) perplexity (PPL), type-token ratio (TTR), and text length distribution histograms from the sampled test sandbox.
+3. **Metric anomaly alert investigation**: If the PPL mean suddenly rises relative to the historical baseline, this typically indicates that the most recently onboarded data source contains HTML residue that was not fully parsed. If the safety block rate (Toxicity Alert) rises abnormally relative to the baseline, it may be related to recently added community discussion sources. No conclusions are rushed in the meeting; only the anomalies requiring deep-dive investigation are identified.
 
 ### 7.5.2 Tuesday and Wednesday: Anomaly Tracing and Small-Scale Validation (Root Cause Analysis)
 
@@ -323,7 +323,7 @@ If the evolution of a large model's data infrastructure relies solely on post-ho
 
 1. **Targeted blind review and labeling**: For the quality degradation points identified in Monday's meeting, extract approximately 200 raw corpus samples. The operations evaluation team manually reads through the samples to determine whether rules are causing "false positives" (deleting good articles) or "false negatives" (junk vocabulary bypassing the regex defenses).
 2. **Cleaning strategy correction**: If the issue is identified as "special indentation in certain code domains causing line-filtering logic errors," engineers will correct the `FastText` or regex script logic on Tuesday afternoon and rerun the pipeline on the affected corpus module.
-3. **Mini-experiment scheduling**: Push the newly cleaned sandbox data to a 0.5B or 1B small model and launch a 12- to 24-hour controlled comparative experiment. This is where DVC (data version control) demonstrates its power: strictly controlling variables and comparing scores between only two groups, such as `v1.2_Base` vs. `v1.2_CodePatch`.
+3. **Mini-experiment scheduling**: Push the newly cleaned sandbox data to a small model or short-cycle training task and launch an equivalent controlled experiment. The concrete model scale and runtime should be determined by training budget, target-metric sensitivity, and scheduling constraints. This is where DVC (data version control) demonstrates its power: strictly controlling variables and comparing scores between only two groups, such as `v1.2_Base` vs. `v1.2_CodePatch`.
 
 ### 7.5.3 Thursday: Experimental Decision and Data Mixing
 
@@ -331,15 +331,15 @@ If the evolution of a large model's data infrastructure relies solely on post-ho
 **Key workflow**:
 
 1. **A/B outcome comparison**: On Thursday morning, the mini-experiment results are available. Model engineers report whether the validation loss curves of the two data versions intersect, and the pass rate difference on specific downstream evaluation benchmarks (e.g., the MMLU (Hendrycks et al. 2021) code subcategory or GSM8K (Cobbe et al. 2021)).
-2. **Qualitative analysis**: If the new data (`v1.2_CodePatch`) improves code capability by 5% without meaningfully degrading general instruction-following ability, the cleaning patch is considered validated and the code is merged into the main pre-training cleaning repository.
-3. **Data subset ratio rebalancing**: At this step, the team decides the data mix to be pushed to the large cluster in the following week. For example, if recent evaluations show that foundational reasoning capability is weak, the next million training steps starting Friday may increase the proportion of arXiv papers and high-quality books to 30% while reducing the proportion of open-web encyclopedia data to 15%. The data engine will adjust sampling probabilities (temperature sampling) accordingly. These proportions are example parameters and must be calibrated through ablation experiments.
+2. **Qualitative analysis**: If the new data (`v1.2_CodePatch`) allows the target code capability to reach the preset threshold without weakening general instruction-following ability, the cleaning patch can enter candidate merge status.
+3. **Data subset ratio rebalancing**: At this step, the team decides the data mix to be pushed to the large cluster in the following week. For example, if recent evaluations show that foundational reasoning capability is weak, the sampling weight of arXiv papers, high-quality books, or math-solution data can be increased while the weight of low-value open-web samples can be reduced. Concrete proportions need to be calibrated through ablation experiments.
 
 ### 7.5.4 Friday: Full Production Build and Release (Production Release)
 
 **Core participants**: Full infrastructure team.
 **Key workflow**:
 1. **Weekly version freeze**: Incorporating the fix scripts validated during the week, generate the latest incremental tokens from the raw data lake. All metadata is recorded and updated, stored in the cloud-hosted environment, and the pointer to this latest corpus is updated in the DataLoader configuration file.
-2. **Release smoke test**: Run a two-hour simulation on an idle 8-GPU node to ensure that the sequence incorporating the new weights—after tokenization loading, binary compressed reading, and tensor assembly—can be successfully pushed to the GPU without errors.
+2. **Release smoke test**: Run a short-cycle simulation in a set of idle nodes to ensure that the sequence incorporating the new weights, after tokenization loading, binary compressed reading, and tensor assembly, can be successfully pushed to the GPU without errors. The node count and runtime should be determined by production cluster scale and historical failure modes.
 3. **Main training data switchover**: After confirming all is well, execute a smooth switchover on the "7B main model training cluster" on Friday evening; the model will read the latest `v1.3` data version at the next checkpoint. The entire workflow is thereby closed.
 
 ---
@@ -358,7 +358,7 @@ In the late stages of pre-training, operational evaluation often reveals very sp
 
 Most benchmark evaluation failures can be attributed to one of two extreme tendencies in the data cleaning system: over-retention and over-filtering.
 
-- **Countering over-deduplication**: When a model exhibits obvious gaps in a specific event dimension, investigation may reveal that hundreds of news articles covering that dimension were all filtered out by MinHash at a 0.85 similarity threshold because they cited the same highly similar background summary. A rule write-back is needed: establish domain whitelisting, or lower the deduplication threshold for specific topics to reclaim incorrectly eliminated documents.
+- **Countering over-deduplication**: When a model exhibits obvious gaps in a specific event dimension, investigation may reveal that a batch of news articles covering that dimension was entirely filtered out by MinHash near-duplicate rules because they cited similar background summaries. A rule write-back is needed: establish domain whitelisting, or reclaim incorrectly eliminated documents by raising the duplicate-decision threshold for specific topics or switching to a stricter definition of duplication.
 - **Countering knowledge contamination**: If the security evaluation team discovers during a canary release that certain responses reference closed or high-risk URLs, tracing via source domain ID may reveal that a class of old URLs has been tampered with. The associated domains must immediately be added to a high-priority blocklist on the cleaning side, and the relevant corpus segment must be re-cleaned.
 
 ### 7.6.3 Consolidating into Reusable Assets for SFT (Instruction Fine-Tuning) and RAG
@@ -395,4 +395,16 @@ Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Me
 
 Lees A, Tran V Q, Tay Y, Sorensen J, Gupta J, Metzler D, Vasserman L (2022) A New Generation of Perspective API. In: Proceedings of KDD 2022, pp 3197-3207.
 
-Kuprieiev R, Petrov D, Shcheklein I, et al. (2020) DVC: Data Version Control - Git for Data & Models. Zenodo. https://doi.org/10.5281/zenodo.012345 (software; versioned DOI available in the Zenodo record; maintained by Iterative.ai)
+DVC Team and Contributors (2024) DVC: Data Version Control - Git for Data & Models. Documentation: <https://dvc.org/doc>. Source repository: <https://github.com/iterative/dvc>.
+
+Polyzotis N, Roy S, Whang S E, Zinkevich M (2018) Data Lifecycle Challenges in Production Machine Learning: A Survey. ACM SIGMOD Record 47(2):17-28.
+
+Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the ACM CHI Conference on Human Factors in Computing Systems, pp 1-15.
+
+Whang S E, Roh Y, Song H, Lee J G (2023) Data Collection and Quality Challenges in Deep Learning: A Data-Centric AI Perspective. The VLDB Journal 32(4):791-813.
+
+Liang W, Tadesse G A, Ho D, Fei-Fei L, Zaharia M, Zhang C, Zou J (2022) Advances, Challenges and Opportunities in Creating Data for Trustworthy AI. Nature Machine Intelligence 4(8):669-677.
+
+Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for Machine Learning. In: Proceedings of the 2nd SysML Conference.
+
+Chen D, Huang Y, Pan X, Jiang N, Wang H, Zhang Y, Ge C, Chen Y, Zhang W, Ma Z, Huang J, Lin W, Li Y, Ding B, Zhou J (2025) Data-Juicer 2.0: Cloud-Scale Adaptive Data Processing for and with Foundation Models. arXiv preprint arXiv:2501.14755.

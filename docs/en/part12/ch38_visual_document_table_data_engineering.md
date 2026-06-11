@@ -2,7 +2,7 @@
 
 ## Abstract
 
-This chapter combines invoice document understanding and sparse table structure recognition into one specialized-dataset chapter. StructBill-CN emphasizes high-risk bill fields, hierarchical JSON, and arithmetic consistency, while SparseTable-Bench emphasizes table topology, empty cells, and structural robustness. Together they show that visual document data engineering is not merely OCR; it binds page structure, business semantics, and evaluation protocols into stable sample schemas.
+This chapter discusses how visual documents become trainable, evaluable, and auditable data objects from images, layouts, tables, and business fields through two specialized cases: invoice document understanding and sparse table structure recognition. StructBill-CN emphasizes high-risk bill fields, hierarchical JSON, and arithmetic consistency, while SparseTable-Bench emphasizes table topology, empty cells, and structural robustness. Together they show that visual document data engineering is not merely OCR; it binds page structure, business semantics, and evaluation protocols into stable sample schemas.
 
 ## Keywords
 
@@ -16,7 +16,7 @@ After studying this chapter, you should be able to:
 
 - Explain why Chinese bills and medical-expense documents are a high-risk, high-density, weak-visual-cue data engineering challenge rather than merely an OCR problem.
 - Understand StructBill-CN's task definition: Schema-based End-to-End Unified Extraction, and how it differs from traditional table structure recognition.
-- Understand the three supervision signals in each sample: global key-value fields, nested line-item tables, and logic constraints.
+- Understand the three supervision signals in each sample: global key-value fields, nested line-item tables, and logic constraints, as well as the annotation philosophy of semantic ownership over physical position.
 - Apply a construction pipeline with logic-consistency gates across acquisition, denoising, schema design, hierarchical JSON annotation, schema validation, logic validation, and version splitting.
 - Use multidimensional metrics such as KV-F1, Table-F1, ANLS, TEDS, ACR, and SCVR as a coherent evaluation loop.
 - Attribute errors to concrete data-engineering repair actions.
@@ -101,6 +101,8 @@ StructBill-CN deliberately keeps three types of difficulty.
 
 These difficulties are design targets, not defects. They explain why the construction pipeline needs logic gates, quality grading, and semantics-first annotation.
 
+The image forms of different schemas also carry different emphases, and this matters for controlled splits and sampling. CHIP-2022 inpatient, outpatient, and pharmacy invoices are wired-grid forms with relatively regular structure, mainly testing precise extraction from dense fields. Discharge records are text-dense and nearly table-free, testing long-text understanding and global key-value localization. SIBR-Med expense lists are typical borderless tables, making row-column alignment and logic consistency the main battlefield. Notice forms contain no tables, testing whether the model can refrain from fabricating tables when none should exist.
+
 ### Case A.3: Sample Schema: Key-Value, Line-Item Tables, Hierarchical JSON, and Logic Constraints
 
 #### 38.3.1 Three Supervision Signals
@@ -115,6 +117,8 @@ The key annotation philosophy is **semantic ownership over physical position**. 
 
 Hierarchical JSON is used because it maps directly to real database schema: global attributes plus nested line items. Flat key-value pairs cannot express one-to-many detail rows, while physical coordinates leave semantics for downstream systems to infer. Hierarchical JSON is the natural form for the ingestion-ready goal.
 
+In practice, semantic-ownership annotation can be counterintuitive. If a line is visually shifted under a neighboring column because of printing drift, annotators should label it according to the business field it belongs to, not according to the line it happens to sit beneath in pixels. This shifts the basis of judgment from geometry to logic. The cost is higher annotation difficulty and greater reliance on domain understanding, but the benefit is that models are forced to learn content logic rather than visual projection. In borderless tables, this is the only reliable alignment strategy, and it explains why later quality control and evaluation must be designed around semantic correctness rather than purely positional correctness.
+
 #### 38.3.2 Mapping Schema to Hierarchical JSON
 
 The three schema parts map to the final JSON as follows: $K$ becomes the global `key_information` object, $T$ becomes the `Fee_List` array and its row fields, and $C$ becomes validation relationships attached to numeric fields rather than visible JSON nodes.
@@ -124,6 +128,8 @@ The three schema parts map to the final JSON as follows: $K$ becomes the global 
 *Figure 38-1: Schema-to-JSON mapping. Key fields and table structure become visible JSON nodes; constraints remain verifiable relationships attached to numeric fields.*
 
 This “constraints as relationships, not fields” design lets the same JSON serve training and evaluation. Constraints do not change the output format, but they are instantiated during validation as equations. A future schema can add a new rule such as discounted amount = amount x discount rate without changing historical fields.
+
+This design is also the basis for backward-compatible data-contract evolution. A schema can add a new rule in $C$ without changing existing fields or historical annotations. The constraint remains outside the JSON node set but becomes active during construction-time validation and evaluation-time scoring.
 
 #### 38.3.3 Complete Sample Structure
 
@@ -151,7 +157,7 @@ This “constraints as relationships, not fields” design lets the same JSON se
 }
 ```
 
-In this small sample, `key_information` and `Fee_List` are structure. The row-level and document-level arithmetic equations are logic constraints. Both must be annotated, validated, and evaluated.
+In this small sample, `key_information` and `Fee_List` are structure. The row-level and document-level arithmetic equations are logic constraints. Both must be annotated, validated, and evaluated. The construction pipeline, quality checks, and metrics that follow all revolve around making this JSON both structurally legal and arithmetically self-consistent.
 
 **Code Example 1: Schema definition as a Python dataclass.** The following snippet shows how the schema $S=\{K, T, C\}$ is represented programmatically. Each business document type corresponds to one `Schema` instance. The three constraint fields (`price_field`, `qty_field`, `amount_field`) plus `total_field` encode the arithmetic rules $C$ without modifying the JSON output format.
 
@@ -492,7 +498,7 @@ A core design principle of SparseTable-Bench is to represent each table image as
 }
 ```
 
-The `[EMPTY_CELL]` token here is not ordinary text; it is a placeholder expressing "structure exists, content is absent." It decouples a cell's structural identity from its semantic content: even if the corresponding image region contains no readable characters, that position still has row-column coordinates, a bounding box, and contextual relationships. For sparse tables, this placeholder prevents the model from treating blank regions as non-existent during generation, thereby reducing the probability of column collapse and left-shift errors. Figure 39-2 summarizes the synchronized relationship among the three supervision signals — HTML, text, and bounding boxes — within the same table sample.
+The `[EMPTY_CELL]` token here is not ordinary text; it is a placeholder expressing "structure exists, content is absent." It decouples a cell's structural identity from its semantic content: even if the corresponding image region contains no readable characters, that position still has row-column coordinates, a bounding box, and contextual relationships. For sparse tables, this placeholder prevents the model from treating blank regions as non-existent during generation, thereby reducing the probability of column collapse and left-shift errors. Figure 38-4 summarizes the synchronized relationship among the three supervision signals — HTML, text, and bounding boxes — within the same table sample.
 
 ![Figure 38-4: Three synchronized supervision signals in a table sample](../../images/part12/ch39_02_supervision_schema_en.png)
 
@@ -513,7 +519,7 @@ It is important to note that the specific notation for the empty-cell token must
 
 ### Case B.4: Four-Stage Construction Pipeline
 
-The construction of SparseTable-Bench can be organized into four stages: table collection, structure extraction, spatial annotation, and sparse topology augmentation. These four stages are not a simple serial file transformation; rather, they involve repeated validation of consistency among structure, text, and geometry, as illustrated in Figure 39-1.
+The construction of SparseTable-Bench can be organized into four stages: table collection, structure extraction, spatial annotation, and sparse topology augmentation. These four stages are not a simple serial file transformation; rather, they involve repeated validation of consistency among structure, text, and geometry, as illustrated in Figure 38-5.
 
 ![Figure 38-5: Four-stage SparseTable-Bench construction pipeline](../../images/part12/ch39_01_stb_pipeline_en.png)
 
@@ -567,7 +573,7 @@ These errors demonstrate that the value of SparseTable-Bench is not simply provi
 
 STB-Mask-Stress is the robustness evaluation split within SparseTable-Bench, dedicated specifically to pressure testing. Its design philosophy is to systematically reduce text cues — while preserving table topology — and to observe whether the model can still recover row-column structure and empty cell positions. Unlike ordinary data augmentation, the goal of STB-Mask-Stress is not to increase training set diversity, but to construct an evaluation environment that more closely resembles a "structural understanding stress test." This chapter follows the dataset documentation in using the name STB-Mask-Stress; in related experimental contexts, it can also be understood as a masked table evaluation setting oriented toward column-level occlusion, suitable for use with pressure-test metrics such as Masked-TEDS.
 
-Figure 39-3 illustrates the basic workflow of STB-Mask-Stress, from column-level occlusion generation to evaluation interpretation.
+Figure 38-6 illustrates the basic workflow of STB-Mask-Stress, from column-level occlusion generation to evaluation interpretation.
 
 ![Figure 38-6: STB-Mask-Stress occlusion generation and evaluation workflow](../../images/part12/ch39_03_mask_stress_flow_en.png)
 

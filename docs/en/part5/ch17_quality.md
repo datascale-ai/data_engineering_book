@@ -542,7 +542,7 @@ Post-mortem review reveals that this incident was not simply due to "low-quality
 
 ### Synthetic Data Governance Checklist and Deployment Red Lines
 
-The value of a governance checklist (Gebru et al. 2021; Mitchell et al. 2019; Raji et al. 2020) lies in converting abstract principles into actionable inspection items. A major reason synthetic data systems can easily lose control is that teams often continue to expand in a state of "overall feeling acceptable." The significance of deployment red lines is to clearly specify which problems, once they appear, require the system to pause, roll back, or undergo re-review, rather than allowing continued reliance on optimistic subjective judgment. Table 17-2 lists required inspection questions and corresponding deployment red lines across dimensions such as data source, sample distribution, and repetition and similarity.
+The value of a governance checklist (Gebru et al. 2021; Mitchell et al. 2019; Raji et al. 2020) lies in converting abstract principles into actionable inspection items. A major reason synthetic data systems can easily lose control is that teams often continue to expand in a state of "overall feeling acceptable." The significance of deployment red lines is to clearly specify which problems, once they appear, require the system to pause, roll back, or undergo re-review, rather than allowing continued reliance on optimistic subjective judgment. Table 17-3 lists required inspection questions and corresponding deployment red lines across dimensions such as data source, sample distribution, and repetition and similarity.
 
 
 **Table 17-3: Quality Governance and Deployment Red Lines Checklist for Synthetic Data Training**

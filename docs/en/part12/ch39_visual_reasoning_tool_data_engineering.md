@@ -2,7 +2,7 @@
 
 ## Abstract
 
-This chapter combines multi-chart infographic reasoning and medical image tool-calling into one specialized-dataset chapter. Multi-chart infographic reasoning emphasizes cross-chart evidence aggregation, numerical relations, and multi-step reasoning chains; MedImage-ToolVQA emphasizes ROI, masks, bounding boxes, and tool-call trajectories. Both cases require datasets to record visual evidence, question structure, reasoning processes, and human-review boundaries together.
+This chapter discusses how visual data moves from object recognition toward evidence organization and executable reasoning through two specialized cases: multi-chart infographic reasoning and medical image tool-calling. Multi-chart infographic reasoning emphasizes cross-chart evidence aggregation, numerical relations, and multi-step reasoning chains; MedImage-ToolVQA emphasizes ROI, masks, bounding boxes, and tool-call trajectories. Both cases require datasets to record visual evidence, question structure, reasoning processes, and human-review boundaries together.
 
 ## Keywords
 
@@ -50,8 +50,8 @@ The dataset is described from four perspectives: sample size, domain coverage, c
 
 #### Case A.2.1 Quantitative Scale
 
-- **Image samples:** 354 screened real-world compound infographics. Each image is stored as one complete infographic and is not manually split into separate chart images. Original layout, shared legends, and annotation positions are preserved.
-- **QA samples:** 1,917 logically connected multi-step subquestions. Each infographic contains several dependent subquestions and one additional unanswerable question to test refusal and robustness. On average, each infographic has about 5.41 valid reasoning subquestions plus one unanswerable test question.
+- **Image samples:** 354 screened real-world compound infographics. Because high-quality native multi-subchart infographics on the web are scarce, the current sample size is explicitly treated as small and reserved for later expansion. Each image is stored as one complete infographic and is not manually split into separate chart images. Original layout, shared legends, and annotation positions are preserved as much as possible, so the visual browsing logic remains close to how humans read infographics.
+- **QA samples:** 1,917 logically connected multi-step subquestions. Each infographic contains several dependent subquestions, with questions and answers generated with large-model assistance and verified by human annotation. Each infographic also includes one additional unanswerable question to test refusal and robustness, preventing models from overfitting by fabricating data. On average, each infographic has about 5.41 valid reasoning subquestions plus one unanswerable test question, close to how people ask step-by-step questions in real use.
 
 #### Case A.2.2 Domain Coverage Across 28 Fields
 
@@ -61,7 +61,7 @@ Multi-domain design reduces overfitting to a single theme. Chart conventions, le
 
 ![Figure 39-1: Domain distribution in the multi-chart infographic reasoning dataset](../../images/part12/ch40_domain_en_new.png)
 
-*Figure 40-1. Distribution of domain coverage in the Multi-Chart Infographic Reasoning Dataset, spanning 28 fine-grained domains.*
+*Figure 39-1. Distribution of domain coverage in the Multi-Chart Infographic Reasoning Dataset, spanning 28 fine-grained domains.*
 
 #### Case A.2.3 Chart Types and Layout Features
 
@@ -71,17 +71,17 @@ Each infographic uses whatever mixed layout the original creator used, such as �
 
 ![Figure 39-2: Chart type distribution](../../images/part12/ch40_chart_en_new.png)
 
-*Figure 40-2. Distribution of sub-chart types in the Multi-Chart Infographic Reasoning Dataset, covering 23 distinct chart categories.*
+*Figure 39-2. Distribution of sub-chart types in the Multi-Chart Infographic Reasoning Dataset, covering 23 distinct chart categories.*
 
 #### Case A.2.4 Question Types
 
-The subquestions cover 13 reasoning types: value, categorization, sum, average, median, extrema, count, ranking, proportion, trend, difference, anomaly, assuming, visual, condition, calculation, and other.
+The subquestions are not limited to one extraction style. They cover 17 mainstream reasoning types: value, categorization, sum, average, median, extrema, count, ranking, proportion, trend, difference, anomaly, assuming, visual, condition, calculation, and other.
 
 Questions within one infographic are randomly mixed across types, creating chains such as “maximum lookup + difference calculation + conditional reasoning” or “counting + ratio calculation + visual reasoning.” Extraction questions focus on reading; calculation questions combine multiple values; conditional questions use legends and filters; visual questions use symbols and visual context.
 
 ![Figure 39-3: Question type distribution](../../images/part12/ch40_question_en_new.png)
 
-*Figure 40-3. Distribution of sub-question types in the Multi-Chart Infographic Reasoning Dataset, comprising 13 question categories.*
+*Figure 39-3. Distribution of sub-question types in the Multi-Chart Infographic Reasoning Dataset, comprising 13 question categories.*
 
 #### Case A.2.5 Standardized Core Tasks
 
@@ -99,9 +99,9 @@ The dataset's shark-attack example illustrates subchart partitioning, question c
 
 ![Figure 39-4: Shark-attack compound infographic example](../../images/part12/ch40_where_the_most_shark_attacks_occur_in_the_united_states_1.jpg)
 
-*Figure 40-4. Example of a multi-chart infographic sample from the dataset (Shark Attacks).*
+*Figure 39-4. Example of a multi-chart infographic sample from the dataset (Shark Attacks).*
 
-The example is one integrated science infographic with several subchart regions:
+The example is one integrated science infographic. Its internal regions belong to different chart types, statistical scopes, and data dimensions, while sharing the page title and side annotations:
 
 - **Subchart A: Radial chart.** Historical shark-attack county ranking in the United States. Key value: Volusia, Florida has 343 attacks, the county maximum. It supports Q1.
 - **Subchart B: Map chart.** State-level shark attacks in the last ten years. Key values: Florida 242, Hawaii 71. It supports Q2 and Q3.
@@ -137,7 +137,7 @@ The full path is: Subchart A county maximum -> extract state keyword -> Subchart
 
 #### Case A.3.4 Purpose of Unanswerable Questions
 
-Each infographic includes one question that cannot be answered from the image. This tests hallucination suppression and refusal robustness. The goal is to prevent models from fabricating unsupported numbers.
+Each infographic includes one question that cannot be answered from the image, such as asking how many accidents each year are caused by cats when the original figure does not provide that information. This tests hallucination suppression and refusal robustness. The goal is to prevent models from fabricating unsupported numbers.
 
 ### Case A.4: Construction Pipeline
 
@@ -145,7 +145,7 @@ The dataset construction process has four core stages: collecting and filtering 
 
 ![Figure 39-5: Multi-chart infographic dataset construction pipeline](../../images/part12/ch40_pipeline_en_new.png)
 
-*Figure 40-5. Overview of the four-stage data construction pipeline for the Multi-Chart Infographic Reasoning Dataset.*
+*Figure 39-5. Overview of the four-stage data construction pipeline for the Multi-Chart Infographic Reasoning Dataset.*
 
 #### Case A.4.1 Collecting and Filtering Real Infographics
 
@@ -159,7 +159,7 @@ Annotators manually mark each subchart's physical boundary, chart type, statisti
 
 #### Case A.4.3 Multi-Step Question Design
 
-For each infographic, annotators select target question types, use a large model to draft candidate chained questions constrained by those types and by the subchart structure, then manually revise them against the original image, legends, and region data. Invalid or unsupported questions are removed, natural language is refined, and standard answers are recalculated by humans. The final dataset contains 1,917 valid subquestions and one unanswerable question per image.
+For each infographic, annotators use a semi-automatic design process of type selection, model drafting, and human refinement. They first randomly select several target question types from the full pool, such as extrema extraction, counting, difference calculation, conditional reasoning, trend analysis, or anomaly judgment. A large model then drafts chained candidate questions constrained by those types and by the subchart structure. Human annotators revise the draft against the original image, legends, and region data: they refine natural language, fix cross-chart logic holes, remove invalid or unsupported questions, and recalculate standard answers by reading the image. After this iterative process, the final dataset contains 1,917 valid subquestions and one unanswerable question per image.
 
 #### Case A.4.4 Answer Cross-Checking and Standardized Annotation
 
@@ -181,23 +181,25 @@ For a dependent question chain, all subquestions must be correct for the chain t
 
 This metric checks whether the model locates the correct subchart or legend region for the answer. If the answer should use Subchart A and B but the model retrieves from Subchart C, evidence localization fails. It directly measures cross-chart aggregation.
 
+This metric is designed specifically for the cross-chart aggregation task. It evaluates subchart segmentation and cross-chart retrieval rather than only answer strings.
+
 ### Case A.6: Evaluation Difficulty and Failure Modes
 
 #### Case A.6.1 Technical Difficulties
 
-- **Legend ambiguity:** global legends and icons may shift meaning across subcharts.
-- **Cross-subchart filtering:** names and categories appear in different regions, causing mismatch.
-- **Statistical-scope confusion:** historical totals, ten-year counts, and annual averages must not be mixed.
-- **Error propagation:** one wrong early answer invalidates later calculations.
-- **Unanswerable robustness:** large models may fabricate answers when the image lacks evidence.
+- **Legend ambiguity:** global legends may be shared, icons may replace text explanations, and the same icon may shift meaning across subcharts, so context is needed to interpret symbols.
+- **Cross-subchart filtering:** the same region names or category terms can appear in different subcharts and must be matched precisely; otherwise, data from different partitions is easily confused.
+- **Statistical-scope confusion:** historical totals, last-ten-year counts, and annual averages must not be mixed. Ignoring statistical period is a high-frequency error.
+- **Error propagation:** if an early step in a chained question is wrong, all later calculations can fail as the error propagates through the reasoning path.
+- **Unanswerable robustness:** large models may fabricate answers when the image lacks evidence, making it difficult to identify the correct "cannot answer" scenario.
 
 #### Case A.6.2 Typical Model Failures
 
-- Misreading fatal versus nonfatal attack icons.
-- Confusing subchart partitions, such as using accidental-death data for shark-attack calculations.
+- Misreading fatal versus nonfatal attack icons and therefore failing to infer the shark species in Q4.
+- Confusing subchart partitions, such as using accidental-death data from another chart for shark-attack calculations.
 - Mixing historical cumulative counts with last-ten-year counts.
-- Propagating an early wrong maximum into later values.
-- Hallucinating a number for an unanswerable question.
+- Propagating an early wrong maximum, such as choosing a Hawaii county as the extreme value in Q1 and causing Q2/Q3 to fail.
+- Hallucinating a number for an unanswerable question that lacks image evidence.
 
 ### Case A.7: Current Limits and Future Iteration
 
@@ -217,7 +219,7 @@ The project currently has annotations but no released baseline algorithm or trai
 
 ### Case A: Summary
 
-The multi-chart infographic reasoning dataset starts from real compound infographics and breaks away from the single-chart QA paradigm. It reconstructs chart VQA evaluation around cross-chart aggregation, serial calculation, and visual-context reasoning. The structure of 354 multi-subchart images and 1,917 chained subquestions reflects how people actually read compound data visualizations. The shark-attack example shows that real infographic reasoning requires region-specific evidence retrieval, stepwise calculation, and symbol interpretation. Although the dataset currently lacks companion baselines, it fills an important benchmark gap and can support future cross-modal chart reasoning research.
+The multi-chart infographic reasoning dataset starts from real compound infographics and breaks away from the single-chart QA paradigm. It reconstructs chart VQA evaluation around cross-chart aggregation, serial calculation, and visual-context reasoning. The structure of 354 multi-subchart images and 1,917 chained subquestions, together with layered evaluation metrics, reflects how people actually read compound data visualizations. The shark-attack example shows that real infographic reasoning requires region-specific evidence retrieval, stepwise calculation, and symbol interpretation. Although the dataset currently lacks companion baselines, it fills an important benchmark gap and can become a standardized evaluation base for future cross-modal chart reasoning, helping chart QA move from laboratory-style synthetic data toward real industrial scenarios.
 
 ## Case B: MedImage-ToolVQA: Medical Image Local Evidence and Tool-Call Trajectories
 
@@ -243,6 +245,8 @@ The third difference is **safety boundary**. Ordinary VQA mistakes are usually i
 
 The fourth difference is **evaluation target**. Ordinary VQA often checks only the final answer. Medical tool-use data must also evaluate whether the evidence-gathering process is reasonable. A model may answer correctly while calling a tool on an irrelevant region; or it may choose a good region but select the wrong final option. Data engineering should record these signals separately.
 
+These differences show that medical image VQA needs a finer data organization than ordinary VQA. It needs to preserve the relationships among the whole image, local regions, tool observations, questions, answers, and behavior trajectories. Only then can model training move from "answering in language" toward "gathering evidence visually."
+
 ### Case B.2: From Answer Supervision to Tool Behavior Supervision
 
 Traditional VQA supervision is simple: given image and question, output answer. The reasoning process is hidden inside the model. For medical images, that opacity is risky because we do not know whether the model looked at the relevant region or used local evidence.
@@ -251,7 +255,9 @@ Tool behavior supervision makes executable behavior nodes part of the sample. Fo
 
 This has three benefits. First, it teaches a workflow closer to medical image review, where local reinspection and boundary confirmation are common. Second, it improves auditability: tool parameters, observation images, and answers can be checked. Third, it provides an interface for later reinforcement learning because tool calls and observations can be structured as environment actions and feedback.
 
-The goal is not to create more complex-looking samples. Each tool action should explain what uncertainty it resolves.
+Tool behavior supervision is not a cure-all. It introduces new data noise: tools may segment incorrectly, bboxes may drift away from the target, and models may over-call tools to satisfy the format. Data engineering must acknowledge these risks and reduce their impact through validation and review. The goal is not to create more complex-looking samples. Each tool action should explain what visual uncertainty it resolves.
+
+The basic idea of MedImage-ToolVQA can therefore be summarized as follows: transform the implicit local-evidence process in medical image QA into trainable, checkable, and evaluable multi-turn samples. It keeps answer supervision but does not stop there; it introduces tool trajectories but does not treat tool calls as decoration.
 
 ### Case B.3: Data Objects and Scale
 
@@ -287,22 +293,32 @@ ROI also prevents questions from becoming pure text medical QA. “What organ do
 
 At the same time, local evidence can create **localization leakage**. If the question says “the boxed region” or “inside the mask,” the model does not learn active localization. Good questions imply the need for local observation without exposing bbox or mask.
 
+In this sense, local evidence is both a training resource and a constraint. It helps construct samples and also helps filter them. A qualified MedImage-ToolVQA sample should make the relationship between question and ROI clear without leaking the ROI annotation mechanism in the prompt; it should allow the tool trajectory to use bbox or mask without treating those annotations as answers already given in the question.
+
 #### Case B.4.1 Question and Option Design
 
 A good medical image VQA question should satisfy three conditions: it is tied to a concrete image region, it does not leak annotation position, and its options differ by observable visual evidence.
 
-The question should not be general medical knowledge or a broad modality/organ label. Options should distinguish boundary clarity, focal versus diffuse distribution, density or signal abnormality, artifact versus true structure, and similar visual features. A healthy difficulty mix should include whole-image answerable samples, samples requiring local zoom, and samples requiring segmentation or boundary confirmation.
+The first condition is region relevance. The question should not be general medical knowledge or a broad modality/organ label. For example, "what are common imaging signs of lung nodules" is closer to knowledge QA, while "which option better describes the boundary and density of the target region in the image" is closer to image QA. The former trains medical knowledge recall; the latter trains visual-evidence judgment.
+
+The second condition is avoiding localization leakage. Builders have bbox and mask, so it is tempting to write prompts such as "the boxed region" or "the annotated area." Such wording looks clear but undermines the goal of tool-use data: the model is already told where to look, so the later tool call merely follows the prompt rather than deciding from the question and whole image. Better questions point naturally to a medical phenomenon rather than to the annotation mechanism.
+
+The third condition is option separability. Options should not be synonyms and should not all depend on external medical knowledge. They should differ by observable visual features, such as boundary clarity, focal versus diffuse distribution, density or signal abnormality, artifact versus true structure, and similar visual cues. Only then does the model need image evidence to eliminate options.
+
+A healthy difficulty mix should include whole-image answerable samples, samples requiring local zoom, and samples requiring segmentation or boundary confirmation. If every question is too simple, the model tends to answer directly; if every question is too hard, trajectories may become too long and unstable. The point of the mix is to teach the condition for tool use, not a fixed format.
 
 Medical questions should also avoid asking for clinical treatment or diagnosis. Multiple-choice answers can select the option that best matches image appearance, but explanations should not expand into patient advice.
+
+Question and option design is therefore the first quality gate in MedImage-ToolVQA. It determines whether a sample deserves to enter later trajectory synthesis. If the question itself lacks image dependency, even a refined tool trajectory is only formal complexity. If the question is well designed, the tool trajectory can become real behavior supervision.
 
 #### Case B.4.2 Observation Image Lifecycle
 
 Observation images are not ordinary illustrations. They are derived from the original image and returned to the model as new inputs.
 
-1. **Generation:** local crop from bbox, mask overlay from segmentation, or semantic segmentation image from tool output.
-2. **Binding:** returned images must be tied to original image, tool parameters, and dialogue turn.
-3. **Consumption:** later answers should reflect the observation, not ignore it.
-4. **Audit:** derived images need de-identification, quality checks, and version records.
+1. **Generation:** local crop from bbox, mask overlay from segmentation, or semantic segmentation image from tool output. Observation images should not merely look good; they should be useful as evidence. They need to preserve enough local detail while avoiding the amplification of irrelevant background into misleading information.
+2. **Binding:** returned images must be tied to original image, tool parameters, and dialogue turn. If image indices are unstable, the model may confuse one tool return for another. If the bbox-observation relationship is not recorded, later audit cannot determine whether the tool looked at the intended region.
+3. **Consumption:** later answers should reflect the observation, not ignore it. The model should confirm or revise its judgment from the observation, rather than continue answering only from the original image and prompt.
+4. **Audit:** derived images need de-identification, quality checks, and version records. Local crops may enlarge corner labels or IDs; mask overlays may affect human judgment through color or opacity; segmentation images may cover adjacent structures incorrectly.
 
 Observation images are both training inputs and audit objects. Without maintaining this relationship, multi-image trajectories become “one original image plus some extra pictures” rather than evidence paths.
 
@@ -421,33 +437,49 @@ train_ds = ds.MindDataset("tool_sft.mindrecord").shuffle(4096).batch(8)
 
 ![Figure 39-6: MedImage-ToolVQA conceptual construction flow](../../images/part12/ch41_02_medimage_tool_vqa_pipeline_en.svg)
 
-Key principles:
+*Figure 39-2: Conceptual construction flow for MedImage-ToolVQA. The key point is not script order, but how the evidence chain and behavior chain are preserved across stages.*
 
-- Region deduplication should use region IDs, not only image IDs, because one image can contain multiple findings.
-- Questions should be natural medical image questions and avoid “inside the box” or “inside the mask.”
-- Quality verification must check question structure, option quality, answer consistency, and region grounding.
-- About 90% of samples use tool-enhanced paths, while about 10% remain direct visual reasoning samples so the model learns tools are optional.
-- Training packaging should separate assistant tool calls, user-side observation images, and final answers into multi-turn records.
+The first stage is region-sample organization. Region-level results from medical image parsing tools need to be merged, deduplicated, and normalized. A single medical image may contain multiple candidate regions, and the same region may appear repeatedly in different intermediate results. Data engineering should deduplicate by region identifier rather than simply by image identifier; otherwise, multiple findings or structures in the same image may be mistakenly removed.
 
-Evidence must not be lost: source image, region, observation generation, and answer verification all need to remain traceable.
+The second stage is question generation. The builder generates medical multiple-choice questions from the original image, target region, mask, bbox, and target description. Questions should read like ordinary medical image VQA questions and should not expose annotation mechanics such as "inside the box" or "in the mask." Candidate options need to distinguish local visual features, rather than merely list generic medical concepts.
+
+The third stage is quality verification. The system checks question structure, option quality, answer consistency, and region grounding. Here, grounding does not only mean whether a detection box is accurate in the traditional sense, but whether the question, answer, and target region have a reasonable relationship. If a question is unrelated to the ROI, it is unsuitable as a tool-use training sample even when the textual answer is correct. This stage also identifies questions that can be answered without looking at the image, preventing samples from degenerating into pure-text medical QA.
+
+The fourth stage is tool-observation generation. For samples that need tool enhancement, the construction flow generates local crops, mask overlays, or segmentation observation images. These images are not decoration; they become new inputs in the later multi-turn trajectory. During training, the model sees an observation image appear after a tool call and learns how to consume the tool return.
+
+The fifth stage is trajectory synthesis. Verified samples are organized into a multi-turn structure: the model first observes the original image and question, decides whether to call a tool, receives the tool observation, then continues reasoning and outputs the answer. About 90% of samples use a tool-enhanced path, while about 10% are kept as direct visual reasoning samples. Keeping direct samples is necessary because not every question should call a tool. If the training data implies that every question requires tool use, the model will learn an inefficient or even incorrect behavior policy.
+
+The sixth stage is training packaging. Trajectories are arranged as SFT dialogue records and RL-ready environment inputs. SFT emphasizes format and demonstration, while RL emphasizes policy optimization and reward feedback. They can use similar sample foundations, but their training objectives and packaging formats differ. Training packaging is not simple text concatenation; assistant-side tool calls, user-side observation images, and final answers must be separated into trainable multi-turn records.
+
+The most important principle in this flow is that evidence must not be lost. Which image the question came from, which region it corresponds to, how the tool observation was generated, and how the answer was verified all need to remain traceable. Otherwise, the final data may appear to contain tool calls while providing no proof that those tool actions are related to medical image evidence.
 
 ### Case B.6: Three Tools and Their Boundaries
 
-MedImage-ToolVQA uses three visual tools: `Zoom-in`, `BiomedParse`, and `SAM2`.
+MedImage-ToolVQA uses three visual tools: `Zoom-in`, `BiomedParse`, and `SAM2`. They correspond to three common needs in medical image analysis: looking more closely, locating by medical semantics, and obtaining finer segmentation from a geometric prompt.
+
+`Zoom-in` is the most intuitive tool. It crops a local region according to a bbox so the model can obtain a higher-resolution local observation. It is suitable for small regions whose details are insufficient in the full image. For example, a small lung nodule may occupy only a tiny portion of the whole image, and its boundary and density can be observed more clearly after zooming in. Its risk is also direct: if the bbox drifts, the crop may miss key evidence; if the crop is too tight, it may lose surrounding anatomical context.
+
+`BiomedParse` is closer to medical semantic segmentation. It accepts a target image and a textual description such as "lung nodule" or "liver lesion" and returns segmentation results related to the medical semantic target. This tool can connect natural-language targets with medical image regions, making it suitable for semantic localization. Its risk is that medical imaging modalities vary widely: if the text description is inaccurate, the tool may return the wrong region or segment a similar structure as the target.
+
+`SAM2` is a general bbox-prompted segmentation tool (Ravi et al. 2024). It does not rely on medical semantics; instead, it generates a finer mask from a geometric prompt. For samples that already have a candidate box but need a clearer boundary, `SAM2` can provide supplementary observation. Its main risk is strong dependence on bbox quality: if the bbox covers background or adjacent structures, the segmentation result will also be affected.
 
 | Tool | Main Input | Return | Best For | Risks to Control |
 | --- | --- | --- | --- | --- |
-| `Zoom-in` | Image index, bbox coordinates | Local crop | Small local regions, insufficient whole-image resolution, detail review | Bbox drift, over-cropping, context loss |
-| `BiomedParse` | Image index, medical semantic description | Medical structure or lesion segmentation | Semantic localization of medical structures or findings | Inaccurate description, modality generalization failure, wrong segmentation |
-| `SAM2` | Image index, bbox coordinates | Bbox-prompted mask | Boundary refinement when a candidate box exists | Strong dependence on bbox quality, background inclusion |
+| `Zoom-in` | Image index, bbox coordinates | Local crop image | Region too small, whole-image resolution insufficient, detail review needed | Bbox drift, over-cropping, context loss |
+| `BiomedParse` | Image index, medical semantic description | Medical structure or lesion segmentation | Need to locate a structure or lesion by medical concept | Inaccurate description, insufficient modality generalization, wrong segmentation |
+| `SAM2` | Image index, bbox coordinates | Mask corresponding to the bbox prompt | Candidate box exists and boundary refinement is needed | Strong dependence on bbox quality; may include background |
 
-`Zoom-in` crops; it is not a diagnostic tool. `BiomedParse` performs semantic medical image segmentation; it does not produce pathological conclusions. `SAM2` is a general segmentation tool and does not understand clinical context (Kirillov et al. 2023; Ravi et al. 2024; Ma et al. 2024). Data and prompts should keep these boundaries clear so the model learns evidence acquisition rather than professional judgment replacement.
+Together, these tools form a limited but representative action space. The model does not need unlimited tools; it needs to make reasonable choices inside a bounded tool set. For data engineering, more tools are not necessarily better. As the number of tools grows, call formats, error modes, and quality checks all become more complex. A safer approach is to begin with a small number of tools whose boundaries are clear and whose inputs and outputs are verifiable, so the model can learn the basic evidence-acquisition loop.
+
+Tool boundaries must also be stated clearly in system prompts and dataset documentation: `Zoom-in` is a cropping tool, not a diagnostic tool; `BiomedParse` is a medical image segmentation tool, not a generator of pathology conclusions; `SAM2` is a general segmentation tool and does not understand clinical context. Only when these boundaries are explicit can training avoid confusing "obtaining visual evidence" with "replacing professional judgment." Segment Anything and MedSAM also remind us that the engineering capability of promptable segmentation should be separated from the interpretive boundaries of medical scenarios (Kirillov et al. 2023; Ma et al. 2024).
 
 ### Case B.7: Organizing Tool Trajectories as Multi-Turn Samples
 
-The core of a tool trajectory is multi-turn structure: action, observation, continued judgment.
+The core of a tool trajectory is multi-turn structure. It is not a matter of writing a tool call into the same text paragraph; it separates the tool action from the tool observation so the model experiences an "act, observe, continue judging" process during training (Yao et al. 2023).
 
 ![Figure 39-7: Multi-turn structure of tool-call trajectories](../../images/part12/ch41_03_tool_trajectory_structure_en.svg)
+
+*Figure 39-3: Multi-turn structure of a tool-call trajectory. Tool observations return as new image inputs; the model must continue reasoning from the observation image rather than merely produce a formally correct call.*
 
 A simplified trajectory has four steps. The user provides the original image, question, and options. The assistant decides local evidence is needed and outputs a structured tool call. The environment returns a new observation image. The assistant uses both original and observation images to answer.
 
@@ -482,6 +514,10 @@ to be only artifact.
 
 Tool arguments must be structured. Tool returns must become new multimodal input, not a text note saying “already zoomed.” The final answer should consume the observation. The trajectory should avoid diagnostic claims and stay within the option-comparison task.
 
+Multi-turn trajectories can also contain multiple tool calls. For example, the model may first use `Zoom-in` to inspect a local region and then use `SAM2` to obtain a more precise boundary; or it may first use `BiomedParse` to localize a lesion by semantic description and then use local observation to confirm appearance. Multi-tool trajectories are valuable because they show progressive evidence acquisition, but they also require stricter validation. Each additional tool call adds another risk of parameter error, observation mismatch, or overuse.
+
+For this reason, it is reasonable for MedImage-ToolVQA to preserve a portion of direct visual reasoning samples. Direct samples tell the model that tools are not mandatory actions but on-demand actions. A mature medical image agent should not call a tool merely to display tool capability. It should call a tool when whole-image information is insufficient, local detail is decisive, or the region boundary needs confirmation. This "on demand" behavior is the real policy that tool-use supervision is meant to train.
+
 #### Case B.7.1 Three-Layer Reading of a Sample
 
 Each record can be read at three layers:
@@ -492,15 +528,27 @@ Each record can be read at three layers:
 
 All three layers must work. If the question is good but evidence is missing, it is ordinary VQA. If evidence exists but behavior ignores the observation, it is VQA with extra annotations. If behavior is complete but the question is text-answerable, the tool call becomes formal decoration.
 
+From a training perspective, the three layers correspond to different losses or evaluation concerns. The question layer determines final-answer supervision. The evidence layer determines image grounding and region consistency. The behavior layer determines Tool-Use format and action strategy. A training system can use only part of these layers, but the less it uses, the narrower the capability it learns. Using only the question layer trains medical VQA; adding the evidence layer can train or evaluate local grounding; adding the behavior layer enters evidence-acquisition trajectory learning for medical image agents.
+
+From a data-governance perspective, the three layers also correspond to different owners. Medical content experts are better suited to review whether questions and answers are reasonable. Visual data engineers are better suited to review whether ROI, masks, and observation images are consistent. Agent or training engineers are better suited to review tool format, trajectory structure, and reward interfaces. Separating these layers reduces ambiguity in collaboration. Otherwise, when a sample fails, the team may only say "this data is bad" without knowing whether the problem lies in the question, the region, or the trajectory.
+
 #### Case B.7.2 Difference from Ordinary Chain-of-Thought
 
 Tool trajectories are sometimes confused with chain-of-thought data. Both include intermediate process, but the training meaning differs. Ordinary CoT unfolds in text. Tool trajectories include external actions and environment feedback: the model calls a tool, receives a new observation, then continues. It does not merely “think in more detail”; it sees something new.
 
 This matters in medical images. A model can write “I need to inspect the local region” without obtaining a local image. A tool trajectory requires the model to actually call zoom or segmentation and use the returned image.
 
+Ordinary CoT quality mainly depends on whether the reasoning text is coherent and supports the answer. A tool trajectory additionally requires checking whether the action is executable, whether tool parameters are correct, and whether the observation corresponds to the action. For example, a model may say it will zoom into the upper-right region while the bbox actually points to the lower-left region; or a tool may return a local crop, but the model continues to refer to another region in the original image. Such errors may not exist in ordinary CoT, but they must be identified in tool trajectories.
+
+This is also why tool-use data should not compress the whole trajectory into one assistant message. If the tool call and observation return are folded into one text block, the model never experiences environment feedback. The meaning of multi-turn structure is that the model acts first, receives the result later, and then continues judging. This structure is closer to a real agent and easier to connect to a later tool environment.
+
+Tool trajectories do not exclude short explanations. Before calling a tool, the model can explain why local evidence is needed; after the observation returns, it can explain how the observation affects option comparison. But these explanations should serve action and evidence, not dominate the sample. In medical image scenarios, overly long, overconfident, or overly diagnostic reasoning can itself create risk. A safer style is to give limited explanation around the question options and visual evidence.
+
+Thus, a tool trajectory can be understood as process supervision with external observation. It is finer-grained than answer supervision, more executable than pure-text CoT, and more auditable than a black-box tool policy. The data-engineering value of MedImage-ToolVQA lies precisely in this organization of process supervision.
+
 ### Case B.8: SFT Data and RL Data
 
-Tool trajectories can support both SFT and RL. SFT is behavior demonstration: format, order, and basic strategy. RL is policy optimization under reward feedback.
+Tool trajectories can support both SFT and RL, but the two stages care about different things. SFT is closer to behavior demonstration: its goal is to teach the model format, order, and basic strategy. RL is closer to policy optimization: its goal is to let the model choose more effective behavior under reward feedback.
 
 In SFT, clarity and stability matter most. The model must learn that `<tool_call>` contains parseable JSON, that an observation image appears after a tool return, and that the final answer is placed consistently. If SFT format is unstable, RL environments cannot parse actions reliably.
 
@@ -508,7 +556,7 @@ Medical image SFT records should also keep an imaging-task schema. Here “diagn
 
 ![Figure 39-8: Real image and bbox evidence in the SFT schema](../../images/part12/ch41_05_sft_schema_real_bbox_example_en.svg)
 
-*Figure 41-5: Bbox is a structured field and should be recoverable as reviewable visual evidence.*
+*Figure 39-5: Bbox is a structured field and should be recoverable as reviewable visual evidence.*
 
 Image source: VQA-RAD test split, Hugging Face dataset [flaviagiammarino/vqa-rad](https://huggingface.co/datasets/flaviagiammarino/vqa-rad), [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/). The figure is a resampled derived image used to illustrate correspondence among original image, bbox overlay, and local crop.
 
@@ -602,11 +650,29 @@ Image source: VQA-RAD test split, Hugging Face dataset [flaviagiammarino/vqa-rad
 }
 ```
 
-This schema helps quality control distinguish medical-label errors, evidence-region errors, and tool-behavior errors.
+The point of this schema is not to teach the model "how to diagnose a chest X-ray." It lets a training record answer five engineering questions at the same time: what medical imaging task this is, where the candidate-label boundaries are, which ROI provides the visual evidence, whether the tool call is executable, and whether the final answer stays within the candidates allowed by the question. Without `diagnosis_schema`, an SFT sample can still train format, but later quality checks, stratified evaluation, and human review will struggle to distinguish "medical label error," "region evidence error," and "tool behavior error."
 
-In RL, the environment can validate tool name, argument schema, bbox bounds, and image index. Final answers can receive rule rewards. More advanced rewards can include tool necessity, overuse, and observation use. SFT teaches legal actions; RL optimizes when to act.
+In RL, the data must further expose reward and environment interfaces. After the model outputs a tool call, the environment can validate whether the tool name is legal, whether parameters conform to the schema, whether the bbox is out of bounds, and whether the image index exists. After the model outputs an answer, rule rewards can compare whether the final option is correct. More complex rewards can also consider whether tool use was necessary, whether the model over-called tools, and whether it actually used the observation image.
+
+The relationship between the two stages can be summarized as follows: SFT first teaches the model how to perform a legal action; RL then tries to optimize when that action is appropriate. If SFT is skipped, the model may not even produce stable tool formats. If SFT is used without later policy feedback, the model may learn superficial trajectories but fail to improve tool choice on complex problems.
+
+RL does not automatically solve data problems. If many SFT samples contain unnecessary tool calls, the initial RL policy will be affected. If rewards only check the final answer, the model may learn to underuse or misuse tools as long as it occasionally answers correctly. Therefore, reward design for medical image tool-use data should be coordinated with data quality control. Correct final answers are necessary, but they are not the only objective. Tool-call legality, evidence relevance, and safety boundaries should also become part of evaluation.
 
 ### Case B.9: Common Failure Modes
+
+Tool-use data looks richer than ordinary VQA, but it also creates new failure modes. Understanding these failures helps readers move from "building a pipeline" to "governing data."
+
+The first failure is a text-answerable question. The question appears to come from medical imaging, but the answer only depends on medical common sense. For example, if the prompt asks which organ is associated with a common pulmonary imaging finding, a model can answer without looking at the image. Such samples weaken image dependency and may even teach the model to ignore visual input. Filtering text-answerable questions is a basic threshold for medical VQA data engineering.
+
+The second failure is localization leakage. The prompt directly says "inside the annotated box," "in the mask region," or "at the red outline," so the model does not need to decide where to attend. These samples reduce tool use to surface format rather than evidence strategy. Localization leakage is especially easy to introduce when questions are automatically generated from annotation data, so it needs both text rules and manual spot checks.
+
+The third failure is irrelevant ROI. The question, answer, and target region do not have a strong relationship. This may come from region annotation errors, or from question generation drifting away from the target description. Irrelevant ROI is more hidden than format error because the sample can look structurally complete and the answer can seem plausible. Solving it requires checking the image, target region, description, and answer together.
+
+The fourth failure is invalid tool calling. A model or synthesizer may generate illegal tool parameters: out-of-bounds bbox, nonexistent image index, inconsistent tool-name spelling, or missing argument fields. Such errors directly affect training and environment interaction. For tool-use data, schema validation is not an optional extra step; it is required.
+
+The fifth failure is observation not consumed. The model calls a tool and the tool returns an observation image, but the later answer does not reflect use of that observation. The trajectory is complete in format but incomplete in behavior. It trains the model to treat tool calls as a fixed template rather than as evidence acquisition.
+
+The sixth failure is over-calling. The model calls a tool even when the whole image is sufficient, or it calls multiple tools in sequence without gaining new information. Over-calling increases inference cost and can introduce latency and error accumulation in a real system. The training set therefore needs to preserve a certain proportion of direct visual reasoning samples, and evaluation should distinguish necessary tool use from formalized tool use.
 
 | Failure Mode | Symptom | Risk | Governance Method |
 | --- | --- | --- | --- |
@@ -617,13 +683,15 @@ In RL, the environment can validate tool name, argument schema, bbox bounds, and
 | Observation not consumed | Tool called but answer ignores observation | Tool behavior becomes template | Trajectory audit and regeneration |
 | Over-calling | Tool used for easy whole-image questions | Higher cost and rigid policy | Keep direct samples; evaluate necessity |
 
-Tool-use data quality is not determined by answer correctness alone. A sample should pass checks for visual evidence need, tool validity, and observation consumption.
+These failure modes show that tool-use data quality is not determined by answer correctness alone. A tool trajectory sample should pass at least three classes of checks at the same time: whether the question needs visual evidence, whether the tool action is reasonable and effective, and whether the final answer correctly consumes the observation. Without any one of these checks, the data may become structurally complex but have limited supervision value.
 
 ### Case B.10: Quality Control and Human Review
 
-Quality control should be layered across question generation, region validation, observation generation, trajectory synthesis, and training packaging.
+Quality control for medical image tool-use data should be layered, rather than postponed until final packaging. A more reasonable approach is to set gates separately at question generation, region validation, tool-observation generation, trajectory synthesis, and training packaging.
 
 ![Figure 39-9: Quality-control and human-review gates](../../images/part12/ch41_04_quality_review_gate_en.svg)
+
+*Figure 39-4: Quality-control and human-review gates. Medical image tool-use data needs to check answer, evidence, and behavior together; automated validation and human review should complement each other.*
 
 The first layer is **structure validation**: prompt, options, answer, image references, region fields, and tool parameters must be complete and parseable. Tool names must come from a whitelist; bbox coordinates must be in bounds.
 
@@ -637,26 +705,50 @@ The fifth layer is **human review**. High-risk or low-confidence samples enter a
 
 Review results should not be only pass/fail. Better categories are `passed`, `revise`, `downgrade`, and `discard`, with reasons written back into version records.
 
+Human review should not be treated as a requirement that every sample be audited one by one by experts. Instead, high-risk or low-confidence samples should be routed into a review queue. The queue can be triggered by four types of conditions: low automated validation scores or multiple conflicting rules; weak consistency between bbox, mask, and question target; high-risk medical topics such as suspected malignancy, critical illness, pediatric imaging, or rare disease presentations; and trajectories with abnormal tool-call counts, missing observations, or observations that are not consumed. The goal is not to hand every decision to humans, but to expose the least stable parts of the automated system.
+
+Reviewer roles also need to be separated. Medical content reviewers should focus on whether questions, options, and answers are out of scope or misleading. Visual-evidence reviewers should focus on whether ROI, mask, bbox, and observation images correspond. Tool-trajectory reviewers should focus on tool names, parameter schemas, multi-turn order, and observation consumption. For high-risk medical samples, at least one reviewer with relevant medical background should participate. For ordinary format and flow issues, data engineering or training engineering roles can perform the first pass.
+
+The result categories should be written back into data version records, preserving review reasons, processing actions, and downstream destination. In this way, human review is not only a one-time gate; it also improves question generation, tool-parameter constraints, and quality-filtering rules.
+
+Quality control also needs to record pass rates and failure reasons. Knowing only how many samples remain at the end is not enough. Teams should also record how many samples were filtered because they were text-answerable, how many were rewritten because of localization leakage, how many were discarded because of invalid tool parameters, and how many entered human review. These statistics help explain later training results and quickly localize issues during dataset version updates.
+
 #### Case B.10.1 Evaluation Protocol
 
-Accuracy is only the first layer. A complete evaluation should cover:
+Evaluation for medical image tool-use data cannot retain only ordinary VQA accuracy. Accuracy is still important, but it covers only the final answer, not tool behavior. A model may answer correctly while calling a tool on an irrelevant region. It may also call a reasonable tool but answer incorrectly because of option confusion. These two cases mean very different things for data engineering and model improvement. If evaluation only checks final options, many process problems remain hidden.
+
+A more reasonable evaluation should contain at least four layers:
 
 1. **Answer layer:** final multiple-choice correctness.
 2. **Format layer:** valid tool name, JSON structure, argument types, and required fields.
 3. **Behavior layer:** whether tool calls are necessary, directed to plausible regions, and not excessive.
 4. **Evidence layer:** whether the model uses the observation after it is returned.
 
-Aggregate accuracy can be misleading because option distribution is imbalanced. Report per-option accuracy, accuracy by tool type, direct-sample accuracy, and tool-enhanced-sample accuracy. Also audit samples with abnormal tool counts, boundary-near bboxes, low confidence, automatic/manual disagreement, and high-risk medical topics.
+The answer layer is easiest to compute and easiest to mislead with. In medical multiple-choice questions, if option distribution is imbalanced, a model may obtain a superficially good accuracy by favoring high-frequency options. Therefore, besides aggregate accuracy, teams should report per-option accuracy, accuracy for different tool types, direct-sample accuracy, and tool-enhanced-sample accuracy. Only then can they tell whether the model is stable across sample types.
+
+The format layer mainly supports engineering stability. Once a tool call has invalid format, the environment cannot execute it. Common issues include unparseable JSON, inconsistent capitalization in tool names, bbox not containing four numbers, non-integer image index, and schema-mismatched field names. Format metrics do not necessarily reflect medical capability, but they determine whether the system can run. For Tool-Use data, format stability is the prerequisite for further evaluation.
+
+The behavior layer is closer to the theme of this chapter. It asks whether the model calls tools at appropriate moments. If a sample can be answered directly from the whole image but the model frequently calls a tool, the policy may be overly conservative. If a sample clearly requires local evidence but the model answers directly, the model may not have learned to recognize insufficient evidence. Behavior evaluation can use sample labels, manual sampling, or rule heuristics; it does not need to be fully automated at once.
+
+The evidence layer is the hardest but also the most valuable. It asks whether the model updates its judgment from new visual evidence after the observation image returns. A simple method is to check whether the answer text refers to local observation. A stricter method compares model outputs with and without the observation image. A further method asks a reviewer model or human annotator to judge whether the explanation is consistent with the observation. Evidence evaluation should not rely completely on surface language, because a model can produce plausible explanations that do not actually correspond to the image.
+
+In addition to automated metrics, medical image tool-use data needs sampled audit. Sampling should not include only samples with wrong final predictions; it should also include samples with correct predictions but abnormal tool behavior. Process errors may not affect the answer temporarily, but they can be amplified in more complex or higher-risk scenarios. A stable audit pool can include samples with abnormal tool-call counts, bboxes close to boundaries, low answer confidence, conflicts between automated evaluation and human judgment, and high-risk medical topics.
 
 The evaluation principle is: answer correctness is only the first layer; reasonable behavior is the full target.
 
 #### Case B.10.2 Data Cards and Version Notes
 
-Medical image tool-use data contains images, region evidence, tool trajectories, answers, and safety boundaries, so it needs a data card and version notes (Gebru et al. 2021).
+If a specialized dataset remains only at the sample-file level, later teams will struggle to reuse it reliably. Medical image tool-use data is especially in need of a data card and version notes because it contains images, region evidence, tool trajectories, answers, and safety boundaries. A data card is not an appendix; it is part of dataset maintainability (Gebru et al. 2021).
 
 A data card should describe task definition, data composition, construction flow, tool specifications, quality control, and compliance boundary. It should state that the data is for medical image multiple-choice VQA and tool-use behavior training, not direct clinical diagnosis.
 
 Version notes should record changes in sample membership, annotations, tool schema, bbox conventions, observation generation, trajectory templates, and reward fields. For example, changing crop padding changes local observation content; renaming a tool argument changes action format; filtering text-answerable samples changes difficulty. Without version notes, training differences are hard to attribute.
+
+A data card should also distinguish known capabilities from uncovered capabilities. MedImage-ToolVQA can train a model to perform local evidence acquisition within a given tool space, but that does not mean the model has complete clinical reasoning ability or that all medical modalities are sufficiently covered. If the data mainly comes from certain image types or region sources, the coverage should be stated honestly. Neutral data documentation is more valuable than exaggerated capability claims because it helps users judge applicability boundaries.
+
+For teaching and research use, the data card can also provide suggested experiments, such as comparing direct VQA samples with tool-enhanced samples, comparing model answers with and without observation images, and comparing tool-call rates under SFT-only training versus SFT plus RL. These experiments do not need to be written as result promises; they can serve as entry points for readers to understand the data mechanism.
+
+From a long-term maintenance perspective, data such as MedImage-ToolVQA is more like a training asset than a one-time data file. Its value comes from the combination of samples, tools, evaluation, and documentation. Only when data cards, version records, quality statistics, and risk boundaries are maintained together can later teams use the dataset without rediscovering every detail from scratch.
 
 ### Case B.11: Medical Privacy and Compliance Boundaries
 
@@ -668,29 +760,45 @@ Use boundaries must be explicit. MedImage-ToolVQA is for research, training, and
 
 Tool boundaries also matter. `Zoom-in` crops images; `BiomedParse` and `SAM2` segment or localize. They should not be presented as disease-diagnosis tools. Language in training data should describe acquiring local visual evidence, observing boundaries, and comparing options, not confirming diagnoses.
 
+It is also necessary to guard against overconfident statements in tool trajectories. Medical image questions often contain uncertainty, and training samples should not package limited visual evidence as absolute conclusions. For multiple-choice questions, the model can be required to answer within the option range, but explanations and dataset documentation should avoid extending option answers into clinical advice.
+
 ### Case B.12: Relation to Multimodal Agent Data Engineering
 
 MedImage-ToolVQA is not only a medical case. It provides a general pattern: when a model needs tools to obtain new evidence, training data should record the **action-observation-update** loop. The same idea applies to multimodal RAG, document understanding, table QA, chart reasoning, and robotic perception.
 
 Compared with static multimodal instruction data, tool-use samples emphasize environment feedback. A model can change what it sees by calling a zoom tool, seeing a mask, or retrieving evidence. Data engineering must therefore move from static sample design to trajectory sample design.
 
-The basic principles are:
+Trajectory sample design has several basic principles. First, the action space should be limited and clear: tool names, parameters, and returns should all be verifiable. Second, observation results should really enter later context rather than exist only as comments. Third, rewards and quality control should cover behavior, not only final answers. Fourth, high-risk domains must include safety boundaries and human review.
 
-- keep the action space limited and clear
-- make tool outputs verifiable
-- ensure observations enter later context
-- evaluate behavior, not only final answers
-- add safety boundaries and human review in high-risk domains
+These principles also explain why MedImage-ToolVQA belongs in the part on specialized datasets and data engineering practice. It is not simply an introduction to a medical dataset. It is a case that connects multimodal data, tool use, agent trajectories, and compliance governance. Looking backward, it connects image-text alignment, visual grounding, and multi-turn Tool-Use. Looking forward, it supports VLM data recipes and Agent Tool-Use projects.
+
+For readers, the main takeaway is not a specific tool name but a way of thinking: when a model faces a problem that requires active evidence acquisition, the dataset cannot record only the question and answer. It also needs to record where the evidence comes from, how the action is produced, how the observation returns, how the answer is updated, and how the whole process is validated.
 
 #### Case B.12.1 Migrating the Pattern
 
 The same structure can be migrated to document QA with page-region zoom, chart QA with subchart localization, remote sensing with region retrieval, or industrial inspection with defect zoom. What changes is the evidence object and tool boundary. Medical data uses ROI, mask, and bbox; document data may use page regions, table cells, and OCR coordinates; chart data may use axes, legends, and curve segments.
 
-The core remains stable: define evidence objects, define tool actions, and write returned observations into multi-turn samples.
+Three things need to be preserved during migration. The first is the evidence object. In medical images, evidence objects are ROI, masks, and bboxes; in document settings, they may be page regions, table cells, and OCR coordinates; in chart settings, they may be axes, legends, and curve segments. Different scenarios use different evidence objects, but all of them need structured representation.
+
+The second is the tool boundary. Medical image tools are zooming, semantic segmentation, and geometric segmentation; document tools may be OCR, table parsing, and page retrieval; chart tools may be value reading, subchart cropping, and coordinate mapping. Whatever the tool is, its inputs, outputs, failure conditions, and prohibited uses should be explicit. The more ambiguous a tool is, the easier it is for training data to turn actions into generic explanations.
+
+The third is observation consumption. Tool returns must change the visible information in the later context and be used by the model for the next judgment. If a tool call is only a formal fragment of a trajectory and the observation never enters context, it has limited value for training behavior policy. When readers migrate this chapter's method, the most important check is not whether the tool names are rich enough, but whether the new evidence returned by tools truly changes the model's visible world.
+
+Thus, MedImage-ToolVQA can be viewed as a template: define evidence objects first, then define tool actions, and then explicitly write the observations returned by those actions into multi-turn samples. The concrete fields will vary by scenario, but the core logic is stable. This template helps data engineering teams move from static sample design to trajectory sample design, and it helps evaluation expand from single answer accuracy to action rationality.
 
 #### Case B.12.2 Connection with Other Chapters
 
-This chapter connects Part 3's multimodal cleaning and grounding, Part 6's Tool-Use and Agent data, Part 10's discussion of data engineering agents, Part 11's privacy and compliance boundary, and Part 13/14's training recipes and project practice. Its real topic is not only medical images, but how data engineering should record evidence, action, feedback, and risk when models actively gather visual evidence.
+Placed back into the structure of the whole book, this chapter connects several main threads. Part 3 discusses image-text pairs, multimodal cleaning, and cross-modal alignment, providing the visual data foundation that medical images need before entering a model. Without image quality control, resolution handling, and local grounding, later tool-call trajectories lack reliable inputs.
+
+Part 6 discusses Tool-Use and Agent data, providing the basic concepts of action spaces, tool schemas, and multi-turn trajectories. This chapter places those concepts in medical images and shows that tool use is not only a text-agent capability; it can also become a data object for visual agents. It extends tasks such as calling a search tool into multimodal tasks such as calling a visual tool to re-observe an image.
+
+Following that thread, Part 10 further discusses how data engineering agents are constrained by tool boundaries, security permissions, and human collaboration in real data engineering workflows. Although this chapter focuses on a medical image dataset, tool whitelists, parameter schemas, observation-image audits, and human-review gates handle the same class of problem: when a model or data builder is allowed to act, data engineering must specify what it can do, what evidence remains after it acts, and which steps need human handoff.
+
+Part 11 provides the risk boundary through privacy, compliance, and data security. Medical image data cannot be handled only according to technical feasibility; de-identification, authorization, audit, and misuse risk must also be considered. Tool-use samples introduce more derived images and therefore more objects that need governance.
+
+Parts 13 and 14 focus more on training recipes and project practice. The medical image tool trajectories in this chapter can serve as a preceding case for VLM instruction data, Agent Tool-Use factories, and multimodal RL data. Readers who later design their own multimodal tool-use projects can treat this chapter as an intermediate bridge: it is neither pure concept introduction nor reproduction of a single project, but a transferable method that organizes data structure, tool behavior, and quality boundaries.
+
+This cross-chapter relationship also reminds us that the significance of a specialized dataset is not merely the introduction of a data object. More importantly, it helps readers recombine methods learned earlier in the book. Medical images are the carrier; the real theme is how data engineering should record evidence, action, feedback, and risk when models actively gather evidence in visual environments.
 
 ### Case B: Summary
 

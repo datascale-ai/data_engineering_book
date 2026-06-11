@@ -63,7 +63,9 @@ Reproduction materials should include data-source notes, a minimal sample set, c
 
 ## Background and Objectives
 
-In VLM data engineering, the bottleneck is often not only the number of image-text pairs but also the construction of high-quality, diverse instruction data. In Project 3, the introductory LLaVA project, we showed how to generate simple descriptions and QA instructions from single images. For modern multimodal systems such as Qwen2.5-VL (Wang et al. 2024) and InternVL (Chen et al. 2024), that introductory data is no longer sufficient.
+In VLM data engineering, the bottleneck is often not only the number of image-text pairs but also the construction of high-quality, diverse instruction data. Project 3 already introduced the entry-level process for generating simple descriptions and QA instructions from single images. Under modern multimodal architectures represented by Qwen2.5-VL (Bai et al. 2025) and InternVL3 (Zhu et al. 2025), however, datasets also need to cover complex reasoning, OCR reading, fine-grained grounding, interleaved multi-image input, and video understanding.
+
+Therefore, this chapter is not a repeated version of P03. P03 answers "how to organize the basic pipeline of a LLaVA-style data factory clearly"; this chapter answers "after the foundation model, sampling strategy, and quality-filtering capability are upgraded, how should multimodal instruction production be extended into a pipeline closer to an industrial factory." The former emphasizes reproducibility of the classic process, while the latter emphasizes newer capabilities such as Qwen-VL generation, self-consistency, LLM-as-Judge, multilingual expansion, and unified packaging.
 
 Industrial multimodal instruction synthesis must handle several challenges:
 
@@ -280,6 +282,7 @@ def pack_to_qwen_format(scored_data, output_path="./data/mm_sft_final.jsonl"):
                     "value": item["response"],
                 },
             ],
+            "quality": {"judge_score": item["judge_score"]},
         }
         formatted_dataset.append(record)
 

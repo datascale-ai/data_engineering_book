@@ -67,7 +67,7 @@ Here, $F$ denotes the filtering strategy, $D_F$ is the filtered dataset, $S_{eva
 
 FineWeb is publicly available as a full dataset, configurations split by Common Crawl dump, and smaller sample versions. The official dataset card states that users can load the full dataset or specify a particular crawl/dump; dump names follow the `CC-MAIN-(year)-(week number)` format. Sample versions include random subsets of approximately 350B, 100B, and 10B GPT-2 tokens, enabling researchers to reproduce experiments or debug processing code at lower cost.
 
-*Table 44-1 Public FineWeb Forms and Engineering Uses*
+*Table 41-1 Public FineWeb Forms and Engineering Uses*
 
 | Form | Public Description | Engineering Use | Usage Notes |
 | --- | ---: | --- | --- |
@@ -111,7 +111,7 @@ The third concerns filter validation. FineWeb does not choose filters solely fro
 
 The official FineWeb dataset card states that samples include `language`, `language_score`, and `token_count` annotations, derived respectively from the language filter and GPT-2 tokenizer statistics. When reproducing a FineWeb-like pipeline inside an enterprise, processing status, provenance, deduplication, and risk fields should also be retained. Otherwise, when training results become abnormal, it is impossible to determine whether the issue came from extraction, filtering, deduplication, or sampling.
 
-*Table 44-2 FineWeb-like Web Document Record Schema*
+*Table 41-2 FineWeb-like Web Document Record Schema*
 
 | Field Group | Typical Fields | Source or Generation Method | Engineering Use |
 | --- | --- | --- | --- |
@@ -186,7 +186,7 @@ One important feature of FineWeb is that its processing pipeline has a public sc
 
 The main processing pipeline can be abstracted in the following order. Class names come from the DataTrove FineWeb example script; explanations are organized by this chapter.
 
-*Table 44-3 Key Modules in the FineWeb Main Processing Pipeline*
+*Table 41-3 Key Modules in the FineWeb Main Processing Pipeline*
 
 | Order | DataTrove Module | Input | Output | Role |
 | ---: | --- | --- | --- | --- |
@@ -268,9 +268,9 @@ FineWeb's evaluation method differs from a typical dataset introduction. It trea
 
 ### 41.5.1 Fixed Variables
 
-FineWeb's evaluation protocol can be summarized in Table 44-4.
+FineWeb's evaluation protocol can be summarized in Table 41-4.
 
-*Table 44-4 FineWeb Data-ablation Evaluation Protocol*
+*Table 41-4 FineWeb Data-ablation Evaluation Protocol*
 
 | Control Item | FineWeb Paper Practice | Data-engineering Meaning |
 | --- | --- | --- |
@@ -304,7 +304,7 @@ Third, design custom filters. FineWeb collects more than 50 document-level and c
 
 FineWeb's experience can be converted into an error-attribution table for Web pre-training corpora. This is not an official FineWeb table, but an engineering retrospective organized by this chapter from the FineWeb paper and dataset card.
 
-*Table 44-5 Common Failures and Repair Actions for FineWeb-like Web Corpora*
+*Table 41-5 Common Failures and Repair Actions for FineWeb-like Web Corpora*
 
 | Error Type | Symptom | Possible Root Cause | Data-engineering Repair Action |
 | --- | --- | --- | --- |

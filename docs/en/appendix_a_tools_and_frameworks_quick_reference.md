@@ -194,6 +194,8 @@ Without these capabilities, a team may get good final accuracy but still be unab
 
 This is suitable for cross-institution specialized datasets, course reproduction, and medium-scale research projects. It is lightweight and relatively easy to hand off.
 
+If a dataset is organized and distributed through the Hugging Face Datasets ecosystem, the loading script, dataset card, and split configuration should follow the Hugging Face Datasets Documentation.
+
 ### A.7.2 Enterprise Data Platform Combination
 
 - Workflow scheduling: `Airflow`

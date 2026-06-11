@@ -39,9 +39,7 @@ Because web crawling and SEO practices have evolved in complex ways over more th
 - **What the human eye sees**: a golden retriever happily running on grass.
 - **The alt text extracted from HTML**: "2023 free shipping genuine premium discount full-site promotion buy one get one pet supplies."
 
-If this commercially motivated inducement text is fed into a model without causal separation, back-propagation forces the model to establish false associations. It may learn unreasonable bindings such as "golden retriever fur texture equals free-shipping discount," a form of cross-modal semantic mismatch.
-
-In multimodal data-engineering practice, researchers sometimes call this phenomenon **WebTox**, or web semantic toxic data. Experiments have shown that a large amount of this noise can make a hundred-billion-parameter model perform worse on visual-question-answering benchmarks than an unfine-tuned 1B baseline. CLIP Score-centered cross-modal semantic filtering emerged partly to mitigate this problem systematically.
+If this commercially motivated inducement text is fed into a model without causal separation, back-propagation forces the model to establish false associations. It may learn unreasonable bindings such as "golden retriever fur texture equals free-shipping discount," a form of cross-modal semantic mismatch. Dataset papers such as LAION-5B, DataComp, and OBELICS all list image-text matching, deduplication, and safety filtering as key steps (Schuhmann et al. 2022; Gadre et al. 2023; Laurençon et al. 2023), precisely because web alt text is not naturally equivalent to visual semantic supervision. To mitigate this problem systematically, academia and industry have gradually developed cross-modal semantic filtering techniques that combine CLIP Score, SigLIP, and manual spot-checks.
 
 ### 8.1.3 The Cost Tradeoff Between Image Resolution and GPU Memory
 
@@ -79,7 +77,7 @@ This is the most basic and scalable paradigm.
 To give a model the ability to reason across multiple images in complex contexts, the data engine must extract and restore the native interleaved layout from web pages.
 
 - **Format**: similar to Wikipedia articles or long-form posts: a setup paragraph + `<img_1>` + development text + `<img_2>` + final summary. Image tokens are treated as special vocabulary items embedded inside a long text sequence.
-- **Representative open datasets**: OBELICS (Laurencon et al. 2023), MMC4 (Zhu et al. 2023).
+- **Representative open datasets**: OBELICS (Laurençon et al. 2023), MMC4 (Zhu W et al. 2023).
 - **Applicable stage**: an important data form for modern **generative VLM pretraining**. It teaches the model to infer what later text or a later image should be given previous text and image 1.
 - **Collection challenge and DOM parsing engineering**: interleaved data is much harder to build. A traditional text crawler skips `<img>` tags, but an interleaved-data crawler must parse a large and messy HTML DOM tree and compute **relative distances based on rendered coordinates**.
 
@@ -89,7 +87,7 @@ For this reason, engineering teams usually use a headless browser with a renderi
 
 Listing 8-1 shows simplified logic for extracting interleaved DOM nodes.
 
-**Listing 8-1: Simplified DOM interleaved-node extraction**
+*Listing 8-1: Example code for DOM interleaved-node extraction. Production environments should add DOM cleaning, image-download validation, retention of alt/title fields, and failed-sample isolation.*
 
 ```python
 # Simplified pseudocode for extracting interleaved DOM nodes
@@ -117,7 +115,7 @@ For real business use cases such as reading financial reports or invoices, natur
 - **Applicable stage**: depends on high-resolution patching and OCR assistance. It is mainly used in SFT to teach precise value extraction and logical-structure understanding, such as formula and chart references in page layouts.
 - **Coordinate normalization**: in grounding tasks, the model must output concrete pixel coordinates. Because training images have very different resolutions, the original absolute pixel coordinate `(X, Y)` is usually mapped into a discrete token bucket in `[0, 1000]`, such as `[<loc_255>, <loc_899>]`. This discretization turns continuous spatial coordinates into a vocabulary-like form that an LLM can process.
 
-**Table 8-1: Image-text sample types, characteristics, and applicable tasks**
+*Table 8-1: Image-text sample types, characteristics, and applicable tasks. Source: compiled by the authors; applicable tasks are engineering generalizations, and production environments should review them against model architecture, the vision encoder, and data licensing.*
 
 | Sample type | Data characteristics | Core acquisition method | Best-fit stage | Key capability gained |
 | :--- | :--- | :--- | :--- | :--- |
@@ -136,11 +134,7 @@ Raw data crawled from the web has highly uneven quality. It must pass through at
 
 In text cleaning, `JSON.loads` or `open()` is almost free. For image archives at tens of TB or even PB scale, **decoding** can become the biggest throughput bottleneck in the entire training cluster. Web images may be old JPEGs, large PNGs, corrupted files, or WebP variants with malformed headers or embedded ICC profile errors.
 
-If the pipeline uses CPU `Pillow` or `OpenCV-Python` to resize and normalize images:
-
-- Even on an 8 x A100 node with PyTorch DataLoader `num_workers=64`,
-- Dense CPU image resizing can saturate all physical cores,
-- And interprocess communication must move large uncompressed RGB tensors into GPU memory, which can make PCIe bandwidth a bottleneck and produce GPU starvation, with MFU dropping below 20%.
+If the pipeline uses CPU `Pillow` or `OpenCV-Python` to resize and normalize images on high-concurrency multi-GPU nodes, dense CPU image resizing may quickly saturate physical cores. More seriously, interprocess communication must move large uncompressed RGB tensors into GPU memory, so PCIe bandwidth may also become a bottleneck and produce GPU starvation. Whether a bottleneck has been reached must be verified on the target cluster through profiler output and DataLoader wait time.
 
 **Engineering solution: an end-to-end NVIDIA DALI pipeline**
 
@@ -150,14 +144,14 @@ Large enterprise image-text processing arrays often force the pipeline onto **NV
 2. **NVJPEG hardware decoding**: after the bytes are sent through PCIe to the GPU, the GPU's dedicated JPEG decoder (NVJPEG) decompresses them directly in GPU memory.
 3. **Fused operator transforms**: cropping, resizing, mean-variance normalization, and related operations are compiled into a CUDA graph and run directly on tensors.
 
-With GPU-side decoding and fused preprocessing, latency for one 512 x 512 image can drop from roughly 8 ms on the CPU side to below 0.4 ms. This is an illustrative performance figure as of 2026-06; actual gains depend on image format, hardware, DALI version, and concurrency settings, and production systems should re-benchmark on target hardware.
+With GPU-side decoding and fused preprocessing, image decoding, resizing, and normalization can be pushed into the GPU-side pipeline, reducing waits caused by CPU decoding and host-to-device copies. DALI's official documentation and examples emphasize end-to-end pipeline-throughput optimization rather than universal per-image latency numbers across all hardware; production environments should re-benchmark under the target GPU, image format, batch size, DALI version, and object-storage access pattern.
 
 ### 8.3.2 Resolution and Aspect-Ratio Control
 
 One of the fastest ways to improve the raw-cleaning stage is to define size-filtering rules:
 
-- **Reject pixel islands**: discard images whose shorter side is below `224px` or whose total file size is below `20KB`. These are usually UI icons, such as like buttons or arrows, and provide little semantic signal for large models.
-- **Identify extreme aspect ratios**: web long images, such as full-length e-commerce promotional posters, can be extreme, for example width 500 and height 9000. If such an image is forced into a $336 \times 336$ square for a normal ViT encoder, the content is severely compressed and shape features are lost. Pipelines therefore usually require the aspect ratio to stay within $[0.33, 3.0]$. Images outside that interval are flagged and routed to a targeted dynamic-slicing bypass; see Section 8.4.
+- **Reject pixel islands**: images with an extremely short shorter side or very small file size should be discarded directly or isolated for review. These are usually UI icons, such as like buttons or arrows, and provide little semantic signal for large models. Concrete thresholds should be calibrated according to the target vision encoder's input size and the characteristics of the data source.
+- **Identify extreme aspect ratios**: web long images, such as full-length e-commerce promotional posters, can be extreme, for example width 500 and height 9000. If such an image is forced into a fixed square for a normal ViT encoder, the content is severely compressed and shape features are lost. Pipelines therefore usually need aspect-ratio thresholds; images outside the threshold should be flagged and routed to a targeted dynamic-slicing bypass; see Section 8.4.
 
 ### 8.3.3 Targeted Blocking of NSFW Content, Face Privacy, and Watermarks
 
@@ -166,7 +160,7 @@ Image-text engineering faces stricter ethics and compliance concerns than pure-t
 At this stage, the pipeline usually chains three or four small visual classifiers:
 
 1. **NSFW classifier**: images whose probability exceeds a threshold, such as 0.4, are deleted or isolated for review.
-2. **Watermark detector**: many web images come from stock-photo sites such as Getty Images or Shutterstock. If a model absorbs these images, it may frequently hallucinate watermark text in generated responses and create commercial risk. Samples with dense diagonal patterns or bright central watermarks must be filtered.
+2. **Watermark detector**: many web images come from stock-photo sites such as Getty Images or Shutterstock. If a model absorbs image-text pairs with watermarks or template promotional copy, it may reproduce watermark text or promotional phrasing in generated responses and create copyright and commercial compliance risk. High-risk watermark samples should be filtered, isolated for review, or downweighted.
 3. **Blur/aesthetic threshold**: an aesthetic predictor similar to the LAION team's AES model can remove heavily defocused, extremely dark, or color-noisy low-quality images.
 
 **Multimodal sensitive-data filtering checklist, industrial version:**
@@ -176,7 +170,7 @@ At this stage, the pipeline usually chains three or four small visual classifier
 - [ ] For portrait privacy, has a face-blurring algorithm been applied to high-resolution ordinary-person faces, excluding public figures where policy allows?
 - [ ] Is the commercial-watermark blocking library updated weekly to prevent new image-host contamination?
 
-After these three types of basic cleaning, a 10-billion-scale crawled library may shrink below 4 billion samples. The remaining images are visually cleaner, but they still have not proven semantic correspondence with text. CLIP Score and related cross-modal matching metrics are needed next.
+After these three types of basic cleaning, the usable sample scale of a crawled library usually shrinks substantially. The concrete retention rate depends on source licensing, image resolution, NSFW/watermark thresholds, and manual spot-check standards. The remaining images are visually cleaner, but they still have not proven semantic correspondence with text. CLIP Score and related cross-modal matching metrics are needed next.
 
 ---
 
@@ -192,21 +186,21 @@ Before CLIP (Contrastive Language-Image Pre-training) (Radford et al. 2021), ima
 
 We usually run a stable pretrained CLIP, such as open-source `OpenCLIP ViT-L/14`, on both the image and its caption, then calculate the **cosine similarity**, also called CLIP Score.
 
-- **High match (Score > 0.30)**: the image and text are highly consistent, for example the image is a cat and the text says "an orange cat sunbathing." These samples enter the golden dataset directly.
-- **Low match (Score < 0.22)**: severe mismatch, for example the image is a cat and the text says "follow my account." These samples are usually discarded because they contribute reverse gradient noise.
-- **Medium match (0.22 < Score < 0.30)**: a gray zone. Instead of discarding expensive collected data immediately, the pipeline triggers the recaptioning process described in the next section.
+- **High match**: the image and text are highly consistent, for example the image is a cat and the text says "an orange cat sunbathing." These samples can enter a high-confidence training pool, while still requiring spot-checks to guard against model-score bias.
+- **Low match**: severe mismatch, for example the image is a cat and the text says "follow my account." These samples are usually discarded or isolated for review because they contribute reverse gradient noise.
+- **Medium match**: a gray zone. Instead of discarding expensive collected data immediately, the pipeline triggers the recaptioning process described in the next section.
 
-> **Note**: the thresholds above, 0.22 and 0.30, are based on `OpenCLIP ViT-L/14`. If `ViT-B/32` or `SigLIP` is used, the same data can have a significantly different score distribution. Thresholds must be recalibrated on the target data and should not be reused blindly.
+> **Note**: CLIP/SigLIP thresholds are not universal across models. If a different vision encoder, text encoder, or language data mix is used, the score distribution for the same batch of samples can change significantly. Thresholds must be recalibrated on the target data and should not be reused blindly.
 
 **2. From CLIP to SigLIP: abandoning global Softmax**
 
-In large enterprise data pipelines, traditional CLIP models are increasingly replaced by **SigLIP (Sigmoid Loss for Language Image Pre-Training)** (Zhai et al. 2023). Traditional CLIP computes a global Softmax probability over all image-text pairs inside the batch. This creates an engineering issue: with a very large distributed batch size, such as $32768$, the model must distinguish many fine-grained pair differences and may become overly sensitive to certain hard negatives, making inference-time CLIP Scores unstable.
+In large enterprise data pipelines, traditional CLIP models are increasingly replaced by **SigLIP (Sigmoid Loss for Language Image Pre-Training)** (Zhai et al. 2023). Traditional CLIP computes a global Softmax probability over all image-text pairs inside the batch. This creates an engineering issue: with a very large distributed batch size, the model must distinguish many fine-grained pair differences and may become overly sensitive to certain hard negatives, making inference-time CLIP Scores unstable.
 
 SigLIP converts this global multi-class problem into **pairwise binary sigmoid prediction**. This gives SigLIP better tolerance for partial matches and complex-background image-text pairs, and a more stable score distribution. Engineering teams can set more consistent cutoffs, while still calibrating them on the target data.
 
 Listing 8-2 shows a simplified SigLIP/CLIP image-text alignment filter.
 
-**Listing 8-2: Simplified SigLIP/CLIP image-text alignment filter**
+*Listing 8-2: Example code for SigLIP/CLIP image-text alignment filtering. The threshold is illustrative; production environments should calibrate it by model version, data domain, and manual spot-check results.*
 
 ```python
 # Pseudocode for SigLIP/CLIP image-text alignment filtering
@@ -240,7 +234,7 @@ def filter_by_semantic_score(image, text_caption, threshold=0.25):
 
 ### 8.4.2 Saving Valuable Images: Multi-Granularity Synthetic Recaptioning
 
-When an image has high resolution, good composition, and rare entities, but its original web text is only a label such as "IMG_20230401.jpg," discarding it wastes a data asset. If compute allows, using expert VLMs such as LLaVA-1.5 (Liu et al. 2024), Qwen-VL-Max (Bai et al. 2023), or GPT-4V to regenerate descriptions is an important way to improve image-text training quality.
+When an image has high resolution, good composition, and rare entities, but its original web text is only a label such as "IMG_20230401.jpg," discarding it wastes a data asset. If compute allows, using expert VLMs such as LLaVA-1.5 (Liu et al. 2024), Qwen2.5-VL (Bai et al. 2025), InternVL3 (Zhu et al. 2025), or GPT-4V to regenerate descriptions is an important way to improve image-text training quality. It is important to note that recaptioning is not an unconditional gain: generated captions can introduce hallucinations, stylistic bias, and safety-policy refusals, so the generation model, prompt version, temperature parameter, and spot-check conclusion must be recorded.
 
 Modern large-model engineering usually applies a **multi-granularity recaptioning array** to this image batch so that both early cold-start alignment and later long-text generation are supported:
 
@@ -287,17 +281,17 @@ If interleaved image-text data is not tightly controlled, GPU memory is consumed
 
 ### 8.5.2 Tuning the Three-Way Data Mix
 
-A balanced MLLM pretraining mix must allocate weights to different sources carefully. The following ratios are illustrative parameters as of 2026-06 and should be calibrated using model goals and ablation experiments:
+A balanced MLLM pretraining mix must allocate weights to different sources carefully. Public technical reports usually disclose data types and training phases, but rarely provide complete reusable recipes; therefore, the following items describe capability dimensions rather than fixed percentages:
 
-1. **General natural images, roughly 50-60%**: provide basic world-object knowledge, such as cats and dogs, cars, landscapes, color calibration, and human expressions. This portion is usually based on strictly CLIP Score-filtered open datasets, such as a refined core subset of DataComp-1B (Gadre et al. 2023).
-2. **Charts, plots, and mathematical or code diagrams, roughly 15-20%**: provide abstract mathematical reasoning capability. Without this portion, the model may misinterpret line charts, stock candlestick charts, or complex mind maps.
-3. **High-density OCR document screenshots, roughly 20-30%**: scanned white papers, single-page PDFs, receipt and invoice images. This data is crucial for models that act as contract-review assistants or invoice helpers because it trains the rare "fine-grained text focus" capability that natural images almost never contain.
+1. **General natural images**: provide basic world-object knowledge, such as cats and dogs, cars, landscapes, color calibration, and human expressions. This portion is usually handled by strictly CLIP/SigLIP-filtered open datasets, such as the core filtered subset of DataComp-1B (Gadre et al. 2023), or licensed stock-image sources.
+2. **Charts, plots, and mathematical or code diagrams**: provide abstract mathematical reasoning capability. Without this portion, the model may misinterpret line charts, stock candlestick charts, or complex mind maps.
+3. **High-density OCR document screenshots**: scanned white papers, single-page PDFs, receipt and invoice images. This data is crucial for models that act as contract-review assistants or invoice helpers because it trains the rare "fine-grained text focus" capability that natural images almost never contain. The Qwen-VL and Qwen2.5-VL technical reports both list OCR, document understanding, grounding, and multi-resolution processing as core capability sources (Bai et al. 2023, 2025).
 
-**Table 8-2: Image-cleaning strategies and cost comparison**
+*Table 8-2: Image-cleaning strategies and cost comparison. Source: compiled by the authors; cost descriptions are relative complexity, and actual cost depends on image resolution, model version, concurrency, and manual spot-check ratio.*
 
 | Cleaning strategy | Compute cost | Core function and benefit | Residual risks and side effects |
 | :--- | :--- | :--- | :--- |
-| **Basic resolution cutoff** | Very low, I/O intensive | Remove meaningless color blocks and save roughly 30% storage in an illustrative setup | May wrongly remove historically meaningful documentary images that only survived in low resolution |
+| **Basic resolution cutoff** | Very low, I/O intensive | Remove meaningless color blocks and reduce storage and downstream decoding overhead | May wrongly remove historically meaningful documentary images that only survived in low resolution |
 | **DALI hardware-accelerated decoding** | Low to medium, GPU intensive | Relieve DataLoader bottlenecks and improve decoding by an order of magnitude | High business integration cost; malformed JPEG files can trigger low-level library exceptions |
 | **NSFW / watermark detection** | Medium, CNN forward pass | Enforce commercial compliance boundaries and prevent safety risk | Adversarial tiny watermarks are hard to eliminate; detectors need continuous evolution |
 | **SigLIP/CLIP alignment** | High, dual-tower features | Directly reduce semantic mismatch and form the basis of cognitive quality | High-score regions may become semantically over-smoothed and may wrongly reject metaphorical or ironic images |
@@ -313,7 +307,7 @@ The following case is an anonymized composite. Data scale and cost are used only
 
 In an early R&D stage, one team directly downloaded a subset of a cleaned open image-text dataset for alignment training. During staged blind interaction review, evaluators found a systematic problem: regardless of what landscape photo was shown, the model frequently ended with promotional text similar to "download high-definition watermark-free images from a certain stock site."
 
-**Lessons and remediation**: this is a stock-photo contamination phenomenon. Even when a dataset has been filtered by a relatively high CLIP Score threshold, if OCR or feature classifiers were not used during initial collection to remove anti-theft watermarks and template promotional text, large image-hosting promotional templates can seep into the model's conditional probability distribution. For commercial large models, teams **must build negative hash lists for specific stock-photo sites and perform secondary cleaning on external data**.
+**Lessons and remediation**: this is a stock-photo contamination phenomenon. Even when a dataset has been filtered by a relatively high CLIP Score threshold, if OCR or feature classifiers were not used during initial collection to remove anti-theft watermarks and template promotional text, large image-hosting promotional templates can seep into the model's conditional probability distribution. For commercial large models, teams should establish negative hash lists for high-risk commercial image hosts and perform secondary cleaning on external data.
 
 ### 8.6.2 Long-Term Maintenance of Multimodal Data Assets
 
@@ -337,11 +331,13 @@ Alayrac J B, Donahue J, Luc P, Miech A, Barr I, Hasson Y, Lenc K, Mensch A, Mill
 
 Bai J, Bai S, Yang S, Wang S, Tan S, Wang P, Lin J, Zhou C, Zhou J (2023) Qwen-VL: A Versatile Vision-Language Model's Understanding, Localization, Text Reading, and Beyond. arXiv preprint arXiv:2308.12966.
 
+Bai S, Chen K, Liu X, Wang J, Ge W, Song S, Dang K, Wang P, Wang S, Tang J, Zhong H, Zhu Y, Yang M, Li Z, Wan J, Wang P, Ding W, Fu Z, Xu Y, Ye J, Zhang X, Xie T, Cheng Z, Zhang H, Yang Z, Xu H, Lin J (2025) Qwen2.5-VL Technical Report. arXiv preprint arXiv:2502.13923.
+
 Dosovitskiy A, Beyer L, Kolesnikov A, Weissenborn D, Zhai X, Unterthiner T, Dehghani M, Minderer M, Heigold G, Gelly S, Uszkoreit J, Houlsby N (2020) An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale (ViT). In: International Conference on Learning Representations 2021.
 
 Gadre S Y, Ilharco G, Fang A, Hayase J, Smyrnis G, Nguyen T, Marten R, Wortsman M, Ghosh S, Zhang G, others (2023) DataComp: In Search of the Next Generation of Multimodal Datasets. Advances in Neural Information Processing Systems 36.
 
-Laurencon H, Saulnier L, Tronchon L, Bekman S, Singh A, Lozhkov A, Wang T, Karamcheti S, Rush A M, Kiela D, Cord M, Wolf T (2023) OBELICS: An Open Web-Scale Filtered Dataset of Interleaved Image-Text Documents. Advances in Neural Information Processing Systems 36.
+Laurençon H, Saulnier L, Tronchon L, Bekman S, Singh A, Lozhkov A, Wang T, Karamcheti S, Rush A M, Kiela D, Cord M, Wolf T (2023) OBELICS: An Open Web-Scale Filtered Dataset of Interleaved Image-Text Documents. Advances in Neural Information Processing Systems 36.
 
 Liu H, Li C, Wu Q, Lee Y J (2023) Visual Instruction Tuning (LLaVA). Advances in Neural Information Processing Systems 36:34892-34916.
 
@@ -353,6 +349,10 @@ Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, M
 
 Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, others (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. Advances in Neural Information Processing Systems 35:25278-25294.
 
+Zhu W, Hessel J, Awadalla A, Gadre S Y, Dodge J, Fang A, Yu Y, Schmidt L, Wang W Y, Choi Y (2023) Multimodal C4: An Open, Billion-scale Corpus of Images Interleaved with Text. Advances in Neural Information Processing Systems 36.
+
 Zhai X, Mustafa B, Kolesnikov A, Beyer L (2023) Sigmoid Loss for Language Image Pre-Training (SigLIP). In: Proceedings of the IEEE/CVF International Conference on Computer Vision, pp 11975-11986.
+
+Zhu J, Wang W, Chen Z, Liu Z, Ye S, Gu L, Duan Y, Tian H, Su W, Shao J, Gao Z, Cui E, Cao Y, Liu Y, Xu W, Li H, Wang J, Lv H, Chen D, Li S, He Y, Jiang T, Luo J, Wang Y, He C, Shi B, Zhang X, Shao W, He J, Xiong Y, Qu W, Sun P, Jiao P, Wu L, Zhang K, Deng H, Ge J, Chen K, Wang L, Dou M, Lu L, Zhu X, Lu T, Lin D, Qiao Y, Dai J, Wang W (2025) InternVL3: Exploring Advanced Training and Test-Time Recipes for Open-Source Multimodal Models. arXiv preprint arXiv:2504.10479.
 
 Zhu D, Chen J, Shen X, Li X, Elhoseiny M (2023) MiniGPT-4: Enhancing Vision-Language Understanding with Advanced Large Language Models. arXiv preprint arXiv:2304.10592.
