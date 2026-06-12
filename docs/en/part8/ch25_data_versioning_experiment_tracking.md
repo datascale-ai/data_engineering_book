@@ -93,7 +93,7 @@ It should be emphasized that the value of version management is not equivalent t
 
 Data version management is not a problem of a single granularity; it requires maintaining version information simultaneously at five levels.
 
-![Figure 25-1: Overview of the Version Management System](../../images/part8/图25_1zh.png)
+![Figure 25-1: Overview of the Version Management System](../../images/part8/图25_1.svg)
 
 *Figure 25-1: Panoramic view of the data version management and experiment tracking system—five-level version granularity with bidirectional association architecture*
 
@@ -418,7 +418,7 @@ Lineage graphs also need complexity control. LLM data pipelines often contain la
 
 Edge semantics should also be carefully designed. Edges are not merely "connections"—they should also specify the type of relationship. For example, `derived_from` denotes derivation, `filtered_by` denotes filtering, `annotated_by` denotes annotation, `evaluated_with` denotes evaluation, `approved_by` denotes approval, and `released_as` denotes release. The more clearly edge semantics are defined, the more precise queries become. Otherwise, a lineage graph can only display paths without explaining the governance meaning of those paths.
 
-![Figure 25-2: Data Lineage and Experiment Tracking Graph](../../images/part8/图25_2zh.png)
+![Figure 25-2: Data Lineage and Experiment Tracking Graph](../../images/part8/图25_2.g)
 
 *Figure 25-2: Complete data lineage graph from data sources to model release, showing forward and reverse tracking paths*
 

@@ -87,7 +87,7 @@ This is what distinguishes a market from an ordinary catalog. A catalog answers 
 
 An internal data market is also different from a pure permission system. A permission system focuses on access control; a data market also focuses on product quality, consumer experience, reuse benefits, and asset operations. It is therefore the intersection of data governance, data platforms, and data product management. Figure 30-1 shows the overall architecture of an internal data market and the relationships among data assets, product catalogs, authorization workflows, usage audit, and value feedback.
 
-![Internal data market architecture](../../images/part9/ch30_fig01.png)
+![Internal data market architecture](../../images/part9/图30_1.svg)
 
 *Figure 30-1: Internal data market architecture*
 
@@ -153,7 +153,7 @@ A standard process has seven stages:
 6. **Permission provisioning.** The platform writes the approval into permission systems and records scope, expiration, purpose limits, and responsible parties.
 7. **Usage audit and feedback.** The platform records logs, frequency, abnormal behavior, expiration, and feedback, then feeds results into product operations.
 
-![Authorization approval workflow](../../images/part9/ch30_fig02.png)
+![Authorization approval workflow](../../images/part9/图30_2.svg)
 
 *Figure 30-2: Authorization approval workflow*
 

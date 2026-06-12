@@ -328,7 +328,7 @@ When investigating data content issues, automatic metrics and manual sampling sh
 
 Attribution results should be written back into the issue backlog and knowledge base. Each incident investigation produces valuable troubleshooting paths — for example, a certain type of alert is typically caused by a specific data source going offline; a certain quality score drop is typically associated with a particular annotation task type; a certain dependency upgrade frequently affects specific language processing. Recording these observations in the troubleshooting handbook reduces the time to locate the next similar incident.
 
-![Figure 26-1: Anomaly Attribution Decision Tree](../../images/part8/图26_1zh.png)
+![Figure 26-1: Anomaly Attribution Decision Tree](../../images/part8/图26_1.svg)
 
 *Figure 26-1: LLM Data Platform Anomaly Attribution Decision Tree — Four-Level Diagnostic Path from Alert Trigger to Root-Cause Identification*
 
@@ -478,7 +478,7 @@ Operational dashboards should also offer multiple time scales. Minute-level view
 
 Finally, dashboards should not grow without bound. Each view should retain a small number of core metrics and clear action entry points. The Platform Health View is focused on whether on-call action is needed; the Data Quality View on whether data needs to be paused or repaired; the Business Operations View on whether model and product plans are affected. Additional diagnostic metrics can be placed on a dedicated diagnostic page rather than occupying the primary view. The goal of a monitoring dashboard is not to demonstrate how much data the team can collect but to help the team make correct decisions faster.
 
-![Figure 26-2: Data Platform Observability Panorama](../../images/part8/图26_2zh.png)
+![Figure 26-2: Data Platform Observability Panorama](../../images/part8/图26_2.svg)
 
 *Figure 26-2: LLM Data Platform Observability Panorama — Architecture of the Three-Layer Metric Hierarchy and the Three-Dimensional Operational Dashboard*
 

@@ -135,7 +135,7 @@ These three requirements are not merely theoretical; multiple influential system
 
 A data asset typically passes through a standardized registration process before it can be discovered and put into use. As shown in Figure 27-1, the data creator first prepares metadata and submits a registration request; the system then performs a combination of automated and manual quality checks and security and permissions reviews; only upon passing these checks is the asset published to the data catalog and made searchable. This process institutionalizes "who may register data and what conditions must be met beforehand" as enforceable checkpoints, which are the prerequisite for the governability of the registry.
 
-![Complete workflow from data asset creation to use](../../images/part9/ch27_fig01_zh.png)
+![Complete workflow from data asset creation to use](../../images/part9/图27_1.svg)
 
 *Figure 27-1: Data Asset Registration and Onboarding Workflow*
 
@@ -281,7 +281,7 @@ As shown in Figure 27-2, a single piece of raw data may simultaneously enter mul
 
 The true power of lineage is most fully realized in impact analysis scenarios. Consider an upstream `user_profile_table` planning to modify the definition of a certain field. Without lineage, engineers can only guess from experience and memory "who will be affected," making it very easy to overlook dependencies. With complete lineage, the system can automatically enumerate along the DAG all downstream assets that indirectly depend on that field (such as the feature engineering step in this example and its outputs `preference_model_training` and `rag_knowledge_embeddings`), assess the scope of impact one by one, and notify the responsible parties. In reverse, when a model exhibits anomalies in production, the team can trace back along the lineage: did the raw data source have a problem, did some transformation step introduce a defect, or did the semantics of some upstream field drift without anyone's knowledge? Without lineage, incident investigation and change assessment degrade into searching for a needle in a haystack; with lineage, they become deterministic operations that can be executed by traversing a graph.
 
-![Data Lineage Graph](../../images/part9/ch27_fig02_zh.png)
+![Data Lineage Graph](../../images/part9/图27_2.svg)
 
 *Figure 27-2: Data Lineage Graph*
 
@@ -357,7 +357,7 @@ The importance of lifecycle management stems from the fact that the "exit" of a 
 
 As shown in Figure 27-3, the states above can be abstracted as a state machine: a data asset transitions sequentially through CREATED → ACTIVE → DEPRECATED → ARCHIVED → DELETED, with each transition triggered by explicit conditions, ensuring that every step of the lifecycle is auditable and traceable.
 
-![Data Asset Lifecycle State Transition Diagram](../../images/part9/ch27_fig03_zh.png)
+![Data Asset Lifecycle State Transition Diagram](../../images/part9/图27_3.svg)
 
 *Figure 27-3: Data Asset Lifecycle State Machine*
 
@@ -497,7 +497,7 @@ It is important to emphasize that these metrics are meaningful only when measure
 
 In cross-team governance practice, the health of the permissions dimension is particularly worth examining separately. As shown in Figure 27-4, a permissions matrix can visually present "which team holds what permissions on which assets," enabling at-a-glance identification of excessive permissions or permissions gaps.
 
-![Permissions Management Matrix Based on Roles and Purposes](../../images/part9/ch27_fig04_zh.png)
+![Permissions Management Matrix Based on Roles and Purposes](../../images/part9/图27_4.svg)
 
 *Figure 27-4: Permissions Management Matrix Example*
 
