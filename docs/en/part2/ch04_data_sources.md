@@ -48,9 +48,9 @@ Postmortems of failed pre-training projects repeatedly expose three patterns.
 
 "More data is better" is one of the most common but most easily abused ideas in pre-training. At the macro level it is partly true: if quality is held constant, scale improves capability. At the engineering level it often becomes a substitute for judgment.
 
-FineWeb (Penedo et al. 2024) offers an important observation: under the same token budget, a carefully filtered Common Crawl subset produced stronger benchmark results than training on far larger raw Common Crawl data. In other words, "less but cleaner" can beat "more but messy."
+The FineWeb paper (Penedo et al. 2024) offers an important observation: under the same token-count constraint, high-quality web corpora filtered from Common Crawl can train stronger models, and data cleaning, deduplication, and source recipes significantly affect final results. DCLM/DataComp-LM further organizes this question into a comparable data-recipe competition: under a fixed training budget, different data filtering and mixing strategies lead to noticeably different downstream performance (Li et al. 2024). In other words, "less but refined" can outperform "more but mixed" in pretraining data, but the conclusion must be tied to the experimental setting, model scale, and evaluation set.
 
-This motivates the source strategy for the rest of the chapter: a data recipe should prioritize knowledge density, diversity, and license clarity over raw byte volume.
+This conclusion lays the foundation for the source-selection strategy throughout the chapter: **the formulation of a data recipe should prioritize each source's knowledge density and information diversity rather than raw volume.**
 
 ---
 
@@ -60,7 +60,7 @@ If this chapter is an audit checklist for LLM data engineering, the source map i
 
 ![Figure 4-1: Layered map of pre-training data sources](../../images/part2/pretrain_data_source_map.png)
 
-*Figure 4-1: Layered map of pre-training data sources. The three-layer taxonomy positions mainstream sources by processing complexity, knowledge density, and license risk, with typical reference ranges for mixing. Source: drawn for this book.*
+*Figure 4-1: Layered map of pre-training data sources. The three-layer taxonomy positions mainstream sources by processing complexity, knowledge density, and license risk, with typical reference ranges for mixing. Source: original illustration from this book; Alt text: layered map of pretraining data sources showing the quality and compliance positions of open web, forums and Q&A, encyclopedias, code, academic papers, books, enterprise internal data, and user feedback data.*
 
 ### 4.2.1 Eight Core Source Categories
 
@@ -82,9 +82,9 @@ If this chapter is an audit checklist for LLM data engineering, the source map i
 
 ### 4.2.2 Source Type, License, and Risk Matrix
 
-Source decisions must weigh quality, legal risk, and acquisition feasibility together.
+In practical engineering decisions, source selection cannot be based on quality alone; license risk and acquisition feasibility must also be incorporated into the framework. The following is a risk-profile matrix for major data sources:
 
-**Table 4-1: Source type, license, and risk matrix**
+*Table 4-1: Source type, license, and risk matrix. Source: compiled by the authors; license risk should be based on specific source terms, robots.txt, service agreements, and legal-review conclusions.*
 
 | Source type | Representative sources | License pattern | Commercial risk | Knowledge density | Scale potential |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -100,18 +100,18 @@ Source decisions must weigh quality, legal risk, and acquisition feasibility tog
 
 ### 4.2.3 From Business Goal to Data Recipe
 
-Data mix ratio is one of the most strategic decisions in pre-training. There is no universal recipe; different product goals require different mixtures.
+Data mix ratio is one of the most strategic decisions in pretraining data engineering. There is no universal "golden recipe," because different business objectives require different data combinations. The following are reference mixing strategies for four typical business objectives:
 
-**Table 4-2: Data mix strategy by business objective**
+*Table 4-2: Data mix strategy by business objective. Source: compiled by the authors; mixing recommendations are a strategic framework and should be calibrated in production through proxy-model evaluation and ablation experiments.*
 
 | Business objective | General web | Code | Academic papers | Books / encyclopedia | Vertical data | Notes |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| General Chinese base model | 60-65% | 15-20% | 5-8% | 10-15% | 0-5% | Broad coverage; code should not be too low because it helps reasoning. |
-| Code / technical model | 30-35% | 45-55% | 5-10% | 5-8% | 3-5% | Raise code sharply but keep enough general language. |
-| Vertical industry model | 25-30% | 8-12% | 15-20% | 10-15% | 30-40% | Domain data becomes prominent while general data preserves broad capability. |
-| Multilingual base model | 55-60% | 15-18% | 8-10% | 8-12% | By target language | Control language distribution to match target capability. |
+| **General Chinese base model** | High | Medium | Low-medium | Medium | Low | Pursues broad knowledge coverage; code should not be too low because it affects reasoning capability. |
+| **Code / technical specialized model** | Medium | High | Low-medium | Low-medium | Low | Code proportion rises sharply, but enough general language understanding capability must be retained. |
+| **Vertical industry model (e.g., finance/medicine)** | Medium | Low | Medium | Medium | High | Domain data proportion rises significantly, while general corpora preserve baseline general capability. |
+| **Multilingual base model** | High | Medium | Low-medium | Low-medium | Allocated by target language | Language distribution in web data must be controlled to match target language-capability requirements. |
 
-Mixing should also change over time. Early pre-training may use broader data, while cooldown should increase high-quality selected material such as books, papers, code, math, and enterprise data. Public model reports such as LLaMA 3 and Gemma describe similar late-stage upweighting of curated data.
+Table 4-2 uses "high/medium/low" rather than fixed percentages to avoid misreading one project's experimental recipe as a universal rule. Mixing strategy also needs a **dynamic adjustment mechanism**: different training stages (early pretraining vs. cooldown) should use different mixing weights. The closer training gets to its later stage, the more it should raise the weight of high-quality selected data (books, academic papers, enterprise data) and reduce the weight of low-quality massive data (raw web pages). The LLaMA 3 technical report discloses 15T-scale training data and multi-stage post-training flows (Grattafiori et al. 2024), but it does not provide a directly reusable complete data recipe; production projects must still calibrate through small-model ablations and frozen evaluation sets.
 
 ---
 
@@ -123,7 +123,9 @@ After the source strategy is set, the engineering question becomes: how do we in
 
 For tens of millions of URLs, a single-threaded crawler is insufficient. Production systems usually use distributed asynchronous crawling based on `aiohttp`, `Scrapy`, Ray, or Spark. The scheduler must enforce robots.txt checks before request dispatch, both to reduce legal risk and to avoid stressing source sites.
 
-**Listing 4-1: Asynchronous crawling with robots.txt checks**
+Listing 4-1 gives a lightweight asynchronous concurrent ingestion framework based on `aiohttp`. It uses `urllib.robotparser` to automatically check compliance before sending requests; production environments should also add rate limiting, audit logs, exception retries, and legally maintained source policies.
+
+*Listing 4-1: Example code for asynchronous concurrent ingestion and robots.txt checks. Production environments should add rate limiting, failed retries, audit logs, and source-policy whitelists.*
 
 ```python
 import asyncio
@@ -184,7 +186,9 @@ Different sources require different parsing routes. Using the wrong parser eithe
 
 **HTML and WARC.** Common Crawl provides WARC, WAT, and WET files. WET appears convenient because it contains extracted plain text, but this convenience is a trap for production training. Generic WET extraction often retains navigation, footers, ads, and code fragments. A better route is to parse WARC responses with a high-quality body extractor such as Trafilatura, then evaluate parser yield by language and source.
 
-**Listing 4-2: WARC body extraction with provenance metadata**
+Listing 4-2 shows an illustrative flow for parsing body text from WARC files while preserving source metadata.
+
+*Listing 4-2: Example code for WARC body parsing and source metadata preservation. This snippet shows the parsing path; production environments should add encoding detection, anomalous-sample isolation, and parsing-quality spot checks.*
 
 ```python
 import gzip
@@ -235,7 +239,9 @@ Traceable metadata is the foundation of data governance. Without it, a team cann
 
 Every ingested batch should write metadata at the same time it writes raw data to object storage. The following example fields should be extended according to source type, authorization method, and audit requirements.
 
-**Listing 4-3: Example ingestion-batch provenance metadata**
+Each ingested batch should write standard fields to the metadata database at the same time it lands in object storage. Listing 4-3 gives example fields; actual systems should extend them according to data source, authorization method, and audit requirements.
+
+*Listing 4-3: Example metadata provenance fields for an ingestion batch. Field values are illustrative examples; production environments should extend them according to authorization method, audit requirements, and data-source type.*
 
 ```json
 {
@@ -257,7 +263,7 @@ Every ingested batch should write metadata at the same time it writes raw data t
 
 ![Figure 4-2: Data ingestion and provenance chain](../../images/part2/data_ingestion_provenance_chain.png)
 
-*Figure 4-2: Data ingestion and provenance chain. Each step appends metadata to a provenance ledger, forming an auditable lineage from source contact to archive.*
+*Figure 4-2: Data ingestion and provenance chain. From source contact to final archive, each processing stage appends metadata records to the "Provenance Ledger," forming a complete auditable data-lineage chain. Source: original illustration from this book; Alt text: data ingestion and provenance chain diagram showing the links among source contact, acquisition, parsing, cleaning, storage, and audit records.*
 
 ### 4.3.4 Resumability and Job Reliability
 
@@ -289,13 +295,17 @@ The most practical engineering control is a three-list source-governance system.
 
 **Blacklist.** Sources that must not be used, including litigated datasets, domains that explicitly disallow AI training, robots.txt-disallowed sites when policy forbids use, or any source marked "not for AI training." The crawler should block these at the ingestion entrance.
 
-**Listing 4-4: Copyright blacklist interception**
+Listing 4-4 shows a simplified implementation:
+
+*Listing 4-4: Example code for copyright blacklist interception at the ingestion entrance. In production, the list should be maintained by legal and data-governance teams, and hit reasons and review time should be recorded.*
 
 ```python
+# Copyright blacklist: intercept prohibited sources at the ingestion entrance
 COPYRIGHT_BLACKLIST_DOMAINS = {
-    "nytimes.com",
-    "wsj.com",
-    "theguardian.com",
+    "nytimes.com",       # explicitly prohibits AI-training use
+    "wsj.com",           # explicitly requires paid authorization
+    "theguardian.com",   # terms of service updated to prohibit AI training
+    # ... continuously updated by the legal team
 }
 
 
@@ -308,13 +318,15 @@ def is_url_allowed(url: str) -> bool:
 
 ### 4.4.3 Automatic License Classification
 
-For code data, license text is usually stored in `LICENSE` or `LICENSE.md` at the repository root. Rules or classifiers can identify common patterns, but production systems should use stricter license parsers and legal review.
+For code data, license information is usually stored in `LICENSE` or `LICENSE.md` at the repository root and can be automatically identified through rules or classifiers. Listing 4-5 shows a simplified implementation; production systems should use stricter license-parsing libraries and legal-review workflows.
 
-**Listing 4-5: Simplified license classification**
+*Listing 4-5: Example code for automatic license-type classification. This snippet is only used to illustrate rule-based recognition; production environments should use mature license-parsing libraries and retain a manual review chain.*
 
 ```python
 import re
 
+# Common license keyword recognition (simple version; production use should prefer
+# a library such as license-expression)
 LICENSE_PATTERNS = {
     "MIT": r"(?i)mit\s+license",
     "Apache-2.0": r"(?i)apache\s+license.*2\.0",
@@ -342,42 +354,54 @@ def classify_license(license_text: str) -> dict:
 
 ## 4.5 Case Review and Practical Recommendations
 
-### Case 1: Lessons From Common Crawl Chinese Corpus Ingestion
+### Case 1: End-to-End Lessons From Common Crawl Chinese Corpus Ingestion (Anonymized Composite Case)
 
-**Project background.** A team planned to extract roughly 200 GB of high-quality Chinese text from one Common Crawl release for a general Chinese base model. The sizes, timings, and ratios below are engineering estimates as of 2026-06; actual results depend on crawl release, language filtering, parser version, and manual review criteria.
+**Project background.** A team planned to extract a batch of high-quality Chinese text from a Common Crawl release as the main pretraining corpus for a general Chinese base model. The following scale, time, and ratio descriptions are instructional engineering estimates used to illustrate the risk difference between WET and WARC parsing routes; actual results depend on crawl batch, language-filtering strategy, parser version, and manual spot-check criteria.
 
-**T+0, decision day.** The team inspected about 15 TB of compressed WET files and chose the WET route because the text was already extracted. They downloaded a 500 GB compressed subset, corresponding to about 50 million documents, and ran a quick review.
+**T+0 (decision day).** The team preliminarily assessed the WET files in that batch and decided that directly using WET would be simplest: after all, WET already contains plain text and avoids the parsing step. They downloaded a WET subset and performed a quick evaluation.
 
-**T+3, problem discovery.** Engineers manually reviewed 500 Chinese documents. About 35% contained navigation and menu text, around 20% were ads or product-description stuffing, about 15% were truncated fragments, and fewer than 30% were complete article bodies.
+**T+3 (problem discovery).** Data engineers randomly sampled Chinese documents for manual review and found that quality was far below expectations. Many documents contained large amounts of navigation and menu text, such as "Home | About Us | Contact Us | Copyright Notice," and there were also problems with advertisement stuffing, product-description stuffing, and body-text truncation. The proportion of genuinely complete article bodies was insufficient to support production-grade training.
 
-**T+4, route switch.** The team abandoned WET and reprocessed WARC files with Trafilatura in `favor_precision=True` mode. This required about 80 TB of additional compressed WARC processing and took roughly four days on a 200-core CPU cluster.
+**T+4 (route switch).** The team decided to abandon the WET route and instead start from WARC files, reparsing them with Trafilatura in `favor_precision=True` mode. This increased processing time and CPU cost, but it preserved more complete HTML context for the body-text extractor to judge.
 
-**T+8, reevaluation.** The WARC route improved quality substantially. In a second 500-document review, complete body-text rate rose to 82%, and average document length increased from about 300 Chinese characters to about 1,100. The final output contained roughly 12 million effective Chinese documents and about 28 billion characters, yielding around 40% more effective content than the WET route with far better quality.
+**T+8 (reevaluation).** The Trafilatura route improved results substantially. Manual spot checks showed that both the complete-body ratio and average document length were better than with the WET route. The team therefore kept WARC parsing as the production path and wrote the spot-check results into the parsing-quality baseline for this data source.
 
-**Core lesson.** WET is a cheap trap: useful for rough experiments, but not for production training data. The extra cost of WARC plus a high-quality parser is usually justified by the quality gain.
+**Core lesson.** WET files are a "cheap trap": suitable only for rough experiments, not production-grade training-data preparation. Whether to switch to WARC plus a high-quality parser should be determined jointly by spot-checked quality gains, additional time, and CPU cost, rather than by file-acquisition cost alone.
 
-Three practices follow from this case. First, establish a parser-quality baseline for every new source by manually reviewing 500-1,000 sampled documents and tracking complete-body ratio and average length. Second, separate experiment samples from production samples; early quick pipelines are rarely production-grade. Third, embed quality snapshots in each processing node, so parsing, filtering, and deduplication produce automatic reports on document length, short-document ratio, charset distribution, and other signals.
+Three directly applicable practices follow from this case. First, **establish a parsing-quality baseline**: during early ingestion of any new data source, manually annotate a random sample of 500-1,000 documents according to startup-stage experience, expand the sample size according to source heterogeneity and error types, and measure complete-body ratio and average document length to form a parsing-quality baseline for that source. Second, **separate evaluation samples from production samples**: do not use the same quick-experiment data to evaluate final training effects, because experimental-stage processing precision is often lower than production-grade precision. Third, **embed quality snapshots in the pipeline**: each processing node (parsing -> filtering -> deduplication) should automatically output a quality snapshot report after completion, recording statistics such as average document length, short-document ratio, and character-set distribution for the current batch. Engineers can then judge whether node output quality meets expectations without additional manual sampling. This automatic quality-snapshot mechanism is one of the core methods for avoiding black-box pipelines in large-scale data engineering.
 
-### Case 2: Compliance Risk in a Financial Enterprise Knowledge Base
+### Case 2: Compliance Risk in Financial Enterprise Knowledge-Base Ingestion (Anonymized Composite Case)
 
-**Project background.** A financial group decided to train an internal Q&A model from research reports, compliance manuals, product documents, and internal PDFs/Word files accumulated over ten years. The corpus was roughly 500 GB. These numbers illustrate risk categories, not a public incident.
+**Project background.** A financial group decided to train an internal financial Q&A model based on internal research reports, compliance manuals, product descriptions, and other documents. The data scale was approximately 500 GB (PDF + Word format), covering nearly ten years of accumulated internal documents. The following proportions and scale are used to illustrate risk types and do not represent a public event involving any specific company.
 
-The first ingestion plan treated all internal documents as automatically available because they were stored inside the company's knowledge base. Legal review later found several issues: some reports embedded externally licensed market data; some PDF appendices reproduced third-party analyst materials; some Word templates contained customer names and account identifiers; and some documents were only licensed for internal reading, not for model training.
+**T+0 (data inventory).** Data engineers obtained the document-directory list from the group's IT department and began batch-parsing PDF files. Engineering progressed smoothly, and within a short period the team completed document parsing and preliminary cleaning, producing a batch of candidate training data.
 
-The remediation plan separated documents into four buckets. Documents created fully in-house with approved use entered the whitelist. Documents containing vendor charts or purchased data entered the graylist pending contract review. Documents with customer identifiers were routed through PII redaction before any training use. Documents whose license explicitly forbade derivative use were blacklisted. The data team also added per-document provenance fields for business owner, permission basis, redaction status, and license reviewer.
+**T+15 (compliance team intervention).** During a routine risk inspection, the group's compliance team found that the dataset contained many copies of files from third-party organizations, such as regulator websites, rating agencies, and external law firms. These files had been historically deposited in the internal OA system, but their copyrights did not belong to the group itself. Some files even contained statements such as "may not be copied or distributed without permission."
 
-The lesson is simple: "internal" does not automatically mean "trainable." Enterprise data often has high domain value, but it also carries confidentiality, third-party-license, and privacy constraints. A usable internal-data pipeline must combine permission review, redaction, and auditable metadata before model training begins.
+**T+16 (emergency pause).** The legal team urgently halted the training task and required a source review of the dataset. The review found that some documents had unclear copyright ownership or clearly belonged to third parties and therefore had to be removed from the training set.
+
+**T+25 (fix completed).** The data team labeled each document category by source ownership, established an internal copyright inventory, removed all third-party documents with questionable copyright, and supplemented authorization evidence for retained documents. Portions of internal documents that cited regulatory provisions were confirmed by compliance to fall within the scope of "reasonable quotation."
+
+**Core lesson.** Internal enterprise documents are not automatically copyright-owned data. Before ingestion begins, all data sources should undergo systematic copyright-ownership review instead of asking the compliance department to intervene only after engineering is complete; the latter has much higher rework cost. It is recommended to introduce a "source-ownership check" node as the first step in the ingestion pipeline, requiring every file to be labeled as copyright holder / internally created / third-party quotation / unknown source, and confirmed with a signature by the document owner from the business department.
 
 ## Chapter Summary
 
-Source governance is not administrative overhead; it is the first technical boundary of pre-training. Source choice shapes model ability, legal risk, and the maximum value of all downstream cleaning. A production source system should include a source map, data mix strategy, robots.txt-aware ingestion, high-quality parsing, provenance records, resumable execution, whitelist/graylist/blacklist controls, and license classification. Only then can later stages such as cleaning, tokenization, and evaluation work on a trustworthy foundation.
+This chapter began from how source quality constrains model capability and established a cognitive framework for the pretraining data-source system. It built a layered map covering eight core data-source categories and provided operational quantitative tools for engineering decisions through the risk matrix (Table 4-1) and mixing-strategy matrix (Table 4-2). In the ingestion-pipeline section, this chapter explained the risk of directly using WET, presented a high-quality WARC parsing implementation based on Trafilatura, and established the provenance standard that "every record has a birth certificate." The copyright-governance section introduced the three-tier whitelist, graylist, and blacklist management mechanism, together with license auto-classification code, providing an implementable compliance-engineering solution for commercial LLM teams. The two cases showed from technical and legal perspectives that source governance is the first quality gate of pretraining data engineering.
+
+In the next chapter, we will build on the raw data collected in this chapter and discuss **Chapter 5: Cleaning, Deduplication, and Decontamination**. Source governance determines the upper bound of the corpus that can enter the cleaning pipeline, while the cleaning pipeline determines which samples eventually enter the training set. Together, the two chapters form the quality gatekeeping system for text pretraining data engineering.
 
 ## References
 
-- Barbaresi, A. (2021). Trafilatura: A web scraping library and command-line tool for text discovery and extraction.
-- Blecher, L. et al. (2023). Nougat: Neural Optical Understanding for Academic Documents.
-- Broder, A. Z. (1997). On the resemblance and containment of documents.
-- Dubey, A. et al. (2024). The Llama 3 Herd of Models.
-- Lopez, P. (2009). GROBID: Combining automatic bibliographic data recognition and term extraction for scholarship publications.
-- Penedo, G. et al. (2023). The RefinedWeb Dataset for Falcon LLM.
-- Penedo, G. et al. (2024). FineWeb: Decanting the Web for the Finest Text Data at Scale.
+Barbaresi A (2021) Trafilatura: A Web Scraping Library and Command-Line Tool for Text Discovery and Extraction. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics, pp 122-131.
+
+Blecher L, Cucurull G, Scialom T, Stojnic R (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.
+
+Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
+
+Lopez P (2009) GROBID: Combining Automatic Bibliographic Data Recognition and Term Extraction for Scholarship Publications. In: Proceedings of the 13th European Conference on Digital Libraries, pp 473-474.
+
+Li J, Zhang Y, Yu H, Ma X, Chen Y, Jiang H, Dang K, Goyal T, Keh S, Sherborn M, others (2024) DataComp-LM: In search of the next generation of training sets for language models. arXiv preprint arXiv:2406.11794.
+
+Penedo G, Kydlíček H, Ben Allal L, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.
+
+Yu S, Liu Z, Xiong C (2025) Craw4LLM: Efficient Web Crawling for LLM Pretraining. In: Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics. arXiv preprint arXiv:2502.13347.

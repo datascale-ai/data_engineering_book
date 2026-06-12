@@ -4,7 +4,7 @@
 
 This appendix addresses one of the most common and time-consuming problem types in data engineering: the pipeline "looks right," but the result is wrong. It is not a generic incident catalog. It is a debugging manual written for the context of this book, helping readers turn common problems from experience-driven troubleshooting into objects that can be located, classified, and regression-tested.
 
-In large-model data engineering, bugs rarely live only in code. They can appear in data sources, splitting, deduplication, masking, parsing, annotation, evaluation, caching, permissions, write-back, or version references. More difficult, they often compound one another: "the metric did not change but the sample is wrong," "the sample is right but the version is wrong," or "the version is right but the release is wrong." Research on machine-learning technical debt and industrial case studies both show that data dependencies, configuration drift, test gaps, and cross-role collaboration issues are amplified during long-term maintenance (Sculley et al. 2015; Amershi et al. 2019).
+In large-model data engineering, bugs rarely live only in code. They can appear in data sources, splitting, deduplication, masking, parsing, annotation, evaluation, caching, permissions, write-back, or version references. More difficult, they often compound one another: "the metric did not change but the sample is wrong," "the sample is right but the version is wrong," or "the version is right but the release is wrong." Recent research on data-processing systems and data leakage shows that small errors in the data chain can be amplified by training, evaluation, and release processes; troubleshooting must therefore examine data, code, configuration, and evaluation protocol together (Chen et al. 2024; Kapoor and Narayanan 2023).
 
 This appendix therefore emphasizes **debugging order** rather than isolated repair tricks. Locate the layer first, classify the symptom second, and discuss fixes last.
 
@@ -225,7 +225,7 @@ This reduces patch-style troubleshooting. Surface fixes often hide deeper failur
 
 ## E.13 Observation Points and Instrumentation
 
-Debugging is hard not only because systems are complex, but because they lack observation points. For the data-engineering chains in this book, keep at least:
+Debugging is hard not only because systems are complex, but because they lack observation points. For the data-engineering chains in this book, keep at least the following instrumentation points; these observation points also correspond to modern data-processing systems and autonomous-operations evaluation requirements around intermediate artifacts, telemetry signals, and regression samples (Chen et al. 2024; Chen, Shetty et al. 2025):
 
 - Raw input snapshots.
 - Intermediate structured results.
@@ -444,10 +444,10 @@ If these three actions continue, this manual becomes part of daily engineering r
 
 ## References
 
-Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28.
+Blecher L, Cucurull G, Scialom T, Stojnic R (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.
 
-Breck E, Cai S, Nielsen E, Salib M, Sculley D (2017) The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction. In: Proceedings of the IEEE International Conference on Big Data, pp 1123-1132.
+Chen D, Huang Y, Ma Z, Chen H, Pan X, Ge C, Gao D, Xie Y, Liu Z, Gao J, Li Y, Ding B, Zhou J (2024) Data-Juicer: A One-Stop Data Processing System for Large Language Models. In: Companion of the 2024 International Conference on Management of Data, pp 120-134.
 
-Amershi S, Begel A, Bird C, Devanbu P, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice, pp 291-300.
+Chen Y, Shetty M, Somashekar G, Ma M, Simmhan Y, Mace J, Bansal C, Wang R, Rajmohan S (2025) AIOpsLab: A Holistic Framework to Evaluate AI Agents for Enabling Autonomous Clouds. arXiv preprint arXiv:2501.06706.
 
-Google SRE (2016) Site Reliability Engineering: How Google Runs Production Systems. O'Reilly Media.
+Kapoor S, Narayanan A (2023) Leakage and the reproducibility crisis in machine-learning-based science. Patterns 4(9):100804.

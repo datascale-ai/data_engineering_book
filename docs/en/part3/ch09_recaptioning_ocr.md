@@ -36,7 +36,7 @@ Take a typical example from a large open dataset such as LAION-5B (Schuhmann et 
 
 **Impact on model learning signals**
 
-The harm is not merely that there is "too little information." It changes attention allocation. If massive numbers of vague labels such as "an office corner" are used as alignment prefixes in SFT or pretraining, the model tries to fit millions of RGB pixels to a very low-information short-text target. It may therefore fail to learn fine-grained visual features such as the reflection in the half-full coffee, the indentation of keyboard keycaps, or the direction of sunlight. This phenomenon, in which missing text features cause the visual model to ignore small objects, can be summarized as **dense object blindness** or **entity dropout** caused by weak description.
+The harm is not merely that there is "too little information." It changes attention allocation. If massive numbers of vague labels such as "an office corner" are used as alignment prefixes in SFT or pretraining, the model tries to fit millions of RGB pixels to a very low-information short-text target. It may therefore fail to learn fine-grained visual features such as the reflection in the half-full coffee, the indentation of keyboard keycaps, or the direction of sunlight. This phenomenon, in which missing text features cause the visual model to ignore small objects, can be summarized as **dense object blindness** or **entity dropout** caused by weak description; for related systematic analyses, see fine-grained alignment work such as GLIP (Li et al. 2022) and FIBER (Dou et al. 2022).
 
 It also creates logical alignment conflicts. Suppose the subject in an image is a white cat, while the crawled short text only says "white background." The vision encoder extracts contour features for the cat, but the training target asks it to align with "background." The model learns a false correspondence, damaging the stability of multimodal understanding on benchmarks such as MME (Fu et al. 2023) and MMBench (Liu et al. 2023b).
 
@@ -55,8 +55,8 @@ In R&D and data-distillation pipelines, data architects usually do not expect on
    - Engineering role: better suited for **Stage 2 and Stage 3: Visual Instruction Tuning and Preference Alignment**, where it improves detailed observation and expressive organization.
 
 3. **The art of data mixing**
-   - **Do not overfeed short captions**: if late pretraining uses 90% short captions, the model may lose long-sentence generation ability, a form of caption degradation.
-   - **Illustrative ratio**: in SFT, one may use **30% short captions + 50% dense captions + 20% multimodal dialogue** to balance concept recognition and instruction following. This is an illustrative parameter as of 2026-06 and should be calibrated for the target model.
+   - **Do not overfeed short captions**: if late pretraining remains dominated by short descriptions for too long, the model may lack long-sentence generation and complex-relation expression ability, a form of caption degradation.
+   - **Mixing principle**: in SFT, short captions, dense captions, and multimodal dialogue samples should be retained together to balance conceptual recognition, detailed description, and instruction following. Concrete proportions must be calibrated according to model capability goals and ablation experiments.
 
 To move the model from "image-word recognition" to image understanding, relational reasoning, and instruction response, low-information crawled text must be combined with high-quality recaptioned data. The core engineering path is **synthetic recaptioning**, or large-model-generated rewriting.
 
@@ -74,13 +74,13 @@ Industrial data factories often use an inverted-pyramid triage strategy to balan
 
 #### 1. Base layer: open-source model batch recaptioning
 
-For natural images with simple composition and a main object occupying more than 70% of the frame, such as plain landscapes or product photos on a single-color background, hiring annotators or calling expensive commercial APIs for billions of images is not economical. At the base layer, data teams usually deploy small open-source visual models inside private compute clusters, such as LLaVA-1.5 (Liu et al. 2024) 7B, Qwen-VL-Chat, or InternVL-1.2, and run **fast prompting** in bulk.
+For natural images with simple composition and clear subjects, such as plain landscapes or product photos on a single-color background, hiring annotators or calling expensive commercial APIs is not economical when the scale is large. At the base layer, data teams usually deploy small open-source visual models inside private compute clusters, such as LLaVA-1.5 (Liu et al. 2024), Qwen2.5-VL (Bai et al. 2025), or InternVL3 (Zhu et al. 2025), and run **fast prompting** in bulk.
 
 **Strict prompt-template example**
 
 To prevent smaller open-source models from generating unfocused descriptions, prompt engineering must strictly constrain factuality, length, and output scope. Listing 9-1 gives a recaptioning prompt template.
 
-**Listing 9-1: Recaptioning prompt template**
+*Listing 9-1: Recaptioning prompt template example. This template illustrates the constraint style; production environments should A/B validate it according to model version, image type, and safety policy.*
 
 ```text
 [System Instruction]: You are a neutral, highly objective visually impaired helper.
@@ -98,22 +98,22 @@ For complex interleaved scenes, dense environments, or images containing subtle 
 
 #### 3. High-value layer: human refinement and golden truth
 
-At the highest-value layer of the funnel, usually less than 0.05% of the full data lake, automation scripts mainly perform candidate selection and quality logging. Data-science teams send these samples to trained annotation groups for fine labeling.
+At the highest-value layer of the funnel, automation scripts mainly perform candidate selection and quality logging. Data-science teams send these samples to trained annotation groups for fine labeling. The share of this data depends on budget, task risk, and the needs of golden evaluation sets, and should not be copied from a fixed ratio.
 
 These human labels should not rely only on low-barrier crowdsourcing. Multimodal alignment requires high noun precision and hierarchical structure, so annotators usually need systematic training and a dedicated internal labeling tool to confirm small regions one by one. Although this portion is tiny, it forms the **golden truth** used later for training recaptioning reward models or fine-tuning base models.
 
-**Table 9-1: Recaptioning production tiers**
+*Table 9-1: Comparison and accounting dimensions for automated recaptioning production tiers. Source: compiled by the authors; cost and throughput must be recalculated according to model version, API pricing, concurrency limits, and annotation region.*
 
-Note: cost and throughput in Table 9-1 are estimates as of 2026-06. Actual values depend on model version, cloud/API pricing, concurrency limits, image resolution, cache strategy, and annotation region.
+Note: Table 9-1 does not list fixed cost or throughput numbers. Actual results depend on model version, cloud/API pricing, concurrency limits, image resolution, cache strategy, and annotation region; production projects should estimate per-sample cost through small-batch stress tests.
 
-| Recaptioning tier | Estimated cost per million images | Example cluster throughput | Complex-scene and chart ability | Advantages and deployment risks |
+| Recaptioning tier | Cost drivers | Throughput constraints | Complex-scene and chart ability | Advantages and deployment risks |
 | :--- | :--- | :--- | :--- | :--- |
-| **Small VLM local batch** (parameters $< 15B$) | ~$100 | > 14,000 images/node/hour | Weak, especially for tables | **Advantage**: low cost and rapid object alignment. **Risk**: hallucination, not suited to fine-grained training. |
-| **Top commercial API refinement** (such as GPT-4o) | ~$15,000 | Limited, often around 5K/hour by rate limits | Strong | **Advantage**: strong commonsense context and dense long text. **Risk**: fast budget burn and possible refusals under safety policy. |
-| **Private hybrid multi-review framework** | ~$800 in internal GPU-hour accounting | ~2,000 images/multi-node/hour | Medium | **Advantage**: runs locally, reduces leakage risk, and reduces hallucination through intersection. **Risk**: complex architecture and slower multi-node waiting. |
-| **Multi-round human expert labeling** | > $200,000 | < 50 images/expert/hour | Strong | **Advantage**: creates high-quality calibration data. **Risk**: hard to scale; visual fatigue can cause box-dragging errors. |
+| **Small VLM local batch** | GPU card-hours, model quantization method, image resolution | Local inference concurrency and I/O | Weak, especially for tables | **Advantage**: low cost and rapid object alignment.<br>**Risk**: hallucination, not suited to fine-grained training. |
+| **Top commercial API refinement** | API unit price, input image size, output length, retry rate | Provider concurrency throttling and safety policy | Strong | **Advantage**: strong commonsense context and dense long text.<br>**Risk**: fast budget burn and possible refusals under safety policy. |
+| **Private hybrid multi-review framework** | Multi-model GPU card-hours, scheduling wait, judge-model cost | Slowest model and serial judging | Medium | **Advantage**: runs locally, reduces leakage risk, and reduces hallucination through intersection.<br>**Risk**: complex architecture and slower multi-node serial waiting. |
+| **Multi-round human expert labeling** | Expert hours, training cost, quality-inspection ratio, rework rate | Expert supply and visual fatigue | Strong | **Advantage**: creates high-quality calibration data.<br>**Risk**: hard to scale; visual fatigue can cause box-dragging errors. |
 
-### 9.2.2 From Image Recitation to Physical-World Guidance: Fine-Grained Alignment and BBox Injection
+### 9.2.2 From Coarse Image Description to Fine-Grained Spatial Alignment: Bidirectional BBox Injection
 
 Traditional image captioning mainly maps an image to a set of words or one sentence. Text labels alone are still not enough to train a visual assistant with spatial localization, mathematical geometry, and physical direction understanding. Data engineering must introduce **fine-grained grounding**.
 
@@ -121,7 +121,7 @@ In this module, continuous text intended for humans must be converted into a dat
 
 The downstream text assembly script no longer outputs only a sentence such as "a bright red apple is placed on the lower-left side of a square wooden table." Instead, it injects structured, closed XML localization tags into the training text. Listing 9-2 shows an XML grounding example.
 
-**Listing 9-2: XML grounding markup example**
+*Listing 9-2: XML grounding localization markup example. Coordinates and objects are illustrative samples; production environments should constrain them jointly through detector outputs, manual spot-checks, and coordinate normalization rules.*
 
 ```xml
 On the lower-left side of the wooden square table in the back of the image, there is an <object name="apple" bbox="[[320, 550, 450, 690]]">apple</object>; to its left is a stack of <object name="book" bbox="[[500, 520, 680, 750]]">medical books</object>.
@@ -129,11 +129,11 @@ On the lower-left side of the wooden square table in the back of the image, ther
 
 The reason is that a Transformer does not naturally possess absolute spatial awareness of near/far, left/right, and high/low. After many samples extend natural-language words into discrete coordinate tokens such as `[Bbox_xx_yy]` and enter the SFT pipeline, the model can not only answer "what is in the image" but also output coordinates or region references for tasks such as "point to the apple." This is the foundation for reducing spatial hallucination and supporting web visual automation agents.
 
-**Industrial recaptioning JSONL sample**
+*Industrial recaptioning JSONL sample (Recaptioning Schema). The fields and paths below are anonymized examples.*
 
 The final VLM-generated recaptioning data is packaged as JSONL with strict metadata. Listing 9-3 gives an anonymized example; fields and paths are illustrative.
 
-**Listing 9-3: Anonymized recaptioning JSONL schema**
+*Listing 9-3: Anonymized recaptioning JSONL Schema example. Production environments should add data source, model version, review status, license, and safety-filter records.*
 
 ```json
 {
@@ -158,7 +158,7 @@ The final VLM-generated recaptioning data is packaged as JSONL with strict metad
 - `original_caption`: the low-information label crawled from the source.
 - `recaption`: the large-model-generated long description and generation-model record.
 - `grounding_bboxes`: fine-grained entity coordinates extracted and mapped through GroundingDINO, central to training pointing ability.
-- `clip_score` and `quality_flag`: automatic pre-validation signals; below 0.65, the sample may be marked REJECT and discarded.
+- `clip_score` and `quality_flag`: automatic pre-validation signals; whether a sample is set to `REJECT` should be calibrated according to the current vision-text encoder, language, image type, and manual spot-check distribution (see Figure 9-1 for the full dual-track pipeline).
 
 ![Figure 9-1: Recaptioning and OCR dual-track enhancement](../../images/part3/recaptioning_ocr_pipeline.png)
 
@@ -206,7 +206,7 @@ The system shifts part of the difficult character-recognition workload to the te
 
 ## 9.4 Quality Evaluation, Sampling Funnels, and Defect Attribution
 
-In a preprocessing shop where OCR and long-form recaptioning are intertwined, quality control cannot be absent. Even 0.5% collapsed samples or hallucinated labels can be amplified over a long training cycle. This percentage is an illustrative threshold; actual tolerance depends on training stage, data weight, and target task. Before synthetic recaptioned data enters the main training stream, an industrial quality-control process must be established.
+In a preprocessing shop where OCR and long-form recaptioning are intertwined, quality control cannot be absent. Even a small number of collapsed samples or hallucinated labels can be amplified over a long training cycle. Actual tolerance depends on training stage, data weight, and target task. Before synthetic recaptioned data enters the main training stream, an industrial quality-control process must be established.
 
 ### 9.4.1 Machine Scoring and Heuristic Validation
 
@@ -214,11 +214,11 @@ For hundreds of millions of samples, humans cannot cover enough data. Full autom
 
 1. **Long-short consistency cross-check**
    - **Algorithm pipeline**: the recaptioning center often produces dense captions up to 500 Chinese characters. A front-end probe first extracts the five core entity nouns from the dense caption using a lightweight POS tagger such as NLTK or spaCy, for example keyboard, coffee, desk, monitor, and sunlight.
-   - **Consistency standard**: the five entity nouns are then scored against the original image using CLIP or SigLIP similarity. If the mean feature inner product is not higher than that of the original web label, such as "office corner," or drops abnormally, the system should trigger a P0 quality alert. This usually means the upstream recaptioning model did not generate from the image content and that the day's data package from that node should be isolated.
+   - **Consistency standard**: the five entity nouns are then scored against the original image using CLIP or SigLIP similarity. If the mean feature inner product is not higher than that of the original web label, such as "office corner," or drops abnormally relative to the project baseline, the system should trigger a quality alert. This usually means the upstream recaptioning model did not sufficiently generate from the image content and that the day's data package from that node should be isolated.
 
 2. **Punctuation, regular-expression, and repetition-loop sweeping**
    - Even without a complex geometric-semantic model, character-pattern checks can reveal serious synthetic-quality problems. For example, large batches of PDF rich text processed by OCR such as PaddleOCRv4 may end with isolated unclosed HTML tags `</html>`, repeated `[ERROR] [NO_RESPONSE]`, mojibake such as `aaaaa`, or placeholder pollution.
-   - Another high-risk failure is an LLM falling into a repetition loop, such as more than 20 consecutive identical lines. If the regex anomaly truncation rate in system logs exceeds a node watermark, for example 0.05% in an illustrative setup, the scheduler should pause the inference instance and isolate its output.
+   - Another high-risk failure is an LLM falling into a repetition loop, such as several consecutive fully repeated lines. If the regex anomaly truncation rate in system logs exceeds the node watermark, the scheduler should pause the inference instance and isolate its output. The watermark should be set according to the historical batch distribution.
 
 ### 9.4.2 Human-in-the-Loop Blind Sampling and Multi-Layer Attribution
 
@@ -226,7 +226,7 @@ Even if all machine quality metrics pass, a final **expert blind-sampling verifi
 
 These experts not only judge quality but also provide error-attribution reports from long-document token lists to the model-development team. To reduce responsibility ambiguity after training divergence, for example vision engineers blaming the language base and language engineers blaming visual features, the evaluation group needs an incident classification tree.
 
-**Table 9-2: OCR and advanced document-recognition error attribution matrix**
+*Table 9-2: OCR core error attribution and remediation matrix for cross-modal and advanced document recognition. Source: compiled by the authors from anonymized engineering patterns; error types and remediation actions should be reviewed by document type and OCR model version.*
 
 | Error pattern in model output | Root-cause diagnosis in expert workstation | Core remediation strategy and architectural iteration |
 | :--- | :--- | :--- |
@@ -241,13 +241,13 @@ These experts not only judge quality but also provide error-attribution reports 
 
 ### 9.5.1 OCR Reconstruction of a Financial Research Knowledge Base
 
-The following is an anonymized composite case. Time, scale, model parameters, and improvement are engineering estimates as of 2026-06 and do not represent a specific public event. A finance team planned to build an intelligent assistant for full-report penetration analysis and quality control. Initially, the algorithm group paginated about eight million industry research PDFs and anonymized financial scans, then fed the page images directly into a 72B-parameter vision foundation model, hoping it could complete reading and question answering.
+The following is an anonymized composite case used to explain the risks of document OCR and layout structuring; it does not represent a specific public corporate event. A finance team planned to build an intelligent assistant for full-report penetration analysis and quality control. Initially, the algorithm group paginated a large number of industry research PDFs and anonymized financial scans, then fed the page images directly into a vision foundation model, hoping it could complete reading and question answering.
 
 In the first closed blind test, the model could only answer vaguely that "there is a table in the image." For detailed questions such as "compare the year-on-year decline and quarter-on-quarter rise in profit sharing for third-tier-city heavy-metal business," it fabricated revenue numbers across rows. For prospectus scans hundreds of pages long with header watermarks, QA accuracy was far below expectation.
 
 The team paused training and sent the financial-report data back to the data shop for about half a month of reconstruction. In the new OCR assembly pipeline, every page and long image was segmented by multiple networks: pie charts and line charts were extracted separately, dense revenue tables were converted into structured tables, and Table OCR added cell-boundary anchors, structured HTML or Markdown tag trees, page numbers, chart numbers, and source metadata.
 
-The postmortem showed that **without rigorous data engineering, even a strong algorithm cannot compensate for defective data**. After rebuilding OCR and layout structure, the team restarted a lightweight training cycle. On evaluations such as ChartQA (Masry et al. 2022) and TabMWP (Lu et al. 2022), long complex chart-reading reasoning improved by about 45 absolute percentage points in this illustrative setting. The gain depends on the starting baseline, sample difficulty, model size, and evaluation-set configuration and cannot be copied across projects.
+The postmortem showed that **without rigorous data engineering, even a strong algorithm cannot compensate for defective data**. After rebuilding OCR and layout structure, the team restarted a lightweight training cycle and jointly validated the result using benchmarks such as ChartQA (Masry et al. 2022) and TabMWP (Lu et al. 2022) together with a manually curated financial-report QA set. Whether a significant improvement is obtained depends on the starting baseline, sample difficulty, model size, and evaluation-set configuration; gains from a single project cannot be reused across projects.
 
 ### 9.5.2 From Static Documents to Long Temporal Data
 
@@ -259,27 +259,31 @@ The next chapter therefore moves from static image-text and document understandi
 
 ## Chapter Summary
 
-This chapter organized the core problems, process flows, and acceptance criteria for recaptioning and document understanding in large-model data engineering. It places concepts, data objects, quality signals, and engineering delivery in the same narrative so readers can judge which steps must be explicitly recorded and which results require sampling, evaluation, or audit.
+This chapter explained why image-text data that has passed basic cleaning is still insufficient for advanced multimodal understanding, and presented two complementary reconstruction paths. The first is synthetic recaptioning: for weak and missing native web captions, data granularity should be designed in layers across short captions, dense captions, and multimodal dialogue. Costs and hallucinations can be controlled through a pyramid funnel of open-source VLM batch generation, three-blind multi-model review, and human golden labels. With GroundingDINO and SAM, BBox coordinates can be injected so natural-language descriptions become structured supervision with spatial anchors. The second path is OCR and long-document understanding: because text is a sparse, high-frequency discrete symbol system, raising image resolution alone cannot reliably read decimals or tables. Layout detection, domain-specific extraction (formula restoration to LaTeX, table reconstruction to HTML/Markdown), and coordinate alignment are needed to convert part of the two-dimensional visual parsing problem into a long-context reading problem.
 
-The applicability of these methods should be assessed together with data source, business goal, model capability, cost budget, and compliance requirements. In scenarios involving sensitive information, cross-system calls, automated decisions, or public release, human review, version freezing, access control, and rollback mechanisms should be retained rather than treating illustrative workflows as production guarantees.
-
-In the book structure, this chapter sits in the multimodal data-engineering layer, connecting earlier fundamentals to SFT, preference data, and cross-modal alignment. Readers can combine the framework with the figures, references, and appendix checklists to turn the methods into reproducible, inspectable, and deliverable engineering workflows.
+On the quality side, this chapter established machine quality probes such as long-short text consistency cross-checks and syntax/repetition-loop filtering, and used human blind sampling plus an error-attribution matrix to distinguish responsibility sources such as OCR accuracy, layout disorder, recaptioning hallucination, and serialization defects. This chapter still deals with static two-dimensional data; when data expands into video streams containing temporal and audio dimensions, slicing, transcription, and temporal alignment become the new core difficulties. That is the topic of the next chapter.
 
 ## References
 
 Bai J, Bai S, Yang S, Wang S, Tan S, Wang P, Lin J, Zhou C, Zhou J (2023) Qwen-VL: A Versatile Vision-Language Model. arXiv preprint arXiv:2308.12966.
 
-Blecher N, Cresci G, Ballas N, Bautista M (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.
+Bai S, Chen K, Liu X, Wang J, Ge W, Song S, Dang K, Wang P, Wang S, Tang J, Zhong H, Zhu Y, Yang M, Li Z, Wan J, Wang P, Ding W, Fu Z, Xu Y, Ye J, Zhang X, Xie T, Cheng Z, Zhang H, Yang Z, Xu H, Lin J (2025) Qwen2.5-VL Technical Report. arXiv preprint arXiv:2502.13923.
+
+Blecher L, Cucurull G, Scialom T, Stojnic R (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.
 
 Fu C, Chen P, Shen Y, Qin Y, Zhang M, Lin X, Qiu Z, Lin W, Yang J, Zheng X, Li K, Sun X, Wu E (2023) MME: A Comprehensive Evaluation Benchmark for Multimodal Large Language Models. arXiv preprint arXiv:2306.13394.
+
+Dou Z Y, Xu Y, Gan Z, Wang J, Wang S, Wang L, Zhu C, Zhang P, Yuan L, Peng N, Liu Z (2022) Coarse-to-Fine Vision-Language Pre-training with Fusion in the Backbone (FIBER). Advances in Neural Information Processing Systems 35:32942-32956.
 
 Huang Y, Lv T, Cui L, Lu Y, Wei F (2022) LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. In: Proceedings of the 30th ACM International Conference on Multimedia, pp 4083-4091.
 
 Kim G, Moon S, Xu R, Yim J, Park S, Seo J, Baek J, Yoo M, Park S, Park S (2022) OCR-Free Document Understanding Transformer (Donut). In: European Conference on Computer Vision, pp 498-517.
 
-Kirillov A, Mintun E, Ravi N, Mao H, Rolland C, Gustafson D, Xiao T, Whitehead S, Berg A C, Lo W Y, others (2023) Segment Anything (SAM). In: Proceedings of the IEEE/CVF International Conference on Computer Vision, pp 4015-4026.
+Kirillov A, Mintun E, Ravi N, Mao H, Rolland C, Gustafson L, Xiao T, Whitehead S, Berg A C, Lo W Y, others (2023) Segment Anything (SAM). In: Proceedings of the IEEE/CVF International Conference on Computer Vision, pp 4015-4026.
 
 Lee J, Jia M, Sangkloy P, Krishnamurthy J, Han S, Chang S F, Hutchinson B (2023) Pix2Struct: Screenshot Parsing as Pretraining for Visual Language Understanding. In: Proceedings of the 40th International Conference on Machine Learning, pp 18893-18912.
+
+Li L H, Zhang P, Zhang H, Yang J, Li C, Zhong Y, Wang L, Yuan L, Zhang L, Hwang J N, Chang K W, Gao J (2022) Grounded Language-Image Pre-training (GLIP). In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 10965-10975.
 
 Liu H, Li C, Wu Q, Lee Y J (2023b) MMBench: Is Your Multi-modal Model an All-around Player? arXiv preprint arXiv:2307.06281.
 
@@ -291,6 +295,8 @@ Lu P, Qiu L, Chang K W, Zhu W, Rajpurohit T, Clark P, Kalyan A (2022) Dynamic Pr
 
 Masry A, Long D, Tan J Q, Joty S, Hoque E (2022) ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. In: Findings of the Association for Computational Linguistics: ACL 2022, pp 2263-2279.
 
-Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell S, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: ICML 2021, pp 8748-8763.
+Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: ICML 2021, pp 8748-8763.
 
 Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, others (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. Advances in Neural Information Processing Systems 35:25278-25294.
+
+Zhu J, Wang W, Chen Z, Liu Z, Ye S, Gu L, Duan Y, Tian H, Su W, Shao J, Gao Z, Cui E, Cao Y, Liu Y, Xu W, Li H, Wang J, Lv H, Chen D, Li S, He Y, Jiang T, Luo J, Wang Y, He C, Shi B, Zhang X, Shao W, He J, Xiong Y, Qu W, Sun P, Jiao P, Wu L, Zhang K, Deng H, Ge J, Chen K, Wang L, Dou M, Lu L, Zhu X, Lu T, Lin D, Qiao Y, Dai J, Wang W (2025) InternVL3: Exploring Advanced Training and Test-Time Recipes for Open-Source Multimodal Models. arXiv preprint arXiv:2504.10479.

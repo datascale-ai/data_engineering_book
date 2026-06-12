@@ -26,7 +26,7 @@ Throughout this part, "project case study" denotes a runnable, verifiable, and a
 - [Project 10: End-to-End LLM Data Flywheel](p10_flywheel.md)
 - [Project 11: Mini-DeepSeek Pre-training Replication](p11_mini_deepseek.md)
 - [Project 12: Pedagogical R1 Reasoning Data Flywheel](p12_r1_reasoning_flywheel.md)
-- [Project 13: Multimodal Instruction Factory](p13_multimodal_instruction_factory.md)
+- [Project 13: Qwen-VL Multimodal Instruction Factory](p13_multimodal_instruction_factory.md)
 - [Project 14: Video Generation Dataset: From Raw Video Sources to a T2V-Ready Training Data Pipeline](p14_video_generation.md)
 - [Project 15: Building an Enterprise-Grade Semantic Question-Answering Assistant with DataAgent](p15_dataagent_semantic_nl2sql_agent.md)
 

@@ -8,6 +8,23 @@ Part X discusses Agentic Data Engineering, focusing on how data engineering agen
 
 Throughout this part, "data engineering agent" refers to an intelligent component capable of executing data tasks within permission boundaries, invoking tools, recording processes, and supporting audit; "DataAgent" refers to the engineering reference system that runs through this entire part; and "human-machine collaboration" refers to the division of responsibilities among agents, human reviewers, platform policies, and security gates. Agent automation is not equivalent to unattended operation — whenever collection, cleaning, synthesis, evaluation, or security operations are involved, permission scopes, rollback mechanisms, and audit trails must be explicitly specified.
 
+## Learning Objectives
+
+After completing this part, readers should be able to:
+
+- Define task boundaries, automation levels, and responsibility scope for data engineering agents.
+- Design data flows for collection, parsing, cleaning, annotation, synthesis, and evaluation agents.
+- Connect agents to DataOps platform autonomy while recording decision, execution, and rollback evidence.
+- Establish permission control, prompt-injection defense, audit logs, and human-machine collaboration gates.
+
+## Prerequisites
+
+Before reading this part, readers should understand agent interaction data from Part 6, the DataOps platform from Part 8, and data asset governance from Part 9. Readers from agent-platform backgrounds may focus on what agents can do, when work must be handed to human review, and how platforms record responsibility chains.
+
+## Chapter Logic
+
+Chapter 31 first defines the architecture, capability boundaries, and automation levels of data engineering agents. Chapter 32 discusses collection, parsing, and cleaning agents, explaining how external data enters a safe and controllable process. Chapter 33 moves into annotation, synthesis, and evaluation agents, handling supervision-signal production. Chapter 34 discusses DataOps Agents and platform autonomy. Chapter 35 closes the part with security, permissions, audit, and human-machine collaboration.
+
 ## Table of Contents
 
 - [Chapter 31: Architecture and Task Boundaries of the Data Engineering Agent](ch31_agent_architecture.md)

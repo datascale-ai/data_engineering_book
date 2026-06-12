@@ -1,6 +1,6 @@
 # Chapter 36: Data Compliance Frameworks and Governance
 
-**Part-opening guide**
+## Chapter Guide
 
 - **Core goal:** answer three practical questions: can this data be used, how may it be used, and can the use be controlled after it begins?
 - **Design principle:** shift compliance and privacy protection left, so they become architecture and process constraints from the beginning (Privacy by Design).
@@ -8,7 +8,7 @@
 
 ---
 
-## Chapter Summary
+## Chapter Abstract
 
 In a data-driven organization, compliance is no longer a stamp that legal teams add immediately before release. It is an infrastructure constraint that determines whether a system can keep operating safely over time. Many projects pass model-quality checks, business conversion targets, and gray-release experiments, yet are stopped at final review because data provenance is unclear, authorization boundaries are vague, audit trails are incomplete, or sensitive information appears in logs. The failure is rarely that teams do not care about compliance. More often, compliance has been treated as an approval attachment after engineering is complete rather than as a constraint that must shape the system from the start.
 
@@ -19,6 +19,10 @@ We build the framework in four layers. First, we explain why compliance is a sys
 Unlike discussions that stay at the level of regulatory clauses, this chapter focuses on engineering governance. We discuss how to label data levels in a metadata center, how policy files constrain data entering analytics domains, how pipelines can block high-risk changes before release, how logs and lineage support audit replay, and how to design dedicated controls for health care, finance, minors, delegated processing, third-party APIs, cross-border transfer, and large-model prompts.
 
 ---
+
+## Keywords
+
+Data compliance frameworks and governance; data compliance; privacy protection; governance framework; risk control
 
 ## 36.0 Learning Objectives
 
@@ -1060,18 +1064,6 @@ Governance effectiveness is measured by metrics. A useful system may include:
 
 Once metrics exist, governance becomes a managed object rather than an initiative.
 
----
-
-## 36.8 Chapter Summary
-
-This chapter began with a common engineering dilemma and showed why data compliance cannot remain a pre-release approval attachment. It must move left and become an architecture constraint. We built a framework across cognition, policy, and engineering.
-
-First, we discussed the high cost of late compliance and explained that Privacy by Design means placing authorization, classification, masking, audit, deletion, and approval requirements into requirements and architecture. Second, we built data classification, risk matrices, and accountability chains so the system can define governance boundaries across data, scenarios, and roles. Third, we showed how RoPA, DPIA, audit traces, and CI/CD preflight checks embed compliance into development pipelines. Finally, we condensed these requirements into a minimum governance chain connecting policy generation, data processing, isolation, audit, alerts, preflight checks, and incident postmortems.
-
-The central idea is this: **compliance is not a brake on innovation; it is a guardrail for systems**. A system without guardrails may move quickly for a while, but when it meets real regulations, user rights, and audit requirements, the cost of repair will exceed the cost of early governance. When compliance becomes a system capability, teams gain clearer data boundaries, more stable collaboration, and more sustainable business expansion.
-
----
-
 ## 36.9 Further Thinking
 
 1. In generative AI applications, what is the biggest difference between prompt compliance and traditional data masking?
@@ -1081,6 +1073,12 @@ The central idea is this: **compliance is not a brake on innovation; it is a gua
 5. For cross-border, multi-region, and multi-product businesses, how can governance remain unified while allowing differentiated local rules?
 
 ---
+
+## Chapter Summary
+
+This chapter argued that the cost of data compliance rises rapidly as a project moves through its lifecycle. Teams must therefore insist on compliance shift-left and Privacy by Design, moving governance constraints into requirements, architecture, and development rather than treating them as a pre-release approval attachment. Around this core idea, the chapter first established a three-layer data classification system and expanded it from field level, to table level, to scenario level. It then built a risk assessment matrix based on "data sensitivity x processing intensity x business impact scope" and used RACI to clarify the accountability chain across legal, business, platform, algorithm, security, and audit teams.
+
+At the process level, the chapter connected RoPA records of processing activities, DPIA impact assessment, the minimum-necessity principle, consent and purpose binding, audit traces, and CI/CD compliance prechecks into a gate loop from project initiation to retirement. It also gave specialized controls for high-risk scenarios such as health care, finance, minors' data, externally acquired data, third-party APIs, cross-border transfer, and large-model prompts. Finally, through configurable deliverables such as RoPA declarations, classification policies, access policies, DPIA templates, audit logs, and preflight checklists, the chapter showed how policy text can become system behavior that is checkable, blockable, and reviewable, and it outlined an evolution path from templates to platforms.
 
 ## References
 

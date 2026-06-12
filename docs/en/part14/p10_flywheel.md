@@ -6,11 +6,13 @@ P10 focuses on organizing data, supervision, training, applications, platform go
 
 The chapter does not add one more isolated capability.
 
-It integrates the assets, interfaces, stages, and control points from the previous nine projects into one unified system.
+It integrates the project assets, interfaces, stages, and control points in Part 14 into one unified system.
+
+As this part expands to P01-P15, P10's publication framing should be updated from the early "assembly of the previous nine projects" to the "assembly layer for the Part 14 projects": it covers the foundational data-engineering work in P01-P09 and also reserves space for P11-P15's open-source recipes, reasoning flywheel, multimodal instruction, video generation, and enterprise question-answering capabilities.
 
 This chapter can be read through four main threads:
 
-- Asset aggregation and stage planning: bring the outputs of the previous nine projects into one registry and stage system.
+- Asset aggregation and stage planning: bring the outputs of P01-P15 into one registry and stage system.
 - Training, application, and feedback interfaces: define how data enters training, how models enter applications, and how application feedback returns upstream.
 - Control points and governance boundaries: write version control, rollback, human review, privacy isolation, and incident response into the system structure.
 - Checks, acceptance, and organizational reuse: use code, artifacts, and check scripts to verify whether the flywheel can operate steadily.
@@ -111,6 +113,8 @@ The main text keeps necessary fragments.
 
 Full notebooks, long scripts, and large files should be maintained separately as companion resources.
 
+The assembly layer needs unified records for datasets, parallel processing, experiment tracking, and quality checks, so it can refer to the engineering objects in Hugging Face Datasets (Hugging Face 2026), Ray Data (Ray Project 2026), MLflow (MLflow Authors 2026), and Great Expectations (Great Expectations Contributors 2026). Before foundation corpora enter the flywheel, they should also preserve source and filtering notes similar to C4/T5 data processing (Raffel et al. 2020).
+
 ---
 
 ## 1. Project Background: Why an End-to-End LLM Data Flywheel Is Necessary
@@ -153,7 +157,9 @@ Once the system expands, this absence makes stable operation difficult.
 
 Therefore, P10 builds an **end-to-end LLM data flywheel assembly layer**.
 
-It aggregates the outputs, stages, interfaces, control points, and governance mechanisms from the previous nine projects into one system structure.
+It aggregates the outputs, stages, interfaces, control points, and governance mechanisms from P01-P15 in Part 14 into one system structure.
+
+The early code prototype included only P01-P09 and can be understood as a minimum assembly implementation. The current publication narrative should explain P10 against the full P01-P15 project set.
 
 This structure is designed for organization-level engineering scenarios with continuous iteration.
 
@@ -169,7 +175,7 @@ The reusable object is the system method of asset aggregation, stage planning, s
 
 This project focuses on four goals.
 
-**Goal 1: organize the previous nine projects into one system map.**
+**Goal 1: organize the Part 14 projects into one system map.**
 
 The outputs scattered across directories, reports, and task forms should enter a traceable registry and stage system.
 
@@ -199,11 +205,11 @@ To keep the project reproducible, P10 sets several explicit boundaries.
 
 #### 1. Integration-scope Boundary
 
-The current flywheel focuses on offline integration of P01-P09 artifacts.
+The current flywheel focuses on offline integration of existing project artifacts rather than rerunning all upstream training workflows.
 
-It does not rerun all upstream training workflows.
+The early implementation uses P01-P09 as the minimum closed loop; the current Part 14 publication framing should expand to P01-P15 and mark P11-P15 as new recipe, reasoning, multimodal, video, and enterprise-application capabilities.
 
-It is best understood as a system-assembly map and engineering review layer.
+It is best understood as a **system assembly map and engineering review layer**.
 
 It is not the online real-time production system itself.
 
@@ -330,15 +336,15 @@ The registry specifies upstream project lists, stage ownership, output assets, a
 
 It turns scattered projects into traceable and composable system assets.
 
-P10 currently brings the previous nine projects into a unified aggregation system.
+P10's registry should be maintained according to the full P01-P15 directory in Part 14.
 
-It forms a project registry and phase inventory.
+The early implementation already brings P01-P09 into one aggregation system and forms the project registry and phase inventory. In the current manuscript, P10-P15 need to be added as new assembly objects.
 
-The current structure includes:
+The current publication framing includes:
 
-- upstream projects included: `9`;
+- projects to include: `15`;
 - planned stages: `5`;
-- aggregated interfaces: `17`.
+- aggregated interfaces that at least cover data, training, application, governance, reasoning, multimodal, video, and enterprise question-answering capability surfaces.
 
 These numbers do not matter only as numbers.
 
@@ -381,32 +387,36 @@ The registry:
 
 `src/collect_upstream_projects.py` aggregates upstream project assets and normalizes project information into one specification.
 
-The following code shows the core structure of the registry.
+Listing P10-2 preserves the key structure in the publication manuscript. The complete project list, metric-file paths, and interface fields should be maintained in the companion resource `src/collect_upstream_projects.py`; the main text only shows the minimum data model that supports flywheel assembly.
 
 ```python
 PROJECT_SPECS = [
     {
         "project_id": "p1",
-        "title": "Mini-C4 Pretraining Corpus",
-        "project_dir": "project_1_mini_c4",
-        "metrics_file": "data/reports/p1_metrics.json",
-        "test_file": "data/reports/p1_test_results.json",
         "phase": "acquisition",
-        "deliverables": ["raw_corpus", "cleaned_corpus", "train_val_split"],
         "interfaces_out": ["foundation_corpus", "training_manifest"],
     },
     {
         "project_id": "p2",
-        "title": "Legal SFT Factory",
-        "project_dir": "project_2_sft_data",
-        "metrics_file": "data/reports/p2_metrics.json",
-        "test_file": "data/reports/p2_test_results.json",
         "phase": "alignment",
-        "deliverables": ["domain_sft_dataset", "preference_pairs", "risk_refusals"],
         "interfaces_out": ["sft_corpus", "preference_data"],
     },
+    {
+        "project_id": "p10",
+        "phase": "governance",
+        "interfaces_out": ["project_registry", "release_gate", "feedback_routing"],
+        "registry_role": "assembly_layer",
+    },
+    {
+        "project_id": "p11",
+        "phase": "foundation_recipe",
+        "interfaces_out": ["pretraining_recipe", "tokenizer_artifact", "packed_training_data"],
+    },
+    # P12-P15 follow the same schema in the accompanying project script.
 ]
 ```
+
+The role of this fragment is to turn the preceding process into a checkable structured representation.
 
 This structure reflects several basic requirements for upstream asset aggregation:
 
@@ -472,9 +482,11 @@ It should not remain a static diagram.
 
 ## 8. Code Expansion 2: Building Flywheel Architecture and Stage Planning
 
-`src/build_flywheel.py` maps the previous nine projects into the flywheel structure.
+`src/build_flywheel.py` maps the Part 14 projects into the flywheel structure.
 
-The following code shows the structured expression of the five-layer architecture.
+The early minimum implementation covered only P01-P09. The current publication framing should continue mapping P10-P15 into phases such as governance, foundation recipe, reasoning, multimodal instruction, generative media, and enterprise application.
+
+Listing P10-3 preserves the core skeleton of the layer mapping. The complete implementation can be maintained in the companion resource `src/build_flywheel.py` and updated as the project list changes.
 
 ```python
 def build_architecture(registry: list[dict]) -> dict:
@@ -482,22 +494,29 @@ def build_architecture(registry: list[dict]) -> dict:
         "layers": [
             {
                 "name": "data_source_layer",
-                "responsibilities": ["web/data ingestion", "sensitive data intake", "document intake"],
-                "mapped_projects": ["p1", "p5", "p9"],
+                "responsibilities": ["web/data ingestion", "document intake"],
+                "mapped_projects": ["p1", "p5", "p9", "p11", "p14"],
             },
             {
                 "name": "processing_layer",
-                "responsibilities": ["cleaning", "dedup", "de-identification", "instruction synthesis", "curriculum packaging"],
-                "mapped_projects": ["p1", "p2", "p3", "p4", "p9"],
+                "responsibilities": ["cleaning", "dedup", "instruction synthesis"],
+                "mapped_projects": ["p1", "p2", "p3", "p4", "p9", "p11", "p13", "p14"],
             },
             {
-                "name": "modeling_layer",
-                "responsibilities": ["SFT", "PRM", "agent tool-use training", "multimodal training"],
-                "mapped_projects": ["p2", "p3", "p4", "p6", "p7"],
+                "name": "application_layer",
+                "responsibilities": ["RAG service", "agent execution", "semantic BI", "feedback collection"],
+                "mapped_projects": ["p5", "p7", "p10", "p15"],
+            },
+            {
+                "name": "governance_layer",
+                "responsibilities": ["release gates", "privacy controls", "rollback", "cross-project registry"],
+                "mapped_projects": ["p8", "p9", "p10"],
             },
         ]
     }
 ```
+
+The role of this fragment is to turn the preceding process into a checkable structured representation.
 
 This structure shows that the flywheel relies on explicit mapping to maintain consistency.
 
@@ -608,7 +627,7 @@ They convert a complex technical process into an executable organizational rhyth
 
 P10 currently reports these key results:
 
-- upstream projects included: `9`;
+- projects that should be included under the current publication framing: `15`;
 - planned stages: `5`;
 - aggregated interfaces: `17`;
 - upstream checks passed: `103/103`;
@@ -621,9 +640,9 @@ P10 currently reports these key results:
 
 These numbers mainly support three system-level conclusions.
 
-First, the previous nine projects are currently ready to be included in the assembly layer.
+First, the early P01-P09 minimum loop is ready to be included in the assembly layer.
 
-The `103/103` upstream checks show that upstream projects are all in an integrable state.
+The `103/103` upstream checks show that the foundation projects are currently in an integrable state. After Part 14 expands to P15, the recipe, reasoning, multimodal, video, and enterprise-application artifacts from P11-P15 still need to be added to the same registry, with equivalent check criteria established for the new projects.
 
 Second, the flywheel is not merely "many projects."
 
@@ -974,7 +993,7 @@ The dashboard provides a unified visual entry for the assembly layer.
 
 P10 has formed a fairly complete system structure, but it still has clear limitations.
 
-First, it depends heavily on the accuracy and completeness of reports and artifacts from the previous nine projects.
+First, it depends heavily on the accuracy and completeness of reports and artifacts from the upstream projects.
 
 If upstream statistics are wrong, fields are distorted, or tests are incomplete, P10 can only structure those wrong inputs.
 
@@ -1105,7 +1124,7 @@ It represents these system capabilities:
 - the system preserves structure, boundaries, and memory across iterations;
 - the organization moves from project stacking toward capability-system construction.
 
-P10's value is not only summarizing the previous nine projects.
+P10's value is not only summarizing the Part 14 projects.
 
 It reorganizes them into an explainable, checkable, and extensible end-to-end system chain.
 
@@ -1205,7 +1224,7 @@ It needs feedback that has somewhere to go.
 
 A project like P10 exposes many things worth doing at once.
 
-Since the previous nine projects all offer extension directions, the team must answer what to invest in first and why.
+Since the projects in Part 14 all offer extension directions, the team must answer what to invest in first and why.
 
 ### Priority Should Not Look Only at Point Effect
 

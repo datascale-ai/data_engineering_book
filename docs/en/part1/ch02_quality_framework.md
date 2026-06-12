@@ -40,7 +40,7 @@ Root cause: Perplexity (PPL) measures "linguistic distribution plausibility"—a
 **Scenario 3: Product Manager vs. Algorithm Researcher**
 
 > **Product Manager**: "The model is frequently hallucinating on users' financial questions online. Yesterday a user asked about a stock's dividend for this year, and the model confidently produced incorrect data from last year."
-> **Algorithm Researcher**: "On our internal benchmark evaluation set, this model achieves 78% accuracy on financial knowledge QA—several points better than the previous version."
+> **Algorithm Researcher**: "On our internal benchmark evaluation set, this model performs better than the previous version on financial knowledge QA."
 
 Root cause: The internal evaluation set's financial knowledge has a cutoff date from the previous year, while users online are asking about real-time information. The quality dimension of **timeliness (Staleness)** was simply not designed into the internal evaluation.
 
@@ -48,9 +48,9 @@ The common thread across all three scenarios: each party understands "quality" a
 
 **Implementation: A Workshop to Establish a Unified Quality Language**
 
-In most front-line large model teams, the effective solution is to mandate a **Data Quality Definition Alignment Workshop** at project kickoff, producing an internal team document titled *Data Quality Terminology and Metrics Contract*. The first task of this document is to define a complete list of quality dimensions for the project—accuracy, diversity, duplication rate, timeliness, safety—and assign quantifiable calculation methods to each dimension, rather than stopping at qualitative descriptions.
+In most front-line large model teams, the effective solution is to mandate a **Data Quality Definition Alignment Workshop** at project kickoff (for systematic surveys of data selection methodology, see Albalak et al. 2024; Longpre et al. 2023; Nait Saada et al. 2025), producing an internal team document titled *Data Quality Terminology and Metrics Contract*. The first task of this document is to define a complete list of quality dimensions for the project—accuracy, diversity, duplication rate, timeliness, safety—and assign quantifiable calculation methods to each dimension, rather than stopping at qualitative descriptions.
 
-Second, the document must define separate pass/fail thresholds for each training stage: the pass criteria for pre-training data and those for SFT data differ fundamentally in both magnitude and dimensionality, and should never be conflated. More importantly, the document must establish a precise mapping from terminology to code. For example, when any party says "duplication rate is too high," every member of the team must share the exact same understanding of those words: in engineering terms they mean "the proportion of sample pairs with a MinHash (Broder 1997) Jaccard similarity greater than 0.8 exceeds 5% of the total batch," not each person's intuitive sense that "this batch seems to have some repetition."
+Second, the document must define separate pass/fail thresholds for each training stage: the pass criteria for pre-training data and those for SFT data differ fundamentally in both magnitude and dimensionality, and should never be conflated. More importantly, the document must establish a precise mapping from terminology to code. For example, when any party says "duplication rate is too high," every member of the team must share the exact same understanding of those words: in engineering terms they mean "the proportion of sample pairs whose Jaccard similarity under a specific MinHash configuration exceeds the project threshold," not each person's intuitive sense that "this batch seems to have some repetition."
 
 This contract document is not a static file but a versioned document that evolves continuously throughout the project. At every major milestone (for example, after a new model version is released), a retrospective must be held to examine whether existing metric definitions still apply at the new stage and whether they need to be extended or revised as the business context changes.
 
@@ -58,7 +58,7 @@ This contract document is not a static file but a versioned document that evolve
 
 Quality is by no means a static standard; it presents entirely different core requirements at different stages as the data lifecycle progresses. Applying a fixed standard to measure data across the entire lifecycle will inevitably produce serious misjudgments. As shown in Table 2-1, the core quality requirements and detection metrics differ significantly across the four stages of pre-training, instruction fine-tuning, preference alignment, and RAG deployment.
 
-**Table 2-1: LLM Data Four-Stage Quality Objective Evolution Matrix**
+*Table 2-1: LLM Data Four-Stage Quality Objective Evolution Matrix. Source: compiled by the authors; scale ranges and metric definitions reflect common engineering practice and must be recalibrated for the project dataset in production.*
 
 | Training Stage | Typical Data Scale | Core Quality Requirements | Primary Detection Metrics | Typical Defects and Risks | Primary Processing Tools |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -79,18 +79,18 @@ When a unified data quality assessment framework is lacking, the project will in
 2. **Noise Propagation Amplification**: Without a unified framework, small amounts of upstream data pipeline noise often cannot be intercepted early and propagate down the pipeline, producing order-of-magnitude harm downstream:
 
     ```
-    [Crawl/Storage Layer]   0.5% of base64-encoded images mixed into the text stream
+    [Crawl/Storage Layer]   A small number of base64-encoded images are mixed into the text stream
           ↓  Not intercepted in time (no unified defect standard)
-    [Cleaning/Training Layer]  Garbled characters cause specific token frequencies to rise 3x abnormally
+    [Cleaning/Training Layer]  These garbled characters cause specific token frequencies to rise abnormally
           ↓  Noise is repeatedly reinforced through gradient accumulation
-    [Inference/Alignment Layer]  Model produces garbled output ~12% of the time for certain content types
-          ↓  Manifests as severe online hallucinations; user complaints surge
-    [Final Cost]     Model version forced to roll back, losing 3 weeks of training compute and market window
+    [Inference/Alignment Layer]  The model is more likely to produce garbled or format-abnormal output for certain content types
+          ↓  Manifests as degraded online experience, triggering user feedback and version review
+    [Final Cost]     Model version forced to roll back, losing training compute and the market window
     ```
 
-    This amplification effect—"1% upstream error → 10% midstream anomaly → 30% downstream loss"—can be understood as cross-stage error propagation in the data pipeline. The governance solution is the unified quality gate system that this chapter will establish.
+    This amplification effect—"a small upstream error → a midstream distribution anomaly → downstream experience loss"—can be understood as cross-stage error propagation in the data pipeline. The governance solution is the unified quality gate system that this chapter will establish.
 
-3. **Experience Loss**: Because there is no unified defect classification standard, post-mortem conclusions after model failures typically stop at "the data was bad; we need to be more careful next time." Was it because of high duplication rates, imbalanced domain ratios, or benchmark contamination? Without clear classification, these lessons cannot be translated into concrete rule modifications for the next version of the cleaning pipeline. After introducing a unified quality framework, every data issue can be attributed to a specific defect type (see Section 2.3) with corresponding remediation operators and quantified improvement targets. Post-mortem documents should evolve from "the data was bad" to "root cause of this incident: duplication rate exceeded threshold (proportion of sample pairs with MinHash similarity > 0.8 rose from 2.3% to 7.1%); remediation plan: tighten threshold to 0.7, add incremental deduplication rate verification in the next version."
+3. **Experience Loss**: Because there is no unified defect classification standard, post-mortem conclusions after model failures typically stop at "the data was bad; we need to be more careful next time." Was it because of high duplication rates, imbalanced domain ratios, or benchmark contamination? Without clear classification, these lessons cannot be translated into concrete rule modifications for the next version of the cleaning pipeline. After introducing a unified quality framework, every data issue can be attributed to a specific defect type (see Section 2.3) with corresponding remediation operators and quantified improvement targets. Post-mortem documents should evolve from "the data was bad" to "root cause of this incident: duplication rate exceeded the project threshold; remediation plan: recalibrate deduplication thresholds by domain and remeasure the deduplication rate in the next incremental validation."
 
 
 ---
@@ -101,7 +101,7 @@ To resolve the problem of an inconsistent quality language, we must establish cl
 
 ![Figure 2-1: Multi-dimensional quality layering architecture from a lifecycle perspective, showing how metric weights shift across stages from scale and diversity toward truthfulness and helpfulness](../../images/part1/data_quality_hierarchy_1775835516841.png)
 
-*Figure 2-1: Multi-dimensional quality layering architecture from a lifecycle perspective. Source: original illustration from this book. The figure shows how metric emphasis migrates across stages—from scale and diversity toward truthfulness, helpfulness, and traceability.*
+*Figure 2-1: Multi-dimensional quality layering architecture from a lifecycle perspective. Source: original illustration from this book. The upper half is a horizontal four-stage pipeline: pre-training (scale/diversity/low duplication), SFT (instruction coverage/format compliance/factual accuracy), RLHF/DPO preference alignment (contrastive signal/annotation consistency/value alignment), and RAG application (timeliness/retrieval accuracy/traceability); the lower half is a triangular mapping structure showing the bidirectional relationships among offline data quality, proxy model evaluation, and real online business metrics. Alt text: horizontal four-stage pipeline diagram from pre-training to RAG application showing key quality metrics at each stage; the triangle below shows the relationships among offline data quality, proxy model evaluation, and real business metrics.*
 
 
 ### 2.2.1 Quality Objective Differences Across Stages
@@ -112,7 +112,7 @@ Each stage in the large language model training pipeline has different quality o
 
 **Instruction Fine-tuning (SFT)** is the second stage, where the quality objective narrows from "breadth" to "precision": instruction diversity, response format compliance, and complete reasoning chains are all indispensable. SFT is generally more sensitive to contamination than pre-training, because at this stage the model is learning task formats and interaction behavior; even a small number of format-inconsistent or logically erroneous samples can cause observable degradation on the corresponding tasks.
 
-**Preference Alignment (RLHF/DPO)** is the third stage, where the core quality objective is the effectiveness of contrastive data and value alignment: the chosen answer must have a sufficiently distinguishable quality gap from the rejected answer (Ouyang et al. 2022; Rafailov et al. 2023); otherwise the reward signal is too weak and the model cannot learn a stable direction of human preference.
+**Preference Alignment (RLHF/DPO)** is the third stage, where the core quality objective is the effectiveness of contrastive data and value alignment: the chosen answer must have a sufficiently distinguishable quality gap from the rejected answer (Ouyang et al. 2022; Rafailov et al. 2023; Bai et al. 2022); otherwise the reward signal is too weak and the model cannot learn a stable direction of human preference.
 
 **RAG Deployment** is the fourth stage and the one closest to end users. Quality metrics here shift toward timeliness and retrieval precision: the proportion of documents in the knowledge base that have not been updated for more than six months, whether the retrieved chunks accurately cover the user's query intent, and whether PDF and table parsing introduces field misalignment. These issues do not always surface visibly in the first three stages, but in RAG scenarios they directly impact the quality of the final response.
 
@@ -131,7 +131,7 @@ Quality assessment also requires cross-section layering on the dimension of "gra
 
 The finest granularity is **sample-level**. This is the earliest detectable tier in the data pipeline: does this long text contain residual HTML tags? Is this image semantically aligned with its accompanying textual description? Is the answer in this QA pair severely misaligned with the direction of the question? Sample-level issues are large in volume but low in per-sample remediation cost, making them suitable for automated rule-based batch processing.
 
-The next level up is **batch-level**. At this granularity, the focus is on the aggregate statistical distribution characteristics of a data batch: has this batch's domain sampling ratio deviated by more than 10% from the preset baseline? Has the ratio of code corpus to natural language text shifted abruptly because a particular crawler quota failed? Batch-level issues do not manifest in individual samples; they can only be detected in the statistical profile of the batch as a whole, and therefore require dedicated rolling distribution monitoring.
+The next level up is **batch-level**. At this granularity, the focus is on the aggregate statistical distribution characteristics of a data batch: has this batch's domain sampling ratio deviated noticeably from the preset baseline? Has the ratio of code corpus to natural language text shifted abruptly because a particular crawler quota failed? Batch-level issues do not manifest in individual samples; they can only be detected in the statistical profile of the batch as a whole, and therefore require dedicated rolling distribution monitoring.
 
 Above that is **dataset-level**, concerned with the macroscopic health of the entire training set: is the temporal distribution of knowledge in the entire corpus severely concentrated in a few years? What proportion of content has been flagged as high-risk in benchmark contamination detection? Do the proportions of different languages meet the multilingual training requirements? Issues at this tier are strategic in nature, typically completed by data engineering leads through manual review and report auditing before version releases, rather than relying on automated pipelines.
 
@@ -145,7 +145,7 @@ To establish shared governance actions, the vague notion of "bad data" must be t
 
 ![Figure 2-2: Cross-mapping diagram of large language model data defects and quality metrics, showing the relationships between six defect classes and accuracy, consistency, diversity, coverage, and traceability](../../images/part1/defect_metric_radar_1775835533937.png)
 
-*Figure 2-2: Cross-mapping diagram of large language model data defects and quality metrics. Source: original illustration from this book. The figure shows the influence network between six core defect types (noise, repetition, benchmark contamination, systematic bias, structural incompleteness, staleness) and five core quality metrics (accuracy, consistency, diversity, coverage, traceability).*
+*Figure 2-2: Cross-mapping matrix of large language model data defects and quality metrics. Source: original illustration from this book. The matrix rows are six defect classes: noise, repetition, benchmark contamination, systematic bias, structural incompleteness, and staleness; the columns are five quality metrics: accuracy, consistency, diversity, coverage, and traceability. Each cell uses a filled circle (strong impact), half circle (medium impact), or empty circle (weak impact) to mark impact strength. Alt text: 6-by-5 cross-mapping matrix with six data defect classes as rows and five quality metrics as columns; each cell uses a filled circle, half circle, or empty circle to indicate impact strength, with a legend for the three symbols at the bottom.*
 
 ### 2.3.1 Six Core Defect Classes (Six Core Defect Classes)
 
@@ -159,7 +159,7 @@ Definition: Content containing residual HTML tags, garbled characters, meaningle
 import re
 
 def noise_score(text: str) -> float:
-    """Returns noise ratio; samples with ratio > 0.1 are treated as high-noise"""
+    """Returns noise ratio; thresholds must be calibrated by language, source, and spot-check sample."""
     # Detect residual HTML tags
     html_tags = len(re.findall(r'<[^>]+>', text))
     # Detect high proportion of non-printable characters
@@ -169,7 +169,7 @@ def noise_score(text: str) -> float:
     total = len(text) if text else 1
     return (html_tags * 10 + non_printable + repeat_symbols * 5) / total
 
-# Filter threshold: discard if noise_score > 0.1
+# Example: when noise_score exceeds the project-calibrated threshold, send it to quarantine or manual review.
 ```
 
 *Code Listing 2-1: Example of text noise ratio detection. In production, add language, encoding, HTML parser version, and exception sample inspection logs.*
@@ -179,39 +179,44 @@ def noise_score(text: str) -> float:
 Definition: The same content (exact or approximate) appearing a large number of times in the training set, forcing the model to "memorize" these segments, causing memorization-based overfitting, and producing a "parrot" effect at inference time. Industry practice generally uses MinHash LSH for approximate deduplication.
 
 ```python
+import re
 from datasketch import MinHash, MinHashLSH
 
 def build_minhash(text: str, num_perm: int = 128) -> MinHash:
     m = MinHash(num_perm=num_perm)
-    for word in text.lower().split():
-        m.update(word.encode('utf-8'))
+    tokens = re.findall(r"[\u4e00-\u9fff]|[A-Za-z0-9_]+", text.lower())
+    for token in tokens:
+        m.update(token.encode('utf-8'))
     return m
 
-# Recommended deduplication threshold: Jaccard similarity > 0.8 treated as duplicate (pre-training)
-# SFT data can be stricter: discard at > 0.6
-lsh = MinHashLSH(threshold=0.8, num_perm=128)
+# Example threshold is for demonstration only; production thresholds must be calibrated
+# by language, task, and false-rejection cost.
+calibrated_threshold = 0.8
+lsh = MinHashLSH(threshold=calibrated_threshold, num_perm=128)
 ```
 
 *Code Listing 2-2: Example of approximate duplicate detection using MinHash LSH. In production, record the threshold, partitioning strategy, and sampling review results.*
 
 **3. Benchmark Contamination**
 
-Definition: Web crawlers indiscriminately ingesting the original questions and answers from publicly available AI evaluation benchmarks (GSM8K (Cobbe et al. 2021), HumanEval (Chen et al. 2021), MMLU (Hendrycks et al. 2021), etc.) into the pre-training corpus, causing inflated benchmark scores (rote memorization rather than reasoning).
+Definition: Web crawlers indiscriminately ingesting the original questions and answers from publicly available AI evaluation benchmarks (GSM8K (Cobbe et al. 2021), HumanEval (Chen et al. 2021), MMLU (Hendrycks et al. 2021), etc.) into the pre-training corpus, causing inflated benchmark scores (rote memorization rather than reasoning). Systematic surveys of automated detection methods for this problem are available in Shi et al. (2023) and Golchin and Surdeanu (2023).
 
 ```python
 # Benchmark contamination detection: compute N-gram overlap rate
+import re
 from collections import Counter
 
 def ngram_overlap(text: str, benchmark_ngrams: set, n: int = 13) -> float:
     """Returns the 13-gram overlap ratio with the benchmark corpus"""
-    words = text.split()
+    words = re.findall(r"[\u4e00-\u9fff]|[A-Za-z0-9_]+", text.lower())
     text_ngrams = set(
         ' '.join(words[i:i+n]) for i in range(len(words) - n + 1)
     )
     overlap = len(text_ngrams & benchmark_ngrams)
     return overlap / max(len(text_ngrams), 1)
 
-# Recommended threshold: flag as suspected contamination and trigger manual review if 13-gram overlap > 0.1
+# Example: when the overlap rate exceeds the project contamination-risk threshold,
+# flag it as suspected contamination and review manually.
 ```
 
 *Code Listing 2-3: Example of N-gram overlap detection for benchmark contamination. In production, maintain an independent evaluation set fingerprint database and a manual review workflow.*
@@ -247,7 +252,7 @@ def check_completeness(sample: dict) -> list:
 
 Definition: The knowledge base or pre-training corpus is frozen at a certain cutoff date and cannot reflect factual changes occurring after that date. This is particularly high-risk in RAG deployment scenarios.
 
-Detection approach: Record a `crawl_timestamp` metadata field for every document in the corpus, and periodically compute the proportion of documents that have not been updated for more than N months. Trigger a staleness alert when the proportion of documents older than six months reaches 30%.
+Detection approach: Record a `crawl_timestamp` metadata field for every document in the corpus, and periodically compute the proportion of documents that have not been updated for more than N months. Dataset documentation standards such as Datasheets for Datasets provide detailed guidance for metadata fields (Gebru et al. 2021). Trigger a staleness alert when the proportion of outdated documents exceeds the project threshold.
 
 ```python
 from datetime import datetime, timedelta
@@ -260,7 +265,8 @@ def staleness_ratio(docs: list, threshold_days: int = 180) -> float:
         if (now - datetime.fromisoformat(d['crawl_timestamp'])).days > threshold_days
     )
     return stale / len(docs) if docs else 0.0
-# Recommendation: trigger a knowledge base update task when staleness_ratio > 0.3
+# Example: when staleness_ratio exceeds the business-defined waterline,
+# trigger a knowledge base update task.
 ```
 
 *Code Listing 2-5: Example of knowledge base staleness detection. In production, set different thresholds by domain, data source, and business priority.*
@@ -290,7 +296,7 @@ A quality assessment framework must ultimately materialize as concrete, engineer
 
 ![Figure 2-3: Automated blocking and governance flow driven by the data scorecard, showing hard gates, soft gates, manual review, and rollback actions](../../images/part1/data_quality_gates_1775835548587.png)
 
-*Figure 2-3: Automated blocking and governance flow driven by the data scorecard. Source: original illustration from this book. The figure shows how hard gates, soft gates, manual review, and rollback actions collectively block contaminated or degraded data samples.*
+*Figure 2-3: Automated blocking and governance flow driven by the data scorecard. Source: original illustration from this book. The figure shows how hard gates, soft gates, manual review, and rollback actions collectively block contaminated or degraded data samples; Alt text: automated blocking and governance flow driven by the data scorecard, showing hard gates, soft gates, manual review, and rollback actions.*
 
 ### 2.4.1 Scorecard Design and Implementation
 
@@ -349,7 +355,7 @@ The scorecard is a "data health report" derived from a combination of rule scrip
 }
 ```
 
-**Code Listing 2-7: GitHub Actions Example for CI/CD Pipeline Integration**
+*Code Listing 2-7: GitHub Actions Example for CI/CD Pipeline Integration. This snippet demonstrates how quality gates are triggered; production environments should add credential management, log retention, and failed-run rollback strategies.*
 
 ```yaml
 # .github/workflows/data_quality_gate.yml
@@ -403,7 +409,7 @@ With this integration, every time a data engineer merges a new data batch, the C
 When a newly crawled 100 GB incremental data batch arrives in the pipeline:
 
 *   **Hard Gates**: If a significant rise in benchmark contamination rate is detected, or if a safety blocklist match is triggered, the pipeline is immediately blocked at this stage and an alert is automatically triggered (e.g., via PagerDuty).
-*   **Soft Gates**: If the mean text complexity falls more than 5% below the previous version, the batch is temporarily quarantined pending manual confirmation—a state referred to as a "gray freeze."
+*   **Soft Gates**: If text complexity, length distribution, or domain proportion deviates noticeably from the previous version, the batch is temporarily quarantined pending manual confirmation—a state referred to as a "gray freeze."
 
 If post-hoc monitoring reveals severe online model degradation caused by data issues, the DataOps platform must support **rapid rollback to the previous "clean" data pointer combination**.
 
@@ -435,39 +441,57 @@ After a financial knowledge QA model was SFT-trained on a batch of private resea
 
 **Complete Debugging Timeline (Case 1)**
 
-- **T+0**: Internal users report that Python code generation produces strange indentation, causing immediate `IndentationError` on execution
-- **T+1**: Algorithm team suspects a temperature parameter issue; adjustment has no effect
-- **T+2**: Data team is brought in; retrieves data batch diffs for the most recent 3 checkpoints
-- **T+3**: Discovers that when batch 6 (approximately 1.2T tokens) was ingested, the HTML filter dependency package was upgraded from v2.3.1 to v2.4.0; the new version changed the handling logic for `<pre>` tags, incorrectly converting originally preserved code indentation into non-standard spaces
-- **T+3**: Quantitative validation: `\t` accounted for **1.2%** of all whitespace characters in batch 5 (normal); in batch 6 this rose to **4.9%** (4x increase)
-- **T+5**: Lock dependency version, reprocess batch 6 data, restart training from the checkpoint before contamination (losing approximately 4 days of compute)
-- **T+12**: After fix, HumanEval pass@1 recovers from **42.3%** to **51.7%**
+The following timeline is an anonymized composite case used to explain how batch drift can be localized. The version numbers, proportions, and evaluation values are instructional examples and should not be cited as results from a public project.
 
-Root cause: absence of rolling distribution stationarity monitoring at the batch level. If the pipeline had been configured to automatically compare Z-score changes in key character frequencies at every batch ingestion (alert if change exceeds 2σ), this incident could have been intercepted at T+0.
+- **T+0 day**: Internal users report that Python code generation produces strange indentation, causing immediate `IndentationError` on execution
+- **T+1 day**: Algorithm team suspects a temperature parameter issue; adjustment has no effect
+- **T+2 days**: Data team is brought in and retrieves data batch diffs for the most recent three checkpoints
+- **T+3 days**: The team discovers that when batch 6 (approximately 1.2T tokens) was ingested, the HTML filter dependency was upgraded from v2.3.1 to v2.4.0; the new version changed the handling logic for `<pre>` tags, incorrectly converting code indentation that should have been preserved into non-standard spaces
+- **T+3 days**: Quantitative validation shows that the proportions of `\t`, consecutive spaces, and invisible Unicode whitespace in the new batch deviate significantly from the historical baseline, triggering a batch-drift alert
+- **T+5 days**: Lock the dependency version, reprocess batch 6, and restart training from the checkpoint before contamination (losing approximately four days of compute)
+- **T+12 days**: After the fix, the frozen code evaluation set recovers to the pre-contamination baseline range
+
+Root cause: absence of rolling distribution stationarity monitoring at the batch level. If key character-frequency Z-score changes had been compared automatically at every batch ingestion and abnormal fluctuations above the project waterline had triggered alerts, this incident could have been intercepted at T+0.
 
 ```python
 def detect_tab_drift(prev_texts, curr_texts, z_threshold=2.0):
     import re
-    def tab_ratio(texts):
-        ws = sum(len(re.findall(r"\\s", t)) for t in texts)
-        tabs = sum(t.count("\\t") for t in texts)
-        return tabs / max(ws, 1)
-    prev_r = tab_ratio(prev_texts)
-    curr_r = tab_ratio(curr_texts)
-    change = abs(curr_r - prev_r) / max(prev_r, 1e-9)
-    return {"prev": prev_r, "curr": curr_r, "change": change, "alert": change > z_threshold}
+
+    def batch_stats(texts):
+        ratios = []
+        for text in texts:
+            tabs = text.count("\t")
+            spaces = text.count(" ")
+            unicode_spaces = len(re.findall(r"[\u00a0\u2000-\u200b\u3000]", text))
+            whitespace = tabs + spaces + unicode_spaces
+            ratios.append(tabs / max(whitespace, 1))
+        mean = sum(ratios) / max(len(ratios), 1)
+        var = sum((r - mean) ** 2 for r in ratios) / max(len(ratios), 1)
+        return mean, var ** 0.5
+
+    prev_mean, prev_std = batch_stats(prev_texts)
+    curr_mean, _ = batch_stats(curr_texts)
+    z_score = abs(curr_mean - prev_mean) / max(prev_std, 1e-6)
+    return {
+        "prev_tab_ratio": prev_mean,
+        "curr_tab_ratio": curr_mean,
+        "z_score": z_score,
+        "alert": z_score > z_threshold,
+    }
 ```
 
 *Code Listing 2-8: Example of batch-level indentation character drift detection. In production, replace the alert threshold with a statistical threshold based on historical distribution.*
 
 **Complete Debugging Timeline (Case 2)**
 
-- **T+0**: Within 6 hours of deployment, multiple users report that financial report data does not match the official website (discrepancy of approximately 20%)
-- **T+1**: Operations team reviews 50 hallucination cases; all involve tabular data (revenue, EPS, etc.)
-- **T+2**: Data team inspects 200 samples containing financial tables and finds **34% of financial figures are misaligned**. Root cause: when the weak model parsed multi-column PDF tables, numbers between columns were incorrectly aligned to wrong rows.
-- **T+3**: Further discovery that the offline evaluation set was also generated by the same weak model; ROUGE-L of 0.63 overestimated the system's true capability.
-- **T+5**: Emergency response: halt automatic weak-model generation of financial QA pairs; switch to manual annotation; add manual review flags to RAG chunks containing financial figures
-- **T+14**: Introduce independent gold standard evaluation set (600 entries, 100% manually written). Post-fix ROUGE-L is **0.49**, but system hallucination rate drops from **34% to 4.7%**, with a significant reduction in user complaints.
+The following timeline is also an anonymized composite case. Financial table misalignment, self-referential evaluation sets, and human gold-standard isolation are real engineering risk types; the specific proportions and sample counts do not correspond to any public project.
+
+- **T+0 day**: After launch, multiple users report that financial report data does not match official disclosures
+- **T+1 day**: The operations team reviews problematic samples and finds that most involve tabular data such as revenue and EPS
+- **T+2 days**: The data team spot-checks samples containing financial tables and finds row/column misalignment in multi-column PDF tables. The root cause is that when the weak model parsed tables, numbers from different columns were incorrectly aligned to the wrong rows.
+- **T+3 days**: Further investigation shows that the offline evaluation set was also generated by the same weak model, so automated metrics overestimated the system's true capability
+- **T+5 days**: Emergency response: halt automatic weak-model generation of financial QA pairs, switch to manual annotation, and add manual review flags to RAG chunks containing financial figures
+- **T+14 days**: Introduce an independent gold standard evaluation set physically isolated from the training pipeline. After the fix, automated metrics are no longer used as the sole launch basis, and human factuality evaluation for numerical QA becomes a veto-capable metric.
 
 **Core Lesson**: **Self-referential evaluation** is a high-risk issue in RAG and synthetic data scenarios. An independent gold standard evaluation set must satisfy three requirements: (1) written independently by human experts; (2) physically isolated from the training data pipeline; (3) results on the gold standard set must be included in the scorecard after every dataset iteration release, serving as a veto-capable pre-release metric.
 
@@ -488,15 +512,11 @@ This is therefore a "universal checklist" for the entire book. Before proceeding
 
 ## Chapter Summary
 
-This chapter systematically establishes the "data quality public contract" that runs through the entire book. Starting from three anonymized composite dialogue scenarios, we analyzed why teams with different professional backgrounds persistently disagree on "high-quality data"—this is not a personal failing but an inevitable structural outcome of lacking a unified quality framework.
+This chapter organized the core problems, processing flows, and acceptance criteria of the "LLM data lifecycle and quality assessment framework" in large model data engineering. Its contribution is to place concepts, data objects, quality signals, and engineering deliverables into one narrative, enabling readers to determine which links must be explicitly recorded and which results must be verified through sampling, evaluation, or auditing.
 
-Through the four-stage quality objective evolution matrix, we revealed that quality standards are not static but migrate dynamically with the training lifecycle: pre-training pursues scale and diversity; SFT pursues precision and format compliance; RLHF pursues distinctiveness of preference signals; RAG pursues timeliness and retrieval recall. Applying a fixed standard across all stages will inevitably produce misjudgments.
+The applicability of the methods in this chapter should be judged jointly against data sources, business objectives, model capability, cost budget, and compliance requirements. For scenarios involving sensitive information, cross-system calls, automated decision-making, or public release, teams should retain manual review, version freezing, permission control, and anomaly rollback mechanisms, avoiding direct extrapolation from example workflows into production commitments.
 
-The six core defect classes (noise, repetition, benchmark contamination, systematic bias, structural incompleteness, staleness) provide teams with a common language for translating the vague notion of "bad data" into measurable, actionable metrics, with directly executable Python detection code attached to each defect class.
-
-The data release scorecard (with a complete JSON example) and the GitHub Actions CI/CD integration plan upgrade quality assessment from intuitive human judgment to automated, triggerable engineering gates. Two in-depth case post-mortems (grammar drift and self-referential evaluation) use T+N day timelines to reveal the cross-stage amplification mechanism of data problems in the pipeline, and the irreplaceable value of an independent gold standard evaluation set.
-
-Armed with this quality measurement system, we have now laid a solid governance foundation for all the engineering content in this book.
+Within the structure of the whole book, this chapter sits at the foundational-framework layer, connecting the preceding basic concepts to subsequent text and multimodal data processing. Readers can use this chapter's framework together with its figures, tables, references, and appendix checklist to further translate the methods into reproducible, inspectable, and deliverable engineering workflows.
 
 ## References
 
@@ -512,6 +532,8 @@ Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S,
 
 Rafailov R, Sharma A, Mitchell E, Manning C D, Ermon S, Finn C (2023) Direct Preference Optimization: Your Language Model Is Secretly a Reward Model. Advances in Neural Information Processing Systems 36:53728-53741.
 
+Bai Y, Jones A, Ndousse K, Askell A, Chen A, DasSarma N, Drain D, Fort S, Ganguli D, Henighan T, Joseph N, Kadavath S, Kernion J, Conerly T, El-Showk S, Elhage N, Hatfield-Dodds Z, Hernandez D, Hume T, Johnston S, Kravec S, Lovitt L, Nanda N, Olsson C, Amodei D, Brown T, Clark J, McCandlish S, Olah C, Mann B, Kaplan J (2022) Constitutional AI: Harmlessness from AI Feedback. arXiv preprint arXiv:2212.08073.
+
 Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
 
 Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.
@@ -521,3 +543,15 @@ Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Me
 Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.
 
 Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.
+
+Albalak A, Elazar Y, Xie S M, Longpre S, Lambert N, Wang X, Muennighoff N, Hou B, Pan L, Jeong H, Raffel C, Chang S, Hashimoto T, Wang W Y (2024) A Survey on Data Selection for Language Models. arXiv preprint arXiv:2402.16827.
+
+Longpre S, Yauney G, Reif E, Lee K, Roberts A, Zoph B, Zhou D, Wei J, Robinson K, Mimno D M, Ippolito D (2023) A Pretrainer's Guide to Training Data: Measuring the Effects of Data Age, Domain Coverage, Quality, and Toxicity. arXiv preprint arXiv:2305.13169.
+
+Shi W, Ajith A, Xia M, Huang Y, Liu D, Blevins T, Chen D, Zettlemoyer L (2023) Detecting Pretraining Data from Large Language Models. arXiv preprint arXiv:2310.16789.
+
+Golchin S, Surdeanu M (2023) Time Travel in LLMs: Tracing Data Contamination in Large Language Models. arXiv preprint arXiv:2308.14802.
+
+Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92.
+
+Nait Saada T, Bethune L, Klein M, Grangier D, Cuturi M, Ablin P (2025) The Data-Quality Illusion: Rethinking Classifier-Based Quality Filtering for LLM Pretraining. arXiv preprint arXiv:2510.00866.

@@ -8,6 +8,10 @@ Security design for data engineering agents is the engineering balance between a
 
 The chapter builds on Chapter 19's tool-use safety, Chapter 20's memory governance, and Chapters 27-30's governance, compliance, contracts, and sharing controls. The core shift is from after-the-fact audit to security built into the architecture.
 
+## Keywords
+
+Data Engineering Agent; least privilege; prompt injection; audit logs; human-AI collaboration; approval gates
+
 ## 35.0 Learning Objectives
 
 After reading this chapter, you should be able to:
@@ -451,9 +455,46 @@ The opening pollution incident could have been avoided if security had been trea
 
 This is not distrust of agents. It is respect for engineering reality. In complex systems, every component can fail. Security does not prevent all failure; it ensures no single failure becomes catastrophic.
 
+## Chapter Summary
+
+Using a silent data-pollution incident as the thread, this chapter treated security for data engineering agents as a first principle. In the permission model, it combined least privilege and data classification with tool allowlists, capability boundaries, and layered approval gates to constrain the resources agents may reach and the actions they may execute. In defense design, it analyzed prompt injection and unauthorized tool-call vectors, gave strategies such as input isolation and tool-authorization checks, and showed how to engineer those controls while maintaining security red-teaming and continuous testing.
+
+For audit and responsibility, the chapter emphasized complete audit-log design, responsibility-attribution models, evidence chains for compliance audit, and incident-response processes, so every agent operation can be traced and attributed. For human-AI collaboration, it proposed task-allocation principles and four collaboration modes, analyzed common anti-patterns, and used trust-building metrics to support human-in/on-the-loop deployment. Finally, it extended the discussion to supply-chain security, explainability of agent behavior, and future security-architecture evolution, showing that security capability must move forward together with autonomy.
+
 ## References
 
-- OWASP Top 10 for LLM Applications. https://owasp.org/www-project-top-10-for-large-language-model-applications/
-- Greshake, K., et al. "Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection." 2023.
-- NIST AI Risk Management Framework. https://www.nist.gov/itl/ai-risk-management-framework
-- Anthropic. "The Claude Model Card: Safety Evaluations and Mitigations." 2024.
+Andriushchenko M, Croce F, Flammarion N, Hein M (2024) Jailbreaking Leading Safety-Aligned LLMs with Simple Adaptive Attacks. arXiv preprint arXiv:2404.02151.
+
+Chen S, Piet J, Sitawarin C, Wagner D (2024) StruQ: Defending Against Prompt Injection with Structured Queries. arXiv preprint arXiv:2402.06363.
+
+Debenedetti E, Zhang J, Balunovic M, et al. (2024) AgentDojo: A Dynamic Environment to Evaluate Prompt Injection Attacks and Defenses for LLM Agents. In: Advances in Neural Information Processing Systems 37.
+
+Ganguli D, Lovitt L, Kernion J, Askell A, Bai Y, Kadavath S, Mann B, Perez E, Schiefer N, Ndousse K, Jones A, Bowman S R, Chen A, Conerly T, DasSarma N, Drain D, Elhage N, El-Showk S, Fort S, Hatfield-Dodds Z, Henighan T, Hernandez D, Hume T, Johnston S, Joseph N, Kravec S, Nanda N, Olsson C, Olah C, Amodei D, Brown T, Clark J, Kaplan J, McCandlish S, Olsson C, Olah C, Amodei D (2022) Red Teaming Language Models to Reduce Harms: Methods, Scaling Behaviors, and Lessons Learned. arXiv preprint arXiv:2209.07858.
+
+Greshake K, Abdelnabi S, Mishra S, et al. (2023) Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection. In: Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security, pp 79-90.
+
+Hendrycks D, Mazeika M, Zou A, Patel S, Zhu C, Navarro J, Mu J, Song D, Li B, Steinhardt J (2021) The Many Faces of Robustness: A Critical Analysis of Out-of-Distribution Generalization. In: Proceedings of the IEEE/CVF International Conference on Computer Vision, pp 8340-8349.
+
+Huang Y, Gupta S, Xia M, Li K, Chen D (2024) Catastrophic Jailbreak of Open-source LLMs via Exploiting Generation. In: International Conference on Learning Representations.
+
+Lapid R, Langberg R, Sipper M (2023) Open Sesame! Universal Black Box Jailbreaking of Large Language Models. arXiv preprint arXiv:2309.01446.
+
+Liu Y, Deng G, Li Y, et al. (2023) Prompt Injection Attack against LLM-Integrated Applications. arXiv preprint arXiv:2306.05499.
+
+Perez E, Huang S, Song F, Cai T, Ring R, Aslanides J, Glaese A, McAleese N, Irving G (2022) Red Teaming Language Models with Language Models. In: Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing, pp 3419-3448.
+
+Ruan Y, Dong H, Wang A, Pitis S, Zhou Y, Ba J, Dubois Y, Maddison C J, Hashimoto T B (2024) Identifying the Risks of LM Agents with an LM-Emulated Sandbox. In: International Conference on Learning Representations.
+
+Tian Y, Yang X, Zhang J, Dong Y, Su H (2023) Evil Geniuses: Delving into the Safety of LLM-based Agents. arXiv preprint arXiv:2311.11855.
+
+Toyer S, Watkins O, Mendes E A, Svegliato J, Bailey L, Wang T, Ong I, Elmaaroufi K, Abbeel P, Darrell T, Ritter A, Russell S (2024) Tensor Trust: Interpretable Prompt Injection Attacks from an Online Game. In: International Conference on Learning Representations.
+
+Wallace E, Xiao K, Leike R, Weng L, Heidecke J, Beutel A (2024) The Instruction Hierarchy: Training LLMs to Prioritize Privileged Instructions. arXiv preprint arXiv:2404.13208.
+
+Wei A, Haghtalab N, Steinhardt J (2023) Jailbroken: How Does LLM Safety Training Fail? arXiv preprint arXiv:2307.02483.
+
+Yi J, Xie Y, Zhu B, Hines K, Kiciman E, Sun G, Xie X, Wu F (2023) Benchmarking and Defending Against Indirect Prompt Injection Attacks on Large Language Models. arXiv preprint arXiv:2312.14197.
+
+Zhan Q, Liang Z, Ying Z, Kang D (2024) InjecAgent: Benchmarking Indirect Prompt Injections in Tool-Integrated Large Language Model Agents. In: Findings of the Association for Computational Linguistics: ACL 2024, pp 10471-10506.
+
+Zou A, Wang Z, Carlini N, Nasr M, Kolter J Z, Fredrikson M (2023) Universal and Transferable Adversarial Attacks on Aligned Language Models. arXiv preprint arXiv:2307.15043.

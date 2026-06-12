@@ -2,7 +2,7 @@
 
 ---
 
-## Chapter Summary
+## Chapter Abstract
 
 The previous chapter built a compliance and governance baseline around shift-left compliance, Privacy by Design, RoPA, DPIA, and data classification. Yet for highly sensitive C3 data or cross-institutional data silos, policy statements such as “data is usable but not visible,” traditional access control, and field masking are often not enough to eliminate the physical risk of leakage. As machine learning systems, especially large-model systems, move deeper into core business processes, exposure no longer occurs only through database exports, report views, or manual queries. It also appears during feature construction, parameter training, joint modeling, and inference calls.
 
@@ -13,6 +13,10 @@ We first explain why after-the-fact encryption and after-the-fact masking are of
 Finally, through medical and financial cases, and by connecting P09’s privacy-preserving pipeline, Ch27’s compliance governance framework, and Ch22’s multimodal retrieval capabilities, the chapter shows how privacy-preserving technologies form a closed loop across governance, training, validation, and audit. P09 focuses on the pre-training governance chain: classification, permission control, masking, isolation, audit, preflight checks, and postmortems. This chapter focuses on what happens after that chain is in place: how to keep privacy boundaries during cross-party training and model collaboration.
 
 ---
+
+## Keywords
+
+Federated learning; privacy-enhancing technologies; differential privacy; secure multi-party computation; trusted execution environment; privacy validation
 
 ## 37.0 Learning Objectives
 

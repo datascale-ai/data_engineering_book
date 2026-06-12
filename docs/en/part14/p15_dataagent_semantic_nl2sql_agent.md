@@ -318,6 +318,8 @@ Confirm that:
 
 ### 5.4 Prepare Semantic Service
 
+Semantic Service's current main-line capability is metadata enhancement through semantic-layer services.
+
 Semantic Service should carry:
 
 - Table names and descriptions.

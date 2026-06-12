@@ -6,7 +6,7 @@ This appendix standardizes the book's high-frequency terms, abbreviations, and C
 
 For an engineering book with this much scope, inconsistent terminology is itself a cost. It causes the same object to appear under several names across chapters, forcing readers, editors, instructors, and project teams to translate again during alignment. The purpose of this appendix is therefore not to build a dictionary for its own sake, but to establish a stable engineering vocabulary for the whole book.
 
-The terminology table is also more than a translation aid. In data engineering, governance, evaluation, agents, and privacy technologies, many terms look interchangeable but have distinct boundaries. "Masking," "anonymization," "usable," and "releasable" are not the same. "Federated learning," "privacy-enhancing technologies," and "secure multi-party computation" are not freely interchangeable. When terms are used incorrectly, readers may mistake engineering constraints for legal conclusions, or mistake a research prototype for a production solution. ISO/IEC 22989:2022 provides a standard reference for basic AI concepts and terminology. This appendix builds on that reference and gives Chinese primary terms that are closer to the engineering context of this book.
+The terminology table is also more than a translation aid. In data engineering, governance, evaluation, agents, and privacy technologies, many terms look interchangeable but have distinct boundaries. "Masking," "anonymization," "usable," and "releasable" are not the same. "Federated learning," "privacy-enhancing technologies," and "secure multi-party computation" are not freely interchangeable. When terms are used incorrectly, readers may mistake engineering constraints for legal conclusions, or mistake a research prototype for a production solution. Recent research on foundation-model transparency, language-model risk, and trustworthy evaluation all emphasizes that unclear conceptual boundaries directly affect risk identification, responsibility allocation, and result interpretation (Bommasani et al. 2023; Weidinger et al. 2022; Liang et al. 2023).
 
 ## F.2 Principles for Term Use
 
@@ -264,6 +264,8 @@ Many terminology problems do not appear in paragraphs; they appear in figures an
 
 Terms related to compliance and privacy require special care because they often carry both engineering and legal meanings.
 
+Risk-classification and transparency research usually first defines system capabilities, stakeholders, usage scenarios, and disclosure scope before discussing control measures. Therefore, terms such as "legal," "authorized," and "shareable" in the glossary should be understood as judgments that require contextual confirmation, not as default states (Weidinger et al. 2022; Bommasani et al. 2023).
+
 ### F.16.1 "Lawful"
 
 Lawfulness is not an engineering default. It is a conclusion that must be confirmed by jurisdiction, purpose, data type, and processing action. Do not equate "we implemented a control" with "this is lawful."
@@ -400,10 +402,10 @@ This is especially risky around privacy, compliance, and release boundaries. Ter
 
 ## References
 
-Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229.
+Bommasani R, Klyman K, Zhang D, Liang P (2023) The Foundation Model Transparency Index. arXiv preprint arXiv:2310.12941.
 
-Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12): 86-92.
+Liang P, Bommasani R, Lee T, et al. (2023) Holistic Evaluation of Language Models. Transactions on Machine Learning Research.
 
-Pushkarna M, Zaldivar A, Kjartansson O (2022) Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 1776-1826.
+Wang B, Chen W, Pei H, et al. (2023) DecodingTrust: A Comprehensive Assessment of Trustworthiness in GPT Models. In: Advances in Neural Information Processing Systems 36.
 
-ISO/IEC 22989:2022 Information technology - Artificial intelligence - Artificial intelligence concepts and terminology.
+Weidinger L, Uesato J, Rauh M, Griffin C, Huang P-S, Mellor J, Glaese A, Cheng M, Balle B, Kasirzadeh A, Kenton Z, Brown S, Hawkins W, Stepleton T, Birhane A, Haas J, Rimell L, Hendricks L A, Isaac W, Legassick S, Irving G, Gabriel I (2022) Taxonomy of Risks posed by Language Models. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 214-229.

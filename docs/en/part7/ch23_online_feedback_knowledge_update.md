@@ -656,7 +656,7 @@ This section used an online knowledge expiration case to discuss how the online 
 
 To improve feedback processing efficiency, the system needs to automatically identify high-value feedback samples and rank them by priority based on signals including explicit negative feedback, user corrections, follow-up behavior, human handoffs, risk level, recent updates, and question frequency. By combining rules and models, the system can transform large volumes of online feedback into manageable review queues, remediation tasks, and evaluation samples.
 
-The core of the online knowledge update SOP is organizing failure sample collection, root cause analysis, knowledge changes, structured processing, index updates, regression evaluation, gray releases, and retrospective documentation into a stable process. Only when these actions form a institutionalized feedback loop can large-model applications move from "deployable" to "reliably operational over the long term."
+The core of the online knowledge update SOP is organizing failure sample collection, root cause analysis, knowledge changes, structured processing, index updates, regression evaluation, gray releases, and retrospective documentation into a stable process. Only when these actions form an institutionalized feedback loop can large-model applications move from "deployable" to "reliably operational over the long term."
 
 ---
 

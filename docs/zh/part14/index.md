@@ -26,7 +26,7 @@
 - [项目十：端到端 LLM 数据飞轮](p10_flywheel.md)
 - [项目十一：Mini-DeepSeek 预训练复现](p11_mini_deepseek.md)
 - [项目十二：教学化 R1 推理数据飞轮](p12_r1_reasoning_flywheel.md)
-- [项目十三：多模态指令工厂](p13_multimodal_instruction_factory.md)
+- [项目十三：Qwen-VL 多模态指令工厂](p13_multimodal_instruction_factory.md)
 - [项目十四：视频生成数据集：从视频源到可用于 T2V 训练的数据流水线](p14_video_generation.md)
 - [项目十五：基于 DataAgent 构建企业级语义问数助手](p15_dataagent_semantic_nl2sql_agent.md)
 

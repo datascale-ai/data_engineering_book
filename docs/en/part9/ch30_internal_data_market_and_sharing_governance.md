@@ -1,5 +1,21 @@
 # Chapter 30: Internal Data Markets and Sharing Governance
 
+## Chapter Abstract
+
+Many organizations do not lack data; their data is trapped behind team, system, and permission boundaries, causing duplicate collection, duplicate cleaning, unclear permissions, and opaque quality. The cost is scattered across projects and rarely measured in one place. This chapter discusses internal data markets and sharing governance, connecting data assets, data products, authorization workflows, usage audit, value feedback, and sharing incentives into a sustainable governance system. It first analyzes the hidden cost of data silos and introduces the value proposition of an internal data market grounded in FAIR principles: findability, accessibility, interoperability, and reusability. It then defines five roles: providers, consumers, approvers, platform teams, and security/compliance teams, together with standard collaboration processes and responsibility matrices. Next, it explains core sharing-governance mechanisms: data requests, an authorization model combining role-based access control (RBAC) and attribute-based access control (ABAC), purpose limits, access logs, expiration and reclamation, and violation handling. It also explains how high-value shared assets become long-term data products. Finally, it provides operating metrics and sharing incentives, and connects the method through an end-to-end case in which a customer-risk data product enters the market and is reused across multiple paths.
+
+## Keywords
+
+Internal data market; sharing governance; data products; authorization audit; value feedback; sharing incentives
+
+## 30.0 Learning Objectives
+
+- Explain the hidden cost of data silos and use FAIR principles to describe the value proposition of an internal data market.
+- Define the collaboration process and responsibility matrix for providers, consumers, approvers, platform teams, and security/compliance teams.
+- Design an authorization model combining RBAC and ABAC, and implement sharing-governance mechanisms such as purpose limits, access logs, expiration, reclamation, and violation handling.
+- Design a path for turning high-value shared assets into long-term data products.
+- Build operating metrics and incentive mechanisms for an internal data market so sharing behavior can be observed, evaluated, and improved.
+
 ## Chapter Guide
 
 The previous chapters discussed data catalogs, metadata governance, data productization, data contracts, and data valuation. Together they answer several foundational questions: can data be found, understood, depended on, and measured for value? Findability, accessibility, interoperability, and reusability are the conditions that allow data assets to enter an organization's collaboration network (Wilkinson et al. 2016). Inside an enterprise, however, data creates value only after one more barrier is crossed: can the right people reuse the right data, within the right boundaries, in the right way?
@@ -68,6 +84,8 @@ An internal data market has four basic value propositions:
 4. **Make reuse sustainable.** High-value shared data becomes maintained data products with feedback and stable supply.
 
 This is what distinguishes a market from an ordinary catalog. A catalog answers what data exists. A market further answers who can use it, how it can be used, how well it is used, and whether it deserves continued supply.
+
+An internal data market is also different from a pure permission system. A permission system focuses on access control; a data market also focuses on product quality, consumer experience, reuse benefits, and asset operations. It is therefore the intersection of data governance, data platforms, and data product management. Figure 30-1 shows the overall architecture of an internal data market and the relationships among data assets, product catalogs, authorization workflows, usage audit, and value feedback.
 
 ![Internal data market architecture](../../images/part9/ch30_fig01.png)
 
@@ -221,6 +239,8 @@ Providers and approvers also have obligations. If providers fail to maintain pro
 
 ### 30.3.8 Authorization Workflow Table
 
+For implementation, the authorization workflow can be decomposed into executable nodes. Table 30-2 breaks the process from need submission to expiration review and marks each node's main action, responsible role, and output.
+
 *Table 30-2: Authorization workflow nodes*
 
 | Stage | Main action | Responsible role | Output |
@@ -278,7 +298,7 @@ A data product catalog is the core interface of the market. It serves both consu
 | Contract Master Data | Legal | Contract parties, status, term, amount | Finance audit, fulfillment analysis | Medium | Some fields under repair | Subscribe after approval | Legal data team |
 | Knowledge Document Index | Knowledge | Policies, processes, FAQ, procedure documents | RAG, intelligent Q&A | Medium | Normal, weekly refresh | Access after approval | Knowledge management team |
 
-The fields are simple, but they put the consumer's key questions in one place.
+The fields are simple, but they put the consumer's key questions in one place. Consumers can compare products before deciding whether to request access, and providers can see whether their products are described sufficiently.
 
 ### 30.4.4 Product Tiers and Operating Strategies
 
@@ -381,6 +401,7 @@ Consumer feedback shows that risk-label freshness is critical for service. The o
 After two quarters, reuse teams increase, quality complaints decline, authorization stabilizes, and repeated data extraction and anonymization work are reduced. The data governance committee classifies `customer_risk_profile` as a core data product. This brings several changes: home-page recommendation in the market, stronger quality monitoring, automatic alerts for key fields, advance change notification to subscribers, and quarterly reports on reuse value, risk events, and improvement plans.
 
 The case shows that an internal data market is not one-time openness. It lets data become a stable product through controlled sharing and usage evidence.
+When product value is proven by usage facts, the organization has a reason to keep investing in quality, documentation, SLA, and automation.
 
 ### 30.6.6 Section Summary
 
@@ -392,7 +413,7 @@ The customer-risk product case showed the end-to-end market process: listing, pu
 
 The most common anti-pattern is building a prettier catalog. Teams invest in names, tags, and descriptions but do not connect requests, authorization, audit, quality feedback, and product operations. Governance literature repeatedly emphasizes that policies, processes, roles, and controls must be designed together with the technical platform, or governance remains at the documentation layer (Ladley 2019; Abraham, Schneider and vom Brocke 2019).
 
-The symptom is simple: consumers can find data but still do not know how to request it; after requesting, they still need offline approval; after access is granted, there is no purpose record; quality issues have no feedback route. A real market closes the loop from discovery to request, approval, permission, usage record, feedback, and value review.
+The symptom is simple: consumers can find data but still do not know how to request it; after requesting, they still need offline approval; after access is granted, there is no purpose record; quality issues have no feedback route. A static catalog improves discovery efficiency but does not solve sharing governance. A real market closes the loop from discovery to request, approval, permission, usage record, feedback, and value review. A simple diagnostic question is whether consumers can complete the main steps from search to usable data inside the platform. If key steps still depend on email, chat, and manual permission provisioning, the market has not truly formed.
 
 ### 30.7.2 Anti-Pattern 2: Emphasizing Control Without Improving Experience
 

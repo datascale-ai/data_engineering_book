@@ -527,7 +527,7 @@ This chapter uses the "video generation data pipeline" as a case study to demons
 
 The boundaries of this case must also be clearly retained. The focus is on public video samples and a small-scale pipeline, not covering full commercial copyright management or large-scale video platforms. In scenarios with larger scale, higher risk, or stricter compliance requirements, data sources, permission status, manual review proportions, operational costs, and failure rollback strategies must all be reassessed.
 
-As part of Chapter 14, this chapter corresponds to the project-level validation of the methods presented earlier in this book. Readers may combine this case with the data recipes in Chapter 13, the platform governance chapters earlier in the book, and the checklists in the appendix to form a closed loop from methodological understanding to engineering delivery.
+As part of Part 14, this chapter corresponds to the project-level validation of the methods presented earlier in this book. Readers may combine this case with the data recipes in Part 13, the platform governance chapters earlier in the book, and the checklists in the appendix to form a closed loop from methodological understanding to engineering delivery.
 
 ## References
 

@@ -261,6 +261,8 @@ Deduplication is also part of trajectory storage. Two common types of duplicatio
 
 With the emergence of reasoning models such as DeepSeek-R1, QwQ-32B, and Kimi-1.5, traditional SFT instruction datasets have gradually given way to data formats centered on RL and Long-CoT trajectories. The information disclosed in public technical reports and dataset cards is not entirely consistent; therefore, this section marks clearly confirmed sources as `[D]`, reasonable inferences based on public descriptions as `[I]`, and pedagogical estimates as `[E]`.
 
+At the same time, for QwQ, Kimi, OpenThoughts, Sky-T1, and similar community paths, any training recipe, sampling ratio, filtering threshold, or feedback-loop detail not explicitly disclosed in the original materials is treated only as an engineering inference here and is not stated as a confirmed fact.
+
 ### DeepSeek-R1: Cold Start, RL, and Rejection Sampling
 
 The DeepSeek-R1 report (Guo et al. 2025) discloses two paths, R1-Zero and R1 [D]. R1-Zero demonstrates that large-scale RL can stimulate reasoning behavior even without a traditional SFT cold start, but issues with output readability and stability remain. R1 adds a small amount of cold-start Long-CoT data before RL, then forms a more stable model through RL, rejection sampling, and second-round SFT.
@@ -454,6 +456,21 @@ A complete filtering decision can be written with the following fields:
 
 This explicit decision record allows the team to reuse old trajectories when adjusting thresholds later. For example, the first pass selects only samples with `quality_score >= 0.85`; if more data is needed in a subsequent pass, samples scoring 0.75 to 0.85 can be re-selected without resampling all tasks.
 
+### 46.5.1 Interface Mapping to Part XIV Project 12
+
+Chapter 46 defines the theory and paradigm, while Part XIV Project 12 turns the paradigm into a runnable project. To avoid mixing the chapter explanation with the project implementation, the core objects are mapped as follows.
+
+| Chapter object | P12 asset | Interface meaning |
+| --- | --- | --- |
+| Cold-start SFT | `data/processed/cold_start_5k.jsonl`, `cold_start_summary.json` | Organizes Long-CoT seeds into first-round trainable samples |
+| Sampled traces | `data/sampled_traces/*.jsonl` | Stores `prompt_id`, `sample_idx`, `raw_trace`, and `generation_params` |
+| Verifier | `verifier_pool.py`, `data/verified_candidates/*.jsonl` | Runs math, code, and format verification and persists each candidate result |
+| Rejection sampling | `rejection_sampling.py`, `data/processed/rejection_selected_10k_30k.jsonl` | Selects high-scoring candidate traces for feedback into training |
+| Feedback interface | `merge_sft_data.py`, `merged_sft_data.jsonl`, `training_manifest.json` | Merges cold-start samples and feedback samples as second-round SFT input |
+| Evaluation loop | `eval_gsm8k_math.py`, `data/reports/eval_results_gsm8k_math.json` | Verifies pre- and post-training changes and supports rollback diagnosis |
+
+The mapping table clarifies that this chapter describes objects, relationships, and contracts, while P12 describes scripts, files, and deliverables. Once the object mapping is clear, the project can continue along the same interface even when the model, verifier, or task pool changes.
+
 ---
 
 ## 46.6 Common Failure Patterns
@@ -560,6 +577,10 @@ Touvron H, Martin L, Stone K, Albert P, Almahairi A, Babaei Y, Bashlykov N, Batr
 Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, others (2021) Training Verifiers to Solve Math Word Problems. arXiv preprint arXiv:2110.14168.
 
 Chen M, Tworek J, Jun H, Yuan Q, Pinto H P O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code. arXiv preprint arXiv:2107.03374.
+
+Hendrycks D, Burns C, Kadavath S, Arora A, Basart S, Tang E, Song D, Steinhardt J (2021) Measuring Mathematical Problem Solving With the MATH Dataset. arXiv preprint arXiv:2103.03874.
+
+Meurer A, Smith C P, Paprocki M, Certik O, Kirpichev S B, Rocklin M, Kumar A, Ivanov S, Moore J K, Singh S, Rathnayake T, Vig S, Granger B E, Muller R P, Bonazzi F, Gupta H, Vats S, Johansson F, Pedregosa F, Curry M J, Terrel A R, Roucka S, Saboo A, Fernando I, Kulal S, Cimrman R, Scopatz A (2017) SymPy: symbolic computing in Python. PeerJ Computer Science 3:e103. https://doi.org/10.7717/peerj-cs.103.
 
 Guha E, Marten R, Keh S, Raoof N, Smyrnis G, Bansal H, Nezhurina M, Mercat J, Vu T, Sprague Z, others (2025) OpenThoughts: Data Recipes for Reasoning Models. arXiv preprint arXiv:2506.04178.
 

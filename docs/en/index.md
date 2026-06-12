@@ -1,12 +1,11 @@
-# Data Engineering for Large Models: Architecture, Algorithms & Projects
+# Data Engineering for Large Models: Architecture, Algorithms, and Project Practice
 
-## Full Table of Contents
+## Full Table of Contents Overview
 
-The Chinese 2026 Springer edition is the canonical mainline of this book, covering 14 parts, 48 chapters, 15 project case studies, and 4 appendices, with front matter and an afterword in the site edition. The English edition follows the same structure and is being brought into release quality in batches: existing complete English chapters are preserved, missing chapters are translated against the Chinese mainline, and the website navigation is checked with each batch.
+The current Chinese mainline uses the 2026 Springer-size publication structure. The main text covers 51 chapters, 15 end-to-end projects, and 7 appendices (A-G). To reduce friction when reading across parts, this edition adds a unified abbreviation table in the front matter and provides a contents page for each part.
 
 - [Abbreviations](abbreviations.md)
 - [Preface](preface.md)
-- [English Edition Status](translation-status.md)
 - [Front-Matter Guide: Book Structure, Reading Paths, and Edition Notes](front_matter_guide.md)
 - [Part 1: Overview and Infrastructure](part1/index.md)
 - [Part 2: Text Pre-training Data Engineering](part2/index.md)
@@ -25,8 +24,12 @@ The Chinese 2026 Springer edition is the canonical mainline of this book, coveri
 - [Appendix A: Tools and Frameworks Quick Reference](appendix_a_tools_and_frameworks_quick_reference.md)
 - [Appendix B: Compliance and Release Checklist](appendix_b_compliance_and_release_checklist.md)
 - [Appendix C: Cost Estimation and Resource Templates](appendix_c_cost_estimation_and_resource_templates.md)
+- [Appendix D: From Paper to Implementation Guide](appendix_d_paper_to_implementation_guide.md)
+- [Appendix E: Common Data-Engineering Bug Debugging Manual](appendix_e_common_bug_debugging_manual.md)
+- [Appendix F: Terminology and Chinese-English Mapping](appendix_f_terminology_and_chinese_english_mapping.md)
 - [Appendix G: MindSpore Overview and Acknowledgments](appendix_g_mindspore_note.md)
-- [Afterword](afterword.md)
+
+## Part-by-Part Contents
 
 ## Part 1: Overview and Infrastructure
 
@@ -136,12 +139,12 @@ This part focuses on compliance frameworks, privacy protection, federated learni
 This part uses representative specialized datasets to show how data engineering methods are organized around task definitions, schemas, build pipelines, quality control, evaluation protocols, and compliance risks.
 
 - [Part Contents](part12/index.md)
-- [Chapter 38: StructBill-CN Bill Document Understanding Data Engineering](part12/ch38_structbill_cn_dataset.md)
-- [Chapter 39: SparseTable-Bench Table-Structure Robustness Data Engineering](part12/ch39_sparse_table_bench_dataset.md)
-- [Chapter 40: Multi-Chart Infographic Reasoning Data Engineering](part12/ch40_multi_chart_infographic_reasoning_dataset.md)
-- [Chapter 41: MedImage-ToolVQA Medical Image Tool-Use VQA Data Engineering](part12/ch41_medimage_tool_vqa_dataset.md)
-- [Chapter 42: VoiceStyleControl Controllable Voice Interaction Data Engineering](part12/ch42_voice_style_control_dataset.md)
-- [Chapter 43: Latent-Switch-69K Implicit/Explicit Reasoning Data Engineering](part12/ch43_latent_switch_69k.md)
+- [Chapter 38: Visual Document and Structured Table Data Engineering](part12/ch38_visual_document_table_data_engineering.md)
+- [Chapter 39: Visual Reasoning and Tool-Calling Data Engineering](part12/ch39_visual_reasoning_tool_data_engineering.md)
+- [Chapter 40: Interaction Control and Reasoning Trace Data Engineering](part12/ch40_interaction_reasoning_trace_data_engineering.md)
+- [Chapter 41: FineWeb Pre-training Corpus Data Engineering](part12/ch41_fineweb_pretraining_corpus.md)
+- [Chapter 42: Dolma Pre-training Corpus Transparent Ledger](part12/ch42_dolma_pretraining_corpus_ledger.md)
+- [Chapter 43: LAION-5B Image-Text Candidate Pool and Filtering Channels](part12/ch43_laion5b_image_text_candidate_pool.md)
 
 ## Part 13: Open-Source Large-Model Data Engineering Recipes and Paradigms
 
@@ -154,7 +157,7 @@ This part focuses on data recipes, training paradigms, and engineering organizat
 - [Chapter 47: VLM Data Recipes: From Pre-training to Visual Alignment](part13/ch47_vlm_data_recipes.md)
 - [Chapter 48: Multimodal Generative Model Data Engineering: T2I and T2V Data Pipelines](part13/ch48_t2i_t2v.md)
 
-## Part 14: Hands-on Projects
+## Part 14: Project Case Studies
 
 This part connects acquisition, cleaning, synthesis, RAG, agents, DataOps, privacy, data flywheels, open-source model reproduction, video-generation data pipelines, and enterprise semantic data agents into runnable projects.
 
@@ -171,6 +174,16 @@ This part connects acquisition, cleaning, synthesis, RAG, agents, DataOps, priva
 - [Project 10: End-to-End LLM Data Flywheel](part14/p10_flywheel.md)
 - [Project 11: Mini-DeepSeek Pre-training Reproduction](part14/p11_mini_deepseek.md)
 - [Project 12: R1 Reasoning Flywheel](part14/p12_r1_reasoning_flywheel.md)
-- [Project 13: Multimodal Instruction Factory](part14/p13_multimodal_instruction_factory.md)
+- [Project 13: Qwen-VL Multimodal Instruction Factory](part14/p13_multimodal_instruction_factory.md)
 - [Project 14: Video Generation Dataset: From Video Sources to a T2V Training Pipeline](part14/p14_video_generation.md)
 - [Project 15: Building an Enterprise Semantic Data Assistant with DataAgent](part14/p15_dataagent_semantic_nl2sql_agent.md)
+
+## Appendices
+
+- [Appendix A: Tools and Frameworks Quick Reference](appendix_a_tools_and_frameworks_quick_reference.md)
+- [Appendix B: Compliance and Release Checklist](appendix_b_compliance_and_release_checklist.md)
+- [Appendix C: Cost Estimation and Resource Templates](appendix_c_cost_estimation_and_resource_templates.md)
+- [Appendix D: From Paper to Implementation Guide](appendix_d_paper_to_implementation_guide.md)
+- [Appendix E: Common Data-Engineering Bug Debugging Manual](appendix_e_common_bug_debugging_manual.md)
+- [Appendix F: Terminology and Chinese-English Mapping](appendix_f_terminology_and_chinese_english_mapping.md)
+- [Appendix G: MindSpore Overview and Acknowledgments](appendix_g_mindspore_note.md)

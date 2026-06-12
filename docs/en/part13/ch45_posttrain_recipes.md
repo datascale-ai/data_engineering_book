@@ -74,6 +74,8 @@ A sound post-training data repository should maintain at least four types of man
 
 Before building one's own post-training pipeline, it is necessary to cross-compare the publicly disclosed approaches of current mainstream open-source models. This section selects Tülu-3, Llama-3, Qwen2.5, and Nemotron-4 as four representative approaches for analysis. The core objective is not to evaluate whose leaderboard scores are higher, but to establish an engineering methodology for "how to read public information" and assess its practical guidance value.
 
+One real-world constraint also needs to be added: open-source post-training data and recipes update very quickly, so this kind of horizontal comparison should only be treated as a snapshot at a particular point in time. Any comparison intended for publication or long-term retrospective analysis should ideally mark the report publication date, data version, and repository revision (commit/tag); otherwise the same table may become visibly outdated within a few months.
+
 When reading the table below, please note the annotation conventions:
 
 * **[D]**: Numbers explicitly disclosed in technical reports, papers, or dataset cards.
@@ -92,7 +94,7 @@ When reading the table below, please note the annotation conventions:
 In Table 45-1, `[D]` denotes information directly disclosed in public materials, and `[I]` denotes reasonable inferences based on publicly available pipelines or contextual information. Numbers that cannot be directly traced should not be stated as definitive figures; they should be retained as "undisclosed" or "requires verification against source."
 
 * **Tülu-3** is one of the most suitable projects in this chapter to serve as a reproducible baseline. It not only open-sources the model weights, but also discloses the post-training data mixture, training code, and evaluation methodology, enabling teams to translate the recipe from the paper into an inspectable engineering process.
-* **Llama-3** (Dubey et al. 2024) represents a heavy-asset industrial approach. Its report discloses key mechanisms such as multi-round post-training, preference annotation, reward model retraining, and rejection sampling, but many data details are not fully disclosed. It is therefore more suitable as a reference for understanding industrial closed-loop systems than as a direct template for replication.
+* **Llama-3** (Grattafiori et al. 2024) represents a heavy-asset industrial approach. Its report discloses key mechanisms such as multi-round post-training, preference annotation, reward model retraining, and rejection sampling, but many data details are not fully disclosed. It is therefore more suitable as a reference for understanding industrial closed-loop systems than as a direct template for replication.
 * **Qwen2.5** provides important reference value for Chinese, multilingual, multi-task, and synthetic data approaches. A distinction must be carefully drawn: the synthetic data approach in the Qwen2.5 report and seed-free synthesis methods such as Magpie (Xu et al. 2024) can be discussed in parallel, but should not be conflated as "officially adopting Magpie" in the absence of an explicit source.
 * **Nemotron-4** and HelpSteer2 derive their value from the granularity of preference annotation. HelpSteer2 (Wang et al. 2024b) does not merely record overall preference—it establishes scoring signals along dimensions such as helpfulness, correctness, coherence, complexity, and verbosity, providing a referenceable example for reward model data design.
 
@@ -102,17 +104,19 @@ In Table 45-1, `[D]` denotes information directly disclosed in public materials,
 
 Having established that SFT occupies the first layer of post-training, the immediate question is how to obtain high-quality instructions. Since manual authoring is costly and struggles to cover long-tail tasks, Instruction Synthesis has become the mainstream approach. This section compares the engineering differences of three synthesis approaches as they appear in real post-training recipes.
 
+The task boundary needs to be drawn clearly here: Self-Instruct, Evol-Instruct, and Magpie all aim to generate SFT samples. Their outputs are instruction/response pairs required for supervised learning, not preference labels, reward scores, or verifier signals. Preference-data construction belongs to the next layer of work and should not be conflated with this section.
+
 ### 45.3.1 Self-Instruct: Expanding the Instruction Space from Seed Tasks
 
 **Key Points:**
-Self-Instruct (Wang et al. 2022) is one of the seminal methods in instruction synthesis. It relies on a small set of manually written seed tasks—typically a few hundred examples—as a starting point. In the pipeline, a powerful model references these seeds to generalize and generate new instructions, inputs, and outputs, i.e., the instruction, input context, and expected response.
+Self-Instruct (Wang et al. 2023) is one of the seminal methods in instruction synthesis. It relies on a small set of manually written seed tasks—typically a few hundred examples—as a starting point. In the pipeline, a powerful model references these seeds to generalize and generate new instructions, inputs, and outputs, i.e., the instruction, input context, and expected response.
 **Engineering Advantage:** Well suited for rapidly expanding task-domain coverage in early project stages, addressing the base model's "not knowing how to initiate a conversation" problem.
 **Primary Risk:** Heavily dependent on prompt templates, making generated data prone to templatization and linguistic homogeneity, with task difficulty typically concentrated in the common range and insufficient coverage of complex edge cases.
 
 ### 45.3.2 Evol-Instruct: Increasing Complexity via Evolutionary Rules
 
 **Key Points:**
-To address the insufficient difficulty of Self-Instruct, WizardLM (Xu et al. 2023) proposed the Evol-Instruct approach. Its core idea is to systematically increase the complexity of simple instructions through specific "evolutionary rules." Common evolution operations include: adding constraints, increasing reasoning depth, introducing multi-condition branching, and requiring multi-step solutions.
+To address the insufficient difficulty of Self-Instruct, WizardLM (Xu et al. 2024) proposed the Evol-Instruct approach. Its core idea is to systematically increase the complexity of simple instructions through specific "evolutionary rules." Common evolution operations include: adding constraints, increasing reasoning depth, introducing multi-condition branching, and requiring multi-step solutions.
 **Engineering Advantage:** Extremely effective at generating high-complexity instruction-following data, compelling the model to learn deep logical compliance rather than superficial response patterns.
 **Primary Risk:** Increased difficulty does not equate to increased quality. Multiple rounds of evolution can trigger intent drift—where complex constraints contradict each other, or the generated instruction becomes an incoherent accumulation of words. Therefore, difficulty calibration and answer verification are the quality control priorities for this school.
 
@@ -147,6 +151,8 @@ It is also important to note that good SFT data from one stage is not necessaril
 ## 45.4 Preference Data Engineering: From RLHF to DPO, GRPO, and RLVR
 
 After acquiring SFT data, how preference data is constructed ultimately determines the model's "character." This section explains how the shape of preference data evolves with different training paradigms.
+
+The task at this layer is no longer "generating samples," but "constructing preference/reward signals." In other words, the SFT synthesis methods in the previous section and the RLHF, DPO, GRPO, and RLVR methods in this section belong to different layers and should not be described as the same data engineering action.
 
 ### 45.4.1 RLHF: Preference Pairs and Reward Models
 
@@ -214,7 +220,7 @@ The SFT stage of Tülu-3 (Lambert et al. 2024) does not pursue unbounded expansi
 
 After SFT establishes the model's basic behavioral patterns, Tülu-3 introduces the DPO mix for preference refinement. The specific scale and composition of the DPO mix should be verified against the paper and dataset card in the final version to avoid conflating statistics from different stages or different splits.
 **Connecting SFT and DPO:** DPO data should not only include external datasets, but should also cover typical failure patterns in the base model's actual output behavior after SFT.
-**Reflecting differential preference:** The design of chosen and rejected pairs should not be random. When constructing data, Tülu-3 emphasizes avoiding a dangerous tendency: do not select a response that is "superficially more polite but factually inferior" as the chosen. If the data pipeline uses an uncalibrated LLM-as-a-Judge, the model is prone to this type of preference misguidence (Length Bias & Sycophancy (Zheng et al. 2023)). Therefore, high-quality DPO pairs must have a clear and stable difference on the dimension of "factual correctness."
+**Reflecting differential preference:** The design of chosen and rejected pairs should not be random. When constructing data, Tülu-3 emphasizes avoiding a dangerous tendency: do not select a response that is "superficially more polite but factually inferior" as the chosen. If the data pipeline uses an uncalibrated LLM-as-a-Judge, the model is prone to this type of preference misguidance (Length Bias & Sycophancy (Zheng et al. 2023)). Therefore, high-quality DPO pairs must have a clear and stable difference on the dimension of "factual correctness."
 
 ### 45.5.4 RLVR: The Verifiable Task Layer
 
@@ -237,7 +243,7 @@ Another lesson from Tülu-3 is that an open recipe does not mean reproducers can
 
 ## 45.6 Case Study B: Interpreting Llama-3's Multi-Round RLHF Iteration
 
-Llama-3 (Dubey et al. 2024) represents a high-investment industrial approach to post-training. Unlike Tülu-3, which emphasizes the reproducibility of a public recipe, the Llama-3 report emphasizes multi-round RLHF iteration. The key is not any individual dataset, but the engineering workflow connecting preference collection, reward model updates, rejection sampling, and failure sample re-integration.
+Llama-3 (Grattafiori et al. 2024) represents a high-investment industrial approach to post-training. Unlike Tülu-3, which emphasizes the reproducibility of a public recipe, the Llama-3 report emphasizes multi-round RLHF iteration. The key is not any individual dataset, but the engineering workflow connecting preference collection, reward model updates, rejection sampling, and failure sample re-integration.
 
 **Why emphasize multi-round iteration and RM retraining?**
 After the initial SFT, applying RLHF with the initial RM causes the model policy to rapidly shift toward the high-scoring regions of the RM. However, the RM itself has out-of-distribution (OOD) blind spots. As model capability improves, the responses it generates gradually diverge from the sample distribution the initial RM was trained on. Without updating the RM, the model may learn to exploit reward model vulnerabilities (Reward Hacking). Therefore, in the Llama-3 approach, each iteration uses the current model to generate new responses for hard prompts, submits these to human annotation, and incorporates the new data into the RM training set for retraining. The specific scale of newly added data per round should be cited from the report; any unconfirmable figures should be marked as `[I]` or stated as "undisclosed."
@@ -247,6 +253,8 @@ In engineering, Llama-3 uses RSFT as a bridge between RLHF and SFT. In each roun
 
 **Data re-integration mechanism:**
 The value of multi-round iteration lies in the continuous absorption of boundary data. Failure samples and boundary samples identified in each round of red-blue adversarial testing or evaluation are systematically captured. High-scoring samples can be re-integrated to reinforce positive strategies, while failure samples can be constructed as rejected samples for DPO or RM training sets, forming a continuous online optimization loop. This contrasts with Tülu-3's open reproducible recipe: the former demonstrates an industrial system's capacity for continuous iteration, while the latter provides a publicly reviewable methodological asset more readily accessible to external teams.
+
+This re-integration is still, in essence, reconstructing preference signals or reward signals; it is not simply continuing to expand the SFT instruction pool. It should be managed separately from the sample-generation tasks in Section 45.3, so that "creating samples" and "creating signals" are not conflated.
 
 | Iteration Step | Data Input | Processing Action | Data Output | Annotation Convention |
 | --- | --- | --- | --- | --- |
@@ -362,7 +370,7 @@ This chapter, through a systematic deconstruction of the core data recipes in th
 
 ## References
 
-Wang Y, Kordi Y, Mishra S, Liu A, Smith N A, Khashabi D, Hajishirzi H (2023) Self-Instruct: Aligning Language Models with Self-Generated Instructions. Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics, pp 13484–13508.
+Wang Y, Kordi Y, Mishra S, Liu A, Smith N A, Khashabi D, Hajishirzi H (2023) Self-Instruct: Aligning Language Models with Self-Generated Instructions. Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics, pp 13484–13508. https://doi.org/10.18653/v1/2023.acl-long.754.
 
 Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S, Slama K, Ray A, Schulman J, Hilton J, Kelton F, Miller L, Simens M, Askell A, Welinder P, Christiano P F, Leike J, Lowe R (2022) Training Language Models to Follow Instructions with Human Feedback. Advances in Neural Information Processing Systems, 35, 27730–27744.
 
@@ -380,7 +388,7 @@ Yang A, Li A, Yang B, Zhang B, Hui B, Zheng B, Yu B, Gao C, Huang C, Lv C, other
 
 Wang Z, Dong Y, Delalleau O, Zeng J, Shen G, Egert D, Zhang J J, Sreedhar M N, Kuchaiev O (2024) HelpSteer 2: Open-Source Dataset for Training Top-Performing Reward Models. Advances in Neural Information Processing Systems, 37, 1474–1501.
 
-Xu C, Sun Q, Zheng K, Geng X, Zhao P, Feng J, Tao C, Lin Q, Jiang D (2024) WizardLM: Empowering Large Pre-Trained Language Models to Follow Complex Instructions. International Conference on Learning Representations.
+Xu C, Sun Q, Zheng K, Geng X, Zhao P, Feng J, Tao C, Lin Q, Jiang D (2024) WizardLM: Empowering Large Pre-Trained Language Models to Follow Complex Instructions. International Conference on Learning Representations. arXiv:2304.12244.
 
 Xu Z, Jiang F, Niu L, Deng Y, Poovendran R, Choi Y, Lin B Y (2025) Magpie: Alignment Data Synthesis from Scratch by Prompting Aligned LLMs with Nothing. International Conference on Learning Representations.
 

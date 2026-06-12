@@ -18,11 +18,11 @@ Tokenization; Tokenizer; Serialization; DataLoader; MDS; Packing; Data Mixing; T
 
 ## Opening: A Training Incident Where "The Data Pipeline Was Slower Than the Model"
 
-The following is an anonymized composite case study; cost, utilization, and throughput figures are estimated examples as of June 2026, and actual prices depend on cloud provider, region, instance type, procurement discounts, and training configuration. When a team launched pretraining for a 13B-parameter model, they provisioned a compute cluster of 64 A100 GPUs. At the pricing of high-end GPU cloud instances, the rental cost of this cluster was approximately CNY 16,000 per hour. Anomalies appeared in the second hour of training: `nvidia-smi` showed GPU utilization stabilized at **38%**, rather than the expected 85% or higher. Initial diagnosis suspected a model configuration issue — until an engineer opened `iostat` monitoring and discovered that disk I/O had saturated: read speed was pegged at 100% of the disk's maximum, yet the DataLoader still could not keep up with the GPU's consumption rate.
+The following is an anonymized composite case study used to illustrate the diagnostic path for input-pipeline bottlenecks; throughput and utilization should be pressure-tested on the target cluster and should not be reused across projects. When a team launched pretraining for a medium-scale base model, anomalies appeared early in training: `nvidia-smi` showed GPU utilization staying below the project baseline for a long period. Initial diagnosis suspected a model configuration issue, until an engineer opened `iostat`, DataLoader wait time, and profiler monitoring and discovered that disk I/O and online tokenization had become bottlenecks: the DataLoader could not keep up with the GPU's consumption rate.
 
-The root cause was quickly identified: the team had stored the cleaned corpus on ordinary HDD arrays, with each shard being a compressed `.jsonl.gz` file, requiring the DataLoader to decompress and tokenize in real time at runtime, causing both the CPU and disk to become bottlenecks simultaneously. The team ultimately paused training for a full 18 hours, re-tokenized all data offline and serialized it into MDS format (Mosaic Data Shard), and migrated to NVMe SSD storage, before GPU utilization recovered to 88%.
+The root cause was quickly identified: the team had stored the cleaned corpus on ordinary disk arrays, with each shard being a compressed `.jsonl.gz` file, requiring the DataLoader to decompress and tokenize in real time at runtime, causing both the CPU and disk to become bottlenecks simultaneously. The team ultimately paused training, re-tokenized all data offline and serialized it into MDS format (Mosaic Data Shard), and migrated to higher-throughput storage media before GPU utilization recovered to the project baseline range.
 
-**Cost: approximately CNY 30,000 in wasted compute, plus 18 hours of engineering delay.** This estimate is provided to illustrate the order of magnitude of input pipeline bottleneck costs; actual losses must be recalculated based on real cluster unit pricing, training pause policies, and queue wait times. This problem could have been discovered entirely during a smoke test one day before training launch.
+The cost of such an incident should be recalculated based on real cluster unit prices, pause policies, queue time, and reprocessing cost. More importantly, it could have been discovered entirely during the smoke-test phase before training launch.
 
 This case illustrates the central thesis of this chapter: **the efficiency of the data input pipeline is one of the most underestimated engineering components in pretraining — and one with the highest cost when things go wrong.** It occupies a gray zone between "data cleaning is complete" and "training has not yet started" — belonging neither to the focus of data engineering nor to the tuning scope of the training system, and as a result it is often overlooked by both sides until real compute waste forces it to be addressed.
 
@@ -32,15 +32,15 @@ This case illustrates the central thesis of this chapter: **the efficiency of th
 
 ### 6.1.1 The Hidden Cost of GPU Idle Time
 
-In large-scale pretraining scenarios, GPU cluster rental costs are typically charged by the hour and remain persistently high. As of June 2026, on-demand cloud pricing for high-end GPUs such as H100/A100 fluctuates significantly by region, provider, instance specification, and procurement agreement; unit prices mentioned in this chapter serve only as cost estimation examples, and actual prices should be taken from cloud provider announcements or contracts. Under this cost structure, "GPU utilization" is no longer merely a performance metric — it translates directly into financial loss. Every 10% reduction in GPU utilization means that 10% of compute spend is wasted on "waiting for data," generating no actual gradient updates.
+In large-scale pretraining scenarios, GPU cluster rental costs are typically charged by the hour, and prices fluctuate significantly with region, provider, instance specification, and procurement agreement. Under this cost structure, "GPU utilization" is no longer merely a performance metric; it is an economic metric that directly translates into financial loss. Any low utilization caused by waiting for data will extend the time required to reach the same number of effective training tokens.
 
-In theory, a well-configured LLM training system should maintain GPU utilization (more precisely, **Model FLOPS Utilization, MFU**) above 40–50% (considering communication and compute overlap, even high-performance infrastructure rarely exceeds 60%). If MFU consistently falls below 30%, the data pipeline is almost certainly one of the bottlenecks.
+The more precise metric is **Model FLOPS Utilization (MFU)**. MFU is jointly affected by model architecture, parallel strategy, communication topology, batch size, mixed precision, and kernel implementation, and cannot be judged with a single universal threshold. If MFU or GPU utilization stays below the project's historical baseline for a long period, DataLoader wait time, storage throughput, network reads, and online preprocessing should all be investigated.
 
 ### 6.1.2 End-to-End Latency Breakdown from Data Format to GPU
 
 Moving data from disk to GPU memory involves the following stages, each of which can become a bottleneck:
 
-**Disk read**: Reading raw bytes from shard files stored on HDD/SSD/network storage (NFS/S3). Sequential HDD read speed is approximately 200 MB/s, NVMe SSD can reach 5–7 GB/s, and S3 with multi-threaded concurrency can achieve 2–5 GB/s. This is the most common first source of I/O bottlenecks.
+**Disk read**: Reading raw bytes from shard files stored on HDD/SSD/network storage (NFS/S3). Throughput varies greatly across media and cloud-provider object storage, and actual speed is also affected by concurrency, file size, network topology, and cache hit rate. Therefore, before training, pressure tests should be run on the target cluster using the same file format as production shards rather than applying generic bandwidth numbers.
 
 **Decompression and deserialization**: If data is stored in compressed formats such as `.gz` or `.zst`, CPU decompression is required; if stored in text formats like `.jsonl`, JSON parsing is also required. Both steps are compute-intensive CPU operations that consume significant time in DataLoader worker processes.
 
@@ -64,7 +64,7 @@ The tokenization algorithms used by mainstream large models today fall into thre
 
 Listing 6-1 presents simplified pseudocode for the BPE merge process.
 
-**Listing 6-1: Simplified Pseudocode for the BPE Merge Process**
+*Listing 6-1: Simplified pseudocode for the BPE merge process. This snippet explains the merge idea and is not a production-grade tokenizer training implementation.* Note: traditional BPE is not aware of morpheme boundaries; in 2025, MorphBPE (Asgari et al. 2025) explored improving tokenization efficiency and training performance in morphologically rich languages by constraining merge rules not to cross morpheme boundaries.
 
 ```python
 # BPE merge process pseudocode
@@ -89,7 +89,7 @@ For Chinese large models, **Byte-level BPE** (implemented via tiktoken) is recom
 
 Listing 6-2 presents a sample implementation for offline batch tokenization using `tiktoken`.
 
-**Listing 6-2: Sample Code for Offline Batch Tokenization**
+*Listing 6-2: Example code for offline batch tokenization. Production environments should add shard validation, failed retries, vocabulary-version records, and output-consistency checks.*
 
 ```python
 # Offline batch tokenization using tiktoken (recommended for preprocessing)
@@ -118,7 +118,7 @@ def tokenize_document(doc: dict, max_length: int = 4096) -> dict | None:
 
 The vocabulary is the core output of the tokenizer and also the only component of the overall large-model architecture that is nearly impossible to change after training begins. Once the vocabulary is determined, all subsequent data processing, model embedding matrices, and output logit layers are tightly bound to it — changing the vocabulary means re-tokenizing all training data and re-initializing the embedding matrix (discarding the pretrained embedding weights), at enormous cost. Therefore, vocabulary design decisions must be completed before the entire engineering effort begins, rather than being corrected mid-training when a problem is discovered.
 
-**Vocabulary size trade-offs** are the primary decision. A larger vocabulary (100K–150K) can preserve more high-frequency words and domain-specific terminology as single tokens, reducing sequence length and lowering the computational cost of the Transformer (since attention complexity is quadratic in sequence length); but a larger embedding matrix increases parameter count (growing the vocabulary from 32K to 100K roughly triples the embedding matrix parameters), and rare tokens encounter fewer training samples, resulting in lower embedding quality. LLaMA-3 (Dubey et al. 2024) dramatically expanded the vocabulary from LLaMA-2's 32K to 128K, demonstrating significant gains on multilingual understanding and code tasks, at the cost of approximately 12 GB of additional embedding layer parameters (a non-negligible overhead for a 7B model).
+**Vocabulary size trade-offs** are the primary decision. A larger vocabulary, such as at the 100K scale, can preserve more high-frequency words and domain-specific terminology as single tokens, reducing sequence length and lowering Transformer computation (because attention complexity is quadratic in sequence length); but a larger embedding matrix increases parameter count, and rare tokens encounter fewer training samples, resulting in lower embedding quality. LLaMA-3 (Grattafiori et al. 2024) dramatically expanded the vocabulary from LLaMA-2's 32K to 128K and identifies the larger vocabulary as an important design for improving multilingual and code capabilities. Additional embedding parameters can be estimated as "number of added tokens x hidden size," while memory overhead also depends on parameter precision, tied embeddings, and optimizer state; it should not be given as a fixed GB value without the model configuration.
 
 **Domain Vocabulary Extension** is a common requirement for vertical-domain large models. When the base vocabulary has insufficient coverage of domain-specific terminology (e.g., molecular formulas in medical terminology, proper nouns in legal terminology, keyword combinations in programming languages), these terms are split into multiple sub-tokens, leading to: first, increased sequence length, reducing the amount of domain information the model's context window can accommodate; and second, the model needing to reconstruct semantics from fragmented tokens at higher learning cost.
 
@@ -130,7 +130,7 @@ The solution is to **upsample and balance** the corpora of different languages w
 
 Listing 6-3 presents a sample configuration for SentencePiece multilingual vocabulary training.
 
-**Listing 6-3: SentencePiece Multilingual Vocabulary Training Configuration Snippet**
+*Listing 6-3: SentencePiece multilingual vocabulary training configuration snippet. Parameters are configuration examples only; production environments should tune them jointly through language coverage, OOV/UNK rate, and downstream evaluation.*
 
 ```python
 # SentencePiece multilingual vocabulary training (illustrative)
@@ -156,7 +156,7 @@ spm.SentencePieceTrainer.train(
 
 The choice of data format has a direct, order-of-magnitude impact on DataLoader throughput. The following summarizes the performance and engineering trade-offs of mainstream formats:
 
-**Table 6-1: Data Format, Compression, and Access Pattern Comparison**
+*Table 6-1: Data format, compression, and access pattern comparison. Source: compiled by the authors; performance should be validated through pressure tests on target hardware, storage backend, compression method, and DataLoader implementation.*
 
 | Format | Type | Sequential Read Speed | Random Access | Compression Support | Cross-Framework Support | Applicable Scenarios |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -187,7 +187,7 @@ In standard DataLoader implementations, all samples in a batch are padded to the
 
 Listing 6-4 presents a sample implementation of greedy sequence packing.
 
-**Listing 6-4: Sample Code for Greedy Sequence Packing**
+*Listing 6-4: Example code for greedy sequence packing. This snippet shows the basic strategy; production environments should add sample boundaries, label masks, and reproducible experiment records.*
 
 ```python
 def greedy_pack_sequences(
@@ -222,7 +222,7 @@ def greedy_pack_sequences(
     return packed
 ```
 
-Empirical data shows that for training sets containing a large number of short documents (average length < 512 tokens), enabling packing can increase effective token throughput (Tokens/s) by **40–80%**. This range is an empirical example as of June 2026; actual gains depend on document length distribution, max sequence length, attention mask implementation, and hardware configuration.
+For training sets containing many short documents, enabling packing can usually improve effective token throughput (tokens/s). Actual gains depend on document length distribution, max sequence length, attention-mask implementation, and hardware configuration, and should be verified on the target dataset using both padding ratio and tokens/s.
 
 ### 6.3.2 Multi-Source Mixing: Temperature Weighting and Domain Ratio Control
 
@@ -234,7 +234,7 @@ $$p_i = \frac{n_i^{1/T}}{\sum_j n_j^{1/T}}$$
 
 When $T = 1$, weights are proportional to data volume and large sources completely dominate; as $T \to \infty$, all source weights approach uniform. In practice, $T = 2$ is commonly used (the multilingual sampling setting of mT5 (Xue et al. 2021)), upsampling small sources while avoiding excessive deviation from the original data distribution.
 
-**Table 6-2: Comparison of Sampling and Mixing Strategy Benefits**
+*Table 6-2: Comparison of sampling and mixing strategy benefits. Source: compiled by the authors; benefit descriptions are summaries of common patterns, and actual effects should be confirmed through data-recipe ablation experiments.*
 
 | Mixing Strategy | Principle | Advantages | Disadvantages | Applicable Scenarios |
 | :--- | :--- | :--- | :--- | :--- |
@@ -260,13 +260,13 @@ PyTorch's `DataLoader` provides several parameters that directly affect I/O thro
 
 **`num_workers`**: Controls the number of subprocesses for parallel data reading. This is the most common tuning point. The general rule is `num_workers = 4–8 × number of GPUs`, but the actual optimal value must be determined through experimentation (too many workers can actually reduce throughput due to process management overhead and IPC contention). For MDS format read from high-speed NVMe SSDs, `num_workers=8–16` is typically sufficient to saturate disk utilization.
 
-**`pin_memory=True`**: When enabled, the DataLoader allocates pinned memory on the CPU side for storing batches, allowing subsequent CPU→GPU transfers to use DMA (Direct Memory Access), significantly improving PCIe transfer efficiency. For high-frequency large-batch data transfers, enabling `pin_memory` can typically reduce CPU→GPU transfer time by 20–30%.
+**`pin_memory=True`**: When enabled, the DataLoader allocates pinned memory on the CPU side for storing batches, allowing subsequent CPU-to-GPU transfers to use DMA (Direct Memory Access), significantly improving PCIe transfer efficiency. The actual gain depends on batch size, tensor layout, hardware, and transfer frequency and should be measured with profiling.
 
 **`prefetch_factor`**: The number of batches each worker prefetches in advance (default is 2). Increasing this moderately (e.g., to 4–8) can hide disk read latency, but increases CPU memory usage.
 
 Listing 6-5 presents a DataLoader configuration example based on MosaicML Streaming Dataset.
 
-**Listing 6-5: MosaicML Streaming Dataset DataLoader Configuration Snippet**
+*Listing 6-5: MosaicML Streaming Dataset DataLoader configuration snippet. Production environments should pressure-test object-storage bandwidth, cache strategy, and node failure-recovery capability together.*
 
 ```python
 from torch.utils.data import DataLoader
@@ -291,7 +291,7 @@ dataloader = DataLoader(
 
 Listing 6-6 presents a sample implementation of a binary token ID dataset based on `np.memmap`.
 
-**Listing 6-6: Sample Code for a np.memmap-Based Token ID Dataset**
+*Listing 6-6: Example code for an `np.memmap`-based token ID dataset. Production environments should add dtype, file-integrity, index-boundary, and cross-platform compatibility checks.*
 
 ```python
 # Pseudocode for a memmap binary loader optimized for tens-of-millions of small-file I/O
@@ -319,40 +319,40 @@ class MemmapDataset(torch.utils.data.Dataset):
 
 When GPU utilization falls below expectations, follow these systematic steps to diagnose:
 
-![Figure 6-2: Throughput Bottleneck Diagnosis Flowchart](../../images/part2/io_bottleneck_diagnosis_flow.png)
+![Figure 6-1: Throughput Bottleneck Diagnosis Flowchart](../../images/part2/io_bottleneck_diagnosis_flow.png)
 
-*Figure 6-2: Throughput bottleneck diagnosis flowchart — starting from abnormal GPU utilization, a three-level decision tree is used to locate disk I/O bottlenecks, CPU preprocessing bottlenecks, and PCIe transfer bottlenecks, with corresponding remediation steps. Source: original figure by the authors; Alt text: throughput bottleneck diagnosis flowchart showing the decision paths from abnormal GPU utilization to disk I/O, CPU preprocessing, and PCIe transfer investigation.*
+*Figure 6-1: Throughput bottleneck diagnosis flowchart — starting from abnormal GPU utilization, a three-level decision tree is used to locate disk I/O bottlenecks, CPU preprocessing bottlenecks, and PCIe transfer bottlenecks, with corresponding remediation steps. Source: original illustration from this book; Alt text: throughput bottleneck diagnosis flowchart showing the decision paths from abnormal GPU utilization to disk I/O, CPU preprocessing, and PCIe transfer investigation.*
 
-**Step 1 — Confirm whether the GPU is waiting for data**: Run `nvidia-smi dmon -s u` to monitor SM utilization; if SM utilization periodically drops to 0 and `sm_active` is intermittently 0, the GPU is waiting. Also check the MFU (Model FLOPS Utilization) metric; if MFU < 30%, the data pipeline is almost certainly the bottleneck.
+**Step 1 — Confirm whether the GPU is waiting for data**: Run `nvidia-smi dmon -s u` to monitor SM utilization; if SM utilization periodically drops to 0 and `sm_active` is intermittently 0, the GPU is waiting. Also check the MFU (Model FLOPS Utilization) metric and compare it with the project's historical baseline.
 
-**Step 2 — Locate the I/O level**: Run `iostat -x 1` to monitor disk I/O; if `%util` is consistently > 80%, the disk is the bottleneck. Simultaneously use `top` or `htop` to check CPU utilization of DataLoader worker processes; if all CPU cores are saturated, online tokenization or decompression is the bottleneck.
+**Step 2 — Locate the I/O level**: Run `iostat -x 1` to monitor disk I/O and compare utilization, queue depth, and wait time with the storage baseline. Simultaneously use `top` or `htop` to check CPU utilization of DataLoader worker processes; if all CPU cores are saturated, online tokenization or decompression is the bottleneck.
 
-**Step 3 — Check PCIe transfer**: Use PyTorch's Profiler to record the time proportion of `cudaMemcpyH2D`; if H2D transfer time exceeds 10% of GPU kernel execution time, PCIe transfer is the bottleneck, requiring `pin_memory` to be enabled or tensor memory layout to be optimized.
+**Step 3 — Check PCIe transfer**: Use PyTorch's Profiler to record the time proportion of `cudaMemcpyH2D`; if H2D transfer time takes an abnormal share relative to GPU kernel execution time, PCIe transfer is the bottleneck, requiring `pin_memory` to be enabled or tensor memory layout to be optimized.
 
 ### 6.4.3 Pre-Training Smoke Test: 30-Minute Automated Verification Before Launch
 
-Before formally launching a long-running pretraining job, it is strongly recommended to execute a brief **smoke test** — using the complete data pipeline (real shard files, real DataLoader configuration) but running only 100–200 training steps, specifically to verify the following metrics:
+Before formally launching a long-running pretraining job, it is strongly recommended to execute a brief **smoke test** — using the complete data pipeline (real shard files, real DataLoader configuration) but running only a small number of training steps, specifically to verify the following metrics:
 
 - **DataLoader throughput**: Whether Tokens/s meets the target value (which can be pre-calculated based on GPU count and MFU target)
-- **GPU utilization**: Whether it is stable above 80%
+- **GPU utilization**: Whether it is stable around the project baseline
 - **Initial loss value**: Whether it is within a reasonable range (for LLMs, the loss at random initialization is approximately ln(vocab_size); for a vocabulary of 100K this is approximately 11.5)
 - **No abnormal crashes**: No DataLoader worker crashes, no CUDA OOM
 
-This 30-minute smoke test can detect more than 90% of configuration issues, avoiding the high-cost mistake from the opening case study of "running training for 2 hours before discovering the pipeline is a bottleneck."
+This short smoke test can detect many configuration issues and avoid the high-cost mistake from the opening case study of discovering the pipeline bottleneck only after formal training has already started.
 
 ### 6.4.4 Multi-Node Distributed Data Reading: Avoiding "Data Silos"
 
 When training scales to multi-machine multi-GPU configurations (e.g., 8 servers × 8 GPUs = 64 GPUs), data loading faces new challenges not encountered in single-machine scenarios: **how to enable all nodes to read the same dataset efficiently and without conflict, while ensuring the correctness of the global data distribution (no duplicates, no omissions, globally consistent shuffle randomness)?**
 
-The most common mistake is "shared NFS mounting" — all nodes mount the same NFS filesystem, with each node's DataLoader reading shards directly from NFS. This approach is simple to configure, but under large-scale concurrent reads the NFS server quickly becomes a bandwidth bottleneck (the aggregate bandwidth of an NFS server is typically 1–10 GB/s, which is nearly immediately saturated for a 64-GPU cluster), and NFS random access latency is far higher than local SSDs, seriously degrading DataLoader throughput.
+The most common mistake is "shared NFS mounting" — all nodes mount the same NFS filesystem, with each node's DataLoader reading shards directly from NFS. This approach is simple to configure, but under large-scale concurrent reads the NFS server quickly becomes a bandwidth bottleneck, and NFS random access latency is usually higher than local SSDs, seriously degrading DataLoader throughput.
 
-**Recommended Option 1: Local SSD + Data Pre-staging**. Before training begins, distribute shard files to the local NVMe SSD of each node in advance (via rsync or S3 batch download); during training, each node reads only from local disk. This option delivers the best I/O performance but requires additional storage space and pre-staging time (typically 30 minutes to several hours, depending on data volume). The shard allocation strategy is recommended to use "static allocation + global ordering": shuffle all shards in global random order, then distribute them evenly across nodes (node 0 gets shards 0, 8, 16..., node 1 gets shards 1, 9, 17...), ensuring each node's data partition is an equal share of the globally shuffled dataset.
+**Recommended Option 1: Local SSD + Data Pre-staging**. Before training begins, distribute shard files to the local NVMe SSD of each node in advance (via rsync or S3 batch download); during training, each node reads only from local disk. This option delivers the best I/O performance but requires additional storage space and pre-staging time, which depends on data volume, network bandwidth, and copy concurrency. The shard allocation strategy is recommended to use "static allocation + global ordering": shuffle all shards in global random order, then distribute them evenly across nodes (node 0 gets shards 0, 8, 16..., node 1 gets shards 1, 9, 17...), ensuring each node's data partition is an equal share of the globally shuffled dataset.
 
-**Recommended Option 2: MosaicML Streaming from S3**. This has become an increasingly popular approach among large teams in recent years — the dataset is stored in object storage such as S3/GCS, and each node downloads shards on demand via `StreamingDataset` during training (download one shard, delete it after training on it is complete, then download the next), with local disk serving only as a cache layer (cache size is configurable). The advantage of this approach is that the dataset does not need to be pre-copied to each node, and new nodes can join training immediately; the limitation is that it requires stable network bandwidth (approximately 1–2 GB/s of S3 read bandwidth per node), and network latency is 5–20 times higher than local SSDs, making it unsuitable for scenarios with very small shards or high latency sensitivity.
+**Recommended Option 2: MosaicML Streaming from S3**. This has become an increasingly popular approach among large teams in recent years — the dataset is stored in object storage such as S3/GCS, and each node downloads shards on demand via `StreamingDataset` during training (download one shard, delete it after training on it is complete, then download the next), with local disk serving only as a cache layer (cache size is configurable). The advantage of this approach is that the dataset does not need to be pre-copied to each node, and new nodes can join training immediately; the limitation is that it requires stable object-storage read bandwidth and a low-jitter network, making it unsuitable for scenarios with very small shards or high latency sensitivity.
 
 Listing 6-7 presents a sample DataLoader configuration for multi-node distributed training.
 
-**Listing 6-7: Multi-Node Distributed DataLoader Configuration Snippet**
+*Listing 6-7: Multi-node distributed DataLoader configuration snippet. Production environments should combine rank-aware sharding, global shuffle, and token-count consistency checks.*
 
 ```python
 # DataLoader configuration for multi-node distributed training
@@ -395,29 +395,27 @@ dataloader = DataLoader(
 
 ### Figures and Case Studies
 
-![Figure 6-1: Training Input Pipeline Layer Diagram](../../images/part2/training_input_pipeline_layers.png)
+![Figure 6-2: Training Input Pipeline Layer Diagram](../../images/part2/training_input_pipeline_layers.png)
 
-*Figure 6-1: LLM training input pipeline layered architecture — the complete five-stage path from tokenization, serialization, data mixing, and packing to DataLoader GPU feeding, with the two highest-frequency bottleneck risk points (disk I/O and CPU↔GPU transfer) annotated at the bottom. Source: original figure by the authors; Alt text: training input pipeline layer diagram showing the sequential relationship between tokenization, serialization, mixing, packing, DataLoader, and GPU feeding.*
+*Figure 6-2: LLM training input pipeline layered architecture — the complete five-stage path from tokenization, serialization, data mixing, and packing to DataLoader GPU feeding, with the two highest-frequency bottleneck risk points (disk I/O and CPU-GPU transfer) annotated at the bottom. Source: original illustration from this book; Alt text: training input pipeline layer diagram showing the sequential relationship between tokenization, serialization, mixing, packing, DataLoader, and GPU feeding.*
 
 ### Case Study: Migration Benefits from JSONL + Online Tokenization to MDS + Offline Tokenization
 
-Continuing from the opening anonymized composite case study, the following records the quantified benefit comparison after the team completed the storage format migration. All throughput, time, and cost savings are illustrative parameters; actual results depend on hardware, storage, data format, batch size, and framework implementation.
+Continuing the anonymized composite case from the opening, the following gives a pressure-test comparison template after completing the storage-format migration. The table deliberately avoids fixed numbers to prevent results from one cluster from being misread as universal gains; actual results depend on hardware, storage, data format, batch size, and framework implementation.
 
 **Before migration** (JSONL.gz, HDD, online tokenization):
 
-- Disk read speed (IPC reads): approximately 180 MB/s (HDD ceiling)
-- DataLoader throughput: approximately 12,000 tokens/s (64 GPUs)
-- GPU utilization: 38%
-- Processing time per 1B tokens: approximately 83,333 seconds (approximately 23 hours)
+- Record disk read speed, object-storage request latency, and DataLoader wait time.
+- Record end-to-end tokens/s, GPU utilization/MFU, and CPU decompression/tokenization usage.
+- Record read failures, retries, and bad-sample ratios for each shard.
 
 **After migration** (MDS, NVMe SSD, offline pre-tokenization):
 
-- Disk read speed: approximately 4.5 GB/s (NVMe RAID)
-- DataLoader throughput: approximately 380,000 tokens/s
-- GPU utilization: 88%
-- Processing time per 1B tokens: approximately 2,632 seconds (approximately 43 minutes)
+- Record end-to-end tokens/s under the same batch size and model configuration.
+- Record whether GPU wait time decreases and whether the DataLoader remains a bottleneck.
+- Record additional storage cost, preprocessing time, and data-validation cost introduced by the migration.
 
-**Core benefit**: For the same training objective (1T tokens, 7B model), the estimated duration before migration was approximately 966 GPU-days, and approximately 440 GPU-days after migration, **reducing actual compute cost by approximately 54%**, with engineering changes taking 18 hours (offline re-tokenization + storage migration). This benefit is presented to illustrate the order of magnitude of I/O optimization and cannot be directly reused without accounting for specific hardware and data distribution.
+**Core-benefit accounting method**: Compare end-to-end tokens/s, DataLoader wait time, GPU wait time, and total preprocessing cost before and after migration, then convert them into the GPU hours required to reach the same number of training tokens. Only under the same model configuration, batch size, and training objective are pre- and post-migration gains comparable.
 
 ### 6.5.1 Input Pipeline Optimization Checklist
 
@@ -433,16 +431,16 @@ The following is a directly usable input pipeline optimization checklist, recomm
 **Tokenization and Serialization**
 
 - [ ] Tokenization was completed offline during the preprocessing phase; the DataLoader does not perform online tokenization
-- [ ] Sequences have been packed; padding token proportion is < 5%
+- [ ] Sequences have been packed; padding token proportion is below the project baseline
 - [ ] Global shuffle has been enabled (randomness across shards)
 - [ ] Sequence length distribution matches the target max_seq_len
 
 **DataLoader Configuration**
 
-- [ ] `num_workers` ≥ 2 × number of GPUs
+- [ ] `num_workers` has been tuned through the smoke test rather than copied from a fixed multiple
 - [ ] `pin_memory=True`
 - [ ] `persistent_workers=True` (avoid restart overhead between epochs)
-- [ ] Smoke test has been run (100 steps, confirming GPU util ≥ 80%)
+- [ ] Smoke test has been run, confirming that GPU util, MFU, and DataLoader wait time reach the project baseline
 
 **Monitoring and Observability**
 
@@ -454,15 +452,15 @@ The following is a directly usable input pipeline optimization checklist, recomm
 
 ## Chapter Summary
 
-This chapter used an anonymized composite case study to illustrate how I/O bottlenecks cause GPU idle time and cost waste, systematically establishing a complete technical understanding of the training input pipeline. We examined tokenization algorithm selection in detail (the engineering trade-offs of BPE/SentencePiece), data format choices (the performance leap from JSONL to MDS/Arrow), packing strategies (a 40–80% throughput improvement by eliminating padding), temperature sampling and curriculum learning-based mixing strategies (Table 6-2), and a systematic three-step I/O bottleneck diagnosis method (Figure 6-2). The "Input Pipeline Optimization Checklist" in this section can be used directly as a pre-launch verification tool for production-grade pretraining jobs.
+This chapter used an anonymized composite case study to illustrate how I/O bottlenecks cause GPU idle time and cost waste, systematically establishing a complete technical understanding of the training input pipeline. We examined tokenization algorithm selection in detail (the engineering trade-offs of BPE/SentencePiece), data format choices (the performance trade-offs from JSONL to MDS/Arrow), packing strategies (reducing ineffective computation caused by padding), temperature sampling and curriculum learning-based mixing strategies (Table 6-2), and a systematic three-step I/O bottleneck diagnosis method (Figure 6-1). The "Input Pipeline Optimization Checklist" in this section can be used directly as a pre-launch verification tool for production-grade pretraining jobs.
 
-This chapter echoes the cost governance perspective of Chapter 3 — in pretraining projects where GPU compute costs are extremely high, differences in input pipeline engineering quality can directly determine compute cost savings of tens to hundreds of millions of CNY. Moving into the next chapter, we shift our perspective from "how to feed data into the model" to "how to evaluate what the model has learned from this data": **Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration**.
+This chapter echoes the cost governance perspective of Chapter 3: in pretraining projects where GPU compute costs are extremely high, the engineering quality of the input pipeline directly affects effective training time and total budget. Moving into the next chapter, we shift our perspective from "how to feed data into the model" to "how to evaluate what the model has learned from this data": **Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration**.
 
 ## References
 
 Bengio Y, Louradour J, Collobert R, Weston J (2009) Curriculum Learning. In: Proceedings of the 26th Annual International Conference on Machine Learning, pp 41-48.
 
-Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Yang A, Fan A, others (2024) The LLaMA 3 Herd of Models. arXiv preprint arXiv:2407.21783.
+Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
 
 Kudo T, Richardson J (2018) SentencePiece: A simple and language independent subword tokenizer and detokenizer for Neural Text Processing. In: Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing: System Demonstrations, pp 66-71.
 
@@ -472,4 +470,4 @@ Sennrich R, Haddow B, Birch A (2016) Neural Machine Translation of Rare Words wi
 
 Xue L, Constant N, Roberts A, Kale M, Al-Rfou R, Siddhant A, Barua A, Raffel C (2021) mT5: A Massively Multilingual Pre-trained Text-to-Text Transformer. In: Proceedings of the 2021 Conference of the North American Chapter of the Association for Computational Linguistics, pp 483-498.
 
-Brown T B, Mann B, Ryder N, Subbiah M, Kaplan J, Dhariwal P, Neelakantan A, Shyam P, Sastry G, Askell A, others (2020) Language Models are Few-Shot Learners (GPT-3). Advances in Neural Information Processing Systems 33:1877-1901.
+Asgari E, El Kheir Y, Javaheri M A S (2025) MorphBPE: A Morpho-Aware Tokenizer Bridging Linguistic Complexity for Efficient LLM Training Across Morphologies. arXiv preprint arXiv:2502.00894.

@@ -8,6 +8,10 @@ The goal of DataOps Agents is to upgrade the data platform from "being operated"
 
 This chapter builds on Chapters 24-26: DataOps flywheel, version management, experiment tracking, and platform observability. It turns manual operations into agent-driven autonomous loops.
 
+## Keywords
+
+DataOps Agent; platform autonomy; root-cause localization; data rollback; cost governance; operations automation
+
 ## 34.0 Learning Objectives
 
 After reading this chapter, you should be able to:
@@ -447,9 +451,46 @@ The operations paradigm is evolving:
 
 AgentOps does not replace DataOps. It adds a layer above it: agents manage data pipelines, and AgentOps manages agents. Operations dashboards must therefore combine data quality metrics with agent behavior metrics.
 
+## Chapter Summary
+
+Starting from a 3 A.M. alert storm, this chapter discussed how DataOps Agents can move platform operations from passive response toward bounded autonomy. For alert-to-root-cause workflows, it presented alert aggregation and prioritization, root-cause candidate generation, and alert-fatigue governance to reduce mean time to repair. For recovery, it discussed automatic rollback-plan generation and approval workflows, pipeline self-healing, data consistency during version rollback, and decision-support matrices that keep human judgment in the loop for high-risk data rollback.
+
+The methods in this chapter should be applied by jointly considering data sources, business goals, model capability, cost budget, and compliance requirements. For scenarios involving sensitive information, cross-system calls, automated decisions, or public release, human review, version freeze, permission control, and exception rollback should be retained. Example flows should not be generalized directly into production commitments; the governance, mapping, measurement, and management requirements of AI risk-management frameworks also apply to autonomy boundaries for DataOps Agents.
+
+In the book's structure, this chapter sits in the agent-automation layer. It connects earlier platform foundations with later privacy, compliance, and specialized dataset cases. Readers can combine the chapter's frameworks, figures, references, and appendix checklists to turn the methods into reproducible, inspectable, and deliverable engineering workflows.
+
 ## References
 
-- Google SRE. "Site Reliability Engineering: How Google Runs Production Systems." O'Reilly, 2016.
-- Forsgren, N., et al. "Accelerate: The Science of Lean Software and DevOps." IT Revolution, 2018.
-- OpenLineage Specification. https://openlineage.io/
-- Prometheus Alertmanager Documentation. https://prometheus.io/docs/alerting/
+Amershi S, Begel A, Bird C, Devanbu P, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice, pp 291-300.
+
+Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for Machine Learning. In: Proceedings of Machine Learning and Systems 1, pp 334-347.
+
+Dang Y, Lin Q, Huang P (2019) AIOps: Real-World Challenges and Research Innovations. In: Proceedings of the 41st International Conference on Software Engineering: Companion Proceedings, pp 4-5.
+
+He S, He P, Chen Z, Yang T, Su Y, Lyu M R (2021) A Survey on Automated Log Analysis for Reliability Engineering. ACM Computing Surveys 54(6):1-37.
+
+Huyen C (2022) Designing Machine Learning Systems: An Iterative Process for Production-Ready Applications. O'Reilly Media.
+
+Kreuzberger D, Kuhl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879.
+
+Makinen S, Skogstrom H, Laaksonen E, Mikkonen T (2021) Who Needs MLOps: What Data Scientists Seek to Accomplish and How Can MLOps Help? In: Proceedings of the 2021 IEEE/ACM 1st Workshop on AI Engineering - Software Engineering for AI, pp 109-112.
+
+Lwakatare L E, Raj A, Crnkovic I, Bosch J, Olsson H H (2020) Large-scale Machine Learning Systems in Real-world Industrial Settings: A Review of Challenges and Solutions. Information and Software Technology 127:106368.
+
+NIST (2023) Artificial Intelligence Risk Management Framework (AI RMF 1.0). National Institute of Standards and Technology.
+
+NIST (2024) Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile. NIST AI 600-1.
+
+Paleyes A, Urma R-G, Lawrence N D (2022) Challenges in Deploying Machine Learning: A Survey of Case Studies. ACM Computing Surveys 55(6):1-29.
+
+Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1-15.
+
+Tamburri D A (2020) Sustainable MLOps: Trends and Challenges. In: Proceedings of the 22nd International Symposium on Symbolic and Numeric Algorithms for Scientific Computing, pp 17-23.
+
+Testi M, Ballabio M, Frontoni E, Iannello G, Moccia S, Soda P, Vessio G (2022) MLOps: A Taxonomy and a Methodology. IEEE Access 10:63606-63618.
+
+Treveil M, Omont N, Stenac C, Lefevre K, Phan D, Zentici J, Lavoillotte A, Miyazaki M, Heidmann L (2020) Introducing MLOps: How to Scale Machine Learning in the Enterprise. O'Reilly Media.
+
+Vela D, Sharp A, Zhang R, Nguyen T, Hoang A, Pianykh O S (2022) Temporal quality degradation in AI models. Scientific Reports 12:11654.
+
+Zhu J, He S, Liu J, He P, Xie Q, Zheng Z, Lyu M R (2019) Tools and Benchmarks for Automated Log Parsing. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice, pp 121-130.

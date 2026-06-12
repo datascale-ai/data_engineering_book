@@ -113,6 +113,8 @@ The main text keeps necessary fragments.
 
 Full notebooks, long scripts, and large files should be maintained separately as companion resources.
 
+Dataset versioning, parallel processing, experiment tracking, and data-quality gates in the platform can respectively refer to Hugging Face Datasets (Hugging Face 2026), Ray Data (Ray Project 2026), MLflow (MLflow Authors 2026), and Great Expectations (Great Expectations Contributors 2026). If the platform is to carry pretraining corpora, it should also preserve data-source and filtering records similar to those in C4/T5 (Raffel et al. 2020).
+
 ---
 
 ## 1. Project Background: Why a DataOps Platform Is Necessary
@@ -602,6 +604,8 @@ This lets the platform move from "an experiment happened" to "the experiment can
 
 ### 9.3 Simplified Experiment Record
 
+Listing P08-4 provides a Python implementation fragment to illustrate the input/output relationship, structural constraints, or execution method in this section.
+
 ```python
 experiment_run = {
     "experiment_id": "exp_007",
@@ -615,6 +619,8 @@ experiment_run = {
     "requires_review": True,
 }
 ```
+
+The role of this fragment is to turn the preceding process into a checkable structured representation.
 
 ![Figure 6: Experiment status distribution and governance actions](../../images/part10/10_8_fig06_experiment_tracking.png)
 
@@ -644,6 +650,8 @@ With a lineage graph, they become daily platform capability.
 
 ### 10.2 Simple Edge Definition
 
+Listing P08-5 provides a Python implementation fragment to illustrate the input/output relationship, structural constraints, or execution method in this section.
+
 ```python
 lineage_edge = {
     "from": "dataset:ds_v005",
@@ -651,6 +659,8 @@ lineage_edge = {
     "relation": "used_by",
 }
 ```
+
+The role of this fragment is to turn the preceding process into a checkable structured representation.
 
 ### 10.3 Why Introduce Lineage During the Prototype Stage
 
@@ -766,6 +776,8 @@ They care whether:
 
 ### 12.3 Simplified Alert Structure
 
+Listing P08-6 provides a Python implementation fragment to illustrate the input/output relationship, structural constraints, or execution method in this section.
+
 ```python
 alert = {
     "alert_id": "alert_003",
@@ -775,6 +787,8 @@ alert = {
     "status": "resolved",
 }
 ```
+
+The role of this fragment is to turn the preceding process into a checkable structured representation.
 
 ![Figure 9: Metrics, logs, alerts, and audit loop](../../images/part10/10_8_fig09_observability_loop.png)
 
@@ -894,6 +908,8 @@ For platform projects, checks serve at least three functions:
 
 ### 15.3 Simplified Check Example
 
+Listing P08-7 provides a Python implementation fragment to illustrate the input/output relationship, structural constraints, or execution method in this section.
+
 ```python
 required_files = [
     "data/processed/platform_scope.json",
@@ -907,6 +923,8 @@ required_files = [
 for path in required_files:
     assert Path(path).exists(), f"Missing required artifact: {path}"
 ```
+
+The role of this fragment is to turn the preceding process into a checkable structured representation.
 
 This check looks simple.
 

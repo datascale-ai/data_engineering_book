@@ -2,7 +2,7 @@
 
 ## 全书目录概览
 
-本书当前中文主线采用 2026 Springer 尺寸版结构，正文覆盖 48 章、15 个端到端项目与 7 个附录（A–G）。为降低跨篇阅读门槛，本版在前置部分新增统一的缩写表，并为每一篇补充了分册目录页。
+本书当前中文主线采用 2026 Springer 尺寸版结构，正文覆盖 51 章、15 个端到端项目与 7 个附录（A–G）。为降低跨篇阅读门槛，本版在前置部分新增统一的缩写表，并为每一篇补充了分册目录页。
 
 - [缩写表](abbreviations.md)
 - [序言](preface.md)
@@ -132,12 +132,12 @@
 第十二篇以若干具有代表性的专项数据集为线索，讨论数据工程方法在真实任务中的组织方式。各章围绕任务定义、样本 schema、构建流水线、质量控制、评测协议和合规风险展开，并向后连接项目案例研究与开源模型数据配方。
 
 - [本篇目录](part12/index.md)
-- [第38章：StructBill-CN 票据文档理解数据工程](part12/ch38_structbill_cn_dataset.md)
-- [第39章：SparseTable-Bench 表格结构鲁棒性数据工程](part12/ch39_sparse_table_bench_dataset.md)
-- [第40章：多图表信息图推理数据工程](part12/ch40_multi_chart_infographic_reasoning_dataset.md)
-- [第41章：MedImage-ToolVQA 医学图像工具调用数据工程](part12/ch41_medimage_tool_vqa_dataset.md)
-- [第42章：VoiceStyleControl 可控语音交互数据工程](part12/ch42_voice_style_control_dataset.md)
-- [第43章：Latent-Switch-69K 隐式/显式推理数据工程](part12/ch43_latent_switch_69k.md)
+- [第38章：视觉文档与结构化表格数据工程](part12/ch38_visual_document_table_data_engineering.md)
+- [第39章：视觉推理与工具调用数据工程](part12/ch39_visual_reasoning_tool_data_engineering.md)
+- [第40章：交互控制与推理轨迹数据工程](part12/ch40_interaction_reasoning_trace_data_engineering.md)
+- [第41章：FineWeb 预训练语料数据工程](part12/ch41_fineweb_pretraining_corpus.md)
+- [第42章：Dolma 预训练语料透明账本](part12/ch42_dolma_pretraining_corpus_ledger.md)
+- [第43章：LAION-5B 图文候选池与筛选通道](part12/ch43_laion5b_image_text_candidate_pool.md)
 
 ## 第十三篇：开源大模型数据工程配方与范式
 
@@ -167,7 +167,7 @@
 - [项目十：端到端 LLM 数据飞轮](part14/p10_flywheel.md)
 - [项目十一：Mini-DeepSeek 预训练复现](part14/p11_mini_deepseek.md)
 - [项目十二：R1 推理飞轮](part14/p12_r1_reasoning_flywheel.md)
-- [项目十三：多模态指令工厂](part14/p13_multimodal_instruction_factory.md)
+- [项目十三：Qwen-VL 多模态指令工厂](part14/p13_multimodal_instruction_factory.md)
 - [项目十四：视频生成数据集：从视频源到可用于 T2V 训练的数据流水线](part14/p14_video_generation.md)
 - [项目十五：基于 DataAgent 构建企业级语义问数助手](part14/p15_dataagent_semantic_nl2sql_agent.md)
 

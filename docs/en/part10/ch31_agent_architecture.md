@@ -10,6 +10,10 @@ This chapter defines a layered architecture for data engineering agents. It cent
 
 To keep the discussion concrete, the chapter uses DataAgent as a running reference. Its YAML orchestration, FlexAgent, NL2SQL sub-agent, Semantic Service, workspace, and A2A/SDK/CLI entry points map well to the path from "can call tools" to "configurable, auditable, and serviceable." The point is not to make one agent "smarter." It is to make a group of agents collaborate in a more orderly way.
 
+## Keywords
+
+Data engineering; Data Engineering Agent; automated data engineering; permission governance; human-AI collaboration
+
 ## 31.0 Learning Objectives
 
 After reading this chapter, you should be able to:
@@ -46,11 +50,11 @@ The incident exposes three systemic problems:
 
 Four high-frequency task categories in LLM data engineering are naturally suited to agentization.
 
-**Parser exception repair.** As sources grow from dozens to hundreds, PDF layout failures, HTML structure drift, API schema changes, and mixed encodings increase nonlinearly. Each new source does not require only one new rule; it requires a set of rules and coordination with existing rules. An agent can detect failure types, select alternate parsers, generate temporary repair rules, and submit a validation report.
+**Parser exception repair.** As sources grow from dozens to hundreds, PDF layout failures, HTML structure drift, API schema changes, and mixed encodings increase nonlinearly. Each new source does not require only one new rule; it requires a set of rules and coordination with existing rules. An agent can detect failure types, select alternate parsers, generate temporary repair rules, and submit a validation report (Mialon et al. 2023; Wang et al. 2023; Xi et al. 2023).
 
 **Cleaning-rule iteration.** Data cleaning is not a one-time job. Business changes, model training feedback, and updated quality thresholds all trigger rule changes. In a traditional workflow, cleaning-rule backlogs grow faster than engineers can process them. An agent can generate rule candidates from sampled defects, validate them in a sandbox, and submit a diff report for human approval.
 
-**Evaluation writeback.** When model evaluation finds a data quality problem, such as low accuracy in a domain slice, the feedback must flow back to data production. Today this often happens through chat messages and manual investigation, taking days. An agent can read evaluation reports, locate relevant data batches and production steps, generate repair suggestions, and route them to the right team.
+**Evaluation writeback.** When model evaluation finds a data quality problem, such as low accuracy in a domain slice, the feedback must flow back to data production. Today this often happens through chat messages and manual investigation, taking days. An agent can read evaluation reports, locate relevant data batches and production steps, generate repair suggestions, and route them to the right team (Nakano et al. 2021; Park et al. 2023).
 
 **Alert attribution.** Data platforms generate many alerts every day: delayed jobs, abnormal volume, declining quality metrics. Human root-cause analysis requires logs, lineage, change records, and business context, often taking more than 30 minutes per alert. An agent can aggregate signals, generate candidate root causes, rank them by confidence, and reduce MTTR.
 
@@ -73,7 +77,7 @@ Agentization does not mean pursuing full automation everywhere. The correct auto
 
 Teams need a structured decision framework before agentizing a task.
 
-**Dimension 1: Structurability.** Agents are strongest at structured reasoning: decomposing a task into explicit steps. If the hard part is finding the right sequence of steps, the task is a good candidate. If the hard part is subjective judgment, agentization is less suitable.
+**Dimension 1: Structurability.** Agents are strongest not at "creative work" in the abstract, but at structured reasoning: decomposing a task into explicit steps. If the hard part is finding the right sequence of steps, the task is a good candidate. If the hard part is subjective judgment, such as judging the literary value of a passage, agentization is less suitable. Work such as ReAct, Tree of Thoughts, Graph of Thoughts, PAL, Self-Refine, and Reflexion shows that structured reasoning usually requires making thoughts, actions, programmatic intermediate representations, and self-feedback explicit rather than relying on one-shot generation (Yao, Zhao et al. 2023; Yao, Yu et al. 2023; Besta et al. 2024; Gao et al. 2023; Madaan et al. 2023; Shinn et al. 2023).
 
 **Dimension 2: Exception frequency.** If exceptions dominate the task, agentization can become inefficient: the agent proposes a plan, humans reject it, the agent tries again, and the loop becomes slower than direct manual work. A useful rule of thumb: tasks with exception rates below 30 percent are suitable; above 70 percent, humans should stay in the lead.
 
@@ -95,7 +99,7 @@ Resistance is often organizational rather than technical.
 
 ### 31.1.5 From Abstract Capability to Engineering Anchor: Why DataAgent
 
-If Agentic Data Engineering is discussed only conceptually, it is easy to reduce it to "let the model call more tools." That misses the real difficulty. Tool calling is not the hardest part; the hard part is keeping tool calls inside configurable, verifiable, replayable, and deliverable system boundaries.
+If Agentic Data Engineering is discussed only conceptually, it is easy to reduce it to "let the model call more tools." That misses the real difficulty. Tool calling is not the hardest part; the hard part is keeping tool calls inside configurable, verifiable, replayable, and deliverable system boundaries. Research on MRKL, Toolformer, Gorilla, and ToolLLM similarly shows that tool capability becomes engineering-usable only after tools are registered, selected, parameterized, and verified (Karpas et al. 2022; Schick et al. 2023; Patil et al. 2023; Qin et al. 2024).
 
 DataAgent is useful as an engineering anchor because it puts several key questions into one runnable framework:
 
@@ -111,7 +115,7 @@ This chapter uses DataAgent as a reference for how the six-layer architecture la
 
 ### 31.2.1 Architecture Overview
 
-Task boundaries must be constrained through layering. Each layer owns one type of responsibility, communicates through structured protocols, and does not share internal mutable state with other layers.
+Task boundaries must be constrained through layering. Each layer owns one type of responsibility, communicates through structured protocols, and does not share internal mutable state with other layers. Multi-agent conversation frameworks and surveys of autonomous agents both emphasize that complex agent systems need role separation, message protocols, and state isolation to reduce runaway risk (Wu et al. 2023; Wang et al. 2023; Xi et al. 2023).
 
 ```mermaid
 flowchart LR
@@ -311,6 +315,8 @@ DataAgent has three roles in this part:
 ## 31.3 Task Boundaries and Automation Levels
 
 ### 31.3.1 Four-Level Automation Model
+
+Not all data engineering tasks are suitable for fully automatic execution. This chapter proposes a four-level automation model, where each level corresponds to different agent permissions and human involvement.
 
 *Table 31-6: Four-level automation matrix*
 
@@ -531,9 +537,46 @@ The bottleneck is often organizational trust rather than technology. Engineers n
 4. **Expand gradually.** Increase scope by data classification and automation level.
 5. **Deploy platform-wide.** Enable agents for eligible tables while retaining Human Gate as the final safety layer.
 
+## Chapter Summary
+
+This chapter organized the core problems, processing flow, and acceptance criteria for "architecture and task boundaries of data engineering agents" in large-model data engineering. Its contribution is to place concepts, data objects, quality signals, and engineering delivery into one narrative so readers can judge which steps must be explicitly recorded and which results must be verified through sampling, evaluation, or audit.
+
+The methods in this chapter should be applied by jointly considering data sources, business goals, model capability, cost budget, and compliance requirements. For scenarios involving sensitive information, cross-system calls, automated decisions, or public release, human review, version freeze, permission control, and exception rollback should be retained. Example flows should not be generalized directly into production commitments; this is also consistent with production-grade MLOps and AI risk-governance requirements for traceability, risk classification, and human oversight.
+
+For boundary design, the chapter proposed four automation levels: recommendation, semi-automatic, approval-based, and autonomous. It clarified that schema changes, data deletion, rule release, and cross-system actions must require human review, and it proposed assessing whether a task is suitable for agentization through dimensions such as structurability, exception rate, and reversibility. Finally, the chapter demonstrated two minimum viable agent paths: data-quality repair and DataAgent semantic query, and used the maturity model to show that the bottleneck from L0 to L4 is mainly organizational trust rather than technology alone.
+
 ## References
 
-- Lilian Weng. "LLM Powered Autonomous Agents." Lil'Log, 2023.
-- Andrew Ng. "Agentic Design Patterns." DeepLearning.AI, 2024.
-- OpenLineage Specification. https://openlineage.io/
-- Great Expectations Documentation. https://docs.greatexpectations.io/
+Besta M, Blach N, Kubicek A, Gerstenberger R, Podstawski M, Gianinazzi L, Gajda J, Lehmann T, Niewiadomski H, Nyczyk P, Hoefler T (2024) Graph of Thoughts: Solving Elaborate Problems with Large Language Models. In: Proceedings of the AAAI Conference on Artificial Intelligence 38(16):17682-17690.
+
+Gao L, Madaan A, Zhou S, Alon U, Liu P, Yang Y, Callan J, Neubig G (2023) PAL: Program-aided Language Models. In: Proceedings of the 40th International Conference on Machine Learning, pp 10764-10799.
+
+Karpas E, Abend O, Belinkov Y, Lenz B, Lieber O, Ratner N, Shoham Y, Bata H, Levine Y, Leyton-Brown K, Muhlgay D, Rozen N, Schwartz E, Shashua A, Shuster K, Tenenbaum J, Wolf L, Zettlemoyer L, Riedel S (2022) MRKL Systems: A Modular, Neuro-Symbolic Architecture That Combines Large Language Models, External Knowledge Sources and Discrete Reasoning. arXiv preprint arXiv:2205.00445.
+
+Kreuzberger D, Kuhl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879.
+
+Madaan A, Tandon N, Gupta P, Hallinan S, Gao L, Wiegreffe S, Alon U, Dziri N, Prabhumoye S, Yang Y, Gupta S, Majumder B P, Hermann K, Welleck S, Yazdanbakhsh A, Clark P (2023) Self-Refine: Iterative Refinement with Self-Feedback. In: Advances in Neural Information Processing Systems 36.
+
+Mialon G, Dessi R, Lomeli M, Nalmpantis C, Pasunuru R, Raileanu R, Roziere B, Schick T, Dwivedi-Yu J, Celikyilmaz A, Grave E, LeCun Y, Scialom T (2023) Augmented Language Models: A Survey. Transactions on Machine Learning Research.
+
+Nakano R, Hilton J, Balaji S, Wu J, Ouyang L, Kim C, Hesse C, Jain S, Kosaraju V, Saunders W, Jiang X, Cobbe K, Eloundou T, Krueger G, Button K, Knight M, Chess B, Schulman J (2021) WebGPT: Browser-assisted question-answering with human feedback. arXiv preprint arXiv:2112.09332.
+
+Park J S, O'Brien J C, Cai C J, Morris M R, Liang P, Bernstein M S (2023) Generative Agents: Interactive Simulacra of Human Behavior. In: Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology, Article 2.
+
+Patil S G, Zhang T, Wang X, Gonzalez J E (2023) Gorilla: Large Language Model Connected with Massive APIs. arXiv preprint arXiv:2305.15334.
+
+Qin Y, Liang S, Ye Y, Zhu K, Yan L, Lu Y, Lin Y, Cong X, Tang X, Qian B, Zhao S, Tian R, Xie R, Zhou J, Gerstein M, Li D, Liu Z, Sun M (2024) ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs. In: International Conference on Learning Representations.
+
+Schick T, Dwivedi-Yu J, Dessi R, Raileanu R, Lomeli M, Hambro E, Zettlemoyer L, Cancedda N, Scialom T (2023) Toolformer: Language Models Can Teach Themselves to Use Tools. In: Advances in Neural Information Processing Systems 36.
+
+Shinn N, Cassano F, Gopinath A, Narasimhan K, Yao S (2023) Reflexion: Language Agents with Verbal Reinforcement Learning. In: Advances in Neural Information Processing Systems 36.
+
+Wang L, Ma C, Feng X, Zhang Z, Yang H, Zhang J, Chen Z, Tang J, Chen X, Lin Y, Zhao W X, Wei Z, Wen J-R (2023) A Survey on Large Language Model based Autonomous Agents. arXiv preprint arXiv:2308.11432.
+
+Wu Q, Bansal G, Zhang J, Wu Y, Li B, Zhu E, Jiang L, Zhang X, Zhang S, Liu J, Awadallah A H, White R W, Burger D, Wang C (2023) AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation. arXiv preprint arXiv:2308.08155.
+
+Xi Z, Chen W, Guo X, He W, Ding Y, Hong B, Zhang M, Wang J, Jin S, Zhou E, Zheng R, Fan X, Wang X, Xiong L, Zhou Y, Wang W, Jiang C, Zou Y, Liu X, Yin Z, Dou S, Weng R, Cheng W, Zhang Q, Qin W, Zheng Y, Qiu X, Huang X, Gui T (2023) The Rise and Potential of Large Language Model Based Agents: A Survey. arXiv preprint arXiv:2309.07864.
+
+Yao S, Zhao J, Yu D, Du N, Shafran I, Narasimhan K, Cao Y (2023) ReAct: Synergizing Reasoning and Acting in Language Models. In: International Conference on Learning Representations.
+
+Yao S, Yu D, Zhao J, Shafran I, Griffiths T L, Cao Y, Narasimhan K (2023) Tree of Thoughts: Deliberate Problem Solving with Large Language Models. In: Advances in Neural Information Processing Systems 36.
