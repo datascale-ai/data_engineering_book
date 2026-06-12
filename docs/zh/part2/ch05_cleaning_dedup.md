@@ -1,4 +1,4 @@
-# 第5章：清洗、去重与去污染
+# 第5章 清洗、去重与去污染
 
 ## 摘要
 
@@ -50,7 +50,7 @@ FineWeb 项目（Penedo et al. 2024）给出了一个量化答案：针对同样
 
 面对上述问题，工业界实践证明，没有任何单一手段能够独立完成高质量的数据清洗——有效的清洗体系必然是**规则过滤、模型过滤和人工抽检**三类方法的协同组合，每类方法覆盖不同的缺陷类型，各有其最优使用场景（见图5-1）。
 
-![图5-1：清洗与去污染全景流程图](../../images/part2/cleaning_pipeline_overview.png)
+![图5-1：清洗与去污染全景流程图](../../images/part2/cleaning_pipeline_overview.svg)
 
 *图5-1：清洗与去污染全景流程图 —— 多阶段质量闸门从原始语料逐步精炼为候选训练语料，图中比例仅为示意，真实留存率取决于来源质量、过滤阈值和合规要求。来源：本书自绘；Alt text：清洗与去污染全景流程图，展示规则过滤、模型评分、去重、PII 脱敏、去污染和人工抽检的顺序关系。*
 
@@ -409,7 +409,7 @@ def detect_and_redact_pii(
     return text, found
 ```
 
-**命名实体识别（NER）模型**则覆盖规则难以枚举的 PII 类型，如真实人名、地址和机构名。推荐使用 spaCy (Honnibal et al. 2023) 的中文模型（`zh_core_web_trf`）或 HuggingFace 上开源的中文 NER 模型，对人名（PER）、地点（LOC）、机构（ORG）等命名实体进行识别，再根据上下文判断是否需要脱敏。
+**命名实体识别（NER）模型**则覆盖规则难以枚举的 PII 类型，如真实人名、地址和机构名。推荐使用 spaCy (Honnibal et al. 2020) 的中文模型（`zh_core_web_trf`）或 HuggingFace 上开源的中文 NER 模型，对人名（PER）、地点（LOC）、机构（ORG）等命名实体进行识别，再根据上下文判断是否需要脱敏。
 
 ---
 
@@ -508,7 +508,7 @@ class DocumentQualityScore:
 
 质量闭环的设计思路是**人工审计驱动规则迭代**，而非"人工处理每条数据"（后者在 PB 级语料下根本不可行），完整流程见图5-2。
 
-![图5-2：质量过滤漏斗与抽检闭环图](../../images/part2/quality_filter_funnel_loop.png)
+![图5-2：质量过滤漏斗与抽检闭环图](../../images/part2/quality_filter_funnel_loop.svg)
 
 *图5-2：质量过滤漏斗与抽检闭环 —— 左侧漏斗展示每阶段的数据留存率，右侧闭环展示人工抽检如何驱动过滤规则的持续迭代优化。来源：本书自绘；Alt text：质量过滤漏斗与抽检闭环图，展示规则过滤、模型评分、去重、人工抽检和规则回写之间的循环关系。*
 
@@ -547,7 +547,7 @@ class DocumentQualityScore:
 
 ---
 
-## 5.8 大规模工程案例与问题复盘
+## 5.8 大规模工程案例与踩坑复盘
 
 以下案例均为匿名化复合案例，数据规模、比例和周期用于说明工程口径；截至 2026-06，实际数值会随语料来源、清洗规则、模型规模和评测方法变化。
 
@@ -626,7 +626,7 @@ Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedin
 
 Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.
 
-Honnibal M, Montani I, Van Landeghem S, Boyd A (2023) explosion/spaCy: v3.7.2: Fixes for APIs and requirements. Zenodo. <https://doi.org/10.5281/zenodo.1212303>.
+Honnibal M, Montani I, Van Landeghem S, Boyd A (2020) spaCy: Industrial-strength Natural Language Processing in Python. Available at: https://spacy.io/ (Accessed 2024-11).
 
 Indyk P, Motwani R (1998) Approximate Nearest Neighbors: Towards Removing the Curse of Dimensionality. In: Proceedings of the 30th Annual ACM Symposium on Theory of Computing, pp 604-613.
 
@@ -636,13 +636,13 @@ Penedo G, Kydlíček H, Ben Allal L, Lozhkov A, Mitchell M, Raffel C, von Werra 
 
 Penedo G, Malartic Q, Hesslow D, Cojocaru R, Cappelli A, Alobeidli H, Pannier B, Almazrouei E, Launay J (2023) The RefinedWeb Dataset for Falcon LLM: Outperforming Curated Corpora with Web Data Only. In: Advances in Neural Information Processing Systems 36.
 
-Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur R, Bogin B, Chandu K, Dumas L, Elazar Y, others (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.
+Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur R, Bogin B, Chandu K, Dumas J, Elazar Y, Hofmann V, Jha A H, Kumar S, Lucy L, Lyu X, Lambert N, Magnusson I, Morrison J, Muennighoff N, Naik A, Nam C, Peters M E, Ravichander A, Richardson K, Shen Z, Strubell E, Subramani N, Tafjord O, Walsh P, Zettlemoyer L, Smith N A, Hajishirzi H, Beltagy I, Groeneveld D, Dodge J, Lo K (2024) Dolma: An Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. arXiv preprint arXiv:2402.00159.
 
 
 Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.
 
 Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Measuring Massive Multitask Language Understanding (MMLU). In: International Conference on Learning Representations.
 
-Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
+Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, Ray A, Puri R, Krueger G, Petrov M, Khlaaf H, Sastry G, Mishkin P, Chan B, Gray S, Ryder N, Pavlov M, Power A, Kaiser L, Bavarian M, Winter C, Tillet P, Such F P, Cummings D, Plappert M, Chantzis F, Barnes E, Herbert-Voss A, Guss W H, Nichol A, Paino A, Tezak N, Tang J, Babuschkin I, Balaji S, Jain S, Saunders W, Hesse C, Carr A N, Leike J, Achiam J, Misra V, Morikawa E, Radford A, Knight M, Brundage M, Murati M, Mayer K, Welinder P, McGrew B, Amodei D, Sutskever I, Zaremba W (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
 
 Nait Saada T, Bethune L, Klein M, Grangier D, Cuturi M, Ablin P (2025) The Data-Quality Illusion: Rethinking Classifier-Based Quality Filtering for LLM Pretraining. arXiv preprint arXiv:2510.00866.

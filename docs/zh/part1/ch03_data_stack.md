@@ -1,4 +1,4 @@
-# 第3章：AI原生数据栈与成本治理
+# 第3章 AI原生数据栈与成本治理
 
 ## 摘要
 
@@ -8,7 +8,7 @@
 
 AI 原生数据栈；数据基础设施；Ray Data；Apache Iceberg；对象存储；成本治理；DataOps
 
-## 学习目标
+**学习目标**
 
 - 区分传统数仓与 LLM 数据栈在目标和工作负载上的差异。
 - 理解 AI 原生数据栈的五层架构及其关键接口。
@@ -67,7 +67,7 @@ LLM 数据栈的工作负载有着截然不同的特征结构：
 
 在明确了 AI 原生数据栈与传统数仓的本质差异之后，我们可以开始系统性地建立这套体系的架构蓝图（见图3-1）。一套完整的 LLM 数据栈，从底到顶可以拆解为五个功能层级，每一层都有其核心职责和关键的技术选型决策。
 
-![图3-1：AI原生数据栈五层架构，展示采集接入、处理编排、存储索引、评测运营和治理安全层之间的数据流](../../images/part1/ai_data_stack_architecture.png)
+![图3-1：AI原生数据栈五层架构，展示采集接入、处理编排、存储索引、评测运营和治理安全层之间的数据流](../../images/part1/ai_data_stack_architecture.svg)
 
 *图3-1：AI 原生数据栈五层架构。来源：本书自绘。该图展示采集接入、处理编排、存储索引、评测运营和治理安全层如何协同驱动数据从原始语料流向可训练数据集；Alt text：AI 原生数据栈五层架构，展示采集接入、处理编排、存储索引、评测运营和治理安全层之间的数据流。*
 
@@ -117,7 +117,7 @@ def register_ingestion(record: DataIngestionRecord, metadata_db_path: str):
 
 处理编排层要解决的核心工程问题是：如何让这些步骤在数千个并行计算节点上高效执行，同时保证整个流水线的可观测性、可恢复性和可复现性。
 
-目前工业界最主流的两种选择是 **Apache Spark** (Zaharia et al. 2016) 和 **Ray Data** (Moritz et al. 2018)，两者在设计哲学和适用场景上存在根本性的差异，其核心特性对比如表 3-1 所示：
+目前工业界最主流的两种选择是 **Apache Spark** (Zaharia et al. 2016) 和 **Ray Data** (Moritz et al. 2018)，两者在设计哲学和适用场景上存在根本性的差异：
 
 *表3-1：Apache Spark vs Ray Data 核心特性对比。来源：本书基于开源框架公开文档与 LLM 数据处理实践整理。*
 
@@ -176,7 +176,7 @@ LLM 数据栈要同时管理三种性质截然不同的数据，每种数据对�
 
 **文本语料与结构化标注数据**是体量最大的一类，包括清洗后的预训练语料（Parquet 格式）、SFT 样本集（JSONL 格式）和偏好对比数据集等。这类数据的读写模式是典型的批处理：大批量顺序写入（数据处理完成后整批落盘），大批量顺序读取（训练时 DataLoader 顺序扫描）。对象存储（AWS S3 / MinIO）是这类数据通常的推荐选择，但在其之上需要叠加一层数据湖表格式（Lakehouse Format）来解决版本管理和 ACID 事务的需求。
 
-目前主流的三种数据湖格式各有其适用场景，其特性对比如表 3-2 所示：
+目前主流的三种数据湖格式各有其适用场景：
 
 *表3-2：数据湖表格式选型对比（Apache Iceberg vs Delta Lake vs Apache Hudi）。来源：本书基于开源项目公开文档与湖仓架构实践整理。*
 
@@ -193,7 +193,7 @@ LLM 数据栈要同时管理三种性质截然不同的数据，每种数据对�
 
 **向量数据（Embeddings）**是第二类存储需求，主要服务于 RAG（检索增强生成）场景。向量数据库的核心职责是将海量文本 Chunk 转化为高维稠密向量并建立索引，支持高效的近似最近邻（ANN）检索 (Malkov and Yashunin 2020)。目前主流的向量数据库有 Milvus（开源，支持大规模分布式部署）、Qdrant（Rust 实现，性能较强，轻量部署友好）和 Weaviate（内置多模态向量支持，Schema 友好）等。选型时的核心决策因素是：向量数量规模（100 万以下 vs 亿级）、是否需要 Hybrid Search（稠密向量 + BM25 (Robertson and Zaragoza 2009) 稀疏检索的混合）、以及运维团队对分布式系统的运维能力。
 
-**模型 Checkpoint 与实验产物**是第三类，包括训练过程中保存的模型权重文件（动辄数百 GB）、TensorBoard 或 W&B 的训练日志、以及 Tokenizer 配置等。这类数据量大、访问频率不均匀（训练中频繁写入，训练后几乎只读），适合以对象存储为主存储，配合 DVC（Data Version Control）(DVC 2024) 或 MLflow Artifacts 做版本追踪。
+**模型 Checkpoint 与实验产物**是第三类，包括训练过程中保存的模型权重文件（动辄数百 GB）、TensorBoard 或 W&B 的训练日志、以及 Tokenizer 配置等。这类数据量大、访问频率不均匀（训练中频繁写入，训练后几乎只读），适合以对象存储为主存储，配合 DVC（Data Version Control）(Kuprieiev et al. 2021) 或 MLflow Artifacts 做版本追踪。
 
 ```bash
 # 使用 DVC 为数据集建立版本追踪
@@ -211,7 +211,7 @@ dvc push  # 将实际数据推送到 S3 远程存储
 
 评测运营层的职责是为整个数据平台提供可观测性（Observability）——让团队能够实时看到数据管线的运行状态、数据质量的变化趋势，以及各类实验的追踪记录。它是数据飞轮得以持续转动的"仪表盘"。
 
-一个成熟的评测运营层至少应当覆盖四个维度。**数据质量看板**展示每一批次数据的核心质量指标（去重率、PPL 分布、噪声比例、基准污染率），并支持与历史基线的对比，一旦某项指标偏离基线超过设定阈值，立即触发告警。**管线运行监控**追踪数据处理作业的任务完成率、处理速度（文档/秒）、失败重试次数和资源消耗（CPU/内存/网络），确保没有"静默失败"的情况（即任务在报错时没有触发告警，悄悄跳过了大批数据）。生产级机器学习系统中的数据管线技术债务问题已有系统研究 (Sculley et al. 2015)；一站式云原生数据处理平台（如 Data-Juicer 2.0，Chen et al. 2025）可支持 200+ 算子和 TB 级多模态数据的可重现 YAML 化处理管线。**数据抽检工具**提供随机抽样和人工审阅界面，允许数据工程师定期对各节点的输出数据进行人工"望闻问切"，发现自动化检测无法捕捉的系统性质量问题。**实验追踪**则将数据集版本与模型训练实验进行绑定记录，确保每一个模型训练实验都能准确追溯到使用了哪个版本的数据集、哪套清洗配置，这是保证实验可复现性的基础。
+一个成熟的评测运营层至少应当覆盖四个维度。**数据质量看板**展示每一批次数据的核心质量指标（去重率、PPL 分布、噪声比例、基准污染率），并支持与历史基线的对比，一旦某项指标偏离基线超过设定阈值，立即触发告警。**管线运行监控**追踪数据处理作业的任务完成率、处理速度（文档/秒）、失败重试次数和资源消耗（CPU/内存/网络），确保没有"静默失败"的情况（即任务在报错时没有触发告警，悄悄跳过了大批数据）。生产级机器学习系统中的数据管线技术债务问题已有系统研究 (Sculley et al. 2015)；一站式云原生数据处理平台（如 Data-Juicer 2.0，Chen et al. 2025）可支持 100+ 算子和 TB 级多模态数据的可重现 YAML 化处理管线。**数据抽检工具**提供随机抽样和人工审阅界面，允许数据工程师定期对各节点的输出数据进行人工"望闻问切"，发现自动化检测无法捕捉的系统性质量问题。**实验追踪**则将数据集版本与模型训练实验进行绑定记录，确保每一个模型训练实验都能准确追溯到使用了哪个版本的数据集、哪套清洗配置，这是保证实验可复现性的基础。
 
 ### 3.2.5 治理安全层：数据也需要"合规档案"
 
@@ -259,7 +259,7 @@ $$\text{数据工程 ROI} = \frac{\Delta\text{模型性能} \times \text{模型�
 
 将以上三个环节（规划→监控→评估→优化→复盘）串联为一个持续迭代的闭环，即构成了大模型团队的**成本治理闭环**（见图3-2）：
 
-![图3-2：训练数据成本治理闭环图，展示预算规划、成本监控、ROI评估、优化决策和预算复盘的循环](../../images/part1/cost_governance_loop.png)
+![图3-2：训练数据成本治理闭环图，展示预算规划、成本监控、ROI评估、优化决策和预算复盘的循环](../../images/part1/cost_governance_loop.svg)
 
 *图3-2：训练数据成本治理闭环。来源：本书自绘。该图展示从预算规划出发，经过成本监控、ROI 评估和优化决策，最终回归预算复盘的跨版本迭代过程；Alt text：训练数据成本治理闭环图，展示预算规划、成本监控、ROI 评估、优化决策和预算复盘的循环。*
 
@@ -288,7 +288,7 @@ $$\text{数据工程 ROI} = \frac{\Delta\text{模型性能} \times \text{模型�
 
 这个阶段面临的核心挑战是数据管线的**标准化与复用**：多个工程师各自开发的清洗脚本缺乏统一接口，无法复用；数据版本管理混乱，不同的实验用了哪个版本的数据无法准确追踪；随着数据量增长，单机处理已无法满足时效性要求。
 
-推荐的中型团队技术栈为：计算层升级为 **Ray Data**（支持多机分布式，Python 原生友好）或 **Spark on EMR**（如果团队有 Spark 经验）；存储层引入 **Apache Iceberg + S3** 实现数据版本管理；引入 **Weights & Biases** 或 **MLflow** 进行实验追踪；数据质量监控基于第2章 §2.4 描述的评分卡体系，搭建基础的 Grafana 看板。数据处理代码以算子（Operator）为单位进行模块化封装，形成可复用的算子库。
+推荐的中型团队技术栈为：计算层升级为 **Ray Data**（支持多机分布式，Python 原生友好）或 **Spark on EMR**（如果团队有 Spark 经验）；存储层引入 **Apache Iceberg + S3** 实现数据版本管理；引入 **Weights & Biases** 或 **MLflow** 进行实验追踪；数据质量监控基于本章 §2.2 描述的评分卡体系，搭建基础的 Grafana 看板。数据处理代码以算子（Operator）为单位进行模块化封装，形成可复用的算子库。
 
 ### 3.4.3 大型组织的多租户协同模式
 
@@ -350,7 +350,7 @@ Malkov Y A, Yashunin D A (2020) Efficient and Robust Approximate Nearest Neighbo
 
 Apache Software Foundation (2024) Apache Iceberg: Table Specification and Documentation. <https://iceberg.apache.org/spec/> (accessed 2024-11).
 
-DVC Team and Contributors (2024) DVC: Data Version Control - Git for Data & Models. Documentation: <https://dvc.org/doc>. Source repository: <https://github.com/iterative/dvc>.
+Kuprieiev R, Pachhai S, Petrov D, Redzyński P, da Costa-Luis C, Rowlands P, Shcheklein I, Gao J, Gao C, Batóg P (2021) DVC: Data Version Control - Git for Data and Models. Zenodo. <https://doi.org/10.5281/zenodo.5561081>.
 
 Penedo G, Kydlíček H, Ben Allal L, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.
 

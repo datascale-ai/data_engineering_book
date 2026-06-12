@@ -8,7 +8,7 @@
 
 数据质量评估；数据生命周期；数据评分卡；基准污染；数据治理；RAG 评估；DataOps
 
-## 学习目标
+**学习目标**
 
 - 建立跨团队一致的数据质量术语和指标语言。
 - 区分不同训练阶段的数据质量目标和评估方法。
@@ -35,7 +35,7 @@
 > **标注专家**："你们给我这批 SFT 原始数据太差了，里面一半答案在事实上是错的，有的把 2023 年的事件说在 2021 年。"
 > **数据工程师**："这批数据我专门用 KenLM 跑过困惑度过滤，PPL 分布非常好，语言流畅度很高啊。"
 
-问题根因：困惑度（PPL）衡量的是"语言分布合理性"——一个语言流畅但事实全错的段落，PPL 可以非常低（看起来很"好"）。预训练语料过滤中常用的 KenLM 等 n-gram 语言模型正是以此类 PPL 打分作为筛选依据（Heafield 2011）。标注专家需要的"事实准确性"是 PPL 过滤完全覆盖不到的维度。
+问题根因：困惑度（PPL）衡量的是"语言分布合理性"——一个语言流畅但事实全错的段落，PPL 可以非常低（看起来很"好"）。标注专家需要的"事实准确性"是 PPL 过滤完全覆盖不到的维度。
 
 **场景三：产品经理 vs 算法研究员**
 
@@ -56,7 +56,7 @@
 
 ### 2.1.2 生命周期视角下质量目标为何会动态变迁
 
-质量绝非一个静态标准，它随着数据生命周期的推进，在不同阶段呈现出完全不同的核心诉求。如果用一个固定的标准去衡量整个生命周期的数据，必然会有严重的误判。如表 2-1 所示，预训练、指令微调、偏好对齐与 RAG 应用四个阶段的核心质量诉求与检测指标存在显著差异。
+质量绝非一个静态标准，它随着数据生命周期的推进，在不同阶段呈现出完全不同的核心诉求。如果用一个固定的标准去衡量整个生命周期的数据，必然会有严重的误判。
 
 *表2-1：LLM 数据四阶段质量目标演变矩阵。来源：本书整理，规模区间与指标口径为工程常见范围，生产环境需按项目数据集重新校准。*
 
@@ -98,7 +98,7 @@
 
 要解决语言不统一的问题，我们必须在生命周期的各个阶段建立明确的“质量目标层级”（见图2-1）。
 
-![图2-1：生命周期视角下的多维度质量分层架构，展示不同阶段质量指标权重从规模、多样性转向真实性、帮助性](../../images/part1/data_quality_hierarchy_1775835516841.png)
+![图2-1：生命周期视角下的多维度质量分层架构，展示不同阶段质量指标权重从规模、多样性转向真实性、帮助性](../../images/part1/data_quality_hierarchy_1775835516841.svg)
 
 *图2-1：生命周期视角下的多维度质量分层架构。来源：本书自绘。上半部分为水平四阶段流水线：预训练（规模/多样性/低重复率）→ 指令微调SFT（指令覆盖/格式合规/事实准确）→ 偏好对齐RLHF/DPO（对比信号/标注一致性/价值观贴合）→ RAG应用（时效性/检索精度/可追溯性）；下半部分为三角映射结构，展示离线数据质量、代理模型评测和真实业务在线三者的双向关联。Alt text：水平四阶段流水线图，从预训练到RAG应用展示各阶段关键质量指标；下方三角形展示离线数据质量、代理模型评测与真实业务指标的相互关系。*
 
@@ -142,7 +142,7 @@
 
 要建立公共的治理动作，必须将那些模糊的“数据不好”翻译为具体、可测量的缺陷指标矩阵（见图2-2）。
 
-![图2-2：大模型数据缺陷与质量指标交叉映射图，展示六类缺陷与准确度、一致性、多样性、覆盖度和可追溯性之间的关系](../../images/part1/defect_metric_radar_1775835533937.png)
+![图2-2：大模型数据缺陷与质量指标交叉映射图，展示六类缺陷与准确度、一致性、多样性、覆盖度和可追溯性之间的关系](../../images/part1/defect_metric_radar_1775835533937.svg)
 
 *图2-2：大模型数据缺陷与质量指标交叉映射矩阵。来源：本书自绘。矩阵行为六类缺陷：噪声、重复、基准污染、系统偏差、结构缺失、时效衰败；矩阵列为五项质量指标：准确度、一致性、多样性、覆盖度、可追溯性。各单元格以实心圆（强影响）、半圆（中等影响）、空圆（弱影响）标注影响程度。Alt text：6行×5列交叉映射矩阵，行为六类数据缺陷，列为五项质量指标，每个单元格用实心圆、半圆或空圆表示影响强弱；底部附图例说明三种符号含义。*
 
@@ -197,7 +197,7 @@ lsh = MinHashLSH(threshold=calibrated_threshold, num_perm=128)
 
 **3. 基准污染 (Benchmark Contamination)**
 
-定义：爬虫不加筛选地将各类公开 AI 评测题库（GSM8K (Cobbe et al. 2021)、HumanEval (Chen et al. 2021)、MMLU (Hendrycks et al. 2021) 等）的原题及解答一并抓入预训练集，模型在基准测试上得分虚高（机械背诵而非推理）。针对该问题的自动化检测方案已有系统综述 (Shi et al. 2023; Golchin and Surdeanu 2023)。
+定义：爬虫不加筛选地将各类公开 AI 评测题库（GSM8K (Cobbe et al. 2021)、HumanEval (Chen et al. 2021)、MMLU (Hendrycks et al. 2021) 等）的原题及解答一并抓入预训练集，模型在基准测试上得分虚高（机械背诵而非推理）。针对该问题的自动化检测方案已有系统综述 (Shi et al. 2023; Golchin and Surdeanu 2024)。
 
 ```python
 # 基准污染检测: 计算 N-gram 重叠率
@@ -269,7 +269,6 @@ def staleness_ratio(docs: list, threshold_days: int = 180) -> float:
 
 ### 2.3.2 建立核心指标矩阵
 为了将缺陷定量化，书中统一采用五大考核指标：
-
 1. **准确度 (Accuracy)**：数据包含正确知识的比率，是微调数据的最高优指标。
 2. **一致性 (Consistency)**：数据上下游、各模态组合是否存在矛盾（逻辑一致性）。
 3. **多样性 (Diversity) / 熵值**：涵盖不同话题的离散程度分布。
@@ -278,7 +277,6 @@ def staleness_ratio(docs: list, threshold_days: int = 180) -> float:
 
 ### 2.3.3 指标间的博弈与冲突关系
 没有完美的指标组合。强行提升某一指标，往往以另一指标下降为代价。例如：
-
 *   **去重（提升精确性/避免过拟合） vs 多样性**：过于严苛的 MinHash 去重阈值（如超过0.7相似度就丢弃）会消除很多在细微边缘处不同（例如模板代码）的高质量特征学习，导致代码能力受损。
 *   **准确度 vs 时效性**：要求极高的人工专家级验证会大幅拉长生产周期，此时高质量语料产生时，可能对应的事实已经变更。
 
@@ -288,7 +286,7 @@ def staleness_ratio(docs: list, threshold_days: int = 180) -> float:
 
 质量评估框架最终必须落地为具体的工程化自动闸门（见图2-3）。我们通过设立“数据发布评分卡（Data Release Scorecard）”建立闭环。
 
-![图2-3：数据评分卡驱动的自动截断与治理流，展示硬闸门、软闸门、人工复核和回滚动作](../../images/part1/data_quality_gates_1775835548587.png)
+![图2-3：数据评分卡驱动的自动截断与治理流，展示硬闸门、软闸门、人工复核和回滚动作](../../images/part1/data_quality_gates_1775835548587.svg)
 
 *图2-3：数据评分卡驱动的自动截断与治理流。来源：本书自绘。该图展示硬闸门、软闸门、人工复核和回滚动作如何共同阻隔被污染或劣化的数据样本；Alt text：数据评分卡驱动的自动截断与治理流，展示硬闸门、软闸门、人工复核和回滚动作。*
 
@@ -400,7 +398,6 @@ jobs:
 
 ### 2.4.2 质量阈值、阻断闸门设计与回退 (Rollback)
 当新爬取的一批 100G 增量数据到达流水线时：
-
 *   **硬闸门（Hard Gates）**：如果发现基准污染率大幅上升、或命中安全黑名单字典，立刻在此阶段（Stage）进行阻断，禁止流入下一级并自动触发告警（PagerDuty）。
 *   **软闸门（Soft Gates）**：如果文本复杂度、长度分布或领域比例相对上一版本出现明显偏移，暂时封存待人工确认，这被称为“灰度冻结”。
 一旦事后监控发现线上模型退化严重（由于数据引发），DataOps 平台应该支持**快速回退到上一个“清洁”的数据指针组合**。
@@ -518,21 +515,22 @@ Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S,
 Rafailov R, Sharma A, Mitchell E, Manning C D, Ermon S, Finn C (2023) Direct Preference Optimization: Your Language Model Is Secretly a Reward Model. Advances in Neural Information Processing Systems 36:53728-53741.
 
 
-Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
+Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, Ray A, Puri R, Krueger G, Petrov M, Khlaaf H, Sastry G, Mishkin P, Chan B, Gray S, Ryder N, Pavlov M, Power A, Kaiser L, Bavarian M, Winter C, Tillet P, Such F P, Cummings D, Plappert M, Chantzis F, Barnes E, Herbert-Voss A, Guss W H, Nichol A, Paino A, Tezak N, Tang J, Babuschkin I, Balaji S, Jain S, Saunders W, Hesse C, Carr A N, Leike J, Achiam J, Misra V, Morikawa E, Radford A, Knight M, Brundage M, Murati M, Mayer K, Welinder P, McGrew B, Amodei D, Sutskever I, Zaremba W (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
 
 Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.
 
 Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Measuring Massive Multitask Language Understanding (MMLU). In: International Conference on Learning Representations.
+
 Albalak A, Elazar Y, Xie S M, Longpre S, Lambert N, Wang X, Muennighoff N, Hou B, Pan L, Jeong H, Raffel C, Chang S, Hashimoto T, Wang W Y (2024) A Survey on Data Selection for Language Models. arXiv preprint arXiv:2402.16827.
 
 Longpre S, Yauney G, Reif E, Lee K, Roberts A, Zoph B, Zhou D, Wei J, Robinson K, Mimno D M, Ippolito D (2023) A Pretrainer's Guide to Training Data: Measuring the Effects of Data Age, Domain Coverage, Quality, and Toxicity. arXiv preprint arXiv:2305.13169.
 
 Shi W, Ajith A, Xia M, Huang Y, Liu D, Blevins T, Chen D, Zettlemoyer L (2023) Detecting Pretraining Data from Large Language Models. arXiv preprint arXiv:2310.16789.
 
-Golchin S, Surdeanu M (2023) Time Travel in LLMs: Tracing Data Contamination in Large Language Models. arXiv preprint arXiv:2308.14802.
+Golchin S, Surdeanu M (2024) Time Travel in LLMs: Tracing Data Contamination in Large Language Models. In: International Conference on Learning Representations.
 
 Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92.
 
-Bai Y, Jones A, Ndousse K, Askell A, Chen A, DasSarma N, Drain D, Fort S, Ganguli D, Henighan T, Joseph N, Kadavath S, Kernion J, Conerly T, El-Showk S, Elhage N, Hatfield-Dodds Z, Hernandez D, Hume T, Johnston S, Kravec S, Lovitt L, Nanda N, Olsson C, Amodei D, Brown T, Clark J, McCandlish S, Olah C, Mann B, Kaplan J (2022) Constitutional AI: Harmlessness from AI Feedback. arXiv preprint arXiv:2212.08073.
+Bai Y, Kadavath S, Kundu S, Askell A, Kernion J, Jones A, Chen A, Goldie A, Mirhoseini A, McKinnon C, Chen C, Olsson C, Olah C, Hernandez D, Drain D, Ganguli D, Li D, Tran-Johnson E, Perez E, Kerr J, Mueller J, Ladish J, Landau J, Ndousse K, Lukosuite K, Lovitt L, Sellitto M, Elhage N, Schiefer N, Mercado N, DasSarma N, Lasenby R, Larson R, Ringer S, Johnston S, Kravec S, El Showk S, Fort S, Lanham T, Telleen-Lawton T, Conerly T, Henighan T, Hume T, Bowman S R, Hatfield-Dodds Z, Mann B, Amodei D, Joseph N, McCandlish S, Brown T, Kaplan J (2022) Constitutional AI: Harmlessness from AI Feedback. arXiv preprint arXiv:2212.08073.
 
 Nait Saada T, Bethune L, Klein M, Grangier D, Cuturi M, Ablin P (2025) The Data-Quality Illusion: Rethinking Classifier-Based Quality Filtering for LLM Pretraining. arXiv preprint arXiv:2510.00866.

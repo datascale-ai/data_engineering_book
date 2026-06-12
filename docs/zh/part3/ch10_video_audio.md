@@ -1,4 +1,4 @@
-# 第10章：视频与音频数据工程
+# 第10章 视频与音频数据工程
 
 ## 摘要
 
@@ -50,7 +50,7 @@
 
 面对长时序数据，数据清洗工厂不能沿用早期图文对时代的“一图配一句（Image-Text Pair）”模式。我们需要搭建一套能够剥离并处理视觉、声学和文本等多条独立轨道的**音视频样本构建全流程自动化平台**。
 
-![图10-1：音视频对齐分布式管线图](../../images/part3/av_sample_pipeline.png)
+![图10-1：音视频对齐分布式管线图](../../images/part3/av_sample_pipeline.svg)
 
 *图10-1：音视频对齐分布式管线图（Audio-Video Pipeline: Temporal Alignment） —— 左侧原始 Video Lake 中的混合视频被剥离为视觉（Visual Track）和声学（Acoustic Track）双轨并行管线，视觉帧提取器与声学分离器各自提取特征后，最终汇集入跨模态时间对齐引擎（Temporal Alignment Engine），生成带时间戳闭合约束的多模态输入样本（Aligned Multimodal JSONL）。来源：本书自绘；Alt text：音视频对齐分布式管线图，展示原始视频被拆分为视觉轨、音频轨和文本轨，并通过时间对齐引擎生成 JSONL 样本。*
 
@@ -61,7 +61,7 @@
 1. **关键的镜头切换点检测（Shot Boundary Detection）**
    我们需要在视觉流水线（Top Path）中加入快速检测节点，如采用**双阈值颜色直方图比对**（硬切变 Hard Cut 采用高阈值、软渐变 Fade/Dissolve 采用低阈值）或轻量级的两帧之间光流差异（Optical Flow Difference）计算，以捕获视频中由于机位推拉、镜头剪辑引起的硬切变与软渐变。只有在同一镜头内保持的连续帧，才适合作为一个完整的知识概念（Event Grounding）进入预训练视觉模型。
 
-![图10-2：自适应镜头边界检测与语义防泄漏架构图](../../images/part3/av_shot_boundary_hsv.png)
+![图10-2：自适应镜头边界检测与语义防泄漏架构图](../../images/part3/av_shot_boundary_hsv.svg)
 
 *图10-2：自适应镜头边界检测与语义防泄漏架构图（Adaptive Shot Boundary Detection & Semantic Leakage Prevention） —— 展示双轨特征侦测逻辑：上层提取 HSV 多通道色彩空间聚合差分，下层提取光流像素位移（Optical Flow）以捕捉细微运动姿态。两种张量差分在右侧汇入“双重阈值路由（Dual-Threshold Triage）”。当突变分值 $\Delta$ 超过硬切阈值（Hard Cut Threshold）时，引擎切分片段，避免场景转换导致视觉切片语义泄漏。来源：本书自绘；Alt text：自适应镜头边界检测图，展示 HSV 差分、光流差分和双阈值路由如何共同判断镜头切分点。*
 
@@ -76,7 +76,7 @@
 #### A. 核心语义层提取：超大并发的 WhisperX 自动语音识别（ASR）
 对于语音轨，常见做法是调用开源 Whisper (Radford et al. 2023) 或 WhisperX (Bain et al. 2023) 等框架，将夹杂口音、噪声和停顿的音频转写为带时间戳的结构化文字序列。
 
-![图10-3：大规模 ASR 提取与时间轴动态校准对比图](../../images/part3/asr_whisperx_comparison.png)
+![图10-3：大规模 ASR 提取与时间轴动态校准对比图](../../images/part3/asr_whisperx_comparison.svg)
 
 *图10-3：大规模 ASR 提取与时间轴动态校准对比图（Large-Scale ASR Extraction & Temporal Calibration） —— 展示传统 ASR 管道在长序列中可能产生累积性时间漂移（Cumulative Temporal Drift）和语义错误（将 `I love apples.` 误听写为 `maples.`）；中间展示 WhisperX 通过 VAD 切分、多路声学解码与 DTW（音素级强制对齐）矩阵进行时间校准；底部展示词汇 Token 与音频波谷通过垂直虚线对齐后的输出。来源：本书自绘；Alt text：ASR 提取与时间轴校准对比图，展示传统 ASR 漂移、WhisperX 校准和词级时间戳对齐结果。*
 
@@ -95,7 +95,7 @@
 
 一条字幕在 ASR 中写着 “Hello World!”，但在 10 秒钟时序片段里，究竟是哪几毫秒、哪个帧、哪个嘴型匹配这句声音，需要通过时间锚点（Temporal Anchors）明确。如果不建立这种绑定，大模型难以学习声画同步和口型匹配预测。
 
-![图10-4：跨模态时序校准与几何对齐架构图](../../images/part3/av_alignment_diagram.png)
+![图10-4：跨模态时序校准与几何对齐架构图](../../images/part3/av_alignment_diagram.svg)
 
 *图10-4：跨模态时序校准与几何对齐架构图（Cross-Modal Geometric & Temporal Alignment） —— 顶端青色轨道表示视觉关键帧（Visual Modality），中段灰色轨道表示声学特征（Acoustic Modality），底端珊瑚色轨道表示离散文本 Token（Discrete Textual Tokens）。中央时间轴在 `t=4.2s` 处将“端起水杯的视觉动作”、“波谷处的声学特征”与 `<start:4.2s> "Water cup"` 文本标签绑定，最终生成统一的 Mixed Token Pipeline / JSONL 样本。来源：本书自绘；Alt text：跨模态时序校准图，展示视觉帧、音频波形和文本 Token 如何通过同一时间轴锚点绑定。*
 
@@ -147,7 +147,6 @@
 ### 10.4.1 解码器算力（CPU/GPU）与 I/O 带宽量化
 
 关键问题是“到底用什么硬件解码（Decoding）视频帧”。
-
 1. **纯 CPU 软件解码的局限**：在早期架构设计中，团队可能使用高配 CPU、多线程 ffmpeg 或 Python OpenCV 进行软件解码。高并发下，内存搬运和 PCIe/RAM 带宽会很快成为瓶颈。
 2. **硬件编解码引擎加速（Hardware Video Decoders, NVDEC）**：更适合大规模清洗的方案，是将解码任务卸载至专有硬件。通过调用 GPU 芯片里的视频解码模块（例如 NVDEC API），可以减少 CPU 解码压力并提升吞吐。虽然需要购买 GPU 实例，但在大规模清洗下通常是降本的核心手段。
 
@@ -334,9 +333,11 @@ DataLoader worker 0: Pipe broken, resetting shard iterator. Skipping shard.
 
 ## 本章小结
 
-本章把数据工程从静态图文扩展到带时间维与音频维的长时序数据，核心结论是视频音频"看起来多、可用样本少"：维度从 $(W{\times}H{\times}C)$ 增长到 $(T{\times}W{\times}H{\times}C)$，叠加静止冗余、音画分离和解码 I/O 瓶颈，原始素材中真正可用的比例往往很低。为此本章建立视觉、声学、文本三轨并行流水线：视觉侧用镜头边界检测切分语义连续片段，再以 DINOv2 特征位移做自适应抽帧；声学侧经 WhisperX 转写、Demucs 降噪、说话人日志切分和 LLM 字幕纠错；最后通过时间锚点把字幕、波形和关键帧锁定在同一时间轴上，封装为多轨混拼的 JSONL 样本。
+本章围绕“视频与音频数据工程”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
 
-在此基础上本章补充了密集事件标注、音画错配检测，以及围绕解码硬件（NVDEC/DALI）、画质声学评分和分阶段成本占比的工程治理，并以 30ms 读取偏置累积导致音画系统性错位的复盘，说明时序对齐缺位对训练信号的破坏。本章的三轨样本解决了长时序信号的切分与同步问题，但图像、文本、音频、视频如何在同一语义空间形成稳定对应，仍需专门的对齐与融合设计，这是下一章的内容。
+本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
+
+在全书结构中，本章位于多模态数据工程层，承担承接前文基础概念并导向SFT、偏好和跨模态对齐的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
 
 ## 参考文献
 
@@ -344,11 +345,11 @@ Bain M, Huh J, Han T, Zisserman A (2023) WhisperX: Time-Accurate Speech Transcri
 
 Bredin H, Yin R, Coria J M, Gelly G, Korshunov P, Lavechin M, Fustes D, Titeux H, Bouaziz W, Gill M P (2020) pyannote.audio: Neural Building Blocks for Speaker Diarization. In: IEEE International Conference on Acoustics, Speech and Signal Processing, pp 7124-7128.
 
-Brooks T, Peebles B, Holmes C, DePue W, Guo Y, Jing L, Schnurr D, Taylor J, Luhman T, Luhman E, others (2024) Video Generation Models as World Simulators (Sora). OpenAI Technical Report.
+Brooks T, Peebles B, Holmes C, DePue W, Guo Y, Jing L, Schnurr D, Taylor J, Luhman T, Luhman E, Lyu C, Ying P (2024) Video Generation Models as World Simulators (Sora). OpenAI Technical Report.
 
 Défossez A, Usunier N, Bottou L, Bach F (2019) Music Source Separation in the Waveform Domain (Demucs). arXiv preprint arXiv:1911.13254.
 
-Oquab M, Darcet T, Moutakanni T, Vo H, Szafraniec M, Khalidov V, Fernandez P, Haziza D, Massa F, El-Nouby A, others (2023) DINOv2: Learning Robust Visual Features without Supervision. Transactions on Machine Learning Research.
+Oquab M, Darcet T, Moutakanni T, Vo H, Szafraniec M, Khalidov V, Fernandez P, Haziza D, Massa F, El-Nouby A, Assran M, Ballas N, Galuba W, Howes R, Huang P, Li S, Misra I, Rabbat M, Sharma V, Synnaeve G, Xu H, Jegou H, Mairal J, Labatut P, Joulin A, Bojanowski P (2023) DINOv2: Learning Robust Visual Features without Supervision. Transactions on Machine Learning Research.
 
 Radford A, Kim J W, Xu T, Brockman G, McLeavey C, Sutskever I (2023) Robust Speech Recognition via Large-Scale Weak Supervision (Whisper). In: Proceedings of the 40th International Conference on Machine Learning, pp 28492-28518.
 
@@ -356,6 +357,6 @@ Gemini Team (2024) Gemini 1.5: Unlocking multimodal understanding across million
 
 Zhang H, Li X, Bing L (2023) Video-LLaMA: An Instruction-tuned Audio-Visual Language Model for Video Understanding. arXiv preprint arXiv:2306.02858.
 
-Zhang Y, Li Z, Liu C, Chen K, Ma L, Sun Y, Dou Q, Ouyang W, Yang M H, others (2024) Video Instruction Tuning with Synthetic Data (LLaVA-Video). arXiv preprint arXiv:2410.02713.
+Zhang Y, Wu J, Li W, Li B, Ma Z, Liu Z, Li C (2024) Video Instruction Tuning with Synthetic Data (LLaVA-Video). arXiv preprint arXiv:2410.02713.
 
 Zohar O, Wang X, Dubois Y, Mehta N, Xiao T, Hansen-Estruch P, Yu L, Wang X F, Juefei-Xu F, Zhang N, Yeung-Levy S, Xia X (2025) Apollo: An Exploration of Video Understanding in Large Multimodal Models. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. arXiv preprint arXiv:2412.10360.

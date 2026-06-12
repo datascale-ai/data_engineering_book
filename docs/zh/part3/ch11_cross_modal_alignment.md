@@ -1,4 +1,4 @@
-# 第11章：跨模态对齐与融合
+# 第11章 跨模态对齐与融合
 
 ## 摘要
 
@@ -65,7 +65,7 @@
 
 在生产级数据平台中，上述对齐对象通常会按颗粒度（Granularity）划分为三个层级，形成跨模态对齐的三级框架。
 
-![图11-1：跨模态对齐的三级金字塔架构](../../images/part3/cross_modal_alignment_hierarchy.png)
+![图11-1：跨模态对齐的三级金字塔架构](../../images/part3/cross_modal_alignment_hierarchy.svg)
 
 *图11-1：跨模态对齐的三级金字塔架构 —— 展现从微观到宏观的三级对齐体系：底层为基于 BBox 的对象级对齐（Object-Level），中层为基于 DTW 时序同步的片段级对齐（Segment-Level），顶层为长上下文交错排序的文档级对齐（Document-Level）。来源：本书自绘；Alt text：跨模态对齐三级金字塔，展示对象级、片段级和文档级对齐之间的层级关系。*
 
@@ -119,7 +119,7 @@
 ```
 这种设计（JSONL Schema）是融合训练数据设计的基石。它使得文本管道和视觉管道能够解耦开发：数据工程师只负责在 JSON 结构中维护元数据和占位符逻辑，而深度学习框架中的 DataLoader 在最后一步才根据 `visual_features_path` 将真正的稠密张量（Dense Tensors）读取并注入到计算图中。
 
-![图11-2：多模态融合与负样本挖掘管线](../../images/part3/fusion_training_sample_design.png)
+![图11-2：多模态融合与负样本挖掘管线](../../images/part3/fusion_training_sample_design.svg)
 
 *图11-2：多模态融合样本设计图 —— 左侧展示独立的图片、音频和文本池，中间展示数据拼装 JSONL 结构，右侧通过占位符技术（Placeholder Grid）映射为离散 Token，最终打包成统一维度的融合张量块供下游模型预训练。来源：本书自绘；Alt text：多模态融合样本设计图，展示图片、音频、文本池如何通过 JSONL 和 Placeholder 映射为统一训练样本。*
 
@@ -136,12 +136,12 @@
 
 ### 11.3.3 难负样本（Hard Negatives）挖掘与质控策略
 
-在对比学习对齐（Contrastive Alignment）中（Dufumier et al. 2025（ICLR）指出，有效的多模态对比学习应同时对齐共享特征、各模态独特特征及协同特征，而非仅优化共享信息），如果模型总是区分简单样本对（例如“猫”和“狗”），能力提升会很快进入边际递减阶段。难负样本的作用，是为模型提供语义接近但关键属性不同的样本对，使其学习更细粒度的视觉、文本和时序差异。
+在对比学习对齐（Contrastive Alignment）中，Dufumier et al. (2025, ICLR) 指出，有效的多模态对比学习应同时对齐共享特征、各模态独特特征及协同特征，而非仅优化共享信息；如果模型总是区分简单样本对（例如“猫”和“狗”），能力提升会很快进入边际递减阶段。难负样本的作用，是为模型提供语义接近但关键属性不同的样本对，使其学习更细粒度的视觉、文本和时序差异。
 
 **难负样本的五大核心挖掘手段：**
 
 1. **极小微差替换法（Subtle Replacement Mining）**：将正样本图片"一只蓝色的杯子放在木桌上"原样保留，从海量句库中找出只改变一个关键修饰词的文本——"一只**黑色**的杯子放在木桌上"——并将其作为负类，使 Vision Encoder 更关注颜色细节。
-2. **跨模态属性错位法（Cross-modal Attribute Swap）**：在图片级进行局部语义改写。通过基于潜在扩散模型的 Inpainting 方法（Rombach et al. 2022）将图片中的"红苹果"改写为"绿苹果"，同时保留原始正向文本。错位样本促使 Cross-attention 层学习视觉区域与文字描述的绑定关系。
+2. **跨模态属性错位法（Cross-modal Attribute Swap）**：在图片级进行局部语义改写。通过 Inpainting 模型将图片中的"红苹果"改写为"绿苹果"，同时保留原始正向文本。错位样本促使 Cross-attention 层学习视觉区域与文字描述的绑定关系。
 3. **批内在线最难负样本挖掘法（In-Batch Online Hard Negative Mining, OHNM）** (Chen et al. 2020)：在每个训练批次内部动态计算所有样本两两之间的相似度，挑选出相似度最高但语义不匹配的样本对。OHNM 无需构建静态数据库，而是让模型实时决定"最有训练价值的困难样本"。
 4. **时序扰动法（Temporal Perturbation，适用于视频-文本）**：将视频字幕与相邻时间窗口（如前后 3 秒）的画面错位配对。例如正样本是「`<00:03-00:06>` 运动员起跑」，负样本则是文本错配到「`<00:10-00:13>` 运动员冲线」。这类样本用于强化模型对时间因果关系的辨别能力。
 5. **大模型合成难负样本法（LLM-Generated Synthetic Hard Negatives）**：调用 LLM 输入正向描述，要求生成"语义极相近但含关键事实错误"的对抗文本。相比词典替换，此法多样性高，是业界主流的规模化生产方式。
@@ -282,8 +282,8 @@ Contrastive loss variance exceeds historical baseline. Training instability dete
 
 **[根因与修复]**：
 
-- **根因**：Hard Negative 挖掘的相似度阈值（0.92）过高，大量真正的正样本对被错误分类为难负样本，产生"假负例污染（False Negative Contamination）"。
-- **修复**：①将阈值从 0.92 降至 0.75，并引入两阶段判断：先用 CLIP 做粗过滤，再用人工规则（如图文是否有词汇级别共现）做精筛；②限制每批次 Hard Negative 占比不超过正样本数的 2 倍；③部署独立的 False Negative 检测器，定期抽样人工审核。
+- **根因**：Hard Negative 挖掘的相似度阈值过高，大量真正的正样本对被错误分类为难负样本，产生"假负例污染（False Negative Contamination）"。
+- **修复**：①降低阈值并引入两阶段判断：先用 CLIP 做粗过滤，再用人工规则（如图文是否有词汇级别共现）做精筛；②限制每批次 Hard Negative 占比；③部署独立的 False Negative 检测器，定期抽样人工审核。
 
 ---
 
@@ -348,15 +348,17 @@ Affected batch: 256 samples. Training step 28,441 aborted.
 
 ## 本章小结
 
-作为第三篇的收束章节，本章论证单模态各自清洗并不能自动带来跨模态推理能力：若图像、文本、音频之间缺少语义、空间或时间的刚性绑定，对比学习会强化错误关联，引发跨模态幻觉。为解决异构空间的模态鸿沟，本章建立对象级、片段级和文档级三级对齐框架——对象级以 BBox 与词汇做坐标锚固，片段级用 DTW/FastDTW 在不等长的帧、波形与文字间做时序映射，文档级在长上下文窗口内对图文声信号交错排序。工程实现上，本章用占位符与特征路径解耦统一表示，按消融实验确定多模态配比以抑制跨模态遗忘，并系统梳理了五类难负样本挖掘手段及其假负例风险。
+本章围绕“跨模态对齐与融合”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
 
-质量侧本章给出跨模态召回率、时序连续性、幻觉率（CHAIR）和蕴含冲突率等指标与对应治理动作，并以部位错配、片段错位和路口语义错配三个复盘，说明几何增强、弱一致性存储和模板化标注如何污染对齐关系。至此多模态数据工程已从"样本是否干净"推进到"模态间是否具有可验证的监督关系"；下一篇将转向 SFT、偏好与人类反馈等指令对齐数据系统。
+本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
+
+在全书结构中，本章位于多模态数据工程层，承担承接前文基础概念并导向SFT、偏好和跨模态对齐的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
 
 ## 参考文献
 
 Chen T, Kornblith S, Norouzi M, Hinton G (2020) A Simple Framework for Contrastive Learning of Visual Representations (SimCLR). In: Proceedings of the 37th International Conference on Machine Learning, pp 1597-1607.
 
-Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: ICML 2021, pp 8748-8763.
+Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, Krueger G, Sutskever I (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: ICML 2021, pp 8748-8763.
 
 
 Sakoe H, Chiba S (1978) Dynamic Programming Algorithm Optimization for Spoken Word Recognition (DTW). IEEE Transactions on Acoustics, Speech, and Signal Processing 26(1):43-49.
@@ -367,4 +369,4 @@ van den Oord A, Vinyals O, Kavukcuoglu K (2017) Neural Discrete Representation L
 
 Wu Y, Chen K, Zhang T, Hui Y, Berg-Kirkpatrick T, Dubnov S (2023) Large-Scale Contrastive Language-Audio Pretraining with Feature Fusion and Keyword-to-Caption Augmentation (CLAP). In: IEEE International Conference on Acoustics, Speech and Signal Processing, pp 1-5.
 
-Dufumier B, Castillo-Navarro J, Tuia D, Thiran J P (2025) What to Align in Multimodal Contrastive Learning? In: Proceedings of the 13th International Conference on Learning Representations. arXiv preprint arXiv:2409.07402.
+Dufumier B, Castillo-Navarro J, Tuia D, Thiran J P (2025) What to Align in Multimodal Contrastive Learning? In: International Conference on Learning Representations. arXiv preprint arXiv:2409.07402.

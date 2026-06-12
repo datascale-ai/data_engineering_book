@@ -55,7 +55,7 @@ LLM；数据配方；开源大模型；训练数据；阶段化调度
 
 > **提示**：通用数据采集、清洗（如 MinHash LSH 去重）与分词（Tokenizer）的基础通用方法论，已经在 Ch04（数据源）、Ch05（清洗）、Ch06（分词）中做了详尽铺垫。如第4章给出的预训练数据源分层地图，构成了本章讨论的基石。本章及本篇将不再赘述这些底层基础设施，而是聚焦于不同模型在配方阶段的具体工程权衡。
 
-![图44-3：预训练数据源分层地图](../../images/part11/4_1_pretrain_data_source_map.png)
+![图44-3：预训练数据源分层地图](../../images/part11/4_1_pretrain_data_source_map.svg)
 <div align="center"><b>图44-3：预训练数据源分层地图（改绘自第4章基础图）</b></div>
 
 **表44-1：主流开源大模型数据透明度光谱 (6 行 × 5 列)**
@@ -289,7 +289,7 @@ Bengio Y, Louradour J, Collobert R, Weston J (2009) Curriculum Learning. In: Pro
 
 Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.
 
-Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
+Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, et al. (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
 
 Groeneveld D, Magnusson I, Bhagia A, Schwenk D, Soldaini L, Tafjord O, Sherborne M, Kinney R, Authur C, Atkinson D, others (2024) OLMo: Accelerating the Science of Language Models. In: Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics, pp 15789-15809.
 

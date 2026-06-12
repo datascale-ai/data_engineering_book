@@ -1,4 +1,4 @@
-# 第4章：数据源、采集与版权
+# 第4章 数据源、采集与版权
 
 ## 摘要
 
@@ -58,7 +58,7 @@ FineWeb 的论文（Penedo et al. 2024）提供了一个重要观察：在相同
 
 如果说第4章是一份大模型数据工程的"购物清单审计"，那么数据源地图就是这份审计的核心视图——它帮助工程师在动手采集任何数据之前，先回答一个关键问题：**我们的语料从哪里来，各占多少，质量和法律风险如何？**
 
-![图4-1：预训练数据源分层地图](../../images/part2/pretrain_data_source_map.png)
+![图4-1：预训练数据源分层地图](../../images/part2/pretrain_data_source_map.svg)
 
 *图4-1：预训练数据源分层地图 —— 三层分类体系按照处理复杂度、知识密度和许可风险对主流数据来源进行定位，并给出典型的配比参考区间。来源：本书自绘；Alt text：预训练数据源分层地图，展示开放网页、论坛问答、百科、代码、学术论文、书籍、企业内部数据和用户反馈数据的质量与合规位置。*
 
@@ -98,9 +98,9 @@ FineWeb 的论文（Penedo et al. 2024）提供了一个重要观察：在相同
 | 企业内部数据 | 知识库 / 文档系统 / 工单 | 私有（需内部授权） | ○ 极低（内部授权后） | ★★★★★ 极高 | ★☆☆☆☆ 项目相关 |
 | 用户在线对话 | 产品用户反馈 / 对话日志 | 隐私协议授权 | △ 中（PII脱敏要求高） | ★★★★☆ 高 | ★★★☆☆ 项目相关 |
 
-### 4.2.3 配比策略：从业务目标反推数据组合
+### 4.2.3 配比策略：从业务目标反推数据食谱
 
-数据配比（Data Mix Ratio）是预训练数据工程中最具策略性的决策之一。没有一个放之四海而皆准的"黄金配方"，因为不同的业务目标需要不同的数据组合。以下是面向四类典型业务目标的配比策略参考：
+数据配比（Data Mix Ratio）是预训练数据工程中最具策略性的决策之一。没有一个放之四海而皆准的"黄金配方"，因为不同的业务目标需要不同的数据"食谱"。以下是面向四类典型业务目标的配比策略参考：
 
 *表4-2：数据配比策略与业务目标对应矩阵。来源：本书整理，配比建议为策略框架，生产环境应通过代理模型评测和消融实验校准。*
 
@@ -255,7 +255,7 @@ def parse_warc_to_clean_text(warc_path: str) -> list[dict]:
   "ingestion_time":  "2024-10-15T08:23:41+08:00",
   "license_type":    "cc-crawl-mixed",           // 采集时判定的许可类型
   "license_risk":    "medium",                   // low / medium / high
-  "language":        "zh",                       // fastText 识别结果 (Joulin et al. 2017)
+  "language":        "zh",                       // fastText 识别结果
   "raw_doc_count":   4280350,
   "raw_size_bytes":  18432000000,
   "parser_version":  "trafilatura==1.6.3",
@@ -265,7 +265,7 @@ def parse_warc_to_clean_text(warc_path: str) -> list[dict]:
 }
 ```
 
-![图4-2：数据采集与权属存证流程图](../../images/part2/data_ingestion_provenance_chain.png)
+![图4-2：数据采集与权属存证流程图](../../images/part2/data_ingestion_provenance_chain.svg)
 
 *图4-2：数据采集与权属存证流程——从数据源触达到最终归档，每个处理阶段均向"Provenance Ledger（权属账本）"追加元数据记录，形成完整的可审计数据血缘链路。来源：本书自绘；Alt text：数据采集与权属存证流程图，展示来源触达、采集、解析、清洗、入库和审计记录之间的链路。*
 
@@ -398,17 +398,17 @@ def classify_license(license_text: str) -> dict:
 
 ## 参考文献
 
-Barbaresi A (2021) Trafilatura: A Web Scraping Library and Command-Line Tool for Text Discovery and Extraction. In: Proceedings of the 59th Annual Meeting of the Association for Computational Linguistics, pp 122-131.
+Barbaresi A (2021) Trafilatura: A Web Scraping Library and Command-Line Tool for Text Discovery and Extraction. In: Proceedings of the ACL-IJCNLP 2021 System Demonstrations, pp 122-131.
 
 Blecher L, Cucurull G, Scialom T, Stojnic R (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.
 
-Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
+Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, Yang A, Fan A, Goyal A, Hartshorn A, Yang A, Mitra A, Sravankumar A, Korenev A, Hinsvark A, Rao A, Zhang A, Rodriguez A, Gregerson A, Spataru A, Roziere B, Biron B, Tang B, Chern B, Caucheteux C, Nayak C, Bi C, Marra C, McConnell C, Keller C, Touret C, Wu C, Wong C, Ferrer C C, Nikolaidis C, Allonsius D, Song D, Pintz D, Livshits D, Wyatt D, Esiobu D, Choudhary D, Mahajan D, Garcia-Olano D, Perino D, Hupkes D, Lakomkin E, AlBadawy E, Lobanova E, Dinan E, Smith E M, Radenovic F, Guzmán F, Zhang F, Synnaeve G, Lee G, Anderson G L, Thattai G, Nail G, Mialon G, Pang G, Cucurell G, Nguyen H, Korevaar H, Xu H, Touvron H, Zarov I, Ibarra I A, Kloumann I, Misra I, Evtimov I, Zhang J, Copet J, Lee J, Geffert J, Vranes J, Park J, Mahadeokar J, Shah J, Linde J v d, Billock J, Hong J, Lee J, Fu J, Chi J, Huang J, Liu J, Wang J, Yu J, Bitton J, Spisak J, Park J, Rocca J, Johnstun J, Saxe J, Jia J, Alwala K V, Prasad K, Upasani K, Plawiak K, Li K, Heafield K, Stone K, El-Arini K, Iyer K, Malik K, Chiu K, Bhalla K, Lakhotia K, Rantala-Yeary L, Maaten L v d, Chen L, Tan L, Jenkins L, Martin L, Madaan L, Malo L, Blecher L, Landzaat L, Oliveira L d, Muzzi M, Pasupuleti M, Singh M, Paluri M, Kardas M, Tsimpoukelli M, Oldham M, Rita M, Pavlova M, Kambadur M, Lewis M, Si M, Singh M K, Hassan M, Goyal N, Torabi N, Bashlykov N, Bogoychev N, Chatterji N, Zhang N, Duchenne O, Çelebi O, Alrassy P, Zhang P, Li P, Vasic P, Weng P, Bhargava P, Dubal P, Krishnan P, Koura P S, Xu P, He Q, Dong Q, Srinivasan R, Ganapathy R, Calderer R, Cabral R S, Stojnic R, Raileanu R, Maheswari R, Girdhar R, Patel R, Sauvestre R, Polidoro R, Sumbaly R, Taylor R, Silva R, Hou R, Wang R, Hosseini S, Chennabasappa S, Singh S, Bell S, Kim S S, Edunov S, Nie S, Narang S, Raparthy S, Shen S, Wan S, Bhosale S, Zhang S, Vandenhende S, Batra S, Whitman S, Sootla S, Collot S, Gururangan S, Borodinsky S, Herman T, Fowler T, Sheasha T, Georgiou T, Scialom T, Speckbacher T, Mihaylov T, Xiao T, Karn U, Goswami V, Gupta V, Ramanathan V, Kerkez V, Gonguet V, Do V, Vogeti V, Albiero V, Petrovic V, Chu W, Xiong W, Fu W, Meers W, Martinet X, Wang X, Wang X, Tan X E, Xia X, Xie X, Jia X, Wang X, Goldschlag Y, Gaur Y, Babaei Y, Wen Y, Song Y, Zhang Y, Li Y, Mao Y, Coudert Z D, Yan Z, Chen Z, Papakipos Z, Singh A, Srivastava A, Jain A, Kelsey A, Shajnfeld A, Gangidi A, Victoria A, Goldstand A, Menon A, Sharma A, Boesenberg A, Baevski A, Feinstein A, Kallet A, Sangani A, Teo A, Yunus A, Lupu A, Alvarado A, Caples A, Gu A, Ho A, Poulton A, Ryan A, Ramchandani A, Dong A, Franco A, Goyal A, Saraf A, Chowdhury A, Gabriel A, Bharambe A, Eisenman A, Yazdan A, James B, Maurer B, Leonhardi B, Huang B, Loyd B, Paola B D, Paranjape B, Liu B, Wu B, Ni B, Hancock B, Wasti B, Spence B, Stojkovic B, Gamido B, Montalvo B, Parker C, Burton C, Mejia C, Liu C, Wang C, Kim C, Zhou C, Hu C, Chu C, Cai C, Tindal C, Feichtenhofer C, Gao C, Civin D, Beaty D, Kreymer D, Li D, Adkins D, Xu D, Testuggine D, David D, Parikh D, Liskovich D, Foss D, Wang D, Le D, Holland D, Dowling E, Jamil E, Montgomery E, Presani E, Hahn E, Wood E, Le E, Brinkman E, Arcaute E, Dunbar E, Smothers E, Sun F, Kreuk F, Tian F, Kokkinos F, Ozgenel F, Caggioni F, Kanayet F, Seide F, Florez G M, Schwarz G, Badeer G, Swee G, Halpern G, Herman G, Sizov G, Guangyi, Zhang, Lakshminarayanan G, Inan H, Shojanazeri H, Zou H, Wang H, Zha H, Habeeb H, Rudolph H, Suk H, Aspegren H, Goldman H, Zhan H, Damlaj I, Molybog I, Tufanov I, Leontiadis I, Veliche I, Gat I, Weissman J, Geboski J, Kohli J, Lam J, Asher J, Gaya J, Marcus J, Tang J, Chan J, Zhen J, Reizenstein J, Teboul J, Zhong J, Jin J, Yang J, Cummings J, Carvill J, Shepard J, McPhie J, Torres J, Ginsburg J, Wang J, Wu K, U K H, Saxena K, Khandelwal K, Zand K, Matosich K, Veeraraghavan K, Michelena K, Li K, Jagadeesh K, Huang K, Chawla K, Huang K, Chen L, Garg L, A L, Silva L, Bell L, Zhang L, Guo L, Yu L, Moshkovich L, Wehrstedt L, Khabsa M, Avalani M, Bhatt M, Mankus M, Hasson M, Lennie M, Reso M, Groshev M, Naumov M, Lathi M, Keneally M, Liu M, Seltzer M L, Valko M, Restrepo M, Patel M, Vyatskov M, Samvelyan M, Clark M, Macey M, Wang M, Hermoso M J, Metanat M, Rastegari M, Bansal M, Santhanam N, Parks N, White N, Bawa N, Singhal N, Egebo N, Usunier N, Mehta N, Laptev N P, Dong N, Cheng N, Chernoguz O, Hart O, Salpekar O, Kalinli O, Kent P, Parekh P, Saab P, Balaji P, Rittner P, Bontrager P, Roux P, Dollar P, Zvyagina P, Ratanchandani P, Yuvraj P, Liang Q, Alao R, Rodriguez R, Ayub R, Murthy R, Nayani R, Mitra R, Parthasarathy R, Li R, Hogan R, Battey R, Wang R, Howes R, Rinott R, Mehta S, Siby S, Bondu S J, Datta S, Chugh S, Hunt S, Dhillon S, Sidorov S, Pan S, Mahajan S, Verma S, Yamamoto S, Ramaswamy S, Lindsay S, Lindsay S, Feng S, Lin S, Zha S C, Patil S, Shankar S, Zhang S, Zhang S, Wang S, Agarwal S, Sajuyigbe S, Chintala S, Max S, Chen S, Kehoe S, Satterfield S, Govindaprasad S, Gupta S, Deng S, Cho S, Virk S, Subramanian S, Choudhury S, Goldman S, Remez T, Glaser T, Best T, Koehler T, Robinson T, Li T, Zhang T, Matthews T, Chou T, Shaked T, Vontimitta V, Ajayi V, Montanez V, Mohan V, Kumar V S, Mangla V, Ionescu V, Poenaru V, Mihailescu V T, Ivanov V, Li W, Wang W, Jiang W, Bouaziz W, Constable W, Tang X, Wu X, Wang X, Wu X, Gao X, Kleinman Y, Chen Y, Hu Y, Jia Y, Qi Y, Li Y, Zhang Y, Zhang Y, Adi Y, Nam Y, Yu, Wang, Zhao Y, Hao Y, Qian Y, Li Y, He Y, Rait Z, DeVito Z, Rosnbrick Z, Wen Z, Yang Z, Zhao Z, Ma Z (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
 
 
 Lopez P (2009) GROBID: Combining Automatic Bibliographic Data Recognition and Term Extraction for Scholarship Publications. In: Proceedings of the 13th European Conference on Digital Libraries, pp 473-474.
 
-Li J, Zhang Y, Yu H, Ma X, Chen Y, Jiang H, Dang K, Goyal T, Keh S, Sherborn M, others (2024) DataComp-LM: In search of the next generation of training sets for language models. arXiv preprint arXiv:2406.11794.
+Li J, Fang A, Smyrnis G, Ivgi M, Jordan M, Gadre S, Bansal H, Guha E, Keh S, Arora K, Garg S, Xin R, Muennighoff N, Heckel R, Mercat J, Chen M, Gururangan S, Wortsman M, Albalak A, Bitton Y, Nezhurina M, Abbas A, Hsieh C, Ghosh D, Gardner J, Kilian M, Zhang H, Shao R, Pratt S, Sanyal S, Ilharco G, Daras G, Marathe K, Gokaslan A, Zhang J, Chandu K, Nguyen T, Vasiljevic I, Kakade S, Song S, Sanghavi S, Faghri F, Oh S, Zettlemoyer L, Lo K, El-Nouby A, Pouransari H, Toshev A, Wang S, Groeneveld D, Soldaini L, Koh P W, Jitsev J, Kollar T, Dimakis A G, Carmon Y, Dave A, Schmidt L, Shankar V (2024) DataComp-LM: In search of the next generation of training sets for language models. arXiv preprint arXiv:2406.11794.
 
 Penedo G, Kydlíček H, Ben Allal L, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.
 
-Yu S, Liu Z, Xiong C (2025) Craw4LLM: Efficient Web Crawling for LLM Pretraining. In: Proceedings of the 63rd Annual Meeting of the Association for Computational Linguistics. arXiv preprint arXiv:2502.13347.
+Yu S, Liu Z, Xiong C (2025) Craw4LLM: Efficient Web Crawling for LLM Pretraining. arXiv preprint arXiv:2502.13347.

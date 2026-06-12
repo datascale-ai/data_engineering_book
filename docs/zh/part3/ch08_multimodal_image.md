@@ -1,4 +1,4 @@
-# 第8章：图文对数据工程
+# 第8章 图文对数据工程
 
 ## 摘要
 
@@ -53,7 +53,7 @@
 
 仅仅将图像的边长拉大 4.5 倍，**Attention 层的计算量**就会增加近 **410 倍**（注意：这里衡量的是 Self-Attention 的二次方复杂度，而非整个模型的 FLOPs；其他层如 FFN 的计算量与序列长度呈线性增长，实际总训练算力涨幅仍然显著但略小于 410 倍）。因此，图文多模态数据工程的核心任务之一，是在保留局部细节与控制训练成本之间设计动态裁切、降维与多尺度 Patching 策略（见图8-1中的全景流程）。
 
-![图8-1：图文数据工程全景图](../../images/part3/multimodal_data_panorama.png)
+![图8-1：图文数据工程全景图](../../images/part3/multimodal_data_panorama.svg)
 
 *图8-1：多模态图文数据工程全景图 —— 从最左侧的 DOM 树抓取与 PDF 解析起始，依次穿过格式解析、水印过滤、CLIP 语义对齐、直至最右侧的交错序列拼装与 Token 化表示。分布式计算与 Metadata 是横跨底层的核心支撑。来源：本书自绘；Alt text：图文数据工程全景图，展示 DOM 抽取、图片下载、格式解析、过滤、语义对齐、重标注和序列拼装之间的流程。*
 
@@ -134,7 +134,6 @@
 **工程解法：基于 NVIDIA DALI 的端到端流水线**
 在大型企业的图文处理阵列中，通常会强制切入基于 **NVIDIA DALI（Data Loading Library）** (NVIDIA 2023) 的显存级加速流水线。
 其核心思想是**“尽早将比特推入 GPU，并在显存内解压缩”**：
-
 1. **CPU 仅搬运二进制**：CPU 读取未经解码的 JPEG 字节流（Byte Stream），并不执行解码。
 2. **NVJPEG 硬件解码**：字节流通过 PCIe 高带宽通道送入 GPU 后，调用 GPU 集成的专属 JPEG 硬件解码器（NVJPEG）在显存内部完成解压。
 3. **融合算子变换**：随后的裁剪（Crop）、调整尺寸（Resize）与方差均值归一化（Normalize）等操作全部被编译为一个 CUDA Graph，直接在张量上执行。
@@ -150,7 +149,6 @@
 ### 8.3.3 NSFW、面部隐私与水印靶向拦截
 图文工程相比纯文本工程受到更高伦理合规关注：多模态模型不应学习素人人脸隐私、敏感内容或版权水印模板。
 在这一阶段的流水线通常串联部署了三至四个小型的纯视觉或分类网络：
-
 1. **NSFW 分类器**：对概率打分超过阈值（如 0.4）的高风险图像执行删除或隔离复核。
 2. **水印鉴别器 (Watermark Detector)**：由于大量网络图片来自图库（Getty Images、Shutterstock），一旦模型吸收了带水印或模板宣传语的图文对，就可能在生成回答中复现水印字样或促销式文本，并带来版权和商用合规风险。因此，高风险水印样本应被过滤、隔离复核或降权处理。
 3. **模糊度判定阈值 (Blur/Aesthetic Score)**：利用类似 LAION 团队训练的 AES（Aesthetic Predictor）美学评分模型，剔除重度失焦、光照极度昏暗或充斥彩色噪点的低质量图片。
@@ -236,7 +234,7 @@ def filter_by_semantic_score(image, text_caption, threshold=0.25):
 3. **结构化边界框与 OCR 注入 (Grounded Injection)**：
    - **并行流合并**：仅用大模型观察图像仍不够准确，尤其是画面里出现密集数字时。重标注引擎的旁路（Side-car Workflow）会同步调用 PaddleOCR。如果在长描述中发现画面背景有一块广告牌，合并脚本会将其坐标转化为特殊 Token 拼接入文本：`...背景是一块写着 "<box_45_120_350_200> Broadway 5th Ave. </box>" 的广告牌。` 这使视觉符号能够在训练样本中转化为可定位的字符串和坐标信息。
 
-![图8-2：图像语义对齐与过滤流程图](../../images/part3/image_semantic_alignment_flow.png)
+![图8-2：图像语义对齐与过滤流程图](../../images/part3/image_semantic_alignment_flow.svg)
 
 *图8-2：图像语义对齐与过滤流程图 —— 展示基于 CLIP 与启发式规则的量化决策树，将低匹配样本筛出，将中等匹配但高价值图片送往 Re-captioning 流水线，最后将图片 Zero-pad 或动态切分后存入训练池。来源：本书自绘；Alt text：图像语义对齐与过滤流程图，展示质量过滤、CLIP 打分、重标注、动态切分和训练池入库之间的路径。*
 
@@ -252,12 +250,11 @@ def filter_by_semantic_score(image, text_caption, threshold=0.25):
 
 早期 VLM（如 CLIP 及其时代的诸多模型）通常对输入图像采取固定尺寸缩放（Resize）：许多管线会将横版风景图或纵向长文档压缩至 $224 \times 224$ 一类固定正方形输入，导致内容比例失真。为解决这一问题，现代数据工厂在预处理阶段常引入 **AnyRes（动态高分辨率保持）** 策略（见图8-3）：
 
-![图8-3：AnyRes 动态多分辨率切割算法原理图](../../images/part3/anyres_dynamic_patching.png)
+![图8-3：AnyRes 动态多分辨率切割算法原理图](../../images/part3/anyres_dynamic_patching.svg)
 
 *图8-3：AnyRes 动态多分辨率切割算法原理图 —— 展示 AnyRes 的核心思想：左侧的超长全景图（High-Res Input）不再被强制压缩，而是被自适应网格（Adaptive Grid）划分为 $1 \times 3$ 个原生分辨率的局部图像块（Local Patches），同时结合右上方全局缩略图（Global Thumbnail）一同送入 Vision Encoder，以保留高频局部特征与宏观语义。来源：本书自绘；Alt text：AnyRes 动态多分辨率切割算法原理图，展示全景图被切成局部块并与全局缩略图共同输入视觉编码器。*
 
 **AnyRes 原理与核心策略详解：**
-
 1. **基础补零（Zero-padding / Letterboxing）策略**：对于不想失去原始横纵比，且分辨率未溢出的图，在周围补全黑色或均值边框凑成正方块，使得模型能学到相对的无失真几何形状。
 2. **多重补丁切割（Multi-Patch Splitting / Grid Cropping）**：将一张 $336 \times 1008$ 的竖版图片，动态匹配到 $1 \times 3$ 的切割网格（Grid），切割成 3 张 $336 \times 336$ 的正方形子图（Local Sub-patches）。同时，为了不失去全图视野，还会外加一张经过大幅下采样（Down-sampled）的**全局缩略图（Global Context Patch）**。这意味着这 1 张原图将被输入为 4 份 576 Token 的矩阵块（合计消耗 2304 个 Token）。
 3. **坐标编码注入（Positional Embedding Injection）**：被切开的子图不能随便丢进模型。在 DataLoader 组装阶段，需要为每个子图块打上类似 `[<row_1>, <col_1>]` 的二维相对位置编码，让模型知道哪块图在左、哪块在右。
@@ -269,7 +266,7 @@ def filter_by_semantic_score(image, text_caption, threshold=0.25):
 一个平衡的 MLLM 预训练数据混合（Data Mix）需要精确分配不同来源的比重。公开技术报告通常只披露数据类型和训练阶段，很少给出可复用的完整配方；因此下列内容只给出能力维度，不给出固定百分比：
 1. **通用自然图像（Web Images）**：提供基础的世界物体常识（猫狗、汽车、风景色准、人物神态）。这部分通常由严格 CLIP/SigLIP 筛选后的开源数据集（如 DataComp-1B (Gadre et al. 2023) 的核心过滤提纯集）或授权图库承担。
 2. **图表与代码图纸（Charts/Plots/Math）**：提供抽象数理推理能力。如果缺失此部分，大模型看折线图、股票 K 线图或复杂思维导图时，容易产生错误解释。
-3. **高密度 OCR 文档截图（Documents）**：大量的扫描版白皮书、PDF 单页、收据发票影印件。这对于未来模型去充当“合同审查专员”或者“财务发票小助手”至关重要，它训练了模型克服自然图像中极少出现的“超高细粒度文本焦点”（Fine-Grained Text Focus）能力。Qwen-VL 与 Qwen2.5-VL 系列技术报告均把 OCR、文档理解、定位和多分辨率处理列为核心能力来源 (Bai et al. 2023, 2025)。
+3. **高密度 OCR 文档截图（Documents）**：大量的扫描版白皮书、PDF 单页、收据发票影印件。这对于未来模型去充当“合同审查专员”或者“财务发票小助手”至关重要，它训练了模型克服自然图像中极少出现的“超高细粒度文本焦点”（Fine-Grained Text Focus）能力。Qwen-VL 与 Qwen2.5-VL 系列技术报告均把 OCR、文档理解、定位和多分辨率处理列为核心能力来源 (Bai et al. 2023; Bai et al. 2025)。
 
 *表8-2：图像清洗策略与代价对照表。来源：本书整理，代价描述为相对复杂度，实际成本取决于图片分辨率、模型版本、并发和人工抽检比例。*
 
@@ -311,7 +308,7 @@ def filter_by_semantic_score(image, text_caption, threshold=0.25):
 
 ## 参考文献
 
-Alayrac J B, Donahue J, Luc P, Miech A, Barr I, Hasson Y, Lenc K, Mensch A, Millican K, Reynolds M, others (2022) Flamingo: A Visual Language Model for Few-Shot Learning. Advances in Neural Information Processing Systems 35:23716-23736.
+Alayrac J, Donahue J, Luc P, Miech A, Barr I, Hasson Y, Lenc K, Mensch A, Millican K, Reynolds M, Ring R, Rutherford E, Cabi S, Han T, Gong Z, Samangooei S, Monteiro M, Menick J, Borgeaud S, Brock A, Nematzadeh A, Sharifzadeh S, Binkowski M, Barreira R, Vinyals O, Zisserman A, Simonyan K (2022) Flamingo: A Visual Language Model for Few-Shot Learning. Advances in Neural Information Processing Systems 35:23716-23736.
 
 Bai J, Bai S, Yang S, Wang S, Tan S, Wang P, Lin J, Zhou C, Zhou J (2023) Qwen-VL: A Versatile Vision-Language Model's Understanding, Localization, Text Reading, and Beyond. arXiv preprint arXiv:2308.12966.
 
@@ -319,7 +316,7 @@ Bai S, Chen K, Liu X, Wang J, Ge W, Song S, Dang K, Wang P, Wang S, Tang J, Zhon
 
 Dosovitskiy A, Beyer L, Kolesnikov A, Weissenborn D, Zhai X, Unterthiner T, Dehghani M, Minderer M, Heigold G, Gelly S, Uszkoreit J, Houlsby N (2020) An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale (ViT). In: International Conference on Learning Representations 2021.
 
-Gadre S Y, Ilharco G, Fang A, Hayase J, Smyrnis G, Nguyen T, Marten R, Wortsman M, Ghosh S, Zhang G, others (2023) DataComp: In Search of the Next Generation of Multimodal Datasets. Advances in Neural Information Processing Systems 36.
+Gadre S Y, Ilharco G, Fang A, Hayase J, Smyrnis G, Nguyen T, Marten R, Wortsman M, Ghosh D, Zhang J, Orgad E, Entezari R, Daras G, Pratt S, Ramanujan V, Bitton Y, Marathe K, Mussmann S, Vencu R, Cherti M, Krishna R, Koh P W, Saukh O, Ratner A, Song S, Hajishirzi H, Farhadi A, Beaumont R, Oh S, Dimakis A, Jitsev J, Carmon Y, Shankar V, Schmidt L (2023) DataComp: In Search of the Next Generation of Multimodal Datasets. Advances in Neural Information Processing Systems 36.
 
 Laurençon H, Saulnier L, Tronchon L, Bekman S, Singh A, Lozhkov A, Wang T, Karamcheti S, Rush A M, Kiela D, Cord M, Wolf T (2023) OBELICS: An Open Web-Scale Filtered Dataset of Interleaved Image-Text Documents. Advances in Neural Information Processing Systems 36.
 
@@ -329,9 +326,9 @@ Liu H, Li C, Li Y, Lee Y J (2024) Improved Baselines with Visual Instruction Tun
 
 NVIDIA (2023) NVIDIA Data Loading Library (DALI). GitHub repository. <https://github.com/NVIDIA/DALI>.
 
-Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: Proceedings of the 38th International Conference on Machine Learning, pp 8748-8763.
+Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, Krueger G, Sutskever I (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: Proceedings of the 38th International Conference on Machine Learning, pp 8748-8763.
 
-Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, others (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. Advances in Neural Information Processing Systems 35:25278-25294.
+Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, Schramowski P, Kundurthy S, Crowson K, Schmidt L, Kaczmarczyk R, Jitsev J (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. Advances in Neural Information Processing Systems 35:25278-25294.
 
 Zhu W, Hessel J, Awadalla A, Gadre S Y, Dodge J, Fang A, Yu Y, Schmidt L, Wang W Y, Choi Y (2023) Multimodal C4: An Open, Billion-scale Corpus of Images Interleaved with Text. Advances in Neural Information Processing Systems 36.
 

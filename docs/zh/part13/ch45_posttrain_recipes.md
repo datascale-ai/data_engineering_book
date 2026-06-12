@@ -380,7 +380,7 @@ Ethayarajh K, Xu W, Muennighoff N, Jurafsky D, Kiela D (2024) Model Alignment as
 
 Gheshlaghi Azar M, Guo Z D, Piot B, Munos R, Rowland M, Valko M, Calandriello D (2024) A General Theoretical Paradigm to Understand Learning from Human Preferences. Proceedings of the 27th International Conference on Artificial Intelligence and Statistics, pp 4447-4455.
 
-Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
+Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, et al. (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
 
 Lambert N, Morrison J, Pyatkin V, Huang S, Ivison H, Brahman F, Miranda L J V, Liu A, Dziri N, Lyu X, Gu Y, Malik S, Graf V, Hwang J D, Yang J, Le Bras R, Tafjord O, Wilhelm C, Soldaini L, Smith N A, Wang Y, Dasigi P, Hajishirzi H (2025) Tülu 3: Pushing Frontiers in Open Language Model Post-Training. Second Conference on Language Modeling.
 

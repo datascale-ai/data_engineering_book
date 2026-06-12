@@ -1,4 +1,4 @@
-# 第9章：重标注与文档理解
+# 第9章 重标注与文档理解
 
 ## 摘要
 
@@ -88,7 +88,6 @@
 #### （2）中间层：多模型交叉互审机制（Multi-Model-as-a-Judge）
 当面对复杂的交错场景、密集环境或含有细微文化特征的图片时，单一开源模型容易出现幻觉发散（例如把地上的黑色花园灌溉水管识别成黑色蛇）。
 为了降低单一模型的隐性缺陷，流水线会自动将此类复杂批次升级到 **“三盲交叉互审制（MoE-Judge）”**：
-
 1. **并行分诊（Parallel Inference）**：图像同时且独立地送入架构截然不同的视觉引擎 $V_1$ (如基于 CLIP 偏向的 LLaVA)、$V_2$ (如参数量庞大的专有版 InternVL)、以及 $V_3$ (如偏向结构化认知的 Pix2Struct (Lee et al. 2023) 或 Donut (Kim et al. 2022))。
 2. **异构输出（Heterogeneous Output）**：三个视觉模型会同时生成三段不同描述 $C_1, C_2, C_3$。
 3. **文本裁决与融合（LLM Judgement & Fusion）**：再调用一个纯文本模型（如 Claude-3.5-Sonnet 或 GPT-4-Turbo）提取三个描述中的重叠高频语义实体（Overlapping Semantics），并对只有单方观察到的边缘名词或可疑实体进行降权，生成兼顾细节和事实一致性的重述结果。
@@ -153,7 +152,7 @@
 - `grounding_bboxes`：通过 GroundingDINO 提取并映射的细粒度实体坐标，是训练基座具备“指认能力”的核心。
 - `clip_score`与`quality_flag`：用于前置校验过滤的自动打分；是否设为 `REJECT` 应根据当前视觉-文本编码器、语种、图片类型和人工抽检分布校准阈值（完整双轨管道见图9-1）。
 
-![图9-1：重标注与 OCR 双流线增强图](../../images/part3/recaptioning_ocr_pipeline.png)
+![图9-1：重标注与 OCR 双流线增强图](../../images/part3/recaptioning_ocr_pipeline.svg)
 
 *图9-1：重标注与 OCR 增强联合的双轨管道图（Dual-track Pipeline） —— 左侧展示语义密集叙述流（Semantic Vision Track），右侧展示包含 DOM 排版分割与表格矩阵的高密度结构流（Structural Text Track），最终融合为统一的混合监督模板格式。来源：本书自绘；Alt text：重标注与 OCR 双流线增强图，展示视觉重描述、OCR 结构提取、BBox 注入和混合监督格式之间的关系。*
 
@@ -180,14 +179,13 @@
    第一层通常是专门的版面定位网络（如基于 YOLOv8 或 LayoutLMv3 (Huang et al. 2022)）。它的任务是在页面中定位标题组（Title）、正文池（Body Text）、脚注（Footnote）、柱状图容器及代码块（Code Snippet）。
 2. **第二级 OCR：多维领域特化提取管线（Domain-specific Extraction Pipeline）**
    完整 PDF 被切分为独立像素模块（Cropped Patches）后，会被并发推送（Dispatch）给领域特化的提取管线：
-
    - **文档级文本提取**：对于纯文字段落，分发给 Tesseract 或 PaddleOCR 进行高精度拼写矫正提取。
    - **数学公式逆向编译**：遇到密集公式组，标准 OCR 错误率极高。路由给专门微调的开源引擎（如 Nougat (Blecher et al. 2023)）或商业服务（如 Mathpix），将图像直接还原为严格的 LaTeX 代码流（如：`\int_{0}^{\infty} e^{-x^2} dx`）。
    - **复杂表格拓扑重构**：带有合并单元格与跨页表头的表格最难处理。可以使用类似 TableMaster 的专门架构，将视觉上的横竖线转换为机器可读的 HTML 表格标签链或 Markdown 树。
 
 在多级 OCR 提取后，核心工程难点在于**坐标对准机制（Modality Absolute Geometric Alignment）**（见图9-2）。提取出的文字如果不与图片上的像素区域建立绑定，模型仍不知道应关注页面的哪个区域。常见做法是在每段文本后追加 `<box_coord>` 映射串，让注意力机制可以参考这些坐标锚点。
 
-![图9-2：文档结构 Layout-to-Token 映射图](../../images/part3/document_structure_sample.png)
+![图9-2：文档结构 Layout-to-Token 映射图](../../images/part3/document_structure_sample.svg)
 
 *图9-2：文档结构 Layout-to-Token 映射图（Document Structure Layout-to-Token Mapping） —— 左半区展示一份双栏学术报告残页；系统首先通过 Bounding Box 阵列定位标题、正文、图表和公式区域；右半区展示 Nougat、PaddleOCR 等特化模型输出如何经脚本后处理，归并为层级化 Markdown 文本与离散坐标 `[x_y]` 的富文本数据流。来源：本书自绘；Alt text：文档结构 Layout-to-Token 映射图，展示文档页面被版面检测、OCR、公式解析和坐标标注转换为层级文本序列。*
 
@@ -254,9 +252,11 @@
 
 ## 本章小结
 
-本章说明经过基础清洗的图文数据为何仍不足以支撑高级多模态理解，并给出两条互补的重构路径。其一是合成重描述（Re-captioning）：针对原生网页 Caption 的弱描述与漏描述，按短描述、密集描述和多模态对话分层设计数据粒度，通过开源 VLM 批量生成、多模型三盲互审和人工金标的金字塔漏斗控制成本与幻觉，并借助 GroundingDINO、SAM 注入 BBox 坐标，把自然语言描述升级为带空间锚点的结构化监督。其二是 OCR 与长文档理解：由于文字是稀疏高频的离散符号，单靠提高图像分辨率难以稳定读取小数点和表格，需要版面检测、领域特化提取（公式还原为 LaTeX、表格重构为 HTML/Markdown）和坐标对齐，把部分二维视觉解析转化为长上下文阅读问题。
+本章围绕“重标注与文档理解”梳理了该主题在大模型数据工程中的核心问题、处理流程和验收口径。其贡献在于把概念、数据对象、质量信号和工程交付放入同一套叙事中，使读者能够判断哪些环节需要被显式记录，哪些结果需要通过抽样、评测或审计来验证。
 
-在质量侧，本章建立了长短文本一致性交叉校验、语法与重复环路过滤等机器质检探针，并以人工盲抽和错误归因矩阵区分 OCR 精度、版面错乱、重描述幻觉与序列化缺陷的责任来源。本章处理的仍是静态二维数据；当数据扩展到包含时间维与音频维的视频流时，切片、转写与时序对齐将成为新的核心难点，这是下一章的主题。
+本章方法的适用范围应结合数据来源、业务目标、模型能力、成本预算和合规要求共同判断。对于涉及敏感信息、跨系统调用、自动化决策或公开发布的场景，应保留人工复核、版本冻结、权限控制和异常回滚机制，避免把示例流程直接外推为生产承诺。
+
+在全书结构中，本章位于多模态数据工程层，承担承接前文基础概念并导向SFT、偏好和跨模态对齐的作用。读者可将本章的框架与图表、参考文献和附录清单配合使用，把章节中的方法进一步转化为可复现、可检查、可交付的工程流程。
 
 ## 参考文献
 
@@ -274,7 +274,7 @@ Huang Y, Lv T, Cui L, Lu Y, Wei F (2022) LayoutLMv3: Pre-training for Document A
 
 Kim G, Moon S, Xu R, Yim J, Park J, Seo J, Baek J, Yoo M, Park S, Park S (2022) OCR-Free Document Understanding Transformer (Donut). In: European Conference on Computer Vision, pp 498-517.
 
-Kirillov A, Mintun E, Ravi N, Mao H, Rolland C, Gustafson L, Xiao T, Whitehead S, Berg A C, Lo W Y, others (2023) Segment Anything (SAM). In: Proceedings of the IEEE/CVF International Conference on Computer Vision, pp 4015-4026.
+Kirillov A, Mintun E, Ravi N, Mao H, Rolland C, Gustafson L, Xiao T, Whitehead S, Berg A C, Lo W, Dollár P, Girshick R (2023) Segment Anything (SAM). In: Proceedings of the IEEE/CVF International Conference on Computer Vision, pp 4015-4026.
 
 Lee J, Jia M, Sangkloy P, Krishnamurthy J, Han S, Chang S F, Hutchinson B (2023) Pix2Struct: Screenshot Parsing as Pretraining for Visual Language Understanding. In: Proceedings of the 40th International Conference on Machine Learning, pp 18893-18912.
 
@@ -290,8 +290,8 @@ Lu P, Qiu L, Chang K W, Zhu W, Rajpurohit T, Clark P, Kalyan A (2022) Dynamic Pr
 
 Masry A, Long D, Tan J Q, Joty S, Hoque E (2022) ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. In: Findings of the Association for Computational Linguistics: ACL 2022, pp 2263-2279.
 
-Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: ICML 2021, pp 8748-8763.
+Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, Krueger G, Sutskever I (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: ICML 2021, pp 8748-8763.
 
-Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, others (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. Advances in Neural Information Processing Systems 35:25278-25294.
+Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, Schramowski P, Kundurthy S, Crowson K, Schmidt L, Kaczmarczyk R, Jitsev J (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. Advances in Neural Information Processing Systems 35:25278-25294.
 
 Zhu J, Wang W, Chen Z, Liu Z, Ye S, Gu L, Duan Y, Tian H, Su W, Shao J, Gao Z, Cui E, Cao Y, Liu Y, Xu W, Li H, Wang J, Lv H, Chen D, Li S, He Y, Jiang T, Luo J, Wang Y, He C, Shi B, Zhang X, Shao W, He J, Xiong Y, Qu W, Sun P, Jiao P, Wu L, Zhang K, Deng H, Ge J, Chen K, Wang L, Dou M, Lu L, Zhu X, Lu T, Lin D, Qiao Y, Dai J, Wang W (2025) InternVL3: Exploring Advanced Training and Test-Time Recipes for Open-Source Multimodal Models. arXiv preprint arXiv:2504.10479.

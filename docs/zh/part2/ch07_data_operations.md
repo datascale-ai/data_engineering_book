@@ -1,8 +1,8 @@
-# 第7章：数据评估、质量闭环与运营迭代
+# 第7章 数据评估、质量闭环与运营迭代
 
 ## 摘要
 
-本章讨论预训练数据在清洗完成后的持续评估、版本治理和运营迭代问题。章节首先通过匿名化复合案例说明“更干净”的数据并不必然带来更好的模型效果，随后建立数据运营（DataOps）的基本框架：离线代理指标、代表性抽样、质量看板、问题样本库、版本对比和上游策略回写（生产机器学习中的数据生命周期管理参见 Polyzotis et al. 2018; Whang et al. 2023; Liang et al. 2022）。指标部分重点解释困惑度、类型/令牌比率、有毒性与 PII 密度、基准污染和领域覆盖等指标的适用边界，并强调它们只是代理信号，需要与小规模验证器模型和人工抽检结合。后半章给出 5 Whys 根因复盘、周度运营节奏、仪表盘告警和数据资产向 SFT/RAG 复用的路径。读者应能够将数据处理从一次性交付扩展为可追踪、可回滚、可审计的持续运营体系（数据工作在 AI 团队中的人力与组织挑战参见 Sambasivan et al. 2021；工业级 DataOps 平台如 Data-Juicer 2.0 (Chen et al. 2025) 提供 200+ 算子和全链路可回滚运营能力）。
+本章讨论预训练数据在清洗完成后的持续评估、版本治理和运营迭代问题。章节首先通过匿名化复合案例说明“更干净”的数据并不必然带来更好的模型效果，随后建立数据运营（DataOps）的基本框架：离线代理指标、代表性抽样、质量看板、问题样本库、版本对比和上游策略回写（生产机器学习中的数据生命周期管理参见 Polyzotis et al. 2018; Whang et al. 2023; Liang et al. 2022）。指标部分重点解释困惑度、类型/令牌比率、有毒性与 PII 密度、基准污染和领域覆盖等指标的适用边界，并强调它们只是代理信号，需要与小规模验证器模型和人工抽检结合。后半章给出 5 Whys 根因复盘、周度运营节奏、仪表盘告警和数据资产向 SFT/RAG 复用的路径。读者应能够将数据处理从一次性交付扩展为可追踪、可回滚、可审计的持续运营体系（数据工作在 AI 团队中的人力与组织挑战参见 Sambasivan et al. 2021；工业级 DataOps 平台如 Data-Juicer 2.0 (Chen et al. 2025) 提供 100+ 算子和全链路可回滚运营能力）。
 
 ## 关键词
 
@@ -21,7 +21,6 @@
 以下为匿名化复合案例，指标、时间和数据规模用于说明复盘方法。截至 2026-06，类似项目中的评测波动会受到模型规模、语料配比、训练步数和基准选择影响。某个 7B 语言模型研发项目中，数据团队经过两个月的努力，将预训练语料库清洗到非常严格的程度。他们使用启发式规则排除了大量短文本，用困惑度评分去除了“非标准语言”，并用较低的 MinHash 阈值进行查重。团队认为这是一版更干净、更可控的数据。
 
 然而，基于新版数据训练出的模型（代号 v2.0）在多项基准评测上的表现，全面落后于一个月前用粗糙数据（v1.0）训练的版本。深入排查后，团队发现了几个重要事实：
-
 1. 因为剔除了一切带有“大量换行和符号”的文本，模型几乎完全丧失了生成代码和渲染 Markdown 的能力。
 2. 因为剔除了“非标准口语化表达”，模型失去了在对话任务中的共情回应能力，变得像一台冰冷的百科全书。
 3. 严格的去重使得某些极高频事实（如常识地理、基础历史）在训练集中的出现频率过低，导致模型发生了严重的“知识遗忘”。
@@ -58,7 +57,7 @@
 
 这种跨职能协同正是通过“运营飞轮”来实现的（见图7-1）。
 
-![图7-1：数据运营飞轮图](../../images/part2/data_operations_flywheel.png)
+![图7-1：数据运营飞轮图](../../images/part2/data_operations_flywheel.svg)
 
 *图7-1：数据运营飞轮图 —— 左侧展示高成本的起步区，右侧展示经过长期模型评估与根因分析反哺后，逐渐形成的自动化、高质量数据资产积累循环。来源：本书自绘；Alt text：数据运营飞轮图，展示数据生产、模型评估、根因分析、规则回写和资产复用之间的循环关系。*
 
@@ -121,7 +120,7 @@ def calculate_perplexity_batch(texts, cache_model_path="llama-1b-ref"):
 #### 2. 多样性稀疏度（Type-Token Ratio, TTR & 词汇覆盖率）
 - **检测目标**：确认清洗管线是否由于阈值设定过度（或者是去重（MinHash）过于严酷），而导致小众知识或特定长尾词汇的永久流失。
 - **验证手段**：统计前述文档集内不同独特词汇（Type，如词表内单独的词根）和总文本序列长度（Token）的比值。大跨度段落的 TTR 通常较低，故须用特定算法作窗口平均化（如 MATTR (Covington and McFall 2010)）。
-- **解读逻辑**：如果目标文档沙箱的未重复词数、MATTR 或领域词覆盖率显著低于同类来源的历史基线，说明这批数据集可能存在严重的词汇多样性不足（可能源于大量的电商灌水或者机翻死循环）。长此以往，模型将陷入机械式的平庸作答。
+- **解读逻辑**：如果目标文档沙箱的未重复词数、MATTR 或领域词覆盖率显著低于同类来源的历史基线，说明这批数据集可能存在严重的“词穷”现象（可能源于大量的电商灌水或者机翻死循环）。长此以往，模型将陷入机械式的平庸作答。
 
 代码清单7-2展示了 Type-Token Ratio 的离线计算示意。
 
@@ -156,7 +155,7 @@ def calculate_ttr(texts, tokenizer=None):
   - 此外，还需要对包含类似于 `sk-****` (API Token)、`13[0-9]*` (手机号码特征) 的文本触发率进行正则监控，确认 PII 屏蔽层没有在更新时意外抛错。
 
 #### 4. 领域分类与掺杂重叠（Subpopulation Overlap）
-- **检测目标**：这是数据领域近年来最重要的高风险指标之一，又名防止基准污染（Benchmark Contamination Prevention）。团队必须确认日常抓取的随机数据中，没有混入正式评测所用的基准试题（如 GSM8K (Cobbe et al. 2021) 的标准答案、MMLU (Hendrycks et al. 2021) 的英文原本）。一旦混入，将影响评测可信度和科研诚信。
+- **检测目标**：这是数据领域近年来最“高危”的一项指标，又名防止基准污染（Benchmark Contamination Prevention）。我们必须确认日常抓取的随机数据中，没有混入那些用于年终大考的高分基准试题（如 GSM8K (Cobbe et al. 2021) 的标准答案、MMLU (Hendrycks et al. 2021) 的英文原本）。一旦混入，将引发严重的科研诚信危机。
 - **验证手段**：将所有主流 Benchmark 的测试集数据进行 N-gram（通常是 13-gram 或 15-gram）全量散列哈希；随后对待入库的抽样数据做一次交集测算。
 - **解读逻辑**：重叠率（Overlap Ratio）必须无限趋近于零。若某批次语料相对评测集出现明显高于背景噪声的 N-gram 撞车，通常说明某个开源库、镜像站或个人 GitHub 仓库已经把评测内容重新发布进了本次流水线，必须执行定点摘除。
 
@@ -190,9 +189,9 @@ def calculate_ttr(texts, tokenizer=None):
 
 ### 7.3.1 DVC视角下的数据集版本化与 A/B 对比
 
-与代码的 Git 托管类似，对于多达 TB 级别的数据湖我们必须引入 DVC (DVC 2024)（Data Version Control）或者相似的基于 SHA 挂载的不可变对象管控策略。在大规模实验中，切不可原位覆盖并覆盖原始数据，任何处理节点的修改都应产生全新的增量版本或通过 Delta Lake 切割 Snapshot。
+与代码的 Git 托管类似，对于多达 TB 级别的数据湖我们必须引入 DVC (Kuprieiev et al. 2021)（Data Version Control）或者相似的基于 SHA 挂载的不可变对象管控策略。在大规模实验中，切不可原位覆盖并覆盖原始数据，任何处理节点的修改都应产生全新的增量版本或通过 Delta Lake 切割 Snapshot。
 
-**A/B 测试原则**：每次调整新管线（例如：新加入一批由 Reddit 高质量节点解析的数据，并增强针对该网站特定评论树的过滤逻辑），在全面上线前，应抽取等价算力启动小规模平行对照训练。对照实验规模要由模型大小、训练预算和目标评测灵敏度决定。只有在两只实验对照组模型完成核心评测集后，证实目标能力达到预设上线门槛且未损害通用世界常识指标时，此套策略方可全量铺设进入生产版本（例如 v2.1 升级至 v2.2）。
+**A/B 测试原则**：每次调整新管线（例如：新加入一批由 Reddit 高质量节点解析的数据，并增强针对该网站特定评论树的过滤逻辑），在全面上线前，应抽取等价算力启动小规模平行对撞训练。对照实验规模要由模型大小、训练预算和目标评测灵敏度决定。只有在两只实验对照组模型完成核心评测集后，证实目标能力达到预设上线门槛且没有拉挂通用世界常识指标时，此套策略方可全量铺设进入生产版本（例如 v2.1 升级至 v2.2）。
 
 ### 7.3.2 建立“问题样本库”与追溯回环
 
@@ -245,7 +244,6 @@ def calculate_ttr(texts, tokenizer=None):
 
 **复盘与治理动作（Root Cause Action）**
 查明真相后，团队立刻采取了三步走操作：
-
 1. **隔离问题来源**：将属于该来源的所有 PDF 解析数据从数据湖中隔离复核，共计 1.4 TB（约 3.5 亿 Token，示例口径）。
 2. **规则补丁**：给 FastText 语言模型前置一道“有效 UTF-8/目标语言字符占比检测器”，并设置主流自然语言中的标点符号密度下限。
 3. **安全再审核**：针对同批次入库的异构文本，额外增加一重利用小型 LLaMA 判别其能否符合基本语法结构的过滤门禁。
@@ -274,13 +272,12 @@ def calculate_ttr(texts, tokenizer=None):
 ### 7.4.1 数据质量看板的核心模块
 
 优秀的质量仪表盘应当由高到低俯视各项指标。主要包含：
-
 1. **大盘状态统览**：各域名源数据入库量、当前库存余量及已消费的进度百分比。
 2. **清洗漏斗转化率（Yield Rate）**：分阶段留存指标，如语言识别拦截占比、启发式过滤抛弃比率、模糊去重剔除率。任何步骤如骤降或飙升须直接标红告警。
 3. **安全风险底线观测**：记录每一周期 PII 或高敏有害文档查获数及屏蔽日志。
 4. **抽检审计红绿灯**：呈现每周随机抽出的一千条语料样本盲审得分趋势，以 1 至 5 分展示数据通顺度和正确性均线走势（自动化数据验证框架参见 Breck et al. 2019）。
 
-![图7-2：数据评估闭环图](../../images/part2/data_evaluation_loop.png)
+![图7-2：数据评估闭环图](../../images/part2/data_evaluation_loop.svg)
 
 *图7-2：数据评估闭环图 —— 从抽取式盲审到针对评估指标启动根因排查，再针对具体现象采取系统治理动作的环形架构。来源：本书自绘；Alt text：数据评估闭环图，展示抽样评估、指标异常、根因排查、治理动作和规则更新之间的闭环。*
 
@@ -316,27 +313,24 @@ def calculate_ttr(texts, tokenizer=None):
 
 **核心参与者**：数据工程师、数据产品经理、测试评价负责人。
 **主要动线**：
-
 1. **周末预训练巡检**：查看刚刚过去的周末内，主预训练分支持续输入的总 Token 数。核对 `nvidia-smi` 监控面板是否因 DataLoader 卡顿或存储 I/O 阻塞出现 GPU 空转现象（MFU 低于警戒线）。如果存在，需要立刻在当天的第一顺位记录 I/O 缺陷日志。
 2. **离线检测报告开箱**：针对周日晚间最新完成清洗的 T-1 批次数据，提取抽样测试沙箱的 KenLM (Heafield 2011) 困惑度（PPL）、类型/令牌比率（TTR）、文本长度分布直方图。
 3. **指标异常警报排查**：如果 PPL 均线相对历史基线突然上升，通常意味着最新接入的数据源包含未被解析干净的 HTML 杂质。如果安全阻截率（Toxicity Alert）相对基线异常抬升，可能与近期增加社群讨论源有关。在会议上不急于下结论，只确定需要深度钻取的异常点。
 
-### 7.5.2 周二与周三：异常追溯与小规模验证 (Root Cause Analysis)
+### 7.5.2 周二与周三：异常追溯与小股试错验证 (Root Cause Defecting)
 
 **核心参与者**：数据运营官、预训练数据工程师。
 **主要动线**：
-
 1. **针对性盲审与打标**：对周一会议发现的质量坍塌点，提取出 200 条左右的原生语料。运营评估团队人工进行抽样通读，判断规则是“误杀”（假阳性，将好文章删掉了）还是“漏杀”（假阴性，垃圾词汇绕过了正则防线）。
 2. **清洗策略修正**：如果发现问题是“某些代码域名下的特殊缩进导致行过滤逻辑出错”，工程师将在周二下午修正 `FastText` 或正则脚本逻辑，对问题语料的对应模块重新跑一边 Pipeline。
-3. **微型实验排期**：将新洗出的沙箱数据推送到小模型或短周期训练任务上，启动等价对照实验。具体模型规模和运行时长应由训练预算、目标指标灵敏度和排期决定。这正是 DVC（数据版本监控）发挥威力的阶段：严控变量，仅对比如 `v1.2_Base` 与 `v1.2_CodePatch` 的两组跑分。
+3. **微型实验排期**：将新洗出的沙箱数据推送到小模型或短周期训练任务上，启动等价测试对撞实验。具体模型规模和运行时长应由训练预算、目标指标灵敏度和排期决定。这正是 DVC（数据版本监控）发挥威力的阶段：严控变量，仅对比如 `v1.2_Base` 与 `v1.2_CodePatch` 的两组跑分。
 
 ### 7.5.3 周四：实验决策与数据配方调整 (Data Mixing)
 
 **核心参与者**：预训练模型工程师、数据工程师、核心构架师。
 **主要动线**：
-
 1. **A/B 效果对照**：周四早晨，微型实验跑出结果。模型工程师将公布两组数据版本的验证集 Loss 曲线是否发生交叉，以及其在特定的下游测试基准（例如 MMLU (Hendrycks et al. 2021) Code 分项或 GSM8K (Cobbe et al. 2021)）上的通过率偏差。
-2. **定性分析**：如果新数据（`v1.2_CodePatch`）让目标代码能力达到预设门槛，且没有削弱通用的指令遵从度，那么这个清洗补丁（Patch）可以进入候选合并状态。
+2. **定性分析**：如果新数据（`v1.2_CodePatch`）让目标代码能力达到预设门槛，且没有拉垮通用的指令遵从度，那么这个清洗补丁（Patch）可以进入候选合并状态。
 3. **数据重配子集比重**：在本步骤，团队决定下一周正式推入大型集群的数据混合（Data Mix）。例如，若近期评测表明基础推理能力偏弱，可以提高 arXiv 论文、高质量书籍或数学题解的采样权重，并相对降低低价值开放网页样本的权重。具体比例需要通过消融实验校准。
 
 ### 7.5.4 周五：全量产线构建与封版交付 (Production Release)
@@ -345,7 +339,7 @@ def calculate_ttr(texts, tokenizer=None):
 **主要动线**：
 1. **周度版本封版（Freeze）**：结合本周通过检验的修复脚本，从原始数据湖中递进式地提炼最新一版的增量 Token。所有元数据（Metadata）记录并更新，存入云托管环境，将指向该语料版本的指针更新至 DataLoader 的配置文件中。
 2. **发布预演（Smoke Test）**：在一组闲置节点上运行短周期拟真环境，确保这个混入了新权重的序列，在分词（Tokenization）装载、二进制压缩读取和 Tensor 拼装后，能被顺利推送进显卡且不报错。节点数和运行时长应由生产集群规模与历史故障模式决定。
-3. **主训数据切换**：确认无误后，周五晚间对“7B 主模型训练集群”执行平滑切换，模型将在下一个 Checkpoint 读取到最新的 `v1.3` 数据版本。整个工作流在此完成闭环。
+3. **主训数据切换**：确认无误后，周五晚间对“7B 主模型训练集群”执行无感热切，模型将在下一个 Checkpoint 读取到最新的 `v1.3` 数据版本。整个工作流在此完成闭环。
 
 ---
 
@@ -370,9 +364,9 @@ def calculate_ttr(texts, tokenizer=None):
 
 在大模型工程中，预训练语料清洗管线的最后也是最大的战略价值，就是“资产的向下流转”。
 
-那些在预训练期间经过多轮严格评估和人工复核，并最终带来模型指标提升的数据，通常被称为“Golden Dataset（金标准数据集）”。这部分高价值内容（例如格式规范的长篇说明文，或者带有高清图文排版的结构化数据），不应只在单次预训练中使用。
+那些在预训练期间经过一层层严酷的评估、人工的反复打磨，并最终导致模型跑分上涨的被称为“Golden Dataset（金标准数据集）”。这部分含金量最高的内容（例如格式完美的万字说明长文，或者自带极高清晰度图文排版的结构化数据），并不需要只用一遍就扔掉。
 
-在后期做 SFT（监督微调阶段）时，可以从这部分高质量数据中反向抽取无监督问题，使用教师模型（Teacher Model，例如 GPT-4）进行指令生成；在做 RAG（检索增强生成）系统时，预训练阶段留存下的干净、语义对齐且长度合适的高质量文本块，可以转化为知识库中的向量索引源。
+在后期做 SFT（监督微调阶段）时，可以从这段极高质量的数据中反向抽取高质量的无监督问题，使用强大的教师模型（Teacher Model，例如 GPT-4）进行指令生成；在做 RAG（检索增强生成）系统时，预训练阶段留存下的干净、语义对齐且被切割成精巧 Token 长度的高质量文本块，直接就能无缝转化为外挂知识库中的向量索引源。
 
 这也是数据飞轮（Flywheel）之所以能持续转动的根本：一开始高昂的人工抽验测试和离线评估，换来的是整个工程团队不断加深的对“何为好数据”的手感和经验共识。最终留下的流水线配置和领域专有名词库，将成为超越一代训练模型的企业长期知识资本。
 
@@ -388,7 +382,7 @@ def calculate_ttr(texts, tokenizer=None):
 
 ## 参考文献
 
-Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
+Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, Ray A, Puri R, Krueger G, Petrov M, Khlaaf H, Sastry G, Mishkin P, Chan B, Gray S, Ryder N, Pavlov M, Power A, Kaiser L, Bavarian M, Winter C, Tillet P, Such F P, Cummings D, Plappert M, Chantzis F, Barnes E, Herbert-Voss A, Guss W H, Nichol A, Paino A, Tezak N, Tang J, Babuschkin I, Balaji S, Jain S, Saunders W, Hesse C, Carr A N, Leike J, Achiam J, Misra V, Morikawa E, Radford A, Knight M, Brundage M, Murati M, Mayer K, Welinder P, McGrew B, Amodei D, Sutskever I, Zaremba W (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
 
 Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, Hesse C, Schulman J (2021) Training Verifiers to Solve Math Word Problems (GSM8K). arXiv preprint arXiv:2110.14168.
 
@@ -398,9 +392,9 @@ Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedi
 
 Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Measuring Massive Multitask Language Understanding (MMLU). In: International Conference on Learning Representations.
 
-Lees A, Tran V Q, Tay Y, Sorensen J, Gupta J, Metzler D, Vasserman L (2022) A New Generation of Perspective API. In: Proceedings of KDD 2022, pp 3197-3207.
+Lees A, Tran V Q, Tay Y, Sorensen J, Gupta J, Metzler D, Vasserman L (2022) A New Generation of Perspective API: Efficient Multilingual Character-level Transformers. In: Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 3197-3207.
 
-DVC Team and Contributors (2024) DVC: Data Version Control - Git for Data & Models. Documentation: <https://dvc.org/doc>. Source repository: <https://github.com/iterative/dvc>.
+Kuprieiev R, Pachhai S, Petrov D, Redzyński P, da Costa-Luis C, Rowlands P, Shcheklein I, Gao J, Gao C, Batóg P (2021) DVC: Data Version Control - Git for Data and Models. Zenodo. <https://doi.org/10.5281/zenodo.5561081>.
 
 Polyzotis N, Roy S, Whang S E, Zinkevich M (2018) Data Lifecycle Challenges in Production Machine Learning: A Survey. ACM SIGMOD Record 47(2):17-28.
 

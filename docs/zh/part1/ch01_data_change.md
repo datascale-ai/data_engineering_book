@@ -1,4 +1,4 @@
-# 第1章：大模型时代的数据变革
+# 第1章 大模型时代的数据变革
 
 ## 摘要
 
@@ -8,7 +8,7 @@
 
 大模型数据工程；Scaling Laws；数据质量；数据飞轮；基准污染；数据基础设施；模型训练生命周期
 
-## 学习目标
+**学习目标**
 
 - 理解大模型研发从模型中心转向数据中心的主要原因。
 - 区分训练指标、评测指标和业务指标之间的常见脱钩方式。
@@ -80,7 +80,7 @@ $$
 然而，在 Scaling Laws 发布初期，行业中存在一个重要认知偏差。许多团队优先追求扩大参数量（例如发布千亿甚至万亿参数规模的大模型，如早期 175B 参数的 GPT-3 (Brown et al. 2020) 以及后续追随者），并倾向于把模型规模直接等同于性能。
 但到了 2022 年，DeepMind 的一篇名为《Training Compute-Optimal Large Language Models》（即著名的 Chinchilla 论文）(Hoffmann et al. 2022) 的研究打破了这一幻觉。
 
-DeepMind 研究团队进行了严格控制变量的计算最优（Compute-Optimal）实验。结果显示：参数量为 70B（700 亿）的 Chinchilla 模型，在使用约 1.4T（1.4 万亿）Tokens 训练数据后，多项评测结果超过了此前参数量更大的 280B Gopher 模型 (Rae et al. 2021)。两类模型在参数量与训练数据资源上的对比如表 1-1 所示。
+DeepMind 研究团队进行了严格控制变量的计算最优（Compute-Optimal）实验。结果显示：参数量为 70B（700 亿）的 Chinchilla 模型，在使用约 1.4T（1.4 万亿）Tokens 训练数据后，多项评测结果超过了此前参数量更大的 280B Gopher 模型 (Rae et al. 2021)。
 
 *表1-1：DeepMind 旧范式模型与新范式模型数据资源对比。来源：基于 Rae et al. (2021) 与 Hoffmann et al. (2022) 公开论文信息整理。*
 
@@ -104,7 +104,7 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
 当训练数据具有更高信息密度、更少噪声和更清晰的任务结构时，小模型也可能在特定能力上获得显著提升。这说明，合成数据（Synthetic Data）和专家知识蒸馏不是规模扩张的替代品，但可以成为提高数据效率和降低训练成本的重要手段。
 
 ### 1.2.3 核心基石：规模、质量与多样性的工程权衡
-从上述研究脉络可以看到，在大模型数据工程范式下，真正制约模型能力边界的不是单一维度，而是**规模（Scale）、质量（Quality）与多样性（Diversity）**之间的组合权衡。三者在有限预算和有限时间内很难同时达到最优，每一项的极端化通常会带来另外两项或工程成本上的代价。表 1-2 给出了规模、质量与多样性三个维度在数据处理手段、直接收益与主要约束上的成本约束矩阵。
+从上述研究脉络可以看到，在大模型数据工程范式下，真正制约模型能力边界的不是单一维度，而是**规模（Scale）、质量（Quality）与多样性（Diversity）**之间的组合权衡。三者在有限预算和有限时间内很难同时达到最优，每一项的极端化通常会带来另外两项或工程成本上的代价。
 
 *表1-2：大模型数据工程中规模、质量与多样性的成本约束矩阵。来源：本书整理，基于公开研究脉络与工程实践归纳。*
 
@@ -117,7 +117,7 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
 由于无法同时把规模、质量和多样性推到极致，数据工程负责人需要在预算、训练目标、上线时间和风险边界之间做权衡。成熟的数据设计不是简单地扩大语料，而是在三个变量之间找到可解释、可复现、可迭代的平衡点。
 
 ### 1.2.4 传统 AI 生命周期链路与 LLM 数据管线的主要差异
-对于长期从事推荐系统、搜索排序或工业视觉任务的工程团队来说，转向大语言模型训练时常会遇到方法论迁移困难。传统数据仓库和机器学习流水线主要处理结构化表格、日志特征和有限标签空间，而大模型训练面对的是非结构化文本、代码、文档、多模态长序列和开放式生成目标。因此，许多传统 ETL 经验仍然有价值，但不能直接替代面向 LLM 的数据清洗、去重、污染检测、配比、版本管理和训练 I/O 优化。两类数据体系在核心数据类型、物理体量与质量风控博弈点上的差异如表 1-3 所示。
+对于长期从事推荐系统、搜索排序或工业视觉任务的工程团队来说，转向大语言模型训练时常会遇到方法论迁移困难。传统数据仓库和机器学习流水线主要处理结构化表格、日志特征和有限标签空间，而大模型训练面对的是非结构化文本、代码、文档、多模态长序列和开放式生成目标。因此，许多传统 ETL 经验仍然有价值，但不能直接替代面向 LLM 的数据清洗、去重、污染检测、配比、版本管理和训练 I/O 优化。
 
 *表1-3：传统机器学习数据链路与大语言模型原生数据体系对照。来源：本书整理，基于传统数据平台与 LLM 数据管线的工程差异归纳。*
 
@@ -138,9 +138,9 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
 
 在 LLM 研发体系中，角色的融合与接口定义的清晰变得前所未有的重要。此时不再是单向移交数据的流水线，而是必须构建首尾相连的"**数据飞轮（Data Flywheel）**"。
 
-所谓数据飞轮，指的是一个持续自我强化的数据闭环：模型上线后，前端用户的交互行为（如对回答的赞/踩、修改建议、放弃率等）会被采集记录；这些在线负反馈数据经过数据工程师的清洗、标注和结构化处理，转化为下一轮 RLHF (Ouyang et al. 2022) 的偏好对比集；新的偏好数据进入对齐阶段训练出更好的模型；更好的模型再次部署，产生更高质量的在线反馈数据。这一职责重构与角色闭环关系如图 1-1 所示。
+所谓数据飞轮，指的是一个持续自我强化的数据闭环：模型上线后，前端用户的交互行为（如对回答的赞/踩、修改建议、放弃率等）会被采集记录；这些在线负反馈数据经过数据工程师的清洗、标注和结构化处理，转化为下一轮 RLHF (Ouyang et al. 2022) 的偏好对比集；新的偏好数据进入对齐阶段训练出更好的模型；更好的模型再次部署，产生更高质量的在线反馈数据。
 
-![图1-1：大模型时代数据工程职责重构图，展示平台、数据、算法、标注、产品与合规角色之间的闭环接口](../../images/part1/data_engineering_roles_1775830393574.png)
+![图1-1：大模型时代数据工程职责重构图，展示平台、数据、算法、标注、产品与合规角色之间的闭环接口](../../images/part1/data_engineering_roles_1775830393574.svg)
 
 *图1-1：大模型时代数据工程职责重构图。来源：本书自绘。该图展现了从平台架构、数据采集到模型微调验证再到产研迭代的角色飞轮闭环；Alt text：大模型时代数据工程职责重构图，展示平台、数据、算法、标注、产品与合规角色之间的闭环接口。*
 
@@ -187,7 +187,7 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
 
 现代的**大模型数据工程师（LLM Data Engineer）**已经从传统数据工程、机器学习工程和平台工程之间分化出来。这个角色不再只负责 SQL 报表或离线 ETL，也不只是执行标注规范，而是处于模型研发链条的数据接口位置，需要同时具备以下四类能力：
 
-1. **大规模分布式计算能力**：熟练掌握 Ray Data、Apache Spark、Dask 等大规模并行计算框架，能够在数千个 CPU 核心上设计并调优由 MinHash LSH (Broder 1997) + Bloom Filter (Bloom 1970) 驱动的高效去重作业。要能感知 I/O 瓶颈与计算瓶颈的差异，懂得如何调整分区策略（Partitioning）来避免几个超大 Shard 文件阻塞整个作业。
+1. **大规模分布式计算能力**：熟练掌握 Ray Data、Apache Spark、Dask 等大规模并行计算框架，能够在数千个 CPU 核心上设计并调优由 MinHash LSH (Broder 1997) + Bloom Filter 驱动的高效去重作业。要能感知 I/O 瓶颈与计算瓶颈的差异，懂得如何调整分区策略（Partitioning）来避免几个超大 Shard 文件阻塞整个作业。
 2. **算法感知度（ML-Awareness）**：需要深刻理解 Tokenization 的底层原理（BPE、Unigram LM），懂得如何解读 Perplexity（困惑度）曲线来判断数据质量好坏，知道如何利用 KenLM (Heafield 2011) 这样的 N-gram 语言模型为候选数据打出"信息密度评分"，从而在算力成本和语料质量之间做出精确权衡。他们有时需要与算法研究员一起设计"消融实验"（Ablation Study），通过"数据集 A vs 数据集 B"的对照组，探明某类语料对某项基准测试提升的真实贡献率。
 3. **数据治理与版本控制工程**：像 Git 控制代码版本一样，用 LakeFS 或 DVC 管理 TB 乃至 PB 级别的数据集版本。每一次数据过滤规则的修改、每一次领域配比权重的调整，都应当形成一个可追溯的数据版本提交（commit）。这是数据工程区别于"数据搬运"的根本体现——当模型训练出问题时，必须能够"git bisect"般地将低质量数据的源头精确定位到某次配比调整或某一批爬取数据。
 4. **大语言模型生态嗅觉与工具链整合**：熟悉各类主流开源数据集（如 The Pile (Gao et al. 2020)、RefinedWeb (Penedo et al. 2023)、FineWeb-Edu (Lozhkov et al. 2024)、Dolma (Soldaini et al. 2024)、DCLM-Baseline (Li et al. 2024)），了解各数据集的内容偏向与局限；同时能熟练使用 Data-Juicer (Chen et al. 2024)、datatrove (Penedo et al. 2024)、dolma-toolkit 等专为 LLM 逻辑设计的数据处理工具框架，而非用通用 ETL 工具生搬硬套。
@@ -209,9 +209,9 @@ Phi-1 的核心方法来自《Textbooks Are All You Need》(Gunasekar et al. 202
 
 ## 1.4 全生命周期地图与十四篇制导读
 
-理解上述范式变革后，需要用一个全局地图来定位大模型数据工程的主要问题域。本书以系统工程视角将知识结构组织为十四篇。全书十四篇制的生命周期地图如图 1-2 所示。
+理解上述范式变革后，需要用一个全局地图来定位大模型数据工程的主要问题域。本书以系统工程视角将知识结构组织为十四篇。
 
-![图1-2：全书十四篇制生命周期地图，展示从总论、预训练、多模态、对齐、应用、平台、合规到项目实战的知识结构](../../images/part1/data_lifecycle_map_1775830407042.png)
+![图1-2：全书十四篇制生命周期地图，展示从总论、预训练、多模态、对齐、应用、平台、合规到项目实战的知识结构](../../images/part1/data_lifecycle_map_1775830407042.svg)
 
 *图1-2：全书十四篇制生命周期地图。来源：本书自绘。该图以基础设施为底座，串联预训练、多模态、对齐、应用、平台治理、合规与项目实战；Alt text：全书十四篇制生命周期地图，展示从总论、预训练、多模态、对齐、应用、平台、合规到项目实战的知识结构。*
 
@@ -307,7 +307,7 @@ Rae J W, Borgeaud S, Cai T, Millican K, Hoffmann J, Song F, Aslanides J, Henders
 
 Brown T B, Mann B, Ryder N, Subbiah M, Kaplan J D, Dhariwal P, Neelakantan A, Shyam P, Sastry G, Askell A, Agarwal S, Herbert-Voss A, Krueger G, Henighan T, Child R, Ramesh A, Ziegler D, Wu J, Winter C, Hesse C, Chen M, Sigler E, Litwin M, Gray S, Chess B, Clark J, Berner C, McCandlish S, Radford A, Sutskever I, Amodei D (2020) Language Models are Few-Shot Learners. Advances in Neural Information Processing Systems 33:1877-1901.
 
-Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
+Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, Yang A, Fan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
 
 Gunasekar S, Zhang Y, Aneja J, Mendes C C T, Del Giorno A, Gopi S, Javaheripi M, Kauffmann P, de Rosa G, Saarikivi O, Salim A, Shah S, Behl H S, Wang X, Bubeck S, Eldan R, Kalai A T, Lee Y T, Li Y (2023) Textbooks Are All You Need. arXiv preprint arXiv:2306.11644.
 
@@ -329,7 +329,7 @@ Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedin
 
 Chen D, Huang Y, Ma Z, Chen H, Pan X, Ge C, Gao D, Xie Y, Liu Z, Gao J, Li Y, Ding B, Zhou J (2024) Data-Juicer: A One-Stop Data Processing System for Large Language Models. In: Proceedings of the ACM SIGMOD International Conference on Management of Data, Companion Volume, pp 120-134.
 
-Penedo G, Kydlíček H, Cappelli A, Wolf T, Sasko M (2024) DataTrove: large scale data processing. Software repository. <https://github.com/huggingface/datatrove>.
+Penedo G, Kydlíček H, Cappelli A, Sasko M, Wolf T (2024) DataTrove: large scale data processing. GitHub repository. <https://github.com/huggingface/datatrove>.
 
 Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S, Slama K, Ray A, Schulman J, Hilton J, Kelton F, Miller L, Simens M, Askell A, Welinder P, Christiano P F, Leike J, Lowe R (2022) Training Language Models to Follow Instructions with Human Feedback. Advances in Neural Information Processing Systems 35:27730-27744.
 
@@ -348,5 +348,3 @@ Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, 
 Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Measuring Massive Multitask Language Understanding (MMLU). In: International Conference on Learning Representations.
 
 Chen M, Tworek J, Jun H, Yuan Q, Pinto H P d O, Kaplan J, Edwards H, Burda Y, Joseph N, Brockman G, others (2021) Evaluating Large Language Models Trained on Code (HumanEval). arXiv preprint arXiv:2107.03374.
-
-Bloom B H (1970) Space/time Trade-offs in Hash Coding with Allowable Errors. Communications of the ACM 13(7):422-426.
