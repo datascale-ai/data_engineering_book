@@ -125,7 +125,7 @@ In practice, semantic-ownership annotation can be counterintuitive. If a line is
 
 The three schema parts map to the final JSON as follows: $K$ becomes the global `key_information` object, $T$ becomes the `Fee_List` array and its row fields, and $C$ becomes validation relationships attached to numeric fields rather than visible JSON nodes.
 
-![Figure 38-1: ch38_Figure_38-1](../../images/part12/ch38_Figure_38-1_en.png)
+![Figure 38-1: ch38_Figure_38-1](../../images/part12/ch38_01_schema_decomposition_en.png)
 
 *Figure 38-1: Schema-to-JSON mapping. Key fields and table structure become visible JSON nodes; constraints remain verifiable relationships attached to numeric fields.*
 
@@ -206,7 +206,7 @@ This table acts as a contract between annotation rules and evaluation scripts.
 
 StructBill-CN uses a multi-stage pipeline whose goal is to preserve semantic content and business-logic topology while creating traceable quality gates.
 
-![Figure 38-2: ch38_Figure_38-2](../../images/part12/ch38_Figure_38-2_en.png)
+![Figure 38-2: ch38_Figure_38-2](../../images/part12/ch38_02_dataset_construction_pipeline_en.png)
 
 
 
@@ -224,7 +224,7 @@ StructBill-CN uses a multi-stage pipeline whose goal is to preserve semantic con
 
 **6. Logic consistency validation.** The core step checks whether annotations are arithmetically self-consistent: row by row, unit price x quantity approximately equals amount; at document level, line-item amounts approximately sum to total. Tolerance $\varepsilon$ absorbs OCR and floating-point noise.
 
-![Figure 38-3: ch38_Figure_38-3](../../images/part12/ch38_Figure_38-3_en.png)
+![Figure 38-3: ch38_Figure_38-3](../../images/part12/ch38_03_structural_consistency_validation_en.png)
 
 *Figure 38-3: Logic-consistency validation. The same gate is reused during construction to block inconsistent labels and during evaluation/training to score model output.*
 
@@ -502,7 +502,7 @@ A core design principle of SparseTable-Bench is to represent each table image as
 
 The `[EMPTY_CELL]` token here is not ordinary text; it is a placeholder expressing "structure exists, content is absent." It decouples a cell's structural identity from its semantic content: even if the corresponding image region contains no readable characters, that position still has row-column coordinates, a bounding box, and contextual relationships. For sparse tables, this placeholder prevents the model from treating blank regions as non-existent during generation, thereby reducing the probability of column collapse and left-shift errors. Figure 38-4 summarizes the synchronized relationship among the three supervision signals — HTML, text, and bounding boxes — within the same table sample.
 
-![Figure 38-4: Three synchronized supervision signals in a table sample](../../images/part12/ch39_02_supervision_schema.png)
+![Figure 38-4: Three synchronized supervision signals in a table sample](../../images/part12/ch38_04_supervision_schema.png)
 
 From a data engineering perspective, the sample schema of STB includes at least the following fields and validation rules.
 
@@ -523,7 +523,7 @@ It is important to note that the specific notation for the empty-cell token must
 
 The construction of SparseTable-Bench can be organized into four stages: table collection, structure extraction, spatial annotation, and sparse topology augmentation. These four stages are not a simple serial file transformation; rather, they involve repeated validation of consistency among structure, text, and geometry, as illustrated in Figure 38-5.
 
-![Figure 38-5: Four-stage SparseTable-Bench construction pipeline](../../images/part12/ch39_01_stb_pipeline.png)
+![Figure 38-5: Four-stage SparseTable-Bench construction pipeline](../../images/part12/ch38_05_stb_pipeline.png)
 
 #### Case B.4.1 Table Collection
 
@@ -577,7 +577,7 @@ STB-Mask-Stress is the robustness evaluation split within SparseTable-Bench, ded
 
 Figure 38-6 illustrates the basic workflow of STB-Mask-Stress, from column-level occlusion generation to evaluation interpretation.
 
-![Figure 38-6: STB-Mask-Stress occlusion generation and evaluation workflow](../../images/part12/ch39_03_mask_stress_flow.png)
+![Figure 38-6: STB-Mask-Stress occlusion generation and evaluation workflow](../../images/part12/ch38_06_mask_stress_flow.png)
 
 The occlusion strategy of STB-Mask-Stress is column-aware. The workflow can be summarized as follows.
 

@@ -40,7 +40,7 @@ In contrast to naive scaled-down trial-and-error, DeepSeek-V3 (Liu et al. 2024) 
 
 Before examining specific pretraining data recipes, it is necessary to establish a credibility scale for the available information. Intensifying commercial competition has produced wide variation in how today's "open-source models" disclose their data. Without filtering out promotional language in technical reports, engineers can easily misread marketing claims as genuine data engineering documentation. This chapter therefore classifies the degree of data disclosure by leading open-source LLMs along a "transparency spectrum" defined by four dimensions: **Sources**, **Mixture/Ratio**, **Cleaning Pipeline**, and **Downloadability**.
 
-![Figure 44-1: Data Recipe Funnel](../../images/part11/29_1_data_recipe_funnel_en.png)
+![Figure 44-1: Data Recipe Funnel](../../images/part13/ch44_01_data_recipe_funnel_en.png)
 <div align="center"><b>Figure 44-1: Data Recipe Funnel</b></div>
 
 As shown in Figure 44-1, the data recipe funnel narrows progressively from top to bottom. The macro-level figures disclosed in technical reports (e.g., 14.8T tokens) represent only the surface layer; being able to infer the precise mixture ratios for each domain goes one level deeper; and what can actually be translated into engineering actions—such as heuristic filter thresholds and cleaning scripts—lies at the finest level of detail.
@@ -52,12 +52,12 @@ As shown in Figure 44-1, the data recipe funnel narrows progressively from top t
 3. **Black-box (closed source)**:
    Only vague references appear in the technical report—"we collected a large and high-quality multilingual corpus"—with no source breakdown, no specific ratios, no code, and no data downloads. The figures disclosed in such cases typically serve only public-relations purposes and carry minimal engineering value.
 
-![Figure 44-2: Data Transparency Spectrum for Large Language Models](../../images/part11/29_2_data_transparency_spectrum_en.png)
+![Figure 44-2: Data Transparency Spectrum for Large Language Models](../../images/part13/ch44_02_data_transparency_spectrum_en.png)
 <div align="center"><b>Figure 44-2: Data Transparency Spectrum for Large Language Models</b></div>
 
 > **Note**: The foundational methodologies for general data collection, cleaning (e.g., MinHash LSH deduplication), and tokenization have already been covered in detail in Ch04 (Data Sources), Ch05 (Cleaning), and Ch06 (Tokenization). The hierarchical map of pretraining data sources presented in Chapter 4, for instance, forms the foundation for the discussions in this chapter. This chapter and this section of the book will not revisit those lower-level infrastructures, focusing instead on the specific engineering trade-offs each model makes at the recipe stage.
 
-![Figure 44-3: Hierarchical Map of Pretraining Data Sources](../../images/part11/4_1_pretrain_data_source_map.png)
+![Figure 44-3: Hierarchical Map of Pretraining Data Sources](../../images/part13/ch44_03_pretrain_data_source_map.png)
 <div align="center"><b>Figure 44-3: Hierarchical Map of Pretraining Data Sources (redrawn from the foundational figure in Chapter 4)</b></div>
 
 **Table 44-1: Data Transparency Spectrum of Leading Open-Source LLMs (6 rows × 5 columns)**
@@ -88,7 +88,7 @@ After filtering out promotional language in technical reports, the critical ques
 | **Mathematics / Logic** | Forum posts / synthetic derivations | Format clean, logically rigorous | ~10–15% [E] | ~12% [I] | ~15% [E] | ~10% [E], high-quality math data concentrated in later phases | ~10–15% [E], used in Dolmino Mix high-quality phase |
 | **Academic Literature** | ArXiv / medical / legal | Professional terminology, formula parsing | ~5% [I] | ~5–8% [I] | ~8% [I] | ~5% [I], primarily high-quality journals and open-access papers | ~5–8% [I], concentrated in Dolmino Mix academic phase |
 
-![Figure 44-4: Estimated Data Mixture Ratios — Pie Chart Comparison Across Three Models](../../images/part11/29_3_models_pie_chart_en.png)
+![Figure 44-4: Estimated Data Mixture Ratios — Pie Chart Comparison Across Three Models](../../images/part13/ch44_04_models_pie_chart_en.png)
 <div align="center"><b>Figure 44-4: Estimated Data Mixture Ratios — Pie Chart Comparison Across Three Models</b></div>
 
 Examining this comparison table horizontally (as illustrated in Figure 44-4) yields **three important observations**:
@@ -254,7 +254,7 @@ Examining Llama-3, OLMo-2, and Qwen2.5 together yields a clear conclusion: an ef
 
 Therefore, when reproducing a large model under a 1B-token or smaller budget, one cannot simply scale down all settings proportionally. A more principled approach is to partition the token budget into phases: the early phase uses clean general text; the middle phase progressively increases the proportion of code, math, encyclopedias, and books; the late phase concentrates high-quality data for annealing or capability consolidation. If long-context capability is required, a dedicated window-extension phase should be scheduled separately, with short-context and long-text retrieval evaluations jointly monitoring degradation. The essence of a training schedule is ensuring that the model encounters data of appropriate difficulty at the appropriate time. Only in this way can limited tokens be converted into stable capabilities rather than being diluted by uniform sampling.
 
-![Figure 44-5: Llama-3 Annealing Phase Data Composition Timeline (Curriculum Learning Schedule)](../../images/part11/29_4_llama3_annealing_schedule_en.png)
+![Figure 44-5: Llama-3 Annealing Phase Data Composition Timeline (Curriculum Learning Schedule)](../../images/part13/ch44_05_llama3_annealing_schedule_en.png)
 <div align="center"><b>Figure 44-5: Llama-3 Annealing Phase Data Composition Timeline (Curriculum Learning Schedule)</b></div>
 
 Qwen2.5's data sampling strategy also embodies the classic principles of Curriculum Learning (Bengio et al. 2009). In Phase 1 (Foundation Building), the model is exposed primarily to massive general web data and base corpora, focusing on learning the statistical distribution of language and commonsense knowledge. In Phase 2 (High-Quality Refinement), the quality filtering threshold is substantially raised: the proportion of general text decreases while the density of code, math, and rigorous academic documents increases—this is the critical period for capability improvement. In Phase 3 (Annealing and Ultra-Long Context), the learning rate declines (annealing), and a higher proportion of synthetic data, domain-specific high-precision human instruction data, and ultra-long sequence data are introduced, enabling a smooth transition from pretraining to alignment.

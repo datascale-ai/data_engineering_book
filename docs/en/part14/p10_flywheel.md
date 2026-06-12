@@ -267,7 +267,7 @@ This chapter focuses on system-level questions:
 
 ## 4. Overall Architecture: From Upstream Project Assets to an Organizational Flywheel
 
-![Figure 1: End-to-end LLM data flywheel overview](../../images/part10/10_10_fig01_flywheel_overview.png)
+![Figure 1: End-to-end LLM data flywheel overview](../../images/part14/p10_01_flywheel_overview.png)
 
 From an engineering perspective, this project should be viewed as five layers instead of a linear data-input to model-output chain.
 
@@ -381,7 +381,7 @@ The registry:
 - supports later architecture mapping and bottleneck identification;
 - gives organizational reviews a shared language.
 
-![Figure 2: Upstream project registry and interface mapping](../../images/part10/10_10_fig02_registry_and_interfaces.png)
+![Figure 2: Upstream project registry and interface mapping](../../images/part14/p10_02_registry_and_interfaces.png)
 
 ---
 
@@ -435,7 +435,7 @@ Other assembly-layer projects can use the same method to bring existing projects
 
 They do not need to depend on manual sorting.
 
-![Figure 3: Structured upstream project specs](../../images/part10/10_10_fig03_project_specs.png)
+![Figure 3: Structured upstream project specs](../../images/part14/p10_03_project_specs.png)
 
 ---
 
@@ -478,7 +478,7 @@ The important point is to make the transferable advancement method explicit.
 
 It should not remain a static diagram.
 
-![Figure 4: Five-stage plan and milestone relationships](../../images/part10/10_10_fig04_stage_plan.png)
+![Figure 4: Five-stage plan and milestone relationships](../../images/part14/p10_04_stage_plan.png)
 
 ---
 
@@ -545,7 +545,7 @@ It is a group of:
 
 Only this expression makes the flywheel maintainable.
 
-![Figure 5: Five-layer flywheel code mapping](../../images/part10/10_10_fig05_architecture_code_mapping.png)
+![Figure 5: Five-layer flywheel code mapping](../../images/part14/p10_05_architecture_code_mapping.png)
 
 ---
 
@@ -590,7 +590,7 @@ Control points show that the flywheel does not pursue undifferentiated accelerat
 
 It assigns different flow speeds, review requirements, and traceability levels to different links.
 
-![Figure 6: System boundaries and control points](../../images/part10/10_10_fig06_boundaries_and_control_points.png)
+![Figure 6: System boundaries and control points](../../images/part14/p10_06_boundaries_and_control_points.png)
 
 ---
 
@@ -621,7 +621,7 @@ For managers, reviewers, and cross-team collaborators, milestones are easier to 
 
 They convert a complex technical process into an executable organizational rhythm.
 
-![Figure 7: Run records and milestone board](../../images/part10/10_10_fig07_runs_and_milestones.png)
+![Figure 7: Run records and milestone board](../../images/part14/p10_07_runs_and_milestones.png)
 
 ---
 
@@ -719,7 +719,7 @@ Bottleneck analysis explains:
 - which key issues are still unresolved;
 - where the next optimization round should invest.
 
-![Figure 8: Flywheel bottleneck map](../../images/part10/10_10_fig08_bottleneck_map.png)
+![Figure 8: Flywheel bottleneck map](../../images/part14/p10_08_bottleneck_map.png)
 
 ---
 
@@ -796,7 +796,7 @@ Those conclusions must also be supported by structured computation.
 
 This code connects metric generation to result interpretation.
 
-![Figure 9: System-level metric generation logic](../../images/part10/10_10_fig09_metrics_codegen.png)
+![Figure 9: System-level metric generation logic](../../images/part14/p10_09_metrics_codegen.png)
 
 ---
 
@@ -882,7 +882,7 @@ It brings the assembly layer itself into engineering quality management.
 
 This section connects system integration with quality contracts.
 
-![Figure 10: Check scripts and system contracts](../../images/part10/10_10_fig10_check_contracts.png)
+![Figure 10: Check scripts and system contracts](../../images/part14/p10_10_check_contracts.png)
 
 ---
 

@@ -68,7 +68,7 @@ Tasks unsuitable for direct entry into the first round of RL also need to be ide
 
 The R1-style reasoning data flywheel can be broken into four stages: cold-start SFT, large-scale RL, rejection sampling, and second-round SFT. These four stages are not a linear one-time process but a closed loop that can be run repeatedly.
 
-![Figure 46-1: The four stages of the R1-style reasoning data flywheel](../../images/part11/31_1_r1_reasoning_flywheel.png)
+![Figure 46-1: The four stages of the R1-style reasoning data flywheel](../../images/part13/ch46_01_r1_reasoning_flywheel.png)
 *Figure 46-1: The data feedback relationships among cold-start SFT, large-scale RL, rejection sampling, and second-round SFT.*
 
 ### 46.2.1 Stage One: Cold-Start SFT
@@ -173,7 +173,7 @@ On the data versioning side, second-round SFT should generate an independent man
 
 The core of R1-paradigm data engineering lies in reward signal and verifier design. Without reliable rewards, RL merely amplifies the model's existing biases; without a traceable data structure, rejection sampling cannot be audited.
 
-![Figure 46-2: Reward signal and verifier architecture for reasoning data](../../images/part11/31_2_reward_verifier_architecture.png)
+![Figure 46-2: Reward signal and verifier architecture for reasoning data](../../images/part13/ch46_02_reward_verifier_architecture.png)
 *Figure 46-2: The relationship among rule-based rewards, model-based rewards, and human audits.*
 
 ### 46.3.1 Rule-Based Rewards and Model-Based Rewards
@@ -216,7 +216,7 @@ Code task verifiers are more complex. They must isolate the filesystem, restrict
 
 Long-CoT trajectory quality can also be observed from internal structure. Three common segment types are Reflection, Verification, and Backtrack: Reflection is used to re-examine assumptions, Verification checks intermediate conclusions or the final answer, and Backtrack retreats and changes the solution approach when a path is found to be incorrect. These three patterns should not be mechanically encoded as fixed templates but should serve as structural labels when analyzing reasoning trajectories.
 
-![Figure 46-3: Long-CoT data sample cross-section](../../images/part11/31_3_long_cot_trace_patterns.png)
+![Figure 46-3: Long-CoT data sample cross-section](../../images/part13/ch46_03_long_cot_trace_patterns.png)
 *Figure 46-3: A cross-section of a Long-CoT data sample illustrating three reasoning trajectory patterns: Reflection, Verification, and Backtrack.*
 
 ### 46.3.3 Chinese-English Mixed Reasoning Strategy in Long-CoT

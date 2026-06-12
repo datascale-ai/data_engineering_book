@@ -154,7 +154,7 @@ Image generation models typically require bucketing by resolution, aspect ratio,
 More sophisticated systems additionally route samples by data source, aesthetic score, caption type, safety tier, presence of text, presence of human subjects, and presence of complex multi-subject scenes. This allows training-time control of batch composition, preventing any category of samples from overwhelming others. For example, if text-rendering capability is weak, increase the sampling weight for images containing text at low risk; if spatial relationship modeling is poor, increase the weight for samples with prominent positional relationships; if hand detail on human subjects is poor, create a dedicated bucket for relevant samples.
 
 
-![Figure 48-1: T2I Data Pipeline](../../images/part11/图33_1.svg)
+![Figure 48-1: T2I Data Pipeline](../../images/part13/ch48_01_t2i_data_pipeline.svg)
 
 *Figure 48-1: T2I Data Pipeline*
 
@@ -263,7 +263,7 @@ This reveals that a T2V data pipeline is not a linear "clean then output" proces
 
 
 
-![Figure 48-2: T2V Data Pipeline](../../images/part11/图33_2.svg)
+![Figure 48-2: T2V Data Pipeline](../../images/part13/ch48_02_t2v_data_pipeline.svg)
 
 *Figure 48-2: T2V Data Pipeline*
 
@@ -368,7 +368,7 @@ The core principle of multi-tier filtering is therefore: safety risk takes prece
 
 
 
-![Figure 48-3: Multi-Tier Aesthetic / Copyright / Safety Filtering Architecture](../../images/part11/图33_3.svg)
+![Figure 48-3: Multi-Tier Aesthetic / Copyright / Safety Filtering Architecture](../../images/part13/ch48_03_multistage_filtering_architecture.svg)
 
 *Figure 48-3: Multi-Tier Aesthetic / Copyright / Safety Filtering Architecture*
 

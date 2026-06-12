@@ -67,7 +67,7 @@ VoiceStyleControl should therefore not be understood simply as a TTS dataset. Th
 
 ### Case A.3: Sample Schema: Separate Modeling of the Semantic Channel and Style Channel
 
-![Figure 40-1: Dual-channel schema for semantic response and style control](../../images/part12/ch42_fig02_dual_channel_schema.svg)
+![Figure 40-1: Dual-channel schema for semantic response and style control](../../images/part12/ch40_01_dual_channel_schema.svg)
 
 *Figure 40-1: Dual-channel schema for semantic response and style control. The semantic channel answers "what to say," the style channel answers "with which voice and emotion to say it," and the acoustic supervision channel binds both to audio files, speech tokens, and sampling configuration.*
 
@@ -268,7 +268,7 @@ Once training samples enter the dataloader, they are projected from the standard
 
 ### Case A.4: Construction Pipeline: From Text Conversation to Controllable Voice Records
 
-![Figure 40-2: VoiceStyleControl data construction pipeline](../../images/part12/ch42_fig01_data_pipeline.svg)
+![Figure 40-2: VoiceStyleControl data construction pipeline](../../images/part12/ch40_02_voice_style_data_pipeline.svg)
 
 *Figure 40-2: VoiceStyleControl data construction pipeline. Text conversation or style content is first assigned speaker and emotion conditions, then audio is generated or collected through the authorized reference voice pool, and finally the samples are tokenized, quality-checked, balanced, and packaged.*
 
@@ -362,7 +362,7 @@ The packaging artifacts include not only JSONL, Parquet, or Hugging Face Dataset
 
 ### Case A.5: Quality Assessment and Closed-Loop Remediation
 
-![Figure 40-3: Quality assessment and data flywheel closed loop](../../images/part12/ch42_fig03_quality_loop.svg)
+![Figure 40-3: Quality assessment and data flywheel closed loop](../../images/part12/ch40_03_quality_loop.svg)
 
 *Figure 40-3: Quality assessment and data flywheel closed loop. Automated validation, reverse ASR, style assessment, and manual sampling together form a defective-sample queue that feeds back into re-synthesis, re-annotation, downweighting, or removal.*
 
@@ -472,7 +472,7 @@ First, long CoT carries a high token cost. Derivations in mathematics, code, and
 
 Latent-Switch-69K emerged against this backdrop. It is neither a simple "shorter CoT dataset" nor a collection of Long-CoT samples summarized and directly used for SFT. It serves [LaTER](https://github.com/TioeAre/LaTER)-style latent-then-explicit reasoning systems: the model first passes through a bounded latent reasoning interval, completing high-level planning and compressed thinking in continuous hidden states, then switches back to visible text and uses a shorter explicit CoT for symbolic verification, before generating the final answer. The data engineering objective therefore shifts: samples must answer not only "what is the answer" but also "which content is appropriate for the hidden planning budget and which content still needs to serve as visible verification supervision."
 
-![Figure 40-4: Latent-Switch-69K Construction Pipeline](../../images/part12/ch43_latent_switch_pipeline.svg)
+![Figure 40-4: Latent-Switch-69K Construction Pipeline](../../images/part12/ch40_04_latent_switch_pipeline.svg)
 
 *Figure 40-4: Latent-Switch-69K distills reasoning traces from Dolci-Think-SFT-32B into solution intuitions, compressed CoT, latent budgets, student sequences, and mask-aligned SFT records.*
 
@@ -497,7 +497,7 @@ In terms of difficulty distribution, the dataset does not pursue perfect uniform
 
 In terms of domain composition, Latent-Switch-69K skews heavily toward reasoning-intensive tasks. Mathematics problems account for approximately 37%, code problems for approximately 34%, science-oriented questions for approximately 5%, and the remainder comes primarily from instruction-following and general-knowledge prompts. This proportion is not accidental. The tasks that most benefit from latent-then-explicit reasoning are those that involve "a high-level solution plan but where one does not want to unroll all derivations"; mathematics and code have strong verifiability, clear step structure, and high token costs. Science questions provide conceptual reasoning and multi-condition judgment scenarios, while general instruction and knowledge samples prevent the model from learning only the expression patterns of competition mathematics or code completion.
 
-![Figure 40-5: Latent-Switch-69K Data Sources and Domain Composition](../../images/part12/ch43_dataset_composition.png)
+![Figure 40-5: Latent-Switch-69K Data Sources and Domain Composition](../../images/part12/ch40_05_dataset_composition.png)
 
 *Figure 40-5: The final training set contains 69,745 samples; mathematics, code, and precise instruction-following data account for a large share.*
 
@@ -622,7 +622,7 @@ record = asyncio.run(
 )
 ```
 
-![Figure 40-6: Comparison of Original CoT, Compressed CoT, and Latent Placeholders](../../images/part12/ch43_cot_latent_comparison.svg)
+![Figure 40-6: Comparison of Original CoT, Compressed CoT, and Latent Placeholders](../../images/part12/ch40_06_cot_latent_comparison.svg)
 
 *Figure 40-6: The extensive visible reasoning in the source trace is split into two types of signal: solution intuition is used to estimate the latent budget, and the compressed CoT is used for explicit verification and answer supervision.*
 
@@ -635,7 +635,7 @@ $$
 
 The mean compression ratio across the final corpus is 0.612 and the median is 0.569. This indicates that the distilled visible CoT typically retains approximately 57% to 61% of the original reasoning length. This figure should not be interpreted as "forty percent of reasoning information has been deleted." A more accurate reading is: some details have been compressed into the high-level plan represented by the solution intuition and further mapped onto the latent placeholder budget, while the necessary derivations still retained inside `<think>` serve for explicit verification and to supervise the model's visible reasoning style.
 
-![Figure 40-7: Distributions of Original and Distilled Reasoning Length and Compression Ratio](../../images/part12/ch43_token_compression_distribution.png)
+![Figure 40-7: Distributions of Original and Distilled Reasoning Length and Compression Ratio](../../images/part12/ch40_07_token_compression_distribution.png)
 
 *Figure 40-7: This figure shows the distributions of source CoT length, distilled CoT length, intuition length, ground truth length, and compression ratio.*
 
@@ -782,7 +782,7 @@ x_i, & \text{otherwise}.
 
 Here \(\mathcal{S}_{\mathrm{prompt}}\) denotes positions in the user prompt and the context preceding the assistant prefix, and \(\mathcal{S}_{\mathrm{latent\_inner}}\) denotes the interior placeholder positions between `<latent_think>` and `</latent_think>`. Tokens set to `-100` are not directly fitted by ordinary CE. This avoids an erroneous objective: requiring the model to predict a specific fixed text token at latent interior positions. For LaTER, the value of latent interior positions lies not in outputting `<|endoftext|>` tokens but in allowing the model to execute a number of hidden state updates.
 
-![Figure 40-8: Supervision Mask Schematic](../../images/part12/ch43_supervision_mask.svg)
+![Figure 40-8: Supervision Mask Schematic](../../images/part12/ch40_08_supervision_mask.svg)
 
 *Figure 40-8: Prompt and latent interior tokens are masked from ordinary CE; latent boundaries, explicit CoT, answers, and end tokens are controlled by different weights and masks.*
 

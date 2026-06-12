@@ -180,7 +180,7 @@ In this sense, the most important aspect of this chapter is not "the model can s
 
 ## 4. Overall Architecture: The Data Pipeline from Multimodal Assets to Training Assets
 
-![Figure P03-1](../../images/part10/10_3_fig01_llava_factory_overview.png)
+![Figure P03-1](../../images/part14/p03_01_llava_factory_overview.png)
 *Figure P03-1: LLaVA Multimodal Instruction Data Factory Overview*
 
 From an engineering perspective, this project can be decomposed into three layers.
@@ -260,7 +260,7 @@ Many teams encounter a real problem the first time they do multimodal SFT: it is
 
 Therefore, writing out these responsibility domains clearly is essentially stating: **Multimodal SFT more closely resembles an engineering pipeline with visual quality inspection capability than a set of ad hoc sample assembly steps.**
 
-![Figure P03-2](../../images/part10/10_3_fig02_roles_and_responsibilities.png)
+![Figure P03-2](../../images/part14/p03_02_roles_and_responsibilities.png)
 *Figure P03-2: Multimodal Data Factory Responsibility Collaboration Diagram*
 
 ---
@@ -301,7 +301,7 @@ Many teams mistakenly assume "multimodal = natural photos." But in real-world bu
 
 Therefore, this project does not remain at COCO natural images but further derives document-style and chart-style assets, using a small-scale project to expand the multimodal task spectrum. The task design for document QA and chart QA draws respectively from the question types in DocVQA (Mathew et al. 2021) and ChartQA (Masry et al. 2022); for stages involving image-text similarity or visual semantic retrieval, the image-text alignment ideas of CLIP (Radford et al. 2021) are referenced.
 
-![Figure P03-3](../../images/part10/10_3_fig03_asset_layers.png)
+![Figure P03-3](../../images/part14/p03_03_asset_layers.png)
 *Figure P03-3: Multimodal Asset Layering Diagram*
 
 Table P03-2 summarizes the relationship between different asset types and their task mappings.
@@ -439,7 +439,7 @@ Because in real-world multimodal tasks, many inputs are not natural photographs 
 
 Therefore, the significance of document image tasks in this project extends beyond expanding the sample pool — it pushes the factory from "describing what's in a picture" toward "joint image-text understanding."
 
-![Figure P03-4](../../images/part10/10_3_fig04_document_tasks.png)
+![Figure P03-4](../../images/part14/p03_04_document_tasks.png)
 *Figure P03-4: Document Image Task Layering Diagram*
 
 ---
@@ -539,7 +539,7 @@ The importance of bounding box alignment lies not merely in "knowing how to writ
 
 > In multimodal data engineering, any step that "looks like just a format change" may in fact determine whether the supervision ground truth remains valid.
 
-![Figure P03-5](../../images/part10/10_3_fig05_bbox_alignment.png)
+![Figure P03-5](../../images/part14/p03_05_bbox_alignment.png)
 *Figure P03-5: Bounding Box Coordinate Conversion and Normalization Diagram*
 
 ---
@@ -708,7 +708,7 @@ In multimodal projects, the low-quality sample library provides at least three b
 * Helps classify common error types;
 * Provides an empirical foundation for subsequent training safety filtering.
 
-![Figure P03-6](../../images/part10/10_3_fig06_quality_loop.png)
+![Figure P03-6](../../images/part14/p03_06_quality_loop.png)
 *Figure P03-6: Sample Quality Inspection and Rollback Closure Loop Diagram*
 
 ---
@@ -922,7 +922,7 @@ These failure samples can be classified into at least the following types:
 * Grounding offset: coordinates shift to an adjacent target;
 * Multi-image confusion: information from the first and second images is conflated.
 
-![Figure P03-7](../../images/part10/10_3_fig07_failure_attribution.png)
+![Figure P03-7](../../images/part14/p03_07_failure_attribution.png)
 *Figure P03-7: Failure Sample Attribution Diagram*
 
 Table P03-5 summarizes typical failure sample types and priority repair directions.
@@ -977,7 +977,7 @@ Because it means the project is not "looks about right to the eye" but has estab
 
 From the perspective of engineering reuse, this type of closure information often has more transfer value than individual examples.
 
-![Figure P03-8](../../images/part10/10_3_fig08_validation_loop.png)
+![Figure P03-8](../../images/part14/p03_08_validation_loop.png)
 *Figure P03-8: Project Validation Closure Loop Diagram*
 
 ---

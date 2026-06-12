@@ -515,7 +515,7 @@ This integration avoids rebuilding video instruction data from scratch. P14 hand
 
 | frame1 | frame2 |
 |---|---|
-| ![frame1](../../images/part10/14_f0.jpg) | ![frame2](../../images/part10/14_f1.jpg) |
+| ![frame1](../../images/part14/p14_video_frame_0.jpg) | ![frame2](../../images/part14/p14_video_frame_1.jpg) |
 
 *Table P14-12: Example of multi-frame sampling from a video clip*
 

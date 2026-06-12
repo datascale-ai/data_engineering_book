@@ -94,7 +94,7 @@ Upon completing this project, readers should understand three things. First, the
 
 This project's architecture can be decomposed into six components: cold-start data extraction, multi-path reasoning sampling, verifier pool, rejection sampling, second-round SFT data merging, and training and evaluation. The six components communicate via files and a unified schema, rather than being tightly coupled in a single long script. The benefit of this approach is that each layer can be re-run independently: if sampling fails, only the sampling step needs to be re-run; if the verifier is updated, only rejection sampling needs to be re-run; if training proportions change, only the data merge needs to be redone.
 
-![Figure P12-1](../../images/part11/p12_r1_reasoning_flywheel_architecture.png)
+![Figure P12-1](../../images/part14/p12_r1_reasoning_flywheel_architecture.png)
 *Figure P12-1: The closed-loop structure from cold-start data extraction, multi-path reasoning sampling, verifier pool, and rejection sampling to second-round SFT merging and training evaluation.*
 
 The first component is **cold-start data extraction**. The corresponding script is `cold_start_data.py`. It extracts samples suitable for SFT from existing data sources and normalizes them into the `messages` format. Math samples are organized with `Reasoning:` and `Final Answer:` sections; code samples are organized with `Reasoning:` and a fenced Python code block. The purpose of cold-start data is not to directly train the highest-performance model, but to give the model a basic reasoning output structure, language style, and parseable format.

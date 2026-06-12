@@ -168,7 +168,7 @@ Listing P02-1 给出了流程或路径示例，用于说明本节中的输入输
 ## 4. 整体架构：从法规 PDF 到训练资产的法律数据流水线
 
 
-![图 P02-1](../../images/part10/10_2_fig01_legal_sft_factory_overview.png)
+![图 P02-1](../../images/part14/p02_01_legal_sft_factory_overview.png)
 *图 P02-1：法律领域 SFT 数据工厂总览*
 
 从工程视角看，本项目可以拆成三层。
@@ -246,7 +246,7 @@ Listing P02-1 给出了流程或路径示例，用于说明本节中的输入输
 
 把职责分工写清楚，本质上是在说明：**行业 SFT 更像一条内容生产线，而不是单点脚本。**
 
-![图 P02-2](../../images/part10/10_2_fig02_roles_and_responsibilities.png)
+![图 P02-2](../../images/part14/p02_02_roles_and_responsibilities.png)
 *图 P02-2：法律 SFT 数据工厂角色分工图*
 
 ---
@@ -364,10 +364,10 @@ Listing P02-4 给出了流程或路径示例，用于说明本节中的输入输
 
 因为行业 SFT 的第一步从来不是“想办法多生成数据”，而是**先保证种子层别脏**。只要种子文本里存在大量格式损伤，后面的模板、思维链（CoT）、偏好和质量保障（QA）都会在脏基础上工作，成本只会越来越高。
 
-![图 P02-3](../../images/part10/10_2_fig03_pdf_cleaning_pipeline.png)
+![图 P02-3](../../images/part14/p02_03_pdf_cleaning_pipeline.png)
 *图 P02-3：法律 PDF 智能清洗示意图*
 
-![图 P02-4](../../images/part10/10_2_fig04_cleaning_examples.png)
+![图 P02-4](../../images/part14/p02_04_cleaning_examples.png)
 *图 P02-4：嵌入式页码与中文断词修复案例*
 
 ---
@@ -416,7 +416,7 @@ Listing P02-4 给出了流程或路径示例，用于说明本节中的输入输
 
 schema 是行业 SFT 工厂的底座，而不是附属物。
 
-![图 P02-5](../../images/part10/10_2_fig05_seed_schema.png)
+![图 P02-5](../../images/part14/p02_05_seed_schema.png)
 *图 P02-5：法律种子样本 schema 示意图*
 
 ---
@@ -472,7 +472,7 @@ schema 是行业 SFT 工厂的底座，而不是附属物。
 
 在法律领域，这种“表面多样、实际单一”的问题尤其严重。只有明确区分问答、解释、分析等能力，模型才有机会学到更完整的行为分布。
 
-![图 P02-6](../../images/part10/10_2_fig06_task_taxonomy.png)
+![图 P02-6](../../images/part14/p02_06_task_taxonomy.png)
 *图 P02-6：法律任务体系分层图*
 
 ---
@@ -497,7 +497,7 @@ schema 是行业 SFT 工厂的底座，而不是附属物。
 
 因为总样本数只能回答“规模有多大”，却回答不了“模型会偏向哪里”。而在行业数据工程里，分布结构往往比绝对规模更重要。
 
-![图 P02-7](../../images/part10/10_2_fig07_task_vs_domain_distribution.png)
+![图 P02-7](../../images/part14/p02_07_task_vs_domain_distribution.png)
 *图 P02-7：任务分布与法域覆盖对照图*
 
 ---
@@ -531,7 +531,7 @@ schema 是行业 SFT 工厂的底座，而不是附属物。
 
 这种做法的价值在于，它把“数据分布”变成了一个可调控对象，而不是事后统计的结果。
 
-![图 P02-8](../../images/part10/10_2_fig08_weighted_task_sampling.png)
+![图 P02-8](../../images/part14/p02_08_weighted_task_sampling.png)
 *图 P02-8：加权轮盘赌任务采样示意图*
 
 ---
@@ -569,7 +569,7 @@ schema 是行业 SFT 工厂的底座，而不是附属物。
 * 帮助模型学到更接近法律分析的表达顺序；
 * 为 QA 审核提供更清晰的中间依据，便于识别“结论对了但推理错了”的样本。
 
-![图 P02-9](../../images/part10/10_2_fig09_cot_structure.png)
+![图 P02-9](../../images/part14/p02_09_cot_structure.png)
 *图 P02-9：案情分析类 CoT 结构示意图*
 
 ---
@@ -608,7 +608,7 @@ schema 是行业 SFT 工厂的底座，而不是附属物。
 * 可从拒收原因中沉淀错误模式；
 * 可为下一轮模板优化提供依据。
 
-![图 P02-10](../../images/part10/10_2_fig10_preference_and_review.png)
+![图 P02-10](../../images/part14/p02_10_preference_and_review.png)
 *图 P02-10：偏好对与评审记录关系图*
 
 ---
@@ -642,7 +642,7 @@ schema 是行业 SFT 工厂的底座，而不是附属物。
 
 现有产物中，风险拒答样本和风险登记项均为 6 条。这个数量不大，但它传递了一个重要信号：项目已经把风险边界从“口头注意事项”变成了**显式数据资产**。
 
-![图 P02-11](../../images/part10/10_2_fig11_risk_refusal_flow.png)
+![图 P02-11](../../images/part14/p02_11_risk_refusal_flow.png)
 *图 P02-11：法律场景风险拒答分流图*
 
 ---
@@ -690,10 +690,10 @@ schema 是行业 SFT 工厂的底座，而不是附属物。
 
 如果只写生成逻辑，不写 QA 协议，行业 SFT 就会退化成“数据生成步骤说明”，而不是“数据工厂方法”。
 
-![图 P02-12](../../images/part10/10_2_fig12_qa_loop.png)
+![图 P02-12](../../images/part14/p02_12_qa_loop.png)
 *图 P02-12：QA 审核闭环图*
 
-![图 P02-13](../../images/part10/10_2_fig13_qa_decision_table.png)
+![图 P02-13](../../images/part14/p02_13_qa_decision_table.png)
 *图 P02-13：QA 接收/返工/拒收判定表*
 
 ---
@@ -729,7 +729,7 @@ schema 是行业 SFT 工厂的底座，而不是附属物。
 
 因为数据工厂的“工厂”二字，最终一定要落在协作机制上。只写模型、模板和脚本，而不写人与流程，很难支撑团队落地。
 
-![图 P02-14](../../images/part10/10_2_fig14_human_in_the_loop.png)
+![图 P02-14](../../images/part14/p02_14_human_in_the_loop.png)
 *图 P02-14：人机协同与供应商分层审核图*
 
 ---
@@ -766,7 +766,7 @@ schema 是行业 SFT 工厂的底座，而不是附属物。
 
 smoke test 的价值不在于评估模型性能，而在于尽早发现训练链路中的明显问题，例如字段缺失、编码错误、样本格式不一致或读取逻辑和 manifest 不匹配。
 
-![图 P02-15](../../images/part10/10_2_fig15_training_artifacts.png)
+![图 P02-15](../../images/part14/p02_15_training_artifacts.png)
 *图 P02-15：训练封装与交付接口图*
 
 ---
@@ -823,7 +823,7 @@ smoke test 的价值不在于评估模型性能，而在于尽早发现训练链
 
 这说明项目的输出已经不是“若干 JSONL 文件”，而是一组可被训练侧直接消费并可被检查脚本一致性验证的资产。
 
-![图 P02-16](../../images/part10/10_2_fig16_metrics_dashboard.png)
+![图 P02-16](../../images/part14/p02_16_metrics_dashboard.png)
 *图 P02-16：P02 核心指标总览图*
 
 ---
@@ -905,7 +905,7 @@ smoke test 的价值不在于评估模型性能，而在于尽早发现训练链
 * 它直接验证了前面提出的关键设计假设；
 * 它为后续更重的训练实验提供了方向，而不是试图一次性解决全部评测问题。
 
-![图 P02-17](../../images/part10/10_2_fig17_eval_sampling_protocol.png)
+![图 P02-17](../../images/part14/p02_17_eval_sampling_protocol.png)
 *图 P02-17：50 条抽样验证流程图*
 
 ---
@@ -1004,7 +1004,7 @@ smoke test 的价值不在于评估模型性能，而在于尽早发现训练链
 
 它能非常直观地说明：数据工厂不是一下子长成的；每一版都有自己的核心目标；不是所有问题都应该在第一版解决；版本升级的触发条件，应该来自真实问题，而不是抽象完美主义。
 
-![图 P02-18](../../images/part10/10_2_fig18_version_timeline.png)
+![图 P02-18](../../images/part14/p02_18_version_timeline.png)
 *图 P02-18：P02 版本演进路线图*
 
 ---
@@ -1065,7 +1065,7 @@ smoke test 的价值不在于评估模型性能，而在于尽早发现训练链
 
 因为它体现了一种非常重要的工程习惯：数据项目的完成标准，不是“生成了大量文件”，而是“代码、产物、统计与报告彼此一致”。
 
-![图 P02-19](../../images/part10/10_2_fig19_validation_chain.png)
+![图 P02-19](../../images/part14/p02_19_validation_chain.png)
 *图 P02-19：代码—产物—报告一致性验证图*
 
 ---
@@ -1125,7 +1125,7 @@ smoke test 的价值不在于评估模型性能，而在于尽早发现训练链
 
 > 找到权威种子 -> 做结构化切块 -> 设计任务体系 -> 受控合成扩张 -> 建立 QA 与偏好 -> 单独建模风险边界 -> 训练封装与一致性验证。
 
-![图 P02-20](../../images/part10/10_2_fig20_cross_domain_transfer.png)
+![图 P02-20](../../images/part14/p02_20_cross_domain_transfer.png)
 *图 P02-20：行业迁移方法链图*
 
 ---

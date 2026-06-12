@@ -81,7 +81,7 @@ Reproducibility materials should include data source descriptions, minimal sampl
 
 ## 1. Project Background: The Necessity of a Synthetic Mathematics and Code Textbook Factory
 
-![Figure P04-1](../../images/part10/10_4_fig01_project_positioning.png)
+![Figure P04-1](../../images/part14/p04_01_project_positioning.png)
 *Figure P04-1: Synthetic Mathematics and Code Textbook Factory Project Positioning Diagram*
 
 
@@ -106,7 +106,7 @@ Methodologically, this pipeline is arguably more important than the specific pro
 
 ## 2. Project Objectives and Scope
 
-![Figure P04-2](../../images/part10/10_4_fig02_goals_and_scope.png)
+![Figure P04-2](../../images/part14/p04_02_goals_and_scope.png)
 *Figure P04-2: P04 Project Objectives and Scope Diagram*
 
 
@@ -186,7 +186,7 @@ In this sense, P04 is not just a "small reasoning data project" but more aptly a
 
 ## 4. Overall Architecture: A Reasoning Data Pipeline from Seed Problems to Textbook Volumes
 
-![Figure P04-3](../../images/part10/10_4_fig03_pipeline_overview.png)
+![Figure P04-3](../../images/part14/p04_03_pipeline_overview.png)
 *Figure P04-3: P04 Overall Architecture Overview Diagram*
 
 
@@ -230,7 +230,7 @@ At this stage, the project truly upgrades from "able to generate problems" to an
 
 ## 5. Engineering Prerequisites: Key Responsibility Facets of the Textbook Factory
 
-![Figure P04-4](../../images/part10/10_4_fig04_roles_and_responsibilities.png)
+![Figure P04-4](../../images/part14/p04_04_roles_and_responsibilities.png)
 *Figure P04-4: Textbook Factory Responsibility Collaboration Diagram*
 
 
@@ -276,7 +276,7 @@ Stating these responsibility facets explicitly amounts to asserting that **a tex
 
 ## 6. Seed Layer: The Necessity of Problem Seeds
 
-![Figure P04-5](../../images/part10/10_4_fig05_seed_to_plan.png)
+![Figure P04-5](../../images/part14/p04_05_seed_to_plan.png)
 *Figure P04-5: Mapping from Seed Problems to Chapter Plans*
 
 
@@ -315,7 +315,7 @@ From current results, the project has formed two textbook tracks (`math=30`, `co
 
 ## 7. Evol-Instruct: The Problem Evolution Mechanism
 
-![Figure P04-6](../../images/part10/10_4_fig06_evol_path.png)
+![Figure P04-6](../../images/part14/p04_06_evol_path.png)
 *Figure P04-6: Evol-Instruct Evolution Path Diagram*
 
 
@@ -354,7 +354,7 @@ Textbook data cannot tolerate such loss of control. Unlike open-ended writing, e
 
 ## 8. PoT Selection: The Programmatic Reasoning Path
 
-![Figure P04-7](../../images/part10/10_4_fig07_cot_vs_pot.png)
+![Figure P04-7](../../images/part14/p04_07_cot_vs_pot.png)
 *Figure P04-7: CoT vs. PoT Comparison Diagram*
 
 
@@ -395,7 +395,7 @@ From a training perspective, this has greater generalization value than simply m
 
 ## 9. Generation Pipeline: Concrete Implementation from Prompt to Code Solution
 
-![Figure P04-8](../../images/part10/10_4_fig08_generation_chain.png)
+![Figure P04-8](../../images/part14/p04_08_generation_chain.png)
 *Figure P04-8: Generation Pipeline Detail Diagram*
 
 
@@ -425,7 +425,7 @@ Generation systems inevitably encounter network jitter, incomplete responses, or
 
 ## 10. Sandbox Validation: The Core Threshold of Generate-then-Verify
 
-![Figure P04-9](../../images/part10/10_4_fig09_sandbox_validation.png)
+![Figure P04-9](../../images/part14/p04_09_sandbox_validation.png)
 *Figure P04-9: Sandbox Validation Execution Path Diagram*
 
 
@@ -471,7 +471,7 @@ The critical risk of textbook data is that content appears to resemble a teacher
 
 ## 11. Textbook Packaging: Curriculum-Oriented Asset Organization
 
-![Figure P04-10](../../images/part10/10_4_fig10_packaging_outputs.png)
+![Figure P04-10](../../images/part14/p04_10_packaging_outputs.png)
 *Figure P04-10: Textbook Packaging Artifact Relationship Diagram*
 
 
@@ -515,7 +515,7 @@ Many engineering projects treat teacher guides as supplementary instructional ma
 
 ## 12. Training Encapsulation: Feeding Textbook Data into Training Systems
 
-![Figure P04-11](../../images/part10/10_4_fig11_training_interface.png)
+![Figure P04-11](../../images/part14/p04_11_training_interface.png)
 *Figure P04-11: Training Encapsulation Interface Diagram*
 
 

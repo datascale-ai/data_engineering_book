@@ -42,7 +42,7 @@ The project is stopped during the initial DPIA phase by both legal and security 
 
 Under the combined pressure of data silos and strong regulation, the old paradigm of collecting everything into a central data lake for training collapses. The team needs an architecture that can optimize models jointly without sharing raw data. This is the practical background for federated learning and privacy-enhancing technologies: when data no longer moves freely, collaboration must be reorganized through protocols, algorithms, and system boundaries.
 
-![Figure 37-1: Privacy and compliance conflict in cross-institutional medical data collaboration](../../images/part9/图37_1_跨机构医疗数据协作中的隐私与合规冲突示意图.svg)
+![Figure 37-1: Privacy and compliance conflict in cross-institutional medical data collaboration](../../images/part11/图37_1_跨机构医疗数据协作中的隐私与合规冲突示意图.svg)
 *Figure 37-1: Privacy and compliance conflict in cross-institutional medical data collaboration.*
 
 ---
@@ -71,7 +71,7 @@ Privacy protection and data utility are not simple opposites. They form a persis
 
 Architecture design does not eliminate this tension. It finds the **minimum necessary exposure surface** for a specific scenario. This means minimizing visible data, exchangeable information, saved intermediate results, and exposed model capability while still meeting the business objective. PETs are therefore not optional decoration in many cross-party AI systems. They are the condition that makes collaboration possible at all.
 
-![Figure 37-2: Structural tension between data utility and privacy protection](../../images/part9/图37_2_数据可用性与隐私保护的结构性矛盾示意图.svg)
+![Figure 37-2: Structural tension between data utility and privacy protection](../../images/part11/图37_2_数据可用性与隐私保护的结构性矛盾示意图.svg)
 *Figure 37-2: Structural tension between data utility and privacy protection.*
 
 ### 37.1.3 Privacy Budget in Engineering Systems
@@ -86,7 +86,7 @@ Traditional data governance asks who accessed the database, which fields were ex
 
 The security target shifts from protecting databases to protecting training processes, collaboration boundaries, and model behavior. FL, DP, MPC, TEE, and HE all serve this shift. When data cannot move freely, systems must rebuild safety through training protocols, aggregation logic, and output boundaries (Kairouz and McMahan 2021; Bagdasaryan et al. 2020).
 
-![Figure 37-3: Governance focus moves from data security to training security](../../images/part9/图37_3_从数据安全到训练安全的治理重心迁移图.svg)
+![Figure 37-3: Governance focus moves from data security to training security](../../images/part11/图37_3_从数据安全到训练安全的治理重心迁移图.svg)
 *Figure 37-3: Governance focus moves from data security to training security.*
 
 ---
@@ -95,7 +95,7 @@ The security target shifts from protecting databases to protecting training proc
 
 The industry has evolved five main technical families for privacy-preserving computation. They are not mutually exclusive. They protect different objects, impose different costs, and fit different stages. The key is not memorizing definitions, but understanding what each technology protects, what it sacrifices, and where it belongs in a system (Yang et al. 2019; Kairouz and McMahan 2021).
 
-![Figure 37-4: Landscape matrix of privacy-enhancing technologies](../../images/part9/图37_4_隐私增强技术全景矩阵图.svg)
+![Figure 37-4: Landscape matrix of privacy-enhancing technologies](../../images/part11/图37_4_隐私增强技术全景矩阵图.svg)
 *Figure 37-4: Landscape matrix of privacy-enhancing technologies.*
 
 ### 37.2.1 Core Technologies and Comparison
@@ -128,7 +128,7 @@ A typical federated loop has several steps. The coordinator sends an initial or 
 
 This round-based flow resembles distributed training, but the assumptions differ. Distributed training assumes nodes are controlled by one organization and data can be treated as a global partition. Federated learning assumes independent parties, limited trust, and strong local data differences. It is not simply slower distributed training. It is a collaboration paradigm with business boundaries and governance constraints.
 
-![Figure 37-5: Basic federated-learning training loop](../../images/part9/图37_5_联邦学习基本训练闭环.svg)
+![Figure 37-5: Basic federated-learning training loop](../../images/part11/图37_5_联邦学习基本训练闭环.svg)
 *Figure 37-5: Basic federated-learning training loop.*
 
 #### 2. FedAvg and Local Updates
@@ -165,7 +165,7 @@ Both can appear in federated systems. If the organization does not trust the cen
 
 The common training approach is DP-SGD. First, per-sample gradients are clipped to limit the maximum influence of each sample. Then noise from a specified distribution is added to the aggregated gradient. Finally, budget consumption is accumulated and recorded during training. DP engineering is not “adding some noise.” It first bounds individual influence, then injects noise on that controlled boundary so risk measurement is interpretable (Abadi et al. 2016; McMahan et al. 2018).
 
-![Figure 37-6: DP-SGD training flow](../../images/part9/图37_6_DPSGD训练流程示意图.svg)
+![Figure 37-6: DP-SGD training flow](../../images/part11/图37_6_DPSGD训练流程示意图.svg)
 *Figure 37-6: DP-SGD training flow.*
 
 #### 4. Why DP Is Hard to Tune
@@ -234,7 +234,7 @@ Communication optimization determines whether FL can be deployed. A solution tha
 
 Common strategies include **gradient compression**, such as uploading top-k important gradients, using low-bit quantization, or sparsifying updates. The goal is not mathematical perfection but large transfer reduction within acceptable accuracy loss. A second strategy is **reducing synchronization frequency**. More local training steps reduce global rounds by spending more local compute, but they also increase client drift and need stronger aggregation. A third strategy is **asynchronous FL**, which allows nodes to participate at different speeds and reduces straggler impact, at the cost of more complex consistency and convergence analysis.
 
-![Figure 37-7: Communication cost breakdown in federated training](../../images/part9/图37_7_联邦训练中的通信成本分解图.svg)
+![Figure 37-7: Communication cost breakdown in federated training](../../images/part11/图37_7_联邦训练中的通信成本分解图.svg)
 *Figure 37-7: Communication cost breakdown in federated training.*
 
 ### 37.3.4 Accuracy Optimization
@@ -265,7 +265,7 @@ Vertical FL applies when participants share similar users but hold different fea
 
 Vertical FL is usually harder to engineer than horizontal FL. It involves not only model collaboration but also sample alignment, identifier matching, and feature interaction. Strong privacy constraints increase complexity further.
 
-![Figure 37-8: Horizontal FL versus vertical FL](../../images/part9/图37_8_横向联邦与纵向联邦对比示意图.svg)
+![Figure 37-8: Horizontal FL versus vertical FL](../../images/part11/图37_8_横向联邦与纵向联邦对比示意图.svg)
 *Figure 37-8: Horizontal FL versus vertical FL.*
 
 ### 37.4.3 Federated Fine-Tuning
@@ -304,7 +304,7 @@ Gradient inversion exposes a core FL risk: even if raw data never leaves the dom
 
 This attack breaks a common misconception: data not uploaded does not mean information not uploaded. If uploaded content preserves analyzable structure, the attack surface remains.
 
-![Figure 37-9: Gradient inversion attack](../../images/part9/图37_9_梯度反演攻击示意图.svg)
+![Figure 37-9: Gradient inversion attack](../../images/part11/图37_9_梯度反演攻击示意图.svg)
 *Figure 37-9: Gradient inversion attack.*
 
 ### 37.5.3 Model Poisoning and Backdoor Attacks
@@ -339,7 +339,7 @@ The **Coordinator / Orchestrator** handles training-round scheduling, participan
 
 A mature system does not pile these capabilities into one service. It separates training orchestration, privacy control, and audit governance because privacy policy and model strategy may be maintained by different teams. Without clear boundaries, common failures appear: the model updates but privacy parameters do not, or the budget is exhausted but training continues.
 
-![Figure 37-10: Overall federated system architecture](../../images/part9/图37_10_联邦系统整体架构图.svg)
+![Figure 37-10: Overall federated system architecture](../../images/part11/图37_10_联邦系统整体架构图.svg)
 *Figure 37-10: Overall federated system architecture.*
 
 ### 37.6.2 Data Flow and Control Flow
@@ -380,7 +380,7 @@ Even after P09 cleans and controls data, centralized aggregation may still be in
 
 Across the book, the loop is clear. Ch27 provides the institutional compliance framework and classification standards. P09 handles classification, masking, permissions, isolation, audit, and preflight before data enters model systems. Ch37 protects training and collaboration. Ch22 carries multimodal retrieval and application capabilities. Together they form a path from data governance to model governance to application governance.
 
-![Figure 37-11: Closed loop across compliance governance, privacy pipeline, federated training, and application capability](../../images/part9/图37_11_合规治理隐私流水线联邦训练与应用能力闭环图.svg)
+![Figure 37-11: Closed loop across compliance governance, privacy pipeline, federated training, and application capability](../../images/part11/图37_11_合规治理隐私流水线联邦训练与应用能力闭环图.svg)
 *Figure 37-11: Closed loop across compliance governance, privacy pipeline, federated training, and application capability.*
 
 ### 37.7.4 Why This Connection Matters
@@ -405,7 +405,7 @@ Financial scenarios differ from medical ones. The goal is often joint risk contr
 
 If the task is set intersection or intersection statistics, MPC/PSI is usually the first choice. If the task is joint risk-model training, FL may be appropriate. If query results can still leak privacy, stricter result audit and query limits can be added. Compared with health care, finance emphasizes rule precision, low false positives, and explainability, so its route often leans toward secure computation plus audit traceability rather than maximum model performance.
 
-![Figure 37-12: Privacy technology routes in medical and financial scenarios](../../images/part9/图37_12_医疗与金融场景的隐私技术路线对比图.svg)
+![Figure 37-12: Privacy technology routes in medical and financial scenarios](../../images/part11/图37_12_医疗与金融场景的隐私技术路线对比图.svg)
 *Figure 37-12: Privacy technology routes in medical and financial scenarios.*
 
 ---

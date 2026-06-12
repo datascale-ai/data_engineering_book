@@ -171,7 +171,7 @@ P09 的核心目标正是解决这一类问题。根据项目整体报告，P09 
 
 ## 4. 整体架构：从隐私规格到项目检查的处理流水线
 
-![图 P09-1](../../images/part10/10_9_fig01_privacy_pipeline_overview.png)
+![图 P09-1](../../images/part14/p09_01_privacy_pipeline_overview.png)
 *图 P09-1：P09 隐私保护数据流水线总体架构*
 
 从工程视角看，P09 可以拆成三层。
@@ -242,7 +242,7 @@ P09 的核心目标正是解决这一类问题。根据项目整体报告，P09 
 
 这意味着隐私流水线首先是一条需要被完整定义的控制链，而不是若干脱敏动作的拼接。
 
-![图 P09-2](../../images/part10/10_9_fig02_roles_and_responsibilities.png)
+![图 P09-2](../../images/part14/p09_02_roles_and_responsibilities.png)
 *图 P09-2：P09 隐私流水线关键工程面图*
 
 ---
@@ -329,7 +329,7 @@ def build_classification_policy() -> dict:
 
 这一点非常关键，因为隐私控制里最昂贵的错误，往往不是“掩码没写完整”，而是“根本不该看到原始数据的人先看到了”。
 
-![图 P09-3](../../images/part10/10_9_fig03_specs_layer.png)
+![图 P09-3](../../images/part14/p09_03_specs_layer.png)
 *图 P09-3：隐私规格层四类产物关系图*
 
 ---
@@ -389,7 +389,7 @@ def build_raw_records() -> list[dict]:
 
 如果只说“准备了一些样本”，信息量其实很弱。更重要的是写清楚：这些样本为什么选这些域、覆盖哪些字段模式、服务于后续哪些控制动作。
 
-![图 P09-4](../../images/part10/10_9_fig04_raw_records_coverage.png)
+![图 P09-4](../../images/part14/p09_04_raw_records_coverage.png)
 *图 P09-4：原始敏感记录场景覆盖图*
 
 ---
@@ -443,7 +443,7 @@ def detect_pii(text: str) -> list[dict]:
 
 整体报告显示，PII 检测覆盖了多种字段模式，其中 email=5、phone=3、patient_id=2、bank_account=2。 这说明即使在一个小规模数据集中，项目也已经具备跨字段模式的最小覆盖，而不是只处理单一类型的标识符。
 
-![图 P09-5](../../images/part10/10_9_fig05_pii_detection_distribution.png)
+![图 P09-5](../../images/part14/p09_05_pii_detection_distribution.png)
 *图 P09-5：PII 检测规则与命中分布图*
 
 ---
@@ -493,7 +493,7 @@ def classify_record(record: dict, classification_policy: dict) -> dict:
 
 整体报告显示，8 条原始记录中有 7 条被判定为 restricted，且 7 条都进入了隔离。 这与项目的场景选择是匹配的：样本集中大部分记录本来就带有高敏特征，目的是把治理链路展示清楚，而不是刻意制造大量低风险样本。
 
-![图 P09-6](../../images/part10/10_9_fig06_classification_and_quarantine.png)
+![图 P09-6](../../images/part14/p09_06_classification_and_quarantine.png)
 *图 P09-6：分类判定与隔离触发关系图*
 
 ---
@@ -550,7 +550,7 @@ def hash_token(value: str) -> str:
 
 因为隐私工程里最忌讳的，就是把所有问题都写成一个模糊的“脱敏处理”。真正有工程含义的写法，必须把不同字段的控制意图区分出来。
 
-![图 P09-7](../../images/part10/10_9_fig07_redaction_strategies.png)
+![图 P09-7](../../images/part14/p09_07_redaction_strategies.png)
 *图 P09-7：不同 PII 类型的去标识化策略图*
 
 ---
@@ -602,7 +602,7 @@ quarantine_zone 的意义在于：
 
 整体报告显示，当前 restricted 记录为 7 条，隔离记录也是 7 条。 这表明隔离逻辑与分类逻辑保持一致，而不是“分类归分类，隔离另说”。
 
-![图 P09-8](../../images/part10/10_9_fig08_storage_zones.png)
+![图 P09-8](../../images/part14/p09_08_storage_zones.png)
 *图 P09-8：存储分区与角色访问边界图*
 
 ---
@@ -648,7 +648,7 @@ def build_alerts() -> list[dict]:
 
 整体报告显示，当前项目共有告警 2 条、告警解决率 100%、审计事件 5 条。 这说明项目已经不是“生成了一些脱敏文件”，而是开始具备安全运营语义。
 
-![图 P09-9](../../images/part10/10_9_fig09_alerts_and_audit.png)
+![图 P09-9](../../images/part14/p09_09_alerts_and_audit.png)
 *图 P09-9：告警、审计与事件响应关系图*
 
 ---
@@ -694,7 +694,7 @@ preflight = {
 
 > 不是“跑完再看”，而是“先确认最低条件成立，再进入更高风险的处理和演练阶段”。
 
-![图 P09-10](../../images/part10/10_9_fig10_preflight_checks.png)
+![图 P09-10](../../images/part14/p09_10_preflight_checks.png)
 *图 P09-10：preflight 检查流程图*
 
 ---
@@ -742,7 +742,7 @@ incident = {
 
 把 incident 和 postmortem 写进去，更容易看清一件事：隐私流水线并不是一条静态 ETL，而是一套包含异常响应能力的治理体系。
 
-![图 P09-11](../../images/part10/10_9_fig11_incident_postmortem.png)
+![图 P09-11](../../images/part14/p09_11_incident_postmortem.png)
 *图 P09-11：事故响应与 postmortem 闭环图*
 
 ---
@@ -983,7 +983,7 @@ python src/run_p9_checks.py
 
 因为它把整章内容从“叙述”重新收束成“动作”。章节里最容易留下印象的，往往正是这种一步一步的执行链。
 
-![图 P09-12](../../images/part10/10_9_fig12_execution_sequence.png)
+![图 P09-12](../../images/part14/p09_12_execution_sequence.png)
 *图 P09-12：P09 最小可复现运行链图*
 
 ---
