@@ -52,7 +52,7 @@ Dolma 数据卡直接体现了这种设计取向：它列出版本、summary sta
 
 Dolma 不是单一静态文件，而是带版本演进的语料资产。Hugging Face 数据卡列出 `v1`、`v1_5`、`v1_5-sample`、`v1_6`、`v1_6-sample` 和 `v1_7` 等版本；其中 `v1_7` 用于训练 OLMo 7B-v1.7，并引入新来源、更多质量过滤和 fuzzy deduplication。
 
-*表45-1 Dolma 公开版本和用途*
+*表42-1 Dolma 公开版本和用途*
 
 | 版本 | 发布时间 | 压缩体积 | 数据卡说明 | 工程用途 |
 | --- | --- | ---: | --- | --- |
@@ -67,9 +67,9 @@ Dolma 不是单一静态文件，而是带版本演进的语料资产。Hugging 
 
 ### 42.2.1 v1.6 来源结构
 
-Dolma 的来源覆盖 Web、代码、论文、社交媒体、书籍和百科。为了避免不同版本混淆，表45-2 使用数据卡中 v1.6 summary statistics 的大类统计。v1.7 的来源更加细分，新增 Refined Web、StarCoder、arXiv、StackExchange、Flan、OpenWebMath、Algebraic Stack、MegaWika 等 source；后续写作或实验应明确使用哪个版本。
+Dolma 的来源覆盖 Web、代码、论文、社交媒体、书籍和百科。为了避免不同版本混淆，表42-2 使用数据卡中 v1.6 summary statistics 的大类统计。v1.7 的来源更加细分，新增 Refined Web、StarCoder、arXiv、StackExchange、Flan、OpenWebMath、Algebraic Stack、MegaWika 等 source；后续写作或实验应明确使用哪个版本。
 
-*表45-2 Dolma v1.6 来源统计*
+*表42-2 Dolma v1.6 来源统计*
 
 | 来源 | 文档类型 | UTF-8 bytes | 文档数 | Unicode words | Llama tokens |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -84,7 +84,7 @@ Dolma 的来源覆盖 Web、代码、论文、社交媒体、书籍和百科。�
 
 数据来源 Hugging Face `allenai/dolma` 数据卡 Summary Statistics v1.6。表中 GB、M、B 均沿用数据卡口径。
 
-表45-2 不应只被读成规模展示。它提示三类工程事实。
+表42-2 不应只被读成规模展示。它提示三类工程事实。
 
 第一，Dolma 是 source mix，而不是单一 Web dump。Common Crawl 占比很高，但代码、论文、社交媒体、书籍和百科都以不同形式进入语料。模型能力变化不能只笼统归因于“Web 数据更多”。
 
@@ -134,7 +134,7 @@ Dolma v1.7 数据卡中同时列出 source token 数和 sample proportion，正�
 
 透明语料不是把 `text` 打包上传就结束。至少需要三层记录：单条文档记录、source card 和训练版本 manifest。单条文档用于训练和定位，source card 用于解释数据来源和处理规则，训练 manifest 用于复现某次模型训练实际消费的数据。
 
-*表45-3 Dolma 类透明语料记录 schema*
+*表42-3 Dolma 类透明语料记录 schema*
 
 | 层级 | 典型字段 | 来源或生成方式 | 工程用途 |
 | --- | --- | --- | --- |
@@ -185,7 +185,7 @@ Dolma GitHub 仓库说明，Dolma 同时是数据集和工具包。Dolma Toolkit
 
 Dolma Toolkit 文档把数据整理概括为四个动作：tag、dedup、mix、tokenize。它们不是孤立脚本，而是证据链的生成器：tag 记录文档属性，dedup 记录保留和删除，mix 记录采样比例，tokenize 记录进入训练的 token 口径。
 
-*表45-4 Dolma Toolkit 处理动作与证据输出*
+*表42-4 Dolma Toolkit 处理动作与证据输出*
 
 | 顺序 | 动作 | 官方文档说明 | 证据输出 | 主要风险 |
 | ---: | --- | --- | --- | --- |
@@ -224,7 +224,7 @@ $$
 
 ### 42.5.2 诊断清单
 
-*表45-5 Dolma 类透明语料评估和诊断表*
+*表42-5 Dolma 类透明语料评估和诊断表*
 
 | 评估问题 | 所需记录 | 指标或证据 | 可能动作 |
 | --- | --- | --- | --- |
@@ -236,7 +236,7 @@ $$
 
 ### 42.5.3 常见失败模式
 
-*表45-6 Dolma 类透明语料常见失败与修复动作*
+*表42-6 Dolma 类透明语料常见失败与修复动作*
 
 | 失败模式 | 表现 | 可能根因 | 治理方式 |
 | --- | --- | --- | --- |

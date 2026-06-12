@@ -142,9 +142,9 @@ This part uses representative specialized datasets to show how data engineering 
 - [Chapter 38: Visual Document and Structured Table Data Engineering](part12/ch38_visual_document_table_data_engineering.md)
 - [Chapter 39: Visual Reasoning and Tool-Calling Data Engineering](part12/ch39_visual_reasoning_tool_data_engineering.md)
 - [Chapter 40: Interaction Control and Reasoning Trace Data Engineering](part12/ch40_interaction_reasoning_trace_data_engineering.md)
-- [Chapter 41: FineWeb Pre-training Corpus Data Engineering](part12/ch41_fineweb_redpajama_dclm.md)
-- [Chapter 42: Dolma Pre-training Corpus Transparent Ledger](part12/ch42_dolma_olmo_transparent_corpus.md)
-- [Chapter 43: LAION-5B Image-Text Candidate Pool and Filtering Channels](part12/ch43_laion_datacomp_image_text.md)
+- [Chapter 41: FineWeb Pre-training Corpus Data Engineering](part12/ch41_fineweb_pretraining_corpus.md)
+- [Chapter 42: Dolma Pre-training Corpus Transparent Ledger](part12/ch42_dolma_pretraining_corpus_ledger.md)
+- [Chapter 43: LAION-5B Image-Text Candidate Pool and Filtering Channels](part12/ch43_laion5b_image_text_candidate_pool.md)
 
 ## Part 13: Open-Source Large-Model Data Engineering Recipes and Paradigms
 

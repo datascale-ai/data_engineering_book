@@ -4,7 +4,7 @@
 
 第十二篇承担全书的方法验证功能。前十一篇已经建立数据生命周期、文本与多模态处理、对齐数据、推理数据、RAG、DataOps、数据资产化、Agent 自动化和合规治理等框架；本篇将这些方法落到具体数据对象中，检验它们在视觉文档、视觉推理、交互控制、开放 Web 语料、透明预训练语料和图文候选池等场景中的适用性。
 
-本篇不以数据集名称罗列为目标，而以“专项数据集与业界数据工程数据集如何被定义、构建、评测、发布和复现”为主线。前三章把六个专项案例合并为三个方法型章节，后三章保留 FineWeb、Dolma 和 LAION/DataComp 三个业界数据工程数据集，用于连接第十三篇的模型数据配方。
+本篇不以数据集名称罗列为目标，而以“专项数据集与业界数据工程数据集如何被定义、构建、评测、发布和复现”为主线。前三章把六个专项案例合并为三个方法型章节，后三章保留 FineWeb、Dolma 和 LAION-5B 三个业界数据工程数据集，并把 DataComp 作为图文筛选评估协议参照，用于连接第十三篇的模型数据配方。
 
 向前看，本篇承接第三篇的多模态数据、第五篇的合成数据、第六篇的工具与推理数据、第八篇的数据运营和第十一篇的合规治理。向后看，本篇为第十三篇的开源模型数据配方和第十四篇的项目案例研究提供可引用的工程证据。
 
@@ -17,9 +17,9 @@
 - [第38章：视觉文档与结构化表格数据工程](ch38_visual_document_table_data_engineering.md)
 - [第39章：视觉推理与工具调用数据工程](ch39_visual_reasoning_tool_data_engineering.md)
 - [第40章：交互控制与推理轨迹数据工程](ch40_interaction_reasoning_trace_data_engineering.md)
-- [第41章：FineWeb 预训练语料数据工程](ch41_fineweb_redpajama_dclm.md)
-- [第42章：Dolma 预训练语料透明账本](ch42_dolma_olmo_transparent_corpus.md)
-- [第43章：LAION-5B 图文候选池与筛选通道](ch43_laion_datacomp_image_text.md)
+- [第41章：FineWeb 预训练语料数据工程](ch41_fineweb_pretraining_corpus.md)
+- [第42章：Dolma 预训练语料透明账本](ch42_dolma_pretraining_corpus_ledger.md)
+- [第43章：LAION-5B 图文候选池与筛选通道](ch43_laion5b_image_text_candidate_pool.md)
 
 ## 阅读顺序
 
@@ -29,7 +29,7 @@
 
 第40章合并 VoiceStyleControl 与 Latent-Switch-69K，围绕语音风格控制、交互状态、长 CoT 压缩和监督 mask 展开，向后衔接第十三篇的后训练、推理模型、RL 数据工程和第十四篇的 R1 推理飞轮案例。
 
-第41章至第43章进入业界数据工程数据集，分别讨论 FineWeb、Dolma 和 LAION/DataComp 的数据来源、处理链路、透明度、许可边界和发布形态，为第十三篇的模型数据配方提供更具体的数据资产参照。
+第41章至第43章进入业界数据工程数据集，分别讨论 FineWeb、Dolma 和 LAION-5B 的数据来源、处理链路、透明度、许可边界和发布形态，并在图文章节中引入 DataComp 式评估协议，为第十三篇的模型数据配方提供更具体的数据资产参照。
 
 ## 统一检查口径
 

@@ -135,9 +135,9 @@
 - [第38章：视觉文档与结构化表格数据工程](part12/ch38_visual_document_table_data_engineering.md)
 - [第39章：视觉推理与工具调用数据工程](part12/ch39_visual_reasoning_tool_data_engineering.md)
 - [第40章：交互控制与推理轨迹数据工程](part12/ch40_interaction_reasoning_trace_data_engineering.md)
-- [第41章：FineWeb 预训练语料数据工程](part12/ch41_fineweb_redpajama_dclm.md)
-- [第42章：Dolma 预训练语料透明账本](part12/ch42_dolma_olmo_transparent_corpus.md)
-- [第43章：LAION-5B 图文候选池与筛选通道](part12/ch43_laion_datacomp_image_text.md)
+- [第41章：FineWeb 预训练语料数据工程](part12/ch41_fineweb_pretraining_corpus.md)
+- [第42章：Dolma 预训练语料透明账本](part12/ch42_dolma_pretraining_corpus_ledger.md)
+- [第43章：LAION-5B 图文候选池与筛选通道](part12/ch43_laion5b_image_text_candidate_pool.md)
 
 ## 第十三篇：开源大模型数据工程配方与范式
 

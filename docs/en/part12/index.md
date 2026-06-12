@@ -4,7 +4,7 @@
 
 Part XII serves as the methodology validation function for the book as a whole. The preceding eleven parts have established frameworks covering the data lifecycle, text and multimodal processing, alignment data, reasoning data, RAG, DataOps, data asset management, Agent automation, and compliance governance. This part grounds those frameworks in concrete data objects, examining their applicability to visual documents, visual reasoning, interaction control, open Web corpora, transparent pre-training corpora, and image-text candidate pools.
 
-This part does not aim to enumerate dataset names; rather, its thread is "how specialized datasets and industry-scale data engineering datasets are defined, constructed, evaluated, published, and reproduced." The first three chapters consolidate six specialized cases into three method-oriented chapters; the final three chapters retain FineWeb, Dolma, and LAION/DataComp as industry data engineering references for Part XIII.
+This part does not aim to enumerate dataset names; rather, its thread is "how specialized datasets and industry-scale data engineering datasets are defined, constructed, evaluated, published, and reproduced." The first three chapters consolidate six specialized cases into three method-oriented chapters; the final three chapters retain FineWeb, Dolma, and LAION-5B as industry data engineering references for Part XIII, with DataComp used as an evaluation-protocol reference for image-text filtering.
 
 Looking backward, this part builds on Part III (multimodal data), Part V (synthetic data), Part VI (tool and reasoning data), Part VIII (data operations), and Part XI (compliance governance). Looking forward, it provides citable engineering evidence for Part XIII (open-source model data recipes) and Part XIV (project case studies).
 
@@ -17,9 +17,9 @@ Throughout this part, "specialized dataset" consistently refers to data assets c
 - [Chapter 38: Visual Document and Structured Table Data Engineering](ch38_visual_document_table_data_engineering.md)
 - [Chapter 39: Visual Reasoning and Tool-Calling Data Engineering](ch39_visual_reasoning_tool_data_engineering.md)
 - [Chapter 40: Interaction Control and Reasoning Trace Data Engineering](ch40_interaction_reasoning_trace_data_engineering.md)
-- [Chapter 41: FineWeb Pre-training Corpus Data Engineering](ch41_fineweb_redpajama_dclm.md)
-- [Chapter 42: Dolma Pre-training Corpus Transparent Ledger](ch42_dolma_olmo_transparent_corpus.md)
-- [Chapter 43: LAION-5B Image-Text Candidate Pool and Filtering Channels](ch43_laion_datacomp_image_text.md)
+- [Chapter 41: FineWeb Pre-training Corpus Data Engineering](ch41_fineweb_pretraining_corpus.md)
+- [Chapter 42: Dolma Pre-training Corpus Transparent Ledger](ch42_dolma_pretraining_corpus_ledger.md)
+- [Chapter 43: LAION-5B Image-Text Candidate Pool and Filtering Channels](ch43_laion5b_image_text_candidate_pool.md)
 
 ## Reading Order
 
@@ -29,7 +29,7 @@ Chapter 39 combines multi-chart infographics and MedImage-ToolVQA around visual 
 
 Chapter 40 combines VoiceStyleControl and Latent-Switch-69K around voice-style control, interaction state, long-CoT compression, and supervision masks. It leads naturally into Part XIII's post-training, reasoning models, RL data engineering, and the R1 reasoning flywheel case study in Part XIV.
 
-Chapters 41 through 43 shift to industry-scale data engineering datasets and open data assets. FineWeb, Dolma, and LAION/DataComp are read as production-facing references for source transparency, processing manifests, license boundaries, filtering protocols, and public release forms.
+Chapters 41 through 43 shift to industry-scale data engineering datasets and open data assets. FineWeb, Dolma, and LAION-5B are read as production-facing references for source transparency, processing manifests, license boundaries, filtering protocols, and public release forms, while DataComp is introduced as a protocol for comparing image-text filtering strategies.
 
 ## Unified Review Criteria
 
