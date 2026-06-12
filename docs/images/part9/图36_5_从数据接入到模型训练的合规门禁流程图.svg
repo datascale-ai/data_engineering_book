@@ -1,0 +1,2041 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1600"
+   height="900"
+   viewBox="0 0 1600 900"
+   role="img"
+   aria-labelledby="title desc"
+   version="1.1"
+   id="svg145"
+   sodipodi:docname="ch36_05_compliance_gate_data_to_training.svg"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview145"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.9"
+     inkscape:cx="899.99999"
+     inkscape:cy="571.31578"
+     inkscape:window-width="1920"
+     inkscape:window-height="1111"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg145" />
+  <title
+     id="title">Compliance Gate Workflow from Data Ingestion to Model Training</title>
+  <desc
+     id="desc">A CI/CD compliance gate workflow from data ingestion through model training and deployment, with blocking gates and an immutable audit log layer.</desc>
+  <defs
+     id="defs8">
+    <linearGradient
+       id="blueBox"
+       x1="0"
+       y1="0"
+       x2="0"
+       y2="1">
+      <stop
+         offset="0"
+         stop-color="#237faf"
+         id="stop1" />
+      <stop
+         offset="1"
+         stop-color="#0f5f8c"
+         id="stop2" />
+    </linearGradient>
+    <linearGradient
+       id="shieldBlue"
+       x1="0"
+       y1="0"
+       x2="0"
+       y2="1">
+      <stop
+         offset="0"
+         stop-color="#237faf"
+         id="stop3" />
+      <stop
+         offset="1"
+         stop-color="#0c4264"
+         id="stop4" />
+    </linearGradient>
+    <linearGradient
+       id="gateHeader"
+       x1="0"
+       y1="0"
+       x2="0"
+       y2="1">
+      <stop
+         offset="0"
+         stop-color="#145f93"
+         id="stop5" />
+      <stop
+         offset="1"
+         stop-color="#0d4f7d"
+         id="stop6" />
+    </linearGradient>
+    <marker
+       id="arrowBlue"
+       markerWidth="18"
+       markerHeight="18"
+       refX="10"
+       refY="9"
+       orient="auto"
+       markerUnits="userSpaceOnUse"
+       viewBox="0 0 18 18">
+      <path
+         d="M0 0 L18 9 L0 18 Z"
+         fill="#237faf"
+         id="path6" />
+    </marker>
+    <marker
+       id="arrowGreen"
+       markerWidth="18"
+       markerHeight="18"
+       refX="16"
+       refY="9"
+       orient="auto"
+       markerUnits="userSpaceOnUse"
+       viewBox="0 0 18 18">
+      <path
+         d="M0 0 L18 9 L0 18 Z"
+         fill="#2ca56d"
+         id="path7" />
+    </marker>
+    <marker
+       id="arrowRed"
+       markerWidth="34"
+       markerHeight="34"
+       refX="10"
+       refY="9"
+       orient="auto"
+       markerUnits="userSpaceOnUse"
+       viewBox="0 0 18 18">
+      <path
+         d="M0 0 L18 9 L0 18 Z"
+         fill="#d93636"
+         id="path8" />
+    </marker>
+    <filter
+       id="softShadow"
+       x="-0.017857143"
+       y="-0.019230769"
+       width="1.0357143"
+       height="1.0384615">
+      <feDropShadow
+         dx="0"
+         dy="3"
+         stdDeviation="3"
+         flood-color="#0f172a"
+         flood-opacity="0.22" />
+    </filter>
+    <filter
+       id="orangeGlow"
+       x="-0.0044776119"
+       y="-0.0079787234"
+       width="1.0089552"
+       height="1.0159574">
+      <feDropShadow
+         dx="0"
+         dy="0"
+         stdDeviation="6"
+         flood-color="#f59e0b"
+         flood-opacity="0.72" />
+    </filter>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#shieldBlue"
+       id="linearGradient145"
+       x1="244.09533"
+       y1="130.26605"
+       x2="244.09533"
+       y2="248.59704"
+       gradientTransform="matrix(0.84745532,0,0,0.97206129,0,27.481091)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#shieldBlue"
+       id="linearGradient146"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.84745532,0,0,0.97206129,317.70646,24.265895)"
+       x1="244.09533"
+       y1="130.26605"
+       x2="244.09533"
+       y2="248.59704" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#shieldBlue"
+       id="linearGradient147"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.84745532,0,0,0.97206129,637.61563,24.140582)"
+       x1="244.09533"
+       y1="130.26605"
+       x2="244.09533"
+       y2="248.59704" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#shieldBlue"
+       id="linearGradient149"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.84745532,0,0,0.97206129,1118.6842,25.110128)"
+       x1="244.09533"
+       y1="130.26605"
+       x2="244.09533"
+       y2="248.59704" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient1"
+       x1="52.5"
+       y1="160.5"
+       x2="52.5"
+       y2="249.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient2"
+       x1="372.5"
+       y1="160.5"
+       x2="372.5"
+       y2="249.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient3"
+       x1="692.5"
+       y1="160.5"
+       x2="692.5"
+       y2="249.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient4"
+       x1="1012.5"
+       y1="160.5"
+       x2="1012.5"
+       y2="249.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient5"
+       x1="1172.5"
+       y1="160.5"
+       x2="1172.5"
+       y2="249.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient6"
+       x1="1492.5"
+       y1="160.5"
+       x2="1492.5"
+       y2="249.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#gateHeader"
+       id="linearGradient7"
+       x1="41.939889"
+       y1="907.20317"
+       x2="41.939889"
+       y2="1017.8377"
+       gradientTransform="scale(2.7658633,0.36155076)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#gateHeader"
+       id="linearGradient8"
+       x1="20.969944"
+       y1="1980.3581"
+       x2="20.969944"
+       y2="2035.6754"
+       gradientTransform="scale(5.5317267,0.18077538)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#gateHeader"
+       id="linearGradient9"
+       x1="155.8767"
+       y1="936.38112"
+       x2="155.8767"
+       y2="1050.5739"
+       gradientTransform="scale(2.8548205,0.35028472)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#gateHeader"
+       id="linearGradient10"
+       x1="77.938351"
+       y1="2044.0515"
+       x2="77.938351"
+       y2="2101.1479"
+       gradientTransform="scale(5.709641,0.17514236)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#gateHeader"
+       id="linearGradient11"
+       x1="401.55279"
+       y1="986.72955"
+       x2="401.55279"
+       y2="1107.0624"
+       gradientTransform="scale(3.0083218,0.33241125)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#gateHeader"
+       id="linearGradient12"
+       x1="200.77639"
+       y1="2153.9584"
+       x2="200.77639"
+       y2="2214.1248"
+       gradientTransform="scale(6.0166436,0.16620562)"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient13"
+       x1="142.5"
+       y1="740.5"
+       x2="142.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient14"
+       x1="236.5"
+       y1="740.5"
+       x2="236.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient15"
+       x1="330.5"
+       y1="740.5"
+       x2="330.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient16"
+       x1="424.5"
+       y1="740.5"
+       x2="424.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient17"
+       x1="518.5"
+       y1="740.5"
+       x2="518.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient18"
+       x1="612.5"
+       y1="740.5"
+       x2="612.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient19"
+       x1="706.5"
+       y1="740.5"
+       x2="706.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient20"
+       x1="800.5"
+       y1="740.5"
+       x2="800.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient21"
+       x1="894.5"
+       y1="740.5"
+       x2="894.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient22"
+       x1="988.5"
+       y1="740.5"
+       x2="988.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient23"
+       x1="1082.5"
+       y1="740.5"
+       x2="1082.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient24"
+       x1="1176.5"
+       y1="740.5"
+       x2="1176.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient25"
+       x1="1270.5"
+       y1="740.5"
+       x2="1270.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient26"
+       x1="1364.5"
+       y1="740.5"
+       x2="1364.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient27"
+       x1="1458.5"
+       y1="740.5"
+       x2="1458.5"
+       y2="787.5"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#blueBox"
+       id="linearGradient28"
+       x1="26.461586"
+       y1="3987.7145"
+       x2="26.461586"
+       y2="4240.8173"
+       gradientTransform="scale(5.3851648,0.18569534)"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <style
+     id="style8">
+    .font { font-family: Arial, Helvetica, sans-serif; }
+    .title { font-family: Arial, Helvetica, sans-serif; font-size: 36px; font-weight: 700; fill: #101418; }
+    .subtitle { font-family: Arial, Helvetica, sans-serif; font-size: 33px; font-weight: 700; fill: #155f93; }
+    .label { font-family: Arial, Helvetica, sans-serif; font-size: 19px; font-weight: 700; fill: #17202a; text-anchor: middle; }
+    .small { font-family: Arial, Helvetica, sans-serif; font-size: 18px; fill: #17202a; }
+    .tiny { font-family: Arial, Helvetica, sans-serif; font-size: 15px; fill: #374151; }
+    .cardTitle { font-family: Arial, Helvetica, sans-serif; font-size: 20px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+  </style>
+  <!-- light circuit hints -->
+  <g
+     opacity="0.18"
+     stroke="#8eb1c6"
+     stroke-width="2"
+     fill="none"
+     id="g14"
+     transform="translate(-2.2725767e-7,2.9772914)">
+    <path
+       d="m 1282,28 h 123 l 30,30 h 130"
+       id="path9" />
+    <path
+       d="m 1330,76 h 135 l 25,25 h 94"
+       id="path10" />
+    <path
+       d="m 1260,126 h 100 l 35,34 h 187"
+       id="path11" />
+    <circle
+       cx="1405"
+       cy="28"
+       r="4"
+       fill="#8eb1c6"
+       id="circle11" />
+    <circle
+       cx="1465"
+       cy="76"
+       r="4"
+       fill="#8eb1c6"
+       id="circle12" />
+    <circle
+       cx="1395"
+       cy="160"
+       r="4"
+       fill="#8eb1c6"
+       id="circle13" />
+    <path
+       d="m 0,690 h 75 l 30,30 h 100"
+       id="path13" />
+    <path
+       d="m 0,832 h 95 l 33,33 h 112"
+       id="path14" />
+  </g>
+  <text
+     x="28"
+     y="52.977287"
+     class="title"
+     id="text16"><tspan
+       x="28"
+       id="tspan14">Compliance Gate Workflow from</tspan><tspan
+       x="28"
+       dy="39"
+       id="tspan15">Data Ingestion to Model Training</tspan><tspan
+       x="28"
+       dy="39"
+       font-weight="400"
+       id="tspan16">(CI/CD + Audit Logging)</tspan></text>
+  <text
+     x="880"
+     y="121.97729"
+     text-anchor="middle"
+     class="subtitle"
+     id="text17">Compliance as Code in CI/CD</text>
+  <!-- Top pipeline arrows -->
+  <g
+     stroke-width="8"
+     fill="none"
+     stroke-linecap="round"
+     id="g25"
+     transform="translate(-2.2725767e-7,2.9772914)">
+    <path
+       d="m 135,205 h 72"
+       stroke="#237faf"
+       marker-end="url(#arrowBlue)"
+       id="path17" />
+    <path
+       d="m 303,205 h 64"
+       stroke="#2ca56d"
+       marker-end="url(#arrowGreen)"
+       id="path18" />
+    <path
+       d="m 463,205 h 64"
+       stroke="#2ca56d"
+       marker-end="url(#arrowGreen)"
+       id="path19" />
+    <path
+       d="m 623,205 h 64"
+       stroke="#2ca56d"
+       marker-end="url(#arrowGreen)"
+       id="path20" />
+    <path
+       d="m 783,205 h 64"
+       stroke="#2ca56d"
+       marker-end="url(#arrowGreen)"
+       id="path21" />
+    <path
+       d="m 943,205 h 64"
+       stroke="#2ca56d"
+       marker-end="url(#arrowGreen)"
+       id="path22" />
+    <path
+       d="m 1103,205 h 64"
+       stroke="#2ca56d"
+       marker-end="url(#arrowGreen)"
+       id="path23" />
+    <path
+       d="m 1263,205 h 64"
+       stroke="#2ca56d"
+       marker-end="url(#arrowGreen)"
+       id="path24" />
+    <path
+       d="m 1423,205 h 61"
+       stroke="#d93636"
+       marker-end="url(#arrowRed)"
+       id="path25" />
+  </g>
+  <!-- Top workflow nodes -->
+  <g
+     class="font"
+     id="g50"
+     transform="translate(-2.2725767e-7,2.9772914)">
+    <!-- Data ingestion -->
+    <rect
+       x="54"
+       y="162"
+       width="86"
+       height="86"
+       rx="10"
+       fill="url(#blueBox)"
+       stroke="#0f5f8c"
+       stroke-width="3"
+       id="rect25"
+       style="fill:url(#linearGradient1)" />
+    <ellipse
+       cx="97"
+       cy="183"
+       rx="28"
+       ry="11"
+       fill="#dcecf3"
+       stroke="#ffffff"
+       stroke-width="3"
+       id="ellipse25" />
+    <path
+       d="m 69,183 v 36 c 0,14 56,14 56,0 v -36"
+       fill="#dcecf3"
+       stroke="#ffffff"
+       stroke-width="3"
+       id="path26" />
+    <path
+       d="m 69,201 c 0,14 56,14 56,0"
+       fill="none"
+       stroke="#ffffff"
+       stroke-width="3"
+       id="path27" />
+    <text
+       x="97"
+       y="284"
+       class="label"
+       id="text28"><tspan
+         x="97"
+         id="tspan27">Data</tspan><tspan
+         x="97"
+         dy="24"
+         id="tspan28">Ingestion</tspan></text>
+    <!-- Gate 1 shield -->
+    <path
+       d="m 257,155.99054 48,14.82802 v 40.36514 c 0,27.1847 -19,45.30782 -48,56.01695 -29,-10.70913 -48,-28.83225 -48,-56.01695 v -40.36514 z"
+       fill="url(#shieldBlue)"
+       stroke="#0f5f8c"
+       stroke-width="4"
+       id="path28"
+       style="fill:url(#linearGradient145)" />
+    <path
+       d="m 225,180.44664 32,-10.48015 32,10.48015 v 33.18716 c 0,21.83365 -13,35.80719 -32,45.414 -19,-9.60681 -32,-23.58035 -32,-45.414 z"
+       fill="#1d6f9f"
+       id="path29"
+       style="stroke-width:1" />
+    <path
+       d="m 236.74432,212.17376 17,16.03514 28,-32.07029"
+       fill="none"
+       stroke="#49d17d"
+       stroke-width="8"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path30" />
+    <path
+       d="m 574.70646,152.77534 48,14.82802 v 40.36514 c 0,27.1847 -19,45.30782 -48,56.01695 -29,-10.70913 -48,-28.83225 -48,-56.01695 v -40.36514 z"
+       fill="url(#shieldBlue)"
+       stroke="#0f5f8c"
+       stroke-width="4"
+       id="path28-8"
+       style="fill:url(#linearGradient146)" />
+    <path
+       d="m 542.70646,177.23144 32,-10.48015 32,10.48015 v 33.18716 c 0,21.83365 -13,35.80719 -32,45.414 -19,-9.60681 -32,-23.58035 -32,-45.414 z"
+       fill="#1d6f9f"
+       id="path29-8"
+       style="stroke-width:1" />
+    <path
+       d="m 554.45078,208.95856 17,16.03514 28,-32.07029"
+       fill="none"
+       stroke="#49d17d"
+       stroke-width="8"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path30-2" />
+    <path
+       d="m 894.61563,152.65003 48,14.82802 v 40.36514 c 0,27.1847 -19,45.30782 -48,56.01695 -29,-10.70913 -48,-28.83225 -48,-56.01695 v -40.36514 z"
+       fill="url(#shieldBlue)"
+       stroke="#0f5f8c"
+       stroke-width="4"
+       id="path28-1"
+       style="fill:url(#linearGradient147)" />
+    <path
+       d="m 862.61563,177.10613 32,-10.48015 32,10.48015 v 33.18716 c 0,21.83365 -13,35.80719 -32,45.414 -19,-9.60681 -32,-23.58035 -32,-45.414 z"
+       fill="#1d6f9f"
+       id="path29-7"
+       style="stroke-width:1" />
+    <path
+       d="m 874.35995,208.83325 17,16.03514 28,-32.07029"
+       fill="none"
+       stroke="#49d17d"
+       stroke-width="8"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path30-1" />
+    <path
+       d="m 1375.6842,153.61958 48,14.82802 v 40.36514 c 0,27.1847 -19,45.30782 -48,56.01695 -29,-10.70913 -48,-28.83225 -48,-56.01695 V 168.4476 Z"
+       fill="url(#shieldBlue)"
+       stroke="#0f5f8c"
+       stroke-width="4"
+       id="path28-1-1"
+       style="fill:url(#linearGradient149)" />
+    <path
+       d="m 1343.6842,178.07568 32,-10.48015 32,10.48015 v 33.18716 c 0,21.83365 -13,35.80719 -32,45.414 -19,-9.60681 -32,-23.58035 -32,-45.414 z"
+       fill="#1d6f9f"
+       id="path29-7-4"
+       style="stroke-width:1" />
+    <text
+       x="257"
+       y="284"
+       class="label"
+       id="text31"><tspan
+         x="257"
+         id="tspan30">Compliance</tspan><tspan
+         x="257"
+         dy="24"
+         id="tspan31">Gate</tspan></text>
+    <!-- Data processing -->
+    <rect
+       x="374"
+       y="162"
+       width="86"
+       height="86"
+       rx="10"
+       fill="url(#blueBox)"
+       stroke="#0f5f8c"
+       stroke-width="3"
+       id="rect31"
+       style="fill:url(#linearGradient2)" />
+    <circle
+       cx="417.46594"
+       cy="205.88351"
+       r="24"
+       fill="none"
+       stroke="#dcecf3"
+       stroke-width="7"
+       id="circle31" />
+    <path
+       d="m 417.46594,172.88352 v 18 m 0,30 v 18 m -33,-33 h 18 m 30,0 h 18 m -55,-23 12,12 m 20,22 12,12 m 0,-46 -12,12 m -20,22 -12,12"
+       stroke="#dcecf3"
+       stroke-width="6"
+       stroke-linecap="round"
+       id="path31" />
+    <circle
+       cx="445.46594"
+       cy="227.88351"
+       r="9"
+       fill="#dcecf3"
+       id="circle32" />
+    <circle
+       cx="425"
+       cy="225"
+       r="6"
+       fill="#dcecf3"
+       id="circle33" />
+    <text
+       x="417"
+       y="284"
+       class="label"
+       id="text34"><tspan
+         x="417"
+         id="tspan33">Data</tspan><tspan
+         x="417"
+         dy="24"
+         id="tspan34">Processing</tspan></text>
+    <!-- Gate 2 shield -->
+    <text
+       x="577"
+       y="284"
+       class="label"
+       id="text37"><tspan
+         x="577"
+         id="tspan36">Compliance</tspan><tspan
+         x="577"
+         dy="24"
+         id="tspan37">Gate</tspan></text>
+    <!-- Feature engineering -->
+    <rect
+       x="694"
+       y="162"
+       width="86"
+       height="86"
+       rx="10"
+       fill="url(#blueBox)"
+       stroke="#0f5f8c"
+       stroke-width="3"
+       id="rect37"
+       style="fill:url(#linearGradient3)" />
+    <path
+       d="m 718,221 37,-37 m -37,0 37,37"
+       stroke="#dcecf3"
+       stroke-width="8"
+       stroke-linecap="round"
+       id="path37" />
+    <circle
+       cx="724"
+       cy="187"
+       r="8"
+       fill="#dcecf3"
+       id="circle37" />
+    <circle
+       cx="752"
+       cy="218"
+       r="8"
+       fill="#dcecf3"
+       id="circle38" />
+    <text
+       x="737"
+       y="284"
+       class="label"
+       id="text39"><tspan
+         x="737"
+         id="tspan38">Feature</tspan><tspan
+         x="737"
+         dy="24"
+         id="tspan39">Engineering</tspan></text>
+    <!-- Gate 3 shield highlighted -->
+    <g
+       filter="url(#orangeGlow)"
+       id="g41" />
+    <text
+       x="897"
+       y="284"
+       class="label"
+       id="text42"><tspan
+         x="897"
+         id="tspan41">Compliance</tspan><tspan
+         x="897"
+         dy="24"
+         id="tspan42">Gate</tspan></text>
+    <!-- Model training -->
+    <rect
+       x="1014"
+       y="162"
+       width="86"
+       height="86"
+       rx="10"
+       fill="url(#blueBox)"
+       stroke="#0f5f8c"
+       stroke-width="3"
+       id="rect42"
+       style="fill:url(#linearGradient4)" />
+    <path
+       d="m 1042,206 c -26,-19 -11,-48 15,-35 26,-13 42,16 15,36 15,15 -1,34 -15,22 -16,12 -30,-7 -15,-23 z"
+       fill="none"
+       stroke="#dcecf3"
+       stroke-width="5"
+       stroke-linejoin="round"
+       id="path42" />
+    <line
+       x1="1057"
+       y1="171"
+       x2="1057"
+       y2="230"
+       stroke="#dcecf3"
+       stroke-width="4"
+       id="line42" />
+    <text
+       x="1057"
+       y="284"
+       class="label"
+       id="text44"><tspan
+         x="1057"
+         id="tspan43">Model</tspan><tspan
+         x="1057"
+         dy="24"
+         id="tspan44">Training</tspan></text>
+    <!-- Model evaluation -->
+    <rect
+       x="1174"
+       y="162"
+       width="86"
+       height="86"
+       rx="10"
+       fill="url(#blueBox)"
+       stroke="#0f5f8c"
+       stroke-width="3"
+       id="rect44"
+       style="fill:url(#linearGradient5)" />
+    <rect
+       x="1199"
+       y="179"
+       width="38"
+       height="54"
+       rx="4"
+       fill="none"
+       stroke="#dcecf3"
+       stroke-width="4"
+       id="rect45" />
+    <path
+       d="m 1207,194 7,7 13,-14 m -20,24 7,7 13,-14 m -20,24 7,7 13,-14"
+       fill="none"
+       stroke="#dcecf3"
+       stroke-width="3"
+       id="path45" />
+    <line
+       x1="1233"
+       y1="176"
+       x2="1233"
+       y2="188"
+       stroke="#dcecf3"
+       stroke-width="5"
+       id="line45" />
+    <text
+       x="1217"
+       y="284"
+       class="label"
+       id="text46"><tspan
+         x="1217"
+         id="tspan45">Model</tspan><tspan
+         x="1217"
+         dy="24"
+         id="tspan46">Evaluation</tspan></text>
+    <!-- Gate 4 shield fail -->
+    <path
+       d="m 1358.2557,191.16564 36,36 m 0,-36 -36,36"
+       stroke="#ff5c5c"
+       stroke-width="8"
+       stroke-linecap="round"
+       id="path48" />
+    <text
+       x="1377"
+       y="284"
+       class="label"
+       id="text49"><tspan
+         x="1377"
+         id="tspan48">Compliance</tspan><tspan
+         x="1377"
+         dy="24"
+         id="tspan49">Gate</tspan></text>
+    <!-- Deployment -->
+    <rect
+       x="1494"
+       y="162"
+       width="86"
+       height="86"
+       rx="10"
+       fill="url(#blueBox)"
+       stroke="#0f5f8c"
+       stroke-width="3"
+       id="rect49"
+       style="fill:url(#linearGradient6)" />
+    <path
+       d="m 1538,183 c 23,12 24,37 -4,54 l -23,9 9,-24 z"
+       fill="#dcecf3"
+       id="path49" />
+    <circle
+       cx="1541"
+       cy="204"
+       r="7"
+       fill="#237faf"
+       id="circle49" />
+    <path
+       d="m 1518,225 -19,11 m 30,2 -9,22"
+       stroke="#dcecf3"
+       stroke-width="5"
+       stroke-linecap="round"
+       id="path50" />
+    <text
+       x="1537"
+       y="284"
+       class="label"
+       id="text50">Deployment</text>
+  </g>
+  <!-- Gate connector lines -->
+  <g
+     stroke="#155f93"
+     stroke-width="3"
+     fill="none"
+     id="g54"
+     transform="translate(-2.2725767e-7,2.9772914)">
+    <path
+       d="m 257,292 v 36"
+       id="path51" />
+    <path
+       d="m 577,292 v 36"
+       id="path52" />
+    <path
+       d="m 897,292 v 36"
+       id="path53" />
+    <path
+       d="m 1377,292 v 36"
+       id="path54" />
+  </g>
+  <!-- Gate cards -->
+  <g
+     class="font"
+     id="g95"
+     transform="translate(-2.2725767e-7,2.9772914)">
+    <!-- Gate 1 -->
+    <rect
+       x="116"
+       y="328"
+       width="306"
+       height="188"
+       rx="10"
+       fill="#f8fafc"
+       stroke="#155f93"
+       stroke-width="3"
+       filter="url(#softShadow)"
+       id="rect54" />
+    <rect
+       x="116"
+       y="328"
+       width="306"
+       height="40"
+       rx="10"
+       fill="url(#gateHeader)"
+       id="rect55"
+       style="fill:url(#linearGradient7)" />
+    <path
+       d="m 116,358 h 306 v 10 H 116 Z"
+       fill="url(#gateHeader)"
+       id="path55"
+       style="fill:url(#linearGradient8)" />
+    <text
+       x="269"
+       y="354"
+       class="cardTitle"
+       id="text55">Gate 1: Pre-Ingestion Check</text>
+    <ellipse
+       cx="145.18608"
+       cy="384.62634"
+       rx="13"
+       ry="6"
+       fill="#8bd0e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="ellipse55" />
+    <path
+       d="m 132.18608,384.6291 v 28 c 0,8 26,8 26,0 v -28"
+       fill="#8bd0e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="path56" />
+    <text
+       x="175"
+       y="407"
+       font-size="19px"
+       fill="#17202a"
+       id="text56">RoPA exists</text>
+    <text
+       x="365.78946"
+       y="411.1579"
+       font-size="22px"
+       fill="#2ca56d"
+       id="text57">[OK]</text>
+    <circle
+       cx="145"
+       cy="443"
+       r="18"
+       fill="#8bd0e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="circle57" />
+    <path
+       d="m 145,425 v 18 h 19"
+       fill="none"
+       stroke="#155f93"
+       stroke-width="4"
+       id="path57" />
+    <text
+       x="175"
+       y="436"
+       font-size="19px"
+       fill="#17202a"
+       id="text58"><tspan
+         x="175"
+         id="tspan57">Data classification</tspan><tspan
+         x="175"
+         dy="23"
+         id="tspan58">completed (C1/C2/C3)</tspan></text>
+    <text
+       x="364.21054"
+       y="451.10529"
+       font-size="22px"
+       fill="#2ca56d"
+       id="text59">[OK]</text>
+    <circle
+       cx="145"
+       cy="484"
+       r="17"
+       fill="#8bd0e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="circle59" />
+    <path
+       d="m 128,484 h 34 m -17,-17 c -11,10 -11,24 0,34 m 0,-34 c 11,10 11,24 0,34 m 0,-34 v 34"
+       stroke="#155f93"
+       stroke-width="2"
+       fill="none"
+       id="path59" />
+    <text
+       x="175"
+       y="491"
+       font-size="19px"
+       fill="#17202a"
+       id="text60">Data source identified</text>
+    <text
+       x="365.57895"
+       y="491.47369"
+       font-size="22px"
+       fill="#2ca56d"
+       id="text61">[OK]</text>
+    <!-- Gate 2 -->
+    <rect
+       x="445"
+       y="328"
+       width="326"
+       height="188"
+       rx="10"
+       fill="#f8fafc"
+       stroke="#155f93"
+       stroke-width="3"
+       filter="url(#softShadow)"
+       id="rect61" />
+    <rect
+       x="445"
+       y="328"
+       width="326"
+       height="40"
+       rx="10"
+       fill="url(#gateHeader)"
+       id="rect62"
+       style="fill:url(#linearGradient9)" />
+    <path
+       d="m 445,358 h 326 v 10 H 445 Z"
+       fill="url(#gateHeader)"
+       id="path62"
+       style="fill:url(#linearGradient10)" />
+    <text
+       x="608"
+       y="354"
+       class="cardTitle"
+       id="text62">Gate 2: Pre-Processing Check</text>
+    <path
+       d="m 474,391 29,29 m 0,-29 -29,29"
+       stroke="#155f93"
+       stroke-width="4"
+       id="path63" />
+    <path
+       d="m 472,405 c 10,-15 24,-15 34,0 -10,15 -24,15 -34,0 z"
+       fill="none"
+       stroke="#8bd0e8"
+       stroke-width="4"
+       id="path64" />
+    <text
+       x="513"
+       y="407"
+       font-size="19px"
+       fill="#17202a"
+       id="text64">Field-level masking defined</text>
+    <text
+       x="744.47369"
+       y="407.47369"
+       font-size="22px"
+       fill="#2ca56d"
+       id="text65">[OK]</text>
+    <path
+       d="m 486.81579,427.45732 13.26875,5.0229 v 10.5481 c 0,8.53894 -5.3075,14.06413 -13.26875,17.58017 -7.96125,-3.51604 -13.26875,-9.04123 -13.26875,-17.58017 v -10.5481 z"
+       fill="#8bd0e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="path65" />
+    <text
+       x="509.3158"
+       y="453.21054"
+       font-size="19px"
+       fill="#17202a"
+       id="text66">Data minimization enforced</text>
+    <text
+       x="743.89471"
+       y="453.6842"
+       font-size="22px"
+       fill="#2ca56d"
+       id="text67">[OK]</text>
+    <rect
+       x="471.78946"
+       y="481.94736"
+       width="33"
+       height="27"
+       rx="4"
+       fill="#8bd0e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="rect67" />
+    <path
+       d="m 477.52632,486.6842 v -10 q 11,-13 22,0 v 10"
+       fill="none"
+       stroke="#155f93"
+       stroke-width="4"
+       id="path67" />
+    <text
+       x="513"
+       y="501"
+       font-size="19px"
+       fill="#17202a"
+       id="text68">Access control configured</text>
+    <text
+       x="742.3158"
+       y="500.94736"
+       font-size="22px"
+       fill="#2ca56d"
+       id="text69">[OK]</text>
+    <!-- Gate 3 -->
+    <rect
+       x="820"
+       y="328"
+       width="335"
+       height="188"
+       rx="10"
+       fill="#fff7ed"
+       stroke="#d97706"
+       stroke-width="3"
+       filter="url(#orangeGlow)"
+       id="rect69" />
+    <rect
+       x="820"
+       y="328"
+       width="335"
+       height="40"
+       rx="10"
+       fill="#145f93"
+       id="rect70" />
+    <path
+       d="m 820,358 h 335 v 10 H 820 Z"
+       fill="#145f93"
+       id="path70" />
+    <text
+       x="988"
+       y="354"
+       text-anchor="middle"
+       font-size="18px"
+       font-weight="700"
+       fill="#ffffff"
+       id="text71"><tspan
+         id="tspan70">Gate 3: Pre-Training Check</tspan><tspan
+         fill="#f2ba45"
+         id="tspan71">(highlight)</tspan></text>
+    <path
+       d="m 872,384 h 24 l 12,12 v 28 h -36 z"
+       fill="#8bd0e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="path71" />
+    <path
+       d="m 896,384 v 13 h 12"
+       fill="none"
+       stroke="#155f93"
+       stroke-width="2"
+       id="path72" />
+    <path
+       d="m 879,410 8,8 15,-20"
+       stroke="#155f93"
+       stroke-width="4"
+       fill="none"
+       id="path73" />
+    <text
+       x="918"
+       y="407"
+       font-size="19px"
+       fill="#17202a"
+       id="text73">DPIA completed</text>
+    <text
+       x="1069.8948"
+       y="411.1579"
+       font-size="22px"
+       fill="#2ca56d"
+       id="text74">[OK]</text>
+    <path
+       d="m 885,431.89665 23,33.76666 h -46 z"
+       fill="#f2ba45"
+       stroke="#a66a00"
+       stroke-width="2"
+       id="path74" />
+    <text
+       x="885"
+       y="461"
+       text-anchor="middle"
+       font-size="28px"
+       font-weight="700"
+       fill="#17202a"
+       id="text75">!</text>
+    <text
+       x="918"
+       y="447"
+       font-size="18px"
+       fill="#17202a"
+       id="text76"><tspan
+         x="918"
+         id="tspan75">High-risk automated</tspan><tspan
+         x="918"
+         dy="22"
+         id="tspan76">decision detection</tspan></text>
+    <text
+       x="1087.2632"
+       y="445.3158"
+       font-size="20px"
+       fill="#d49b43"
+       id="text77">[!]</text>
+    <path
+       d="m 885,475.94836 23,34.76124 h -46 z"
+       fill="#f2ba45"
+       stroke="#a66a00"
+       stroke-width="2"
+       id="path77" />
+    <text
+       x="885"
+       y="506"
+       text-anchor="middle"
+       font-size="27px"
+       font-weight="700"
+       fill="#17202a"
+       id="text78">!</text>
+    <text
+       x="918"
+       y="497"
+       font-size="17px"
+       fill="#17202a"
+       id="text79">High-sensitivity data usage (C3)</text>
+    <text
+       x="1159.3684"
+       y="497.42105"
+       font-size="20px"
+       fill="#d49b43"
+       id="text80">[!]</text>
+    <!-- Gate 4 -->
+    <rect
+       x="1208"
+       y="328"
+       width="362"
+       height="220"
+       rx="10"
+       fill="#f8fafc"
+       stroke="#155f93"
+       stroke-width="3"
+       filter="url(#softShadow)"
+       id="rect80" />
+    <rect
+       x="1208"
+       y="328"
+       width="362"
+       height="40"
+       rx="10"
+       fill="url(#gateHeader)"
+       id="rect81"
+       style="fill:url(#linearGradient11)" />
+    <path
+       d="m 1208,358 h 362 v 10 h -362 z"
+       fill="url(#gateHeader)"
+       id="path81"
+       style="fill:url(#linearGradient12)" />
+    <text
+       x="1416.9827"
+       y="347.43619"
+       text-anchor="middle"
+       font-size="17.6662px"
+       font-weight="700"
+       fill="#ffffff"
+       id="text81"
+       transform="scale(0.98145818,1.0188921)"
+       style="stroke-width:1">Gate 4: Pre-Deployment Check (Final Gate)</text>
+    <path
+       d="m 1238.8421,384 h 17.5728 L 1266,394.30552 v 24.905 h -27.1579 z"
+       fill="#8bd0e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="path82" />
+    <path
+       d="m 1254,384 v 13 h 12"
+       fill="none"
+       stroke="#155f93"
+       stroke-width="2"
+       id="path83" />
+    <text
+       x="1288"
+       y="407"
+       font-size="18px"
+       fill="#17202a"
+       id="text84">Audit logging enabled</text>
+    <text
+       x="1488"
+       y="408"
+       font-size="21px"
+       fill="#2ca56d"
+       id="text85">[OK]</text>
+    <path
+       d="m 1240.6316,427.4971 h 24 v 28.44944 l -12,-5.95453 -12,5.95453 z"
+       fill="#8bd0e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="path85" />
+    <text
+       x="1282.2106"
+       y="447.05264"
+       font-size="18px"
+       fill="#17202a"
+       id="text86">Data retention (TTL) defined</text>
+    <text
+       x="1515.8948"
+       y="447"
+       font-size="21px"
+       fill="#2ca56d"
+       id="text87">[OK]</text>
+    <circle
+       cx="1239.3026"
+       cy="485.09082"
+       r="6"
+       fill="#8bd0e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="circle87" />
+    <circle
+       cx="1264.3026"
+       cy="471.09082"
+       r="6"
+       fill="#8bd0e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="circle88" />
+    <circle
+       cx="1264.3026"
+       cy="499.09082"
+       r="6"
+       fill="#8bd0e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="circle89" />
+    <line
+       x1="1244.3026"
+       y1="482.09082"
+       x2="1259.3026"
+       y2="474.09082"
+       stroke="#155f93"
+       stroke-width="3"
+       id="line89" />
+    <line
+       x1="1244.3026"
+       y1="488.09082"
+       x2="1259.3026"
+       y2="496.09082"
+       stroke="#155f93"
+       stroke-width="3"
+       id="line90" />
+    <text
+       x="1288"
+       y="491"
+       font-size="18px"
+       fill="#17202a"
+       id="text91"><tspan
+         x="1288"
+         id="tspan90">Third-party sharing / cross-border</tspan><tspan
+         x="1288"
+         dy="23"
+         id="tspan91">identified</tspan></text>
+    <text
+       x="1518"
+       y="514"
+       font-size="21px"
+       fill="#2ca56d"
+       id="text92">[OK]</text>
+    <circle
+       cx="1246"
+       cy="530"
+       r="12"
+       fill="none"
+       stroke="#155f93"
+       stroke-width="3"
+       id="circle92" />
+    <path
+       d="m 1226.9304,550.60513 c 5,-13 35,-13 40,0"
+       fill="none"
+       stroke="#155f93"
+       stroke-width="4"
+       id="path92" />
+    <path
+       d="m 1262.9758,525.0923 c 13,6 13,17 3,24"
+       fill="none"
+       stroke="#155f93"
+       stroke-width="4"
+       id="path93" />
+    <text
+       x="1288"
+       y="536"
+       font-size="18px"
+       fill="#17202a"
+       id="text94"><tspan
+         x="1288"
+         id="tspan93">Data subject request handling</tspan><tspan
+         x="1288"
+         dy="21"
+         id="tspan94">defined</tspan></text>
+    <text
+       x="1526.421"
+       y="544.78949"
+       font-size="21px"
+       fill="#2ca56d"
+       id="text95">[OK]</text>
+  </g>
+  <!-- Block and audit paths -->
+  <g
+     class="font"
+     id="g109"
+     transform="translate(-2.2725767e-7,2.9772914)">
+    <!-- red block circles -->
+    <!-- success audit arrows -->
+    <path
+       d="M 260,516 V 662"
+       stroke="#2ca56d"
+       stroke-width="15"
+       fill="none"
+       marker-end="url(#arrowGreen)"
+       id="path99" />
+    <path
+       d="M 595,516 V 662"
+       stroke="#2ca56d"
+       stroke-width="15"
+       fill="none"
+       marker-end="url(#arrowGreen)"
+       id="path100" />
+    <!-- block routing -->
+    <text
+       x="285"
+       y="552"
+       font-size="19px"
+       font-weight="700"
+       fill="#17202a"
+       id="text102"><tspan
+         x="285"
+         id="tspan101">Block pipeline</tspan><tspan
+         x="285"
+         dy="23"
+         id="tspan102">if failed</tspan></text>
+    <path
+       d="m 595,576 v 30 h 182"
+       stroke="#d93636"
+       stroke-width="10"
+       fill="none"
+       marker-end="url(#arrowRed)"
+       id="path102" />
+    <path
+       d="M 997,516 V 662"
+       stroke="#d93636"
+       stroke-width="15"
+       fill="none"
+       marker-end="url(#arrowRed)"
+       id="path103" />
+    <path
+       d="m 997,576 v 39 H 862"
+       stroke="#d93636"
+       stroke-width="10"
+       fill="none"
+       marker-end="url(#arrowRed)"
+       id="path104" />
+    <text
+       x="1022"
+       y="552"
+       font-size="19px"
+       font-weight="700"
+       fill="#17202a"
+       id="text106"><tspan
+         x="1022"
+         id="tspan104">Block training if</tspan><tspan
+         x="1022"
+         dy="23"
+         id="tspan105">high-risk without</tspan><tspan
+         x="1022"
+         dy="23"
+         id="tspan106">approval</tspan></text>
+    <path
+       d="M 1399,548 V 662"
+       stroke="#d93636"
+       stroke-width="15"
+       fill="none"
+       marker-end="url(#arrowRed)"
+       id="path106" />
+    <path
+       d="m 1399,595 v 20 H 866"
+       stroke="#d93636"
+       stroke-width="7"
+       fill="none"
+       id="path107" />
+    <circle
+       cx="260"
+       cy="558"
+       r="18"
+       fill="#d93636"
+       stroke="#9b1111"
+       stroke-width="3"
+       id="circle95" />
+    <path
+       d="m 250,548 20,20 m 0,-20 -20,20"
+       stroke="#ffffff"
+       stroke-width="5"
+       stroke-linecap="round"
+       id="path95" />
+    <!-- central alert -->
+    <circle
+       cx="595"
+       cy="558"
+       r="18"
+       fill="#d93636"
+       stroke="#9b1111"
+       stroke-width="3"
+       id="circle96" />
+    <path
+       d="m 585,548 20,20 m 0,-20 -20,20"
+       stroke="#ffffff"
+       stroke-width="5"
+       stroke-linecap="round"
+       id="path96" />
+    <rect
+       x="780"
+       y="565"
+       width="84"
+       height="78"
+       rx="10"
+       fill="#d93636"
+       stroke="#b82020"
+       stroke-width="3"
+       filter="url(#softShadow)"
+       id="rect108" />
+    <path
+       d="m 822,584 28,49 h -56 z"
+       fill="#ffffff"
+       id="path108" />
+    <circle
+       cx="997"
+       cy="558"
+       r="18"
+       fill="#d93636"
+       stroke="#9b1111"
+       stroke-width="3"
+       id="circle97" />
+    <path
+       d="m 987,548 20,20 m 0,-20 -20,20"
+       stroke="#ffffff"
+       stroke-width="5"
+       stroke-linecap="round"
+       id="path97" />
+    <circle
+       cx="1399"
+       cy="595"
+       r="18"
+       fill="#d93636"
+       stroke="#9b1111"
+       stroke-width="3"
+       id="circle98" />
+    <path
+       d="m 1389,585 20,20 m 0,-20 -20,20"
+       stroke="#ffffff"
+       stroke-width="5"
+       stroke-linecap="round"
+       id="path98" />
+    <path
+       d="m 260.59982,596.09672 v 39 h 517.06425"
+       stroke="#d93636"
+       stroke-width="10"
+       fill="none"
+       marker-end="url(#arrowRed)"
+       id="path101" />
+    <text
+       x="758.56958"
+       y="691.84302"
+       text-anchor="middle"
+       font-size="60.1343px"
+       font-weight="700"
+       fill="#d93636"
+       id="text109"
+       transform="scale(1.0850214,0.92164079)"
+       style="stroke-width:0.999995">!</text>
+    <text
+       x="1419.0526"
+       y="589.94739"
+       font-size="18px"
+       font-weight="700"
+       fill="#17202a"
+       id="text108"><tspan
+         x="1419.0526"
+         id="tspan107">Block deployment</tspan><tspan
+         x="1419.0526"
+         dy="22"
+         id="tspan108">if failed</tspan></text>
+    <path
+       d="m 822,643 v 40"
+       stroke="#155f93"
+       stroke-width="8"
+       marker-end="url(#arrowBlue)"
+       id="path109" />
+  </g>
+  <!-- Audit log layer -->
+  <g
+     class="font"
+     id="g144"
+     transform="translate(-2.2725767e-7,2.9772914)">
+    <rect
+       x="62"
+       y="690"
+       width="1476"
+       height="158"
+       rx="12"
+       fill="#eaf6fb"
+       stroke="#155f93"
+       stroke-width="3"
+       id="rect109" />
+    <text
+       x="800"
+       y="724"
+       text-anchor="middle"
+       font-size="26px"
+       font-weight="700"
+       fill="#17202a"
+       id="text110">Audit Log Layer</text>
+    <line
+       x1="110"
+       y1="764"
+       x2="1490"
+       y2="764"
+       stroke="#237faf"
+       stroke-width="5"
+       id="line110" />
+    <circle
+       cx="110"
+       cy="764"
+       r="6"
+       fill="#237faf"
+       id="circle110" />
+    <g
+       fill="url(#blueBox)"
+       stroke="#0f5f8c"
+       stroke-width="3"
+       id="g124"
+       style="fill:url(#linearGradient28)">
+      <rect
+         x="144"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect110"
+         style="fill:url(#linearGradient13)" />
+      <rect
+         x="238"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect111"
+         style="fill:url(#linearGradient14)" />
+      <rect
+         x="332"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect112"
+         style="fill:url(#linearGradient15)" />
+      <rect
+         x="426"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect113"
+         style="fill:url(#linearGradient16)" />
+      <rect
+         x="520"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect114"
+         style="fill:url(#linearGradient17)" />
+      <rect
+         x="614"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect115"
+         style="fill:url(#linearGradient18)" />
+      <rect
+         x="708"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect116"
+         style="fill:url(#linearGradient19)" />
+      <rect
+         x="802"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect117"
+         style="fill:url(#linearGradient20)" />
+      <rect
+         x="896"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect118"
+         style="fill:url(#linearGradient21)" />
+      <rect
+         x="990"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect119"
+         style="fill:url(#linearGradient22)" />
+      <rect
+         x="1084"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect120"
+         style="fill:url(#linearGradient23)" />
+      <rect
+         x="1178"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect121"
+         style="fill:url(#linearGradient24)" />
+      <rect
+         x="1272"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect122"
+         style="fill:url(#linearGradient25)" />
+      <rect
+         x="1366"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect123"
+         style="fill:url(#linearGradient26)" />
+      <rect
+         x="1460"
+         y="742"
+         width="44"
+         height="44"
+         rx="7"
+         id="rect124"
+         style="fill:url(#linearGradient27)" />
+    </g>
+    <g
+       stroke="#dcecf3"
+       stroke-width="3"
+       fill="none"
+       id="g138">
+      <path
+         d="m 157,762 v -7 q 9,-12 18,0 v 7"
+         id="path124" />
+      <rect
+         x="157"
+         y="762"
+         width="18"
+         height="14"
+         rx="2"
+         id="rect125" />
+      <path
+         d="m 251,762 v -7 q 9,-12 18,0 v 7"
+         id="path125" />
+      <rect
+         x="251"
+         y="762"
+         width="18"
+         height="14"
+         rx="2"
+         id="rect126" />
+      <path
+         d="m 345,762 v -7 q 9,-12 18,0 v 7"
+         id="path126" />
+      <rect
+         x="345"
+         y="762"
+         width="18"
+         height="14"
+         rx="2"
+         id="rect127" />
+      <path
+         d="m 439,762 v -7 q 9,-12 18,0 v 7"
+         id="path127" />
+      <rect
+         x="439"
+         y="762"
+         width="18"
+         height="14"
+         rx="2"
+         id="rect128" />
+      <path
+         d="m 533,762 v -7 q 9,-12 18,0 v 7"
+         id="path128" />
+      <rect
+         x="533"
+         y="762"
+         width="18"
+         height="14"
+         rx="2"
+         id="rect129" />
+      <path
+         d="m 627,762 v -7 q 9,-12 18,0 v 7"
+         id="path129" />
+      <rect
+         x="627"
+         y="762"
+         width="18"
+         height="14"
+         rx="2"
+         id="rect130" />
+      <path
+         d="m 721,762 v -7 q 9,-12 18,0 v 7"
+         id="path130" />
+      <rect
+         x="721"
+         y="762"
+         width="18"
+         height="14"
+         rx="2"
+         id="rect131" />
+      <path
+         d="m 815,762 v -7 q 9,-12 18,0 v 7"
+         id="path131" />
+      <rect
+         x="815"
+         y="762"
+         width="18"
+         height="14"
+         rx="2"
+         id="rect132" />
+      <path
+         d="m 909,762 v -7 q 9,-12 18,0 v 7"
+         id="path132" />
+      <rect
+         x="909"
+         y="762"
+         width="18"
+         height="14"
+         rx="2"
+         id="rect133" />
+      <path
+         d="m 1003,762 v -7 q 9,-12 18,0 v 7"
+         id="path133" />
+      <rect
+         x="1003"
+         y="762"
+         width="18"
+         height="14"
+         rx="2"
+         id="rect134" />
+      <path
+         d="m 1097,762 v -7 q 9,-12 18,0 v 7"
+         id="path134" />
+      <rect
+         x="1097"
+         y="762"
+         width="18"
+         height="14"
+         rx="2"
+         id="rect135" />
+      <path
+         d="m 1191,762 v -7 q 9,-12 18,0 v 7"
+         id="path135" />
+      <rect
+         x="1191"
+         y="762"
+         width="18"
+         height="14"
+         rx="2"
+         id="rect136" />
+      <path
+         d="m 1285,762 v -7 q 9,-12 18,0 v 7"
+         id="path136" />
+      <rect
+         x="1285"
+         y="762"
+         width="18"
+         height="14"
+         rx="2"
+         id="rect137" />
+      <path
+         d="m 1379,762 v -7 q 9,-12 18,0 v 7"
+         id="path137" />
+      <rect
+         x="1379"
+         y="762"
+         width="18"
+         height="14"
+         rx="2"
+         id="rect138" />
+    </g>
+    <g
+       font-size="16px"
+       fill="#17202a"
+       text-anchor="middle"
+       id="g143">
+      <text
+         x="229.81245"
+         y="810.81244"
+         id="text138">actor, event_time</text>
+      <text
+         x="451.27838"
+         y="813.04541"
+         id="text139">role, approval_id</text>
+      <text
+         x="721.27838"
+         y="813.78973"
+         id="text140">action (query/export/delete/etc.)</text>
+      <text
+         x="1018.2784"
+         y="813.78973"
+         id="text141">dataset, fields, record_count</text>
+      <text
+         x="1284.2784"
+         y="813.78973"
+         id="text142">policy_result ([OK]/[X])</text>
+      <text
+         x="1463.4886"
+         y="813.04541"
+         id="text143">trace_id</text>
+    </g>
+    <text
+       x="800"
+       y="840.10529"
+       text-anchor="middle"
+       font-size="24px"
+       font-weight="700"
+       fill="#17202a"
+       id="text144">Immutable Storage &amp; End-to-end Traceability</text>
+  </g>
+  <text
+     x="797.02271"
+     y="887.02271"
+     text-anchor="middle"
+     class="font"
+     font-size="34px"
+     font-weight="700"
+     fill="#b10f09"
+     id="text145">No Audit, No Compliance</text>
+</svg>
