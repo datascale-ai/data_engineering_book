@@ -69,7 +69,7 @@ Fourth is **storage cost**. The prices of object storage, block storage, and arc
 
 After clarifying the fundamental difference between an AI-native data stack and a traditional data warehouse, we can build the architecture systematically. A complete LLM data stack can be decomposed into five functional layers from bottom to top. Each layer has core responsibilities and key technical choices.
 
-![Figure 3-1: Five-layer architecture of an AI-native data stack](../../images/part1/ai_data_stack_architecture.png)
+![Figure 3-1: Five-layer architecture of an AI-native data stack](../../images/part1/ai_data_stack_architecture.svg)
 
 *Figure 3-1: Five-layer architecture of an AI-native data stack. Source: original illustration from this book. The figure shows how ingestion and access, processing orchestration, storage and indexing, evaluation operations, and governance and security layers jointly move data from raw corpus to trainable datasets; Alt text: five-layer architecture of an AI-native data stack showing the data flow among ingestion and access, processing orchestration, storage and indexing, evaluation operations, and governance and security layers.*
 
@@ -261,7 +261,7 @@ For example, if an investment in legal-domain SFT data brings a statistically si
 
 Connecting planning, monitoring, evaluation, optimization, and postmortem into a continuous loop forms the **cost-governance loop** of a large-model team, as shown below.
 
-![Figure 3-2: Training-data cost-governance loop](../../images/part1/cost_governance_loop.png)
+![Figure 3-2: Training-data cost-governance loop](../../images/part1/cost_governance_loop.svg)
 
 *Figure 3-2: Training-data cost-governance loop. Source: original illustration from this book. The figure shows a cross-version iteration cycle that starts from budget planning, passes through cost monitoring, ROI evaluation, and optimization decisions, and returns to budget review; Alt text: training-data cost-governance loop showing the cycle of budget planning, cost monitoring, ROI evaluation, optimization decisions, and budget review.*
 

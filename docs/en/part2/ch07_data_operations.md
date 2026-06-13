@@ -40,9 +40,9 @@ This chapter shifts perspective from concrete data processing code to the system
 
 In the era of traditional deep learning (e.g., image classification or sequence labeling), datasets were typically treated as static assets: collect, annotate, publish, then freeze indefinitely. This paradigm conditioned engineers to think in terms of one-time delivery.
 
-In the pre-training of large language models (LLMs), however, the boundary between data and model becomes blurred. Different stages of model development demand fundamentally different data recipes. For example, during the cold-start phase (0–100B tokens), the model requires large-scale breadth of information to learn general grammar and foundational world knowledge; whereas during the late convergence or cooldown phase, the model requires highly dense, high-quality knowledge material (mathematical and scientific reasoning, code structure) to raise its capability ceiling. **A single static dataset used from start to finish is unlikely to support high-level model training.**
+In the pre-training of large language models (LLMs), however, the boundary between data and model becomes blurred. Different stages of model development demand fundamentally different data mix plans. For example, during the cold-start phase (0–100B tokens), the model requires large-scale breadth of information to learn general grammar and foundational world knowledge; whereas during the late convergence or cooldown phase, the model requires highly dense, high-quality knowledge material (mathematical and scientific reasoning, code structure) to raise its capability ceiling. **A single static dataset used from start to finish is unlikely to support high-level model training.**
 
-This transforms the role of data engineers from one-time data deliverers into operators who continuously adjust data recipes and quality boundaries. Accordingly, teams must establish a complete Data Operations (DataOps) system.
+This transforms the role of data engineers from one-time data deliverers into operators who continuously adjust data mix plans and quality boundaries. Accordingly, teams must establish a complete Data Operations (DataOps) system.
 
 ### 7.1.2 Why Evaluating After Training Is Already Too Late
 
@@ -60,7 +60,7 @@ In a modern large-model development organization, the typical collaboration boun
 
 This cross-functional coordination is realized through the "operations flywheel."
 
-![Figure 7-1: Data Operations Flywheel](../../images/part2/data_operations_flywheel.png)
+![Figure 7-1: Data Operations Flywheel](../../images/part2/data_operations_flywheel.svg)
 
 *Figure 7-1: Data Operations Flywheel — The left side shows the high-cost startup zone; the right side shows the gradually accumulated cycle of automated, high-quality data assets formed after long-term model evaluation and root-cause analysis feedback. Source: Original illustration by the authors. Alt text: Data operations flywheel diagram showing the cyclical relationship among data production, model evaluation, root-cause analysis, rule write-back, and asset reuse.*
 
@@ -123,7 +123,7 @@ def calculate_perplexity_batch(texts, cache_model_path="llama-1b-ref"):
 #### 2. Diversity Sparsity (Type-Token Ratio, TTR & Vocabulary Coverage)
 - **Detection objective**: Confirm whether the cleaning pipeline, due to overly aggressive threshold settings or excessively strict deduplication (MinHash), has permanently eliminated niche knowledge or specific long-tail vocabulary.
 - **Validation method**: Compute the ratio of unique word types (distinct word stems within the vocabulary) to the total token count in the document collection described above. TTR tends to be lower across long passages, so a windowed averaging algorithm must be applied (e.g., MATTR (Covington and McFall 2010)).
-- **Interpretation logic**: If the number of non-repeated words, MATTR, or domain-term coverage in the target document sandbox is significantly lower than the historical baseline for comparable sources, the dataset may suffer from serious vocabulary diversity deficiency (likely stemming from large volumes of e-commerce filler content or machine-translation cycles). Over time, this tends to produce a mechanical, low-information response style in the trained model.
+- **Interpretation logic**: If the number of non-repeated words, MATTR, or domain-term coverage in the target document sandbox is significantly lower than the historical baseline for comparable sources, the dataset may suffer from insufficient vocabulary diversity (likely stemming from large volumes of e-commerce filler content or machine-translation loops). Over time, this tends to produce a mechanical, low-information response style in the trained model.
 
 Listing 7-2 shows a reference implementation for offline Type-Token Ratio computation.
 
@@ -191,9 +191,9 @@ For the evaluation described above to be effective, the organization must establ
 
 ### 7.3.1 Dataset Versioning and A/B Comparison from a DVC Perspective
 
-Analogous to code versioned with Git, for data lakes spanning multiple terabytes we must introduce DVC (DVC Team and Contributors 2024) (Data Version Control) or a similar immutable object management strategy based on SHA-backed mounts. In large-scale experiments, raw data must never be overwritten in place; any modification at a processing node should produce a completely new incremental version or a snapshot partitioned via Delta Lake.
+Analogous to code versioned with Git, for data lakes spanning multiple terabytes we must introduce DVC (DVC 2024) (Data Version Control) or a similar immutable object management strategy based on SHA-backed mounts. In large-scale experiments, raw data must never be overwritten in place; any modification at a processing node should produce a completely new incremental version or a snapshot partitioned via Delta Lake.
 
-**A/B testing principles**: Each time a new pipeline adjustment is made (for example, newly incorporating data parsed from high-quality Reddit nodes and enhancing filtering logic for that site's comment trees), it should be validated before full rollout by allocating equivalent compute to a small-scale parallel controlled training run. The scale of the control experiment should be determined by model size, training budget, and target evaluation sensitivity. Only after both experimental models have completed evaluation on the core benchmark set and demonstrated that the target capability reaches the preset release threshold without damaging general world-knowledge metrics should this strategy be deployed into the production version (e.g., upgrading from v2.1 to v2.2).
+**A/B testing principles**: Each time a new pipeline adjustment is made (for example, newly incorporating data parsed from high-quality Reddit nodes and enhancing filtering logic for that site's comment trees), it should be validated before full rollout by allocating equivalent compute to a small-scale parallel comparison run. The scale of the control experiment should be determined by model size, training budget, and target evaluation sensitivity. Only after both experimental models have completed evaluation on the core benchmark set and demonstrated that the target capability reaches the preset release threshold without significant regression on general world-knowledge metrics should this strategy be deployed into the production version (e.g., upgrading from v2.1 to v2.2).
 
 ### 7.3.2 Building an Issue Sample Pool and Establishing a Traceability Loop
 
@@ -277,7 +277,7 @@ An excellent quality dashboard should provide a top-down view of all metrics. It
 3. **Safety risk baseline monitoring**: Records the number of PII or highly sensitive harmful documents detected and the blocking logs for each cycle.
 4. **Spot-check audit traffic lights**: Displays scoring trends from the weekly blind review of 1,000 randomly sampled corpus items, showing a moving average of fluency and correctness on a scale of 1 to 5 (for automated data validation frameworks, see Breck et al. 2019).
 
-![Figure 7-2: Data Evaluation Feedback Loop](../../images/part2/data_evaluation_loop.png)
+![Figure 7-2: Data Evaluation Feedback Loop](../../images/part2/data_evaluation_loop.svg)
 
 *Figure 7-2: Data Evaluation Feedback Loop — A circular architecture proceeding from sampling-based blind review to root-cause investigation triggered by metric anomalies, followed by targeted system governance actions. Source: Original illustration by the authors. Alt text: Data evaluation feedback loop diagram showing the closed-loop relationship among sampling evaluation, metric anomalies, root-cause investigation, governance actions, and rule updates.*
 
@@ -301,7 +301,7 @@ Under an automated monitoring and review mechanism, the responsibilities of diff
 - The **Data Infrastructure team**'s north star metrics are stable throughput and cost per token (Cost_per_Token). They are responsible for providing downstream teams with high-speed, low-storage-I/O distributed storage architecture; if GPU utilization drops due to a `DataLoader` bottleneck, this team is responsible for diagnosis and resolution.
 - The **Data Ingestion (crawling and collection) team** focuses on acquisition breadth, coverage, and legal/copyright compliance. If PII or high-risk harmful samples escape into the training corpus, they bear responsibility for upstream root-cause investigation.
 - **Pre-training researchers**' primary focus is on which architecture (MoE vs. dense, MHA vs. GQA) and well-configured hyperparameters to use in order to fully utilize the hardware cluster, and whether the current data mixing ratio allows loss to decline strictly in accordance with scaling laws.
-- The **Data Quality Evaluation (DataOps/Evaluator) team**: maintains the quality dashboard and alerting pipeline, determines data mixing ratios (for example, the relative weights of web pages, code, papers, and other sources), and uses the dashboard to assess whether ingested data meets quality standards. They must also combine model evaluation results to determine whether the data recipe is effective; if evaluation performance drops significantly in any phase, they should drive training suspension, sample tracing, and rule updates.
+- The **Data Quality Evaluation (DataOps/Evaluator) team**: maintains the quality dashboard and alerting pipeline, determines data mixing ratios (for example, the relative weights of web pages, code, papers, and other sources), and uses the dashboard to assess whether ingested data meets quality standards. They must also combine model evaluation results to determine whether the data mix plan is effective; if evaluation performance drops significantly in any phase, they should drive training suspension, sample tracing, and rule updates.
 
 ---
 
@@ -325,7 +325,7 @@ If the evolution of a large model's data infrastructure relies solely on post-ho
 
 1. **Targeted blind review and labeling**: For the quality degradation points identified in Monday's meeting, extract approximately 200 raw corpus samples. The operations evaluation team manually reads through the samples to determine whether rules are causing "false positives" (deleting good articles) or "false negatives" (junk vocabulary bypassing the regex defenses).
 2. **Cleaning strategy correction**: If the issue is identified as "special indentation in certain code domains causing line-filtering logic errors," engineers will correct the `FastText` or regex script logic on Tuesday afternoon and rerun the pipeline on the affected corpus module.
-3. **Mini-experiment scheduling**: Push the newly cleaned sandbox data to a small model or short-cycle training task and launch an equivalent controlled experiment. The concrete model scale and runtime should be determined by training budget, target-metric sensitivity, and scheduling constraints. This is where DVC (data version control) demonstrates its power: strictly controlling variables and comparing scores between only two groups, such as `v1.2_Base` vs. `v1.2_CodePatch`.
+3. **Mini-experiment scheduling**: Push the newly cleaned sandbox data to a small model or short-cycle training task and launch an equivalent comparison experiment. The concrete model scale and runtime should be determined by training budget, target-metric sensitivity, and scheduling constraints. This is where DVC (data version control) becomes useful: strictly controlling variables and comparing scores between only two groups, such as `v1.2_Base` vs. `v1.2_CodePatch`.
 
 ### 7.5.3 Thursday: Experimental Decision and Data Mixing
 

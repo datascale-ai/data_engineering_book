@@ -150,7 +150,7 @@ In the LLM development ecosystem, role integration and clearly defined interface
 
 The data flywheel refers to a continuously self-reinforcing data loop: after a model is deployed, end-user interactions—such as upvotes/downvotes on responses, revision suggestions, and abandonment rates—are collected and logged; these online negative-feedback signals are cleaned, annotated, and structured by data engineers into preference comparison sets for the next round of RLHF (Ouyang et al. 2022); the new preference data enters the alignment training stage to produce a better model; the improved model is deployed again, generating higher-quality online feedback. This restructuring of responsibilities and the role closure relationship are illustrated in Figure 1-1.
 
-![Figure 1-1: LLM-Era Data Engineering Role Restructuring Diagram, showing the closed-loop interfaces among platform, data, algorithms, annotation, product, and compliance roles](../../images/part1/data_engineering_roles_1775830393574.png)
+![Figure 1-1: LLM-Era Data Engineering Role Restructuring Diagram, showing the closed-loop interfaces among platform, data, algorithms, annotation, product, and compliance roles](../../images/part1/data_engineering_roles_1775830393574.svg)
 
 *Figure 1-1: LLM-Era Data Engineering Role Restructuring Diagram. Source: original illustration. The figure depicts the role flywheel loop spanning platform architecture, data collection, model fine-tuning and validation, and product-research iteration; Alt text: LLM-era data engineering role restructuring diagram showing the closed-loop interfaces among platform, data, algorithms, annotation, product, and compliance roles.*
 
@@ -223,7 +223,7 @@ For engineers entering this field, the capability-building journey can be broken
 
 With the above paradigm shift in mind, a global map is needed to orient the reader within the primary problem domains of LLM data engineering. This book organizes the knowledge structure into fourteen parts from a systems-engineering perspective. The lifecycle map for all fourteen parts is shown in Figure 1-2.
 
-![Figure 1-2: Full Fourteen-Part Lifecycle Map, showing the knowledge structure spanning general principles, pretraining, multimodal, alignment, applications, platform, compliance, and hands-on projects](../../images/part1/data_lifecycle_map_1775830407042.png)
+![Figure 1-2: Full Fourteen-Part Lifecycle Map, showing the knowledge structure spanning general principles, pretraining, multimodal, alignment, applications, platform, compliance, and hands-on projects](../../images/part1/data_lifecycle_map_1775830407042.svg)
 
 *Figure 1-2: Full Fourteen-Part Lifecycle Map. Source: original illustration. The figure uses infrastructure as its foundation, threading through pretraining, multimodal data, alignment, applications, platform governance, compliance, and hands-on projects; Alt text: full fourteen-part lifecycle map showing the knowledge structure spanning general principles, pretraining, multimodal, alignment, applications, platform, compliance, and hands-on projects.*
 

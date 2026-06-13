@@ -101,7 +101,7 @@ When a unified data quality assessment framework is lacking, the project will in
 
 To resolve the problem of an inconsistent quality language, we must establish clear "quality objective tiers" at each stage of the lifecycle. This multi-dimensional quality layering architecture is illustrated in Figure 2-1.
 
-![Figure 2-1: Multi-dimensional quality layering architecture from a lifecycle perspective, showing how metric weights shift across stages from scale and diversity toward truthfulness and helpfulness](../../images/part1/data_quality_hierarchy_1775835516841.png)
+![Figure 2-1: Multi-dimensional quality layering architecture from a lifecycle perspective, showing how metric weights shift across stages from scale and diversity toward truthfulness and helpfulness](../../images/part1/data_quality_hierarchy_1775835516841.svg)
 
 *Figure 2-1: Multi-dimensional quality layering architecture from a lifecycle perspective. Source: original illustration from this book. The upper half is a horizontal four-stage pipeline: pre-training (scale/diversity/low duplication), SFT (instruction coverage/format compliance/factual accuracy), RLHF/DPO preference alignment (contrastive signal/annotation consistency/value alignment), and RAG application (timeliness/retrieval accuracy/traceability); the lower half is a triangular mapping structure showing the bidirectional relationships among offline data quality, proxy model evaluation, and real online business metrics. Alt text: horizontal four-stage pipeline diagram from pre-training to RAG application showing key quality metrics at each stage; the triangle below shows the relationships among offline data quality, proxy model evaluation, and real business metrics.*
 
@@ -145,7 +145,7 @@ Finally, there is **system-platform level**: the operational health of the data 
 
 To establish shared governance actions, the vague notion of "bad data" must be translated into a specific, measurable defect metrics matrix. Figure 2-2 presents the cross-mapping relationship between six core defect classes and five core quality metrics.
 
-![Figure 2-2: Cross-mapping diagram of large language model data defects and quality metrics, showing the relationships between six defect classes and accuracy, consistency, diversity, coverage, and traceability](../../images/part1/defect_metric_radar_1775835533937.png)
+![Figure 2-2: Cross-mapping diagram of large language model data defects and quality metrics, showing the relationships between six defect classes and accuracy, consistency, diversity, coverage, and traceability](../../images/part1/defect_metric_radar_1775835533937.svg)
 
 *Figure 2-2: Cross-mapping matrix of large language model data defects and quality metrics. Source: original illustration from this book. The matrix rows are six defect classes: noise, repetition, benchmark contamination, systematic bias, structural incompleteness, and staleness; the columns are five quality metrics: accuracy, consistency, diversity, coverage, and traceability. Each cell uses a filled circle (strong impact), half circle (medium impact), or empty circle (weak impact) to mark impact strength. Alt text: 6-by-5 cross-mapping matrix with six data defect classes as rows and five quality metrics as columns; each cell uses a filled circle, half circle, or empty circle to indicate impact strength, with a legend for the three symbols at the bottom.*
 
@@ -296,7 +296,7 @@ There is no perfect combination of metrics. Forcibly improving one metric often 
 
 A quality assessment framework must ultimately materialize as concrete, engineered automated gates. We establish a closed loop by implementing a **Data Release Scorecard**. As shown in Figure 2-3, hard gates, soft gates, manual review, and rollback actions together form the automated blocking and governance flow driven by the data scorecard.
 
-![Figure 2-3: Automated blocking and governance flow driven by the data scorecard, showing hard gates, soft gates, manual review, and rollback actions](../../images/part1/data_quality_gates_1775835548587.png)
+![Figure 2-3: Automated blocking and governance flow driven by the data scorecard, showing hard gates, soft gates, manual review, and rollback actions](../../images/part1/data_quality_gates_1775835548587.svg)
 
 *Figure 2-3: Automated blocking and governance flow driven by the data scorecard. Source: original illustration from this book. The figure shows how hard gates, soft gates, manual review, and rollback actions collectively block contaminated or degraded data samples; Alt text: automated blocking and governance flow driven by the data scorecard, showing hard gates, soft gates, manual review, and rollback actions.*
 

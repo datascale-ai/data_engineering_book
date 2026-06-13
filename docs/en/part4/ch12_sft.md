@@ -679,7 +679,7 @@ Ouyang, L., Wu, J., Jiang, X., Almeida, D., Wainwright, C. L., Mishkin, P., et a
 
 Wei, J., Bosma, M., Zhao, V. Y., Guu, K., Yu, A. W., Lester, B., Du, N., Dai, A. M., & Le, Q. V. (2022). *Finetuned Language Models Are Zero-Shot Learners*. International Conference on Learning Representations. arXiv:2109.01652.
 
-Chung, H. W., Hou, L., Longpre, S., Zoph, B., Tay, Y., Fedus, W., et al. (2024). *Scaling Instruction-Finetuned Language Models*. Journal of Machine Learning Research, 25(70), 1–53. arXiv:2210.11416.
+Chung, H. W., Hou, L., Longpre, S., Zoph, B., Tay, Y., Fedus, W., et al. (2024). *Scaling Instruction-Finetuned Language Models*. Journal of Machine Learning Research, 25(70), 1–53. https://www.jmlr.org/papers/v25/23-0870.html.
 
 Zhou, C., Liu, P., Xu, P., Iyer, S., Sun, J., Mao, Y., et al. (2023). *LIMA: Less Is More for Alignment*. Advances in Neural Information Processing Systems, 36. arXiv:2305.11206.
 

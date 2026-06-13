@@ -420,7 +420,7 @@ Lineage graphs also need complexity control. LLM data pipelines often contain la
 
 Edge semantics should also be carefully designed. Edges are not merely "connections"—they should also specify the type of relationship. For example, `derived_from` denotes derivation, `filtered_by` denotes filtering, `annotated_by` denotes annotation, `evaluated_with` denotes evaluation, `approved_by` denotes approval, and `released_as` denotes release. The more clearly edge semantics are defined, the more precise queries become. Otherwise, a lineage graph can only display paths without explaining the governance meaning of those paths.
 
-![Figure 25-2: Data Lineage and Experiment Tracking Graph](../../images/part8/图25_2.g)
+![Figure 25-2: Data Lineage and Experiment Tracking Graph](../../images/part8/图25_2.svg)
 
 *Figure 25-2: Complete data lineage graph from data sources to model release, showing forward and reverse tracking paths*
 

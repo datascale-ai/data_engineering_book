@@ -200,6 +200,20 @@ def similarity(a: str, b: str) -> float:
     return SequenceMatcher(None, a_norm, b_norm).ratio()
 
 
+def title_matches(reference_title: str, matched_title: str, threshold: float = 0.62) -> bool:
+    ref_norm = normalize_title(reference_title)
+    matched_norm = normalize_title(matched_title)
+    if not ref_norm or not matched_norm:
+        return False
+    if similarity(reference_title, matched_title) >= threshold:
+        return True
+    # Some DOI registries store only a short title, while the manuscript keeps
+    # the full title plus subtitle. Treat such DOI-backed prefix matches as OK.
+    if len(matched_norm) >= 7 and (ref_norm.startswith(matched_norm) or matched_norm in ref_norm):
+        return True
+    return False
+
+
 def year_delta_too_large(left: str, right: str) -> bool:
     if not (left and right and left.isdigit() and right.isdigit()):
         return False
@@ -290,6 +304,10 @@ def title_from_entry(entry: str) -> str:
     if not year_match:
         return ""
     tail = text[year_match.end() :].strip()
+    if not tail:
+        before_year = text[: year_match.start()].strip()
+        if ":" in before_year:
+            tail = before_year.split(":", 1)[1].strip()
     tail = re.sub(r"^[:.]\s*", "", tail)
     tail = re.sub(r"\s+https?://\S+", "", tail)
     tail = re.sub(r"\s+arXiv(?:\s+preprint)?\s+arXiv:\S+\.?$", "", tail, flags=re.I)
@@ -455,25 +473,52 @@ def fetch_text(url: str, timeout: float = 8.0) -> str:
 def check_url_status(url: str) -> str:
     if not url:
         return ""
-    request = urllib.request.Request(
-        url,
-        method="HEAD",
-        headers={"User-Agent": USER_AGENT},
-    )
-    try:
-        with urllib.request.urlopen(request, timeout=6.0) as response:
-            return str(response.status)
-    except urllib.error.HTTPError as exc:
-        if exc.code in {403, 405}:
+    attempts = [
+        (
+            "HEAD",
+            {
+                "User-Agent": USER_AGENT,
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            },
+        ),
+        (
+            "GET",
+            {
+                "User-Agent": USER_AGENT,
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            },
+        ),
+        (
+            "GET",
+            {
+                "User-Agent": "Mozilla/5.0 (compatible; data-engineering-book-reference-audit/1.0)",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            },
+        ),
+    ]
+    last_exc: Exception | None = None
+    for round_no in range(3):
+        for method, headers in attempts:
+            request = urllib.request.Request(url, method=method, headers=headers)
             try:
-                request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-                with urllib.request.urlopen(request, timeout=6.0) as response:
+                with urllib.request.urlopen(request, timeout=10.0) as response:
                     return str(response.status)
-            except Exception:
+            except urllib.error.HTTPError as exc:
+                last_exc = exc
+                if exc.code == 403:
+                    return str(exc.code)
+                if method == "HEAD" and exc.code in {405, 501}:
+                    continue
+                if exc.code in {408, 425, 429, 500, 502, 503, 504}:
+                    continue
                 return str(exc.code)
-        return str(exc.code)
-    except Exception as exc:
-        return f"error:{exc.__class__.__name__}"
+            except Exception as exc:
+                last_exc = exc
+                continue
+        time.sleep(0.35 * (round_no + 1))
+    if last_exc:
+        return f"error:{last_exc.__class__.__name__}"
+    return "error:unknown"
 
 
 def verify_arxiv(ref: ReferenceEntry) -> tuple[str, str, str, float, str, list[str]]:
@@ -491,7 +536,7 @@ def verify_arxiv(ref: ReferenceEntry) -> tuple[str, str, str, float, str, list[s
         published = entry.findtext("a:published", "", ns)
         year = published[:4] if published else ""
         score = similarity(ref.title, title) if ref.title else similarity(ref.entry, title)
-        if score < 0.62:
+        if not title_matches(ref.title, title):
             issues.append("title-mismatch")
         if year_delta_too_large(ref.year, year):
             issues.append("year-mismatch")
@@ -540,7 +585,7 @@ def verify_datacite_doi(ref: ReferenceEntry, prior_issue: str = "") -> tuple[str
         title = titles[0].get("title", "") if titles else ""
         year = str(attrs.get("publicationYear") or "")
         score = similarity(ref.title, title) if ref.title else similarity(ref.entry, title)
-        if score < 0.62:
+        if title and not title_matches(ref.title, title):
             issues.append("title-mismatch")
         if year_delta_too_large(ref.year, year):
             issues.append("year-mismatch")
@@ -567,7 +612,7 @@ def verify_doi(ref: ReferenceEntry) -> tuple[str, str, str, float, str, list[str
         issued = message.get("issued", {}).get("date-parts", [])
         year = str(issued[0][0]) if issued and issued[0] and issued[0][0] else ""
         score = similarity(ref.title, title) if ref.title else similarity(ref.entry, title)
-        if score < 0.62:
+        if not title_matches(ref.title, title):
             issues.append("title-mismatch")
         if year_delta_too_large(ref.year, year):
             issues.append("year-mismatch")

@@ -53,7 +53,7 @@ Videos are usually stored in compressed formats such as H.264, H.265, or VP9. To
 
 For long-temporal data, the cleaning factory cannot reuse the old image-text-pair pattern of "one image, one sentence." We need an automated audio-video sample-building platform that separates and processes visual, acoustic, and text tracks.
 
-![Figure 10-1: Distributed audio-video alignment pipeline](../../images/part3/av_sample_pipeline.png)
+![Figure 10-1: Distributed audio-video alignment pipeline](../../images/part3/av_sample_pipeline.svg)
 
 *Figure 10-1: Distributed audio-video alignment pipeline. Raw mixed videos in the video lake are split into visual and acoustic tracks. Visual-frame extractors and acoustic separators extract features independently before the streams meet in a temporal alignment engine, which produces aligned multimodal JSONL samples with closed timestamp constraints. Source: drawn for this book. Alt text: an audio-video alignment pipeline showing a raw video split into visual, audio, and text tracks and transformed into JSONL by a temporal alignment engine.*
 
@@ -65,7 +65,7 @@ Before training, very long videos, such as two-hour films, must be cut into clip
 
 The visual pipeline needs a fast detection node, such as dual-threshold color-histogram comparison, with a high threshold for hard cuts and a low threshold for fades or dissolves, or lightweight optical-flow difference between adjacent frames. The goal is to capture hard and soft transitions caused by camera movement or editing. Only continuous frames within the same shot are suitable as one complete knowledge concept, or event grounding unit, for pretraining a visual model.
 
-![Figure 10-2: Adaptive shot-boundary detection and semantic leakage prevention](../../images/part3/av_shot_boundary_hsv.png)
+![Figure 10-2: Adaptive shot-boundary detection and semantic leakage prevention](../../images/part3/av_shot_boundary_hsv.svg)
 
 *Figure 10-2: Adaptive shot-boundary detection and semantic leakage prevention. The upper track extracts aggregated HSV-channel color-space differences, while the lower track extracts optical-flow pixel displacement to capture subtle motion posture. The two tensor differences flow into dual-threshold triage. When the jump score $\Delta$ exceeds the hard-cut threshold, the engine splits the clip and prevents semantic leakage across scenes. Source: drawn for this book. Alt text: adaptive shot-boundary detection showing HSV difference, optical-flow difference, and dual-threshold routing.*
 
@@ -81,7 +81,7 @@ The lower track running in parallel with visual frame extraction extracts acoust
 
 For speech tracks, a common approach is to use open-source Whisper (Radford et al. 2023), WhisperX (Bain et al. 2023), or similar frameworks to transcribe accented, noisy, and pause-filled audio into structured text with timestamps.
 
-![Figure 10-3: Large-scale ASR extraction and temporal calibration](../../images/part3/asr_whisperx_comparison.png)
+![Figure 10-3: Large-scale ASR extraction and temporal calibration](../../images/part3/asr_whisperx_comparison.svg)
 
 *Figure 10-3: Large-scale ASR extraction and temporal calibration. Traditional ASR can suffer cumulative temporal drift and semantic errors, such as mishearing `I love apples.` as `maples.` WhisperX uses VAD slicing, multi-path acoustic decoding, and a DTW phoneme-level forced-alignment matrix for temporal calibration. The bottom shows word tokens aligned with waveform troughs through vertical dashed lines. Source: drawn for this book. Alt text: ASR extraction and temporal calibration showing traditional ASR drift, WhisperX calibration, and word-level timestamp alignment.*
 
@@ -103,7 +103,7 @@ After the visual key-frame array, ASR subtitles, and audio waveform are collecte
 
 An ASR subtitle may say "Hello World!", but for a 10-second temporal segment, which milliseconds, frames, and lip shapes correspond to that sound must be specified with temporal anchors. Without this binding, a model cannot learn audiovisual synchronization or lip-motion prediction.
 
-![Figure 10-4: Cross-modal temporal calibration and geometric alignment](../../images/part3/av_alignment_diagram.png)
+![Figure 10-4: Cross-modal temporal calibration and geometric alignment](../../images/part3/av_alignment_diagram.svg)
 
 *Figure 10-4: Cross-modal temporal calibration and geometric alignment. The cyan top track is visual key frames, the gray middle track is acoustic features, and the coral bottom track is discrete text tokens. At `t=4.2s`, the temporal lock binds the visual action "raising a cup," waveform features near the trough, and `<start:4.2s> "Water cup"` text into a unified mixed-token pipeline or JSONL sample. Source: drawn for this book. Alt text: a cross-modal temporal calibration diagram showing visual frames, audio waveform, and text tokens bound by a shared timeline anchor.*
 

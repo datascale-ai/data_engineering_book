@@ -765,7 +765,7 @@ Yang, Z., Long, R., Wang, P., et al. (2023). Modeling Entities as Semantic Point
 
 Zhang, N., Chen, M., Bi, Z., et al. (2022). CBLUE: A Chinese Biomedical Language Understanding Evaluation Benchmark. *Proc. ACL*, pp. 7888–7915. 
 
-Zhong, X., ShafieiBavani, E., and Jimeno Yepes, A. (2020). Image-based Table Recognition: Data, Model, and Evaluation. *arXiv preprint arXiv:2011.13534*. 
+Zhong, X., ShafieiBavani, E., and Jimeno Yepes, A. (2020). Image-based Table Recognition: Data, Model, and Evaluation. *arXiv preprint arXiv:1911.10683*. 
 
 Bai, S., Cai, Y., Chen, R., et al. (2025a). Qwen3-VL Technical Report. *arXiv preprint*.
 

@@ -299,7 +299,7 @@ Groeneveld D, Magnusson I, Bhagia A, Schwenk D, Soldaini L, Tafjord O, Sherborne
 
 Hoffmann J, Borgeaud S, Mensch A, Buchatskaya E, Cai T, Rutherford E, de Las Casas D, Hendricks L A, Welbl J, Clark A, others (2022) Training Compute-Optimal Large Language Models (Chinchilla). arXiv preprint arXiv:2203.15556.
 
-Hui B, Yang J, Cui Z, Yang J, Liu D, Zhang L, Liu B, Yu B, Lu K, Chi K, others (2024) Qwen2.5: A Party of Foundation Models. arXiv preprint arXiv:2412.15115.
+Hui B, Yang J, Cui Z, Yang J, Liu D, Zhang L, Liu B, Yu B, Lu K, Chi K, others (2024) Qwen2.5 Technical Report. arXiv preprint arXiv:2412.15115.
 
 Kaplan J, McCandlish S, Henighan T, Brown T B, Chess B, Child R, Gray S, Radford A, Wu J, Amodei D (2020) Scaling Laws for Neural Language Models. arXiv preprint arXiv:2001.08361.
 

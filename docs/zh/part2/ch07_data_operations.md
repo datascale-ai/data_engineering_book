@@ -122,7 +122,7 @@ def calculate_perplexity_batch(texts, cache_model_path="llama-1b-ref"):
 #### 2. 多样性稀疏度（Type-Token Ratio, TTR & 词汇覆盖率）
 - **检测目标**：确认清洗管线是否由于阈值设定过度（或者是去重（MinHash）过于严酷），而导致小众知识或特定长尾词汇的永久流失。
 - **验证手段**：统计前述文档集内不同独特词汇（Type，如词表内单独的词根）和总文本序列长度（Token）的比值。大跨度段落的 TTR 通常较低，故须用特定算法作窗口平均化（如 MATTR (Covington and McFall 2010)）。
-- **解读逻辑**：如果目标文档沙箱的未重复词数、MATTR 或领域词覆盖率显著低于同类来源的历史基线，说明这批数据集可能存在严重的“词穷”现象（可能源于大量的电商灌水或者机翻死循环）。长此以往，模型将陷入机械式的平庸作答。
+- **解读逻辑**：如果目标文档沙箱的未重复词数、MATTR 或领域词覆盖率显著低于同类来源的历史基线，说明这批数据集可能存在严重的词汇多样性不足（可能源于大量的电商填充文本或者机翻循环）。长此以往，模型容易形成机械式、低信息量的回答风格。
 
 代码清单7-2展示了 Type-Token Ratio 的离线计算示意。
 
@@ -191,9 +191,9 @@ def calculate_ttr(texts, tokenizer=None):
 
 ### 7.3.1 DVC视角下的数据集版本化与 A/B 对比
 
-与代码的 Git 托管类似，对于多达 TB 级别的数据湖我们必须引入 DVC (Kuprieiev et al. 2021)（Data Version Control）或者相似的基于 SHA 挂载的不可变对象管控策略。在大规模实验中，切不可原位覆盖并覆盖原始数据，任何处理节点的修改都应产生全新的增量版本或通过 Delta Lake 切割 Snapshot。
+与代码的 Git 托管类似，对于多达 TB 级别的数据湖我们必须引入 DVC (DVC 2024)（Data Version Control）或者相似的基于 SHA 挂载的不可变对象管控策略。在大规模实验中，切不可原位覆盖并覆盖原始数据，任何处理节点的修改都应产生全新的增量版本或通过 Delta Lake 切割 Snapshot。
 
-**A/B 测试原则**：每次调整新管线（例如：新加入一批由 Reddit 高质量节点解析的数据，并增强针对该网站特定评论树的过滤逻辑），在全面上线前，应抽取等价算力启动小规模平行对撞训练。对照实验规模要由模型大小、训练预算和目标评测灵敏度决定。只有在两只实验对照组模型完成核心评测集后，证实目标能力达到预设上线门槛且没有拉挂通用世界常识指标时，此套策略方可全量铺设进入生产版本（例如 v2.1 升级至 v2.2）。
+**A/B 测试原则**：每次调整新管线（例如：新加入一批由 Reddit 高质量节点解析的数据，并增强针对该网站特定评论树的过滤逻辑），在全面上线前，应抽取等价算力启动小规模平行对照训练。对照实验规模要由模型大小、训练预算和目标评测灵敏度决定。只有在两组实验模型完成核心评测集后，证实目标能力达到预设上线门槛且通用世界常识指标未出现显著回退时，此套策略方可进入生产版本（例如 v2.1 升级至 v2.2）。
 
 ### 7.3.2 建立“问题样本库”与追溯回环
 
@@ -319,20 +319,20 @@ def calculate_ttr(texts, tokenizer=None):
 2. **离线检测报告开箱**：针对周日晚间最新完成清洗的 T-1 批次数据，提取抽样测试沙箱的 KenLM (Heafield 2011) 困惑度（PPL）、类型/令牌比率（TTR）、文本长度分布直方图。
 3. **指标异常警报排查**：如果 PPL 均线相对历史基线突然上升，通常意味着最新接入的数据源包含未被解析干净的 HTML 杂质。如果安全阻截率（Toxicity Alert）相对基线异常抬升，可能与近期增加社群讨论源有关。在会议上不急于下结论，只确定需要深度钻取的异常点。
 
-### 7.5.2 周二与周三：异常追溯与小股试错验证 (Root Cause Defecting)
+### 7.5.2 周二与周三：异常追溯与小规模验证 (Root Cause Analysis)
 
 **核心参与者**：数据运营官、预训练数据工程师。
 **主要动线**：
 1. **针对性盲审与打标**：对周一会议发现的质量坍塌点，提取出 200 条左右的原生语料。运营评估团队人工进行抽样通读，判断规则是“误杀”（假阳性，将好文章删掉了）还是“漏杀”（假阴性，垃圾词汇绕过了正则防线）。
 2. **清洗策略修正**：如果发现问题是“某些代码域名下的特殊缩进导致行过滤逻辑出错”，工程师将在周二下午修正 `FastText` 或正则脚本逻辑，对问题语料的对应模块重新跑一边 Pipeline。
-3. **微型实验排期**：将新洗出的沙箱数据推送到小模型或短周期训练任务上，启动等价测试对撞实验。具体模型规模和运行时长应由训练预算、目标指标灵敏度和排期决定。这正是 DVC（数据版本监控）发挥威力的阶段：严控变量，仅对比如 `v1.2_Base` 与 `v1.2_CodePatch` 的两组跑分。
+3. **微型实验排期**：将新洗出的沙箱数据推送到小模型或短周期训练任务上，启动等价对照实验。具体模型规模和运行时长应由训练预算、目标指标灵敏度和排期决定。这正是 DVC（数据版本控制）发挥作用的阶段：严控变量，仅对比如 `v1.2_Base` 与 `v1.2_CodePatch` 的两组跑分。
 
 ### 7.5.3 周四：实验决策与数据配方调整 (Data Mixing)
 
 **核心参与者**：预训练模型工程师、数据工程师、核心构架师。
 **主要动线**：
 1. **A/B 效果对照**：周四早晨，微型实验跑出结果。模型工程师将公布两组数据版本的验证集 Loss 曲线是否发生交叉，以及其在特定的下游测试基准（例如 MMLU (Hendrycks et al. 2021) Code 分项或 GSM8K (Cobbe et al. 2021)）上的通过率偏差。
-2. **定性分析**：如果新数据（`v1.2_CodePatch`）让目标代码能力达到预设门槛，且没有拉垮通用的指令遵从度，那么这个清洗补丁（Patch）可以进入候选合并状态。
+2. **定性分析**：如果新数据（`v1.2_CodePatch`）让目标代码能力达到预设门槛，且没有削弱通用的指令遵从度，那么这个清洗补丁（Patch）可以进入候选合并状态。
 3. **数据重配子集比重**：在本步骤，团队决定下一周正式推入大型集群的数据混合（Data Mix）。例如，若近期评测表明基础推理能力偏弱，可以提高 arXiv 论文、高质量书籍或数学题解的采样权重，并相对降低低价值开放网页样本的权重。具体比例需要通过消融实验校准。
 
 ### 7.5.4 周五：全量产线构建与封版交付 (Production Release)
@@ -341,7 +341,7 @@ def calculate_ttr(texts, tokenizer=None):
 **主要动线**：
 1. **周度版本封版（Freeze）**：结合本周通过检验的修复脚本，从原始数据湖中递进式地提炼最新一版的增量 Token。所有元数据（Metadata）记录并更新，存入云托管环境，将指向该语料版本的指针更新至 DataLoader 的配置文件中。
 2. **发布预演（Smoke Test）**：在一组闲置节点上运行短周期拟真环境，确保这个混入了新权重的序列，在分词（Tokenization）装载、二进制压缩读取和 Tensor 拼装后，能被顺利推送进显卡且不报错。节点数和运行时长应由生产集群规模与历史故障模式决定。
-3. **主训数据切换**：确认无误后，周五晚间对“7B 主模型训练集群”执行无感热切，模型将在下一个 Checkpoint 读取到最新的 `v1.3` 数据版本。整个工作流在此完成闭环。
+3. **主训数据切换**：确认无误后，周五晚间对“7B 主模型训练集群”执行平滑切换，模型将在下一个 Checkpoint 读取到最新的 `v1.3` 数据版本。整个工作流在此完成闭环。
 
 ---
 
@@ -396,7 +396,7 @@ Hendrycks D, Burns C, Basart S, Zou A, Mazeika M, Song D, Steinhardt J (2021) Me
 
 Lees A, Tran V Q, Tay Y, Sorensen J, Gupta J, Metzler D, Vasserman L (2022) A New Generation of Perspective API: Efficient Multilingual Character-level Transformers. In: Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 3197-3207.
 
-Kuprieiev R, Pachhai S, Petrov D, Redzyński P, da Costa-Luis C, Rowlands P, Shcheklein I, Gao J, Gao C, Batóg P (2021) DVC: Data Version Control - Git for Data and Models. Zenodo. <https://doi.org/10.5281/zenodo.5561081>.
+DVC Team and Contributors (2024) DVC: Data Version Control - Git for Data & Models. Documentation: <https://dvc.org/doc>. Source repository: <https://github.com/iterative/dvc>.
 
 Polyzotis N, Roy S, Whang S E, Zinkevich M (2018) Data Lifecycle Challenges in Production Machine Learning: A Survey. ACM SIGMOD Record 47(2):17-28.
 

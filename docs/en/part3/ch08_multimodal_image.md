@@ -55,7 +55,7 @@ Consider a mainstream visual encoder based on ViT (Vision Transformer) (Dosovits
 
 Increasing the image side length by only 4.5x can therefore increase **attention-layer compute** by nearly **410x**. This refers to the quadratic self-attention portion, not the full model FLOPs; FFN layers scale linearly with sequence length, so the actual total training-compute increase is still substantial but somewhat lower than 410x. One core task in image-text data engineering is therefore to balance local-detail preservation against training cost through dynamic cropping, dimensionality reduction, and multi-scale patching.
 
-![Figure 8-1: Overview of image-text data engineering](../../images/part3/multimodal_data_panorama.png)
+![Figure 8-1: Overview of image-text data engineering](../../images/part3/multimodal_data_panorama.svg)
 
 *Figure 8-1: Overview of multimodal image-text data engineering. The pipeline starts from DOM-tree crawling and PDF parsing, then moves through format parsing, watermark filtering, CLIP semantic alignment, interleaved-sequence assembly, and tokenized representation. Distributed computing and metadata form the foundation across the pipeline. Source: drawn for this book. Alt text: an overview of image-text data engineering showing DOM extraction, image download, format parsing, filtering, semantic alignment, recaptioning, and sequence assembly.*
 
@@ -253,7 +253,7 @@ Modern large-model engineering usually applies a **multi-granularity recaptionin
 3. **Structured bounding boxes and OCR injection**
    - **Parallel-flow merge**: observing the image with a large model is still not accurate enough, especially when dense numbers appear. A side-car recaptioning workflow calls PaddleOCR at the same time. If the long description finds a billboard in the background, the merge script converts its coordinates into special tokens and inserts them into text: `... the background contains a billboard reading "<box_45_120_350_200> Broadway 5th Ave. </box>".` This converts visual signs into locatable strings and coordinate information inside the training sample.
 
-![Figure 8-2: Image semantic alignment and filtering flow](../../images/part3/image_semantic_alignment_flow.png)
+![Figure 8-2: Image semantic alignment and filtering flow](../../images/part3/image_semantic_alignment_flow.svg)
 
 *Figure 8-2: Image semantic alignment and filtering flow. A CLIP- and heuristic-rule-based quantitative decision tree filters out low-match samples, sends medium-match but high-value images to the recaptioning pipeline, and finally stores zero-padded or dynamically sliced images in the training pool. Source: drawn for this book. Alt text: an image semantic alignment and filtering flow showing quality filtering, CLIP scoring, recaptioning, dynamic slicing, and training-pool ingestion.*
 
@@ -269,7 +269,7 @@ In common pure-text packing, 1,000 written characters may require only 300 token
 
 Early VLMs, including CLIP-era models, usually resized all input images to a fixed square size: a landscape photo and a vertical long document were both compressed to $224 \times 224$, causing severe aspect-ratio distortion. To solve this, modern data factories widely introduce **AnyRes**, or dynamic high-resolution preservation, in preprocessing.
 
-![Figure 8-3: AnyRes dynamic multi-resolution patching](../../images/part3/anyres_dynamic_patching.png)
+![Figure 8-3: AnyRes dynamic multi-resolution patching](../../images/part3/anyres_dynamic_patching.svg)
 
 *Figure 8-3: AnyRes dynamic multi-resolution patching. The core idea is that the high-resolution panoramic input on the left is no longer forced into a square. Instead, it is divided by an adaptive grid into $1 \times 3$ native-resolution local patches and paired with a global thumbnail in the upper-right corner before entering the vision encoder, preserving both high-frequency local features and global semantics. Source: drawn for this book. Alt text: AnyRes dynamic multi-resolution patching showing a panorama divided into local patches and combined with a global thumbnail.*
 

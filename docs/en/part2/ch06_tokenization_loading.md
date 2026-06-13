@@ -321,7 +321,7 @@ class MemmapDataset(torch.utils.data.Dataset):
 
 When GPU utilization falls below expectations, follow these systematic steps to diagnose:
 
-![Figure 6-1: Throughput Bottleneck Diagnosis Flowchart](../../images/part2/io_bottleneck_diagnosis_flow.png)
+![Figure 6-1: Throughput Bottleneck Diagnosis Flowchart](../../images/part2/io_bottleneck_diagnosis_flow.svg)
 
 *Figure 6-1: Throughput bottleneck diagnosis flowchart — starting from abnormal GPU utilization, a three-level decision tree is used to locate disk I/O bottlenecks, CPU preprocessing bottlenecks, and PCIe transfer bottlenecks, with corresponding remediation steps. Source: original illustration from this book; Alt text: throughput bottleneck diagnosis flowchart showing the decision paths from abnormal GPU utilization to disk I/O, CPU preprocessing, and PCIe transfer investigation.*
 
@@ -397,7 +397,7 @@ dataloader = DataLoader(
 
 ### Figures and Case Studies
 
-![Figure 6-2: Training Input Pipeline Layer Diagram](../../images/part2/training_input_pipeline_layers.png)
+![Figure 6-2: Training Input Pipeline Layer Diagram](../../images/part2/training_input_pipeline_layers.svg)
 
 *Figure 6-2: LLM training input pipeline layered architecture — the complete five-stage path from tokenization, serialization, data mixing, and packing to DataLoader GPU feeding, with the two highest-frequency bottleneck risk points (disk I/O and CPU-GPU transfer) annotated at the bottom. Source: original illustration from this book; Alt text: training input pipeline layer diagram showing the sequential relationship between tokenization, serialization, mixing, packing, DataLoader, and GPU feeding.*
 

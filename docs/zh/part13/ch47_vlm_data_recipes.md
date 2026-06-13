@@ -36,7 +36,7 @@ VLM 数据配方；视觉语言模型；重描述；高分辨率训练；OCR-Ric
 > **前置知识与合规边界提示**：
 > 本章专注于探讨针对具体 VLM 特化的“数据配方”与 Curriculum 调度差异。关于基础的图文对抓取、MinHash 去重流水线、基础 OCR 抽取，以及跨模态对齐的通用预处理（如 Resize/CenterCrop 等图像处理流），已经在 **Ch08（图文对）**、**Ch09（重标注与文档理解）**、**Ch10（视频与音频）** 与 **Ch11（跨模态对齐）** 中做了详尽铺垫。对于底层通用流水线，可先复习图47-1 的多模态数据工程全景。此外，任何涉及图像爬虫版权的溯源风险，请直接参阅 **Ch04 §4.4** 与 **Ch27（数据合规）**。本章只讲“配方”，不重复“造轮子”。
 
-![图47-1：多模态数据工程全景图](../../images/part11/8_1_multimodal_data_panorama.svg)
+![图47-1：多模态数据工程全景图](../../images/part11/8_1_multimodal_data_panorama.png)
 
 <div align="center"><b>图47-1：多模态数据工程全景图（改绘自第8章基础图）</b></div>
 
@@ -351,4 +351,4 @@ Wang P, Bai S, Tan S, Wang S, Fan Z, Bai J, Chen K, Liu X, Wang J, Ge W, others 
 
 Yue X, Ni Y, Zhang K, Zheng T, Liu R, Zhang S, Stevens J, Jiang C, Zheng N, Sun T, others (2024) MMMU: A Massive Multi-discipline Multimodal Understanding and Reasoning Benchmark for Expert AGI. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 9556-9567.
 
-Zhu D, Chen J, Shen X, Li X, Elhoseiny M (2023) MiniGPT-4 / MMC4: An Open Large-Scale Dataset of Interleaved Image-Text Data. arXiv preprint arXiv:2306.04764.
+Zhu W, Hessel J, Awadalla A, Gadre S Y, Dodge J, Fang A, Yu Y, Schmidt L, Wang W Y, Choi Y (2023) Multimodal C4: An Open, Billion-scale Corpus of Images Interleaved with Text. arXiv preprint arXiv:2304.06939.

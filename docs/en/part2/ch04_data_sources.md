@@ -50,9 +50,9 @@ Postmortems of failed pre-training projects repeatedly expose three patterns.
 
 "More data is better" is one of the most common but most easily abused ideas in pre-training. At the macro level it is partly true: if quality is held constant, scale improves capability. At the engineering level it often becomes a substitute for judgment.
 
-The FineWeb paper (Penedo et al. 2024) offers an important observation: under the same token-count constraint, high-quality web corpora filtered from Common Crawl can train stronger models, and data cleaning, deduplication, and source recipes significantly affect final results. DCLM/DataComp-LM further organizes this question into a comparable data-recipe competition: under a fixed training budget, different data filtering and mixing strategies lead to noticeably different downstream performance (Li et al. 2024). In other words, "less but refined" can outperform "more but mixed" in pretraining data, but the conclusion must be tied to the experimental setting, model scale, and evaluation set.
+The FineWeb paper (Penedo et al. 2024) offers an important observation: under the same token-count constraint, high-quality web corpora filtered from Common Crawl can train stronger models, and data cleaning, deduplication, and source-mixing plans significantly affect final results. DCLM/DataComp-LM further organizes this question into a comparable data-mix benchmark: under a fixed training budget, different data filtering and mixing strategies lead to noticeably different downstream performance (Li et al. 2024). In other words, "less but refined" can outperform "more but mixed" in pretraining data, but the conclusion must be tied to the experimental setting, model scale, and evaluation set.
 
-This conclusion lays the foundation for the source-selection strategy throughout the chapter: **the formulation of a data recipe should prioritize each source's knowledge density and information diversity rather than raw volume.**
+This conclusion lays the foundation for the source-selection strategy throughout the chapter: **the data mix plan should prioritize each source's knowledge density and information diversity rather than raw volume.**
 
 ---
 
@@ -60,7 +60,7 @@ This conclusion lays the foundation for the source-selection strategy throughout
 
 If this chapter is an audit checklist for LLM data engineering, the source map is the central view. Before collecting anything, the team should answer: where does the corpus come from, how much does each source contribute, and what are the quality and legal risks?
 
-![Figure 4-1: Layered map of pre-training data sources](../../images/part2/pretrain_data_source_map.png)
+![Figure 4-1: Layered map of pre-training data sources](../../images/part2/pretrain_data_source_map.svg)
 
 *Figure 4-1: Layered map of pre-training data sources. The three-layer taxonomy positions mainstream sources by processing complexity, knowledge density, and license risk, with typical reference ranges for mixing. Source: original illustration from this book; Alt text: layered map of pretraining data sources showing the quality and compliance positions of open web, forums and Q&A, encyclopedias, code, academic papers, books, enterprise internal data, and user feedback data.*
 
@@ -100,9 +100,9 @@ In practical engineering decisions, source selection cannot be based on quality 
 | Enterprise data | Knowledge bases, docs, tickets | Private authorization | Low after internal approval | Very high | Project-specific |
 | User conversations | Product feedback, logs | Consent/privacy terms | Medium: PII-sensitive | High | Product-specific |
 
-### 4.2.3 From Business Goal to Data Recipe
+### 4.2.3 From Business Goals to Data Mix Plans
 
-Data mix ratio is one of the most strategic decisions in pretraining data engineering. There is no universal "golden recipe," because different business objectives require different data combinations. The following are reference mixing strategies for four typical business objectives:
+Data mix ratio is one of the most strategic decisions in pretraining data engineering. There is no universal fixed mix, because different business objectives require different data combinations. The following are reference mixing strategies for four typical business objectives:
 
 *Table 4-2: Data mix strategy by business objective. Source: compiled by the authors; mixing recommendations are a strategic framework and should be calibrated in production through proxy-model evaluation and ablation experiments.*
 
@@ -113,7 +113,7 @@ Data mix ratio is one of the most strategic decisions in pretraining data engine
 | **Vertical industry model (e.g., finance/medicine)** | Medium | Low | Medium | Medium | High | Domain data proportion rises significantly, while general corpora preserve baseline general capability. |
 | **Multilingual base model** | High | Medium | Low-medium | Low-medium | Allocated by target language | Language distribution in web data must be controlled to match target language-capability requirements. |
 
-Table 4-2 uses "high/medium/low" rather than fixed percentages to avoid misreading one project's experimental recipe as a universal rule. Mixing strategy also needs a **dynamic adjustment mechanism**: different training stages (early pretraining vs. cooldown) should use different mixing weights. The closer training gets to its later stage, the more it should raise the weight of high-quality selected data (books, academic papers, enterprise data) and reduce the weight of low-quality massive data (raw web pages). The LLaMA 3 technical report discloses 15T-scale training data and multi-stage post-training flows (Grattafiori et al. 2024), but it does not provide a directly reusable complete data recipe; production projects must still calibrate through small-model ablations and frozen evaluation sets.
+Table 4-2 uses "high/medium/low" rather than fixed percentages to avoid misreading one project's experimental mix as a universal rule. Mixing strategy also needs a **dynamic adjustment mechanism**: different training stages (early pretraining vs. cooldown) should use different mixing weights. The closer training gets to its later stage, the more it should raise the weight of high-quality selected data (books, academic papers, enterprise data) and reduce the weight of low-quality massive data (raw web pages). The LLaMA 3 technical report discloses 15T-scale training data and multi-stage post-training flows (Grattafiori et al. 2024), but it does not provide a directly reusable complete data mix plan; production projects must still calibrate through small-model ablations and frozen evaluation sets.
 
 ---
 
@@ -263,7 +263,7 @@ Each ingested batch should write standard fields to the metadata database at the
 }
 ```
 
-![Figure 4-2: Data ingestion and provenance chain](../../images/part2/data_ingestion_provenance_chain.png)
+![Figure 4-2: Data ingestion and provenance chain](../../images/part2/data_ingestion_provenance_chain.svg)
 
 *Figure 4-2: Data ingestion and provenance chain. From source contact to final archive, each processing stage appends metadata records to the "Provenance Ledger," forming a complete auditable data-lineage chain. Source: original illustration from this book; Alt text: data ingestion and provenance chain diagram showing the links among source contact, acquisition, parsing, cleaning, storage, and audit records.*
 

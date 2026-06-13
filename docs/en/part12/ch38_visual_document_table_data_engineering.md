@@ -502,7 +502,7 @@ A core design principle of SparseTable-Bench is to represent each table image as
 
 The `[EMPTY_CELL]` token here is not ordinary text; it is a placeholder expressing "structure exists, content is absent." It decouples a cell's structural identity from its semantic content: even if the corresponding image region contains no readable characters, that position still has row-column coordinates, a bounding box, and contextual relationships. For sparse tables, this placeholder prevents the model from treating blank regions as non-existent during generation, thereby reducing the probability of column collapse and left-shift errors. Figure 38-4 summarizes the synchronized relationship among the three supervision signals — HTML, text, and bounding boxes — within the same table sample.
 
-![Figure 38-4: Three synchronized supervision signals in a table sample](../../images/part12/ch39_02_supervision_schema_en.png)
+![Figure 38-4: Three synchronized supervision signals in a table sample](../../images/part12/ch39_02_supervision_schema.png)
 
 From a data engineering perspective, the sample schema of STB includes at least the following fields and validation rules.
 
@@ -523,7 +523,7 @@ It is important to note that the specific notation for the empty-cell token must
 
 The construction of SparseTable-Bench can be organized into four stages: table collection, structure extraction, spatial annotation, and sparse topology augmentation. These four stages are not a simple serial file transformation; rather, they involve repeated validation of consistency among structure, text, and geometry, as illustrated in Figure 38-5.
 
-![Figure 38-5: Four-stage SparseTable-Bench construction pipeline](../../images/part12/ch39_01_stb_pipeline_en.png)
+![Figure 38-5: Four-stage SparseTable-Bench construction pipeline](../../images/part12/ch39_01_stb_pipeline.png)
 
 #### Case B.4.1 Table Collection
 
@@ -577,7 +577,7 @@ STB-Mask-Stress is the robustness evaluation split within SparseTable-Bench, ded
 
 Figure 38-6 illustrates the basic workflow of STB-Mask-Stress, from column-level occlusion generation to evaluation interpretation.
 
-![Figure 38-6: STB-Mask-Stress occlusion generation and evaluation workflow](../../images/part12/ch39_03_mask_stress_flow_en.png)
+![Figure 38-6: STB-Mask-Stress occlusion generation and evaluation workflow](../../images/part12/ch39_03_mask_stress_flow.png)
 
 The occlusion strategy of STB-Mask-Stress is column-aware. The workflow can be summarized as follows.
 
@@ -739,7 +739,7 @@ Yang, Z., Long, R., Wang, P., et al. (2023). Modeling Entities as Semantic Point
 
 Zhang, N., Chen, M., Bi, Z., et al. (2022). CBLUE: A Chinese Biomedical Language Understanding Evaluation Benchmark. *Proc. ACL*, pp. 7888-7915.
 
-Zhong, X., ShafieiBavani, E., and Jimeno Yepes, A. (2020). Image-based Table Recognition: Data, Model, and Evaluation. *arXiv preprint arXiv:2011.13534*.
+Zhong, X., ShafieiBavani, E., and Jimeno Yepes, A. (2020). Image-based Table Recognition: Data, Model, and Evaluation. *arXiv preprint arXiv:1911.10683*.
 
 Bai, S., Cai, Y., Chen, R., et al. (2025a). Qwen3-VL Technical Report. *arXiv preprint*.
 

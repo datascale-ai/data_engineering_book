@@ -57,7 +57,7 @@ LLM；数据配方；开源大模型；训练数据；阶段化调度
 
 > **提示**：通用数据采集、清洗（如 MinHash LSH 去重）与分词（Tokenizer）的基础通用方法论，已经在 Ch04（数据源）、Ch05（清洗）、Ch06（分词）中做了详尽铺垫。如第4章给出的预训练数据源分层地图，构成了本章讨论的基石。本章及本篇将不再赘述这些底层基础设施，而是聚焦于不同模型在配方阶段的具体工程权衡。
 
-![图44-3：预训练数据源分层地图](../../images/part11/4_1_pretrain_data_source_map.svg)
+![图44-3：预训练数据源分层地图](../../images/part11/4_1_pretrain_data_source_map.png)
 <div align="center"><b>图44-3：预训练数据源分层地图（改绘自第4章基础图）</b></div>
 
 **表47-1：主流开源大模型数据透明度光谱 (6 行 × 5 列)**
@@ -297,7 +297,7 @@ Groeneveld D, Magnusson I, Bhagia A, Schwenk D, Soldaini L, Tafjord O, Sherborne
 
 Hoffmann J, Borgeaud S, Mensch A, Buchatskaya E, Cai T, Rutherford E, de Las Casas D, Hendricks L A, Welbl J, Clark A, others (2022) Training Compute-Optimal Large Language Models (Chinchilla). arXiv preprint arXiv:2203.15556.
 
-Hui B, Yang J, Cui Z, Yang J, Liu D, Zhang L, Liu B, Yu B, Lu K, Chi K, others (2024) Qwen2.5: A Party of Foundation Models. arXiv preprint arXiv:2412.15115.
+Hui B, Yang J, Cui Z, Yang J, Liu D, Zhang L, Liu B, Yu B, Lu K, Chi K, others (2024) Qwen2.5 Technical Report. arXiv preprint arXiv:2412.15115.
 
 Kaplan J, McCandlish S, Henighan T, Brown T B, Chess B, Child R, Gray S, Radford A, Wu J, Amodei D (2020) Scaling Laws for Neural Language Models. arXiv preprint arXiv:2001.08361.
 
