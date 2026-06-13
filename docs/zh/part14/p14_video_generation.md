@@ -78,7 +78,7 @@
 
 图 P14-1 给出了本项目的英文标注架构图。图中上半部分是数据阶段，下半部分是工程控制。这样的画法刻意把“生成 caption”放在后段，而不是把它当作唯一核心：视频生成数据集的质量取决于来源、切分、运动、美学、caption、镜头语言和发布门禁的整体配合。
 
-![P14 Video Generation Data Pipeline](../../images/part14/p14_video_generation_pipeline_en.png)
+![P14 Video Generation Data Pipeline](../../images/part14/p14_video_generation_pipeline_en.svg)
 
 *图 P14-1：视频生成数据流水线英文架构图*
 
