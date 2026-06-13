@@ -1,5 +1,7 @@
 # Appendix G: MindSpore Overview and Acknowledgments
 
+<div class="chapter-authors">Xin Xu</div>
+
 ## G.1 Purpose of This Appendix
 
 This appendix explains the role of MindSpore in selected practical parts of this book. It is not a framework tutorial, nor does it replace the official MindSpore documentation, course lab instructions, or the concrete installation and execution guides in the companion code repositories. Readers who need API details, version compatibility, hardware adaptation, operator support, distributed training configuration, or deployment details should use the official documentation and project repositories as the primary references (MindSpore Contributors 2026a; MindSpore Contributors 2026b).

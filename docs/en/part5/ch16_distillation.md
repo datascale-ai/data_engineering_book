@@ -1,5 +1,7 @@
 # Chapter 16: Knowledge Distillation and Model Collaboration
 
+<div class="chapter-authors">Ran Zhang</div>
+
 ## Abstract
 
 Knowledge distillation is often reduced to "feeding a large model's answers into a small model," but its essence is a structured reproduction process organized around target capabilities—where success depends far more on sample design than on training algorithms. This chapter repositions distillation within a multi-model collaborative system, arguing that capability units rather than sample volume should serve as the starting point. The approach begins by defining the tasks the student model is truly responsible for, then determines which fields, trajectories, explanations, and constraints to retain, and bridges teacher outputs, student inputs, and business objectives through task mapping, representation mapping, and objective mapping. On the topic of role allocation, the chapter distinguishes single-teacher, multi-teacher, and Mixture-of-Experts strategies, clarifies how judge models define training boundaries through filtering, scoring, and ranking, and explains why student training recipes must respect capacity constraints. On sample structure, the chapter systematically distinguishes four distillation pathways—answer distillation, process distillation, style distillation, and tool-trajectory distillation—along with their differences in supervision density. It discusses retention strategies for teacher confidence, explanation chains, and failure samples, and establishes that information density and representative sampling determine a student's effective learning speed. The chapter concludes with methods for attributing pre- and post-distillation performance, a return-on-investment framework that integrates cost, latency, and inference quality, and clear guidance on when to stop distillation and shift to real data supplementation. The conclusion is: only when sample structure, role allocation, validation pipelines, and cost accounting are all designed together can distillation grow from an isolated training technique into a stable, reusable system capability.
@@ -341,7 +343,7 @@ To present common collaboration modes and applicable tasks more clearly, Table 1
 In multi-model collaboration engineering implementations, timing and handoff points are equally important. Figure 16-1 illustrates the timing and handoff relationships in multi-model collaborative generation.
 
 
-![Figure 16-1: Multi-Model Collaborative Generation Timing Diagram](../../images/part5/图16_1.png)
+![Figure 16-1: Multi-Model Collaborative Generation Timing Diagram](../../images/part5/图16_1.svg)
 *Figure 16-1: Multi-Model Collaborative Generation Timing Diagram*
 
 ---
@@ -575,7 +577,7 @@ To make the validation pipeline more intuitive, Figure 16-2 illustrates the vali
 
 
 
-![Figure 16-2: Distillation Sample Validation Flow Diagram](../../images/part5/图16_2.png)
+![Figure 16-2: Distillation Sample Validation Flow Diagram](../../images/part5/图16_2.svg)
 
 *Figure 16-2: Distillation Sample Validation Flow Diagram*
 

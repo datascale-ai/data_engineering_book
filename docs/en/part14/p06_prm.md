@@ -1,5 +1,7 @@
 # Project Six: CoT Reasoning Dataset Construction and PRM Training
 
+<div class="chapter-authors">Xin Xu</div>
+
 ## Abstract
 P06 focuses on organizing the reasoning process itself into a trainable, verifiable, analyzable, and iterable process-supervision data asset. The chapter's emphasis is not on demonstrating individual chains of thought, but on the engineering integration between step-level supervision, reward assignment, and the PRM training interface.
 

@@ -1,5 +1,7 @@
 # 第20章：Agent记忆与多轮交互数据
 
+<div class="chapter-authors">张然（Ran Zhang）</div>
+
 ## 摘要
 
 长程、多轮、任务型智能体（Agent）的数据工程，难点不在于把单轮问答拼接得更长，而在于让模型在跨轮交互中保持任务身份、状态一致性与行为稳定性。本章把多轮数据界定为由状态建模、记忆管理、反馈闭环与时间衰减共同作用的状态轨迹，而非对话长度问题，并论述状态依赖、角色漂移与任务中断为何使其无法简化为“下一轮回复”预测。在切分与表示层面，本章区分会话（session）、任务过程（episode）与任务线程（task thread）三层嵌套单位，主张以状态连续性而非物理时间切分，并将对话状态、用户偏好与任务进度结构化为“前态—触发—动作—后态”的最小闭环单元，进而对中断、切换与恢复场景显式建模。在记忆层面，本章界定记忆写入的稳定性、可复用性、可确认性与低风险性判定标准，区分上下文窗口、短期记忆与长期记忆，给出瞬时上下文、工作记忆、会话摘要与长期偏好的分层及其迁移规则，并引入时间衰减、冲突衰减与使用衰减，将摘要、冲突解决与召回从相似度匹配推进为可用性判断。最后，本章通过多轮回放评测、状态漂移评测与记忆依赖评测，把“记住错事”与“忘记要事”归因到写入、召回、衰减与线程恢复等可改进的数据环节，并设计线程污染、错误持久化、恢复失败与反馈失效四类红线测试。
@@ -169,7 +171,7 @@ Agent记忆与多轮交互数据；推理数据；工具调用；Agent 记忆；
 
 
 
-![图20-1：多轮 Agent 状态转移图](../../images/part6/图20_1.png)
+![图20-1：多轮 Agent 状态转移图](../../images/part6/图20_1.svg)
 
 *图20-1：多轮 Agent 状态转移图*
 
@@ -269,7 +271,7 @@ Agent记忆与多轮交互数据；推理数据；工具调用；Agent 记忆；
 
 
 
-![图20-2：任务型 Agent 的记忆分层与更新流程图](../../images/part6/图20_2.png)
+![图20-2：任务型 Agent 的记忆分层与更新流程图](../../images/part6/图20_2.svg)
 
 *图20-2：任务型 Agent 的记忆分层与更新流程图*
 
@@ -479,7 +481,7 @@ AI 助手类场景中的多轮数据，通常最强调长期偏好与轻量任�
 
 ## 参考文献
 
-Young, S., Gašić, M., Thomson, B., & Williams, J. D. (2013). *POMDP-Based Statistical Spoken Dialog Systems: A Review*. Proceedings of the IEEE, 101(5), 1160–1179. https://doi.org/10.1109/JPROC.2012.2225812
+Young, S., Gašić, M., Thomson, B., & Williams, J. D. (2013). *POMDP-Based Statistical Spoken Dialog Systems: A Review*. Proceedings of the IEEE, 101(5), 1160–1179. https://doi.org/10.1109/JPROC.2012.2225812.
 
 Williams, J. D., Raux, A., Ramachandran, D., & Black, A. (2013). *The Dialog State Tracking Challenge*. Proceedings of the SIGDIAL 2013 Conference, 404–413.
 
@@ -489,13 +491,13 @@ Yao, S., Zhao, J., Yu, D., et al. (2023). *ReAct: Synergizing Reasoning and Acti
 
 Schick, T., Dwivedi-Yu, J., Dessì, R., et al. (2023). *Toolformer: Language Models Can Teach Themselves to Use Tools*. Advances in Neural Information Processing Systems, 36.
 
-Liu, N. F., Lin, K., Hewitt, J., et al. (2024a). *Lost in the Middle: How Language Models Use Long Contexts*. Transactions of the Association for Computational Linguistics, 12, 157–173. https://doi.org/10.1162/tacl_a_00638
+Liu, N. F., Lin, K., Hewitt, J., et al. (2024a). *Lost in the Middle: How Language Models Use Long Contexts*. Transactions of the Association for Computational Linguistics, 12, 157–173. https://doi.org/10.1162/tacl_a_00638.
 
 Packer, C., Wooders, S., Lin, K., et al. (2023). *MemGPT: Towards LLMs as Operating Systems*. arXiv:2310.08560.
 
 Wang, W., Dong, L., Cheng, H., et al. (2023). *Augmenting Language Models with Long-Term Memory*. Advances in Neural Information Processing Systems, 36.
 
-Zhong, W., Guo, L., Gao, Q., et al. (2024). *MemoryBank: Enhancing Large Language Models with Long-Term Memory*. Proceedings of the AAAI Conference on Artificial Intelligence, 38(17), 19724–19731. https://doi.org/10.1609/aaai.v38i17.29946
+Zhong, W., Guo, L., Gao, Q., et al. (2024). *MemoryBank: Enhancing Large Language Models with Long-Term Memory*. Proceedings of the AAAI Conference on Artificial Intelligence, 38(17), 19724–19731. https://doi.org/10.1609/aaai.v38i17.29946.
 
 Park, J. S., O’Brien, J. C., Cai, C. J., et al. (2023). *Generative Agents: Interactive Simulacra of Human Behavior*. Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology.
 

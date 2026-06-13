@@ -1,5 +1,7 @@
 # Chapter 3: AI-Native Data Stack and Cost Governance
 
+<div class="chapter-authors">Ke Wang</div>
+
 ## Abstract
 
 This chapter discusses the AI-native data stack and cost-governance methods that support large-model data engineering. Unlike traditional data warehouses, which mainly serve analytical queries, an LLM data stack is designed to provide traceable, evaluable, versioned data assets to training and application pipelines at stable and low cost. The chapter first compares traditional data warehouses and large-model data stacks in their goals, workloads, and cost constraints. It then decomposes the data stack into five layers: ingestion and access, processing orchestration, storage and indexing, evaluation operations, and governance and security. It also discusses the appropriate boundaries of tools such as Spark, Ray Data, Iceberg, object storage, vector databases, DVC, and MLflow. Finally, the chapter provides a cost model, ROI decision framework, and three team-architecture patterns to help readers choose infrastructure that matches startup, mid-sized, and large-organization stages.

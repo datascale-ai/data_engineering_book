@@ -1,5 +1,7 @@
 # Project 8: Building an Enterprise DataOps Platform: From Data Projects to Organizational Governance
 
+<div class="chapter-authors">Xin Xu</div>
+
 ## Abstract
 
 P08 focuses on turning scattered data-engineering actions into DataOps platform capabilities that are governable, traceable, reversible, and measurable.
@@ -1589,7 +1591,7 @@ Readers can combine this case with the data recipes in Part 13, the platform-gov
 ## References
 
 1. Raffel, C., Shazeer, N., Roberts, A., Lee, K., Narang, S., Matena, M., Zhou, Y., Li, W., and Liu, P. J. (2020). Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. JMLR, 21(140), 1-67.
-2. Hugging Face. (2026). Datasets Documentation. https://huggingface.co/docs/datasets/
-3. Ray Project. (2026). Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html
-4. MLflow Authors. (2026). MLflow Documentation. https://mlflow.org/docs/latest/
-5. Great Expectations Contributors. (2026). Great Expectations Documentation. https://docs.greatexpectations.io/
+2. Hugging Face. (2026). Datasets Documentation. https://huggingface.co/docs/datasets/.
+3. Ray Project. (2026). Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html.
+4. MLflow Authors. (2026). MLflow Documentation. https://mlflow.org/docs/latest/.
+5. Great Expectations Contributors. (2026). Great Expectations Documentation. https://docs.greatexpectations.io/.

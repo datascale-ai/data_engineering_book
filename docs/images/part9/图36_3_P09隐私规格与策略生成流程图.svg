@@ -1,0 +1,1711 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1400"
+   height="786"
+   viewBox="0 0 1400 786"
+   role="img"
+   aria-labelledby="title desc"
+   version="1.1"
+   id="svg122"
+   sodipodi:docname="ch36_03_privacy_spec_policy_generation.svg"
+   inkscape:version="1.4.4 (dcaf3e7, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview122"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.0877863"
+     inkscape:cx="774.04911"
+     inkscape:cy="462.86666"
+     inkscape:window-width="1920"
+     inkscape:window-height="1111"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg122" />
+  <title
+     id="title">P09 Privacy-Preserving Data Pipeline</title>
+  <desc
+     id="desc">A five-stage closed-loop privacy-preserving data pipeline from policy specification generation through privacy processing, incident handling, evaluation, and governance feedback.</desc>
+  <defs
+     id="defs7">
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="0.5"
+       markerHeight="0.5"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path122" />
+    </marker>
+    <linearGradient
+       id="stageBlue"
+       x1="0"
+       y1="0"
+       x2="0"
+       y2="1">
+      <stop
+         offset="0"
+         stop-color="#237faf"
+         id="stop1" />
+      <stop
+         offset="1"
+         stop-color="#145f93"
+         id="stop2" />
+    </linearGradient>
+    <linearGradient
+       id="panelBlue"
+       x1="0"
+       y1="0"
+       x2="0"
+       y2="1">
+      <stop
+         offset="0"
+         stop-color="#f4fbff"
+         id="stop3" />
+      <stop
+         offset="1"
+         stop-color="#e7f2f8"
+         id="stop4" />
+    </linearGradient>
+    <marker
+       id="arrowBlue"
+       markerWidth="18"
+       markerHeight="18"
+       refX="16"
+       refY="9"
+       orient="auto"
+       markerUnits="userSpaceOnUse"
+       viewBox="0 0 18 18"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M0 0 L18 9 L0 18 Z"
+         fill="#237faf"
+         id="path4" />
+    </marker>
+    <marker
+       id="arrowGreen"
+       markerWidth="18"
+       markerHeight="18"
+       refX="16"
+       refY="9"
+       orient="auto"
+       markerUnits="userSpaceOnUse"
+       viewBox="0 0 18 18">
+      <path
+         d="M0 0 L18 9 L0 18 Z"
+         fill="#2ca56d"
+         id="path5" />
+    </marker>
+    <marker
+       id="arrowRed"
+       markerWidth="18"
+       markerHeight="18"
+       refX="16"
+       refY="9"
+       orient="auto"
+       markerUnits="userSpaceOnUse"
+       viewBox="0 0 18 18">
+      <path
+         d="M0 0 L18 9 L0 18 Z"
+         fill="#d93636"
+         id="path6" />
+    </marker>
+    <marker
+       id="loopArrow"
+       markerWidth="34"
+       markerHeight="34"
+       refX="17"
+       refY="17"
+       orient="auto"
+       markerUnits="userSpaceOnUse"
+       viewBox="0 0 34 34">
+      <path
+         d="M0 0 L34 17 L0 34 Z"
+         fill="#155f93"
+         id="path7" />
+    </marker>
+    <marker
+       id="arrowBlue-0"
+       markerWidth="18"
+       markerHeight="18"
+       refX="16"
+       refY="9"
+       orient="auto"
+       markerUnits="userSpaceOnUse"
+       viewBox="0 0 18 18"
+       preserveAspectRatio="xMidYMid">
+      <path
+         d="M 0,0 18,9 0,18 Z"
+         fill="#237faf"
+         id="path4-9" />
+    </marker>
+  </defs>
+  <style
+     id="style7">
+    .font { font-family: Arial, Helvetica, sans-serif; }
+    .title { font-family: Arial, Helvetica, sans-serif; font-size: 44px; font-weight: 700; fill: #101418; }
+    .stage { font-family: Arial, Helvetica, sans-serif; font-size: 23px; font-weight: 700; fill: #ffffff; text-anchor: middle; }
+    .label { font-family: Arial, Helvetica, sans-serif; font-size: 22px; font-weight: 700; fill: #17202a; }
+    .small { font-family: Arial, Helvetica, sans-serif; font-size: 19px; fill: #17202a; }
+    .tiny { font-family: Arial, Helvetica, sans-serif; font-size: 16px; fill: #374151; }
+    .white { fill: #ffffff; }
+    .muted { fill: #4b5563; }
+  </style>
+  <rect
+     width="1400"
+     height="786"
+     fill="#ffffff"
+     id="rect7" />
+  <text
+     x="22"
+     y="58"
+     class="title"
+     id="text7">P09 Privacy-Preserving Data Pipeline (Closed-Loop Architecture)</text>
+  <!-- Stage headers -->
+  <g
+     class="stage"
+     id="g23">
+    <path
+       d="M157 95 H398 L428 142 L398 189 H157 Z"
+       fill="url(#stageBlue)"
+       id="path8" />
+    <text
+       x="278"
+       y="124"
+       id="text10"><tspan
+         x="278"
+         id="tspan8">Stage 1:</tspan><tspan
+         x="278"
+         dy="27"
+         id="tspan9">Policy &amp; Specification</tspan><tspan
+         x="278"
+         dy="27"
+         id="tspan10">Generation</tspan></text>
+    <path
+       d="M410 95 H720 L750 142 L720 189 H410 L428 142 Z"
+       fill="url(#stageBlue)"
+       id="path10" />
+    <text
+       x="579"
+       y="124"
+       id="text13"><tspan
+         x="579"
+         id="tspan11">Stage 2:</tspan><tspan
+         x="579"
+         dy="27"
+         id="tspan12">Privacy Processing</tspan><tspan
+         x="579"
+         dy="27"
+         id="tspan13">Pipeline</tspan></text>
+    <path
+       d="M732 95 H967 L997 142 L967 189 H732 L750 142 Z"
+       fill="url(#stageBlue)"
+       id="path13" />
+    <text
+       x="860"
+       y="124"
+       id="text16"><tspan
+         x="860"
+         id="tspan14">Stage 3:</tspan><tspan
+         x="860"
+         dy="27"
+         id="tspan15">Ops Simulation &amp;</tspan><tspan
+         x="860"
+         dy="27"
+         id="tspan16">Incident Handling</tspan></text>
+    <path
+       d="M979 95 H1151 L1181 142 L1151 189 H979 L997 142 Z"
+       fill="url(#stageBlue)"
+       id="path16" />
+    <text
+       x="1078"
+       y="124"
+       id="text19"><tspan
+         x="1078"
+         id="tspan17">Stage 4:</tspan><tspan
+         x="1078"
+         dy="27"
+         id="tspan18">Pipeline</tspan><tspan
+         x="1078"
+         dy="27"
+         id="tspan19">Evaluation</tspan></text>
+    <path
+       d="M1163 95 H1400 V189 H1163 L1181 142 Z"
+       fill="url(#stageBlue)"
+       id="path19" />
+    <text
+       x="1284"
+       y="116"
+       font-size="21"
+       id="text23"><tspan
+         x="1284"
+         id="tspan20">Stage 5:</tspan><tspan
+         x="1284"
+         dy="23"
+         id="tspan21">Project Check &amp;</tspan><tspan
+         x="1284"
+         dy="23"
+         id="tspan22">Governance</tspan><tspan
+         x="1284"
+         dy="23"
+         id="tspan23">Feedback</tspan></text>
+  </g>
+  <!-- Continuous loop behind panels -->
+  <path
+     d="M1294 694 V735 Q1294 761 1264 761 H292 Q262 761 262 731 V708"
+     fill="none"
+     stroke="#155f93"
+     stroke-width="31"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     marker-end="url(#loopArrow)"
+     id="path23"
+     style="stroke-width:27.4;stroke-dasharray:none;marker-end:url(#RoundedArrow)" />
+  <text
+     x="742"
+     y="771"
+     class="font"
+     text-anchor="middle"
+     font-size="24"
+     fill="#ffffff"
+     id="text24">Continuous Compliance Loop</text>
+  <!-- Inbound sources -->
+  <g
+     class="font"
+     id="g32">
+    <path
+       d="M48 244 H96 L114 262 V350 H48 Z"
+       fill="#edf7fd"
+       stroke="#155f93"
+       stroke-width="3"
+       id="path24" />
+    <path
+       d="M96 244 V263 H114"
+       fill="none"
+       stroke="#155f93"
+       stroke-width="3"
+       id="path25" />
+    <line
+       x1="61"
+       y1="263"
+       x2="91"
+       y2="263"
+       stroke="#17202a"
+       stroke-width="3"
+       id="line25" />
+    <line
+       x1="61"
+       y1="279"
+       x2="101"
+       y2="279"
+       stroke="#17202a"
+       stroke-width="3"
+       id="line26" />
+    <line
+       x1="61"
+       y1="295"
+       x2="96"
+       y2="295"
+       stroke="#17202a"
+       stroke-width="3"
+       id="line27" />
+    <circle
+       cx="92"
+       cy="309"
+       r="11"
+       fill="#dcecf3"
+       stroke="#237faf"
+       stroke-width="3"
+       id="circle27" />
+    <path
+       d="M86 320 L86 343 L93 337 L100 343 L100 320"
+       fill="#237faf"
+       stroke="#155f93"
+       stroke-width="2"
+       id="path27" />
+    <text
+       x="86.081207"
+       y="355.59579"
+       text-anchor="middle"
+       font-size="18.8895px"
+       fill="#17202a"
+       id="text28"
+       transform="scale(0.94447444,1.0587899)"
+       style="stroke-width:1"><tspan
+         x="86.081207"
+         id="tspan27"
+         style="stroke-width:1">Regulations</tspan><tspan
+         x="86.081207"
+         dy="23.61186"
+         id="tspan28"
+         style="stroke-width:1">(e.g. PIPL, GDPR)</tspan></text>
+    <circle
+       cx="89"
+       cy="461"
+       r="26"
+       fill="#dcecf3"
+       stroke="#155f93"
+       stroke-width="4"
+       id="circle28" />
+    <circle
+       cx="89"
+       cy="461"
+       r="10"
+       fill="#237faf"
+       id="circle29" />
+    <path
+       d="M89 424 V444 M89 478 V498 M52 461 H72 M106 461 H126 M63 435 L78 449 M101 473 L115 488 M115 435 L101 449 M78 473 L63 488"
+       stroke="#155f93"
+       stroke-width="6"
+       stroke-linecap="round"
+       id="path29" />
+    <rect
+       x="47"
+       y="476"
+       width="42"
+       height="28"
+       fill="#237faf"
+       stroke="#155f93"
+       stroke-width="3"
+       id="rect29" />
+    <circle
+       cx="68"
+       cy="464"
+       r="18"
+       fill="#dcecf3"
+       stroke="#155f93"
+       stroke-width="3"
+       id="circle30" />
+    <text
+       x="78"
+       y="531"
+       text-anchor="middle"
+       font-size="20"
+       fill="#17202a"
+       id="text31"><tspan
+         x="78"
+         id="tspan30">Business</tspan><tspan
+         x="78"
+         dy="25"
+         id="tspan31">requirements</tspan></text>
+    <path
+       d="m 115.95013,320.84786 h 39"
+       fill="none"
+       stroke="#237faf"
+       stroke-width="7"
+       marker-end="url(#arrowBlue)"
+       id="path31" />
+    <path
+       d="M126 469 H153"
+       fill="none"
+       stroke="#237faf"
+       stroke-width="7"
+       marker-end="url(#arrowBlue)"
+       id="path32" />
+  </g>
+  <!-- Stage 1 panel -->
+  <rect
+     x="158"
+     y="202"
+     width="242"
+     height="496"
+     rx="10"
+     fill="url(#panelBlue)"
+     stroke="#8eb1c6"
+     stroke-width="2"
+     id="rect32" />
+  <g
+     class="font"
+     id="g53">
+    <path
+       d="M189 215 H229 L246 232 V289 H189 Z"
+       fill="#eef7fc"
+       stroke="#17202a"
+       stroke-width="3"
+       id="path33" />
+    <path
+       d="M229 215 V233 H246"
+       fill="none"
+       stroke="#17202a"
+       stroke-width="3"
+       id="path34" />
+    <line
+       x1="200"
+       y1="235"
+       x2="225"
+       y2="235"
+       stroke="#17202a"
+       stroke-width="2"
+       id="line34" />
+    <line
+       x1="200"
+       y1="250"
+       x2="232"
+       y2="250"
+       stroke="#17202a"
+       stroke-width="2"
+       id="line35" />
+    <line
+       x1="200"
+       y1="265"
+       x2="228"
+       y2="265"
+       stroke="#17202a"
+       stroke-width="2"
+       id="line36" />
+    <path
+       d="M313 215 H353 L370 232 V289 H313 Z"
+       fill="#eef7fc"
+       stroke="#17202a"
+       stroke-width="3"
+       id="path36" />
+    <path
+       d="M353 215 V233 H370"
+       fill="none"
+       stroke="#17202a"
+       stroke-width="3"
+       id="path37" />
+    <rect
+       x="322"
+       y="241"
+       width="7"
+       height="7"
+       fill="none"
+       stroke="#17202a"
+       stroke-width="2"
+       id="rect37" />
+    <rect
+       x="322"
+       y="258"
+       width="7"
+       height="7"
+       fill="none"
+       stroke="#17202a"
+       stroke-width="2"
+       id="rect38" />
+    <rect
+       x="322"
+       y="275"
+       width="7"
+       height="7"
+       fill="none"
+       stroke="#17202a"
+       stroke-width="2"
+       id="rect39" />
+    <line
+       x1="336"
+       y1="244"
+       x2="357"
+       y2="244"
+       stroke="#17202a"
+       stroke-width="2"
+       id="line39" />
+    <line
+       x1="336"
+       y1="261"
+       x2="357"
+       y2="261"
+       stroke="#17202a"
+       stroke-width="2"
+       id="line40" />
+    <line
+       x1="336"
+       y1="278"
+       x2="357"
+       y2="278"
+       stroke="#17202a"
+       stroke-width="2"
+       id="line41" />
+    <path
+       d="M257 254 H292 V242 L306 265 L292 288 V276 H257 Z"
+       fill="#237faf"
+       stroke="#155f93"
+       stroke-width="2"
+       id="path41" />
+    <path
+       d="M278 290 V326"
+       fill="none"
+       stroke="#155f93"
+       stroke-width="7"
+       marker-end="url(#arrowBlue)"
+       id="path42" />
+    <rect
+       x="170"
+       y="328"
+       width="218"
+       height="53"
+       rx="8"
+       fill="#237faf"
+       stroke="#115b88"
+       stroke-width="3"
+       id="rect42" />
+    <text
+       x="279"
+       y="362"
+       text-anchor="middle"
+       font-size="23"
+       fill="#ffffff"
+       id="text42">Data classification</text>
+    <path
+       d="M279 381 V426"
+       fill="none"
+       stroke="#155f93"
+       stroke-width="7"
+       marker-end="url(#arrowBlue)"
+       id="path43" />
+    <rect
+       x="170"
+       y="430"
+       width="218"
+       height="80"
+       rx="8"
+       fill="#eef7fc"
+       stroke="#17202a"
+       stroke-width="3"
+       id="rect43" />
+    <circle
+       cx="213"
+       cy="470"
+       r="25"
+       fill="#dcecf3"
+       stroke="#155f93"
+       stroke-width="5"
+       id="circle43" />
+    <circle
+       cx="213"
+       cy="470"
+       r="9"
+       fill="#237faf"
+       id="circle44" />
+    <path
+       d="M213 438 V451 M213 489 V502 M181 470 H194 M232 470 H245 M190 447 L200 457 M226 483 L236 493 M236 447 L226 457 M200 483 L190 493"
+       stroke="#155f93"
+       stroke-width="5"
+       stroke-linecap="round"
+       id="path44" />
+    <text
+       x="304"
+       y="462"
+       text-anchor="middle"
+       font-size="24"
+       fill="#17202a"
+       id="text45"><tspan
+         x="304"
+         id="tspan44">Compliance</tspan><tspan
+         x="304"
+         dy="28"
+         id="tspan45">rule engine</tspan></text>
+    <path
+       d="M279 510 V555"
+       fill="none"
+       stroke="#155f93"
+       stroke-width="7"
+       marker-end="url(#arrowBlue)"
+       id="path45" />
+    <path
+       d="M193 558 H229 L245 574 V628 H193 Z"
+       fill="#ffffff"
+       stroke="#17202a"
+       stroke-width="3"
+       id="path46" />
+    <path
+       d="M229 558 V574 H245"
+       fill="none"
+       stroke="#17202a"
+       stroke-width="3"
+       id="path47" />
+    <path
+       d="M257 589 H291 V577 L306 600 L291 623 V611 H257 Z"
+       fill="#237faf"
+       stroke="#155f93"
+       stroke-width="2"
+       id="path48" />
+    <path
+       d="M306 558 H345 L361 574 V628 H306 Z"
+       fill="#ffffff"
+       stroke="#17202a"
+       stroke-width="3"
+       id="path49" />
+    <path
+       d="M345 558 V574 H361"
+       fill="none"
+       stroke="#17202a"
+       stroke-width="3"
+       id="path50" />
+    <rect
+       x="317"
+       y="584"
+       width="8"
+       height="8"
+       fill="none"
+       stroke="#17202a"
+       stroke-width="2"
+       id="rect50" />
+    <rect
+       x="317"
+       y="603"
+       width="8"
+       height="8"
+       fill="none"
+       stroke="#17202a"
+       stroke-width="2"
+       id="rect51" />
+    <line
+       x1="333"
+       y1="588"
+       x2="351"
+       y2="588"
+       stroke="#17202a"
+       stroke-width="2"
+       id="line51" />
+    <line
+       x1="333"
+       y1="607"
+       x2="351"
+       y2="607"
+       stroke="#17202a"
+       stroke-width="2"
+       id="line52" />
+    <text
+       x="279"
+       y="657"
+       text-anchor="middle"
+       font-size="20"
+       fill="#17202a"
+       id="text53"><tspan
+         x="279"
+         id="tspan52">Machine-readable policies</tspan><tspan
+         x="279"
+         dy="24"
+         id="tspan53">(Policy-as-Code)</tspan></text>
+  </g>
+  <!-- Stage 1 to Stage 2 -->
+  <path
+     d="m 400.2392,394.89941 h 15.64777 v -16 l 17.00845,33 -17.00845,33 v -16 H 400.2392 Z"
+     fill="#237faf"
+     stroke="#115b88"
+     stroke-width="2"
+     id="path53" />
+  <!-- Stage 2 panel -->
+  <rect
+     x="422"
+     y="202"
+     width="296"
+     height="496"
+     rx="10"
+     fill="url(#panelBlue)"
+     stroke="#8eb1c6"
+     stroke-width="2"
+     id="rect53" />
+  <g
+     class="font"
+     id="g72">
+    <text
+       x="570"
+       y="227"
+       text-anchor="middle"
+       font-size="23"
+       font-weight="700"
+       fill="#17202a"
+       id="text54">Multi-step Data pipeline</text>
+    <path
+       d="M433 249 V237 H700 V249"
+       fill="none"
+       stroke="#8eb1c6"
+       stroke-width="3"
+       id="path54" />
+    <path
+       d="M459 423 V300 Q459 280 480 280 H520"
+       fill="none"
+       stroke="#237faf"
+       stroke-width="6"
+       marker-end="url(#arrowBlue)"
+       id="path55" />
+    <path
+       d="M592 280 H651 Q671 280 671 302 V392"
+       fill="none"
+       stroke="#237faf"
+       stroke-width="6"
+       marker-end="url(#arrowBlue)"
+       id="path56" />
+    <path
+       d="M647 423 H595"
+       fill="none"
+       stroke="#237faf"
+       stroke-width="6"
+       marker-end="url(#arrowBlue)"
+       id="path57" />
+    <path
+       d="m 439.68647,423.4497 h 92.59824"
+       fill="none"
+       stroke="#237faf"
+       stroke-width="5.99999"
+       marker-end="url(#arrowBlue-0)"
+       id="path57-8"
+       style="marker-end:url(#arrowBlue-0)" />
+    <path
+       d="M533 560 H480 Q459 560 459 538 V438"
+       fill="none"
+       stroke="#237faf"
+       stroke-width="6"
+       marker-end="url(#arrowBlue)"
+       id="path58" />
+    <path
+       d="M591 560 H648 Q670 560 670 538 V497"
+       fill="none"
+       stroke="#237faf"
+       stroke-width="6"
+       marker-end="url(#arrowBlue)"
+       id="path59" />
+    <rect
+       x="533"
+       y="252"
+       width="59"
+       height="59"
+       rx="9"
+       fill="#5abf82"
+       stroke="#18734f"
+       stroke-width="3"
+       id="rect59" />
+    <ellipse
+       cx="562"
+       cy="266"
+       rx="21"
+       ry="8"
+       fill="#dff5e8"
+       stroke="#18734f"
+       stroke-width="3"
+       id="ellipse59" />
+    <path
+       d="M541 266 V287 C541 297 583 297 583 287 V266"
+       fill="none"
+       stroke="#18734f"
+       stroke-width="3"
+       id="path60" />
+    <circle
+       cx="575"
+       cy="289"
+       r="10"
+       fill="#dcecf3"
+       stroke="#155f93"
+       stroke-width="3"
+       id="circle60" />
+    <path
+       d="M575 278 V284 M575 294 V300 M564 289 H570 M580 289 H586 M568 282 L572 286 M578 292 L582 296 M582 282 L578 286 M572 292 L568 296"
+       stroke="#155f93"
+       stroke-width="2"
+       id="path61" />
+    <text
+       x="563"
+       y="339"
+       text-anchor="middle"
+       font-size="21"
+       fill="#17202a"
+       id="text62"><tspan
+         x="563"
+         id="tspan61">Data masking</tspan><tspan
+         x="563"
+         dy="25"
+         id="tspan62">/ anonymization</tspan></text>
+    <rect
+       x="535"
+       y="393"
+       width="58"
+       height="58"
+       rx="8"
+       fill="#5abf82"
+       stroke="#18734f"
+       stroke-width="3"
+       id="rect62" />
+    <circle
+       cx="550"
+       cy="410"
+       r="5"
+       fill="#dff5e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="circle62" />
+    <circle
+       cx="577"
+       cy="422"
+       r="5"
+       fill="#dff5e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="circle63" />
+    <circle
+       cx="550"
+       cy="438"
+       r="5"
+       fill="#dff5e8"
+       stroke="#155f93"
+       stroke-width="2"
+       id="circle64" />
+    <line
+       x1="555"
+       y1="410"
+       x2="572"
+       y2="422"
+       stroke="#155f93"
+       stroke-width="3"
+       id="line64" />
+    <line
+       x1="555"
+       y1="438"
+       x2="572"
+       y2="422"
+       stroke="#155f93"
+       stroke-width="3"
+       id="line65" />
+    <text
+       x="564"
+       y="477"
+       text-anchor="middle"
+       font-size="21"
+       fill="#17202a"
+       id="text66"><tspan
+         x="564"
+         id="tspan65">Data</tspan><tspan
+         x="564"
+         dy="25"
+         id="tspan66">minimization</tspan></text>
+    <path
+       d="M458 395 L485 405 V434 C485 453 474 466 458 474 C442 466 431 453 431 434 V405 Z"
+       fill="#5abf82"
+       stroke="#18734f"
+       stroke-width="3"
+       id="path66" />
+    <path
+       d="M443 431 L454 442 L475 417"
+       fill="none"
+       stroke="#ffffff"
+       stroke-width="5"
+       id="path67" />
+    <path
+       d="M672 395 L699 405 V434 C699 453 688 466 672 474 C656 466 645 453 645 434 V405 Z"
+       fill="#5abf82"
+       stroke="#18734f"
+       stroke-width="3"
+       id="path68" />
+    <path
+       d="M657 431 L668 442 L689 417"
+       fill="none"
+       stroke="#ffffff"
+       stroke-width="5"
+       id="path69" />
+    <text
+       x="672"
+       y="476"
+       text-anchor="middle"
+       font-size="20"
+       fill="#17202a"
+       id="text70"><tspan
+         x="672"
+         id="tspan69">Access</tspan><tspan
+         x="672"
+         dy="25"
+         id="tspan70">control</tspan></text>
+    <rect
+       x="534"
+       y="532"
+       width="58"
+       height="58"
+       rx="9"
+       fill="#5abf82"
+       stroke="#18734f"
+       stroke-width="3"
+       id="rect70" />
+    <path
+       d="M563 545 L583 552 V573 C583 587 575 596 563 602 C551 596 543 587 543 573 V552 Z"
+       fill="#dff5e8"
+       stroke="#18734f"
+       stroke-width="3"
+       id="path70" />
+    <path
+       d="M552 572 L560 580 L575 561"
+       fill="none"
+       stroke="#5abf82"
+       stroke-width="4"
+       id="path71" />
+    <text
+       x="563"
+       y="617"
+       text-anchor="middle"
+       font-size="21"
+       fill="#17202a"
+       id="text72"><tspan
+         x="563"
+         id="tspan71">Access</tspan><tspan
+         x="563"
+         dy="25"
+         id="tspan72">control</tspan></text>
+  </g>
+  <!-- Stage 2 to Stage 3 -->
+  <path
+     d="M718 404 H741 V388 L766 421 L741 454 V438 H718 Z"
+     fill="#237faf"
+     stroke="#115b88"
+     stroke-width="2"
+     id="path72" />
+  <!-- Stage 3 panel -->
+  <rect
+     x="748"
+     y="202"
+     width="216"
+     height="418"
+     rx="10"
+     fill="#fff4f0"
+     stroke="#b98b80"
+     stroke-width="2"
+     id="rect72" />
+  <g
+     class="font"
+     id="g84">
+    <rect
+       x="756"
+       y="220"
+       width="199"
+       height="84"
+       rx="10"
+       fill="#f8d7d2"
+       stroke="#b98b80"
+       stroke-width="2"
+       id="rect73" />
+    <path
+       d="M790 239 L818 284 H762 Z"
+       fill="#ef4d3f"
+       stroke="#b82020"
+       stroke-width="3"
+       id="path73" />
+    <text
+       x="790"
+       y="276"
+       text-anchor="middle"
+       font-size="35"
+       font-weight="700"
+       fill="#ffffff"
+       id="text73">!</text>
+    <text
+       x="825"
+       y="259"
+       font-size="20"
+       fill="#17202a"
+       id="text74"><tspan
+         x="825"
+         id="tspan73">Data breach</tspan><tspan
+         x="825"
+         dy="25"
+         id="tspan74">alerts</tspan></text>
+    <rect
+       x="756"
+       y="319"
+       width="199"
+       height="84"
+       rx="10"
+       fill="#f8d7d2"
+       stroke="#b98b80"
+       stroke-width="2"
+       id="rect74" />
+    <path
+       d="M790 338 L818 383 H762 Z"
+       fill="#ef4d3f"
+       stroke="#b82020"
+       stroke-width="3"
+       id="path74" />
+    <text
+       x="790"
+       y="375"
+       text-anchor="middle"
+       font-size="35"
+       font-weight="700"
+       fill="#ffffff"
+       id="text75">!</text>
+    <text
+       x="825"
+       y="358"
+       font-size="20"
+       fill="#17202a"
+       id="text76"><tspan
+         x="825"
+         id="tspan75">Abnormal</tspan><tspan
+         x="825"
+         dy="25"
+         id="tspan76">access detect</tspan></text>
+    <text
+       x="774"
+       y="454"
+       font-size="22"
+       font-weight="700"
+       fill="#17202a"
+       id="text77">Response system</text>
+    <rect
+       x="756"
+       y="459"
+       width="199"
+       height="145"
+       rx="9"
+       fill="#ffe9c9"
+       stroke="#c99663"
+       stroke-width="2"
+       id="rect77" />
+    <path
+       d="M799 479 L831 542 H767 Z"
+       fill="#ef4d3f"
+       stroke="#b82020"
+       stroke-width="3"
+       id="path77" />
+    <text
+       x="799"
+       y="527"
+       text-anchor="middle"
+       font-size="42"
+       font-weight="700"
+       fill="#ffffff"
+       id="text78">!</text>
+    <path
+       d="M836 510 H874"
+       fill="none"
+       stroke="#d93636"
+       stroke-width="5"
+       marker-end="url(#arrowRed)"
+       id="path78" />
+    <path
+       d="M887 521 H925 V548 H887 Z"
+       fill="#ef6b3d"
+       stroke="#b82020"
+       stroke-width="3"
+       id="path79" />
+    <path
+       d="M894 521 V503 Q906 488 918 503 V521"
+       fill="none"
+       stroke="#b82020"
+       stroke-width="4"
+       id="path80" />
+    <path
+       d="M905 477 V493 M878 487 L890 500 M933 487 L921 500 M874 522 H858 M936 522 H952"
+       stroke="#b82020"
+       stroke-width="3"
+       id="path81" />
+    <text
+       x="800"
+       y="563"
+       text-anchor="middle"
+       font-size="19"
+       fill="#17202a"
+       id="text82"><tspan
+         x="800"
+         id="tspan81">Alerting</tspan><tspan
+         x="800"
+         dy="23"
+         id="tspan82">system</tspan></text>
+    <text
+       x="1042.2998"
+       y="694.02502"
+       text-anchor="middle"
+       font-size="19px"
+       fill="#17202a"
+       id="text82-9"><tspan
+         x="1042.2998"
+         id="tspan81-4">Alerting</tspan><tspan
+         x="1042.2998"
+         dy="23"
+         id="tspan82-8">system</tspan></text>
+    <text
+       x="906"
+       y="563"
+       text-anchor="middle"
+       font-size="19"
+       fill="#17202a"
+       id="text84"><tspan
+         x="906"
+         id="tspan83">Incident</tspan><tspan
+         x="906"
+         dy="23"
+         id="tspan84">response</tspan></text>
+    <text
+       x="906"
+       y="563"
+       text-anchor="middle"
+       font-size="19"
+       fill="#17202a"
+       id="text39"><tspan
+         x="906"
+         id="tspan38">Incident</tspan><tspan
+         x="906"
+         dy="23"
+         id="tspan39">response</tspan></text>
+    <text
+       x="1054.7675"
+       y="689.5899"
+       text-anchor="middle"
+       font-size="19px"
+       fill="#17202a"
+       id="text39-2"><tspan
+         x="1054.7675"
+         id="tspan38-4">Incident</tspan><tspan
+         x="1054.7675"
+         dy="23"
+         id="tspan39-5">response</tspan></text>
+  </g>
+  <!-- Stage 3 to Stage 4 -->
+  <path
+     d="M964 404 H987 V388 L1012 421 L987 454 V438 H964 Z"
+     fill="#237faf"
+     stroke="#115b88"
+     stroke-width="2"
+     id="path84" />
+  <!-- Stage 4 panel -->
+  <rect
+     x="994"
+     y="202"
+     width="157"
+     height="418"
+     rx="10"
+     fill="url(#panelBlue)"
+     stroke="#8eb1c6"
+     stroke-width="2"
+     id="rect84" />
+  <g
+     class="font"
+     id="g104">
+    <text
+       x="1073"
+       y="226"
+       text-anchor="middle"
+       font-size="23"
+       font-weight="700"
+       fill="#17202a"
+       id="text85">Metrics</text>
+    <rect
+       x="1014"
+       y="239"
+       width="118"
+       height="75"
+       fill="#eef7fc"
+       stroke="#17202a"
+       stroke-width="2"
+       id="rect85" />
+    <rect
+       x="1014"
+       y="239"
+       width="118"
+       height="12"
+       fill="#dcecf3"
+       stroke="#17202a"
+       stroke-width="2"
+       id="rect86" />
+    <circle
+       cx="1023"
+       cy="245"
+       r="2.5"
+       fill="#d93636"
+       id="circle86" />
+    <circle
+       cx="1031"
+       cy="245"
+       r="2.5"
+       fill="#f2ba45"
+       id="circle87" />
+    <circle
+       cx="1039"
+       cy="245"
+       r="2.5"
+       fill="#2ca56d"
+       id="circle88" />
+    <circle
+       cx="1034"
+       cy="272"
+       r="13"
+       fill="#ffffff"
+       stroke="#8eb1c6"
+       stroke-width="2"
+       id="circle89" />
+    <path
+       d="M1034 272 L1034 259 A13 13 0 0 1 1047 272 Z"
+       fill="#2ca56d"
+       id="path89" />
+    <path
+       d="M1034 272 L1022 277 A13 13 0 0 0 1047 272 Z"
+       fill="#d93636"
+       id="path90" />
+    <rect
+       x="1062"
+       y="258"
+       width="28"
+       height="20"
+       fill="#dcecf3"
+       stroke="#8eb1c6"
+       stroke-width="2"
+       id="rect90" />
+    <path
+       d="M1066 270 L1074 265 L1081 269 L1087 262"
+       fill="none"
+       stroke="#2ca56d"
+       stroke-width="3"
+       id="path91" />
+    <rect
+       x="1097"
+       y="258"
+       width="28"
+       height="20"
+       fill="#dcecf3"
+       stroke="#8eb1c6"
+       stroke-width="2"
+       id="rect91" />
+    <path
+       d="M1101 270 L1108 266 L1115 269 L1121 264"
+       fill="none"
+       stroke="#2ca56d"
+       stroke-width="3"
+       id="path92" />
+    <text
+       x="1073"
+       y="339"
+       text-anchor="middle"
+       font-size="19"
+       fill="#17202a"
+       id="text93"><tspan
+         x="1073"
+         id="tspan92">Compliance</tspan><tspan
+         x="1073"
+         dy="23"
+         id="tspan93">coverage</tspan></text>
+    <rect
+       x="1017"
+       y="383"
+       width="112"
+       height="75"
+       fill="#eef7fc"
+       stroke="#17202a"
+       stroke-width="2"
+       id="rect93" />
+    <rect
+       x="1017"
+       y="383"
+       width="112"
+       height="12"
+       fill="#dcecf3"
+       stroke="#17202a"
+       stroke-width="2"
+       id="rect94" />
+    <line
+       x1="1027"
+       y1="408"
+       x2="1066"
+       y2="408"
+       stroke="#2ca56d"
+       stroke-width="3"
+       id="line94" />
+    <line
+       x1="1027"
+       y1="418"
+       x2="1073"
+       y2="418"
+       stroke="#2ca56d"
+       stroke-width="3"
+       id="line95" />
+    <line
+       x1="1027"
+       y1="428"
+       x2="1058"
+       y2="428"
+       stroke="#2ca56d"
+       stroke-width="3"
+       id="line96" />
+    <circle
+       cx="1094"
+       cy="413"
+       r="14"
+       fill="#ffffff"
+       stroke="#8eb1c6"
+       stroke-width="2"
+       id="circle96" />
+    <path
+       d="M1094 413 L1094 399 A14 14 0 1 1 1081 418 Z"
+       fill="#2ca56d"
+       id="path96" />
+    <path
+       d="M1094 413 L1081 418 A14 14 0 0 1 1094 399 Z"
+       fill="#d93636"
+       id="path97" />
+    <rect
+       x="1080"
+       y="432"
+       width="8"
+       height="15"
+       fill="#2ca56d"
+       id="rect97" />
+    <rect
+       x="1093"
+       y="424"
+       width="8"
+       height="23"
+       fill="#2ca56d"
+       id="rect98" />
+    <rect
+       x="1106"
+       y="414"
+       width="8"
+       height="33"
+       fill="#2ca56d"
+       id="rect99" />
+    <text
+       x="1073"
+       y="484"
+       text-anchor="middle"
+       font-size="20"
+       fill="#17202a"
+       id="text99">Risk score</text>
+    <rect
+       x="1017"
+       y="507"
+       width="112"
+       height="75"
+       fill="#eef7fc"
+       stroke="#17202a"
+       stroke-width="2"
+       id="rect100" />
+    <rect
+       x="1017"
+       y="507"
+       width="112"
+       height="12"
+       fill="#dcecf3"
+       stroke="#17202a"
+       stroke-width="2"
+       id="rect101" />
+    <line
+       x1="1028"
+       y1="531"
+       x2="1044"
+       y2="531"
+       stroke="#237faf"
+       stroke-width="3"
+       id="line101" />
+    <line
+       x1="1028"
+       y1="545"
+       x2="1044"
+       y2="545"
+       stroke="#237faf"
+       stroke-width="3"
+       id="line102" />
+    <rect
+       x="1052"
+       y="556"
+       width="7"
+       height="16"
+       fill="#2ca56d"
+       id="rect102" />
+    <rect
+       x="1063"
+       y="548"
+       width="7"
+       height="24"
+       fill="#2ca56d"
+       id="rect103" />
+    <rect
+       x="1074"
+       y="538"
+       width="7"
+       height="34"
+       fill="#2ca56d"
+       id="rect104" />
+    <path
+       d="M1092 565 L1102 556 L1111 562 L1122 548"
+       fill="none"
+       stroke="#2ca56d"
+       stroke-width="3"
+       id="path104" />
+    <text
+       x="1073"
+       y="608"
+       text-anchor="middle"
+       font-size="20"
+       fill="#17202a"
+       id="text104">Bias detection</text>
+  </g>
+  <!-- Stage 4 to Stage 5 -->
+  <path
+     d="M1151 404 H1175 V388 L1200 421 L1175 454 V438 H1151 Z"
+     fill="#237faf"
+     stroke="#115b88"
+     stroke-width="2"
+     id="path105" />
+  <!-- Stage 5 panel -->
+  <rect
+     x="1188"
+     y="202"
+     width="202"
+     height="496"
+     rx="10"
+     fill="#eaf8ef"
+     stroke="#80bd9a"
+     stroke-width="2"
+     id="rect105" />
+  <g
+     class="font"
+     id="g118">
+    <text
+       x="1231.6455"
+       y="238.22987"
+       text-anchor="middle"
+       font-size="21.0211px"
+       font-weight="700"
+       fill="#17202a"
+       id="text108"
+       transform="scale(1.0465674,0.95550463)"
+       style="stroke-width:1"><tspan
+         x="1231.6455"
+         id="tspan105"
+         style="stroke-width:1">Automated</tspan><tspan
+         x="1231.6455"
+         dy="23.887615"
+         id="tspan106"
+         style="stroke-width:1">validation of the</tspan><tspan
+         x="1231.6455"
+         dy="23.887615"
+         id="tspan107"
+         style="stroke-width:1">pipeline's</tspan><tspan
+         x="1231.6455"
+         dy="23.887615"
+         id="tspan108"
+         style="stroke-width:1">processes</tspan></text>
+    <rect
+       x="1206"
+       y="310"
+       width="178"
+       height="66"
+       rx="8"
+       fill="#237faf"
+       stroke="#115b88"
+       stroke-width="3"
+       id="rect108" />
+    <path
+       d="m 1240.7333,314.72632 21,8 v 19 c 0,13 -8,22 -21,28 -13,-6 -21,-15 -21,-28 v -19 z"
+       fill="none"
+       stroke="#e8f3f8"
+       stroke-width="3"
+       id="path108" />
+    <path
+       d="m 1228.7333,341.72632 8,8 19,-21"
+       fill="none"
+       stroke="#e8f3f8"
+       stroke-width="4"
+       id="path109" />
+    <text
+       x="1323.6842"
+       y="339.02457"
+       text-anchor="middle"
+       font-size="20px"
+       fill="#ffffff"
+       id="text110"><tspan
+         x="1323.6842"
+         id="tspan109">Policy</tspan><tspan
+         x="1323.6842"
+         dy="23"
+         id="tspan110">enforcement</tspan></text>
+    <rect
+       x="1206"
+       y="389"
+       width="178"
+       height="66"
+       rx="8"
+       fill="#237faf"
+       stroke="#115b88"
+       stroke-width="3"
+       id="rect110" />
+    <path
+       d="M1218 404 H1249 L1260 415 V442 H1218 Z"
+       fill="none"
+       stroke="#e8f3f8"
+       stroke-width="3"
+       id="path110" />
+    <path
+       d="M1249 404 V415 H1260"
+       fill="none"
+       stroke="#e8f3f8"
+       stroke-width="3"
+       id="path111" />
+    <line
+       x1="1227"
+       y1="421"
+       x2="1248"
+       y2="421"
+       stroke="#e8f3f8"
+       stroke-width="3"
+       id="line111" />
+    <line
+       x1="1227"
+       y1="433"
+       x2="1243"
+       y2="433"
+       stroke="#e8f3f8"
+       stroke-width="3"
+       id="line112" />
+    <path
+       d="m 1245.7263,433 8,8 13,-17"
+       fill="none"
+       stroke="#e8f3f8"
+       stroke-width="4"
+       id="path112" />
+    <text
+       x="1391.7673"
+       y="397.47015"
+       text-anchor="middle"
+       font-size="19.0155px"
+       fill="#ffffff"
+       id="text113"
+       transform="scale(0.95077371,1.051775)"
+       style="stroke-width:0.999999"><tspan
+         x="1391.7673"
+         id="tspan112"
+         style="stroke-width:0.999999">Log</tspan><tspan
+         x="1391.7673"
+         dy="21.867796"
+         id="tspan113"
+         style="stroke-width:0.999999">completeness</tspan></text>
+    <rect
+       x="1206"
+       y="468"
+       width="178"
+       height="66"
+       rx="8"
+       fill="#237faf"
+       stroke="#115b88"
+       stroke-width="3"
+       id="rect113" />
+    <path
+       d="m 1242.5719,472.34737 21,8 v 20 c 0,14 -8,23 -21,30 -13,-7 -21,-16 -21,-30 v -20 z"
+       fill="#dcecf3"
+       stroke="#e8f3f8"
+       stroke-width="2"
+       id="path113" />
+    <path
+       d="m 1230.5719,498.34737 8,8 18,-20"
+       fill="none"
+       stroke="#237faf"
+       stroke-width="4"
+       id="path114" />
+    <text
+       x="1316.7894"
+       y="497.42807"
+       text-anchor="middle"
+       font-size="20px"
+       fill="#ffffff"
+       id="text115"><tspan
+         x="1316.7894"
+         id="tspan114">Risk</tspan><tspan
+         x="1316.7894"
+         dy="23"
+         id="tspan115">closure</tspan></text>
+    <path
+       d="M1285 548 H1303 V587 H1322 L1294 615 L1266 587 H1285 Z"
+       fill="#2ca56d"
+       stroke="#18734f"
+       stroke-width="2"
+       id="path115" />
+    <rect
+       x="1199"
+       y="600"
+       width="185"
+       height="78"
+       rx="8"
+       fill="#5abf82"
+       stroke="#18734f"
+       stroke-width="3"
+       id="rect115" />
+    <text
+       x="1292.9193"
+       y="621.48419"
+       text-anchor="middle"
+       font-size="20px"
+       font-weight="700"
+       fill="#17202a"
+       id="text118"><tspan
+         x="1292.9193"
+         id="tspan116">Optimization</tspan><tspan
+         x="1292.9193"
+         dy="24"
+         id="tspan117">recommendations</tspan><tspan
+         x="1292.9193"
+         dy="24"
+         id="tspan118">for entire system</tspan></text>
+  </g>
+  <!-- Bottom explanation -->
+  <rect
+     x="747"
+     y="628"
+     width="405"
+     height="98"
+     rx="12"
+     fill="#f8fafc"
+     stroke="#8f9aa3"
+     stroke-width="2"
+     id="rect118" />
+  <text
+     x="1078.8729"
+     y="704.13373"
+     text-anchor="middle"
+     font-size="19px"
+     fill="#17202a"
+     id="text39-1">and evaluation.</text>
+  <text
+     x="760.58826"
+     y="657.72925"
+     class="font"
+     font-size="20px"
+     fill="#17202a"
+     id="text122"><tspan
+       sodipodi:role="line"
+       id="tspan29"
+       x="760.58826"
+       y="657.72925"><tspan
+         x="760.58826"
+         id="tspan119">Compliance is not a single action.</tspan><tspan
+         x="760.58826"
+         dy="23"
+         id="tspan120">It is a continuous pipeline:</tspan><tspan
+         x="760.58826"
+         dy="23"
+         id="tspan121">policy, execution, response</tspan><tspan
+         x="760.58826"
+         id="tspan122"></tspan></tspan><tspan
+       sodipodi:role="line"
+       id="tspan32"
+       x="760.58826"
+       y="682.72925"><tspan
+         x="760.58826"
+         id="tspan33"></tspan></tspan><tspan
+       sodipodi:role="line"
+       x="760.58826"
+       y="707.72925"
+       id="tspan34"><tspan
+         x="760.58826"
+         id="tspan35"></tspan></tspan><tspan
+       sodipodi:role="line"
+       x="760.58826"
+       y="707.72925"
+       id="tspan36"><tspan
+         x="760.58826"
+         id="tspan37" /></tspan></text>
+</svg>

@@ -1,5 +1,7 @@
 # 第24章：DataOps 飞轮与团队组织
 
+<div class="chapter-authors">杜文卓（Wenzhuo Du）</div>
+
 ---
 
 ## 摘要
@@ -110,7 +112,7 @@ LLM 数据工程引入了传统团队从未遇到过的几类新需求，这些�
 
 混合模式下，数据 Owner 的职责尤为关键。数据 Owner 不只是审批人，也不是单纯的项目经理，而是连接数据战略、模型目标和组织资源的枢纽。其工作包括判断哪些数据值得长期沉淀，哪些需求应作为一次性实验处理，哪些质量问题需要升级为平台规则，哪些共享资产应进入企业级目录。一个缺位的数据 Owner 会让团队陷入事务驱动；一个过度集权的数据 Owner 又会压制角色自主性。因此，DataOps 需要通过 RACI、例会和指标体系为数据 Owner 提供结构化支撑。LLM 数据团队从"单人脚本"到"平台化 DataOps"的四阶段演进路径如图 24-1 所示。
 
-![图24-1：LLM数据团队组织演进路径](../../images/part8/图24_1zh.png)
+![图24-1：LLM数据团队组织演进路径](../../images/part8/图24_1.svg)
 
 *图24-1：LLM 数据团队从"单人脚本"到"平台化 DataOps"的四阶段演进路径*
 
@@ -280,7 +282,7 @@ RACI 矩阵在落地时容易出现两个偏差。第一个偏差是把 RACI 当
 
 DataOps 飞轮是一个描述数据团队持续改进循环的概念模型。DataOps Manifesto 作为在线宣言，强调客户协作、快速反馈、可重复流程、团队协作和降低英雄主义，这些原则共同支撑飞轮式持续改进（DataOps Manifesto, accessed 2026）。它的核心思想是：通过固定的运营节奏，把数据需求、数据生产、质量评估和迭代反馈串成一个自我增强的循环——每一圈循环都比上一圈更高效、更高质量。
 
-![图24-2：DataOps团队组织全景图](../../images/part8/图24_2zh.png)
+![图24-2：DataOps团队组织全景图](../../images/part8/图24_2.svg)
 
 *图24-2：LLM 数据团队 DataOps 全景图——角色、接口、飞轮与治理的集成视图*
 
@@ -315,7 +317,7 @@ DataOps 飞轮是一个描述数据团队持续改进循环的概念模型。Dat
 
 飞轮能否持续运转，取决于其反馈是否足够短、足够准。反馈过长，数据团队无法及时判断本周工作是否有效；反馈过粗，团队只能知道模型整体变好或变差，却不知道该如何调整数据。理想状态下，每一轮迭代都应形成三个层次的反馈：任务层反馈说明交付是否按时完成，质量层反馈说明数据是否达到标准，效果层反馈说明数据是否改善模型表现。三类反馈相互补充，才能避免团队只追求交付速度而忽视数据价值。
 
-![图24-3：DataOps飞轮四池协同示意图](../../images/part8/图24_3zh.png)
+![图24-3：DataOps飞轮四池协同示意图](../../images/part8/图24_3.svg)
 
 *图24-3：DataOps 飞轮运转机制——需求池、数据池、实验池、问题池的协同循环*
 
@@ -831,7 +833,7 @@ Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for M
 
 DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications.
 
-DataOps Manifesto (accessed 2026) The DataOps Manifesto: 18 DataOps Principles. Online manifesto. Available at: https://dataopsmanifesto.org/en/
+DataOps Manifesto (accessed 2026) The DataOps Manifesto: 18 DataOps Principles. Online manifesto. Available at: https://dataopsmanifesto.org/en/.
 
 Dehghani Z (2022) Data Mesh: Delivering Data-Driven Value at Scale. O'Reilly Media.
 

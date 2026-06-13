@@ -1,5 +1,7 @@
 # 第31章：数据工程 Agent 的架构与任务边界
 
+<div class="chapter-authors">汪志立（ZhiLi Wang）</div>
+
 ---
 
 ## 摘要

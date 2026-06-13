@@ -1,5 +1,7 @@
 # Chapter 24: The DataOps Flywheel and Team Organization
 
+<div class="chapter-authors">Wenzhuo Du</div>
+
 ---
 
 ## Abstract
@@ -110,7 +112,7 @@ Organizational design must also handle the tension between centralization and em
 
 In this hybrid model, the role of Data Owner is especially critical. The Data Owner is not merely an approver or a project manager, but the nexus connecting data strategy, model objectives, and organizational resources. Their work includes judging which data merits long-term preservation, which requirements should be treated as one-off experiments, which quality problems should be elevated to platform rules, and which shared assets should enter an enterprise-level catalog. An absent Data Owner causes the team to become reactive; an overly centralized Data Owner suppresses role autonomy. DataOps therefore needs to provide structural support for Data Owners through RACI matrices, regular meetings, and metric systems. Figure 24-1 illustrates the four-stage evolution path of LLM data teams from "single-person scripts" to "platform-driven DataOps."
 
-![Figure 24-1: LLM Data Team Organizational Evolution Path](../../images/part8/图24_1zh.png)
+![Figure 24-1: LLM Data Team Organizational Evolution Path](../../images/part8/图24_1.svg)
 
 *Figure 24-1: The four-stage evolution path of LLM data teams from "single-person scripts" to "platform-driven DataOps"*
 
@@ -280,7 +282,7 @@ Escalation paths should also include post-mortem requirements. Any item that tri
 
 The DataOps flywheel is a conceptual model describing the continuous improvement loop of a data team. The DataOps Manifesto—an online statement of principles—emphasizes customer collaboration, rapid feedback, repeatable processes, team collaboration, and the elimination of heroism; together, these principles sustain flywheel-style continuous improvement (DataOps Manifesto, accessed 2026). Its core idea is: through a fixed operational cadence, data requirements, data production, quality evaluation, and iterative feedback are chained into a self-reinforcing loop—each revolution of the loop more efficient and higher quality than the previous one.
 
-![Figure 24-2: DataOps Team Organization Overview](../../images/part8/图24_2zh.png)
+![Figure 24-2: DataOps Team Organization Overview](../../images/part8/图24_2.svg)
 
 *Figure 24-2: LLM Data Team DataOps Overview—An Integrated View of Roles, Interfaces, Flywheel, and Governance*
 
@@ -313,7 +315,7 @@ Flywheel design should therefore emphasize traceability relationships between ob
 
 Whether the flywheel can run continuously depends on whether feedback is sufficiently short and precise. If feedback takes too long, the data team cannot timely judge whether this week's work was effective; if feedback is too coarse, the team knows only that the model improved or degraded overall but has no idea how to adjust the data. Ideally, each iteration should produce feedback at three levels: task-level feedback indicating whether deliverables were completed on time; quality-level feedback indicating whether the data met standards; and outcome-level feedback indicating whether the data improved model performance. Only when all three types of feedback complement each other can the team avoid pursuing delivery speed at the expense of data value.
 
-![Figure 24-3: DataOps Flywheel Four-Pool Coordination Diagram](../../images/part8/图24_3zh.png)
+![Figure 24-3: DataOps Flywheel Four-Pool Coordination Diagram](../../images/part8/图24_3.svg)
 
 *Figure 24-3: DataOps Flywheel Operating Mechanism—The Coordinated Cycle of Demand Pool, Data Pool, Experiment Pool, and Issue Pool*
 
@@ -829,7 +831,7 @@ Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for M
 
 DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications.
 
-DataOps Manifesto (accessed 2026) The DataOps Manifesto: 18 DataOps Principles. Online manifesto. Available at: https://dataopsmanifesto.org/en/
+DataOps Manifesto (accessed 2026) The DataOps Manifesto: 18 DataOps Principles. Online manifesto. Available at: https://dataopsmanifesto.org/en/.
 
 Dehghani Z (2022) Data Mesh: Delivering Data-Driven Value at Scale. O'Reilly Media.
 

@@ -1,5 +1,7 @@
 # 附录C：成本估算与资源模板
 
+<div class="chapter-authors">徐鑫（Xin Xu）</div>
+
 ## C.1 附录定位
 
 数据工程项目最容易被低估的，不是技术复杂度，而是成本结构。很多团队在立项时只问“训练要几张卡”，却没有系统回答以下问题：样本采集与清洗谁来做，标注复核要花多少人天，评测与排行榜维护需要多少长期预算，多模态文件存储和回源流量要花多少钱，教学镜像是否需要固定一整学期的资源。大规模训练的资源消耗和碳排放已经被多项研究专门讨论，说明训练预算不能只被当成临时工程开销处理（Patterson et al. 2021）。
@@ -319,6 +321,6 @@ Narayanan D, Shoeybi M, Casper J, LeGresley P, Patwary M, Catanzaro B (2021) Eff
 
 Kwon W, Li Z, Zhuang S, Sheng Y, Zheng L, Yu C H, Gonzalez J E, Zhang H, Stoica I (2023) Efficient Memory Management for Large Language Model Serving with PagedAttention. In: Proceedings of the ACM SIGOPS 29th Symposium on Operating Systems Principles, pp 611-626.
 
-Kubernetes Documentation. Available at: https://kubernetes.io/docs/
+Kubernetes Authors (2026) Kubernetes Documentation. Available at: https://kubernetes.io/docs/.
 
-vLLM Documentation. Available at: https://docs.vllm.ai/
+vLLM Project (2026) vLLM Documentation. Available at: https://docs.vllm.ai/.

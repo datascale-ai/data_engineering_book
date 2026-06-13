@@ -1,5 +1,7 @@
 # 附录G：MindSpore 简介与致谢
 
+<div class="chapter-authors">徐鑫（Xin Xu）</div>
+
 ## G.1 附录定位
 
 本附录用于说明 MindSpore（昇思）在本书部分实践内容中的背景位置。它不是框架教程，也不替代 MindSpore 官方文档、课程实验说明或随书代码仓库中的具体安装与运行指南。如需查阅 API、版本兼容性、硬件适配、算子支持、分布式训练配置或部署细节，应以官方文档和项目仓库中的说明为准（MindSpore Contributors 2026a; MindSpore Contributors 2026b）。

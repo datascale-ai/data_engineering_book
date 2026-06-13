@@ -1,5 +1,7 @@
 # Appendix D: From Paper to Implementation Guide
 
+<div class="chapter-authors">ZhiLi Wang</div>
+
 ## D.1 Purpose of This Appendix
 
 This appendix addresses the middle ground between "turning a paper into engineering," "turning engineering into reproducible material," and "turning material into deliverable documentation." It is not primarily concerned with whether a paper is elegant. It asks a more practical question: **how can a paper, a method, or an experimental prototype be translated into an implementation path, verification path, and release path that a team can execute?**

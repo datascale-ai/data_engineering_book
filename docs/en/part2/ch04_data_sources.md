@@ -1,5 +1,7 @@
 # Chapter 4: Data Sources, Acquisition, and Copyright
 
+<div class="chapter-authors">Ke Wang</div>
+
 ## Abstract
 
 This chapter examines source governance for text pre-training data. It answers three practical questions: which data may be collected, how it should be collected, and how the team can later prove the origin and license boundary of each batch. We first explain why source selection determines model capability, copyright exposure, and the ceiling of downstream cleaning. We then establish a source taxonomy covering open web pages, forums and Q&A, encyclopedic knowledge, code, academic papers, books, enterprise data, and user feedback. The chapter then turns to production ingestion: distributed crawling, heterogeneous parsing, metadata provenance, resumable jobs, and reliability. Finally, it introduces whitelist, graylist, blacklist, and license-classification mechanisms, followed by two anonymized composite cases on Common Crawl processing and internal financial-document governance. After this chapter, readers should be able to build an auditable source inventory, license-decision framework, and metadata standard before large-scale crawling or internal-data ingestion begins.
@@ -397,6 +399,8 @@ Barbaresi A (2021) Trafilatura: A Web Scraping Library and Command-Line Tool for
 Blecher L, Cucurull G, Scialom T, Stojnic R (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.
 
 Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
+
+Joulin A, Grave E, Bojanowski P, Douze M, Jegou H, Mikolov T (2017) FastText.zip: Compressing Text Classification Models. arXiv preprint arXiv:1612.03651.
 
 Lopez P (2009) GROBID: Combining Automatic Bibliographic Data Recognition and Term Extraction for Scholarship Publications. In: Proceedings of the 13th European Conference on Digital Libraries, pp 473-474.
 

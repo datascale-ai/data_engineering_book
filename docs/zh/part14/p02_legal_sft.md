@@ -1,5 +1,7 @@
 # 项目二：垂直领域专家 SFT（法律）
 
+<div class="chapter-authors">徐鑫（Xin Xu）</div>
+
 
 ## 摘要
 P02 聚焦把法规文本、制度说明和法律任务需求组织成一条可训练、可质检、可扩展的垂直领域 SFT 数据生产线。章节重点不在单次问答生成，而在从种子知识到监督资产的稳定转化过程。
@@ -1213,7 +1215,7 @@ smoke test 的价值不在于评估模型性能，而在于尽早发现训练链
 ## 参考文献
 
 1. Raffel, C., Shazeer, N., Roberts, A., Lee, K., Narang, S., Matena, M., Zhou, Y., Li, W., & Liu, P. J. (2020). Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. JMLR, 21(140), 1-67.
-2. Hugging Face. (2026). Datasets Documentation. https://huggingface.co/docs/datasets/
-3. Ray Project. (2026). Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html
-4. MLflow Authors. (2026). MLflow Documentation. https://mlflow.org/docs/latest/
-5. Great Expectations Contributors. (2026). Great Expectations Documentation. https://docs.greatexpectations.io/
+2. Hugging Face. (2026). Datasets Documentation. https://huggingface.co/docs/datasets/.
+3. Ray Project. (2026). Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html.
+4. MLflow Authors. (2026). MLflow Documentation. https://mlflow.org/docs/latest/.
+5. Great Expectations Contributors. (2026). Great Expectations Documentation. https://docs.greatexpectations.io/.

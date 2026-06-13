@@ -30,9 +30,3 @@ Chapter 39 combines multi-chart infographics and MedImage-ToolVQA around visual 
 Chapter 40 combines VoiceStyleControl and Latent-Switch-69K around voice-style control, interaction state, long-CoT compression, and supervision masks. It leads naturally into Part XIII's post-training, reasoning models, RL data engineering, and the R1 reasoning flywheel case study in Part XIV.
 
 Chapters 41 through 43 shift to industry-scale data engineering datasets and open data assets. FineWeb, Dolma, and LAION-5B are read as production-facing references for source transparency, processing manifests, license boundaries, filtering protocols, and public release forms, while DataComp is introduced as a protocol for comparing image-text filtering strategies.
-
-## Unified Review Criteria
-
-When reading this part, priority should be given to examining each case study's data definition, schema, construction pipeline, quality control, evaluation protocol, chart provenance, references, and reproduction boundaries.
-
-For cases involving invoices, medical images, voice identity, and reasoning traces, data authorization, privacy protection, misuse risks, and human review mechanisms must also be documented. Only when these boundaries are clearly articulated does a specialized dataset meet the conditions for inclusion in a published manuscript, course experiment, or public reproduction effort.

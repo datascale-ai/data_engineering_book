@@ -1,5 +1,7 @@
 # 项目十四：视频生成数据集：从视频源到可用于 T2V 训练的数据流水线
 
+<div class="chapter-authors">张然（Ran Zhang）</div>
+
 ## 摘要
 
 本项目围绕“视频生成数据集：从视频源到可用于 T2V 训练的数据流水线”构建可复现的数据工程案例，重点说明业务目标、数据边界、架构决策、核心实现、验收指标与风险控制。章节将安装命令和脚本细节收敛到工程复盘视角，突出样本 schema、数据流、失败模式和可交付物之间的关系，帮助读者把前文方法转化为可审计、可扩展的项目资产。
@@ -78,7 +80,7 @@
 
 图 P14-1 给出了本项目的英文标注架构图。图中上半部分是数据阶段，下半部分是工程控制。这样的画法刻意把“生成 caption”放在后段，而不是把它当作唯一核心：视频生成数据集的质量取决于来源、切分、运动、美学、caption、镜头语言和发布门禁的整体配合。
 
-![P14 Video Generation Data Pipeline](../../images/part14/p14_video_generation_pipeline_en.png)
+![P14 Video Generation Data Pipeline](../../images/part14/p14_video_generation_pipeline_en.svg)
 
 *图 P14-1：视频生成数据流水线英文架构图*
 

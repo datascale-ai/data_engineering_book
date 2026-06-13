@@ -1,5 +1,7 @@
 # Chapter 18: Chain-of-Thought and Reasoning Data Engineering
 
+<div class="chapter-authors">Ran Zhang</div>
+
 ## Chapter Overview
 
 As large language models evolve from "answering questions" toward "reasoning, invoking tools, and engaging in multi-turn collaboration," the priorities of data engineering are shifting accordingly. Chain-of-Thought (CoT) and the ReAct framework introduced intermediate reasoning steps and interleaved reasoning–action trajectories into the LLM task-solving paradigm (Yao et al. 2023b). In the past, much data work centered on outcomes—whether the model produced a correct answer. But in reasoning models and agent systems, outcome supervision alone is no longer sufficient to support real-world tasks. Whether the model can think step-by-step, correctly invoke tools, and maintain consistent state while leveraging memory across multi-turn interactions has become the new critical question.
@@ -193,7 +195,7 @@ From an engineering standpoint, the degree of structure in reasoning trajectorie
 
 
 
-![Figure 18-1: Reasoning Data Construction and Verification Workflow](../../images/part6/图18_1.png)
+![Figure 18-1: Reasoning Data Construction and Verification Workflow](../../images/part6/图18_1.svg)
 
 *Figure 18-1: Reasoning Data Construction and Verification Workflow*
 
@@ -321,7 +323,7 @@ Process quality scores build on step-level labels to provide a more comprehensiv
 In many pipelines, whole-problem correctness naturally becomes the most salient scoring metric—it is the simplest, most intuitive, and most easily aligned with benchmarks. But if process scoring still primarily depends on the final result, "process supervision" can easily regress into a variant of outcome supervision; Lightman et al.'s experiments are organized precisely around the difference between outcome supervision and process supervision (Lightman et al. 2024). True process scoring should proceed as much as possible from the intermediate structure itself, avoiding using the final answer as the sole point of reference.
 
 
-![Figure 18-2: Illustration of Process Supervision Labels](../../images/part6/图18_2.png)
+![Figure 18-2: Illustration of Process Supervision Labels](../../images/part6/图18_2.svg)
 *Figure 18-2: Illustration of Process Supervision Labels*
 
 For example, a sample may ultimately produce an incorrect answer, but if ninety percent of the preceding steps are correct and the final step's error is clearly correctable, it still has substantial value for training local correction capability and process robustness. Conversely, a sample may ultimately produce the correct answer, but if it is filled with jumps, pseudo-explanations, and implicit hallucinations, it may not deserve a high score despite passing on the result. In other words, process scoring must be willing to assign low scores to samples that are "correct but process-poor," and must also be willing to distinguish "wrong but process-mainly-good" samples from ordinary failures. Only in this way does the scoring system avoid reinforcing old result-oriented habits. Systematic handling of typical manifestations, common causes, and recommended corrective actions for different error types can be done with reference to Table 18-2.

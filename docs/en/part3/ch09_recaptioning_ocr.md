@@ -1,5 +1,7 @@
 # Chapter 9: Recaptioning and Document Understanding
 
+<div class="chapter-authors">Ke Wang</div>
+
 ## Abstract
 
 This chapter explains why image-text data still needs further recaptioning and document structuring after basic cleaning. It first analyzes weak, missing, and overly generic original web captions, then explains the roles of brief captions, dense captions, grounded captions, and multimodal dialogue at different training stages. The chapter then introduces an industrial recaptioning pipeline, including open-source VLM batch generation, multi-model mutual review, human golden samples, and structured bounding-box injection, along with cost, throughput, and risk-estimation perspectives. The document-understanding section focuses on OCR, layout analysis, table parsing, formula restoration, and coordinate alignment, showing why high-density documents cannot be solved by high-resolution image input alone. Finally, the chapter establishes a quality-evaluation matrix for recaptioning and OCR data and uses an anonymized composite case to demonstrate the value of reconstructing financial-document data. Readers should be able to design recaptioning and OCR-enhanced data pipelines for both natural images and long documents.

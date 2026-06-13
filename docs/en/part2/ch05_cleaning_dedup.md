@@ -1,5 +1,7 @@
 # Chapter 5: Cleaning, Deduplication, and Decontamination
 
+<div class="chapter-authors">Ke Wang</div>
+
 ## Abstract
 
 This chapter discusses the critical steps for transforming raw corpora into training-ready text pretraining data, covering rule-based filtering, model quality scoring, text normalization, exact deduplication, fuzzy deduplication, semantic deduplication, PII redaction, and benchmark decontamination. The chapter begins by explaining how repetition, low information density, privacy leakage, and evaluation contamination are amplified during training, then presents a cleaning framework that combines rules, models, and manual spot-checks. The deduplication section extends from SHA-256 exact matching to MinHash LSH and embedding similarity, emphasizing the dual risks of under- and over-deduplication. The privacy and decontamination sections address the detection of structured PII, named entities, and secrets such as API keys, as well as N-gram fingerprint isolation of evaluation sets. Finally, the chapter illustrates practical deployment paths for cleaning pipelines through anonymized composite case studies and three-tier team configurations. Readers should be able to design text cleaning schemes with traceability, spot-check capability, and iterative refinement, tailored to their data scale, team resources, and target model capabilities.

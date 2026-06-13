@@ -1,5 +1,7 @@
 # Chapter 11: Cross-Modal Alignment and Fusion
 
+<div class="chapter-authors">Ke Wang</div>
+
 ## Abstract
 
 As the closing chapter of Part III, this chapter discusses how to build cross-modal alignment and fusion training samples after image, text, audio, and video have each gone through single-modality cleaning. It first explains why independent cleaning does not automatically create cross-modal reasoning ability: without semantic, spatial, or temporal binding, a model may still learn false correspondences. The chapter then establishes a three-level alignment framework across object-level, segment-level, and document-level data, covering BBox-word anchoring, audio-video timeline synchronization, and long-document interleaved ordering. The engineering section introduces placeholder design, feature-path decoupling, multimodal sample mixing, and hard-negative mining. It then defines quality metrics such as cross-modal recall, temporal continuity, hallucination rate, and entailment conflict. Finally, anonymized composite cases illustrate risks from object misalignment, segment misalignment, and semantic mismatch before the book transitions to Part IV on instruction alignment and preference data systems.

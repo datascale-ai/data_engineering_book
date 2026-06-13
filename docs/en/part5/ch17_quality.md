@@ -1,5 +1,7 @@
 # Chapter 17: Synthetic Data Quality Control and Model Collapse
 
+<div class="chapter-authors">Ran Zhang</div>
+
 ## Abstract
 
 Synthetic data delivers productivity gains, long-tail coverage, and reduced annotation costs, yet its strong self-reinforcing properties can ultimately erode model capability. When generators, judges, template systems, and trainers are coupled into a closed loop, the sample space becomes increasingly driven by the system's internal preferences rather than by the real world, ultimately triggering model collapse—defined in this chapter as the gradual capability degradation common in engineering practice: a model that increasingly resembles its own generated data and decreasingly resembles the real world. Rather than rejecting synthetic data outright, this chapter addresses a governance imperative: how to keep synthetic data as a source of gain and prevent it from becoming a risk amplifier. Six dimensions are examined: (1) the mechanism by which model self-bootstrapping yields simultaneous benefits and risks, explaining why early results nearly always appear positive and why closed loops progressively narrow; (2) the formation pathways of stylistic uniformity, knowledge drift, and error amplification, along with early signals of model collapse in long-tail scenarios and the divergence between offline stability and online volatility; (3) attribution of risk roots to diversity decay from overly narrow data loops, judge bias, template rigidity, growing sample self-similarity, and excessively high synthetic ratios; (4) detection metrics including distributional divergence, repetition rate, perplexity, and evaluation degradation, paired with synthetic-ratio gradient experiments and ablation designs; (5) risk gates and rollback procedures including synthetic-ratio caps, freeze strategies, real-data infusion, version rollback, and template revision; and (6) post-mortems on question-bank and customer-service corpora, with an on-deployment checklist to institutionalize governance red lines. The conclusion is that the key to synthetic data governance lies in continuously identifying when it supplements reality versus when it replaces reality, and maintaining the real-distribution boundary through metrics and gates that can trigger governance actions.
@@ -332,7 +334,7 @@ To more intuitively present the risk formation mechanism, the propagation path o
 
 
 
-![Figure 17-1: Synthetic Data Risk Propagation Mechanism Diagram](../../images/part5/图17_1.png)
+![Figure 17-1: Synthetic Data Risk Propagation Mechanism Diagram](../../images/part5/图17_1.svg)
 
 *Figure 17-1: Synthetic Data Risk Propagation Mechanism Diagram*
 
@@ -493,7 +495,7 @@ To more intuitively present the governance chain, the decision process by which 
 
 
 
-![Figure 17-2: Synthetic Data Quality Gate and Rollback Strategy Flowchart](../../images/part5/图17_2.png)
+![Figure 17-2: Synthetic Data Quality Gate and Rollback Strategy Flowchart](../../images/part5/图17_2.svg)
 
 *Figure 17-2: Synthetic Data Quality Gate and Rollback Strategy Flowchart*
 

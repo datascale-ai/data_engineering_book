@@ -1,5 +1,7 @@
 # Chapter 42: Dolma Pre-training Corpus Transparent Ledger
 
+<div class="chapter-authors">Guanlin Mu</div>
+
 ## Abstract
 
 Most open model releases provide weights, inference code, and some evaluation results, but training data is often reduced to vague source descriptions. This is insufficient for continued pre-training, bias analysis, evaluation-contamination checks, and license audits. When a model exhibits a problem, the team can hardly answer which sources it saw, how those sources were filtered, what the sampling proportions were, whether a benchmark leaked into the training corpus, or which shard should be located when a user requests removal of personal data.
@@ -10,7 +12,7 @@ Dolma is a three-trillion-token-scale English pre-training corpus released by th
 
 Dolma; transparent pre-training corpus; OLMo; source mix; token accounting; source card; manifest; Dolma Toolkit; ODC-BY; data audit
 
-## 42.0 Learning Objectives
+## Learning Objectives
 
 After completing this chapter, readers should be able to:
 

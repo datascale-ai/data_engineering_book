@@ -2,11 +2,14 @@
 
 ## 全书目录概览
 
-本书当前中文主线采用 2026 Springer 尺寸版结构，正文覆盖 51 章、15 个端到端项目与 7 个附录（A–G）。为降低跨篇阅读门槛，本版在前置部分新增统一的缩写表，并为每一篇补充了分册目录页。
+本书当前中文主线采用 2026 Springer 尺寸版结构，正文覆盖 48 章、15 个端到端项目与 7 个附录（A–G）。为降低跨篇阅读门槛，本版在前置部分新增统一的缩写表，并为每一篇补充了分册目录页。
 
-- [缩写表](abbreviations.md)
+- [题名页](title_page.md)
 - [序言](preface.md)
+- [致谢](acknowledgments.md)
 - [卷前导读：全书结构、阅读路径与版本说明](front_matter_guide.md)
+- [贡献者](contributors.md)
+- [缩写表](abbreviations.md)
 - [第一篇：总论与基础设施](part1/index.md)
 - [第二篇：文本预训练数据工程](part2/index.md)
 - [第三篇：多模态数据工程](part3/index.md)

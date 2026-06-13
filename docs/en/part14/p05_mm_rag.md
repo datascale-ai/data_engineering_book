@@ -1,5 +1,7 @@
 # Project Five: Multimodal RAG Enterprise Financial Report Assistant
 
+<div class="chapter-authors">Xin Xu</div>
+
 ## Abstract
 P05 focuses on organizing complex PDF documents — such as corporate financial reports and prospectuses — into a retrievable, interpretable, and evaluable multimodal RAG pipeline. The chapter's emphasis is not on single-turn question answering, but on incorporating page visual structure, chart information, and body text semantics jointly into the retrieval and answering process.
 

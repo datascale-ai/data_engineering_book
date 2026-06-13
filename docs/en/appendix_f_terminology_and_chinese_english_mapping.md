@@ -1,5 +1,7 @@
 # Appendix F: Terminology and Chinese-English Mapping
 
+<div class="chapter-authors">ZhiLi Wang</div>
+
 ## F.1 Purpose of This Appendix
 
 This appendix standardizes the book's high-frequency terms, abbreviations, and Chinese-English mappings, especially concepts that appear repeatedly across chapters but are easy for different teams to describe with different wording.

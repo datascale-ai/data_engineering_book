@@ -2,7 +2,7 @@
 
 ## 1. Positioning and Contributions of This Book
 
-This book addresses data engineering problems in the era of large models. It discusses the complete process by which data moves from raw material into training, evaluation, applications, platform governance, and long-term asset accumulation. The Chinese mainline is the authoritative version. The current publication structure is frozen as **14 parts, 51 chapters, 15 projects, and 7 appendices (A-G)**. The English and Japanese editions serve as later translations, terminology alignment, and external communication materials, and are not treated as the complete publication manuscript for this delivery.
+This book addresses data engineering problems in the era of large models. It discusses the complete process by which data moves from raw material into training, evaluation, applications, platform governance, and long-term asset accumulation. The Chinese mainline is the authoritative source version. The current publication structure is frozen as **14 parts, 48 chapters, 15 projects, and 7 appendices (A-G)**. The English manuscript is maintained as the translation and external-submission preview version; terminology, contributor metadata, and publisher-managed metadata should still be verified before final delivery.
 
 The book's core contributions appear in four areas.
 

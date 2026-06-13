@@ -1,5 +1,7 @@
 # Chapter 8: Image-Text Pair Data Engineering
 
+<div class="chapter-authors">Ke Wang</div>
+
 ## Abstract
 
 This chapter discusses the fundamental engineering problems behind image-text pairs and interleaved image-text data, with a particular focus on why visual data cannot simply reuse the cleaning paradigm of pure text. It first explains the engineering challenges created by visual noise, semantic mismatch, resolution cost, and image representation. It then compares three sample paradigms: image-caption pairs, interleaved image-text documents, and document-grounded screenshots. The cleaning section begins with image decoding, resolution and aspect-ratio filtering, and NSFW, watermark, and privacy blocking, then introduces CLIP/SigLIP-based semantic matching and multi-granularity recaptioning. The second half of the chapter discusses AnyRes dynamic patching, aspect-ratio grouping, multimodal data mixing, and quality risks. An anonymized composite case illustrates why stock-photo watermark contamination and secondary cleaning are necessary. By the end, readers should be able to design a traceable, measurable, and cost-controlled image-text preprocessing pipeline.

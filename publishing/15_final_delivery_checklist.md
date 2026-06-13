@@ -70,6 +70,9 @@
 - [ ] 配套资源说明
 - [ ] alt text 表
 - [ ] AI 使用声明
+- [ ] LaTeX 源文件、图片资源和 Markdown 参考源文件已进入 `Source_Files/`
+- [ ] 整书分页 PDF 已进入 `Full_PDF/`
+- [ ] front matter PDF、逐章/项目章/附录 PDF、back matter PDF 已进入 `Chapter_PDFs/`
 - [ ] Springer 要求的其他元数据
 
 ## 九、使用规则

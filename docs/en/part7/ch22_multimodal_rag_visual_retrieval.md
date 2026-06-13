@@ -1,5 +1,7 @@
 # Chapter 22: Multimodal RAG and Visual Retrieval
 
+<div class="chapter-authors">Wenzhuo Du</div>
+
 ## Abstract
 
 Real-world knowledge does not always exist in plain text: trends in financial reports are embedded in line charts, the steps in a manual depend on button positions in screenshots, and the signatures and annotations in contracts exist as image regions. When Retrieval-Augmented Generation (RAG) expands from text-centric scenarios to such visually complex documents, simply flattening documents into character strings via Optical Character Recognition (OCR) discards visual structure, spatial relationships, and image-text alignment information, leading to systematic failures. This chapter frames the core task of multimodal RAG not as appending OCR to text RAG, but as fundamentally redefining knowledge units, indexing strategies, and evidence organization. The chapter first analyzes why text RAG cannot cover visual knowledge, then discusses how visual chunking and object modeling organize pages, regions, tables, and images into locatable and citable knowledge assets, before explaining the implementation of cross-modal indexing, retrieval, and reranking. It concludes by establishing evaluation, error attribution, and online failure-sample replenishment mechanisms for visual retrieval, providing a methodological foundation for applications such as complex enterprise document understanding and financial report analysis.
@@ -49,7 +51,7 @@ For screenshot-based knowledge, OCR is equally insufficient. The buttons, menus,
 
 Therefore, in multimodal RAG, OCR is only a foundational capability, not a complete solution. True visual understanding must simultaneously handle four categories of information: textual content, visual regions, spatial layout, and cross-modal relationships. Only when this information is organized into a unified knowledge representation can the system stably answer questions in complex document and visual scenarios.
 
-![Figure 22-1: The Capability Boundary Between OCR and Visual Understanding](../../images/part7/图22_1zh.png)
+![Figure 22-1: The Capability Boundary Between OCR and Visual Understanding](../../images/part7/图22_1.svg)
 
 *Figure 22-1: The Capability Boundary Between OCR and Visual Understanding*
 
@@ -160,7 +162,7 @@ One common alignment approach is position-based alignment. In this approach, the
 
 The joint representation of text and visual information is the ultimate goal of cross-modal alignment. Through joint representation, the system can process text and visual data simultaneously and provide integrated information at query time. For example, during retrieval, a user can simultaneously ask "What is the sales trend for Q1 2024?" and "In which chart is the sales data shown?" The system must, through joint representation, first identify the relevant sales trend chart in the image, then extract the description of the sales data from the text, and finally generate a complete answer. Joint representation typically employs multimodal embeddings, mapping text and visual information into the same vector space. In this space, the relationships between textual and visual elements are represented as distances or similarities between vectors, making cross-modal queries and retrieval more efficient.
 
-![Figure 22-2: Joint Representation and Alignment of Text and Visual Elements](../../images/part7/图22_2zh.png)
+![Figure 22-2: Joint Representation and Alignment of Text and Visual Elements](../../images/part7/图22_2.svg)
 
 *Figure 22-2: Joint Representation and Alignment of Text and Visual Elements*
 
@@ -238,7 +240,7 @@ Cross-modal reranking refers to performing a secondary ranking of recalled resul
 
 Cross-modal reranking relies primarily on the image and text embedding vectors in the joint space. During the initial recall phase, the system first performs recall separately for text and images and treats the recalled results as a candidate set. During the cross-modal reranking phase, the system inputs the image and text embedding vectors together into a reranking model and sorts them according to their mutual similarities. Through this approach, the system can comprehensively account for the relevance of both images and text, improving the accuracy of retrieval results.
 
-![Figure 22-3: Cross-modal Retrieval and Reranking Pipeline](../../images/part7/图22_3zh.png)
+![Figure 22-3: Cross-modal Retrieval and Reranking Pipeline](../../images/part7/图22_3.svg)
 
 *Figure 22-3: Cross-modal Retrieval and Reranking Pipeline*
 
@@ -348,7 +350,7 @@ In many projects, "answer accuracy" is further decomposed into two levels: one i
 
 In real systems, these metrics often do not change independently. For instance, increasing the recall candidate set from top 20 to top 100 may noticeably increase Hit@100, but the reranking burden grows, latency rises, and answer accuracy does not necessarily improve in tandem. Conversely, if we compress the candidate count to pursue low latency, complex chart Q&A recall may suffer. Therefore, evaluation metrics must not be interpreted in isolation but analyzed together with the pipeline structure.
 
-![Figure 22-4: Multimodal RAG Evaluation Funnel](../../images/part7/图22_4zh.png)
+![Figure 22-4: Multimodal RAG Evaluation Funnel](../../images/part7/图22_4.svg)
 
 *Figure 22-4: Multimodal RAG Evaluation Funnel*
 
@@ -381,7 +383,7 @@ To systematically convert these phenomena into engineering assets, we typically 
 
 When a team genuinely begins performing error attribution, they discover something very important: many problems that seem like "insufficient model intelligence" are actually caused by deficiencies in data structure design. For example, if a chart chunk does not separately store metadata such as legend, axis, and series, even the strongest model can only guess relationships from pixels and OCR text. In other words, error attribution is not just evaluation work—it is also a reverse check on whether data engineering has provided the model with sufficiently usable evidence structures.
 
-![Figure 22-5: The Closed Loop from Error Attribution to Repair Actions](../../images/part7/图22_5zh.png)
+![Figure 22-5: The Closed Loop from Error Attribution to Repair Actions](../../images/part7/图22_5.svg)
 
 *Figure 22-5: The Closed Loop from Error Attribution to Repair Actions*
 

@@ -1,5 +1,7 @@
 # Project 3: LLaVA Multimodal Instruction Data Factory
 
+<div class="chapter-authors">Xin Xu</div>
+
 ## Abstract
 P03 focuses on processing images, region annotations, optical character recognition (OCR) information, and multi-image relationships into trainable, auditable, and packageable multimodal supervised data assets. The chapter emphasizes not single-image question answering, but the engineering transformation from multimodal assets to training samples.
 

@@ -1,5 +1,7 @@
 # 项目七：Agent Tool-Use 数据工厂
 
+<div class="chapter-authors">徐鑫（Xin Xu）</div>
+
 ## 摘要
 P07 聚焦把 Agent 的工具使用行为组织成可训练、可评估、可扩展的数据资产。章节重点不在单个函数调用，而在工具规范、执行轨迹、恢复行为、安全边界和训练封装之间的完整数据链。
 
@@ -1165,4 +1167,4 @@ P07 当前已经展示了一个很关键的方法论：行为数据不是生成�
 2. Schick, T., Dwivedi-Yu, J., Dessì, R., Raileanu, R., Lomeli, M., Hambro, E., Zettlemoyer, L., Cancedda, N., & Scialom, T. (2023). Toolformer: Language Models Can Teach Themselves to Use Tools. arXiv:2302.04761.
 3. NIST. (2023). Artificial Intelligence Risk Management Framework (AI RMF 1.0). National Institute of Standards and Technology.
 4. OWASP Foundation. (2025). OWASP Top 10 for Large Language Model Applications.
-5. OpenTelemetry Authors. (2026). OpenTelemetry Documentation. https://opentelemetry.io/docs/
+5. OpenTelemetry Authors. (2026). OpenTelemetry Documentation. https://opentelemetry.io/docs/.

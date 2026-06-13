@@ -1,5 +1,7 @@
 # Chapter 30: Internal Data Markets and Sharing Governance
 
+<div class="chapter-authors">Wenzhuo Du</div>
+
 ## Chapter Abstract
 
 Many organizations do not lack data; their data is trapped behind team, system, and permission boundaries, causing duplicate collection, duplicate cleaning, unclear permissions, and opaque quality. The cost is scattered across projects and rarely measured in one place. This chapter discusses internal data markets and sharing governance, connecting data assets, data products, authorization workflows, usage audit, value feedback, and sharing incentives into a sustainable governance system. It first analyzes the hidden cost of data silos and introduces the value proposition of an internal data market grounded in FAIR principles: findability, accessibility, interoperability, and reusability. It then defines five roles: providers, consumers, approvers, platform teams, and security/compliance teams, together with standard collaboration processes and responsibility matrices. Next, it explains core sharing-governance mechanisms: data requests, an authorization model combining role-based access control (RBAC) and attribute-based access control (ABAC), purpose limits, access logs, expiration and reclamation, and violation handling. It also explains how high-value shared assets become long-term data products. Finally, it provides operating metrics and sharing incentives, and connects the method through an end-to-end case in which a customer-risk data product enters the market and is reused across multiple paths.
@@ -8,7 +10,7 @@ Many organizations do not lack data; their data is trapped behind team, system, 
 
 Internal data market; sharing governance; data products; authorization audit; value feedback; sharing incentives
 
-## 30.0 Learning Objectives
+## Learning Objectives
 
 - Explain the hidden cost of data silos and use FAIR principles to describe the value proposition of an internal data market.
 - Define the collaboration process and responsibility matrix for providers, consumers, approvers, platform teams, and security/compliance teams.
@@ -87,7 +89,7 @@ This is what distinguishes a market from an ordinary catalog. A catalog answers 
 
 An internal data market is also different from a pure permission system. A permission system focuses on access control; a data market also focuses on product quality, consumer experience, reuse benefits, and asset operations. It is therefore the intersection of data governance, data platforms, and data product management. Figure 30-1 shows the overall architecture of an internal data market and the relationships among data assets, product catalogs, authorization workflows, usage audit, and value feedback.
 
-![Internal data market architecture](../../images/part9/ch30_fig01.png)
+![Internal data market architecture](../../images/part9/图30_1.svg)
 
 *Figure 30-1: Internal data market architecture*
 
@@ -153,7 +155,7 @@ A standard process has seven stages:
 6. **Permission provisioning.** The platform writes the approval into permission systems and records scope, expiration, purpose limits, and responsible parties.
 7. **Usage audit and feedback.** The platform records logs, frequency, abnormal behavior, expiration, and feedback, then feeds results into product operations.
 
-![Authorization approval workflow](../../images/part9/ch30_fig02.png)
+![Authorization approval workflow](../../images/part9/图30_2.svg)
 
 *Figure 30-2: Authorization approval workflow*
 

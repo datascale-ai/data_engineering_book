@@ -1,5 +1,7 @@
 # Chapter 20: Agent Memory and Multi-Turn Interaction Data
 
+<div class="chapter-authors">Ran Zhang</div>
+
 ## Abstract
 
 The data engineering challenge for long-horizon, multi-turn, task-oriented agents does not lie in stitching single-turn question-and-answer pairs into longer sequences, but in enabling a model to sustain task identity, state consistency, and behavioral stability across turns. This chapter defines multi-turn data as a state trajectory jointly shaped by state modeling, memory management, feedback loops, and temporal decay—rather than a dialogue-length problem—and explains why state dependencies, role drift, and task interruptions make it impossible to reduce this problem to next-turn response prediction. At the segmentation and representation level, the chapter distinguishes three nested units—session, episode, and task thread—argues for segmentation based on state continuity rather than physical time, and structures dialogue state, user preferences, and task progress as minimal closed-loop units of the form pre-state—trigger—action—post-state, with explicit modeling of interruption, switching, and resumption scenarios. On the memory side, the chapter defines stability, reusability, confirmability, and low-risk criteria for memory writes; distinguishes the context window, short-term memory, and long-term memory; presents the layered hierarchy of instantaneous context, working memory, session summaries, and long-term preferences together with their migration rules; and introduces temporal decay, conflict decay, and usage decay to advance summarization, conflict resolution, and recall from similarity matching toward utility-based judgment. Finally, through multi-turn replay evaluation, state-drift evaluation, and memory-dependency evaluation, the chapter attributes "remembering the wrong things" and "forgetting the important things" to actionable data-pipeline stages—writing, recall, decay, and thread recovery—and proposes four categories of red-line tests: thread contamination, error persistence, recovery failure, and feedback invalidation.
@@ -165,7 +167,7 @@ At a deeper level, interruption, switching, and resumption together constitute t
 
 For a more intuitive illustration, Figure 20-1 shows a multi-turn state-transition diagram. The diagram should not merely depict a generic sequential flow, but should highlight forks, suspensions, resumptions, and failure-rollback relationships within state transitions. That is, the diagram should take the form of a state network graph capturing task-thread switching and memory layer influence, rather than a "left-to-right pipeline." This allows readers to see intuitively that the complexity of multi-turn agents does not stem from "more turns" but from "more states, more transitions, and more recovery paths."
 
-![Figure 20-1: Multi-Turn Agent State Transition Diagram](../../images/part6/图20_1.png)
+![Figure 20-1: Multi-Turn Agent State Transition Diagram](../../images/part6/图20_1.svg)
 
 *Figure 20-1: Multi-Turn Agent State Transition Diagram*
 
@@ -261,7 +263,7 @@ Conflict resolution requires not only "knowing there is a conflict" but also a p
 
 For example, if the user's long-term preference is "default output in Chinese," but in the current episode explicitly requests "use English throughout this time," the system should not continue to output Chinese based on the long-term preference. If it does, the priority system has not been established. Similarly, if the model has inferred based on old state that a certain field likely still holds, but the most recent tool query shows that condition has changed, the tool observation should override the model inference. When multi-turn data explicitly shows this override process, the model is more likely to develop robust conflict-resolution habits and avoid averaging across conflicting sources. The memory layer hierarchy for task-oriented agents and its update and override flow under different information sources are shown in Figure 20-2.
 
-![Figure 20-2: Memory Layering and Update Flow for Task-Oriented Agents](../../images/part6/图20_2.png)
+![Figure 20-2: Memory Layering and Update Flow for Task-Oriented Agents](../../images/part6/图20_2.svg)
 
 *Figure 20-2: Memory Layering and Update Flow for Task-Oriented Agents*
 
@@ -472,7 +474,7 @@ This chapter particularly emphasizes that long-term memory must not be treated a
 
 ## References
 
-Young, S., Gašić, M., Thomson, B., & Williams, J. D. (2013). *POMDP-Based Statistical Spoken Dialog Systems: A Review*. Proceedings of the IEEE, 101(5), 1160–1179. https://doi.org/10.1109/JPROC.2012.2225812
+Young, S., Gašić, M., Thomson, B., & Williams, J. D. (2013). *POMDP-Based Statistical Spoken Dialog Systems: A Review*. Proceedings of the IEEE, 101(5), 1160–1179. https://doi.org/10.1109/JPROC.2012.2225812.
 
 Williams, J. D., Raux, A., Ramachandran, D., & Black, A. (2013). *The Dialog State Tracking Challenge*. Proceedings of the SIGDIAL 2013 Conference, 404–413.
 
@@ -482,13 +484,13 @@ Yao, S., Zhao, J., Yu, D., et al. (2023). *ReAct: Synergizing Reasoning and Acti
 
 Schick, T., Dwivedi-Yu, J., Dessì, R., et al. (2023). *Toolformer: Language Models Can Teach Themselves to Use Tools*. Advances in Neural Information Processing Systems, 36.
 
-Liu, N. F., Lin, K., Hewitt, J., et al. (2024a). *Lost in the Middle: How Language Models Use Long Contexts*. Transactions of the Association for Computational Linguistics, 12, 157–173. https://doi.org/10.1162/tacl_a_00638
+Liu, N. F., Lin, K., Hewitt, J., et al. (2024a). *Lost in the Middle: How Language Models Use Long Contexts*. Transactions of the Association for Computational Linguistics, 12, 157–173. https://doi.org/10.1162/tacl_a_00638.
 
 Packer, C., Wooders, S., Lin, K., et al. (2023). *MemGPT: Towards LLMs as Operating Systems*. arXiv:2310.08560.
 
 Wang, W., Dong, L., Cheng, H., et al. (2023). *Augmenting Language Models with Long-Term Memory*. Advances in Neural Information Processing Systems, 36.
 
-Zhong, W., Guo, L., Gao, Q., et al. (2024). *MemoryBank: Enhancing Large Language Models with Long-Term Memory*. Proceedings of the AAAI Conference on Artificial Intelligence, 38(17), 19724–19731. https://doi.org/10.1609/aaai.v38i17.29946
+Zhong, W., Guo, L., Gao, Q., et al. (2024). *MemoryBank: Enhancing Large Language Models with Long-Term Memory*. Proceedings of the AAAI Conference on Artificial Intelligence, 38(17), 19724–19731. https://doi.org/10.1609/aaai.v38i17.29946.
 
 Park, J. S., O'Brien, J. C., Cai, C. J., et al. (2023). *Generative Agents: Interactive Simulacra of Human Behavior*. Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology.
 

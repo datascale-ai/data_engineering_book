@@ -1,5 +1,7 @@
 # Chapter 38: Visual Document and Structured Table Data Engineering
 
+<div class="chapter-authors">Guanjun Liu; Yuefeng Zou</div>
+
 ## Abstract
 
 This chapter discusses how visual documents become trainable, evaluable, and auditable data objects from images, layouts, tables, and business fields through two specialized cases: invoice document understanding and sparse table structure recognition. StructBill-CN emphasizes high-risk bill fields, hierarchical JSON, and arithmetic consistency, while SparseTable-Bench emphasizes table topology, empty cells, and structural robustness. Together they show that visual document data engineering is not merely OCR; it binds page structure, business semantics, and evaluation protocols into stable sample schemas.
@@ -759,8 +761,10 @@ Wang, W., Gao, Z., Gu, L., et al. (2025). InternVL3.5: Advancing Open-Source Mul
 
 Zhang, J., Liu, Y., Wu, Z., et al. (2025). MonkeyOCR v1.5 Technical Report: Unlocking Robust Document Parsing for Complex Patterns. *arXiv preprint*.
 
-1. Zhong, X., ShafieiBavani, E., & Yepes, A. J. (2020). Image-based Table Recognition: Data, Model, and Evaluation. ECCV 2020.
-2. Smock, B., Pesala, R., & Abraham, R. (2022). PubTables-1M: Towards Comprehensive Table Extraction From Unstructured Documents. CVPR 2022.
-3. Zhu, F., Lei, W., Huang, Y., Wang, C., Zhang, S., Lv, J., Feng, F., & Chua, T.-S. (2021). TAT-QA: A Question Answering Benchmark on a Hybrid of Tabular and Textual Content in Finance. ACL 2021.
-4. Pandas Development Team. (2026). pandas Documentation. https://pandas.pydata.org/docs/
-5. Apache Arrow Contributors. (2026). Apache Arrow Documentation. https://arrow.apache.org/docs/
+Smock, B., Pesala, R., and Abraham, R. (2022). PubTables-1M: Towards Comprehensive Table Extraction From Unstructured Documents. *Proc. CVPR*.
+
+Zhu, F., Lei, W., Huang, Y., Wang, C., Zhang, S., Lv, J., Feng, F., and Chua, T.-S. (2021). TAT-QA: A Question Answering Benchmark on a Hybrid of Tabular and Textual Content in Finance. *Proc. ACL*.
+
+Pandas Development Team. (2026). pandas Documentation. https://pandas.pydata.org/docs/.
+
+Apache Arrow Contributors. (2026). Apache Arrow Documentation. https://arrow.apache.org/docs/.

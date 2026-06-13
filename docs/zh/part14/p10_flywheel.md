@@ -1,5 +1,7 @@
 # 项目十：端到端 LLM 数据飞轮
 
+<div class="chapter-authors">徐鑫（Xin Xu）</div>
+
 ## 摘要
 P10 聚焦把数据、监督、训练、应用、平台治理和反馈回流组织成一条持续运转的端到端大语言模型（LLM）数据飞轮。章节重点不在新增单点能力，而在把第十四篇项目资产、接口、阶段和控制点整合为统一系统。随着本篇扩展到 P01-P15，P10 的出版口径应从早期“前九个项目总装”更新为“第十四篇项目总装层”，既覆盖 P01-P09 的基础数据工程，也预留 P11-P15 的开源配方、推理飞轮、多模态指令、视频生成和企业级问数能力。
 
@@ -1072,7 +1074,7 @@ P10 作为总装层，还有一个特别值得补出来的工程动作，就是�
 ## 参考文献
 
 1. Raffel, C., Shazeer, N., Roberts, A., Lee, K., Narang, S., Matena, M., Zhou, Y., Li, W., & Liu, P. J. (2020). Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. JMLR, 21(140), 1-67.
-2. Hugging Face. (2026). Datasets Documentation. https://huggingface.co/docs/datasets/
-3. Ray Project. (2026). Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html
-4. MLflow Authors. (2026). MLflow Documentation. https://mlflow.org/docs/latest/
-5. Great Expectations Contributors. (2026). Great Expectations Documentation. https://docs.greatexpectations.io/
+2. Hugging Face. (2026). Datasets Documentation. https://huggingface.co/docs/datasets/.
+3. Ray Project. (2026). Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html.
+4. MLflow Authors. (2026). MLflow Documentation. https://mlflow.org/docs/latest/.
+5. Great Expectations Contributors. (2026). Great Expectations Documentation. https://docs.greatexpectations.io/.

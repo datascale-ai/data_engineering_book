@@ -1,5 +1,7 @@
 # 第27章：数据资产目录与元数据治理
 
+<div class="chapter-authors">杜文卓（Wenzhuo Du）</div>
+
 ## 摘要
 
 在大模型数据工程中，企业数据常处于"可见但不可达"的状态：数据散落于不同存储，关于数据的关键事实（来源、口径、使用限制、责任人）只存在于个别人的记忆或临时文档中，由此引发数据级联（data cascade）故障与合规风险。本章把数据资产目录（data catalog）与元数据治理（metadata governance）作为应对手段系统展开。首先界定数据资产（data asset）区别于文件清单的六个维度——身份所有权、结构模式、血缘变换、权限安全、质量信心与生命周期，并借鉴数据集说明书（datasheet）的文档规范；继而讨论数据集注册表（dataset registry）的分层元数据模型、自动采集与搜索发现机制；随后剖析数据血缘（data lineage）、基于角色与属性的权限控制，以及以状态机刻画的生命周期管理。最后从治理成熟度演进、组织角色分工与落地检查清单（checklist）三个角度，说明如何在真实组织中把这套方法转化为可持续的日常运营。
@@ -135,7 +137,7 @@ end_of_life: 2025-12-31                      # 计划下线时间
 
 数据资产从准备到上线、再到可被发现，通常需要经过一套标准化的注册流程。如图27-1 所示，数据创建者首先准备元数据并提交注册申请，随后系统执行自动与人工结合的质量检查、安全与权限审核，通过后方可发布进入数据目录被检索到。这一流程把"谁能登记数据、登记前要满足什么条件"固化为可执行的关卡，是注册表可治理性的前提。
 
-![数据资产从创建到使用的完整流程](../../images/part9/ch27_fig01_zh.png)
+![数据资产从创建到使用的完整流程](../../images/part9/图27_1.svg)
 
 *图27-1：数据资产注册与上线流程*
 
@@ -281,7 +283,7 @@ impact_analysis:
 
 血缘的真正威力，在影响分析（impact analysis）场景中体现得最为充分。设想上游的 `user_profile_table` 计划修改某个字段的定义——在没有血缘的环境里，工程师只能凭经验和记忆去猜测"谁会受影响"，极易遗漏；而在血缘完整的环境里，系统可以沿 DAG 自动列出所有间接依赖该字段的下游资产（如本例中的特征工程步骤及其产出的 `preference_model_training` 与 `rag_knowledge_embeddings`），逐一评估影响范围并通知相关负责人。反向地，当某个模型在线上出现异常时，团队也能沿血缘回溯：是原始数据源出了问题，还是某个变换步骤引入了缺陷，抑或是某个上游字段的语义在不知情的情况下发生了漂移。可以说，没有血缘，故障排查与变更评估就退化为大海捞针；有了血缘，它们才成为可沿图遍历的确定性操作。
 
-![数据血缘关系图](../../images/part9/ch27_fig02_zh.png)
+![数据血缘关系图](../../images/part9/图27_2.svg)
 
 *图27-2：数据血缘关系图*
 
@@ -357,7 +359,7 @@ permissions:
 
 如图27-3 所示，上述状态可抽象为一台状态机：数据资产沿 CREATED → ACTIVE → DEPRECATED → ARCHIVED → DELETED 逐级转移，每条转移都由明确条件触发，从而保证生命周期的每一步都可审计、可回溯。
 
-![数据资产生命周期状态转移图](../../images/part9/ch27_fig03_zh.png)
+![数据资产生命周期状态转移图](../../images/part9/图27_3.svg)
 
 *图27-3：数据资产的生命周期状态机*
 
@@ -496,7 +498,7 @@ expected_active_until: 2026-12-31
 
 在跨团队的治理实践中，权限维度的健康状况尤其值得单独审视。如图27-4 所示，可以用一张权限矩阵直观呈现"哪个团队对哪份资产拥有何种权限"，从而一眼发现越权或权限缺失。
 
-![基于角色和用途的权限管理矩阵](../../images/part9/ch27_fig04_zh.png)
+![基于角色和用途的权限管理矩阵](../../images/part9/图27_4.svg)
 
 *图27-4：权限管理矩阵示例*
 
@@ -624,5 +626,4 @@ Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young
 Stonebraker M, Bruckner D, Ilyas I F, Beskales G, Cherniack M, Zdonik S, Pagan A, Xu S (2013) Data Curation at Scale: The Data Tamer System. In: 6th Biennial Conference on Innovative Data Systems Research (CIDR).
 
 Wang R Y, Strong D M (1996) Beyond Accuracy: What Data Quality Means to Data Consumers. Journal of Management Information Systems 12(4):5–33.
-
 

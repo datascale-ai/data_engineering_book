@@ -25,12 +25,12 @@
 - [ ] `docs/zh/part10/ch35_security_permission_collaboration.md`：安全/合规边界、图表权属、参考文献真实性、案例复现边界。
 
 ### Part 12
-- [ ] `docs/zh/part12/ch38_structbill_cn_dataset.md`：安全/合规边界、图表权属、参考文献真实性、案例复现边界。
-- [ ] `docs/zh/part12/ch39_sparse_table_bench_dataset.md`：安全/合规边界、图表权属、参考文献真实性、案例复现边界。
-- [ ] `docs/zh/part12/ch40_multi_chart_infographic_reasoning_dataset.md`：安全/合规边界、图表权属、参考文献真实性、案例复现边界。
-- [ ] `docs/zh/part12/ch41_medimage_tool_vqa_dataset.md`：安全/合规边界、图表权属、参考文献真实性、案例复现边界。
-- [ ] `docs/zh/part12/ch42_voice_style_control_dataset.md`：安全/合规边界、图表权属、参考文献真实性、案例复现边界。
-- [ ] `docs/zh/part12/ch43_latent_switch_69k.md`：安全/合规边界、图表权属、参考文献真实性、案例复现边界。
+- [ ] `docs/zh/part12/ch38_visual_document_table_data_engineering.md`：安全/合规边界、图表权属、参考文献真实性、案例复现边界。
+- [ ] `docs/zh/part12/ch39_visual_reasoning_tool_data_engineering.md`：安全/合规边界、图表权属、参考文献真实性、案例复现边界。
+- [ ] `docs/zh/part12/ch40_interaction_reasoning_trace_data_engineering.md`：安全/合规边界、图表权属、参考文献真实性、案例复现边界。
+- [ ] `docs/zh/part12/ch41_fineweb_pretraining_corpus.md`：安全/合规边界、图表权属、参考文献真实性、案例复现边界。
+- [ ] `docs/zh/part12/ch42_dolma_pretraining_corpus_ledger.md`：安全/合规边界、图表权属、参考文献真实性、案例复现边界。
+- [ ] `docs/zh/part12/ch43_laion5b_image_text_candidate_pool.md`：安全/合规边界、图表权属、参考文献真实性、案例复现边界。
 
 ### Part 14
 - [ ] `docs/zh/part14/p01_mini_c4.md`：安全/合规边界、图表权属、参考文献真实性、案例复现边界。

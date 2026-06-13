@@ -1,5 +1,7 @@
 # 项目四：合成数学与代码教材工厂
 
+<div class="chapter-authors">徐鑫（Xin Xu）</div>
+
 ## 摘要
 P04 聚焦把数学题、代码题和程序化解题过程组织成可训练、可验证、可打包的教材型数据资产。章节重点不在单次题目生成，而在生成、执行验证、教材组织和训练接口之间的工程闭环。
 
@@ -947,7 +949,7 @@ P04 当前已经证明了一件事：数学与代码教材可以通过“种子�
 ## 参考文献
 
 1. Raffel, C., Shazeer, N., Roberts, A., Lee, K., Narang, S., Matena, M., Zhou, Y., Li, W., & Liu, P. J. (2020). Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. JMLR, 21(140), 1-67.
-2. Hugging Face. (2026). Datasets Documentation. https://huggingface.co/docs/datasets/
-3. Ray Project. (2026). Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html
-4. MLflow Authors. (2026). MLflow Documentation. https://mlflow.org/docs/latest/
-5. Great Expectations Contributors. (2026). Great Expectations Documentation. https://docs.greatexpectations.io/
+2. Hugging Face. (2026). Datasets Documentation. https://huggingface.co/docs/datasets/.
+3. Ray Project. (2026). Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html.
+4. MLflow Authors. (2026). MLflow Documentation. https://mlflow.org/docs/latest/.
+5. Great Expectations Contributors. (2026). Great Expectations Documentation. https://docs.greatexpectations.io/.

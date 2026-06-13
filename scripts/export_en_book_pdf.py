@@ -38,6 +38,98 @@ OUT_PDF = OUT_DIR / "data_engineering_book_en_16k_compact.pdf"
 PARTS_DIR = OUT_DIR / "data_engineering_book_en_16k_compact_parts"
 CHROME = Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 FRONT_PDF = PARTS_DIR / "00-book-front-matter.pdf"
+OPENING_FRONT_PDF = PARTS_DIR / "00a-opening-front-matter.pdf"
+CONTENTS_PDF = PARTS_DIR / "00b-contents.pdf"
+SUBMISSION_PDF_DIR = OUT_DIR / "data_engineering_book_en_16k_compact_submission_pdfs"
+
+EXCLUDED_FROM_FORMAL_PDF = {"title_page.md", "index.md", "translation-status.md", "front_matter_guide.md"}
+PRE_CONTENTS_FRONT_PATHS = {"preface.md", "acknowledgments.md"}
+POST_CONTENTS_FRONT_PATHS = {"contributors.md", "abbreviations.md"}
+
+BOOK_AUTHORS = "Jun Yu, Ran Zhang, Wenzhuo Du, Guanlin Mu, ZhiLi Wang, Ke Wang, and Xin Xu"
+PDF_FONT_REGULAR = "DataEngineeringBook-Regular"
+PDF_FONT_BOLD = "DataEngineeringBook-Bold"
+PDF_FONT_REGISTERED = False
+PDF_FONT_CANDIDATES = {
+    PDF_FONT_REGULAR: [
+        Path("/System/Library/Fonts/Supplemental/Times New Roman.ttf"),
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf"),
+        Path("/Library/Fonts/Times New Roman.ttf"),
+    ],
+    PDF_FONT_BOLD: [
+        Path("/System/Library/Fonts/Supplemental/Times New Roman Bold.ttf"),
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf"),
+        Path("/Library/Fonts/Times New Roman Bold.ttf"),
+    ],
+}
+SECTION_AUTHORS = {
+    **{f"part1/ch{chapter:02d}_": "Ke Wang" for chapter in range(1, 4)},
+    **{f"part2/ch{chapter:02d}_": "Ke Wang" for chapter in range(4, 8)},
+    **{f"part3/ch{chapter:02d}_": "Ke Wang" for chapter in range(8, 12)},
+    **{f"part4/ch{chapter:02d}_": "Ran Zhang" for chapter in range(12, 15)},
+    **{f"part5/ch{chapter:02d}_": "Ran Zhang" for chapter in range(15, 18)},
+    **{f"part6/ch{chapter:02d}_": "Ran Zhang" for chapter in range(18, 21)},
+    **{f"part7/ch{chapter:02d}_": "Wenzhuo Du" for chapter in range(21, 24)},
+    **{f"part8/ch{chapter:02d}_": "Wenzhuo Du" for chapter in range(24, 27)},
+    **{f"part9/ch{chapter:02d}_": "Wenzhuo Du" for chapter in range(27, 31)},
+    **{f"part10/ch{chapter:02d}_": "ZhiLi Wang" for chapter in range(31, 36)},
+    "part11/ch36_": "ZhiLi Wang; Xin Xu",
+    "part11/ch37_": "ZhiLi Wang; Xin Xu",
+    "part12/ch38_": "Guanjun Liu; Yuefeng Zou",
+    "part12/ch39_": "Lin Xu; Xinyu Chen",
+    "part12/ch40_": "Fengxin Chen; Xuan Li",
+    "part12/ch41_": "Guanlin Mu",
+    "part12/ch42_": "Guanlin Mu",
+    "part12/ch43_": "Guanlin Mu",
+    "part13/ch44_": "Ke Wang",
+    "part13/ch45_": "Xin Xu",
+    "part13/ch46_": "Xin Xu",
+    "part13/ch47_": "Ke Wang",
+    "part13/ch48_": "Ran Zhang",
+    **{f"part14/p{project:02d}_": "Xin Xu" for project in range(1, 11)},
+    "part14/p11_": "Ke Wang",
+    "part14/p12_": "Xin Xu",
+    "part14/p13_": "Ke Wang",
+    "part14/p14_": "Ran Zhang",
+    "part14/p15_": "caoxuhong",
+    "appendix_a_": "Xin Xu",
+    "appendix_b_": "Xin Xu",
+    "appendix_c_": "Xin Xu",
+    "appendix_d_": "ZhiLi Wang",
+    "appendix_e_": "ZhiLi Wang",
+    "appendix_f_": "ZhiLi Wang",
+    "appendix_g_": "Xin Xu",
+}
+
+
+def register_pdf_fonts() -> tuple[str, str]:
+    """Register embedded TrueType fonts for generated PDF pages and overlays."""
+
+    global PDF_FONT_REGISTERED
+    if PDF_FONT_REGISTERED:
+        return PDF_FONT_REGULAR, PDF_FONT_BOLD
+    try:
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+    except Exception as exc:  # pragma: no cover - dependency check
+        raise RuntimeError("reportlab font support is required for PDF generation") from exc
+
+    for font_name, candidates in PDF_FONT_CANDIDATES.items():
+        for candidate in candidates:
+            if candidate.exists():
+                pdfmetrics.registerFont(TTFont(font_name, str(candidate)))
+                break
+        else:
+            raise FileNotFoundError(f"Cannot find a TrueType font for {font_name}: {candidates}")
+    PDF_FONT_REGISTERED = True
+    return PDF_FONT_REGULAR, PDF_FONT_BOLD
+
+
+def author_line_for_path(path: str) -> str:
+    for prefix, authors in SECTION_AUTHORS.items():
+        if path.startswith(prefix):
+            return authors
+    return ""
 
 
 CSS = r"""
@@ -421,6 +513,22 @@ mjx-container[jax="SVG"][display="true"] svg {
   font-size: 8.3pt;
   margin: -4mm 0 6mm;
 }
+
+.chapter-authors {
+  font-family: "Times New Roman", "Times", "Nimbus Roman", serif;
+  font-size: 10.2pt;
+  line-height: 1.35;
+  color: #2e3b4e;
+  margin: -2.2mm 0 5.4mm;
+  text-align: left;
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.chapter-authors::before {
+  content: "Author: ";
+  font-weight: 700;
+}
 """
 
 
@@ -611,6 +719,7 @@ def build_book_html(
         text = rewrite_image_paths(text, src)
         text = normalize_mermaid_blocks(text)
         html_body = md.convert(text)
+        html_body = transform_section_opening(html_body, item.path)
         md.reset()
         file_class = classify_path(item.path)
         label = html.escape(f"{item.title} | {item.path}")
@@ -644,6 +753,24 @@ def build_book_html(
 </html>
 """
     return html_doc, stats
+
+
+def transform_section_opening(html_body: str, source_path: str) -> str:
+    """Use a Springer-like title block in the PDF while keeping source headings stable."""
+
+    if not re.search(r"(?:part\d+/ch\d+_|part14/p\d+_|appendix_)", source_path):
+        return html_body
+
+    patterns = [
+        (r"<h1>Chapter\s+\d+:\s*([^<]+)</h1>", r"<h1>\1</h1>"),
+        (r"<h1>Project\s+\d+:\s*([^<]+)</h1>", r"<h1>\1</h1>"),
+        (r"<h1>Appendix\s+[A-G]:\s*([^<]+)</h1>", r"<h1>\1</h1>"),
+    ]
+    for pattern, replacement in patterns:
+        html_body, count = re.subn(pattern, replacement, html_body, count=1)
+        if count:
+            return html_body
+    return html_body
 
 
 def build_cover(stats: dict[str, int]) -> str:
@@ -683,16 +810,77 @@ def build_print_toc(items: list[NavItem]) -> str:
 """
 
 
+def generated_title_page_html() -> str:
+    return f"""
+<section class="source-file front-section generated-front-section">
+  <h1>Title Page</h1>
+  <p><strong>Data Engineering for Large Foundation Models</strong></p>
+  <p><em>A Handbook</em></p>
+  <p>{html.escape(BOOK_AUTHORS)}</p>
+  <p>Springer manuscript review PDF.</p>
+</section>
+"""
+
+
+def generated_front_matter_html(*, include_toc: bool = True) -> str:
+    toc = """
+<section class="source-file front-section generated-front-section">
+  <h1>Contents</h1>
+  <p>The final table of contents and page numbers should be verified in the publisher production system.</p>
+</section>
+""" if include_toc else ""
+    return (
+        generated_title_page_html()
+        + """
+<section class="source-file front-section generated-front-section"><h1>Preface</h1></section>
+<section class="source-file front-section generated-front-section"><h1>Acknowledgments</h1></section>
+"""
+        + toc
+        + """
+<section class="source-file front-section generated-front-section"><h1>Contributors</h1></section>
+<section class="source-file front-section generated-front-section"><h1>Abbreviations</h1></section>
+"""
+    )
+
+
 def prepare_pdf_items(items: list[NavItem]) -> list[NavItem]:
     """Return the formal PDF sequence, excluding web-only front-matter pages."""
 
-    excluded = {"index.md", "translation-status.md"}
-    filtered = [item for item in items if item.path not in excluded]
-    front_order = {"preface.md": 0, "front_matter_guide.md": 1, "abbreviations.md": 2}
+    filtered = [item for item in items if item.path not in EXCLUDED_FROM_FORMAL_PDF]
+    front_order = {
+        "preface.md": 0,
+        "acknowledgments.md": 1,
+        "front_matter_guide.md": 2,
+        "contributors.md": 3,
+        "abbreviations.md": 4,
+    }
     front = [item for item in filtered if item.group_slug == "front-matter"]
     rest = [item for item in filtered if item.group_slug != "front-matter"]
     front.sort(key=lambda item: (front_order.get(item.path, 99), item.path))
     return front + rest
+
+
+def is_submission_pdf_item(item: NavItem) -> bool:
+    path = item.path
+    return bool(
+        re.match(r"part\d+/ch\d+_", path)
+        or re.match(r"part14/p\d+_", path)
+        or path.startswith("appendix_")
+        or path == "afterword.md"
+    )
+
+
+def submission_pdf_items(items: list[NavItem]) -> list[NavItem]:
+    return [item for item in prepare_pdf_items(items) if is_submission_pdf_item(item)]
+
+
+def front_matter_pdf_items(items: list[NavItem]) -> list[NavItem]:
+    paths = PRE_CONTENTS_FRONT_PATHS | POST_CONTENTS_FRONT_PATHS
+    return [item for item in prepare_pdf_items(items) if item.path in paths]
+
+
+def back_matter_pdf_items(items: list[NavItem]) -> list[NavItem]:
+    return [item for item in prepare_pdf_items(items) if item.path == "afterword.md"]
 
 
 def to_roman(number: int) -> str:
@@ -726,11 +914,7 @@ def build_page_number_label(page_number: int, first_body_page: int) -> str:
     return str(page_number - first_body_page + 1)
 
 
-def generate_book_front_pdf(
-    path: Path,
-    toc_entries: list[tuple[str, int, str]],
-    stats: dict[str, int],
-) -> int:
+def generate_opening_front_pdf(path: Path, stats: dict[str, int]) -> int:
     try:
         from reportlab.lib import colors
         from reportlab.lib.pagesizes import mm
@@ -738,6 +922,7 @@ def generate_book_front_pdf(
     except Exception as exc:  # pragma: no cover - dependency check
         raise RuntimeError("reportlab is required to generate formal front matter") from exc
 
+    regular_font, bold_font = register_pdf_fonts()
     path.parent.mkdir(parents=True, exist_ok=True)
     page_width = 185 * mm
     page_height = 260 * mm
@@ -747,104 +932,103 @@ def generate_book_front_pdf(
     bottom = 20 * mm
     usable_width = page_width - left - right
 
-    c = canvas.Canvas(str(path), pagesize=(page_width, page_height))
+    c = canvas.Canvas(str(path), pagesize=(page_width, page_height), initialFontName=regular_font)
+    page_count = 0
+
+    def draw_wrapped(text: str, x: float, y: float, font: str, size: float, max_width: float, leading: float) -> float:
+        c.setFont(font, size)
+        line = ""
+        for word in text.split():
+            candidate = (line + " " + word).strip()
+            if c.stringWidth(candidate, font, size) > max_width and line:
+                c.drawString(x, y, line)
+                y -= leading
+                line = word
+            else:
+                line = candidate
+        if line:
+            c.drawString(x, y, line)
+            y -= leading
+        return y
+
+    def footer(label: str | None = None) -> None:
+        nonlocal page_count
+        page_count += 1
+        if label:
+            c.setFont(regular_font, 9)
+            c.setFillColor(colors.HexColor("#5f6876"))
+            c.drawCentredString(page_width / 2, 10 * mm, label)
+        c.showPage()
+
+    # Title page.
+    c.setFillColor(colors.HexColor("#182336"))
+    c.setFont(bold_font, 24)
+    y = page_height - top - 42 * mm
+    c.drawString(left, y, "Data Engineering for")
+    y -= 10 * mm
+    c.drawString(left, y, "Large Foundation Models")
+    y -= 13 * mm
+    c.setFont(regular_font, 15)
+    c.setFillColor(colors.HexColor("#245a8d"))
+    c.drawString(left, y, "A Handbook")
+    y -= 20 * mm
+    c.setFillColor(colors.HexColor("#333333"))
+    c.setFont(bold_font, 11)
+    c.drawString(left, y, "Authors")
+    y -= 6 * mm
+    y = draw_wrapped(BOOK_AUTHORS, left, y, regular_font, 10, usable_width, 5 * mm)
+    y -= 12 * mm
+    c.setFont(regular_font, 9.5)
+    c.setFillColor(colors.HexColor("#5f6876"))
+    draw_wrapped("Springer manuscript review PDF", left, y, regular_font, 9.5, usable_width, 4.8 * mm)
+    footer(None)
+
+    c.save()
+    return page_count
+
+
+def generate_contents_pdf(path: Path, toc_entries: list[tuple[str, int, str]], start_page_number: int) -> int:
+    try:
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import mm
+        from reportlab.pdfgen import canvas
+    except Exception as exc:  # pragma: no cover - dependency check
+        raise RuntimeError("reportlab is required to generate formal contents") from exc
+
+    regular_font, bold_font = register_pdf_fonts()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    page_width = 185 * mm
+    page_height = 260 * mm
+    left = 18 * mm
+    right = 18 * mm
+    top = 22 * mm
+    bottom = 20 * mm
+    usable_width = page_width - left - right
+    c = canvas.Canvas(str(path), pagesize=(page_width, page_height), initialFontName=regular_font)
     page_count = 0
 
     def footer(label: str | None = None) -> None:
         nonlocal page_count
         page_count += 1
         if label:
-            c.setFont("Times-Roman", 9)
+            c.setFont(regular_font, 9)
             c.setFillColor(colors.HexColor("#5f6876"))
             c.drawCentredString(page_width / 2, 10 * mm, label)
         c.showPage()
 
-    # Half-title / cover page.
-    c.setFillColor(colors.HexColor("#182336"))
-    c.setFont("Times-Bold", 25)
-    y = page_height * 0.57
-    for line in ("Data Engineering for", "Large Foundation Models"):
-        c.drawCentredString(page_width / 2, y, line)
-        y -= 10 * mm
-    c.setFont("Times-Roman", 15)
-    c.setFillColor(colors.HexColor("#245a8d"))
-    c.drawCentredString(page_width / 2, y - 2 * mm, "A Handbook")
-    c.setStrokeColor(colors.HexColor("#182336"))
-    c.setLineWidth(1)
-    c.line(left, 34 * mm, page_width - right, 34 * mm)
-    c.setFont("Times-Roman", 9.5)
-    c.setFillColor(colors.HexColor("#5f6876"))
-    c.drawCentredString(page_width / 2, 27 * mm, "Springer manuscript review PDF")
-    footer(None)
-
-    # Title page.
-    c.setFillColor(colors.HexColor("#182336"))
-    c.setFont("Times-Bold", 24)
-    y = page_height - top - 42 * mm
-    c.drawString(left, y, "Data Engineering for")
-    y -= 10 * mm
-    c.drawString(left, y, "Large Foundation Models")
-    y -= 13 * mm
-    c.setFont("Times-Roman", 15)
-    c.setFillColor(colors.HexColor("#245a8d"))
-    c.drawString(left, y, "A Handbook")
-    y -= 26 * mm
-    c.setFont("Times-Roman", 10)
-    c.setFillColor(colors.HexColor("#333333"))
-    title_meta = [
-        "Manuscript PDF generated from the English source files.",
-        "Book trim preview: 16K, 185 mm x 260 mm.",
-        f"Included manuscript files: {stats.get('files', 0)}.",
-        "Author, affiliation, imprint, ISBN, and copyright metadata are to be supplied in the final publisher metadata package.",
-    ]
-    for line in title_meta:
-        c.drawString(left, y, line)
-        y -= 6 * mm
-    footer("ii")
-
-    # Copyright and declarations placeholder.
-    c.setFillColor(colors.HexColor("#182336"))
-    c.setFont("Times-Bold", 16)
-    y = page_height - top
-    c.drawString(left, y, "Copyright, Permissions, and Production Notes")
-    y -= 10 * mm
-    c.setFont("Times-Roman", 10)
-    c.setFillColor(colors.HexColor("#222222"))
-    paragraphs = [
-        "This page is a manuscript-stage placeholder. The final copyright page, imprint line, ISBN, DOI, series information, and legal notices should be completed in Springer's production workflow.",
-        "All third-party figures, tables, screenshots, adapted diagrams, dataset marks, and code snippets that require permission should be supplied in a separate permissions package with source, rights holder, license, and permission-status records.",
-        "The PDF has been generated for manuscript review. Page numbers, running heads, and table-of-contents entries should be rechecked after any subsequent content or layout change.",
-    ]
-    for para in paragraphs:
-        words = para.split()
-        line = ""
-        for word in words:
-            candidate = (line + " " + word).strip()
-            if c.stringWidth(candidate, "Times-Roman", 10) > usable_width:
-                c.drawString(left, y, line)
-                y -= 5.2 * mm
-                line = word
-            else:
-                line = candidate
-        if line:
-            c.drawString(left, y, line)
-            y -= 7.5 * mm
-    footer("iii")
-
     def write_contents_page_header(page_no: int) -> float:
         c.setFillColor(colors.HexColor("#182336"))
-        c.setFont("Times-Bold", 17)
+        c.setFont(bold_font, 17)
         c.drawString(left, page_height - top, "Contents")
         c.setStrokeColor(colors.HexColor("#d9dee7"))
         c.setLineWidth(0.7)
         c.line(left, page_height - top - 4 * mm, page_width - right, page_height - top - 4 * mm)
-        c.setFont("Times-Roman", 9)
+        c.setFont(regular_font, 9)
         c.setFillColor(colors.HexColor("#5f6876"))
         c.drawRightString(page_width - right, page_height - top, f"Page {page_no}")
         return page_height - top - 12 * mm
 
-    # Page-numbered contents.
-    contents_page_no = 4
+    contents_page_no = start_page_number
     y = write_contents_page_header(contents_page_no)
     min_y = bottom + 7 * mm
     for title, level, page_label in toc_entries:
@@ -853,7 +1037,7 @@ def generate_book_front_pdf(
             contents_page_no += 1
             y = write_contents_page_header(contents_page_no)
         indent = max(0, level - 1) * 5 * mm
-        font = "Times-Bold" if level == 1 else "Times-Roman"
+        font = bold_font if level == 1 else regular_font
         size = 9.4 if level <= 2 else 8.7
         c.setFont(font, size)
         c.setFillColor(colors.HexColor("#182336") if level <= 2 else colors.HexColor("#333333"))
@@ -878,13 +1062,35 @@ def generate_book_front_pdf(
     return page_count
 
 
+def generate_book_front_pdf(
+    path: Path,
+    toc_entries: list[tuple[str, int, str]],
+    stats: dict[str, int],
+) -> int:
+    """Backward-compatible front matter generator for non-Springer split flows."""
+
+    opening_pages = generate_opening_front_pdf(path, stats)
+    contents_pages = generate_contents_pdf(CONTENTS_PDF, toc_entries, opening_pages + 1)
+    try:
+        from pypdf import PdfWriter
+    except Exception as exc:  # pragma: no cover - dependency check
+        raise RuntimeError("pypdf is required to merge generated front matter") from exc
+
+    writer = PdfWriter()
+    writer.append(str(path))
+    writer.append(str(CONTENTS_PDF))
+    with path.open("wb") as handle:
+        writer.write(handle)
+    return opening_pages + contents_pages
+
+
 def write_html(path: Path, html_doc: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(html_doc, encoding="utf-8")
     print(f"[ok] HTML written: {path}")
 
 
-def export_pdf(html_path: Path, pdf_path: Path, timeout: int) -> None:
+def export_pdf(html_path: Path, pdf_path: Path, timeout: int, *, min_size: int = 100_000) -> None:
     if not CHROME.exists():
         raise FileNotFoundError(f"Google Chrome not found: {CHROME}")
 
@@ -907,7 +1113,7 @@ def export_pdf(html_path: Path, pdf_path: Path, timeout: int) -> None:
         print(proc.stderr.strip(), file=sys.stderr)
     if proc.returncode != 0:
         raise RuntimeError(f"Chrome PDF export failed with rc={proc.returncode}")
-    if not pdf_path.exists() or pdf_path.stat().st_size < 100_000:
+    if not pdf_path.exists() or pdf_path.stat().st_size < min_size:
         raise RuntimeError("PDF was not produced or is suspiciously small")
     print(f"[ok] PDF written: {pdf_path} ({pdf_path.stat().st_size / 1024 / 1024:.1f} MB)")
 
@@ -927,6 +1133,24 @@ def group_items(items: list[NavItem]) -> list[tuple[str, str, list[NavItem]]]:
         current_items.append(item)
     if current_items:
         groups.append((current_slug, current_title, current_items))
+    return groups
+
+
+def formal_groups(items: list[NavItem]) -> list[tuple[str, str, list[NavItem]]]:
+    pre_contents = [
+        item for item in items if item.group_slug == "front-matter" and item.path in PRE_CONTENTS_FRONT_PATHS
+    ]
+    post_contents = [
+        item for item in items if item.group_slug == "front-matter" and item.path in POST_CONTENTS_FRONT_PATHS
+    ]
+    body_items = [item for item in items if item.group_slug != "front-matter"]
+
+    groups: list[tuple[str, str, list[NavItem]]] = []
+    if pre_contents:
+        groups.append(("front-matter-before-contents", "Front Matter Before Contents", pre_contents))
+    if post_contents:
+        groups.append(("front-matter-after-contents", "Front Matter After Contents", post_contents))
+    groups.extend(group_items(body_items))
     return groups
 
 
@@ -956,12 +1180,14 @@ def merge_pdfs(parts: list[Path], output: Path, items: list[NavItem] | None = No
 
 
 def merge_formal_book_pdf(
-    front_pdf: Path,
+    opening_pdf: Path,
+    contents_pdf: Path,
     parts: list[Path],
     output: Path,
-    items: list[NavItem],
+    groups: list[tuple[str, str, list[NavItem]]],
     *,
     first_body_page: int,
+    contents_after_group: int,
 ) -> None:
     try:
         from pypdf import PdfReader, PdfWriter
@@ -969,15 +1195,26 @@ def merge_formal_book_pdf(
         raise RuntimeError("pypdf is required to merge the formal book PDF") from exc
 
     writer = PdfWriter()
-    writer.append(str(front_pdf))
+    writer.append(str(opening_pdf))
     offsets: list[int] = []
-    page_offset = len(PdfReader(str(front_pdf)).pages)
-    for part in parts:
+    page_offset = len(PdfReader(str(opening_pdf)).pages)
+    for index, part in enumerate(parts):
         offsets.append(page_offset)
         page_offset += len(PdfReader(str(part)).pages)
         writer.append(str(part))
+        if index == contents_after_group:
+            writer.append(str(contents_pdf))
+            page_offset += len(PdfReader(str(contents_pdf)).pages)
 
-    add_formal_bookmarks(writer, front_pdf, parts, offsets, items)
+    add_formal_bookmarks(
+        writer,
+        opening_pdf,
+        contents_pdf,
+        parts,
+        offsets,
+        groups,
+        contents_after_group=contents_after_group,
+    )
     try:
         writer.page_mode = "/UseOutlines"
     except Exception:
@@ -992,17 +1229,19 @@ def merge_formal_book_pdf(
 
 def add_formal_bookmarks(
     writer: Any,
-    front_pdf: Path,
+    opening_pdf: Path,
+    contents_pdf: Path,
     parts: list[Path],
     offsets: list[int],
-    items: list[NavItem],
+    groups: list[tuple[str, str, list[NavItem]]],
+    *,
+    contents_after_group: int,
 ) -> None:
-    front_pages = len(__import__("pypdf").PdfReader(str(front_pdf)).pages)
-    writer.add_outline_item("Half Title", 0)
-    writer.add_outline_item("Title Page", 1)
-    writer.add_outline_item("Copyright, Permissions, and Production Notes", 2)
-    writer.add_outline_item("Contents", 3)
-    groups = group_items(items)
+    opening_pages = len(__import__("pypdf").PdfReader(str(opening_pdf)).pages)
+    contents_pages = len(__import__("pypdf").PdfReader(str(contents_pdf)).pages)
+    writer.add_outline_item("Title Page", 0)
+    contents_offset = offsets[contents_after_group] + len(__import__("pypdf").PdfReader(str(parts[contents_after_group])).pages)
+    writer.add_outline_item("Contents", contents_offset)
     if len(groups) != len(parts):
         print("[WARN] bookmark group count does not match part PDFs", file=sys.stderr)
         return
@@ -1013,7 +1252,7 @@ def add_formal_bookmarks(
         for item in grouped:
             local_page = local_pages.get(item.path, 0)
             writer.add_outline_item(item.title, offset + local_page, parent=parent)
-    if front_pages < 4:
+    if opening_pages < 1 or contents_pages < 1:
         print("[WARN] generated front matter has fewer pages than expected", file=sys.stderr)
 
 
@@ -1027,6 +1266,7 @@ def add_page_number_overlay(writer: Any, *, first_body_page: int) -> Any:
     except Exception as exc:  # pragma: no cover - dependency check
         raise RuntimeError("pypdf and reportlab are required to add page numbers") from exc
 
+    regular_font, _ = register_pdf_fonts()
     numbered = PdfWriter()
     total_pages = len(writer.pages)
     for index, page in enumerate(writer.pages, 1):
@@ -1036,13 +1276,13 @@ def add_page_number_overlay(writer: Any, *, first_body_page: int) -> Any:
         width = float(page.mediabox.width)
         height = float(page.mediabox.height)
         packet = BytesIO()
-        c = canvas.Canvas(packet, pagesize=(width, height))
-        c.setFont("Times-Roman", 8.5)
+        c = canvas.Canvas(packet, pagesize=(width, height), initialFontName=regular_font)
+        c.setFont(regular_font, 8.5)
         c.setFillColor(colors.HexColor("#5f6876"))
         label = build_page_number_label(index, first_body_page)
         c.drawCentredString(width / 2, 18, label)
         if index >= first_body_page:
-            c.setFont("Times-Roman", 7.8)
+            c.setFont(regular_font, 7.8)
             c.drawString(42, 18, "Data Engineering for Large Foundation Models")
             c.drawRightString(width - 42, 18, "A Handbook")
         c.save()
@@ -1125,12 +1365,62 @@ def compute_toc_entries(
     return entries
 
 
+def compute_formal_toc_entries(
+    groups: list[tuple[str, str, list[NavItem]]],
+    parts: list[Path],
+    *,
+    opening_pages: int,
+    contents_pages: int,
+    first_body_page: int,
+    contents_after_group: int,
+) -> list[tuple[str, int, str]]:
+    from pypdf import PdfReader
+
+    entries: list[tuple[str, int, str]] = []
+    content_offset = opening_pages
+    for index, ((_, title, grouped), part) in enumerate(zip(groups, parts)):
+        reader = PdfReader(str(part))
+        is_artificial_front_group = title in {"Front Matter Before Contents", "Front Matter After Contents"}
+        if not is_artificial_front_group:
+            entries.append((title, 1, build_page_number_label(content_offset + 1, first_body_page)))
+        local_pages = locate_item_pages(reader, grouped, start_after_toc=False)
+        for item in grouped:
+            local_page = local_pages.get(item.path, 0)
+            absolute_page = content_offset + local_page + 1
+            entry_level = item.level if not is_artificial_front_group else 1
+            entries.append((item.title, entry_level, build_page_number_label(absolute_page, first_body_page)))
+        content_offset += len(reader.pages)
+        if index == contents_after_group:
+            content_offset += contents_pages
+    return entries
+
+
+def first_body_page_number(
+    groups: list[tuple[str, str, list[NavItem]]],
+    parts: list[Path],
+    *,
+    opening_pages: int,
+    contents_pages: int,
+    contents_after_group: int,
+) -> int:
+    from pypdf import PdfReader
+
+    page_offset = opening_pages
+    for index, ((slug, _, _), part) in enumerate(zip(groups, parts)):
+        if slug not in {"front-matter-before-contents", "front-matter-after-contents"}:
+            return page_offset + 1
+        page_offset += len(PdfReader(str(part)).pages)
+        if index == contents_after_group:
+            page_offset += contents_pages
+    return page_offset + 1
+
+
 def export_split_pdf(items: list[NavItem], timeout: int, include_mathjax: bool, global_stats: dict[str, int]) -> None:
     if PARTS_DIR.exists():
         shutil.rmtree(PARTS_DIR)
     PARTS_DIR.mkdir(parents=True, exist_ok=True)
     part_pdfs: list[Path] = []
-    groups = group_items(items)
+    groups = formal_groups(items)
     width = len(str(len(groups)))
     for index, (slug, title, grouped) in enumerate(groups, 1):
         prefix = f"{index:0{width}d}-{slug}"
@@ -1157,7 +1447,7 @@ def export_split_pdf(items: list[NavItem], timeout: int, include_mathjax: bool, 
                 ]
             )
         )
-        export_pdf(html_path, pdf_path, timeout)
+        export_pdf(html_path, pdf_path, timeout, min_size=10_000)
         part_pdfs.append(pdf_path)
 
     try:
@@ -1165,39 +1455,214 @@ def export_split_pdf(items: list[NavItem], timeout: int, include_mathjax: bool, 
     except Exception as exc:  # pragma: no cover - dependency check
         raise RuntimeError("pypdf is required to compute page-numbered contents") from exc
 
-    front_pages = 4
+    opening_pages = generate_opening_front_pdf(OPENING_FRONT_PDF, global_stats)
+    contents_after_group = 0
+    contents_pages = 1
     for _ in range(4):
-        front_matter_pages = len(PdfReader(str(part_pdfs[0])).pages) if groups else 0
-        first_body_page = front_pages + front_matter_pages + 1
-        toc_entries = compute_toc_entries(
-            items,
+        first_body_page = first_body_page_number(
+            groups,
             part_pdfs,
-            front_pages=front_pages,
-            first_body_page=first_body_page,
+            opening_pages=opening_pages,
+            contents_pages=contents_pages,
+            contents_after_group=contents_after_group,
         )
-        actual_front_pages = generate_book_front_pdf(FRONT_PDF, toc_entries, global_stats)
-        if actual_front_pages == front_pages:
+        toc_entries = compute_formal_toc_entries(
+            groups,
+            part_pdfs,
+            opening_pages=opening_pages,
+            contents_pages=contents_pages,
+            first_body_page=first_body_page,
+            contents_after_group=contents_after_group,
+        )
+        actual_contents_pages = generate_contents_pdf(
+            CONTENTS_PDF,
+            toc_entries,
+            start_page_number=opening_pages + len(PdfReader(str(part_pdfs[0])).pages) + 1,
+        )
+        if actual_contents_pages == contents_pages:
             break
-        front_pages = actual_front_pages
+        contents_pages = actual_contents_pages
     else:
-        print("[WARN] front-matter page count did not stabilize after TOC generation", file=sys.stderr)
+        print("[WARN] contents page count did not stabilize after TOC generation", file=sys.stderr)
 
-    front_matter_pages = len(PdfReader(str(part_pdfs[0])).pages) if groups else 0
-    first_body_page = front_pages + front_matter_pages + 1
-    toc_entries = compute_toc_entries(
-        items,
+    first_body_page = first_body_page_number(
+        groups,
         part_pdfs,
-        front_pages=front_pages,
-        first_body_page=first_body_page,
+        opening_pages=opening_pages,
+        contents_pages=contents_pages,
+        contents_after_group=contents_after_group,
     )
-    generate_book_front_pdf(FRONT_PDF, toc_entries, global_stats)
-    merge_formal_book_pdf(FRONT_PDF, part_pdfs, OUT_PDF, items, first_body_page=first_body_page)
+    toc_entries = compute_formal_toc_entries(
+        groups,
+        part_pdfs,
+        opening_pages=opening_pages,
+        contents_pages=contents_pages,
+        first_body_page=first_body_page,
+        contents_after_group=contents_after_group,
+    )
+    generate_contents_pdf(
+        CONTENTS_PDF,
+        toc_entries,
+        start_page_number=opening_pages + len(PdfReader(str(part_pdfs[0])).pages) + 1,
+    )
+    merge_formal_book_pdf(
+        OPENING_FRONT_PDF,
+        CONTENTS_PDF,
+        part_pdfs,
+        OUT_PDF,
+        groups,
+        first_body_page=first_body_page,
+        contents_after_group=contents_after_group,
+    )
+
+
+def extract_main_html(html_doc: str) -> str:
+    match = re.search(r"<main>\s*(.*?)\s*</main>", html_doc, flags=re.S)
+    return match.group(1) if match else ""
+
+
+def build_reference_pdf_html(
+    body_html: str,
+    *,
+    title_suffix: str,
+    include_mathjax: bool,
+) -> str:
+    mathjax = MATHJAX if include_mathjax else ""
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Engineering for Large Foundation Models: A Handbook - {html.escape(title_suffix)}</title>
+<style>{CSS}</style>
+{mathjax}
+</head>
+<body>
+<main>
+{body_html}
+</main>
+</body>
+</html>
+"""
+
+
+def build_front_matter_reference_html(items: list[NavItem], include_mathjax: bool) -> str:
+    prepared = prepare_pdf_items(items)
+    pre_items = [item for item in prepared if item.path in PRE_CONTENTS_FRONT_PATHS]
+    post_items = [item for item in prepared if item.path in POST_CONTENTS_FRONT_PATHS]
+    pre_doc, _ = build_book_html(pre_items, include_mathjax=include_mathjax, include_cover_toc=False)
+    post_doc, _ = build_book_html(post_items, include_mathjax=include_mathjax, include_cover_toc=False)
+    body = (
+        generated_title_page_html()
+        + extract_main_html(pre_doc)
+        + """
+<section class="source-file front-section generated-front-section">
+  <h1>Contents</h1>
+  <p>The final table of contents and page numbers should be verified in the publisher production system.</p>
+</section>
+"""
+        + extract_main_html(post_doc)
+    )
+    return build_reference_pdf_html(body, title_suffix="Front Matter", include_mathjax=include_mathjax)
+
+
+def export_submission_pdfs(items: list[NavItem], timeout: int, include_mathjax: bool) -> None:
+    """Export a Springer-style PDF folder: full book plus one PDF per manuscript unit."""
+
+    if SUBMISSION_PDF_DIR.exists():
+        shutil.rmtree(SUBMISSION_PDF_DIR)
+    SUBMISSION_PDF_DIR.mkdir(parents=True, exist_ok=True)
+
+    if OUT_PDF.exists():
+        shutil.copy2(OUT_PDF, SUBMISSION_PDF_DIR / "00_full_book_pagenumbered.pdf")
+    else:
+        print("[WARN] full book PDF does not exist yet; submission folder will contain contribution PDFs only")
+
+    manifest_lines = [
+        "# English Springer PDF Submission Folder",
+        "",
+        "This folder contains the full paginated book PDF plus reference PDFs for front matter, chapters, project chapters, appendices, and back matter.",
+        "Springer Nature's manuscript guidelines ask for a single ZIP that includes source files and a PDF set with chapter PDFs plus front/back matter PDFs when applicable.",
+        "",
+        "| No. | Title | Source | PDF |",
+        "| --- | --- | --- | --- |",
+    ]
+    front_html_path = SUBMISSION_PDF_DIR / "00_front_matter.html"
+    front_pdf_path = SUBMISSION_PDF_DIR / "00_front_matter.pdf"
+    write_html(front_html_path, build_front_matter_reference_html(items, include_mathjax))
+    export_pdf(front_html_path, front_pdf_path, timeout, min_size=10_000)
+    manifest_lines.append(
+        f"| Front | Front matter | generated title page plus `{', '.join(item.path for item in front_matter_pdf_items(items))}` | `{front_pdf_path.name}` |"
+    )
+
+    manuscript_items = submission_pdf_items(items)
+    width = len(str(len(manuscript_items)))
+    for index, item in enumerate(manuscript_items, 1):
+        slug = slugify(Path(item.path).with_suffix("").as_posix().replace("/", "-"))
+        prefix = f"{index:0{width}d}-{slug}"
+        html_path = SUBMISSION_PDF_DIR / f"{prefix}.html"
+        pdf_path = SUBMISSION_PDF_DIR / f"{prefix}.pdf"
+        html_doc, stats = build_book_html(
+            [item],
+            title_suffix=f" - {item.title}",
+            include_mathjax=include_mathjax,
+            include_cover_toc=False,
+        )
+        write_html(html_path, html_doc)
+        print(
+            "[stats] submission "
+            + item.title
+            + " | "
+            + ", ".join(
+                [
+                    f"files={stats['files']}",
+                    f"missing={stats['missing']}",
+                    f"images={stats['images']}",
+                    f"code_blocks={stats['code_blocks']}",
+                    f"tables={stats['tables']}",
+                ]
+            )
+        )
+        export_pdf(html_path, pdf_path, timeout, min_size=10_000)
+        safe_title = item.title.replace("|", "\\|")
+        manifest_lines.append(
+            f"| {index} | {safe_title} | `{item.path}` | `{pdf_path.name}` |"
+        )
+
+    back_items = back_matter_pdf_items(items)
+    if back_items:
+        back_html_path = SUBMISSION_PDF_DIR / "99_back_matter.html"
+        back_pdf_path = SUBMISSION_PDF_DIR / "99_back_matter.pdf"
+        back_doc, _ = build_book_html(
+            back_items,
+            title_suffix=" - Back Matter",
+            include_mathjax=include_mathjax,
+            include_cover_toc=False,
+        )
+        write_html(back_html_path, back_doc)
+        export_pdf(back_html_path, back_pdf_path, timeout, min_size=10_000)
+        manifest_lines.append(
+            f"| Back | Back matter | `{', '.join(item.path for item in back_items)}` | `{back_pdf_path.name}` |"
+        )
+    manifest = SUBMISSION_PDF_DIR / "README.md"
+    manifest.write_text("\n".join(manifest_lines) + "\n", encoding="utf-8")
+    print(f"[ok] submission PDF folder written: {SUBMISSION_PDF_DIR}")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Export en manuscript to 16K compact PDF")
     parser.add_argument("--no-pdf", action="store_true", help="Only write the intermediate HTML")
     parser.add_argument("--split", action="store_true", help="Export by book part and merge PDFs")
+    parser.add_argument(
+        "--submission-pdfs",
+        action="store_true",
+        help="Also export a Springer-style folder with the full PDF and one PDF per navigation unit",
+    )
+    parser.add_argument(
+        "--submission-pdfs-only",
+        action="store_true",
+        help="Only export the Springer-style submission PDF folder from the current sources",
+    )
     parser.add_argument("--no-mathjax", action="store_true", help="Disable MathJax formula rendering")
     parser.add_argument("--timeout", type=int, default=1200, help="Chrome export timeout in seconds")
     args = parser.parse_args()
@@ -1219,11 +1684,15 @@ def main() -> int:
             ]
         )
     )
-    if not args.no_pdf:
+    if args.submission_pdfs_only:
+        export_submission_pdfs(items, args.timeout, include_mathjax)
+    elif not args.no_pdf:
         if args.split:
             export_split_pdf(items, args.timeout, include_mathjax, stats)
         else:
             export_pdf(OUT_HTML, OUT_PDF, args.timeout)
+        if args.submission_pdfs:
+            export_submission_pdfs(items, args.timeout, include_mathjax)
     return 0
 
 

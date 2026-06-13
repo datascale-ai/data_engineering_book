@@ -1,5 +1,7 @@
 # 第43章：LAION-5B 图文候选池与筛选通道
 
+<div class="chapter-authors">穆冠霖（Guanlin Mu）</div>
+
 ## 摘要
 
 图文基础语料和纯文本语料最大的差异，不在于多了图片文件，而在于样本被拆成了多个必须同时成立的通道。文本通道要说明图片被怎样描述，视觉通道要说明图片是否能下载、尺寸和内容是否可用，对齐通道要说明图文是否相关，风险通道要说明是否含有水印、NSFW、毒性、隐私或授权风险。任何一个通道失效，图文对都可能不适合训练。
@@ -10,7 +12,7 @@ LAION-5B 是由 Common Crawl 衍生的大规模图文候选池。它从网页 WA
 
 LAION-5B；图文对；Common Crawl；alt text；CLIP 过滤；多通道 schema；WebDataset；Parquet；DataComp；风险治理
 
-## 43.0 学习目标
+## 学习目标
 
 通过本章学习，读者应能够：
 
@@ -259,9 +261,9 @@ LAION-5B 展示了开放图文候选池如何从网页 URL 和 alt text 变成�
 
 ## 参考文献
 
-- Schuhmann, C., Beaumont, R., Vencu, R., Gordon, C., Wightman, R., Cherti, M., et al. (2022). LAION-5B: An open large-scale dataset for training next generation image-text models. NeurIPS 2022 Datasets and Benchmarks Track. https://arxiv.org/abs/2210.08402
-- LAION. (2022). LAION-5B: A new era of open large-scale multi-modal datasets. https://laion.ai/blog/laion-5b/
-- LAION-AI. (2022). dataset-spec. https://github.com/LAION-AI/dataset-spec
-- Gadre, S. Y., Ilharco, G., Fang, A., Hayase, J., Smyrnis, G., Nguyen, T., et al. (2023). DataComp: In search of the next generation of multimodal datasets. NeurIPS 2023 Datasets and Benchmarks Track. https://arxiv.org/abs/2304.14108
-- DataComp Team. (2026). DataComp Benchmark Documentation. https://www.datacomp.ai/dcclip/
-- ML Foundations. (2023). DataComp codebase. https://github.com/mlfoundations/datacomp
+- Schuhmann, C., Beaumont, R., Vencu, R., Gordon, C., Wightman, R., Cherti, M., et al. (2022). LAION-5B: An open large-scale dataset for training next generation image-text models. NeurIPS 2022 Datasets and Benchmarks Track. https://arxiv.org/abs/2210.08402.
+- LAION. (2022). LAION-5B: A new era of open large-scale multi-modal datasets. https://laion.ai/blog/laion-5b/.
+- LAION-AI. (2022). dataset-spec. https://github.com/LAION-AI/dataset-spec.
+- Gadre, S. Y., Ilharco, G., Fang, A., Hayase, J., Smyrnis, G., Nguyen, T., et al. (2023). DataComp: In search of the next generation of multimodal datasets. NeurIPS 2023 Datasets and Benchmarks Track. https://arxiv.org/abs/2304.14108.
+- DataComp Team. (2026). DataComp Benchmark Documentation. https://www.datacomp.ai/dcclip/.
+- ML Foundations. (2023). DataComp codebase. https://github.com/mlfoundations/datacomp.

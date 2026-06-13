@@ -1,5 +1,7 @@
 # 第32章：自动化采集、解析与清洗 Agent
 
+<div class="chapter-authors">汪志立（ZhiLi Wang）</div>
+
 ---
 
 ## 摘要

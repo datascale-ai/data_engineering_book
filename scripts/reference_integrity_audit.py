@@ -44,13 +44,14 @@ NEXT_H2_RE = re.compile(r"^##\s+")
 YEAR_RE = re.compile(r"\b((?:19|20)\d{2})(?:[a-z])?(?=\b|[).,;:])")
 ARXIV_RE = re.compile(r"arXiv(?::|\s+preprint\s+arXiv:)\s*([0-9]{4}\.[0-9]{4,5}(?:v\d+)?|[a-z-]+/[0-9]{7}(?:v\d+)?)", re.I)
 DOI_RE = re.compile(r"\b10\.\d{4,9}/[-._;()/:A-Za-z0-9]+\b")
-URL_RE = re.compile(r"https?://[^\s<>)]+")
+URL_RE = re.compile(r"https?://[^\s<>)]*[^\s<>).,;。；]")
 
 AUTHOR_TOKEN_RE = r"[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’`.-]+"
 CITATION_PATTERNS = [
     re.compile(r"\b(National Institute of Standards and Technology)\s*\(?((?:19|20)\d{2})\)?"),
-    re.compile(r"\b(Nait\s+Saada|Jimeno\s+Yepes)\s+et\s+al\.\s*\(?((?:19|20)\d{2})\)?"),
+    re.compile(r"\b(Nait\s+Saada|Jimeno\s+Yepes|Ortiz\s+Suárez)\s+et\s+al\.\s*\(?((?:19|20)\d{2})\)?"),
     re.compile(r"\b(Kimi\s+Team|Qwen\s+Team|Gemini\s+Team|Open-Sora\s+Team|Wan\s+Team)\s*\(?((?:19|20)\d{2})\)?"),
+    re.compile(rf"\b({AUTHOR_TOKEN_RE}),\s+{AUTHOR_TOKEN_RE}\s+et\s+al\.\s*\(?((?:19|20)\d{{2}})\)?"),
     re.compile(rf"\b({AUTHOR_TOKEN_RE})\s+et\s+al\.\s*\(?((?:19|20)\d{{2}})\)?"),
     re.compile(rf"\b({AUTHOR_TOKEN_RE}),\s+{AUTHOR_TOKEN_RE}\s+and\s+{AUTHOR_TOKEN_RE}\s*\(?((?:19|20)\d{{2}})\)?"),
     re.compile(rf"\b({AUTHOR_TOKEN_RE}),\s+{AUTHOR_TOKEN_RE}\s*&\s+{AUTHOR_TOKEN_RE}\s*\(?((?:19|20)\d{{2}})\)?"),
@@ -251,6 +252,8 @@ def first_author_from_entry(entry: str) -> str:
         return "Nait Saada"
     if entry.startswith("Jimeno Yepes"):
         return "Jimeno Yepes"
+    if entry.startswith("Ortiz Suárez"):
+        return "Ortiz Suárez"
     if entry.startswith("Team Kimi"):
         return "Kimi Team"
     for team_name in ("Qwen Team", "Gemini Team", "Open-Sora Team", "Wan Team"):
@@ -272,6 +275,8 @@ def first_author_from_entry(entry: str) -> str:
         return "DVC"
     if entry.startswith("MLflow "):
         return "MLflow"
+    if entry.startswith("vLLM "):
+        return "vLLM"
     match = re.match(r"([A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’`.-]+)", entry)
     return match.group(1) if match else ""
 
@@ -279,7 +284,9 @@ def first_author_from_entry(entry: str) -> str:
 def title_from_entry(entry: str) -> str:
     text = re.sub(r"\*+", "", entry)
     text = re.sub(r"\s+", " ", text).strip()
-    year_match = re.search(r"\((?:19|20)\d{2}[a-z]?\)\.?\s*", text)
+    year_match = re.search(r"\((?:19|20)\d{2}[a-z]?(?:,\s*[A-Za-z]+)?\)\.?\s*", text)
+    if not year_match:
+        year_match = re.search(r"\b(?:19|20)\d{2}[a-z]?\.\s+", text)
     if not year_match:
         return ""
     tail = text[year_match.end() :].strip()
@@ -361,8 +368,12 @@ def extract_body_citations(path: Path) -> list[BodyCitation]:
     rows: list[BodyCitation] = []
     seen_line_keys: set[tuple[int, str, str]] = set()
     for lineno, line in body_lines_before_references(path):
+        accepted_spans: list[tuple[int, int]] = []
         for pattern in CITATION_PATTERNS:
             for match in pattern.finditer(line):
+                start, end = match.span()
+                if any(start < accepted_end and end > accepted_start for accepted_start, accepted_end in accepted_spans):
+                    continue
                 author, year = match.group(1), match.group(2)
                 if should_ignore_citation(author, line):
                     continue
@@ -371,6 +382,7 @@ def extract_body_citations(path: Path) -> list[BodyCitation]:
                 if sig in seen_line_keys:
                     continue
                 seen_line_keys.add(sig)
+                accepted_spans.append((start, end))
                 context = line.strip()
                 if len(context) > 220:
                     context = context[:217] + "..."

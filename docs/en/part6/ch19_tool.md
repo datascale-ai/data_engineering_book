@@ -1,5 +1,7 @@
 # Chapter 19: Tool-Use and Function Calling Data
 
+<div class="chapter-authors">Ran Zhang</div>
+
 ## Abstract
 
 Tool-Use and function calling data determine the capability floor of agents—the boundary between "knowing how to answer" and "knowing how to act." This chapter defines tool invocation as an action-modeling problem with state transitions, environmental feedback, and risk boundaries, rather than a formatting exercise attached to language. At the data-object level, the chapter argues that tool invocation spans three consecutive stages: mapping intent to action, instantiating action to parameters, and consuming results into a response. It further shows how systematic gaps in training data at four positions—"whether to call," "parameter instantiation," "result consumption," and "failure recovery"—are amplified into cascading failures during deployment. At the structural design level, the chapter provides decidable and learnable specifications for tool descriptions, parameter schemas, constraints, and error codes; advocates organizing data as trajectories rather than individual samples; and unifies the representation of natural-language input, function-call actions, and environment observation results, while distinguishing single-tool, sequential, and parallel calling structures. At the trajectory level, the chapter defines the minimum closed-loop elements of a successful trajectory and constructs a layered set of failure and recovery samples organized by type—parameter errors, tool rejections, timeouts, and permission failures—emphasizing conditional strategy adjustment rather than mechanical retries. Finally, the chapter discusses evaluation metrics such as exact match, execution success, and recovery rate, along with four categories of safety boundaries—high-risk tools, unauthorized calls, prompt injection, and sensitive data—and the data-synchronization governance challenges posed by tool version evolution.
@@ -301,7 +303,7 @@ When referring to the tool field table, it should not be treated as a fixed fiel
 
 
 
-![Figure 19-1: Tool-Use Data Construction State Machine Diagram](../../images/part6/图19_1.png)
+![Figure 19-1: Tool-Use Data Construction State Machine Diagram](../../images/part6/图19_1.svg)
 
 *Figure 19-1: Tool-Use Data Construction State Machine Diagram*
 
@@ -438,7 +440,7 @@ In other words, log feedback cannot stop at the simple export layer—it is fund
 
 
 
-![Figure 19-2: Call Failure Recovery Process Diagram](../../images/part6/图19_2.png)
+![Figure 19-2: Call Failure Recovery Process Diagram](../../images/part6/图19_2.svg)
 
 *Figure 19-2: Call Failure Recovery Process Diagram*
 

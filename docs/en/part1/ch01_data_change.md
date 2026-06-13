@@ -1,5 +1,7 @@
 # Chapter 1: The Data Revolution in the Era of Large Language Models
 
+<div class="chapter-authors">Ke Wang</div>
+
 ## Abstract
 
 This chapter explains why large language model (LLM) development has shifted from a model-architecture-centric paradigm to a systems-engineering discipline jointly constrained by data, compute, and infrastructure. The chapter opens with an anonymized composite case study illustrating how low-quality corpora, duplicate samples, and benchmark contamination are routinely misdiagnosed as optimizer, distributed-training, or model-architecture problems, producing a systematic decoupling among training metrics, evaluation metrics, and business metrics. It then reviews the empirical patterns revealed by Scaling Laws, the Chinchilla principle, the Phi model series, and synthetic-data practice: data scale, data quality, and data diversity together determine the capability frontier of a model, and all three are subject to cost and engineering constraints. Finally, the chapter presents the role interfaces, the data flywheel, and the fourteen-part structure of the book, establishing a unified coordinate system for the subsequent chapters on quality assessment, infrastructure, pretraining data, multimodal data, alignment data, RAG, DataOps, and compliance governance.

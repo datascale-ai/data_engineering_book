@@ -1,5 +1,7 @@
 # 第40章：交互控制与推理轨迹数据工程
 
+<div class="chapter-authors">Fengxin Chen；Xuan Li</div>
+
 ## 摘要
 
 本章讨论非静态样本如何记录控制条件、状态迁移和推理预算，可控语音交互与隐式/显式推理轨迹两个专项案例。VoiceStyleControl 关注语义内容与声音风格的双通道监督，Latent-Switch-69K 关注长 CoT 压缩、latent placeholder 和 supervision mask。两者共同体现了交互式数据工程的重点：不仅要保存输入输出，还要保存控制变量、隐藏状态和可验证边界。
@@ -893,7 +895,7 @@ Latent-Switch-69K 展示了推理数据工程的一种重要转向：从“收�
 
 An K, Chen Q, Deng C, Du Z, Gao C, Gao Z, Gu Y, He T, Hu H, Hu K, others (2024) FunAudioLLM: Voice Understanding and Generation Foundation Models for Natural Interaction Between Humans and LLMs. arXiv preprint arXiv:2407.04051.
 
-Chanfungjan (n.d.) VoiceStyleControl. GitHub repository. https://github.com/Chanfungjan/VoiceStyleControl.
+Chanfungjan (2026) VoiceStyleControl. GitHub repository. https://github.com/Chanfungjan/VoiceStyleControl.
 
 Du Z, Chen Q, Zhang S, Hu K, Lu H, Yang Y, Hu H, Zheng S, Gu Y, Ma Z, Gao Z, Yan Z (2024) CosyVoice: A Scalable Multilingual Zero-shot Text-to-speech Synthesizer based on Supervised Semantic Tokens. arXiv preprint arXiv:2407.05407.
 
@@ -901,7 +903,7 @@ Du Z, Wang Y, Chen Q, Shi X, Lv X, Zhao T, Gao Z, Yang Y, Gao C, Wang H, others 
 
 Mittag G, Naderi B, Chehadi A, Möller S (2021) NISQA: A Deep CNN-Self-Attention Model for Multidimensional Speech Quality Prediction with Crowdsourced Datasets. In: Interspeech 2021, pp 2127-2131.
 
-Song X (n.d.) S3Tokenizer: Reverse Engineering of Supervised Semantic Speech Tokenizer proposed in CosyVoice. GitHub repository. https://github.com/xingchensong/S3Tokenizer.
+Song X (2026) S3Tokenizer: Reverse Engineering of Supervised Semantic Speech Tokenizer proposed in CosyVoice. GitHub repository. https://github.com/xingchensong/S3Tokenizer.
 
 Yang A, Li A, Yang B, Zhang B, Hui B, Zheng B, Yu B, Gao C, Huang C, Lv C, others (2025) Qwen3 Technical Report. arXiv preprint arXiv:2505.09388.
 

@@ -1,5 +1,7 @@
 # 第26章：数据平台可观测性
 
+<div class="chapter-authors">杜文卓（Wenzhuo Du）</div>
+
 ---
 
 ## 摘要
@@ -328,7 +330,7 @@ P0 和 P1 告警必须有人工确认（ACK）机制。高可靠系统通常通�
 
 归因结果应写回问题池和知识库。每次事故排查都会产生有价值的排障路径，例如某类告警通常由某个数据源断供引起，某个质量分数下降通常与某种标注任务有关，某个依赖升级常影响特定语言处理。把这些经验写入排障手册，可以缩短下一次类似事故的定位时间。
 
-![图26-1：异常归因决策树](../../images/part8/图26_1zh.png)
+![图26-1：异常归因决策树](../../images/part8/图26_1.svg)
 
 *图26-1：LLM 数据平台异常归因决策树——从告警触发到根因定位的四级诊断路径*
 
@@ -478,9 +480,9 @@ LLM 数据平台的运营面板需要服务于不同视角的受众：平台工�
 
 最后，面板不应无限堆叠。每个视图应保留少数核心指标和明确行动入口。平台健康视图关注是否需要值班处理，数据质量视图关注是否需要暂停或修复数据，业务运营视图关注是否影响模型和产品计划。多余指标可以放入诊断页，而不是占据首页。监控面板的目标不是展示团队能收集多少数据，而是帮助团队更快做出正确判断。
 
-![图26-2：平台可观测性全景图](../../images/part8/图26_2zh.png)
+![图26-2：平台可观测性全景图](../../images/part8/图26_2.svg)
 
-*图26-2：LLM 数据平台可观测性全景图——三层指标体系与三维运营面板的架构*
+*图26-2：LLM 数据平台可观测性全景图*
 
 ---
 
@@ -706,7 +708,7 @@ Nygard M T (2018) Release It!: Design and Deploy Production-Ready Software, 2nd 
 
 Oliner A, Stearley J (2007) What Supercomputers Say: A Study of Five System Logs. In: Proceedings of the 37th Annual IEEE/IFIP International Conference on Dependable Systems and Networks (DSN), pp 575-584.
 
-OpenTelemetry Authors (2024) OpenTelemetry Specification. Available at: https://opentelemetry.io/docs/specs/
+OpenTelemetry Authors (2024) OpenTelemetry Specification. Available at: https://opentelemetry.io/docs/specs/.
 
 Polyzotis N, Roy S, Whang S E, Zinkevich M (2017) Data Management Challenges in Production Machine Learning. In: Proceedings of the 2017 ACM International Conference on Management of Data (SIGMOD), pp 1723-1726.
 

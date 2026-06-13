@@ -1,5 +1,7 @@
 # Project 13: Qwen-VL Multimodal Instruction Factory
 
+<div class="chapter-authors">Ke Wang</div>
+
 ## Abstract
 
 This project builds a reproducible data-engineering case around a "multimodal instruction factory." It focuses on business goals, data boundaries, architecture decisions, core implementation, acceptance metrics, and risk control. Installation commands and script details are condensed into an engineering-review perspective. The emphasis is on the relationship among sample schema, data flow, failure modes, and deliverables, so that readers can turn methods from earlier chapters into auditable and extensible project assets.

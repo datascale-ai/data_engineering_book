@@ -379,6 +379,12 @@ def render_image(match: re.Match[str], source_file: Path, assets: AssetManager, 
 def preprocess_markdown(text: str) -> str:
     text = text.replace("\ufeff", "")
     text = re.sub(
+        r'<div\s+class=["\']chapter-authors["\']>\s*(.*?)\s*</div>',
+        lambda m: f"**作者：**{html.unescape(m.group(1)).strip()}",
+        text,
+        flags=re.I | re.S,
+    )
+    text = re.sub(
         r'<div\s+align=["\']center["\']>\s*<b>(.*?)</b>\s*</div>',
         lambda m: f"**{html.unescape(m.group(1)).strip()}**",
         text,

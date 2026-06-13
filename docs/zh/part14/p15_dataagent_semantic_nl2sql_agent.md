@@ -1,5 +1,7 @@
 # 项目十五：基于 DataAgent 构建企业级语义问数助手
 
+<div class="chapter-authors">caoxuhong</div>
+
 ## 摘要
 本章以 DataAgent 为项目实战对象，构建一个面向企业结构化数据的语义问数助手。项目目标不是让模型直接“猜 SQL”，而是把自然语言问题、业务语义层、数据库元数据、NL2SQL 子 Agent、结果文件、报告生成和运行审计组织成一条可复用的数据工程链路。
 
@@ -227,7 +229,7 @@ DataAgent 的运行状态、消息轨迹、工具返回和 workspace 文件为�
 
 本章依赖 DataAgent、Semantic Service、value match 服务和可选 A2A 服务。为了让读者能够把案例从文字说明转成可运行环境，发布版本中应显式冻结版本、安装方式、环境变量和最小本地运行路径。若实际仓库版本发生变化，应以配套代码仓库的 `requirements`、`pyproject.toml`、示例 YAML 和发布说明为准，并在本节记录对应 tag 或 commit。
 
-### 5.0 版本与最小环境矩阵
+### 5.1 版本与最小环境矩阵
 
 | 组件 | 最小复现要求 | 版本记录方式 |
 | --- | --- | --- |
@@ -240,7 +242,7 @@ DataAgent 的运行状态、消息轨迹、工具返回和 workspace 文件为�
 
 *表 P15-1：DataAgent 语义问数助手最小环境矩阵*
 
-### 5.1 安装项目
+### 5.2 安装项目
 
 DataAgent 是一个开源的 Agent 数据工程框架，项目仓库：[https://github.com/datagallery-ai/DataAgent](https://github.com/datagallery-ai/DataAgent)。
 
@@ -276,7 +278,7 @@ python -c "import dataagent; print(getattr(dataagent, '__version__', 'unknown'))
 git rev-parse --short HEAD
 ```
 
-### 5.2 配置模型环境变量
+### 5.3 配置模型环境变量
 
 DataAgent 的模型配置来自 YAML 的 `MODEL` 段。通常建议将密钥放入 `.env`，而不是直接写进 YAML。
 
@@ -306,7 +308,7 @@ $env:VALUE_MATCH_URL="http://127.0.0.1:8000"
 $env:A2A_AUTH_TOKEN="replace-with-local-dev-token"
 ```
 
-### 5.3 准备业务数据库
+### 5.4 准备业务数据库
 
 最小复现可以使用 SQLite；企业环境可以使用 MySQL、PostgreSQL 或 Hive。
 
@@ -317,7 +319,7 @@ $env:A2A_AUTH_TOKEN="replace-with-local-dev-token"
 - 业务问题中的指标口径能落到字段和过滤条件上。
 - join key 已经在元数据中被描述。
 
-### 5.4 准备 Semantic Service
+### 5.5 准备 Semantic Service
 
 Semantic Service 的当前主线能力是 语义层服务 增强元数据。它需要承载：
 
@@ -331,7 +333,7 @@ Semantic Service 的当前主线能力是 语义层服务 增强元数据。它�
 
 最小本地路径建议采用“SQLite + 本地 Semantic Service + 本地 value match”的组合。准备时至少完成三项工作：第一，将 SQLite 样例库放在稳定路径；第二，把表描述、字段描述、join 关系和指标口径导入 Semantic Service；第三，为枚举值、客户等级、地区、品类等高频过滤字段建立 value match 索引。若暂时没有生产级服务，也应在配套资源中提供 mock 或最小索引文件，并在报告中说明其覆盖范围。
 
-### 5.5 准备 workspace
+### 5.6 准备 workspace
 
 workspace 是本项目的资产落盘位置。主 Agent 调用 NL2SQL 子 Agent 后，会在 workspace 下保存：
 
@@ -346,7 +348,7 @@ workspace 是本项目的资产落盘位置。主 Agent 调用 NL2SQL 子 Agent 
 /tmp/dataagent-semantic-bi-demo/session-001
 ```
 
-### 5.6 最小本地运行路径
+### 5.7 最小本地运行路径
 
 最小本地运行不要求开启 A2A 服务，也不要求接入生产数据库。推荐路径如下：
 
@@ -903,4 +905,4 @@ NL2SQL -> CSV -> 图表 -> Markdown 报告 -> 业务交付
 2. Wang, B., Shin, R., Liu, X., Polozov, O., & Richardson, M. (2020). RAT-SQL: Relation-Aware Schema Encoding and Linking for Text-to-SQL Parsers. ACL 2020.
 3. Schick, T., Dwivedi-Yu, J., Dessì, R., Raileanu, R., Lomeli, M., Hambro, E., Zettlemoyer, L., Cancedda, N., & Scialom, T. (2023). Toolformer: Language Models Can Teach Themselves to Use Tools. arXiv:2302.04761.
 4. Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., & Cao, Y. (2023). ReAct: Synergizing Reasoning and Acting in Language Models. arXiv:2210.03629.
-5. dbt Labs. (2026). dbt Documentation. https://docs.getdbt.com/
+5. dbt Labs. (2026). dbt Documentation. https://docs.getdbt.com/.

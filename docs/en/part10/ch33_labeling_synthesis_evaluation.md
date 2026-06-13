@@ -1,5 +1,7 @@
 # Chapter 33: Labeling, Synthesis, and Evaluation Agents
 
+<div class="chapter-authors">ZhiLi Wang</div>
+
 ## Chapter Abstract
 
 Labeling and evaluation are two of the most human-intensive stages in LLM data engineering. Labeling requires many human judgments. Evaluation requires carefully designed test cases and consistency calibration. As model iteration accelerates and data needs diversify, fully manual labeling and evaluation quickly become bottlenecks.
@@ -12,7 +14,7 @@ This chapter starts with labeling-assistance agents, covering task explanation, 
 
 Labeling-assistance agents; synthetic data; automated evaluation; red-team samples; consistency calibration; LLM-as-judge
 
-## 33.0 Learning Objectives
+## Learning Objectives
 
 After reading this chapter, you should be able to:
 

@@ -1,5 +1,7 @@
 # 第47章：多模态大模型（VLM）数据配方：从预训练到视觉对齐
 
+<div class="chapter-authors">王珂（Ke Wang）</div>
+
 ## 摘要
 
 在视觉语言模型（Vision-Language Model，VLM）的架构创新逐渐收敛的背景下，数据配方的精细程度已成为头部模型与跟随者之间的主要分界。本章以"配方"视角，系统拆解 Qwen2.5-VL、InternVL3、LLaVA-OneVision 与 MiniCPM-V 等主流 VLM 的数据工程实践。内容首先建立预训练、多任务高分辨率对齐与监督微调（Supervised Fine-Tuning，SFT）三阶段流水线，说明各阶段在数据规模、质量要求与冻结策略上的数量级差异；继而横向对照各模型在预训练图文对、交错图文文档、富光学字符识别信息（OCR-Rich）数据、视觉定位（Grounding）与视频数据上的配比，归纳重描述（Re-captioning）优先、OCR 数据安全阈值、视频数据从可选转为必选等关键趋势；随后剖析动态高分切片（Dynamic Hi-Res）与原生分辨率（Native Resolution）两派在 Token 长度管控与分桶（Bucketing）上的数据工程分歧，以及对比式图文预训练（CLIP）打分过滤与强 VLM 重标注的质量提升机制。本章强调，从原始 alt-text 到可执行视觉监督信号的转化，是现代 VLM 数据配方可复现性的核心环节。

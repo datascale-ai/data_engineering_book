@@ -1,5 +1,7 @@
 # Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
 
+<div class="chapter-authors">Ke Wang</div>
+
 ## Abstract
 
 This chapter establishes the data quality assessment framework that underpins the entire book. "High-quality data" in large language model projects is not a single metric, but a multi-dimensional set of constraints that shift dynamically with the training stage, task objective, and business context. The chapter begins by explaining why algorithm, data, annotation, and product teams inevitably disagree on the definition of quality, and proposes a data quality terminology contract to unify communication. It then breaks down quality objectives, detection metrics, and typical risks for each of four stages: pre-training, instruction fine-tuning, preference alignment, and RAG deployment. A layered evaluation perspective is then constructed across the sample, batch, dataset, and system-platform levels. Finally, the chapter presents six core defect classes, a data release scorecard, CI/CD quality gates, and anonymized composite case studies to illustrate how quality assessment can be converted into executable governance actions, alerting strategies, and rollback mechanisms.

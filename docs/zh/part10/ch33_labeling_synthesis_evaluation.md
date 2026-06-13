@@ -1,5 +1,7 @@
 # 第33章：标注、合成与评测 Agent
 
+<div class="chapter-authors">汪志立（ZhiLi Wang）</div>
+
 ---
 
 ## 摘要

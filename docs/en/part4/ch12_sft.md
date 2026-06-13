@@ -1,5 +1,7 @@
 # Chapter 12: SFT Data Design and Instruction Systems
 
+<div class="chapter-authors">Ran Zhang</div>
+
 ## Chapter Overview
 
 After pretraining, a large language model has acquired substantial language generation capability—but this does not mean it can reliably complete specific tasks. As the model enters the post-training stage, the more critical questions become: Can the model understand user requirements? Can it maintain consistent behavior across different scenarios? Can it produce outputs that conform to human usage conventions?
@@ -266,7 +268,7 @@ Further, these four components each correspond to a distinct training meaning. s
 
 To help teams develop a unified understanding, Figure 12-1 provides an architecture diagram of the SFT instruction system.
 
-![Figure 12-1: Architecture Diagram of the SFT Instruction System](../../images/part4/图12_1.png)
+![Figure 12-1: Architecture Diagram of the SFT Instruction System](../../images/part4/图12_1.svg)
 
 *Figure 12-1: Architecture Diagram of the SFT Instruction System*
 
@@ -581,7 +583,7 @@ In practice, teams may set a weighted total score—for example, assigning highe
 
 To help teams understand the overall flow from generation to revision, Figure 12-2 provides a schematic of the sample generation and acceptance feedback loop.
 
-![Figure 12-2: Schematic of the Sample Generation and Acceptance Feedback Loop](../../images/part4/图12_2.png)
+![Figure 12-2: Schematic of the Sample Generation and Acceptance Feedback Loop](../../images/part4/图12_2.svg)
 
 *Figure 12-2: Schematic of the Sample Generation and Acceptance Feedback Loop*
 

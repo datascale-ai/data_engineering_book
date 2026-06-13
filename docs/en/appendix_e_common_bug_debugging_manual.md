@@ -1,5 +1,7 @@
 # Appendix E: Common Data-Engineering Bug Debugging Manual
 
+<div class="chapter-authors">ZhiLi Wang</div>
+
 ## E.1 Purpose of This Appendix
 
 This appendix addresses one of the most common and time-consuming problem types in data engineering: the pipeline "looks right," but the result is wrong. It is not a generic incident catalog. It is a debugging manual written for the context of this book, helping readers turn common problems from experience-driven troubleshooting into objects that can be located, classified, and regression-tested.
@@ -445,6 +447,8 @@ If these three actions continue, this manual becomes part of daily engineering r
 ## References
 
 Blecher L, Cucurull G, Scialom T, Stojnic R (2023) Nougat: Neural Optical Understanding for Academic Documents. arXiv preprint arXiv:2308.13418.
+
+Pfitzmann B, Auer C, Dolfi M, Nassar A S, Staar P (2022) DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis. In: Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 3743-3751.
 
 Chen D, Huang Y, Ma Z, Chen H, Pan X, Ge C, Gao D, Xie Y, Liu Z, Gao J, Li Y, Ding B, Zhou J (2024) Data-Juicer: A One-Stop Data Processing System for Large Language Models. In: Companion of the 2024 International Conference on Management of Data, pp 120-134.
 

@@ -1,5 +1,7 @@
 # 第42章：Dolma 预训练语料透明账本
 
+<div class="chapter-authors">穆冠霖（Guanlin Mu）</div>
+
 ## 摘要
 
 多数开放模型发布时会给出权重、推理代码和若干评测结果，但训练数据往往只留下含混的来源描述。对继续预训练、偏差分析、评测污染排查和许可审计来说，这种发布方式不够。模型出了问题，团队很难回答它见过哪些 source、这些 source 被怎样过滤、采样比例是多少、某个 benchmark 是否泄漏进训练语料，以及用户请求移除个人数据时应定位到哪个 shard。
@@ -10,7 +12,7 @@ Dolma 是 Allen Institute for AI 发布的三万亿 token 级英文预训练语�
 
 Dolma；透明预训练语料；OLMo；source mix；token accounting；source card；manifest；Dolma Toolkit；ODC-BY；数据审计
 
-## 42.0 学习目标
+## 学习目标
 
 通过本章学习，读者应能够：
 
@@ -275,9 +277,9 @@ Dolma 把预训练语料从不可见的数据配方推进到有账可查的数�
 
 ## 参考文献
 
-- Soldaini, L., Kinney, R., Bhagia, A., Schwenk, D., Atkinson, D., Authur, R., et al. (2024). Dolma: an Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. ACL 2024. https://arxiv.org/abs/2402.00159
-- Allen Institute for AI. (2023). Ai2 Dolma: 3 trillion token open corpus for language model pretraining. https://allenai.org/blog/dolma-3-trillion-tokens-open-llm-corpus-9a0ff4b8da64
-- AllenAI. (2026). allenai/dolma Dataset Card. https://huggingface.co/datasets/allenai/dolma
-- AllenAI. (2026). Dolma Dataset and Toolkit Repository. https://github.com/allenai/dolma
-- AllenAI. (2026). Dolma Toolkit Documentation. https://github.com/allenai/dolma/blob/main/docs/README.md
-- Groeneveld, D., Beltagy, I., Walsh, P., Bhagia, A., Kinney, R., Tafjord, O., et al. (2024). OLMo: Accelerating the Science of Language Models. https://arxiv.org/abs/2402.00838
+- Soldaini, L., Kinney, R., Bhagia, A., Schwenk, D., Atkinson, D., Authur, R., et al. (2024). Dolma: an Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. ACL 2024. https://arxiv.org/abs/2402.00159.
+- Allen Institute for AI. (2023). Ai2 Dolma: 3 trillion token open corpus for language model pretraining. https://allenai.org/blog/dolma-3-trillion-tokens-open-llm-corpus-9a0ff4b8da64.
+- AllenAI. (2026). allenai/dolma Dataset Card. https://huggingface.co/datasets/allenai/dolma.
+- AllenAI. (2026). Dolma Dataset and Toolkit Repository. https://github.com/allenai/dolma.
+- AllenAI. (2026). Dolma Toolkit Documentation. https://github.com/allenai/dolma/blob/main/docs/README.md.
+- Groeneveld, D., Beltagy, I., Walsh, P., Bhagia, A., Kinney, R., Tafjord, O., et al. (2024). OLMo: Accelerating the Science of Language Models. https://arxiv.org/abs/2402.00838.

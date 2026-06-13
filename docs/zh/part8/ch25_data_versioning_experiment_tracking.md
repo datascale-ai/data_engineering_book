@@ -1,5 +1,7 @@
 # 第25章：数据版本管理与实验追踪
 
+<div class="chapter-authors">杜文卓（Wenzhuo Du）</div>
+
 ## 摘要
 "我们上周的模型效果比上上周差，但数据团队说数据没有变"——这句话在 LLM 项目中出现的频率，远远超出大多数团队的预期。数据工程的隐蔽性在于：数据变化往往不是单次的、显著的，而是累积的、渐进的。如果没有系统化的版本管理，团队就没有能力回答"变了什么"这个最基本的问题，更无法做到"为什么变了"的归因。
 
@@ -93,9 +95,9 @@ LLM 数据尤其需要这种统一。预训练语料、SFT 指令数据、偏好
 
 数据版本管理不是一个单一粒度的问题，而是需要在五个层级上同时维护版本信息。
 
-![图25-1：版本管理体系全景图](../../images/part8/图25_1zh.png)
+![图25-1：版本管理体系全景图](../../images/part8/图25_1.svg)
 
-*图25-1：数据版本管理与实验追踪体系全景——五层版本粒度与双向关联架构*
+*图25-1：数据版本管理与实验追踪体系全景架构图*
 
 数据管理知识体系通常把数据资产、元数据、血缘、质量和生命周期作为共同治理对象，因此版本粒度也应覆盖从样本到发布包的多个层级（DAMA International 2017）：
 
@@ -414,7 +416,7 @@ LLM 数据尤其需要这种统一。预训练语料、SFT 指令数据、偏好
 
 在设计血缘图时，还应注意边的语义。边不只是"连接关系"，还应说明关系类型。例如，`derived_from` 表示派生，`filtered_by` 表示过滤，`annotated_by` 表示标注，`evaluated_with` 表示评测，`approved_by` 表示审批，`released_as` 表示发布。边的语义越清楚，查询就越准确。否则，血缘图只能展示路径，无法解释路径上的治理含义。
 
-![图25-2：数据谱系与实验追踪图](../../images/part8/图25_2zh.png)
+![图25-2：数据谱系与实验追踪图](../../images/part8/图25_2.svg)
 
 *图25-2：从数据源到模型发布的完整数据谱系图，展示正向追踪与反向追踪路径*
 
@@ -666,7 +668,7 @@ Buneman P, Khanna S, Tan W-C (2001) Why and Where: A Characterization of Data Pr
 
 DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications.
 
-DVC Documentation (2024) Data Version Control Documentation. Available at: https://dvc.org/doc
+DVC Documentation (2024) Data Version Control Documentation. Available at: https://dvc.org/doc.
 
 Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92.
 

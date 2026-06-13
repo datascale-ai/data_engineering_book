@@ -1,5 +1,7 @@
 # Chapter 34: DataOps Agents and Platform Autonomy
 
+<div class="chapter-authors">ZhiLi Wang</div>
+
 ## Chapter Abstract
 
 Data platform operations have long been treated as necessary but low-value labor: monitoring alerts, debugging incidents, rolling back versions, and analyzing cost. Each task consumes engineering time, yet none directly creates business value. As data platforms scale to hundreds of pipelines, PB-level storage, and thousands of tables, manual operations reach their limit. Alert fatigue causes missed signals, root cause analysis depends on personal experience, rollback decisions become hesitant, and cost black holes go unnoticed.
@@ -12,7 +14,7 @@ This chapter builds on Chapters 24-26: DataOps flywheel, version management, exp
 
 DataOps Agent; platform autonomy; root-cause localization; data rollback; cost governance; operations automation
 
-## 34.0 Learning Objectives
+## Learning Objectives
 
 After reading this chapter, you should be able to:
 

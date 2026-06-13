@@ -1,5 +1,7 @@
 # Chapter 45: LLM Post-Training Data Engineering in Practice: SFT and Preference Alignment
 
+<div class="chapter-authors">Xin Xu</div>
+
 ## Abstract
 
 Supervised Fine-Tuning (SFT) and Preference Alignment are the two core data engineering entry points in the post-training phase of Large Language Models (LLMs), yet they serve fundamentally different objectives: the former uses Maximum Likelihood Estimation (MLE) to establish behavioral templates for the model, while the latter shapes the model's reward surface through chosen/rejected contrastive signals. This chapter deconstructs post-training data engineering practices in open-source models from a "recipe" perspective. It begins by proposing a three-stage pipeline of SFT, preference alignment, and online continuous optimization, defining the data shape, optimization objectives, and manifest governance requirements at each layer. It then cross-examines post-training data transparency and scale across Tülu-3, Llama-3, Qwen2.5, and Nemotron-4/HelpSteer2 as four representative approaches, distinguishing three levels of information credibility: direct disclosure, reasonable inference, and pedagogical estimation. The chapter subsequently compares the engineering differences among Self-Instruct, Evol-Instruct, and Magpie—three schools of instruction synthesis—with respect to seed dependency, difficulty calibration, and distribution filtering, and extends to data production methods for paradigms including Rejection Sampling (RS), Reward Models (RM), and Direct Preference Optimization. This chapter emphasizes that the maturity of post-training data engineering lies not in generating samples, but in whether each sample can be traced to its source, isolated for evaluation, documented for its intended use, and supported for rollback.
@@ -16,7 +18,7 @@ LLM; data recipe; open-source large models; training data; phased scheduling
 - Design preference data production methods for paradigms including rejection sampling, reward models, DPO, GRPO, and RLVR.
 - Evaluate post-training data with respect to source traceability, evaluation isolation, use-case documentation, and rollback capability, and identify risks of Reward Hacking and data contamination.
 
-## 45.0 Opening Scenario: Why Alpaca Cannot Train a GPT-4-Style Model
+## Opening Scenario: Why Alpaca Cannot Train a GPT-4-Style Model
 
 From 2023 through early 2024, the open-source community intensively explored the instruction tuning route. Consider a common team scenario: a large model application team, aiming to build a vertical-domain assistant, uses an open-source base model and collects approximately 200K instruction data samples in the style of Alpaca, Dolly, and Self-Instruct, then applies Supervised Fine-Tuning (SFT).
 
@@ -392,6 +394,8 @@ Xu C, Sun Q, Zheng K, Geng X, Zhao P, Feng J, Tao C, Lin Q, Jiang D (2024) Wizar
 
 Xu Z, Jiang F, Niu L, Deng Y, Poovendran R, Choi Y, Lin B Y (2025) Magpie: Alignment Data Synthesis from Scratch by Prompting Aligned LLMs with Nothing. International Conference on Learning Representations.
 
+Shao Z, Wang P, Zhu Q, Xu R, Song J, Bi X, Zhang H, Zhang M, Li Y, Wu Y, Guo D (2024) DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv preprint arXiv:2402.03300.
+
 Liu A, Feng B, Xue B, Wang B, Wu B, Lu C, Zhao C, Deng C, Zhang C, Ruan C, others (2024a) DeepSeek-V3 Technical Report. arXiv preprint arXiv:2412.19437.
 
 Liu C Y, Zeng L, Liu J, Yan R, He J, Wang C, Yan S, Liu Y, Zhou Y (2024b) Skywork-Reward: Bag of Tricks for Reward Modeling in LLMs. arXiv preprint arXiv:2410.18451.
@@ -399,5 +403,7 @@ Liu C Y, Zeng L, Liu J, Yan R, He J, Wang C, Yan S, Liu Y, Zhou Y (2024b) Skywor
 Singhal P, Goyal T, Xu J, Durrett G (2024) A Long Way to Go: Investigating Length Correlations in RLHF. First Conference on Language Modeling.
 
 Zhou K, Zhu Y, Chen Z, Chen W, Zhao W X, Chen X, Lin Y, Wen J-R, Han J (2023) Don't Make Your LLM an Evaluation Benchmark Cheater. arXiv preprint arXiv:2311.01964.
+
+Zheng L, Chiang W-L, Sheng Y, Zhuang S, Wu Z, Zhuang Y, Lin Z, Li Z, Li D, Xing E, Zhang H, Gonzalez J, Stoica I (2023) Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. Advances in Neural Information Processing Systems, 36, 46595-46623.
 
 Lightman H, Kosaraju V, Burda Y, Edwards H, Baker B, Lee T, Leike J, Schulman J, Sutskever I, Cobbe K (2024) Let's Verify Step by Step. International Conference on Learning Representations.

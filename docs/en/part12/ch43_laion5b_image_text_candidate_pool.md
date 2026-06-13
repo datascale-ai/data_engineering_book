@@ -1,5 +1,7 @@
 # Chapter 43: LAION-5B Image-Text Candidate Pool and Filtering Channels
 
+<div class="chapter-authors">Guanlin Mu</div>
+
 ## Abstract
 
 The largest difference between image-text foundation corpora and pure-text corpora is not simply the addition of image files, but that each sample is split into multiple channels that must all hold at the same time. The text channel must explain how the image is described; the visual channel must explain whether the image can be downloaded and whether its size and content are usable; the alignment channel must explain whether image and text are related; and the risk channel must explain whether there are watermark, NSFW, toxicity, privacy, or authorization risks. If any one channel fails, the image-text pair may be unsuitable for training.
@@ -10,7 +12,7 @@ LAION-5B is a large-scale image-text candidate pool derived from Common Crawl. I
 
 LAION-5B; image-text pairs; Common Crawl; alt text; CLIP filtering; multi-channel schema; WebDataset; Parquet; DataComp; risk governance
 
-## 43.0 Learning Objectives
+## Learning Objectives
 
 After completing this chapter, readers should be able to:
 

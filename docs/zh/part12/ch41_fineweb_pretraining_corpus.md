@@ -1,5 +1,7 @@
 # 第41章：FineWeb 预训练语料数据工程
 
+<div class="chapter-authors">穆冠霖（Guanlin Mu）</div>
+
 ## 摘要
 
 FineWeb 是 Hugging Face 团队基于 Common Crawl 构建的大规模英文 Web 预训练语料。它的价值不只在于规模，而在于把“如何把网页快照变成训练数据”这件事拆成了可复现的工程链路：从 WARC 原始网页读取、URL 风险过滤、Trafilatura 正文抽取、FastText 语言识别、Gopher/C4/FineWeb 质量过滤，到按 crawl 独立 MinHash 去重、PII 格式化和版本发布。FineWeb 论文同时公开了处理代码、DataTrove 处理库和消融模型，使数据处理选择可以被训练结果回验，而不是停留在人工抽检或经验判断上。
@@ -10,7 +12,7 @@ FineWeb 这一章的主线是 Web 预训练语料的“炼制过程”。Common 
 
 FineWeb；Common Crawl；DataTrove；WARC；Trafilatura；FastText；MinHash；质量过滤；预训练语料；数据消融
 
-## 41.0 学习目标
+## 学习目标
 
 通过本章学习，读者应能够：
 
@@ -323,8 +325,8 @@ FineWeb 讲清楚了一个常被低估的问题：Web 预训练语料不是 Comm
 
 ## 参考文献
 
-- Penedo, G., Kydlíček, H., Allal, L. B., Lozhkov, A., Mitchell, M., Raffel, C., von Werra, L., & Wolf, T. (2024). The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. NeurIPS 2024 Datasets and Benchmarks Track. https://arxiv.org/abs/2406.17557
-- Hugging Face. (2026). HuggingFaceFW/fineweb Dataset Card. https://huggingface.co/datasets/HuggingFaceFW/fineweb
-- Hugging Face. (2026). DataTrove FineWeb Processing Script. https://github.com/huggingface/datatrove/blob/main/examples/fineweb.py
-- Penedo, G., Kydlíček, H., Cappelli, A., Sasko, M., & Wolf, T. (2024). DataTrove large scale data processing. https://github.com/huggingface/datatrove
-- Luccioni, S., & Viviano, J. (2021). What's in the Box? A Preliminary Analysis of Undesirable Content in the Common Crawl Corpus. https://arxiv.org/abs/2105.02732
+- Penedo, G., Kydlíček, H., Allal, L. B., Lozhkov, A., Mitchell, M., Raffel, C., von Werra, L., & Wolf, T. (2024). The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. NeurIPS 2024 Datasets and Benchmarks Track. https://arxiv.org/abs/2406.17557.
+- Hugging Face. (2026). HuggingFaceFW/fineweb Dataset Card. https://huggingface.co/datasets/HuggingFaceFW/fineweb.
+- Hugging Face. (2026). DataTrove FineWeb Processing Script. https://github.com/huggingface/datatrove/blob/main/examples/fineweb.py.
+- Penedo, G., Kydlíček, H., Cappelli, A., Sasko, M., & Wolf, T. (2024). DataTrove large scale data processing. https://github.com/huggingface/datatrove.
+- Luccioni, S., & Viviano, J. (2021). What's in the Box? A Preliminary Analysis of Undesirable Content in the Common Crawl Corpus. https://arxiv.org/abs/2105.02732.

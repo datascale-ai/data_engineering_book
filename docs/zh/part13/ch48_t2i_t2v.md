@@ -1,5 +1,7 @@
 # 第48章：多模态生成模型数据工程：T2I 与 T2V 数据流水线
 
+<div class="chapter-authors">张然（Ran Zhang）</div>
+
 ## 摘要
 
 文本到图像（Text-to-Image，T2I）与文本到视频（Text-to-Video，T2V）生成模型的提示词跟随（Prompt Following）能力，在很大程度上由训练数据中的监督语言决定，而非仅由生成骨架架构决定。本章以"配方"视角，拆解生成模型如何把原始图像与视频素材转化为可训练、可控制、可审计的数据。内容首先提炼生成数据工程的三大主线：从标签到可执行描述的稠密重描述（Dense Caption）、作为训练集路由器的美学与质量打分，以及版权、安全与隐私的硬约束治理；继而以 DALL·E 3、Stable Diffusion 3、FLUX、HunyuanVideo、Wan2.2、Open-Sora 与 CogVideoX 为代表，横向对照图像重描述路线、视频工程路线与产业模型路线在数据入口、过滤治理与标注策略上的取舍。本章进一步展开 T2I 与 T2V 数据流水线的具体环节，包括 LAION 与 DataComp 等数据入口、分层过滤、光流运动与镜头语言筛选、结构化时空描述增强，以及按分辨率与质量层级的训练分桶与路由。本章强调，生成模型的数据流水线已从被动的"数据收集"演化为主动塑造模型能力的"监督信号生产"。
@@ -87,22 +89,22 @@ CogVideoX 的公开内容更偏向组件和方法层面。它没有完整公开�
 
 Wan2.2 (Wan Team 2025) 的数据策略则更强调高质量视频生成的审美方向。公开材料显示，它在 Wan2.1 基础上扩充了图像和视频训练数据，并引入更细粒度的美学数据、电影感标签和提示系统。这里的重点不是单纯扩大数据量，而是提升数据的视觉质感和创作属性。视频生成已经从“能让画面动起来”进入“能否生成可用素材”的阶段，光影、色调、镜头感、动态节奏、人物与场景的稳定性都会影响实际可用性。Wan2.2 适合放在“电影感数据策略”的位置讨论，它说明 T2V 数据工程正在从通用视频样本清洗，进一步走向风格化、高审美和创作型数据组织。
 
-把这些模型放在一起比较，可以看到三条比较清晰的路线。第一条是 DALL·E 3、SD3 代表的图像 recaption 路线，重点是让训练文本变得更细、更接近用户 prompt。第二条是 HunyuanVideo、Open-Sora 代表的视频工程路线，重点是把运动、镜头、质量、OCR、水印和结构化 caption 统一进流水线。第三条是 FLUX、Wan2.2 代表的产业模型路线，公开效果强，但数据链细节与证据层级并不相同，不能把所有项目都当成同一透明度的公开材料来读。对于本章而言，表51-1 只是把这些差异收束起来，真正需要读者理解的是：生成模型的数据流水线已经从“数据收集”演化为“监督信号生产”。数据不再只是被动进入训练集，而是经过过滤、改写、分层和路由之后，主动塑造模型的生成能力。
+把这些模型放在一起比较，可以看到三条比较清晰的路线。第一条是 DALL·E 3、SD3 代表的图像 recaption 路线，重点是让训练文本变得更细、更接近用户 prompt。第二条是 HunyuanVideo、Open-Sora 代表的视频工程路线，重点是把运动、镜头、质量、OCR、水印和结构化 caption 统一进流水线。第三条是 FLUX、Wan2.2 代表的产业模型路线，公开效果强，但数据链细节与证据层级并不相同，不能把所有项目都当成同一透明度的公开材料来读。对于本章而言，表48-1 只是把这些差异收束起来，真正需要读者理解的是：生成模型的数据流水线已经从“数据收集”演化为“监督信号生产”。数据不再只是被动进入训练集，而是经过过滤、改写、分层和路由之后，主动塑造模型的生成能力。
 
-**表51-1 主流 T2I/T2V 模型数据流水线对比**
+**表48-1 主流 T2I/T2V 模型数据流水线对比**
 
 注：下表按公开证据强度排序，不把模型卡、论文、项目文档和社区推断混为同一证据等级。FLUX 与 Wan2.2 的数据链细节公开较少，表中只写公开材料可直接支持的内容；HunyuanVideo 与 Open-Sora 的流程披露更细，可作为更强的工程证据。
 
 | 模型/项目 | 模态 | 数据入口与证据层级 | 过滤与治理重点 | Caption / 标注策略 | 对数据工程的启发 |
 |---|---|---|---|---|---|
-| DALL·E 3 | T2I | 数据池未完整披露，公开材料强调高质量图文监督 | 安全过滤、个人信息减少、推理侧 prompt 改写 | 使用高度描述性 caption，推理时扩写用户 prompt | 证明高描述性 caption 对 prompt following 极其关键 |
-| Stable Diffusion 3 | T2I | 大规模图文数据，来源未逐项展开 | 论文重点在模型训练与 caption 消融，过滤链披露较少 | CogVLM 合成 caption；原始 caption 与合成 caption 混合训练 | 提供了 recaption 提升生成跟随能力的定量证据 |
-| FLUX.1 / FLUX.1 Kontext | T2I / 图像编辑 | 训练数据细节公开较少，主要可见模型卡与发布说明 | 模型卡更强调风险缓解、使用边界和开放权重版本 | 基础 recaption 细节未系统披露 | 效果强，但数据链更多停留在公开材料层面，不宜外推为完整训练事实 |
-| HunyuanVideo | T2V + T2I 预训练 | internet-scale 图像与视频数据，论文和 pipeline 披露较细 | 去重、概念重采样、DOVER、清晰度、光流、OCR、水印、logo、border | 结构化 JSON caption，包含短描述、稠密描述、背景、风格、景别、光照、氛围和相机运动 | 公开视频生成数据工程中最适合作为核心拆解案例 |
-| Wan2.2 | T2V / I2V / TI2V | 在 Wan2.1 基础上扩充图像和视频数据，公开材料偏方向性描述 | 强调高质量数据、美学数据和电影感标签 | 引入细粒度美学与创作提示体系 | 体现 T2V 数据从通用可用走向电影感和创作可控 |
-| Open-Sora 2.0 | T2V / I2V | 大规模视频候选池，项目文档与论文披露较多 | bpp、fps、时长、比例预筛；aesthetic、motion、blur、OCR、jitter 多级过滤 | 低分辨率阶段用 LLaVA-Video，高分辨率阶段用 Qwen 2.5 Max；motion score 进入 caption | 展示了开源 T2V 分层过滤和分阶段 caption 的实用范式 |
-| Open-Sora-Plan | T2V | Mixkit、Pexels、Pixabay 等 CC0 视频源，复现路径更清楚 | 从低版权风险素材起步，先构建可控小数据池 | ShareGPT4V-Captioner-7B 与 LLaVA-1.6-34B 生成 dense caption | 适合资源有限团队搭建小规模可复现 T2V 数据链 |
-| CogVideoX | T2V / I2V / V2V | 完整训练数据池未完全公开 | 公开更多在组件与工具链层面 | CogVLM2-Caption 用于视频转文本，提供 prompt 改写工具 | caption 组件复用价值高，可接入自建视频流水线 |
+| DALL·E 3 (Betker et al. 2023; OpenAI 2023) | T2I | 数据池未完整披露，公开材料强调高质量图文监督 | 安全过滤、个人信息减少、推理侧 prompt 改写 | 使用高度描述性 caption，推理时扩写用户 prompt | 证明高描述性 caption 对 prompt following 极其关键 |
+| Stable Diffusion 3 (Esser et al. 2024) | T2I | 大规模图文数据，来源未逐项展开 | 论文重点在模型训练与 caption 消融，过滤链披露较少 | CogVLM 合成 caption；原始 caption 与合成 caption 混合训练 | 提供了 recaption 提升生成跟随能力的定量证据 |
+| FLUX.1 / FLUX.1 Kontext (Black Forest Labs 2025a; Black Forest Labs 2025b) | T2I / 图像编辑 | 公开材料主要覆盖模型能力、开放权重版本和使用边界；训练数据构成未系统披露 | 模型卡和技术报告更强调风险缓解、使用边界和图像编辑能力 | 基础 recaption 细节未系统披露 | 效果强，但数据链更多停留在公开材料层面，不宜外推为完整训练事实 |
+| HunyuanVideo (Kong et al. 2024) | T2V + T2I 预训练 | internet-scale 图像与视频数据，论文和 pipeline 披露较细 | 去重、概念重采样、DOVER、清晰度、光流、OCR、水印、logo、border | 结构化 JSON caption，包含短描述、稠密描述、背景、风格、景别、光照、氛围和相机运动 | 公开视频生成数据工程中最适合作为核心拆解案例 |
+| Wan2.2 (Wan Team 2025; Wan-Video Team 2025) | T2V / I2V / TI2V | 在 Wan 系列基础上扩充图像和视频数据，公开材料偏方向性描述 | 强调高质量数据、美学数据和电影感标签 | 引入细粒度美学与创作提示体系 | 体现 T2V 数据从通用可用走向电影感和创作可控 |
+| Open-Sora 2.0 (Peng et al. 2025) | T2V / I2V | 大规模视频候选池，项目文档与论文披露较多 | bpp、fps、时长、比例预筛；aesthetic、motion、blur、OCR、jitter 多级过滤 | 低分辨率阶段用 LLaVA-Video，高分辨率阶段用 Qwen 2.5 Max；motion score 进入 caption | 展示了开源 T2V 分层过滤和分阶段 caption 的实用范式 |
+| Open-Sora-Plan (Lin et al. 2024) | T2V | Mixkit、Pexels、Pixabay 等 CC0 视频源，复现路径更清楚 | 从低版权风险素材起步，先构建可控小数据池 | ShareGPT4V-Captioner-7B 与 LLaVA-1.6-34B 生成 dense caption | 适合资源有限团队搭建小规模可复现 T2V 数据链 |
+| CogVideoX (Yang et al. 2024; THUDM 2024) | T2V / I2V / V2V | 完整训练数据池未完全公开 | 公开更多在组件与工具链层面 | CogVLM2-Caption 用于视频转文本，提供 prompt 改写工具 | caption 组件复用价值高，可接入自建视频流水线 |
 
 本节的重点不在于判断哪个 pipeline “最好”，而是理解每类系统在数据工程上的取舍。T2I 模型更依赖图文相关性、审美筛选和 caption 重写；T2V 模型在此基础上增加了运动质量、镜头语言和时空对齐；产业模型通常保留更多数据细节，开源项目则把可复现模块拆得更清楚。真正能指导工程实践的，不是某个项目的单一配置，而是这些项目共同暴露出的趋势：生成模型越往高可控、高审美、高安全方向发展，数据流水线越会成为模型能力的一部分。
 
@@ -138,13 +140,13 @@ T2I recaption 通常有三种做法：
 
 SD3 的 50/50 混合策略尤其值得借鉴。全量替换成 VLM 生成 caption，可能会带来概念遗忘和风格单一；保留一部分原始 caption，可以维持数据分布的粗糙多样性。工程上可以进一步改成随机长度混合：同一张图有时使用短 caption，有时使用 dense caption，有时使用结构化字段展开后的长 caption。这样模型不会只适应一种文本长度。
 
-**表51-2 Caption 重写方法对比（DALL·E 3 / SD3 / CogVLM2 蒸馏）**
+**表48-2 Caption 重写方法对比（DALL·E 3 / SD3 / CogVLM2 蒸馏）**
 
 | 路线 | 训练侧 caption 生成器 | 原始 caption 保留策略 | 输出形态 | 推理侧 prompt 重写 | 优点 | 风险与代价 |
 |---|---|---|---|---|---|---|
-| DALL·E 3 | 专门训练的高描述性 captioner | 公开资料未完整披露 | 高密度自然语言 caption | 是，使用 GPT-4 扩写用户 prompt | prompt following 提升明显，短 prompt 也能转成可执行描述 | 系统封闭，captioner 训练细节和数据阈值不可复现 |
-| Stable Diffusion 3 | CogVLM 生成合成 caption | 明确采用 50% 原始 caption + 50% 合成 caption | 原始 caption 与合成 caption 混合训练 | 论文未把推理侧重写作为主线 | 公开了清晰的消融收益，复现价值高 | 合成 caption 受 VLM 偏差影响，可能引入幻觉 |
-| CogVLM2 蒸馏式重写 | CogVLM2 / CogVLM2-Caption 生成 dense caption，再由模板或 LLM 蒸馏成受控文本 | 可保留一部分原始 caption，也可做随机长度混合 | dense caption、结构化 caption、随机长度 caption | 可选，常与长 prompt 扩写配合 | 开源可复用，适合垂直领域和社区 pipeline | 成本较高；caption 过长可能导致风格僵硬或语义幻觉 |
+| DALL·E 3 (Betker et al. 2023) | 专门训练的高描述性 captioner | 公开资料未完整披露 | 高密度自然语言 caption | 是，使用 GPT-4 扩写用户 prompt | prompt following 提升明显，短 prompt 也能转成可执行描述 | 系统封闭，captioner 训练细节和数据阈值不可复现 |
+| Stable Diffusion 3 (Esser et al. 2024) | CogVLM 生成合成 caption | 明确采用 50% 原始 caption + 50% 合成 caption | 原始 caption 与合成 caption 混合训练 | 论文未把推理侧重写作为主线 | 公开了清晰的消融收益，复现价值高 | 合成 caption 受 VLM 偏差影响，可能引入幻觉 |
+| CogVLM2 蒸馏式重写 (Yang et al. 2024; Hong et al. 2024; THUDM 2024) | CogVLM2 / CogVLM2-Caption 生成 dense caption，再由模板或 LLM 蒸馏成受控文本 | 可保留一部分原始 caption，也可做随机长度混合 | dense caption、结构化 caption、随机长度 caption | 可选，常与长 prompt 扩写配合 | 开源可复用，适合垂直领域和社区 pipeline | 成本较高；caption 过长可能导致风格僵硬或语义幻觉 |
 
 ### 48.3.4 分桶：让训练调度匹配数据分布
 
@@ -153,7 +155,7 @@ SD3 的 50/50 混合策略尤其值得借鉴。全量替换成 VLM 生成 captio
 更细的系统还会按数据来源、审美分、caption 类型、安全等级、是否含文字、是否含人物、是否为复杂多主体场景等维度做路由。这样训练时可以控制 batch 组成，避免某类样本淹没其它样本。比如文字生成能力差，就提高含文字但低风险图片的采样权重；空间关系弱，就提高含明显位置关系的样本；人物手部细节差，就为相关样本建立专项桶。
 
 
-![图48-1：T2I 数据流水线](../../images/part11/ch33_1.png)
+![图48-1：T2I 数据流水线](../../images/part11/图33_1.svg)
 
 *图48-1：T2I 数据流水线*
 
@@ -229,7 +231,7 @@ T2V 数据流水线的起点，通常不是已经清洗好的 clip，而是来�
 
 这里要强调的是，时空对齐并不意味着本章要重新讲长视频时间轴设计。那部分已经由第十章处理。本章只关心一个更窄的问题：**在训练一个 T2V 模型时，如何让 caption 更忠实地对应这段 clip 的动作顺序与空间变化**。这类对齐越准确，模型越能学会“人物先转身，再迈步，最后离开画面”这类细粒度过程，而不只是输出一段模糊动态。
 
-**表51-3 视频 caption 时空对齐策略**
+**表48-3 视频 caption 时空对齐策略**
 
 | 策略 | 做法 | 代表项目 | 优点 | 短板 | 适用位置 |
 |---|---|---|---|---|---|
@@ -259,7 +261,7 @@ HunyuanVideo 在这方面披露得最充分。它不仅使用结构化 JSON capt
 
 
 
-![图48-2：T2V 数据流水线](../../images/part11/ch33_2.png)
+![图48-2：T2V 数据流水线](../../images/part11/图33_2.svg)
 
 *图48-2：T2V 数据流水线* 
 
@@ -364,7 +366,7 @@ NSFW、版权和水印过滤不能压成一个总分来处理。总分看起来�
 
 
 
-![图48-3：美学/版权/安全多级过滤架构](../../images/part11/ch33_3.png)
+![图48-3：美学/版权/安全多级过滤架构](../../images/part11/图33_3.svg)
 
 *图48-3：美学/版权/安全多级过滤架构*
 
@@ -398,11 +400,7 @@ T2I 与 T2V 的数据工程，已经从早期的“采集—清洗”升级为�
 
 ## 参考文献
 
-Betker J, Goh G, Jing L, Brooks T, Wang J, Li L, Ouyang L, Zhuang J, Lee J, Guo Y, others (2023) Improving Image Generation with Better Captions (DALL·E 3). OpenAI Technical Report.
-
 PySceneDetect Contributors (2026) PySceneDetect Documentation. Available at: https://www.scenedetect.com/docs/latest/.
-
-Esser P, Kulal S, Blattmann A, Entezari R, Müller J, Saini H, Levi Y, Lorenz D, Sauer A, Boesel F, others (2024) Scaling Rectified Flow Transformers for High-Resolution Image Synthesis (Stable Diffusion 3). arXiv preprint arXiv:2403.03206.
 
 Gadre S Y, Ilharco G, Fang A, Hayase J, Ilharco G, Marten T, Wortsman M, Goyal S, Guha E, Jain H, others (2023) DataComp: In Search of the Next Generation of Multimodal Datasets. In: Advances in Neural Information Processing Systems 36.
 
@@ -410,14 +408,36 @@ Ghosh S, Bhatt U, Bhattacharya R, Parmar P, Patel S, Islam M, Reddy K K, others 
 
 Kirstain Y, Polyak A, Singer U, Matiana S, Penna J, Levy O (2023) Pick-a-Pic: An Open Dataset of User Preferences for Text-to-Image Generation (PickScore). In: Advances in Neural Information Processing Systems 36.
 
-Kong X, Tian Y, Zhang J, Min R, Dai X, Deng X, Chen Q, Liu L, Ni M, others (2024) HunyuanVideo: A Systematic Framework for Large Video Generation Models. arXiv preprint arXiv:2412.03603.
-
 Open-Sora Team (2024) Open-Sora: Democratizing Efficient Video Production for All. arXiv preprint arXiv:2412.20404.
 
 Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, others (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. In: Advances in Neural Information Processing Systems 35:25278-25294.
 
-Wan Team (2025) Wan: Open and Advanced Large-Scale Video Generative Models. arXiv preprint arXiv:2503.20314.
-
 Wang W, Lv Q, Yu W, Hong W, Qi J, Wang Y, Ji J, Yang Z, Zhao L, Song X, others (2023) CogVLM: Visual Expert for Pretrained Language Models. In: Advances in Neural Information Processing Systems 36.
 
 Wu X, Sun K, Zhu F, Zhao R, Li H (2023) Human Preference Score v2: A Solid Benchmark for Evaluating Human Preferences of Text-to-Image Synthesis (HPSv2). arXiv preprint arXiv:2306.09341.
+
+Betker, J., Goh, G., Jing, L., Brooks, T., Wang, J., Li, L., Ouyang, L., Zhuang, J., Lee, J., Guo, Y., Manassra, W., Dhariwal, P., Chu, C., Jiao, Y., Ramesh, A.: Improving Image Generation with Better Captions. OpenAI technical report (2023).
+
+OpenAI: DALL·E 3 System Card. OpenAI system card (2023).
+
+Esser, P., Kulal, S., Blattmann, A., Entezari, R., Müller, J., Saini, H., Levi, Y., Lorenz, D., Sauer, A., Boesel, F., Podell, D., Dockhorn, T., English, Z., Lacey, K., Goodwin, A., Marek, Y., Rombach, R.: Scaling Rectified Flow Transformers for High-Resolution Image Synthesis. In: Proceedings of the 41st International Conference on Machine Learning, ICML 2024. arXiv:2403.03206 (2024).
+
+Black Forest Labs: FLUX.1 Kontext [dev] Model Card. Hugging Face model card (2025a).
+
+Black Forest Labs, Batifol, S., Blattmann, A., Boesel, F., Consul, S., Diagne, C., Dockhorn, T., English, J., English, Z., Esser, P., Kulal, S., Lacey, K., Levi, Y., Li, C., Lorenz, D., Müller, J., Podell, D., Rombach, R., Saini, H., Sauer, A., Smith, L.: FLUX.1 Kontext: Flow Matching for In-Context Image Generation and Editing in Latent Space. arXiv:2506.15742 (2025b).
+
+Kong, W., Tian, Q., Zhang, Z., Min, R., Dai, Z., Zhou, J., Xiong, J., Li, X., Wu, B., Zhang, J., et al.: HunyuanVideo: A Systematic Framework for Large Video Generative Models. arXiv:2412.03603 (2024).
+
+Wan Team, Wang, A., Ai, B., Wen, B., Mao, C., Xie, C.-W., Chen, D., Yu, F., Zhao, H., Yang, J., et al.: Wan: Open and Advanced Large-Scale Video Generative Models. arXiv:2503.20314 (2025).
+
+Wan-Video Team: Wan2.2: Wan: Open and Advanced Large-Scale Video Generative Models. GitHub repository and model documentation (2025).
+
+Peng, X., Zheng, Z., Shen, C., Young, T., Guo, X., Wang, B., Xu, H., Liu, H., Jiang, M., Li, W., et al.: Open-Sora 2.0: Training a Commercial-Level Video Generation Model in $200k. arXiv:2503.09642 (2025).
+
+Lin, B., Ge, Y., Cheng, X., Li, Z., Zhu, B., Wang, S., He, X., Ye, Y., Yuan, S., Chen, L., et al.: Open-Sora Plan: Open-Source Large Video Generation Model. arXiv:2412.00131 (2024).
+
+Yang, Z., Teng, J., Zheng, W., Ding, M., Huang, S., Xu, J., Yang, Y., Hong, W., Zhang, X., Feng, G., et al.: CogVideoX: Text-to-Video Diffusion Models with An Expert Transformer. arXiv:2408.06072 (2024).
+
+THUDM: CogVLM2-Caption for CogVideoX Training Data Captioning. CogVideo official tool documentation (2024).
+
+Hong, W., Wang, W., Ding, M., Yu, W., Lv, Q., Wang, Y., Cheng, Y., Huang, S., Ji, J., Xue, Z., et al.: CogVLM2: Visual Language Models for Image and Video Understanding. arXiv:2408.16500 (2024).

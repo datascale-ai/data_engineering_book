@@ -1,5 +1,7 @@
 # 第46章：推理模型与 RL 数据工程：R1 / QwQ 范式
 
+<div class="chapter-authors">徐鑫（Xin Xu）</div>
+
 ## 摘要
 上一章讨论了后训练阶段的 SFT、偏好对齐、奖励模型和 RLVR 数据接口。本章继续向前推进，聚焦 2025 年以来开源社区最重要的一类变化：推理模型不再只依赖人工写好的长思维链样本，而是开始通过强化学习（Reinforcement Learning, RL）和可验证奖励，主动扩大自己的推理轨迹空间。
 
@@ -567,6 +569,8 @@ RL 推理数据飞轮的成本主要来自三部分：多路采样、验证器�
 Guo D, Yang D, Zhang H, Song J, Wang P, Zhu Q, Xu R, Zhang R, Ma S, Bi X, others (2025) DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. arXiv preprint arXiv:2501.12948.
 
 Team Kimi, Du A, Gao B, Xing B, Jiang C, Chen C, Li C, Xiao C, Du C, Liao C, others (2025) Kimi k1.5: Scaling Reinforcement Learning with LLMs. arXiv preprint arXiv:2501.12599.
+
+Qwen Team (2025) QwQ-32B Model Card. Available at: https://huggingface.co/Qwen/QwQ-32B.
 
 Touvron H, Martin L, Stone K, Albert P, Almahairi A, Babaei Y, Bashlykov N, Batra S, Bhargava P, Bhosale S, others (2023) Llama 2: Open Foundation and Fine-Tuned Chat Models. arXiv preprint arXiv:2307.09288.
 

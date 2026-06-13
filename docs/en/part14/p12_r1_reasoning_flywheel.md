@@ -1,5 +1,7 @@
 # Project 12: A Pedagogical R1 Reasoning Data Flywheel
 
+<div class="chapter-authors">Xin Xu</div>
+
 ## Abstract
 
 This project constructs a reproducible data engineering case study around the "Pedagogical R1 Reasoning Data Flywheel," focusing on business objectives, data boundaries, architectural decisions, core implementation, acceptance metrics, and risk controls. The chapter distills installation commands and script details into an engineering retrospective perspective, highlighting the relationships among sample schemas, data flows, failure modes, and deliverables, thereby helping readers translate the methodologies presented earlier into auditable, scalable project assets.

@@ -1,5 +1,7 @@
 # Chapter 46: Reasoning Models and RL Data Engineering: The R1/QwQ Paradigm
 
+<div class="chapter-authors">Xin Xu</div>
+
 ## Abstract
 The previous chapter discussed SFT, preference alignment, reward models, and RLVR data interfaces in the post-training stage. This chapter moves further forward, focusing on the most significant shift in the open-source community since 2025: reasoning models no longer rely solely on manually written long chain-of-thought samples. Instead, they actively expand their reasoning trajectory space through Reinforcement Learning (RL) and verifiable rewards.
 
@@ -571,6 +573,8 @@ The next chapter turns to data engineering for multimodal understanding models. 
 Guo D, Yang D, Zhang H, Song J, Wang P, Zhu Q, Xu R, Zhang R, Ma S, Bi X, others (2025) DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. arXiv preprint arXiv:2501.12948.
 
 Team Kimi, Du A, Gao B, Xing B, Jiang C, Chen C, Li C, Xiao C, Du C, Liao C, others (2025) Kimi k1.5: Scaling Reinforcement Learning with LLMs. arXiv preprint arXiv:2501.12599.
+
+Qwen Team (2025) QwQ-32B Model Card. Available at: https://huggingface.co/Qwen/QwQ-32B.
 
 Touvron H, Martin L, Stone K, Albert P, Almahairi A, Babaei Y, Bashlykov N, Batra S, Bhargava P, Bhosale S, others (2023) Llama 2: Open Foundation and Fine-Tuned Chat Models. arXiv preprint arXiv:2307.09288.
 

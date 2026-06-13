@@ -1,5 +1,7 @@
 # 第39章：视觉推理与工具调用数据工程
 
+<div class="chapter-authors">Lin Xu；Xinyu Chen</div>
+
 ## 摘要
 
 本章讨论视觉数据如何从对象识别走向证据组织和可执行推理，有多图表信息图推理与医学图像工具调用两个专项案例。多图表信息图强调跨子图表证据聚合、数值关系和多步推理链路，MedImage-ToolVQA 强调 ROI、mask、bbox 与工具调用轨迹。两类任务都要求数据集同时记录视觉证据、问题结构、推理过程和人工复核边界。
@@ -40,7 +42,7 @@
 
 #### 案例A.1.3 现有基准数据集缺口与本数据集研发意义
 
-当前全球公开的多模态图表推理基准数据集存在明显供给缺口：人工合成仿真图表数据集较多，基于网页、报刊、科普出版物抓取的原生真实复合信息图样本稀缺，多数数据集为了降低标注难度，人为拆分多子图信息图为多张独立图片，破坏原图的空间关联与上下文逻辑。在此背景下，多图表信息图推理数据集立足原生真实信息图抓取，保留原图多子图同屏布局、图例全局共用、分区备注穿插的原生结构，填补真实场景跨图表推理评测基准空白。
+当前全球公开的多模态图表推理基准数据集存在明显供给缺口：人工合成仿真图表数据集较多，基于网页、报刊、科普出版物抓取的原生真实复合信息图样本稀缺，多数数据集为了降低标注难度，人为拆分多子图信息图为多张独立图片，破坏原图的空间关联与上下文逻辑。在此背景下，多图表信息图推理数据集立足原生真实信息图抓取，保留原图多子图同屏布局、图例全局共用、分区备注穿插的原生结构，与上述依赖网页抓取的构建方式不同，我们利用多模态大模型进行自动化地合成图表以及问答对，填补真实场景跨图表推理评测基准空白，自建数据集采用huggingface链接：<https://huggingface.co/datasets/ustc-lab/ChartQwen>。
 
 从算法研发视角，该数据集的落地可以倒逼 VQA 模型跳出 “单图读取” 固有架构，推动多模态模型新增子图区域分割、跨视图信息记忆存储、多轮计算链路推理三项能力，贴合金融数据分析、市场资讯解读、公共卫生数据研判等产业落地场景。
 
@@ -470,7 +472,7 @@ MedImage-ToolVQA 中涉及三类视觉工具：`Zoom-in`、`BiomedParse` 和 `SA
 
 `BiomedParse` 更偏医学语义分割。它接受目标图像和文本描述（例如“lung nodule”或“liver lesion”），返回与医学语义相关的分割结果。这类工具的优势是能将自然语言目标与医学图像区域联系起来，适合需要语义定位的场景。风险在于，医学图像模态差异很大，文本描述若不准确，工具可能返回错误区域，或将相似结构误分割为目标。
 
-`SAM2` 是 bbox prompt 驱动的通用分割工具 (Ravi et al. 2024)。它不依赖医学语义，而是根据几何提示在图像中生成更精细的 mask。对于已有候选框但需要更明确边界的样本，`SAM2` 可以提供补充观察。它的主要风险是过度依赖 bbox 质量：bbox 若覆盖背景或相邻结构，分割结果也会受到影响。
+`SAM2` 是 bbox prompt 驱动的通用分割工具 (Ravi et al. 2025)。它不依赖医学语义，而是根据几何提示在图像中生成更精细的 mask。对于已有候选框但需要更明确边界的样本，`SAM2` 可以提供补充观察。它的主要风险是过度依赖 bbox 质量：bbox 若覆盖背景或相邻结构，分割结果也会受到影响。
 
 | 工具 | 主要输入 | 返回结果 | 适合解决的问题 | 需要控制的风险 |
 |---|---|---|---|---|
@@ -840,13 +842,13 @@ Foroutan, N., Romanou, A., Ansaripour, M., Eisenschlos, J. M., Aberer, K., & Leb
 
 Zhu, Z., Jia, M., Zhang, Z., Li, L., & Jiang, M. (2025, April). MultiChartQA: Benchmarking vision-language models on multi-chart problems. In Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) (pp. 11341-11359).
 
-Antol, S., Agrawal, A., Lu, J., Mitchell, M., Batra, D., Zitnick, C. L., & Parikh, D. (2015). VQA: Visual Question Answering. Proceedings of the IEEE International Conference on Computer Vision, 2425–2433. https://doi.org/10.1109/ICCV.2015.279
+Antol, S., Agrawal, A., Lu, J., Mitchell, M., Batra, D., Zitnick, C. L., & Parikh, D. (2015). VQA: Visual Question Answering. Proceedings of the IEEE International Conference on Computer Vision, 2425–2433. https://doi.org/10.1109/ICCV.2015.279.
 
-Lau, J. J., Gayen, S., Ben Abacha, A., & Demner-Fushman, D. (2018). A dataset of clinically generated visual questions and answers about radiology images. Scientific Data, 5, 180251. https://doi.org/10.1038/sdata.2018.251
+Lau, J. J., Gayen, S., Ben Abacha, A., & Demner-Fushman, D. (2018). A dataset of clinically generated visual questions and answers about radiology images. Scientific Data, 5, 180251. https://doi.org/10.1038/sdata.2018.251.
 
 He, X., Zhang, Y., Mou, L., Xing, E., & Xie, P. (2020). PathVQA: 30000+ Questions for Medical Visual Question Answering. arXiv:2003.10286.
 
-Liu, B., Zhan, L.-M., Xu, L., Ma, L., Yang, Y., & Wu, X.-M. (2021). SLAKE: A Semantically-Labeled Knowledge-Enhanced Dataset for Medical Visual Question Answering. IEEE 18th International Symposium on Biomedical Imaging. https://doi.org/10.1109/ISBI48211.2021.9434010
+Liu, B., Zhan, L.-M., Xu, L., Ma, L., Yang, Y., & Wu, X.-M. (2021). SLAKE: A Semantically-Labeled Knowledge-Enhanced Dataset for Medical Visual Question Answering. IEEE 18th International Symposium on Biomedical Imaging. https://doi.org/10.1109/ISBI48211.2021.9434010.
 
 Yao, S., Zhao, J., Yu, D., et al. (2023). ReAct: Synergizing Reasoning and Acting in Language Models. International Conference on Learning Representations.
 
@@ -856,10 +858,10 @@ Kirillov, A., Mintun, E., Ravi, N., et al. (2023). Segment Anything. Proceedings
 
 Ravi, N., Gabeur, V., Hu, Y.-T., Hu, R., Ryali, C., Ma, T., et al. (2025). SAM 2: Segment Anything in Images and Videos. International Conference on Learning Representations.
 
-Ma, J., He, Y., Li, F., et al. (2024). Segment anything in medical images. Nature Communications, 15, 654. https://doi.org/10.1038/s41467-024-44824-z
+Ma, J., He, Y., Li, F., et al. (2024). Segment anything in medical images. Nature Communications, 15, 654. https://doi.org/10.1038/s41467-024-44824-z.
 
-Zhao, T., Gu, Y., Yang, J., et al. (2025). BiomedParse: A biomedical foundation model for image parsing of everything everywhere all at once. Nature Methods, 22, 166–176. https://doi.org/10.1038/s41592-024-02499-w
+Zhao, T., Gu, Y., Yang, J., et al. (2025). BiomedParse: A biomedical foundation model for image parsing of everything everywhere all at once. Nature Methods, 22, 166–176. https://doi.org/10.1038/s41592-024-02499-w.
 
-Gebru, T., Morgenstern, J., Vecchione, B., Vaughan, J. W., Wallach, H., Daumé III, H., & Crawford, K. (2021). Datasheets for Datasets. Communications of the ACM, 64(12), 86–92. https://doi.org/10.1145/3458723
+Gebru, T., Morgenstern, J., Vecchione, B., Vaughan, J. W., Wallach, H., Daumé III, H., & Crawford, K. (2021). Datasheets for Datasets. Communications of the ACM, 64(12), 86–92. https://doi.org/10.1145/3458723.
 
-Mitchell, M., Wu, S., Zaldivar, A., et al. (2019). Model Cards for Model Reporting. Proceedings of the Conference on Fairness, Accountability, and Transparency, 220–229. https://doi.org/10.1145/3287560.3287596
+Mitchell, M., Wu, S., Zaldivar, A., et al. (2019). Model Cards for Model Reporting. Proceedings of the Conference on Fairness, Accountability, and Transparency, 220–229. https://doi.org/10.1145/3287560.3287596.

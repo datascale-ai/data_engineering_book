@@ -1,5 +1,7 @@
 # 项目一：基于 Ray 构建分布式 Mini-C4 数据流水线
 
+<div class="chapter-authors">徐鑫（Xin Xu）</div>
+
 ## 摘要
 P01 聚焦从 Common Crawl shard 构建 Mini-C4 训练数据集的工程过程。章节重点不在单次抓取结果，而在把网页归档、正文抽取、去重过滤、训练封装和结果验证组织成一条可复现的数据生产线。
 
@@ -1072,7 +1074,7 @@ Mini-C4 这一章虽然重点放在数据清洗与质量控制，但从预训练
 ## 参考文献
 
 1. Raffel, C., Shazeer, N., Roberts, A., Lee, K., Narang, S., Matena, M., Zhou, Y., Li, W., & Liu, P. J. (2020). Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. JMLR, 21(140), 1-67.
-2. Hugging Face. (2026). Datasets Documentation. https://huggingface.co/docs/datasets/
-3. Ray Project. (2026). Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html
-4. MLflow Authors. (2026). MLflow Documentation. https://mlflow.org/docs/latest/
-5. Great Expectations Contributors. (2026). Great Expectations Documentation. https://docs.greatexpectations.io/
+2. Hugging Face. (2026). Datasets Documentation. https://huggingface.co/docs/datasets/.
+3. Ray Project. (2026). Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html.
+4. MLflow Authors. (2026). MLflow Documentation. https://mlflow.org/docs/latest/.
+5. Great Expectations Contributors. (2026). Great Expectations Documentation. https://docs.greatexpectations.io/.

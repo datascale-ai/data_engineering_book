@@ -1,5 +1,7 @@
 # Chapter 25: Data Version Management and Experiment Tracking
 
+<div class="chapter-authors">Wenzhuo Du</div>
+
 ## Abstract
 "Our model performed worse last week than the week before, but the data team says nothing changed"—this complaint arises far more often in LLM projects than most teams expect. The insidious nature of data engineering lies in the fact that data changes tend to be cumulative and incremental rather than discrete and conspicuous. Without systematic version management, a team lacks the ability to answer even the most fundamental question—"what changed?"—let alone attribute causality to "why it changed."
 
@@ -93,7 +95,7 @@ It should be emphasized that the value of version management is not equivalent t
 
 Data version management is not a problem of a single granularity; it requires maintaining version information simultaneously at five levels.
 
-![Figure 25-1: Overview of the Version Management System](../../images/part8/图25_1zh.png)
+![Figure 25-1: Overview of the Version Management System](../../images/part8/图25_1.svg)
 
 *Figure 25-1: Panoramic view of the data version management and experiment tracking system—five-level version granularity with bidirectional association architecture*
 
@@ -418,7 +420,7 @@ Lineage graphs also need complexity control. LLM data pipelines often contain la
 
 Edge semantics should also be carefully designed. Edges are not merely "connections"—they should also specify the type of relationship. For example, `derived_from` denotes derivation, `filtered_by` denotes filtering, `annotated_by` denotes annotation, `evaluated_with` denotes evaluation, `approved_by` denotes approval, and `released_as` denotes release. The more clearly edge semantics are defined, the more precise queries become. Otherwise, a lineage graph can only display paths without explaining the governance meaning of those paths.
 
-![Figure 25-2: Data Lineage and Experiment Tracking Graph](../../images/part8/图25_2zh.png)
+![Figure 25-2: Data Lineage and Experiment Tracking Graph](../../images/part8/图25_2.g)
 
 *Figure 25-2: Complete data lineage graph from data sources to model release, showing forward and reverse tracking paths*
 
@@ -670,7 +672,7 @@ Buneman P, Khanna S, Tan W-C (2001) Why and Where: A Characterization of Data Pr
 
 DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications.
 
-DVC Documentation (2024) Data Version Control Documentation. Available at: https://dvc.org/doc
+DVC Documentation (2024) Data Version Control Documentation. Available at: https://dvc.org/doc.
 
 Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92.
 

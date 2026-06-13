@@ -1,5 +1,7 @@
 # Appendix A: Tools and Frameworks Quick Reference
 
+<div class="chapter-authors">Xin Xu</div>
+
 ## A.1 Purpose of This Appendix
 
 This appendix supports the engineering implementation layer of the book. It is not trying to list every tool you may have heard of. It answers a more practical question: when a team has decided to collect data, clean it, evaluate it, track experiments, release assets, and support teaching reproduction, how should it choose tools at different stages and understand the responsibility boundaries between them?
@@ -292,8 +294,8 @@ Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Ra
 
 Pushkarna M, Zaldivar A, Kjartansson O, Cicconi P, Chen V, Efrat A, Zou Y, Mueller J, Taly A, Ehyaei A, Karkkainen K, Marathe A, Han X, Mittal A, Schuster T, Yarmand M, Sohn H, Dwarakanath N C, McCann B (2022) Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 1776-1826.
 
-DVC Documentation. Available at: https://dvc.org/doc
+DVC Contributors (2026) Data Version Control Documentation. Available at: https://dvc.org/doc.
 
-MLflow Documentation. Available at: https://mlflow.org/docs/latest/
+MLflow Authors (2026) MLflow Documentation. Available at: https://mlflow.org/docs/latest/.
 
-Hugging Face Datasets Documentation. Available at: https://huggingface.co/docs/datasets
+Hugging Face (2026) Hugging Face Datasets Documentation. Available at: https://huggingface.co/docs/datasets.

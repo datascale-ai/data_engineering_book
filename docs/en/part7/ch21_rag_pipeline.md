@@ -1,5 +1,7 @@
 # Chapter 21: The RAG Data Pipeline
 
+<div class="chapter-authors">Wenzhuo Du</div>
+
 ## Chapter Abstract
 
 The quality ceiling of a retrieval-augmented generation (RAG) system is often fixed by the upstream data-processing chain before the query ever reaches the model. This chapter reframes RAG as a document engineering problem: the system does not operate on raw documents, but on data representations that have been parsed, cleaned, structured, and chunked. Information loss in any stage is amplified downstream. The chapter follows the actual data pipeline: it first argues that RAG is grounded in document engineering rather than terminal generation; then explains stable multi-source knowledge ingestion, heterogeneous format parsing, and structured cleaning; then discusses how knowledge units become multi-route retrieval infrastructure combining vectors, keywords, structured fields, and parent-child hierarchy; then builds evaluation, error attribution, feedback, and knowledge-update loops for the whole chain; and finally uses an enterprise complex-document case and engineering checklist to show how these methods converge into a traceable, verifiable, deliverable production pipeline.
@@ -8,7 +10,7 @@ The quality ceiling of a retrieval-augmented generation (RAG) system is often fi
 
 RAG data pipeline; document engineering; retrieval-augmented generation; chunking; knowledge update; evaluation feedback
 
-## 21.0 Learning Objectives
+## Learning Objectives
 
 - Explain why the performance ceiling of RAG is determined by the upstream data pipeline rather than the terminal generation model.
 - Design a document-engineering chain that covers multi-source ingestion, heterogeneous format parsing, and structured cleaning.
@@ -48,7 +50,7 @@ Against this backdrop, the simplistic understanding of RAG as merely "retrieval 
 
 
 
-![Figure 21-1: Data transformation pipeline in a RAG system](../../images/part7/图21_1.png)
+![Figure 21-1: Data transformation pipeline in a RAG system](../../images/part7/图21_1.svg)
 
 *Figure 21-1: Data transformation pipeline in a RAG system*
 
@@ -77,7 +79,7 @@ If this structural skeleton is destroyed during parsing and chunking, even if ev
 
 
 
-![Figure 21-2: Structural changes from a raw document to RAG-usable knowledge units](../../images/part7/图21_2.png)
+![Figure 21-2: Structural changes from a raw document to RAG-usable knowledge units](../../images/part7/图21_2.svg)
 
 
 
@@ -117,7 +119,7 @@ This abstraction reveals an engineering iron law: the system output $Y$ is separ
 
 Evaluation studies such as RAGAS and RAGTruth emphasize that RAG errors must be decomposed into different dimensions, including retrieval, context use, and generation faithfulness, rather than judged only by whether the final answer looks good or bad (Es et al. 2024; Niu et al. 2024). Referring to the error-accumulation diagram of RAG, one can see that an answer existing in the original document does not mean it exists in a retrieval-reachable knowledge unit; an answer existing in a knowledge unit does not mean it can be recalled; an answer being recalled does not mean it enters the context in a complete, clear, and citable form. RAG failures are rarely the failure of a single module in isolation — they are the accumulation of multiple small information losses along the pipeline, eventually producing user-visible errors.
 
-![Figure 21-3: How RAG errors accumulate along the data pipeline](../../images/part7/图21_3.png)
+![Figure 21-3: How RAG errors accumulate along the data pipeline](../../images/part7/图21_3.svg)
 
 *Figure 21-3: How RAG errors accumulate along the data pipeline*
 
@@ -224,9 +226,9 @@ This expression reveals the classic "bucket-stave" effect: when the underlying d
 
 
 
-![Figure 21-4: The bucket-stave effect on RAG system performance](../../images/part7/图21_4.png)
+![Figure 21-4: The bucket-stave effect on RAG system performance](../../images/part7/图21_4.svg)
 
-*Figure 21-4: The bucket-stave effect on RAG system performance*
+*Figure 21-4: The bucket-stave effect on RAG system performance(copyright:DooFi, Public domain, via Wikimedia Commons)*
 
 
 
@@ -291,7 +293,7 @@ In traditional text-processing tasks, text is usually assumed to be a linear seq
 
 Therefore, document parsing usually needs to be performed at three levels: layout parsing, structure parsing, and semantic parsing. Layout parsing focuses on visual region partitioning on the page, identifying headings, body text, tables, images, headers, footers, and footnotes, and recovering their spatial positions. Structure parsing focuses on the logical relationships among these elements, such as heading hierarchy, paragraph attribution, list nesting, and table row/column relationships. Semantic parsing further identifies content roles, such as definitions, rules, conditions, steps, conclusions, examples, and notes.
 
-![Figure 21-5: Layout parsing and structure reconstruction of complex documents](../../images/part7/图21_5.png)
+![Figure 21-5: Layout parsing and structure reconstruction of complex documents](../../images/part7/图21_5.svg)
 
 *Figure 21-5: Layout parsing and structure reconstruction of complex documents*
 
@@ -380,7 +382,7 @@ After parsing and cleaning, the system must split long documents into knowledge 
 
 Fixed-length chunking is the most common initial approach. For example, slice every 500 or 1000 tokens with some overlap. This approach is simple to implement, has high throughput, and is easy to parallelize. Its biggest flaw, however, is ignoring semantic boundaries. A rule clause, a table description, an operating step, or a case analysis may be cut between two chunks. If the model receives only half of either, it cannot understand the full meaning. A more reasonable approach is semantic-structure-based chunking. For policy documents, chunk by chapters, clauses, and sub-clauses; for product manuals, by feature modules and operating steps; for FAQs, treat the question, answer, and tags as a natural unit; for reports, bind the table, table title, units, notes, and related body text into one knowledge unit. Recent research on RAG for financial reports shows that chunking by document-element type is usually more beneficial for retrieval and Q&A quality than simple fixed-length chunking (Jimeno Yepes et al. 2024).
 
-![Figure 21-6: How different chunking strategies affect semantic integrity](../../images/part7/图21_6.png)
+![Figure 21-6: How different chunking strategies affect semantic integrity](../../images/part7/图21_6.svg)
 
 *Figure 21-6: How different chunking strategies affect semantic integrity*
 
@@ -440,7 +442,7 @@ Production-grade RAG systems therefore commonly use multi-granularity indexes or
 
 
 
-![Figure 21-7: Parent–child indexes and multi-granularity retrieval](../../images/part7/图21_7.png)
+![Figure 21-7: Parent–child indexes and multi-granularity retrieval](../../images/part7/图21_7.svg)
 
 *Figure 21-7: Parent–child indexes and multi-granularity retrieval*
 
@@ -488,7 +490,7 @@ This is what reranking does. Reranking does not search across the full knowledge
 
 The value of reranking is especially clear in complex questions. For simple factual queries, top-k vector retrieval may suffice; for multi-condition, comparative, rule-based, or cross-document questions, the initial recall often contains many "seemingly relevant but not actually answerable" fragments. Without reranking, these fragments enter the model context and interfere with generation, even inducing wrong conclusions.
 
-![Figure 21-8: Two-stage retrieval with hybrid search and reranking](../../images/part7/图21_8.png)
+![Figure 21-8: Two-stage retrieval with hybrid search and reranking](../../images/part7/图21_8.svg)
 
 *Figure 21-8: Two-stage retrieval with hybrid search and reranking*
 
@@ -620,7 +622,7 @@ Online feedback can be explicit or implicit. Explicit feedback includes upvotes,
 
 Online feedback must therefore be combined with full-pipeline logging. As shown in Figure 21-9, for every Q&A, the system should record the user question, query-rewrite result, recall candidates, reranker ordering, final context, generated answer, citation sources, user feedback, and subsequent behavior. Only with this can the team replay the entire pipeline after a failure and locate the source. Error attribution typically falls into several categories: (1) data coverage — the KB lacks the relevant content; (2) parsing or cleaning — the source exists but structure is broken; (3) chunking — the answer is split across chunks; (4) retrieval — the correct chunk was not recalled; (5) ranking — the correct chunk was recalled but ranked too low; (6) generation — evidence was correct but the model answered incorrectly; (7) citation — the answer is correct but the citation is inaccurate. Each error type has a corresponding fix: data coverage needs new sources; parsing issues need parser improvement; chunking issues need chunk-strategy adjustment; retrieval issues need embedding, query rewriting, or hybrid retrieval tuning; ranking issues need reranker improvements; generation issues need prompt or model adjustments; citation issues need fixes to citation anchors.
 
-![Figure 21-9: Evaluation, feedback, and optimization loop in a RAG system](../../images/part7/图21_9.png)
+![Figure 21-9: Evaluation, feedback, and optimization loop in a RAG system](../../images/part7/图21_9.svg)
 
 *Figure 21-9: Evaluation, feedback, and optimization loop in a RAG system*
 

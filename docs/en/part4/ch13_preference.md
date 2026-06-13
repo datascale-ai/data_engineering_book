@@ -1,5 +1,7 @@
 # Chapter 13: Preference Data and Reward Signals
 
+<div class="chapter-authors">Ran Zhang</div>
+
 ## Abstract
 
 After supervised fine-tuning, a model can already follow instructions and produce formatted responses. Whether it can consistently respond in the manner an organization expects, however, depends on the design of preference data and reward signals. This chapter is addressed to teams responsible for constructing preference data and building reward models. It explains how preference data determines a model's behavioral style and why preference alignment is still necessary after SFT. The chapter first distinguishes three supervision paradigms—pairwise preference, scalar score, and process reward—along with their respective data requirements. It then discusses sources of preference (expert annotation, user feedback, model-as-judge, and rule-based arbitration) and strategies for mixing online, offline, and synthetic preference data. It proceeds to address annotation disagreement, style bias, and score drift, offering consistency governance methods including arbitration, re-labeling, annotator calibration, and golden sets. Finally, it establishes an interface mapping between preference data and training methods such as DPO, RM, RLAIF, and PRM, clarifying when to use pairwise preferences and when to use process supervision.
@@ -80,7 +82,7 @@ Business preferences that do not enter annotation specifications cannot enter tr
 
 
 
-![Figure 13-1: Flowchart from preference data to reward signal](../../images/part4/图13_1.png)
+![Figure 13-1: Flowchart from preference data to reward signal](../../images/part4/图13_1.svg)
 
 *Figure 13-1: Flowchart from preference data to reward signal*
 
@@ -270,7 +272,7 @@ This evolutionary path is important because it illustrates that preference learn
 
 
 
-![Figure 13-2: Schematic of multi-objective preference trade-offs](../../images/part4/图13_2.png)
+![Figure 13-2: Schematic of multi-objective preference trade-offs](../../images/part4/图13_2.svg)
 
 *Figure 13-2: Schematic of multi-objective preference trade-offs*
 

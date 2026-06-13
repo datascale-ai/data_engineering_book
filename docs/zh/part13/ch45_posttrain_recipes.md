@@ -1,5 +1,7 @@
 # 第45章：LLM 后训练数据工程实战：SFT 与偏好对齐
 
+<div class="chapter-authors">徐鑫（Xin Xu）</div>
+
 ## 摘要
 
 监督微调（Supervised Fine-Tuning，SFT）与偏好对齐（Preference Alignment）是大语言模型（Large Language Model，LLM）后训练阶段的两个核心数据工程入口，但二者承担的目标截然不同：前者通过极大似然估计（Maximum Likelihood Estimation，MLE）为模型建立行为模板，后者通过 chosen/rejected 对比信号塑造模型的奖励曲面。本章以"配方"视角拆解开源模型的后训练数据工程实践。内容首先提出 SFT、偏好对齐与在线持续优化的三段论流水线，界定各层的数据形状、优化目标与 manifest 治理要求；继而以 Tülu-3、Llama-3、Qwen2.5 与 Nemotron-4/HelpSteer2 为代表横向对照后训练数据的透明度与规模，并区分直接披露、合理推断与教学估算三类信息可信度；随后比较 Self-Instruct、Evol-Instruct 与 Magpie 三类指令合成流派在种子依赖、难度校准与分布过滤上的工程差异，并延伸至拒绝采样（Rejection Sampling，RS）、奖励模型（Reward Model，RM）与直接偏好优化等范式的数据生产方法。本章强调后训练数据工程的成熟度不在于产出样本，而在于每条样本能否追溯来源、隔离评测、说明用途并支持回滚。
@@ -16,7 +18,7 @@ LLM；数据配方；开源大模型；训练数据；阶段化调度
 - 能够设计拒绝采样、奖励模型与 DPO、GRPO、RLVR 等范式的偏好数据生产方法。
 - 能够评估后训练数据的来源可追溯、评测隔离、用途说明与回滚能力，识别 Reward Hacking 与数据污染风险。
 
-## 45.0 开篇问题场景：为什么 Alpaca 训不出 GPT-4 风格
+## 开篇问题场景：为什么 Alpaca 训不出 GPT-4 风格
 
 2023 年至 2024 年初，开源社区集中探索了指令微调（Instruction Tuning）路线。设想这样一个常见团队案例：某大模型应用团队为了打造自己的垂直领域助手，使用开源基座模型，并收集了约 200K 条 Alpaca、Dolly 以及 Self-Instruct 风格的指令数据，对其进行监督微调（Supervised Fine-Tuning, SFT）。
 
@@ -398,6 +400,10 @@ Liu C Y, Zeng L, Liu J, Yan R, He J, Wang C, Yan S, Liu Y, Zhou Y (2024b) Skywor
 
 Singhal P, Goyal T, Xu J, Durrett G (2024) A Long Way to Go: Investigating Length Correlations in RLHF. First Conference on Language Modeling.
 
+Shao Z, Wang P, Zhu Q, Xu R, Song J, Bi X, Zhang H, Zhang M, Li Y, Wu Y, Guo D (2024) DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv preprint arXiv:2402.03300.
+
 Zhou K, Zhu Y, Chen Z, Chen W, Zhao W X, Chen X, Lin Y, Wen J-R, Han J (2023) Don't Make Your LLM an Evaluation Benchmark Cheater. arXiv preprint arXiv:2311.01964.
+
+Zheng L, Chiang W-L, Sheng Y, Zhuang S, Wu Z, Zhuang Y, Lin Z, Li Z, Li D, Xing E, Zhang H, Gonzalez J, Stoica I (2023) Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. Advances in Neural Information Processing Systems, 36, 46595-46623.
 
 Lightman H, Kosaraju V, Burda Y, Edwards H, Baker B, Lee T, Leike J, Schulman J, Sutskever I, Cobbe K (2024) Let's Verify Step by Step. International Conference on Learning Representations.

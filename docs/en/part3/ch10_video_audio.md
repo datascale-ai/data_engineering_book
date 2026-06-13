@@ -1,5 +1,7 @@
 # Chapter 10: Video and Audio Data Engineering
 
+<div class="chapter-authors">Ke Wang</div>
+
 ## Abstract
 
 This chapter discusses the core problems of video and audio data engineering, emphasizing why long-temporal multimodal data is much harder than static image-text data in usable-sample ratio, decoding cost, temporal alignment, and quality evaluation. It first analyzes why video data "looks abundant but yields few usable samples," including dimensional growth, static redundancy, background noise, audio-video separation, and decoding I/O bottlenecks. It then builds a three-track parallel pipeline across visual, acoustic, and text streams: shot-boundary detection, key-frame extraction, ASR transcription, denoising, speaker diarization, subtitle correction, and timestamp alignment. The second half discusses event labels, audio-video mismatch detection, cost models, and hardware decoding strategies such as NVDEC and DALI. An anonymized composite case shows how temporal offset can destroy audio-video learning signals. Readers should be able to design auditable video and audio preprocessing pipelines that can slice, transcribe, align, and evaluate long-temporal samples.

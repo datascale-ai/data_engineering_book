@@ -1,5 +1,7 @@
 # 第11章 跨模态对齐与融合
 
+<div class="chapter-authors">王珂（Ke Wang）</div>
+
 ## 摘要
 
 本章是第三篇的收束章节，讨论图像、文本、音频和视频在完成单模态清洗之后，如何构建跨模态对齐与融合训练样本。章节首先说明独立清洗并不能自动带来跨模态推理能力，若缺少语义、空间或时间绑定，模型仍会学习到错误对应关系。随后，本章建立对象级、片段级和文档级三层对齐框架，分别覆盖 BBox-词汇锚固、音视频时间轴同步和长文档交错排序。工程实现部分介绍占位符设计、特征路径解耦、多模态样本配比和难负样本挖掘，并给出跨模态召回率、时序连续性、幻觉率和蕴含冲突等质量指标。最后，章节通过匿名化复合案例说明对象错位、片段错位和语义错配的风险，并自然过渡到第四篇的指令对齐与偏好数据系统。
@@ -359,6 +361,8 @@ Affected batch: 256 samples. Training step 28,441 aborted.
 Chen T, Kornblith S, Norouzi M, Hinton G (2020) A Simple Framework for Contrastive Learning of Visual Representations (SimCLR). In: Proceedings of the 37th International Conference on Machine Learning, pp 1597-1607.
 
 Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, Krueger G, Sutskever I (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: ICML 2021, pp 8748-8763.
+
+Rombach R, Blattmann A, Lorenz D, Esser P, Ommer B (2022) High-Resolution Image Synthesis with Latent Diffusion Models. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 10684-10695.
 
 
 Sakoe H, Chiba S (1978) Dynamic Programming Algorithm Optimization for Spoken Word Recognition (DTW). IEEE Transactions on Acoustics, Speech, and Signal Processing 26(1):43-49.

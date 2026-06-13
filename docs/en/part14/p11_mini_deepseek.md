@@ -1,5 +1,7 @@
 # Project 11: Mini-DeepSeek Pre-Training Reproduction
 
+<div class="chapter-authors">Ke Wang</div>
+
 ## Abstract
 
 This project builds a reproducible data engineering case study around "Mini-DeepSeek Pre-Training Reproduction," with an emphasis on business objectives, data boundaries, architectural decisions, core implementation, acceptance criteria, and risk controls. The chapter consolidates installation commands and script details into an engineering retrospective perspective, highlighting the relationships among sample schemas, data flows, failure modes, and deliverables, helping readers translate the methods presented earlier into auditable and extensible project assets.

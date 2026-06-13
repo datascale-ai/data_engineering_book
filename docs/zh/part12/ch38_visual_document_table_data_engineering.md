@@ -1,5 +1,7 @@
 # 第38章：视觉文档与结构化表格数据工程
 
+<div class="chapter-authors">Guanjun Liu；Yuefeng Zou</div>
+
 ## 摘要
 
 本章讨论视觉文档如何从图像、版式、表格和业务字段中形成可训练、可评测、可审计的数据对象，有票据文档理解与稀疏表格结构识别两个专项案例。StructBill-CN 强调高风险票据字段、层级 JSON 和算术一致性，SparseTable-Bench 强调表格拓扑、空单元格和结构鲁棒性；两者共同说明，视觉文档数据工程的核心不是单纯 OCR，而是把页面结构、业务语义和评测协议绑定成稳定的样本 schema。
@@ -785,8 +787,10 @@ Wang, W., Gao, Z., Gu, L., et al. (2025). InternVL3.5: Advancing Open-Source Mul
 
 Zhang, J., Liu, Y., Wu, Z., et al. (2025). MonkeyOCR v1.5 Technical Report: Unlocking Robust Document Parsing for Complex Patterns. *arXiv preprint*.
 
-1. Zhong, X., ShafieiBavani, E., & Yepes, A. J. (2020). Image-based Table Recognition: Data, Model, and Evaluation. ECCV 2020.
-2. Smock, B., Pesala, R., & Abraham, R. (2022). PubTables-1M: Towards Comprehensive Table Extraction From Unstructured Documents. CVPR 2022.
-3. Zhu, F., Lei, W., Huang, Y., Wang, C., Zhang, S., Lv, J., Feng, F., & Chua, T.-S. (2021). TAT-QA: A Question Answering Benchmark on a Hybrid of Tabular and Textual Content in Finance. ACL 2021.
-4. Pandas Development Team. (2026). pandas Documentation. https://pandas.pydata.org/docs/
-5. Apache Arrow Contributors. (2026). Apache Arrow Documentation. https://arrow.apache.org/docs/
+Smock, B., Pesala, R., and Abraham, R. (2022). PubTables-1M: Towards Comprehensive Table Extraction From Unstructured Documents. *Proc. CVPR*.
+
+Zhu, F., Lei, W., Huang, Y., Wang, C., Zhang, S., Lv, J., Feng, F., and Chua, T.-S. (2021). TAT-QA: A Question Answering Benchmark on a Hybrid of Tabular and Textual Content in Finance. *Proc. ACL*.
+
+Pandas Development Team. (2026). pandas Documentation. https://pandas.pydata.org/docs/.
+
+Apache Arrow Contributors. (2026). Apache Arrow Documentation. https://arrow.apache.org/docs/.

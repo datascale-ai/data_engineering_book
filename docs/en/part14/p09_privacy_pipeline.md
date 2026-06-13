@@ -1,5 +1,7 @@
 # Project 9: Privacy-Preserving Data Pipeline
 
+<div class="chapter-authors">Xin Xu</div>
+
 ## Abstract
 P09 focuses on the governance process for sensitive data before it enters training, analytics, and data-sharing pipelines. Rather than concentrating on point-in-time anonymization techniques, the chapter organizes control boundaries, sensitive record handling, operational response, and acceptance mechanisms into a complete privacy-preserving data pipeline.
 

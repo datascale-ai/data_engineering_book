@@ -1,5 +1,7 @@
 # 附录A：工具与框架速查表
 
+<div class="chapter-authors">徐鑫（Xin Xu）</div>
+
 ## A.1 附录定位
 
 本附录面向整本书的工程落地环节，目标不是罗列“所有常见工具”，而是回答一个更实际的问题：**当团队已经明确要做数据采集、清洗、评测、实验追踪、开放发布和教学复现时，应该如何在不同阶段选择合适的工具栈，并理解它们之间的职责边界。**
@@ -293,8 +295,8 @@ Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Ra
 
 Pushkarna M, Zaldivar A, Kjartansson O (2022) Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 1776-1826.
 
-DVC Documentation. Available at: https://dvc.org/doc
+DVC Contributors (2026) Data Version Control Documentation. Available at: https://dvc.org/doc.
 
-MLflow Documentation. Available at: https://mlflow.org/docs/latest/
+MLflow Authors (2026) MLflow Documentation. Available at: https://mlflow.org/docs/latest/.
 
-Hugging Face Datasets Documentation. Available at: https://huggingface.co/docs/datasets
+Hugging Face (2026) Hugging Face Datasets Documentation. Available at: https://huggingface.co/docs/datasets.

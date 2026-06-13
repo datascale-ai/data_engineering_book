@@ -1,5 +1,7 @@
 # Project 14: Video Generation Dataset — From Video Sources to a T2V-Training-Ready Data Pipeline
 
+<div class="chapter-authors">Ran Zhang</div>
+
 ## Abstract
 
 This project constructs a reproducible data engineering case study around "Video Generation Dataset: From Video Sources to a T2V-Training-Ready Data Pipeline," with emphasis on business objectives, data boundaries, architectural decisions, core implementation, acceptance metrics, and risk controls. Installation commands and script details are consolidated into an engineering retrospective perspective, highlighting the relationships among sample schemas, data flows, failure modes, and deliverables — helping readers translate the methods presented earlier in this book into auditable, extensible project assets.
@@ -76,7 +78,7 @@ This section focuses on how to organize a rerunnable, auditable, and extensible 
 
 Figure P14-1 shows the English-annotated architecture diagram for this project. The upper half of the diagram represents data stages; the lower half represents engineering controls. This layout deliberately places "caption generation" in the later stage rather than treating it as the sole core: the quality of a video generation dataset depends on the collective coordination of source, segmentation, motion, aesthetics, captioning, cinematic language, and release gates.
 
-![P14 Video Generation Data Pipeline](../../images/part14/p14_video_generation_pipeline_en.png)
+![P14 Video Generation Data Pipeline](../../images/part14/p14_video_generation_pipeline_en.svg)
 
 *Figure P14-1: English architecture diagram of the video generation data pipeline*
 

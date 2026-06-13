@@ -1,5 +1,7 @@
 # 项目八：企业级 DataOps 平台搭建：从数据项目到组织级治理能力
 
+<div class="chapter-authors">徐鑫（Xin Xu）</div>
+
 ## 摘要
 P08 聚焦把分散的数据工程动作组织成可治理、可追踪、可回滚、可评估的 DataOps 平台能力。章节重点不在单个控制台页面，而在对象建模、版本治理、实验追踪、血缘回滚和可观测闭环之间的系统化关系。
 
@@ -1129,7 +1131,7 @@ DataOps 平台一旦进入多团队使用阶段，就不可避免会面对发布
 ## 参考文献
 
 1. Raffel, C., Shazeer, N., Roberts, A., Lee, K., Narang, S., Matena, M., Zhou, Y., Li, W., & Liu, P. J. (2020). Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. JMLR, 21(140), 1-67.
-2. Hugging Face. (2026). Datasets Documentation. https://huggingface.co/docs/datasets/
-3. Ray Project. (2026). Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html
-4. MLflow Authors. (2026). MLflow Documentation. https://mlflow.org/docs/latest/
-5. Great Expectations Contributors. (2026). Great Expectations Documentation. https://docs.greatexpectations.io/
+2. Hugging Face. (2026). Datasets Documentation. https://huggingface.co/docs/datasets/.
+3. Ray Project. (2026). Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html.
+4. MLflow Authors. (2026). MLflow Documentation. https://mlflow.org/docs/latest/.
+5. Great Expectations Contributors. (2026). Great Expectations Documentation. https://docs.greatexpectations.io/.
