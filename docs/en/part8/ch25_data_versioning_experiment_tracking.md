@@ -111,6 +111,8 @@ The Data Management Body of Knowledge typically treats data assets, metadata, li
 
 **Release package level (Release)**: An externally released model version. Version information includes release version number, the corresponding model checkpoint, the dataset version used, the list of evaluation sets passed, and the release approval record.
 
+**Table 25-1: Data version granularity and applicable scenarios**
+
 | Version Granularity | Primary Use | Key Fields | Retention Policy |
 |---|---|---|---|
 | Sample level | Compliance auditing, annotation traceability | sample_id, source, status | Permanent retention |
@@ -119,13 +121,13 @@ The Data Management Body of Knowledge typically treats data assets, metadata, li
 | Experiment level | Result attribution, performance tracking | experiment_id, dataset_version, results | Retain for 18 months |
 | Release package level | Deployment management, compliance review | release_version, model_checkpoint, approval | Permanent retention |
 
-*Table 25-1: Data version granularity and applicable scenarios*
-
 These five levels are not parallel—they form a hierarchical aggregation. Sample-level records answer "where does this data item come from?"; shard-level records answer "how was this batch of data generated?"; dataset-level records answer "what combination was used in this training run?"; experiment-level records answer "how did data affect the model?"; release-package-level records answer "what was ultimately delivered externally?" A gap in any level creates a break in the retrospection chain.
 
 In practice, teams need not automate management of all granularities from the start, but must clearly define the responsibility boundaries for each granularity. Sample-level information is typically produced by collection and annotation systems; shard-level information is maintained by data pipelines and annotation platforms; dataset-level information is maintained by version management tools; experiment-level information is maintained by experiment tracking systems; release-package-level information is maintained by model registration and release systems. If these systems share no unified IDs or association tables, data will remain only partially traceable.
 
 Granularity design must also account for cost. Sample-level versioning is the most fine-grained but incurs the highest storage and indexing costs; dataset-level versioning is the most widely used but insufficient for explaining fine-grained quality issues; release-package-level versioning is best suited to compliance auditing but cannot directly answer questions about processing details. Teams should therefore adopt a strategy of "fine granularity for critical paths, moderate granularity for ordinary paths." For formal training sets, evaluation sets, high-sensitivity data, and online feedback data, sample-level or shard-level records should be retained where possible. For one-off exploratory data, only dataset-level and experiment-level records may be needed, but these must be marked as ineligible for formal release.
+
+**Table 25-2: Recommended version granularity by data type**
 
 | Data Type | Recommended Minimum Granularity | Rationale | Records That May Be Simplified |
 |---|---|---|---|
@@ -135,8 +137,6 @@ Granularity design must also account for cost. Sample-level versioning is the mo
 | Online feedback data | Sample level | Involves user requests, permissions, and deletion requirements | Aggregated statistics may be retained long-term; raw content requires time-limited control |
 | Exploratory synthetic data | Dataset level + Experiment level | Primarily for hypothesis validation; relatively low risk | Generation-process logs per sample need not be retained, but generation configuration must be retained |
 | Externally released packages | Release package level + Experiment level | Need to account for model provenance and approval chain | Training intermediate checkpoints may be compressed according to policy |
-
-*Table 25-2: Recommended version granularity by data type*
 
 Overly fine granularity creates operational burden; overly coarse granularity weakens traceability. A practical heuristic is: when a problem occurs, can the team locate the scope of responsibility within a reasonable time? If the team can only identify that "some dataset has a problem" but cannot pinpoint the shard, source, or processing step, granularity is too coarse. If every minor field change requires complex approval workflows that cause the team to bypass the process, granularity and governance intensity are too fine. Version granularity should serve real investigation, reproduction, and auditing needs.
 
@@ -277,6 +277,8 @@ The following is a standard experiment card field design:
 
 **Experiment Records**
 
+**Table 25-3: Sample experiment card fields**
+
 | Field | Type | Description |
 |---|---|---|
 | hypothesis | string | Experiment hypothesis (what this experiment aims to validate) |
@@ -284,8 +286,6 @@ The following is a standard experiment card field design:
 | notes | string | Observations and anomaly records during the experiment |
 | conclusion | string | Experiment conclusion |
 | next_actions | list | Follow-up actions based on the results of this experiment |
-
-*Table 25-3: Sample experiment card fields*
 
 Special emphasis should be placed on the importance of the `hypothesis` field. Many teams record only "what was done" but not "why it was done." Six months later, the experiment results may still be available, but the rationale for running the experiment is nowhere to be found. Requiring the `hypothesis` field to be filled in forces the experiment initiator to explicitly state the experiment's purpose before it begins—and this alone can significantly improve the quality of experiment design.
 
@@ -349,6 +349,8 @@ Failed experiment preservation also requires distinguishing among different fail
 
 For example, an experiment that terminates due to insufficient VRAM during training does not imply that the data recipe is invalid. An experiment that produces anomalous results due to evaluation set contamination does not imply a genuine improvement in model capability. An experiment that regresses because newly added data is mismatched to the task objective can clearly rule out that data direction. Failure classification enables the team to decide whether to re-run, fix the data, adjust evaluation, or add the direction to the exclusion list.
 
+**Table 25-4: Failed experiment types and preservation requirements**
+
 | Failure Type | Typical Manifestation | Should Re-Run? | Information to Preserve |
 |---|---|---|---|
 | Execution failure | Training interrupted, logs missing, insufficient resources | Usually should re-run | Resource configuration, failure cause, re-run conditions |
@@ -356,8 +358,6 @@ For example, an experiment that terminates due to insufficient VRAM during train
 | Hypothesis failure | No metric improvement or regression on critical scenarios | Usually not immediately | Experiment hypothesis, comparison results, exclusion conclusion |
 | Evaluation failure | Evaluation set contamination, evaluation code error, metric definition change | Re-run after fixing evaluation | Evaluation version, erroneous definition, scope of impact |
 | Compliance failure | Insufficient data authorization, non-compliant use, unprocessed sensitive information | Should not re-run; risk must be addressed first | Compliance conclusion, isolation measures, permission revocation |
-
-*Table 25-4: Failed experiment types and preservation requirements*
 
 Failed experiments can also form an organization-level "anti-pattern library." For example, a certain type of synthetic data repeatedly causes the model's output style to become mechanical; a certain filtering rule repeatedly deletes historical business process samples in error; a certain evaluation set cannot distinguish genuine capability improvement from template memorization. If these lessons only exist in personal notes, they cannot prevent the team from repeating similar mistakes. An anti-pattern library need not be complex, but should include a problem description, trigger conditions, evidence, avoidance strategies, and applicable boundaries.
 
@@ -367,6 +367,8 @@ For R&D teams, carefully recording failures also has cultural significance. It s
 
 A complete audit trail must be able to answer the following core questions. Research on both data cards and model cards emphasizes that data sources, usage boundaries, evaluation conditions, and model behavior must be documented to support auditing and accountability tracing (Gebru et al. 2021; Mitchell et al. 2019):
 
+**Table 25-5: Audit trail information requirements**
+
 | Question | Information Required |
 |---|---|
 | What data was used to train this model? | Release package → Experiment → Dataset version |
@@ -375,8 +377,6 @@ A complete audit trail must be able to answer the following core questions. Rese
 | What quality checks did this batch of data pass? | Quality evaluation records + Evaluator + Time |
 | Was the use of this data authorized through compliance review? | Data compliance review records + Reviewer + Review conclusion |
 | If a user's data needs to be deleted, what is the scope of impact? | Sample-level source index → Associated shards → Associated datasets → Associated experiments |
-
-*Table 25-5: Audit trail information requirements*
 
 For auditing purposes, the principle is not "more records are better" but "critical information must be present." Every column of information in the table above constitutes the minimum necessary set for an audit; a gap in any single item creates a break in the audit chain.
 
@@ -438,6 +438,8 @@ The standard change audit workflow is as follows:
 6. **Change verification**: Run automated quality checks and compare against the expected impact described in the change request.
 7. **Change recording**: Write the change log into the dataset's metadata and update the lineage graph.
 
+**Table 25-6: Data change audit workflow**
+
 | Step | Executor | Tool | Output |
 |---|---|---|---|
 | Change request | Requesting party | Change request form | Completed request form |
@@ -447,8 +449,6 @@ The standard change audit workflow is as follows:
 | Change execution | Data engineer | Processing scripts + version tools | New dataset version |
 | Change verification | Quality evaluator | Automated quality check tools | Quality report |
 | Change recording | Automated | Metadata service | Updated lineage graph and change log |
-
-*Table 25-6: Data change audit workflow*
 
 The core of change auditing is connecting "pre-change judgment" with "post-change verification." The change request phase articulates expected impacts—for example, a new data source will improve task coverage, or a modified filtering rule will reduce duplication. The change verification phase must then check whether actual results match expectations. If the expected and actual results diverge significantly, the team should not simply release the new version but should re-evaluate the change assumption. This transforms change auditing from a mere approval workflow into a miniature experiment feedback loop.
 
@@ -493,6 +493,8 @@ Governance rules must also be tied to the data lifecycle. From collection, clean
 
 Governance rule enforcement should also be tiered. Low-risk operations can be completed through system prompts and automatic recording. Medium-risk operations require lightweight approval. High-risk operations require formal approval and auditing. Prohibited operations should be blocked directly by the system. Text-based policies alone cannot guarantee compliance because people under project pressure tend to bypass processes. Embedding rules into tools—such as frozen versions being read-only, failing quality checks blocking release, and unauthorized data sources being blocked from the mainline—is what genuinely reduces the probability of violations.
 
+**Table 25-7: Lineage governance rules by data lifecycle stage**
+
 | Lifecycle Stage | Permitted Focus | Key Constraints | Primary Evidence |
 |---|---|---|---|
 | Collection | Explore data sources, build sample pools | Source, authorization, and sensitivity classification must be recorded | Source manifest, authorization records, collection logs |
@@ -502,8 +504,6 @@ Governance rule enforcement should also be tiered. Low-risk operations can be co
 | Evaluation | Compare model performance, analyze errors | Evaluation set version and evaluation code must be fixed | Metric records, error samples, evaluation commit |
 | Release | Freeze model and data evidence | Approval, quality, and compliance chains must be complete | Release package, approval records, audit report |
 | Archival | Reduce storage costs, retain necessary evidence | Information required for reproduction and auditing must not be destroyed | Archival policy, index records, recovery instructions |
-
-*Table 25-7: Lineage governance rules by data lifecycle stage*
 
 Lineage governance also requires periodic review. Common review items include: whether any data shards exist without source records; whether any official models exist without associated experiments; whether any frozen datasets have been modified; whether any experiments use expired evaluation sets; and whether any unclosed compliance exceptions exist. Through periodic review, teams can identify systematic gaps in the governance chain rather than waiting for incidents to occur before investigating.
 
@@ -583,6 +583,8 @@ Without version management, this investigation would likely have taken a very di
 
 With version management, the retrospection path flows from model to experiment, experiment to dataset, dataset to shard, shard to quality review, and review record to business rule. This is a structured evidence chain. It not only shortens investigation time but also changes the way the team discusses problems: discussions are no longer centered on "who might have changed the data" but on "where the evidence chain shows a rule produced an unintended effect."
 
+**Table 25-8: Comparison of retrospection approaches with and without version management**
+
 | Retrospection Step | Typical Approach Without Version Management | Approach With Version Management | Difference |
 |---|---|---|---|
 | Locate training data | Ask experiment owner; search file folders | Find dataset version through experiment card | Starting point changes from memory to record |
@@ -590,8 +592,6 @@ With version management, the retrospection path flows from model to experiment, 
 | Find problematic samples | Write ad-hoc scripts to scan historical files | Query lineage by label and shard | Scope narrows from full dataset to relevant subset |
 | Confirm reason for change | Ask reviewers or search chat history | Check review records and rule versions | Reason changes from verbal explanation to evidence |
 | Formulate remediation | Roll back the entire dataset or re-clean everything | Precisely restore affected samples and update rules | Fix changes from blunt to targeted |
-
-*Table 25-8: Comparison of retrospection approaches with and without version management*
 
 ### Summary of Key Success Factors
 

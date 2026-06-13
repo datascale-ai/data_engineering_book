@@ -49,13 +49,13 @@ Understanding the distinction between these three layers is a prerequisite for b
 
 **Data correctness** is the most critical layer: the output data is healthy in content and meets the quality standards expected by the business. Data validation research indicates that schema checks, statistical constraints, distribution-shift detection, and anomaly-value detection should be integrated into routine pipelines rather than reserved for post-incident manual investigation (Breck et al. 2019). Data correctness cannot be inferred from task status; it can only be verified by inspecting the data content itself.
 
+**Table 26-1: Three-Layer Definitions of Success and Typical Blind Spots**
+
 | Layer | What Is Inspected | Typical Tools | Common Blind Spots |
 |-------|-------------------|---------------|--------------------|
 | Schedule success | Whether the task was started | Airflow/Dagster status | Task starts but immediately exits with an error |
 | Task success | Process exit code | Monitoring system alerts | Task completes but output is empty or content is incorrect |
 | Data correctness | Data content quality | Data quality testing frameworks | Content format is valid but semantics are wrong; distribution shift |
-
-*Table 26-1: Three-Layer Definitions of Success and Typical Blind Spots*
 
 These three layers have a clear containment relationship, but they cannot substitute for one another. Schedule success only indicates that the control plane has no obvious faults; task success only indicates that the execution plane has no explicit exceptions; data correctness is what actually establishes that results are trustworthy at the business-semantics layer. Many teams persistently misjudge platform health because they treat the green status of the control and execution planes as a proxy for the green status of the data layer. For a traditional batch reporting pipeline, such misjudgment may only mean a given metric is fixed one day late. For an LLM data platform, it can allow corrupt data to enter the training set and surface weeks later as model capability regression.
 
@@ -149,13 +149,13 @@ Business metrics assess the overall health of data assets from a business-value 
 - Data request fulfillment rate: proportion of data requests from the algorithm team completed on time
 - Compliant data ratio: proportion of total data that has passed compliance review
 
+**Table 26-2: Tiered Monitoring Metrics**
+
 | Metric Layer | Typical Metrics | Update Frequency | Primary Audience |
 |--------------|-----------------|------------------|------------------|
 | Task metrics | Success rate, duration, throughput | Real-time / minute-level | Platform engineers, SRE |
 | Quality metrics | Blank rate, duplication rate, consistency, coverage | Batch-level (hourly / daily) | Data engineers, quality assessors |
 | Business metrics | Domain coverage, data freshness, fulfillment rate | Daily / weekly | Data owners, algorithm team, product team |
-
-*Table 26-2: Tiered Monitoring Metrics*
 
 The three-layer metric framework must avoid becoming siloed. Task metrics tell the team "whether the platform is running on schedule"; quality metrics tell the team "whether the data meets standards"; business metrics tell the team "whether the data supports objectives." Relying solely on task metrics causes teams to overlook silent quality issues; relying solely on quality metrics may mean not knowing whether a problem has already affected the business; relying solely on business metrics means investigation begins only after the problem has become apparent too late. All three layers must be correlated through a shared data version, a shared processing batch, and a shared time window to support complete judgments.
 
@@ -183,14 +183,14 @@ The four core observability tools — Logs, Traces, Audit Logs, and Lineage — 
 
 **Lineage**: As described in Chapter 25, lineage records dependency relationships between data assets. The key distinction between lineage and logs/traces is that lineage describes the static "derivation relationship," while logs and traces describe the dynamic "processing process." The lineage graph tells you "which data sources were used to produce dataset v2.3"; a trace tells you "what processing steps this specific sample went through."
 
+**Table 26-3: Characteristics of Typical Observability Information**
+
 | Tool | Records | Timeliness | Primary Use |
 |------|---------|------------|-------------|
 | Logs | Processing-event details | Real-time | Fault investigation, filter-reason analysis |
 | Traces | End-to-end path of a single record | Real-time | Data traceability, performance analysis |
 | Audit logs | User operation events | Real-time, retained permanently | Compliance auditing, accountability tracing |
 | Lineage | Data asset dependency relationships | Updated on each version change | Impact analysis, root-cause identification |
-
-*Table 26-3: Characteristics of Typical Observability Information*
 
 The way these four types of information are combined determines the ceiling of observability. Logs are best suited for explaining what happened within a single processing step; traces for explaining what path a single sample took; audit logs for explaining who performed what operation; lineage for explaining how data assets depend on one another. If a team retains only logs, the blast radius of an incident is still difficult to assess; if only lineage is available without logs, dependency relationships are known but specific processing details are not; without audit logs, questions about permissions, accountability, and compliance cannot be answered.
 
@@ -277,14 +277,14 @@ Alert systems also require ongoing review. Each week or month, teams can track m
 
 ### 26.3.2 Four-Tier Alert Framework
 
+**Table 26-4: Alert Tiers and Corresponding Remediation Actions**
+
 | Tier | Name | Example Trigger Conditions | Response Time | Notification Method | Remediation Action |
 |------|------|---------------------------|---------------|---------------------|--------------------|
 | P0 | Critical | Core pipeline fully down; training set accidentally deleted; large-scale compliance violation discovered | Within 15 minutes | Phone + SMS + instant message | Immediately page on-call engineer; initiate incident response procedure |
 | P1 | High | Data throughput down > 50%; quality metric deviates significantly from baseline (> 3σ); critical-category data supply interrupted | Within 1 hour | Instant message + email | On-call engineer acknowledges within 1 hour and assesses impact scope |
 | P2 | Medium | Data throughput down 20–50%; quality metric slightly off baseline (2–3σ); annotation task backlog exceeds threshold | Within 4 hours | Instant message | Address during that day's working hours |
 | P3 | Low | Non-critical metric anomaly; trending warning (e.g., storage utilization rising for 7 consecutive days) | Within 24 hours | Email | Incorporate into that week's task plan |
-
-*Table 26-4: Alert Tiers and Corresponding Remediation Actions*
 
 P0 and P1 alerts must have a manual acknowledgment (ACK) mechanism. High-reliability systems typically use tiered alerting, escalation paths, and clearly assigned on-call responsibilities to shorten mean time to recovery and prevent incidents from escalating while no one is handling them (Beyer et al. 2018; Nygard 2018): the engineer who receives the alert must acknowledge it within the specified time ("acknowledged, handling now"), otherwise it is automatically escalated. P2 and P3 alerts do not require immediate acknowledgment but must be resolved and closed within their SLA windows.
 
@@ -411,14 +411,14 @@ Capacity forecasting results should appear in the operational dashboard and trig
 
 The main cost categories of an LLM data platform are four. The cost of a cloud-based data system typically arises from a combination of compute, storage, networking, and platform services; cost observability must be designed together with capacity forecasting and retention policies (Nygard 2018):
 
+**Table 26-5: Cost Driver and Optimization Direction Design**
+
 | Cost Category | Primary Cost Drivers | Optimization Direction |
 |---------------|----------------------|------------------------|
 | Compute cost | CPU/GPU usage for data processing, format conversion, and quality assessment | Batch consolidation, off-peak scheduling, algorithmic optimization to reduce compute density |
 | Storage cost | Storage of raw data, intermediate artifacts, and historical versions | Tiered storage (hot/warm/cold), automatic archival/deletion of expired data |
 | Annotation cost | Unit price × annotation volume for outsourced annotation | Improve annotation task design quality to reduce rework; optimize the internal/external annotation ratio |
 | Tool and platform cost | Subscription fees for annotation platforms, monitoring tools, and version management tools | ROI evaluation of build vs. buy |
-
-*Table 26-5: Cost Driver and Optimization Direction Design*
 
 Cost alerting should be configured at two levels:
 
@@ -502,6 +502,8 @@ At the time of the incident, all job statuses at the platform layer were normal.
 
 The incident also exhibited clear latency. The code change occurred on May 15; the alert fired on May 21, spanning multiple batches. The coverage drop in any single batch had not reached the existing alert threshold, but the cumulative trend was unmistakable. After the incident was exposed, the team recognized that the existing monitoring attended only to point-in-time anomalies and lacked trend detection, as well as error-budget management for critical category coverage.
 
+**Table 26-6: Case Timeline**
+
 | Time | Event |
 |------|-------|
 | May 15, 09:00 | Data engineer Zhang made a "minor optimization" to the crawler filter rules: the keyword list in the filter rule was changed from an external JSON file to hardcoded values, with the goal of reducing configuration file dependencies |
@@ -514,8 +516,6 @@ The incident also exhibited clear latency. The code change occurred on May 15; t
 | May 21, 14:50 | Incident escalated to P0; algorithm team notified to suspend use of the affected data batches |
 | May 21, 16:30 | Fix deployed; reprocessing of the 6 days of affected data initiated |
 | May 22, 08:00 | Data reprocessing complete; quality metrics returned to normal; incident resolved |
-
-*Table 26-6: Case Timeline*
 
 **Defect latency / total impact duration**: From the erroneous change deployment on May 15 at 10:00 to incident resolution on May 22 at 08:00, approximately 6 days and 22 hours. This measure reflects the actual window during which corrupt data had an impact and also reflects the inadequacy of monitoring detection capability.
 
@@ -570,6 +570,8 @@ The team also required the three affected experiments to rebind to the repaired 
 
 The following is a standardized incident post-mortem template applicable to all P0/P1 data incidents. Effective post-mortems should focus on systemic improvement rather than individual blame — a principle consistently emphasized in SRE incident post-mortem practice and resilience engineering (Beyer et al. 2016; Beyer et al. 2018):
 
+**Table 26-7: Incident Post-Mortem Report**
+
 | Field | Content |
 |-------|---------|
 | Incident ID | INC-2024-0521-001 |
@@ -585,8 +587,6 @@ The following is a standardized incident post-mortem template applicable to all 
 | **Preventive measures** | Update test dataset; add trend alerting; establish change-tiering policy |
 | **Lessons learned** | "Minor changes" are not minor — any change affecting filter logic requires complete test coverage |
 
-*Table 26-7: Incident Post-Mortem Report*
-
 The post-mortem template should be consistent across all P0/P1 incidents, but the content must not be templated. In particular, the "root cause" and "preventive measures" fields must be written to an actionable level. For example, "strengthen testing" is not an acceptable preventive measure; "add 200 fixed regression samples covering all business categories to the filter-rule CI, with the quality lead reviewing the sample set monthly" is an actionable measure. Similarly, "improve monitoring sensitivity" is not an acceptable formulation; "add a trend alert for three consecutive batches with category coverage declining by more than 20%, routed to the data quality on-call" is a verifiable measure.
 
 The post-mortem should also record which signals could have detected the incident earlier. In this case, the medical and health category coverage had been continuously below the 30-day mean since May 16, but no trend alert was configured; on May 17, the filter proportion for a certain medical-related keyword rose anomalously, but that metric was only displayed on the diagnostic dashboard and had not been incorporated into the alert rules. These "near-miss" signals are extremely valuable: they help teams improve alert strategies.
@@ -597,13 +597,13 @@ After the post-mortem concludes, action items should be incorporated into the is
 
 Through the remediation of this incident, the team improved the following monitoring capabilities:
 
+**Table 26-8: Metric Improvements**
+
 | Improvement Item | Before | After |
 |-----------------|--------|-------|
 | Detection latency for category coverage anomalies | ~6 days (in this incident, sufficient cumulative deviation was needed before the alert fired) | Target < 6 hours (target detection time after adding trend alerting) |
 | Time to detect data quality regressions caused by code changes | Average 4 days | < 2 hours (CI smoke test) |
 | Proportion of code changes with quality test coverage | ~35% | > 85% |
-
-*Table 26-8: Metric Improvements*
 
 These metric improvements do not mean that risk has been fully eliminated. The "< 6 hours" in the table is the target detection time established by the newly added trend alerting after remediation; it is not the actual detection time in this incident — in this incident, approximately 6 days elapsed from the erroneous change deployment to the alert. The intent of trend alerting is to advance detection of similar coverage anomalies from "days later" to "within hours," but if business category definitions change, manual review may still be required. CI smoke tests can detect regressions on representative samples but cannot cover all real data distributions. Improved change test coverage also cannot replace code review and impact analysis. Therefore, the post-remediation metrics should be understood as reinforced defensive layers, not as the complete elimination of this incident type.
 
@@ -613,14 +613,14 @@ From an implementation perspective, data platform observability should not be pu
 
 Observability construction should also follow a risk-first principle. Not every dataset requires the same monitoring intensity. Formal training sets, critical evaluation sets, production feedback data, and compliance-sensitive data should have more stringent SLOs, alerting, and auditing. Exploratory experimental data may use lighter-weight monitoring but must be clearly marked as ineligible for the formal pipeline. Temporary analytical data needs only basic access and lifecycle records. Tiered monitoring prevents the platform team from being overwhelmed by low-value signals and concentrates resources on the objects that truly affect models and the business.
 
+**Table 26-9: Data Platform Observability Build Stages and Acceptance Questions**
+
 | Build Stage | Primary Objective | Key Capabilities | Acceptance Question |
 |-------------|-------------------|------------------|---------------------|
 | Foundation | Make platform problems visible | Task status, basic logs, quality summary, version records | Can you determine when the core dataset is produced and whether it passes basic quality checks? |
 | Standard | Make data problems diagnosable | Three-layer metrics, Traces, lineage, tiered alerting, issue backlog | Can you trace from an alert to the affected batch, source, and processing step? |
 | Operations | Make risks manageable | Dataset SLOs, incident response, post-mortem loop, operational dashboards | Can you detect trending quality degradation early and coordinate cross-team remediation? |
 | Governance | Make assets auditable and manageable | Audit logs, access records, cost dashboards, capacity forecasting, health records | Can you explain the quality, cost, risk, and business value of data assets? |
-
-*Table 26-9: Data Platform Observability Build Stages and Acceptance Questions*
 
 Referring to the build stages table, if the Foundation stage is not yet complete, teams should not rush to build complex operational dashboards. If the Standard stage lacks lineage and Traces, troubleshooting will still be difficult after an alert fires. If the Operations stage lacks a post-mortem loop, incidents will recur. If the Governance stage lacks cost and audit views, platform value will be difficult to explain to management. Every stage should produce verifiable capabilities, not merely deploy new monitoring tools.
 

@@ -147,7 +147,7 @@ end_of_life: 2025-12-31                      # 计划下线时间
 
 一个生产级的数据集注册表，通常包含以下元数据字段分类。这些字段的设计，既要服务于发现和使用，也要支撑治理和合规。
 
-*表27-1：数据资产注册表的核心元数据字段分类*
+**表27-1：数据资产注册表的核心元数据字段分类**
 
 | 字段分类 | 代表字段 | 用途说明 |
 | --- | --- | --- |
@@ -345,7 +345,7 @@ permissions:
 
 生命周期管理之所以重要，是因为数据资产的"退场"与"登场"同样会产生工程后果。如果过期数据迟迟不下线，它们会持续占用存储、污染搜索结果，甚至被新项目误用；反过来，若数据在下游毫不知情的情况下被突然删除或变更 schema，又会直接破坏依赖它的流水线。这类问题是生产级机器学习系统中技术债的重要来源之一：未经治理的数据依赖会以隐蔽的方式不断积累，最终显著抬高系统的维护成本，且往往在出问题时才被发现（Sculley et al. 2015）。把生命周期建模为带明确转移条件的状态机，本质上就是为数据依赖关系提供一份显式契约，使每一次状态变更都经过评估、通知与审批，从而把"隐性的数据债"转化为"可见、可管理的受控过程"（Polyzotis et al. 2018）。
 
-*表27-2：数据资产的生命周期状态*
+**表27-2：数据资产的生命周期状态**
 
 | 状态 | 特征 | 典型时长 | 转移条件 | 用户操作 |
 | --- | --- | --- | --- | --- |
@@ -402,7 +402,7 @@ permissions:
 
 为了说明如何在实际中应用数据资产治理，本节通过一个电商推荐系统的数据资产目录，展示多种数据类型和治理需求的案例。之所以选择推荐系统，是因为它几乎天然地触及了本章讨论的全部治理维度：它同时依赖实时流数据、离线特征表、训练数据集、评测基准、RAG 知识库与合规审计日志；这些资产分属不同团队、采用不同更新频率、承载不同敏感等级，且彼此之间存在复杂的血缘依赖。表27-3 截取了该目录中的代表性资产，涵盖流数据、特征表、向量库、训练集、评测集和知识库等多种类型。
 
-*表27-3：电商推荐系统的数据资产目录样例*
+**表27-3：电商推荐系统的数据资产目录样例**
 
 | Asset ID | 类型 | 质量评分 | 状态 | 主要用途 |
 | --- | --- | --- | --- | --- |
@@ -482,7 +482,7 @@ expected_active_until: 2026-12-31
 
 在一个成熟的数据组织中，数据资产目录会包含数百甚至数千个资产。管理者需要从整体视角了解数据资产的健康状态，这通常通过仪表板（Dashboard）实现。表27-4 列出了治理仪表板常用的关键指标，按覆盖度、质量、合规、生命周期和使用五个维度组织，每个指标都配有目标值与告警阈值。
 
-*表27-4：数据资产治理仪表板的关键指标（节选）*
+**表27-4：数据资产治理仪表板的关键指标（节选）**
 
 | 维度 | 代表指标 | 目标 | 告警阈值 |
 | --- | --- | --- | --- |
@@ -496,7 +496,7 @@ expected_active_until: 2026-12-31
 
 需要强调的是，这些指标只有在被持续、自动地度量时才有意义。如果质量评分、血缘覆盖率等指标依赖人工定期统计，它们很快就会因为更新滞后而失真，最终沦为"仪表板上好看但没人相信的数字"。因此成熟的治理平台会把指标采集嵌入数据流水线，借助自动化的质量验证与元数据扫描持续刷新这些指标（Schelter et al. 2018），让仪表板真正成为可据以行动的运营工具，而非一次性的汇报材料。换个角度看，治理仪表板与单个资产的元数据是同一套机制在不同尺度上的投影：前者关心"整片数据资产的健康分布"，后者关心"某一份数据能否被信任"，二者共享同一份持续更新的元数据底座。
 
-在跨团队的治理实践中，权限维度的健康状况尤其值得单独审视。如图27-4 所示，可以用一张权限矩阵直观呈现"哪个团队对哪份资产拥有何种权限"，从而一眼发现越权或权限缺失。
+在跨团队的治理实践中，权限维度的健康状况尤其值得单独审视。如图27-4 所示，可以用一张权限矩阵直观呈现"哪个团队对哪份资产拥有何种权限"，从而快速确认越权或权限缺失的具体位置。
 
 ![基于角色和用途的权限管理矩阵](../../images/part9/图27_4.svg)
 
@@ -546,7 +546,7 @@ expected_active_until: 2026-12-31
 
 为了把前文方法转化为可执行的验收标准，可以建立一份治理 Checklist。它的作用不是替代具体实现，而是帮助团队在每个数据资产上线、每个治理能力建设时，系统检查关键环节是否到位。
 
-*表27-5：数据资产治理落地 Checklist*
+**表27-5：数据资产治理落地 Checklist**
 
 | 检查类别 | 关键问题 | 验收标准 |
 | --- | --- | --- |
@@ -593,7 +593,7 @@ Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for M
 
 Buneman P, Khanna S, Tan W-C (2001) Why and Where: A Characterization of Data Provenance. In: Proceedings of the 8th International Conference on Database Theory (ICDT), pp 316–330.
 
-Cai L, Zhu Y (2015) The Challenges of Data Quality and Data Quality Metrics. Journal of Data and Information Quality 6(2-3):1–10.
+Cai L, Zhu Y (2015) The challenges of data quality and data quality assessment in the big data era. Data science journal, 2015, 14: 2-2.
 
 DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications, Basking Ridge.
 
@@ -626,4 +626,3 @@ Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young
 Stonebraker M, Bruckner D, Ilyas I F, Beskales G, Cherniack M, Zdonik S, Pagan A, Xu S (2013) Data Curation at Scale: The Data Tamer System. In: 6th Biennial Conference on Innovative Data Systems Research (CIDR).
 
 Wang R Y, Strong D M (1996) Beyond Accuracy: What Data Quality Means to Data Consumers. Journal of Management Information Systems 12(4):5–33.
-

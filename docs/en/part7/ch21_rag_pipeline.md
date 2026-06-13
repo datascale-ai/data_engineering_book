@@ -196,7 +196,7 @@ Without document engineering, RAG systems easily fall into a state of "surface u
 
 Retrieval benchmark research shows that retrieval models vary significantly across tasks and domains, and that the capability of a single model cannot replace data quality, index design, and evidence organization (Thakur et al. 2021).
 
-*Table 21-1: Typical issues in RAG document engineering and their system-level manifestations*
+**Table 21-1: Typical issues in RAG document engineering and their system-level manifestations**
 
 | Missing aspect of document engineering           | Upstream data-layer manifestation                                                                  | Downstream application-layer (user-side) manifestation                                                                 |
 | :----------------------------------------------- | :------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
@@ -266,7 +266,7 @@ To this end, establishing a unified **knowledge source registry** is critical. A
 
 
 
-*Table 21-2: Common knowledge sources for RAG systems and their ingestion characteristics*
+**Table 21-2: Common knowledge sources for RAG systems and their ingestion characteristics**
 
 | Knowledge source type             | Common formats              | Core processing focus                                | Main risks                                                                |
 | --------------------------------- | --------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------- |
@@ -345,7 +345,7 @@ Metadata completion is the closing stage of cleaning, and the key to enabling co
 
 
 
-*Table 21-3: Recommended metadata fields for RAG knowledge units*
+**Table 21-3: Recommended metadata fields for RAG knowledge units**
 
 | Field             | Meaning                                | Main purpose                                  |
 | ----------------- | -------------------------------------- | --------------------------------------------- |
@@ -466,7 +466,7 @@ Unlike these two, structured retrieval relies mainly on metadata and structural 
 
 Production-grade RAG systems therefore rarely choose between vector, keyword, and structured retrieval — they adopt hybrid retrieval. Different retrieval methods take on different roles: structured filtering controls scope; keyword retrieval ensures precise hits; vector retrieval boosts semantic recall; a reranker model produces the final ordering of candidates.
 
-*Table 21-4: Applicability boundaries of different retrieval methods*
+**Table 21-4: Applicability boundaries of different retrieval methods**
 
 | Retrieval method   | Main strengths                                            | Main weaknesses                                      | Typical use cases                                                          |
 | ------------------ | ---------------------------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------- |
@@ -522,7 +522,7 @@ Retrieval evaluation should therefore have at least three layers. The first is r
 
 Citability evaluation focuses on whether evidence has a clear source, page, chapter path, and version information. For an enterprise knowledge base, a correct answer that cannot be traced is still a trust problem. Particularly in compliance, finance, legal, and medical scenarios, answers must be traceable to original evidence; otherwise the system cannot support formal business processes.
 
-*Table 21-5: Core metrics for RAG retrieval evaluation*
+**Table 21-5: Core metrics for RAG retrieval evaluation**
 
 | Evaluation dimension | Typical metrics                  | Question of interest                                |
 | -------------------- | -------------------------------- | --------------------------------------------------- |
@@ -576,7 +576,7 @@ Context-layer evaluation focuses on whether the context sent to the model is com
 
 Generation-layer evaluation focuses on whether the model produced a correct answer grounded in the evidence. The "grounded in evidence" part is especially important. An answer may be factually correct but not derived from the recalled evidence — drawn instead from the model's internal knowledge. In open-domain settings this might be acceptable, but in enterprise knowledge bases it is risky, because enterprise users typically require answers to be traceable, auditable, and verifiable, not merely "sound plausible."
 
-*Table 21-6: Layered evaluation metrics for RAG systems*
+**Table 21-6: Layered evaluation metrics for RAG systems**
 
 | Evaluation layer | Core question                          | Typical metrics                                              | Common failure modes                                                              |
 | ---------------- | -------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------- |
@@ -599,7 +599,7 @@ Three common methods are used to build evaluation sets. The first is manual cons
 
 All three should be combined. The manual golden set is for stable regression testing; the model-generated set expands coverage; live failure samples drive iteration. Relying only on the golden set risks insufficient coverage; only on generated sets risks divergence from real user expression; only on live samples may lack standard answers and evidence annotation.
 
-*Table 21-7: Sources of RAG evaluation data and their use cases*
+**Table 21-7: Sources of RAG evaluation data and their use cases**
 
 | Data source           | Pros                                          | Cons                            | Use cases                              |
 | --------------------- | --------------------------------------------- | ------------------------------- | -------------------------------------- |
@@ -878,7 +878,7 @@ In real engineering, such code rarely runs standalone; it is embedded into the p
 
 To turn the above methods into actionable engineering practice, we can establish a checklist for the RAG data pipeline. The checklist does not replace concrete implementations; it helps the team systematically inspect key elements before launch, avoiding a system that only "runs" but fails to reach a "trustworthy, controllable, maintainable" production standard.
 
-*Table 21-8: Production-grade RAG data pipeline checklist*
+**Table 21-8: Production-grade RAG data pipeline checklist**
 
 | Category              | Key question                                         | Acceptance criterion                                       |
 | --------------------- | ---------------------------------------------------- | ---------------------------------------------------------- |

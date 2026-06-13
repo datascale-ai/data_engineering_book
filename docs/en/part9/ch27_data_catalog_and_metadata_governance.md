@@ -147,7 +147,7 @@ A data asset typically passes through a standardized registration process before
 
 A production-grade dataset registry typically organizes metadata fields into the following categories. The design of these fields must serve both discovery and usage while also supporting governance and compliance.
 
-*Table 27-1: Core Metadata Field Categories for the Data Asset Registry*
+**Table 27-1: Core Metadata Field Categories for the Data Asset Registry**
 
 | Field Category | Representative Fields | Purpose |
 | --- | --- | --- |
@@ -345,7 +345,7 @@ Data assets are not permanent. From creation, active use, and gradual deprecatio
 
 The importance of lifecycle management stems from the fact that the "exit" of a data asset, like its "entry," produces engineering consequences. If outdated data is not retired in a timely manner, it will continue to consume storage, pollute search results, and potentially be misused by new projects. Conversely, if data is suddenly deleted or its schema is changed without the knowledge of downstream consumers, it will directly break pipelines that depend on it. Such problems are a significant source of technical debt in production-grade machine learning systems: unmanaged data dependencies accumulate in hidden ways, steadily increasing system maintenance costs and typically only coming to light when something breaks (Sculley et al. 2015). Modeling the lifecycle as a state machine with explicit transition conditions is essentially providing an explicit contract for data dependencies, ensuring that every state change undergoes evaluation, notification, and approval, thus transforming "implicit data debt" into a "visible, manageable, controlled process" (Polyzotis et al. 2018).
 
-*Table 27-2: Lifecycle States of a Data Asset*
+**Table 27-2: Lifecycle States of a Data Asset**
 
 | State | Characteristics | Typical Duration | Transition Condition | User Action |
 | --- | --- | --- | --- | --- |
@@ -402,7 +402,7 @@ Lineage, permissions, and lifecycle are the three pillars of data asset governan
 
 To illustrate how data asset governance is applied in practice, this section uses the data asset catalog of an e-commerce recommendation system to present cases involving diverse data types and governance requirements. The recommendation system is chosen because it naturally touches virtually all governance dimensions discussed in this chapter: it simultaneously depends on real-time streaming data, offline feature tables, training datasets, evaluation benchmarks, RAG knowledge bases, and compliance audit logs. These assets belong to different teams, are updated at different frequencies, carry different sensitivity levels, and are interconnected by complex lineage dependencies. Table 27-3 excerpts representative assets from this catalog, spanning multiple types including streaming data, feature tables, vector stores, training sets, evaluation sets, and knowledge bases.
 
-*Table 27-3: Data Asset Catalog Example for an E-Commerce Recommendation System*
+**Table 27-3: Data Asset Catalog Example for an E-Commerce Recommendation System**
 
 | Asset ID | Type | Quality Score | Status | Primary Use |
 | --- | --- | --- | --- | --- |
@@ -483,7 +483,7 @@ This example conveys a core principle: **the metadata of a mature data asset is 
 
 In a mature data organization, a data asset catalog may contain hundreds or even thousands of assets. Managers need an aggregate view of the health of the data asset portfolio, which is typically achieved through a dashboard. Table 27-4 lists key metrics commonly used in governance dashboards, organized along five dimensions—coverage, quality, compliance, lifecycle, and usage—with a target value and alert threshold specified for each metric.
 
-*Table 27-4: Key Metrics for the Data Asset Governance Dashboard (Selected)*
+**Table 27-4: Key Metrics for the Data Asset Governance Dashboard (Selected)**
 
 | Dimension | Representative Metric | Target | Alert Threshold |
 | --- | --- | --- | --- |
@@ -547,7 +547,7 @@ The collaboration among these roles is essentially the explicit assignment of "k
 
 To translate the foregoing methods into actionable acceptance criteria, a governance checklist can be established. Its purpose is not to replace specific implementations, but to help teams systematically verify that key steps are in place whenever a data asset goes live or a governance capability is built.
 
-*Table 27-5: Data Asset Governance Implementation Checklist*
+**Table 27-5: Data Asset Governance Implementation Checklist**
 
 | Check Category | Key Question | Acceptance Criterion |
 | --- | --- | --- |
@@ -594,7 +594,7 @@ Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for M
 
 Buneman P, Khanna S, Tan W-C (2001) Why and Where: A Characterization of Data Provenance. In: Proceedings of the 8th International Conference on Database Theory (ICDT), pp 316–330.
 
-Cai L, Zhu Y (2015) The Challenges of Data Quality and Data Quality Metrics. Journal of Data and Information Quality 6(2-3):1–10.
+Cai L, Zhu Y (2015) The challenges of data quality and data quality assessment in the big data era. Data science journal, 2015, 14: 2-2.
 
 DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications, Basking Ridge.
 

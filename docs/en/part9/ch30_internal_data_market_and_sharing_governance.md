@@ -163,7 +163,7 @@ A standard process has seven stages:
 
 A responsibility matrix makes the process executable and auditable. Governance organization design must fit business complexity, centralization, and decision rights; no single model fits all enterprises (Weber, Otto and Osterle 2009; Otto 2011; Alhassan, Sammon and Daly 2016).
 
-*Table 30-1: Internal data market role responsibility matrix*
+**Table 30-1: Internal data market role responsibility matrix**
 
 | Governance action | Data provider | Data consumer | Approver | Platform team | Security/compliance team |
 | --- | --- | --- | --- | --- | --- |
@@ -243,7 +243,7 @@ Providers and approvers also have obligations. If providers fail to maintain pro
 
 For implementation, the authorization workflow can be decomposed into executable nodes. Table 30-2 breaks the process from need submission to expiration review and marks each node's main action, responsible role, and output.
 
-*Table 30-2: Authorization workflow nodes*
+**Table 30-2: Authorization workflow nodes**
 
 | Stage | Main action | Responsible role | Output |
 | --- | --- | --- | --- |
@@ -289,7 +289,7 @@ After these steps, the data is no longer a passively shared resource; it is an i
 
 A data product catalog is the core interface of the market. It serves both consumer discovery and governance portfolio management. A good page tells consumers what the data is, what it is suitable for, who maintains it, how quality looks, whether it can be requested, what conditions apply, who already uses it, and what recently changed. Dataset documentation research emphasizes that provenance, composition, use, limits, and maintenance information must be explicit for responsible reuse (Gebru et al. 2021).
 
-*Table 30-3: Example shared data product catalog*
+**Table 30-3: Example shared data product catalog**
 
 | Product name | Domain | Main content | Suitable scenarios | Sensitivity | Quality status | Request method | Owner |
 | --- | --- | --- | --- | --- | --- | --- | --- |

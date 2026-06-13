@@ -66,7 +66,7 @@ Several elements are central:
 
 Table 28-1 summarizes the fundamental differences between datasets and data products along these dimensions.
 
-*Table 28-1: Dataset versus data product*
+**Table 28-1: Dataset versus data product**
 
 | Dimension | Dataset | Data Product |
 | --- | --- | --- |
@@ -97,7 +97,7 @@ The idea is highly consistent with practice in ML data validation. In production
 
 A complete data contract usually contains five core clause groups, each covering a different side of data reliability. Table 28-2 summarizes the questions and examples for these five contract types.
 
-*Table 28-2: Focus and examples of five data-contract types*
+**Table 28-2: Focus and examples of five data-contract types**
 
 | Contract Type | Question Answered | Example Clauses |
 | --- | --- | --- |
@@ -183,7 +183,7 @@ Change governance turns change from a risk source that may cause silent failure 
 
 Not all changes are equally dangerous. Based on downstream impact, data changes can be divided into three categories, as shown in Table 28-3.
 
-*Table 28-3: Field change types and compatibility*
+**Table 28-3: Field change types and compatibility**
 
 | Change Type | Example | Compatibility | Handling |
 | --- | --- | --- | --- |
@@ -248,7 +248,7 @@ The key field is `interaction_type`, originally an enum with values `{click, lik
 
 This incident clearly exposes the cost of silent failure. If a consumer registry and impact-analysis capability had existed, the upstream team would have immediately received a list of affected consumers when proposing the change. Table 28-4 shows a retrospective consumer impact analysis.
 
-*Table 28-4: Consumer impact analysis for splitting the `interaction_type` enum*
+**Table 28-4: Consumer impact analysis for splitting the `interaction_type` enum**
 
 | Consumer | Depended Field | Use | Impact | Consequence | Response |
 | --- | --- | --- | --- | --- | --- |

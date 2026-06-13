@@ -69,7 +69,7 @@ The second category is chart numerical knowledge. It exists in financial reports
 
 The third category is interface and object knowledge. It exists in software screenshots, operation manuals, industrial images, product photographs, and on-site photos. Its defining characteristic is that knowledge depends on object position, visual attributes, and spatial relationships. Expressions such as "upper-right button," "red warning icon," "submit button below the form," and "port on the left side of the device" can only be understood in conjunction with visual regions. For this type of knowledge, the system needs object detection, region description, and visual object alignment.
 
-*Table 22-1: Major Forms of Visual Knowledge and Their Processing Priorities*
+**Table 22-1: Major Forms of Visual Knowledge and Their Processing Priorities**
 
 | Visual Knowledge Type      | Common Sources                              | Core Information                                         | Processing Priority                                  |
 | -------------------------- | ------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------- |
@@ -225,7 +225,7 @@ Text recall is similar to visual recall, except that it recalls text data. Given
 
 
 
-*Table 22-2: Comparison of Visual Recall and Text Recall*
+**Table 22-2: Comparison of Visual Recall and Text Recall**
 
 | Characteristic          | Visual Recall                                    | Text Recall                                         |
 | ----------------------- | ------------------------------------------------ | --------------------------------------------------- |
@@ -300,7 +300,7 @@ The significance of this formula is not to give the system a single final score,
 
 It is important to note that $R_k$, $L$, $A$, and $E$ come from different evaluation layers and their raw values do not naturally share the same measurement scale, nor are they necessarily comparable across different datasets. For example, localization accuracy may depend on the granularity of bounding box annotations, evidence consistency may depend on human review standards, and answer accuracy may be influenced by the difficulty distribution of questions. Therefore, before using the weighted sum above, each metric must first be calibrated and normalized, with explicit statistical definitions, sample distributions, human calibration standards, and confidence intervals. Weights and metrics must be determined according to business risk, dataset distribution, and human calibration; cross-metric comparisons are invalid without normalization. This formula is better suited for version-to-version comparison and bottleneck analysis on the same evaluation set with the same statistical definitions, rather than being interpreted as an absolute score that can be directly compared across scenarios.
 
-*Table 22-3: A Layered Perspective on Multimodal RAG Evaluation*
+**Table 22-3: A Layered Perspective on Multimodal RAG Evaluation**
 
 | Evaluation Layer | Focus                                 | Typical Issues                                        | Representative Metrics                                      |
 | ---------------- | ------------------------------------- | ----------------------------------------------------- | ----------------------------------------------------------- |
@@ -337,7 +337,7 @@ The third category of metrics is answer accuracy. It measures whether the final 
 
 In many projects, "answer accuracy" is further decomposed into two levels: one is strict accuracy, which requires that the facts, units, page numbers, and objects all be correct; the other is utility accuracy, which requires only that the main conclusions and business action recommendations be correct. The advantage of this decomposition is that the team can observe both the strict reliability of the system and the user-level usability, avoiding misguided optimization caused by an overly narrow metric definition.
 
-*Table 22-4: Definitions and Applicable Scenarios for Key Evaluation Metrics*
+**Table 22-4: Definitions and Applicable Scenarios for Key Evaluation Metrics**
 
 | Metric Name            | Core Question   | Applicable Granularity  | Common Threshold or Determination Method     | Applicable Scenario                            |
 | ---------------------- | --------------- | ----------------------- | -------------------------------------------- | ---------------------------------------------- |
@@ -370,7 +370,7 @@ Chart understanding failure is a higher-level problem. It does not necessarily o
 
 To systematically convert these phenomena into engineering assets, we typically design an error coding table (Table 22-5) where each failure sample is tagged with at least three labels: first-level error type, specific sub-cause, and repair priority. First-level types are for macro-level statistics; sub-causes guide model or rule repairs; and priority helps the team schedule iteration order. For example, missed detection can be subdivided into "not sliced," "sliced but not indexed," and "indexed but not recalled"; misreading can be subdivided into "OCR character error," "header misalignment," and "caption binding error"; chart understanding failure can be subdivided into "axis misparse," "legend mapping error," and "trend description error."
 
-*Table 22-5: Example Error Attribution Coding for Multimodal RAG*
+**Table 22-5: Example Error Attribution Coding for Multimodal RAG**
 
 | First-level Type        | Second-level Cause            | Typical Symptom                               | Priority Repair Direction                                        |
 | ----------------------- | ----------------------------- | --------------------------------------------- | ---------------------------------------------------------------- |
@@ -455,7 +455,7 @@ A key pattern in such systems is "text-guided vision"—rather than relying pure
 
 Another lesson is that the financial report assistant must explicitly handle units, definitional scope, and time dimensions. For example, "year-over-year growth," "quarter-over-quarter growth," "percentage point change," "billion yuan," and "million yuan" can all be used interchangeably. If the system retrieves solely based on text similarity, it easily assembles evidence with inconsistent definitional scopes. Therefore, visual chunks in financial report scenarios are best annotated with structured metadata such as reporting period, currency, unit, metric alias, chart number, and page range.
 
-*Table 22-6: Evidence Organization Patterns in the Financial Report Assistant*
+**Table 22-6: Evidence Organization Patterns in the Financial Report Assistant**
 
 | Evidence Type           | Primary Question Answered | Typical Source                     | Retrieval Strategy                              | Role in Generation                              |
 | ----------------------- | ------------------------- | ---------------------------------- | ----------------------------------------------- | ----------------------------------------------- |
@@ -493,7 +493,7 @@ $$
 
 This function reminds us that multimodal solutions should not pile up all models in pursuit of "technical sophistication," but should instead seek the optimal balance among accuracy, explainability, and cost. For example, for a system with only a small number of screenshot Q&A tasks, it may not be necessary to introduce a complex chart extraction pipeline; whereas for a financial assistant, the business returns from evidence verifiability are sufficient to justify higher inference costs.
 
-*Table 22-7: Mapping from Chapter 22 Methods to P05 Project Modules*
+**Table 22-7: Mapping from Chapter 22 Methods to P05 Project Modules**
 
 | Chapter 22 Method Module          | P05 Corresponding Build Item        | Key Deliverables                                         | Primary Acceptance Metrics                            |
 | --------------------------------- | ----------------------------------- | -------------------------------------------------------- | ----------------------------------------------------- |
@@ -511,7 +511,7 @@ There is also a very important pattern called "evidence before answer." This mea
 
 Corresponding to these patterns, there are also several high-frequency anti-patterns. The most typical anti-pattern is "treating OCR as multimodal." This causes the system to continuously fail on charts, interface screenshots, and complex-layout scenarios. The second anti-pattern is "indexing only at page level." While whole-page indexing is simple to implement, once a page has high information density, the model during generation has great difficulty focusing precisely on the target region. The third anti-pattern is "offline evaluation only, no online replenishment." Such systems often perform well during prototype validation but quickly suffer continuous failures in enterprise real-world templates due to accumulating long-tail errors.
 
-*Table 22-8: Reusable Patterns and Common Anti-patterns for Multimodal RAG*
+**Table 22-8: Reusable Patterns and Common Anti-patterns for Multimodal RAG**
 
 | Type         | Name                                          | Effect or Consequence                               | Explanation                                                     |
 | ------------ | --------------------------------------------- | --------------------------------------------------- | --------------------------------------------------------------- |
