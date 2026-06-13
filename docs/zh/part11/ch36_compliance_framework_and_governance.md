@@ -25,7 +25,7 @@
 
 数据合规框架与治理；数据合规；隐私保护；治理框架；风险控制
 
-## 36.0 学习目标（Learning Objectives）
+## 学习目标（Learning Objectives）
 
 通过本章学习，读者应能够：
 

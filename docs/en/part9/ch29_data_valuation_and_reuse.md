@@ -10,7 +10,7 @@ Once data can be found and trusted, a sharper question appears: how much is this
 
 Data asset valuation and reuse mechanisms; data assets; metadata governance; data products; data contracts
 
-## 29.0 Learning Objectives
+## Learning Objectives
 
 - Identify four common illusions in data valuation: scale, cost, model gain, and business value, and explain through scaling laws, data pruning, and deduplication why value depends on information density rather than size.
 - Build a value metric system covering reuse rate, coverage, training gain, retrieval hits, labeling savings, risk reduction, and maintenance cost, and unify them through net value.

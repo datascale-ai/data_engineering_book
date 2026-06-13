@@ -16,7 +16,7 @@ The chapter builds on Chapter 4's data acquisition, Chapter 5's cleaning and ded
 
 Automated collection; data parsing agents; cleaning-rule generation; quality filtering; human review; source-structure drift
 
-## 32.0 Learning Objectives
+## Learning Objectives
 
 After reading this chapter, you should be able to:
 

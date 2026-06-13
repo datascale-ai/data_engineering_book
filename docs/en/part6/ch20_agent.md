@@ -474,7 +474,7 @@ This chapter particularly emphasizes that long-term memory must not be treated a
 
 ## References
 
-Young, S., Gašić, M., Thomson, B., & Williams, J. D. (2013). *POMDP-Based Statistical Spoken Dialog Systems: A Review*. Proceedings of the IEEE, 101(5), 1160–1179. https://doi.org/10.1109/JPROC.2012.2225812
+Young, S., Gašić, M., Thomson, B., & Williams, J. D. (2013). *POMDP-Based Statistical Spoken Dialog Systems: A Review*. Proceedings of the IEEE, 101(5), 1160–1179. https://doi.org/10.1109/JPROC.2012.2225812.
 
 Williams, J. D., Raux, A., Ramachandran, D., & Black, A. (2013). *The Dialog State Tracking Challenge*. Proceedings of the SIGDIAL 2013 Conference, 404–413.
 
@@ -484,13 +484,13 @@ Yao, S., Zhao, J., Yu, D., et al. (2023). *ReAct: Synergizing Reasoning and Acti
 
 Schick, T., Dwivedi-Yu, J., Dessì, R., et al. (2023). *Toolformer: Language Models Can Teach Themselves to Use Tools*. Advances in Neural Information Processing Systems, 36.
 
-Liu, N. F., Lin, K., Hewitt, J., et al. (2024a). *Lost in the Middle: How Language Models Use Long Contexts*. Transactions of the Association for Computational Linguistics, 12, 157–173. https://doi.org/10.1162/tacl_a_00638
+Liu, N. F., Lin, K., Hewitt, J., et al. (2024a). *Lost in the Middle: How Language Models Use Long Contexts*. Transactions of the Association for Computational Linguistics, 12, 157–173. https://doi.org/10.1162/tacl_a_00638.
 
 Packer, C., Wooders, S., Lin, K., et al. (2023). *MemGPT: Towards LLMs as Operating Systems*. arXiv:2310.08560.
 
 Wang, W., Dong, L., Cheng, H., et al. (2023). *Augmenting Language Models with Long-Term Memory*. Advances in Neural Information Processing Systems, 36.
 
-Zhong, W., Guo, L., Gao, Q., et al. (2024). *MemoryBank: Enhancing Large Language Models with Long-Term Memory*. Proceedings of the AAAI Conference on Artificial Intelligence, 38(17), 19724–19731. https://doi.org/10.1609/aaai.v38i17.29946
+Zhong, W., Guo, L., Gao, Q., et al. (2024). *MemoryBank: Enhancing Large Language Models with Long-Term Memory*. Proceedings of the AAAI Conference on Artificial Intelligence, 38(17), 19724–19731. https://doi.org/10.1609/aaai.v38i17.29946.
 
 Park, J. S., O'Brien, J. C., Cai, C. J., et al. (2023). *Generative Agents: Interactive Simulacra of Human Behavior*. Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology.
 

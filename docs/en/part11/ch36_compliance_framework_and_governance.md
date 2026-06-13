@@ -26,7 +26,7 @@ Unlike discussions that stay at the level of regulatory clauses, this chapter fo
 
 Data compliance frameworks and governance; data compliance; privacy protection; governance framework; risk control
 
-## 36.0 Learning Objectives
+## Learning Objectives
 
 After studying this chapter, you should be able to:
 

@@ -17,7 +17,7 @@
 
 ---
 
-## 37.0 学习目标（Learning Objectives）
+## 学习目标（Learning Objectives）
 
 通过本章学习，读者应能够：
 

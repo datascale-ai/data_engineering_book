@@ -453,3 +453,5 @@ Chen D, Huang Y, Ma Z, Chen H, Pan X, Ge C, Gao D, Xie Y, Liu Z, Gao J, Li Y, Di
 Chen Y, Shetty M, Somashekar G, Ma M, Simmhan Y, Mace J, Bansal C, Wang R, Rajmohan S (2025) AIOpsLab: A Holistic Framework to Evaluate AI Agents for Enabling Autonomous Clouds. arXiv preprint arXiv:2501.06706.
 
 Kapoor S, Narayanan A (2023) Leakage and the reproducibility crisis in machine-learning-based science. Patterns 4(9):100804.
+
+Pfitzmann B, Auer C, Dolfi M, Nassar A S, Staar P (2022) DocLayNet: A Large Human-Annotated Dataset for Document-Layout Analysis. In: Proceedings of the 28th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 3743-3751.

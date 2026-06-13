@@ -311,14 +311,14 @@
 
 ## 参考文献
 
-中华人民共和国网络安全法. Available at: http://www.npc.gov.cn/zgrdw/npc/xinwen/2016-11/07/content_2001605.htm
+National People's Congress of the People's Republic of China (2016) Cybersecurity Law of the People's Republic of China. Available at: http://www.npc.gov.cn/zgrdw/npc/xinwen/2016-11/07/content_2001605.htm.
 
-中华人民共和国数据安全法. Available at: https://www.cac.gov.cn/2021-06/11/c_1624994566919140.htm
+National People's Congress of the People's Republic of China (2021a) Data Security Law of the People's Republic of China. Available at: https://www.cac.gov.cn/2021-06/11/c_1624994566919140.htm.
 
-中华人民共和国个人信息保护法. Available at: http://www.npc.gov.cn/npc/c2/c30834/202108/t20210820_313088.html
+National People's Congress of the People's Republic of China (2021b) Personal Information Protection Law of the People's Republic of China. Available at: http://www.npc.gov.cn/npc/c2/c30834/202108/t20210820_313088.html.
 
-National Institute of Standards and Technology (2023) AI Risk Management Framework (AI RMF 1.0). Available at: https://www.nist.gov/itl/ai-risk-management-framework
+National Institute of Standards and Technology (2023) AI Risk Management Framework (AI RMF 1.0). Available at: https://www.nist.gov/itl/ai-risk-management-framework.
 
-Regulation (EU) 2024/1689 of the European Parliament and of the Council of 13 June 2024 laying down harmonised rules on artificial intelligence (Artificial Intelligence Act). Available at: https://eur-lex.europa.eu/eli/reg/2024/1689/oj
+European Parliament and Council of the European Union (2024) Regulation (EU) 2024/1689 laying down harmonised rules on artificial intelligence (Artificial Intelligence Act). Available at: https://eur-lex.europa.eu/eli/reg/2024/1689/oj.
 
 Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229.

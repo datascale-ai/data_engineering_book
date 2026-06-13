@@ -16,7 +16,7 @@ To keep the discussion concrete, the chapter uses DataAgent as a running referen
 
 Data engineering; Data Engineering Agent; automated data engineering; permission governance; human-AI collaboration
 
-## 31.0 Learning Objectives
+## Learning Objectives
 
 After reading this chapter, you should be able to:
 

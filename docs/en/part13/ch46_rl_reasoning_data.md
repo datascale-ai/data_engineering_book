@@ -574,6 +574,8 @@ Guo D, Yang D, Zhang H, Song J, Wang P, Zhu Q, Xu R, Zhang R, Ma S, Bi X, others
 
 Team Kimi, Du A, Gao B, Xing B, Jiang C, Chen C, Li C, Xiao C, Du C, Liao C, others (2025) Kimi k1.5: Scaling Reinforcement Learning with LLMs. arXiv preprint arXiv:2501.12599.
 
+Qwen Team (2025) QwQ-32B Model Card. Available at: https://huggingface.co/Qwen/QwQ-32B.
+
 Touvron H, Martin L, Stone K, Albert P, Almahairi A, Babaei Y, Bashlykov N, Batra S, Bhargava P, Bhosale S, others (2023) Llama 2: Open Foundation and Fine-Tuned Chat Models. arXiv preprint arXiv:2307.09288.
 
 Cobbe K, Kosaraju V, Bavarian M, Chen M, Jun H, Kaiser L, Plappert M, Tworek J, Hilton J, Nakano R, others (2021) Training Verifiers to Solve Math Word Problems. arXiv preprint arXiv:2110.14168.

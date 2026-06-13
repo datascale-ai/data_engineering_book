@@ -465,7 +465,7 @@ MedImage-ToolVQA uses three visual tools: `Zoom-in`, `BiomedParse`, and `SAM2`. 
 
 `BiomedParse` is closer to medical semantic segmentation. It accepts a target image and a textual description such as "lung nodule" or "liver lesion" and returns segmentation results related to the medical semantic target. This tool can connect natural-language targets with medical image regions, making it suitable for semantic localization. Its risk is that medical imaging modalities vary widely: if the text description is inaccurate, the tool may return the wrong region or segment a similar structure as the target.
 
-`SAM2` is a general bbox-prompted segmentation tool (Ravi et al. 2024). It does not rely on medical semantics; instead, it generates a finer mask from a geometric prompt. For samples that already have a candidate box but need a clearer boundary, `SAM2` can provide supplementary observation. Its main risk is strong dependence on bbox quality: if the bbox covers background or adjacent structures, the segmentation result will also be affected.
+`SAM2` is a general bbox-prompted segmentation tool (Ravi et al. 2025). It does not rely on medical semantics; instead, it generates a finer mask from a geometric prompt. For samples that already have a candidate box but need a clearer boundary, `SAM2` can provide supplementary observation. Its main risk is strong dependence on bbox quality: if the bbox covers background or adjacent structures, the segmentation result will also be affected.
 
 | Tool | Main Input | Return | Best For | Risks to Control |
 | --- | --- | --- | --- | --- |
@@ -836,13 +836,13 @@ Foroutan, N., Romanou, A., Ansaripour, M., Eisenschlos, J. M., Aberer, K., & Leb
 
 Zhu, Z., Jia, M., Zhang, Z., Li, L., & Jiang, M. (2025, April). MultiChartQA: Benchmarking vision-language models on multi-chart problems. In Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers) (pp. 11341-11359).
 
-Antol, S., Agrawal, A., Lu, J., Mitchell, M., Batra, D., Zitnick, C. L., & Parikh, D. (2015). VQA: Visual Question Answering. Proceedings of the IEEE International Conference on Computer Vision, 2425-2433. https://doi.org/10.1109/ICCV.2015.279
+Antol, S., Agrawal, A., Lu, J., Mitchell, M., Batra, D., Zitnick, C. L., & Parikh, D. (2015). VQA: Visual Question Answering. Proceedings of the IEEE International Conference on Computer Vision, 2425-2433. https://doi.org/10.1109/ICCV.2015.279.
 
-Lau, J. J., Gayen, S., Ben Abacha, A., & Demner-Fushman, D. (2018). A dataset of clinically generated visual questions and answers about radiology images. Scientific Data, 5, 180251. https://doi.org/10.1038/sdata.2018.251
+Lau, J. J., Gayen, S., Ben Abacha, A., & Demner-Fushman, D. (2018). A dataset of clinically generated visual questions and answers about radiology images. Scientific Data, 5, 180251. https://doi.org/10.1038/sdata.2018.251.
 
 He, X., Zhang, Y., Mou, L., Xing, E., & Xie, P. (2020). PathVQA: 30000+ Questions for Medical Visual Question Answering. arXiv:2003.10286.
 
-Liu, B., Zhan, L.-M., Xu, L., Ma, L., Yang, Y., & Wu, X.-M. (2021). SLAKE: A Semantically-Labeled Knowledge-Enhanced Dataset for Medical Visual Question Answering. IEEE 18th International Symposium on Biomedical Imaging. https://doi.org/10.1109/ISBI48211.2021.9434010
+Liu, B., Zhan, L.-M., Xu, L., Ma, L., Yang, Y., & Wu, X.-M. (2021). SLAKE: A Semantically-Labeled Knowledge-Enhanced Dataset for Medical Visual Question Answering. IEEE 18th International Symposium on Biomedical Imaging. https://doi.org/10.1109/ISBI48211.2021.9434010.
 
 Yao, S., Zhao, J., Yu, D., et al. (2023). ReAct: Synergizing Reasoning and Acting in Language Models. International Conference on Learning Representations.
 
@@ -852,10 +852,10 @@ Kirillov, A., Mintun, E., Ravi, N., et al. (2023). Segment Anything. Proceedings
 
 Ravi, N., Gabeur, V., Hu, Y.-T., Hu, R., Ryali, C., Ma, T., et al. (2025). SAM 2: Segment Anything in Images and Videos. International Conference on Learning Representations.
 
-Ma, J., He, Y., Li, F., et al. (2024). Segment anything in medical images. Nature Communications, 15, 654. https://doi.org/10.1038/s41467-024-44824-z
+Ma, J., He, Y., Li, F., et al. (2024). Segment anything in medical images. Nature Communications, 15, 654. https://doi.org/10.1038/s41467-024-44824-z.
 
-Zhao, T., Gu, Y., Yang, J., et al. (2025). BiomedParse: A biomedical foundation model for image parsing of everything everywhere all at once. Nature Methods, 22, 166-176. https://doi.org/10.1038/s41592-024-02499-w
+Zhao, T., Gu, Y., Yang, J., et al. (2025). BiomedParse: A biomedical foundation model for image parsing of everything everywhere all at once. Nature Methods, 22, 166-176. https://doi.org/10.1038/s41592-024-02499-w.
 
-Gebru, T., Morgenstern, J., Vecchione, B., Vaughan, J. W., Wallach, H., Daume III, H., & Crawford, K. (2021). Datasheets for Datasets. Communications of the ACM, 64(12), 86-92. https://doi.org/10.1145/3458723
+Gebru, T., Morgenstern, J., Vecchione, B., Vaughan, J. W., Wallach, H., Daume III, H., & Crawford, K. (2021). Datasheets for Datasets. Communications of the ACM, 64(12), 86-92. https://doi.org/10.1145/3458723.
 
-Mitchell, M., Wu, S., Zaldivar, A., et al. (2019). Model Cards for Model Reporting. Proceedings of the Conference on Fairness, Accountability, and Transparency, 220-229. https://doi.org/10.1145/3287560.3287596
+Mitchell, M., Wu, S., Zaldivar, A., et al. (2019). Model Cards for Model Reporting. Proceedings of the Conference on Fairness, Accountability, and Transparency, 220-229. https://doi.org/10.1145/3287560.3287596.

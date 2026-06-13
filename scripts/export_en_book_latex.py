@@ -27,9 +27,11 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+from xml.etree import ElementTree as ET
 
 import yaml
 
@@ -43,9 +45,11 @@ OUT_PDF = OUT_DIR / "data_engineering_book_en_16k_latex.pdf"
 OUT_WARNINGS = OUT_DIR / "data_engineering_book_en_16k_latex_warnings.txt"
 ASSET_DIR = OUT_DIR / "latex_assets_en"
 PARTS_DIR = OUT_DIR / "data_engineering_book_en_16k_latex_parts"
+CHAPTERS_DIR = OUT_DIR / "data_engineering_book_en_16k_latex_chapters"
+CHROME = Path("/Applications/Google Chrome.app/Contents/MacOS/Google Chrome")
 
-SUPPORTED_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".pdf"}
-UNSUPPORTED_IMAGE_SUFFIXES = {".svg", ".gif", ".webp"}
+SUPPORTED_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".pdf", ".svg"}
+UNSUPPORTED_IMAGE_SUFFIXES = {".gif", ".webp"}
 PIL_FORMAT_SUFFIXES = {
     "JPEG": ".jpg",
     "PNG": ".png",
@@ -106,6 +110,23 @@ class AssetManager:
                 f"missing image skipped: {source_file.relative_to(ROOT)} -> {image_path}"
             )
             return None
+        if suffix == ".svg":
+            if image_path in self._seen:
+                return self._seen[image_path]
+            self._counter += 1
+            target_name = f"asset_{self._counter:04d}.png"
+            target = self.asset_dir / target_name
+            try:
+                convert_svg_to_png(image_path, target)
+            except Exception as exc:
+                self.stats.unsupported_images += 1
+                self.stats.warnings.append(
+                    f"svg conversion failed: {source_file.relative_to(ROOT)} -> {image_path} ({exc})"
+                )
+                return None
+            rel = f"{self.asset_dir.name}/{target_name}"
+            self._seen[image_path] = rel
+            return rel
         actual_suffix = detect_image_suffix(image_path)
         if actual_suffix is None:
             self.stats.unsupported_images += 1
@@ -136,6 +157,126 @@ def detect_image_suffix(image_path: Path) -> str | None:
             return PIL_FORMAT_SUFFIXES.get(image.format)
     except Exception:
         return None
+
+
+def svg_dimensions(svg_path: Path) -> tuple[int, int]:
+    root = ET.parse(svg_path).getroot()
+
+    def parse_length(value: str | None) -> float | None:
+        if not value:
+            return None
+        match = re.match(r"\s*([0-9]+(?:\.[0-9]+)?)", value)
+        return float(match.group(1)) if match else None
+
+    width = parse_length(root.get("width"))
+    height = parse_length(root.get("height"))
+    if width is None or height is None:
+        view_box = root.get("viewBox")
+        if view_box:
+            parts = [float(part) for part in re.split(r"[\s,]+", view_box.strip()) if part]
+            if len(parts) == 4:
+                width = width or parts[2]
+                height = height or parts[3]
+    return max(1, round(width or 1200)), max(1, round(height or 800))
+
+
+def convert_svg_to_png(svg_path: Path, png_path: Path) -> None:
+    png_path.parent.mkdir(parents=True, exist_ok=True)
+    width, height = svg_dimensions(svg_path)
+    sips = shutil.which("sips")
+    if sips:
+        proc = subprocess.run(
+            [sips, "-s", "format", "png", str(svg_path), "--out", str(png_path)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if proc.returncode == 0 and detect_image_suffix(png_path) == ".png":
+            return
+    if CHROME.exists():
+        try:
+            with tempfile.TemporaryDirectory() as profile:
+                cmd = [
+                    str(CHROME),
+                    "--headless=new",
+                    "--disable-gpu",
+                    "--disable-dev-shm-usage",
+                    "--no-first-run",
+                    "--no-default-browser-check",
+                    f"--user-data-dir={profile}",
+                    f"--screenshot={png_path}",
+                    f"--window-size={width},{height}",
+                    svg_path.resolve().as_uri(),
+                ]
+                proc = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            if proc.returncode == 0 and detect_image_suffix(png_path) == ".png":
+                return
+        except subprocess.TimeoutExpired:
+            pass
+    render_simple_svg_to_png(svg_path, png_path, width, height)
+    if detect_image_suffix(png_path) != ".png":
+        raise RuntimeError("SVG conversion did not produce a valid PNG")
+
+
+def render_simple_svg_to_png(svg_path: Path, png_path: Path, width: int, height: int) -> None:
+    try:
+        from PIL import Image, ImageColor, ImageDraw, ImageFont
+    except Exception as exc:  # pragma: no cover - environment dependency
+        raise RuntimeError("Pillow is required for SVG fallback rendering") from exc
+
+    def color(value: str | None, default: str | None = None):
+        value = value or default
+        if not value or value == "none":
+            return None
+        try:
+            return ImageColor.getrgb(value)
+        except ValueError:
+            return ImageColor.getrgb(default or "#000000")
+
+    def number(value: str | None, default: float = 0.0) -> float:
+        if value is None:
+            return default
+        match = re.match(r"\s*(-?[0-9]+(?:\.[0-9]+)?)", value)
+        return float(match.group(1)) if match else default
+
+    def local_name(tag: str) -> str:
+        return tag.rsplit("}", 1)[-1]
+
+    image = Image.new("RGB", (width, height), "#ffffff")
+    draw = ImageDraw.Draw(image)
+    root = ET.parse(svg_path).getroot()
+    for node in root.iter():
+        tag = local_name(node.tag)
+        if tag == "rect":
+            x = number(node.get("x"))
+            y = number(node.get("y"))
+            w = number(node.get("width"), width)
+            h = number(node.get("height"), height)
+            draw.rectangle(
+                [x, y, x + w, y + h],
+                fill=color(node.get("fill"), "#ffffff"),
+                outline=color(node.get("stroke")),
+                width=max(1, round(number(node.get("stroke-width"), 1))),
+            )
+        elif tag == "line":
+            draw.line(
+                [
+                    (number(node.get("x1")), number(node.get("y1"))),
+                    (number(node.get("x2")), number(node.get("y2"))),
+                ],
+                fill=color(node.get("stroke"), "#000000"),
+                width=max(1, round(number(node.get("stroke-width"), 1))),
+            )
+        elif tag == "text":
+            text = "".join(node.itertext()).strip()
+            if text:
+                font_size = max(8, round(number(node.get("font-size"), 14)))
+                try:
+                    font = ImageFont.truetype("Arial.ttf", font_size)
+                except Exception:
+                    font = ImageFont.load_default()
+                draw.text((number(node.get("x")), number(node.get("y")) - font_size), text, fill=color(node.get("fill"), "#000000"), font=font)
+    image.save(png_path, "PNG")
 
 
 def find_en_nav(config: dict[str, Any]) -> list[Any]:
@@ -214,6 +355,27 @@ def group_items(items: list[NavItem]) -> list[tuple[str, list[NavItem]]]:
     if current_key is not None:
         groups.append((current_key, current_items))
     return groups
+
+
+def is_submission_latex_unit(item: NavItem) -> bool:
+    if item.path in {"index.md", "front_matter_guide.md", "translation-status.md"}:
+        return False
+    if not re.search(r"part\d+/", item.path) and not item.path.startswith("appendix_") and item.path != "afterword.md":
+        return False
+    if re.search(r"part\d+/index\.md$", item.path):
+        return False
+    return True
+
+
+def submission_latex_items(items: list[NavItem]) -> list[NavItem]:
+    return [item for item in items if is_submission_latex_unit(item)]
+
+
+def latex_unit_slug(item: NavItem, index: int) -> str:
+    stem = Path(item.path).with_suffix("").as_posix()
+    stem = stem.replace("/", "-").replace("_", "-")
+    stem = re.sub(r"[^A-Za-z0-9-]+", "-", stem).strip("-").lower()
+    return f"{index:02d}-{stem}.tex"
 
 
 def strip_url_suffix(url: str) -> str:
@@ -673,6 +835,49 @@ def build_latex_document(items: list[NavItem], assets: AssetManager, stats: Expo
     )
 
 
+def build_latex_body(items: list[NavItem], assets: AssetManager, stats: ExportStats, tex_dir: Path) -> str:
+    body: list[str] = []
+    included: set[str] = set()
+
+    for item in items:
+        if item.path in included:
+            continue
+        included.add(item.path)
+        source_file = DOCS_EN / item.path
+        if not source_file.exists():
+            stats.missing += 1
+            stats.warnings.append(f"missing nav source: {source_file.relative_to(ROOT)}")
+            continue
+        stats.files += 1
+        text = source_file.read_text(encoding="utf-8")
+        body.append(r"\cleardoublepage")
+        body.append(
+            r"\noindent{\small\textsf{"
+            + inline_to_latex(f"{item.title} | {item.path}")
+            + r"}}\par\vspace{1.5mm}"
+        )
+        body.append(markdown_to_latex(text, source_file, assets, stats, tex_dir))
+
+    return "\n\n".join(body)
+
+
+def build_latex_wrapper(input_paths: list[Path], stats: ExportStats, base_dir: Path) -> str:
+    includes = [rf"\input{{{Path(os.path.relpath(path, base_dir)).as_posix()}}}" for path in input_paths]
+    return "\n".join(
+        [
+            latex_preamble(stats),
+            r"\begin{document}",
+            r"\frontmatter",
+            r"\maketitle",
+            r"\tableofcontents",
+            r"\mainmatter",
+            "\n\n".join(includes),
+            r"\end{document}",
+            "",
+        ]
+    )
+
+
 def write_outputs(tex: str, stats: ExportStats, tex_path: Path = OUT_TEX, warnings_path: Path = OUT_WARNINGS) -> None:
     tex_path.parent.mkdir(parents=True, exist_ok=True)
     tex_path.write_text(tex, encoding="utf-8")
@@ -761,6 +966,9 @@ def export_split(items: list[NavItem], compile_output: bool, timeout: int) -> No
     if PARTS_DIR.exists():
         shutil.rmtree(PARTS_DIR)
     PARTS_DIR.mkdir(parents=True, exist_ok=True)
+    if CHAPTERS_DIR.exists():
+        shutil.rmtree(CHAPTERS_DIR)
+    CHAPTERS_DIR.mkdir(parents=True, exist_ok=True)
     groups = group_items(items)
     width = len(str(len(groups)))
     part_pdfs: list[Path] = []
@@ -775,6 +983,32 @@ def export_split(items: list[NavItem], compile_output: bool, timeout: int) -> No
         "| No. | Group | LaTeX | Source files |",
         "| --- | --- | --- | --- |",
     ]
+
+    chapter_manifest_lines = [
+        "# English Springer LaTeX Chapter Sources",
+        "",
+        "Each `.tex` file is one chapter, project, appendix, or front/back matter contribution in the original source format.",
+        "",
+        "| No. | LaTeX | Source file | Title |",
+        "| --- | --- | --- | --- |",
+    ]
+    chapter_paths: list[Path] = []
+    for index, item in enumerate(submission_latex_items(items), 1):
+        chapter_stats = ExportStats()
+        shared_assets.stats = chapter_stats
+        tex_path = CHAPTERS_DIR / latex_unit_slug(item, index)
+        tex_body = build_latex_body([item], shared_assets, chapter_stats, tex_path.parent)
+        write_outputs(tex_body + "\n", chapter_stats, tex_path, tex_path.with_suffix(".warnings.txt"))
+        chapter_paths.append(tex_path)
+        chapter_manifest_lines.append(
+            f"| {index} | `{tex_path.name}` | `{item.path}` | {item.title} |"
+        )
+    (CHAPTERS_DIR / "README.md").write_text("\n".join(chapter_manifest_lines) + "\n", encoding="utf-8")
+
+    main_stats = ExportStats()
+    main_stats.files = len(chapter_paths)
+    main_tex = build_latex_wrapper(chapter_paths, main_stats, PARTS_DIR)
+    write_outputs(main_tex, main_stats, PARTS_DIR / "00-manuscript.tex", PARTS_DIR / "00-manuscript.warnings.txt")
 
     for index, (key, grouped_items) in enumerate(groups, 1):
         part_stats = ExportStats()

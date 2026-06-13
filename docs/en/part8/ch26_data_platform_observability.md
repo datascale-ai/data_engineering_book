@@ -700,7 +700,7 @@ Nygard M T (2018) Release It!: Design and Deploy Production-Ready Software, 2nd 
 
 Oliner A, Stearley J (2007) What Supercomputers Say: A Study of Five System Logs. In: Proceedings of the 37th Annual IEEE/IFIP International Conference on Dependable Systems and Networks (DSN), pp 575-584.
 
-OpenTelemetry Authors (2024) OpenTelemetry Specification. Available at: https://opentelemetry.io/docs/specs/
+OpenTelemetry Authors (2024) OpenTelemetry Specification. Available at: https://opentelemetry.io/docs/specs/.
 
 Polyzotis N, Roy S, Whang S E, Zinkevich M (2017) Data Management Challenges in Production Machine Learning. In: Proceedings of the 2017 ACM International Conference on Management of Data (SIGMOD), pp 1723-1726.
 

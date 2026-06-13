@@ -20,7 +20,7 @@ Finally, through medical and financial cases, and by connecting P09’s privacy-
 
 Federated learning; privacy-enhancing technologies; differential privacy; secure multi-party computation; trusted execution environment; privacy validation
 
-## 37.0 Learning Objectives
+## Learning Objectives
 
 After studying this chapter, you should be able to:
 

@@ -14,7 +14,7 @@ This chapter starts with labeling-assistance agents, covering task explanation, 
 
 Labeling-assistance agents; synthetic data; automated evaluation; red-team samples; consistency calibration; LLM-as-judge
 
-## 33.0 Learning Objectives
+## Learning Objectives
 
 After reading this chapter, you should be able to:
 

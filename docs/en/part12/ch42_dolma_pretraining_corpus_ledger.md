@@ -12,7 +12,7 @@ Dolma is a three-trillion-token-scale English pre-training corpus released by th
 
 Dolma; transparent pre-training corpus; OLMo; source mix; token accounting; source card; manifest; Dolma Toolkit; ODC-BY; data audit
 
-## 42.0 Learning Objectives
+## Learning Objectives
 
 After completing this chapter, readers should be able to:
 

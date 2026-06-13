@@ -10,7 +10,7 @@ The quality ceiling of a retrieval-augmented generation (RAG) system is often fi
 
 RAG data pipeline; document engineering; retrieval-augmented generation; chunking; knowledge update; evaluation feedback
 
-## 21.0 Learning Objectives
+## Learning Objectives
 
 - Explain why the performance ceiling of RAG is determined by the upstream data pipeline rather than the terminal generation model.
 - Design a document-engineering chain that covers multi-source ingestion, heterogeneous format parsing, and structured cleaning.

@@ -12,7 +12,7 @@ LAION-5B is a large-scale image-text candidate pool derived from Common Crawl. I
 
 LAION-5B; image-text pairs; Common Crawl; alt text; CLIP filtering; multi-channel schema; WebDataset; Parquet; DataComp; risk governance
 
-## 43.0 Learning Objectives
+## Learning Objectives
 
 After completing this chapter, readers should be able to:
 

@@ -230,7 +230,7 @@ DataAgent runtime state, message traces, tool outputs, and workspace files provi
 
 This chapter depends on DataAgent, Semantic Service, a value-match service, and optional A2A service exposure. To make the case executable rather than only descriptive, the published version should explicitly freeze versions, installation steps, environment variables, and the minimal local run path. If the actual repository changes, use the companion code repository's `requirements`, `pyproject.toml`, example YAML files, and release notes as the source of truth, and record the corresponding tag or commit in this section.
 
-### 5.0 Version and Minimal Environment Matrix
+### 5.1 Version and Minimal Environment Matrix
 
 | Component | Minimal Reproduction Requirement | Version Record |
 | --- | --- | --- |
@@ -243,7 +243,7 @@ This chapter depends on DataAgent, Semantic Service, a value-match service, and 
 
 *Table P15-1: Minimal environment matrix for the DataAgent semantic BI assistant*
 
-### 5.1 Install the Project
+### 5.2 Install the Project
 
 DataAgent is an open-source agent data engineering framework: [https://github.com/datagallery-ai/DataAgent](https://github.com/datagallery-ai/DataAgent).
 
@@ -279,7 +279,7 @@ python -c "import dataagent; print(getattr(dataagent, '__version__', 'unknown'))
 git rev-parse --short HEAD
 ```
 
-### 5.2 Configure Model Environment Variables
+### 5.3 Configure Model Environment Variables
 
 DataAgent model configuration comes from the `MODEL` section of YAML. Put keys in `.env` or environment variables rather than directly in YAML.
 
@@ -307,7 +307,7 @@ $env:VALUE_MATCH_URL="http://127.0.0.1:8000"
 $env:A2A_AUTH_TOKEN="replace-with-local-dev-token"
 ```
 
-### 5.3 Prepare the Business Database
+### 5.4 Prepare the Business Database
 
 SQLite is enough for minimal reproduction; enterprise environments can use MySQL, PostgreSQL, or Hive.
 
@@ -318,7 +318,7 @@ Confirm that:
 - Business metrics in user questions can be mapped to fields and filters.
 - Join keys are described in metadata.
 
-### 5.4 Prepare Semantic Service
+### 5.5 Prepare Semantic Service
 
 Semantic Service's current main-line capability is metadata enhancement through semantic-layer services.
 
@@ -334,7 +334,7 @@ A vector database can act as the primary vector retrieval backend for improving 
 
 For the minimal local path, use "SQLite + local Semantic Service + local value match" as the recommended combination. Preparation should complete three tasks: place the SQLite sample database at a stable path; import table descriptions, field descriptions, join relations, and metric definitions into Semantic Service; and build a value-match index for high-frequency filter fields such as enums, customer tiers, regions, and product categories. If a production-grade service is not available, provide a mock or minimal index file in the companion resources and state its coverage in the report.
 
-### 5.5 Prepare the Workspace
+### 5.6 Prepare the Workspace
 
 The workspace is where project assets are persisted. After the main agent calls the NL2SQL sub-agent, the workspace stores:
 
@@ -349,7 +349,7 @@ Use an isolated workspace for each task or user session:
 /tmp/dataagent-semantic-bi-demo/session-001
 ```
 
-### 5.6 Minimal Local Run Path
+### 5.7 Minimal Local Run Path
 
 The minimal local run does not require A2A service exposure or production database access. The recommended path is:
 
@@ -937,4 +937,4 @@ As part of Part 14, this chapter validates earlier methods at the project level.
 2. Wang, B., Shin, R., Liu, X., Polozov, O., & Richardson, M. (2020). RAT-SQL: Relation-Aware Schema Encoding and Linking for Text-to-SQL Parsers. ACL 2020.
 3. Schick, T., Dwivedi-Yu, J., Dessi, R., Raileanu, R., Lomeli, M., Hambro, E., Zettlemoyer, L., Cancedda, N., & Scialom, T. (2023). Toolformer: Language Models Can Teach Themselves to Use Tools. arXiv:2302.04761.
 4. Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., & Cao, Y. (2023). ReAct: Synergizing Reasoning and Acting in Language Models. arXiv:2210.03629.
-5. dbt Labs. (2026). dbt Documentation. https://docs.getdbt.com/
+5. dbt Labs. (2026). dbt Documentation. https://docs.getdbt.com/.

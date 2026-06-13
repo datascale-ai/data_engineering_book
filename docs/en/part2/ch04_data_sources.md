@@ -400,6 +400,8 @@ Blecher L, Cucurull G, Scialom T, Stojnic R (2023) Nougat: Neural Optical Unders
 
 Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
 
+Joulin A, Grave E, Bojanowski P, Douze M, Jegou H, Mikolov T (2017) FastText.zip: Compressing Text Classification Models. arXiv preprint arXiv:1612.03651.
+
 Lopez P (2009) GROBID: Combining Automatic Bibliographic Data Recognition and Term Extraction for Scholarship Publications. In: Proceedings of the 13th European Conference on Digital Libraries, pp 473-474.
 
 Li J, Zhang Y, Yu H, Ma X, Chen Y, Jiang H, Dang K, Goyal T, Keh S, Sherborn M, others (2024) DataComp-LM: In search of the next generation of training sets for language models. arXiv preprint arXiv:2406.11794.

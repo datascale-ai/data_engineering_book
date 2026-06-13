@@ -1167,4 +1167,4 @@ As part of Part Fourteen, this chapter corresponds to the project-level validati
 2. Schick, T., Dwivedi-Yu, J., Dessì, R., Raileanu, R., Lomeli, M., Hambro, E., Zettlemoyer, L., Cancedda, N., & Scialom, T. (2023). Toolformer: Language Models Can Teach Themselves to Use Tools. arXiv:2302.04761.
 3. NIST. (2023). Artificial Intelligence Risk Management Framework (AI RMF 1.0). National Institute of Standards and Technology.
 4. OWASP Foundation. (2025). OWASP Top 10 for Large Language Model Applications.
-5. OpenTelemetry Authors. (2026). OpenTelemetry Documentation. https://opentelemetry.io/docs/
+5. OpenTelemetry Authors. (2026). OpenTelemetry Documentation. https://opentelemetry.io/docs/.

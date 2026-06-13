@@ -295,8 +295,8 @@ Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Ra
 
 Pushkarna M, Zaldivar A, Kjartansson O (2022) Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 1776-1826.
 
-DVC Documentation. Available at: https://dvc.org/doc
+DVC Contributors (2026) Data Version Control Documentation. Available at: https://dvc.org/doc.
 
-MLflow Documentation. Available at: https://mlflow.org/docs/latest/
+MLflow Authors (2026) MLflow Documentation. Available at: https://mlflow.org/docs/latest/.
 
-Hugging Face Datasets Documentation. Available at: https://huggingface.co/docs/datasets
+Hugging Face (2026) Hugging Face Datasets Documentation. Available at: https://huggingface.co/docs/datasets.

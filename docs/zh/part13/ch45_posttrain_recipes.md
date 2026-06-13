@@ -18,7 +18,7 @@ LLM；数据配方；开源大模型；训练数据；阶段化调度
 - 能够设计拒绝采样、奖励模型与 DPO、GRPO、RLVR 等范式的偏好数据生产方法。
 - 能够评估后训练数据的来源可追溯、评测隔离、用途说明与回滚能力，识别 Reward Hacking 与数据污染风险。
 
-## 45.0 开篇问题场景：为什么 Alpaca 训不出 GPT-4 风格
+## 开篇问题场景：为什么 Alpaca 训不出 GPT-4 风格
 
 2023 年至 2024 年初，开源社区集中探索了指令微调（Instruction Tuning）路线。设想这样一个常见团队案例：某大模型应用团队为了打造自己的垂直领域助手，使用开源基座模型，并收集了约 200K 条 Alpaca、Dolly 以及 Self-Instruct 风格的指令数据，对其进行监督微调（Supervised Fine-Tuning, SFT）。
 
@@ -400,6 +400,10 @@ Liu C Y, Zeng L, Liu J, Yan R, He J, Wang C, Yan S, Liu Y, Zhou Y (2024b) Skywor
 
 Singhal P, Goyal T, Xu J, Durrett G (2024) A Long Way to Go: Investigating Length Correlations in RLHF. First Conference on Language Modeling.
 
+Shao Z, Wang P, Zhu Q, Xu R, Song J, Bi X, Zhang H, Zhang M, Li Y, Wu Y, Guo D (2024) DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv preprint arXiv:2402.03300.
+
 Zhou K, Zhu Y, Chen Z, Chen W, Zhao W X, Chen X, Lin Y, Wen J-R, Han J (2023) Don't Make Your LLM an Evaluation Benchmark Cheater. arXiv preprint arXiv:2311.01964.
+
+Zheng L, Chiang W-L, Sheng Y, Zhuang S, Wu Z, Zhuang Y, Lin Z, Li Z, Li D, Xing E, Zhang H, Gonzalez J, Stoica I (2023) Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. Advances in Neural Information Processing Systems, 36, 46595-46623.
 
 Lightman H, Kosaraju V, Burda Y, Edwards H, Baker B, Lee T, Leike J, Schulman J, Sutskever I, Cobbe K (2024) Let's Verify Step by Step. International Conference on Learning Representations.

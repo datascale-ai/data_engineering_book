@@ -10,7 +10,7 @@ Many organizations do not lack data; their data is trapped behind team, system, 
 
 Internal data market; sharing governance; data products; authorization audit; value feedback; sharing incentives
 
-## 30.0 Learning Objectives
+## Learning Objectives
 
 - Explain the hidden cost of data silos and use FAIR principles to describe the value proposition of an internal data market.
 - Define the collaboration process and responsibility matrix for providers, consumers, approvers, platform teams, and security/compliance teams.

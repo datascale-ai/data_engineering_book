@@ -321,6 +321,6 @@ Narayanan D, Shoeybi M, Casper J, LeGresley P, Patwary M, Catanzaro B (2021) Eff
 
 Kwon W, Li Z, Zhuang S, Sheng Y, Zheng L, Yu C H, Gonzalez J E, Zhang H, Stoica I (2023) Efficient Memory Management for Large Language Model Serving with PagedAttention. In: Proceedings of the ACM SIGOPS 29th Symposium on Operating Systems Principles, pp 611-626.
 
-Kubernetes Documentation. Available at: https://kubernetes.io/docs/
+Kubernetes Authors (2026) Kubernetes Documentation. Available at: https://kubernetes.io/docs/.
 
-vLLM Documentation. Available at: https://docs.vllm.ai/
+vLLM Project (2026) vLLM Documentation. Available at: https://docs.vllm.ai/.

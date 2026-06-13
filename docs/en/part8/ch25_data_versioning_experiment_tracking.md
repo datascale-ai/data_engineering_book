@@ -672,7 +672,7 @@ Buneman P, Khanna S, Tan W-C (2001) Why and Where: A Characterization of Data Pr
 
 DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications.
 
-DVC Documentation (2024) Data Version Control Documentation. Available at: https://dvc.org/doc
+DVC Documentation (2024) Data Version Control Documentation. Available at: https://dvc.org/doc.
 
 Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92.
 

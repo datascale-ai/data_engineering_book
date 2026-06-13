@@ -360,6 +360,8 @@ Chen T, Kornblith S, Norouzi M, Hinton G (2020) A Simple Framework for Contrasti
 
 Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, others (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: ICML 2021, pp 8748-8763.
 
+Rombach R, Blattmann A, Lorenz D, Esser P, Ommer B (2022) High-Resolution Image Synthesis with Latent Diffusion Models. In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 10684-10695.
+
 
 Sakoe H, Chiba S (1978) Dynamic Programming Algorithm Optimization for Spoken Word Recognition (DTW). IEEE Transactions on Acoustics, Speech, and Signal Processing 26(1):43-49.
 

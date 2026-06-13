@@ -12,7 +12,7 @@ The central thread of this chapter is the "refining process" of Web pre-training
 
 FineWeb; Common Crawl; DataTrove; WARC; Trafilatura; FastText; MinHash; quality filtering; pre-training corpus; data ablation
 
-## 41.0 Learning Objectives
+## Learning Objectives
 
 After completing this chapter, readers should be able to:
 

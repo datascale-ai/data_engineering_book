@@ -10,7 +10,7 @@ A dataset registered in a catalog may still have field semantics changed silentl
 
 Data productization and data contracts; data assets; metadata governance; data products; data contracts
 
-## 28.0 Learning Objectives
+## Learning Objectives
 
 - Distinguish dataset thinking from data product thinking, and use a data product canvas to describe inputs, outputs, SLA, owner, and change policy.
 - Design machine-readable, verifiable, versioned contract clauses for schema, quality, freshness, privacy, and compatibility.

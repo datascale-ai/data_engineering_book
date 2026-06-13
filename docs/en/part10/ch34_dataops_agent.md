@@ -14,7 +14,7 @@ This chapter builds on Chapters 24-26: DataOps flywheel, version management, exp
 
 DataOps Agent; platform autonomy; root-cause localization; data rollback; cost governance; operations automation
 
-## 34.0 Learning Objectives
+## Learning Objectives
 
 After reading this chapter, you should be able to:
 

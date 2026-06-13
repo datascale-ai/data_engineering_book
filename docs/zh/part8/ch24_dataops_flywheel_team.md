@@ -833,7 +833,7 @@ Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for M
 
 DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications.
 
-DataOps Manifesto (accessed 2026) The DataOps Manifesto: 18 DataOps Principles. Online manifesto. Available at: https://dataopsmanifesto.org/en/
+DataOps Manifesto (accessed 2026) The DataOps Manifesto: 18 DataOps Principles. Online manifesto. Available at: https://dataopsmanifesto.org/en/.
 
 Dehghani Z (2022) Data Mesh: Delivering Data-Driven Value at Scale. O'Reilly Media.
 
