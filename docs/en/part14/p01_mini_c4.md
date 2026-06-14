@@ -127,7 +127,7 @@ At smaller data scales, it is easier to inspect intermediate artifacts, conduct 
 
 ## 3. Overall Project Architecture
 
-![Figure P01-1](../../images/part14/p01_01_mini_c4_pipeline_overview.png)
+![Figure P01-1](../../images/part14/p01/p01_01_mini_c4_pipeline_overview.svg)
 *Figure P01-1: Mini-C4 Data Pipeline Overview*
 
 
@@ -225,7 +225,7 @@ Therefore, the goal of the body text extraction phase is not "to capture as many
 
 ### 5.2 Core Component Selection
 
-![Figure P01-2](../../images/part14/p01_02_warc_to_text.png)
+![Figure P01-2](../../images/part14/p01/p01_02_warc_to_text.svg)
 *Figure P01-2: Parsing Path from WARC to Body Text*
 
 
@@ -293,7 +293,7 @@ From an engineering perspective, this stage answers:
 
 ## 6. Heuristic Cleaning: First-Pass Noise Removal
 
-![Figure P01-3](../../images/part14/p01_03_cleaning_rules.png)
+![Figure P01-3](../../images/part14/p01/p01_03_cleaning_rules.svg)
 *Figure P01-3: Heuristic Cleaning Rules Illustration*
 
 
@@ -382,7 +382,7 @@ The significance of this stage is:
 
 ## 7. Deduplication: Near-Duplicate Handling in Web Corpora
 
-![Figure P01-4](../../images/part14/p01_04_dedup_minhash_lsh.png)
+![Figure P01-4](../../images/part14/p01/p01_04_dedup_minhash_lsh.svg)
 *Figure P01-4: MinHash + LSH Deduplication Approach*
 
 
@@ -477,7 +477,7 @@ On the contrary, the importance of deduplication is reflected in its ability to 
 
 ## 8. Language Splitting: The Necessity of Language-Based Processing
 
-![Figure P01-5](../../images/part14/p01_05_language_split.png)
+![Figure P01-5](../../images/part14/p01/p01_05_language_split.svg)
 *Figure P01-5: Language Splitting and Branch Processing*
 
 ### 8.1 Different Languages Cannot Share the Same Quality Gate
@@ -512,7 +512,7 @@ From an engineering organization perspective, language splitting elevates the pi
 
 ## 9. Quality Filtering: From "Looks Like Text" to "Suitable for Training"
 
-![Figure P01-6](../../images/part14/p01_06_quality_filter.png)
+![Figure P01-6](../../images/part14/p01/p01_06_quality_filter.svg)
 *Figure P01-6: Quality Filtering Decision Illustration*
 
 ### 9.1 Why Quality Filtering Is the Most Critical Gate
@@ -574,7 +574,7 @@ This also means that in industrial-scale multilingual data engineering, language
 
 ## 10. Three-Round Experimental Review: The Iterative Formation of the Pipeline
 
-![Figure P01-7](../../images/part14/p01_07_three_iterations.png)
+![Figure P01-7](../../images/part14/p01/p01_07_three_iterations.svg)
 *Figure P01-7: Three-Round Experimental Iteration Path*
 
 If the project is understood only as a series of script calls, the trade-offs behind these design decisions are not easy to discern.
@@ -691,7 +691,7 @@ Its significance lies in making the dataset not merely a collection of scattered
 
 ## 12. Data Evaluation: Pipeline Value Assessment
 
-![Figure P01-8](../../images/part14/p01_08_funnel.png)
+![Figure P01-8](../../images/part14/p01/p01_08_funnel.svg)
 *Figure P01-8: Data Retention Funnel*
 
 ### 12.1 Data Retention Funnel
@@ -738,7 +738,7 @@ This indicates that the final dataset is no longer merely a collection of texts,
 
 ## 13. Cost Analysis: Resource Accounting and Bottlenecks
 
-![Figure P01-9](../../images/part14/p01_09_cost_breakdown.png)
+![Figure P01-9](../../images/part14/p01/p01_09_cost_breakdown.svg)
 *Figure P01-9: Resource and Cost Breakdown*
 
 In many introductory projects, developers focus more on "whether the chain can be completed" and less on "what the cost is."
@@ -769,7 +769,7 @@ If the process design is unreasonable, CPU and I/O will quickly become real bott
 
 ## 14. Validation Loop: Project Consistency Checks
 
-![Figure P01-10](../../images/part14/p01_10_validation_loop.png)
+![Figure P01-10](../../images/part14/p01/p01_10_validation_loop.svg)
 *Figure P01-10: Project Validation Loop*
 
 ### 14.1 The Role of Project Checks
@@ -892,7 +892,7 @@ This way, when tuning parameters, developers know not only "results changed" but
 
 ## 17. Engineering Practice Summary: The Methodological Value of Mini-C4
 
-![Figure P01-11](../../images/part14/p01_11_methodology_summary.png)
+![Figure P01-11](../../images/part14/p01/p01_11_methodology_summary.svg)
 *Figure P01-11: Mini-C4 Engineering Methodology Summary*
 
 What this project truly aims to convey is not the usage of a particular library, but a more general data engineering methodology:
