@@ -1,6 +1,6 @@
 # 第1章 大模型时代的数据变革
 
-<div class="chapter-authors">王珂（Ke Wang）</div>
+<div class="chapter-authors">王柯（Ke Wang）</div>
 
 ## 摘要
 

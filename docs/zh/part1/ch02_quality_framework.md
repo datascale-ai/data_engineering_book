@@ -1,6 +1,6 @@
 # 第2章：LLM数据生命周期与质量评估框架
 
-<div class="chapter-authors">王珂（Ke Wang）</div>
+<div class="chapter-authors">王柯（Ke Wang）</div>
 
 ## 摘要
 

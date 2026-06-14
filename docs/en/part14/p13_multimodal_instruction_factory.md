@@ -81,7 +81,7 @@ This project builds a complete multimodal instruction data factory. Starting fro
 
 The factory is divided into five components, shown in Figure 13-1.
 
-![Multimodal Instruction Factory](../../images/part14/p13_mm_instruction_factory_arch_en.png)
+![Multimodal Instruction Factory](../../images/part14/p13_mm_instruction_factory_arch_en.svg)
 *Figure 13-1 Qwen-VL-style multimodal instruction synthesis pipeline.*
 
 1. **Seed selector**: Retrieves seed images from massive image pools, emphasizing OCR-rich images, charts, and realistic complex scenes.

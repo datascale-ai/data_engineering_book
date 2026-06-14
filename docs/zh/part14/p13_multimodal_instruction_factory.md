@@ -1,6 +1,6 @@
 # 项目十三：Qwen-VL 多模态指令工厂
 
-<div class="chapter-authors">王珂（Ke Wang）</div>
+<div class="chapter-authors">王柯（Ke Wang）</div>
 
 ## 摘要
 
@@ -81,7 +81,7 @@
 
 为了实现流水线作业，工厂被划分为五个核心组件。整体架构如图 P13-1 所示。
 
-![Multimodal Instruction Factory](../../images/part14/p13_mm_instruction_factory_arch_en.png)
+![Multimodal Instruction Factory](../../images/part14/p13_mm_instruction_factory_arch_en.svg)
 *图 P13-1：Qwen-VL 风格多模态指令合成流水线架构*
 
 1. **种子选择器 (Seed Selector)**：从百亿级海量图像库中，针对性地捞取 OCR 丰富、图表、真实复杂场景三类种子图像。

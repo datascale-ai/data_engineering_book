@@ -1,6 +1,6 @@
 # 第4章 数据源、采集与版权
 
-<div class="chapter-authors">王珂（Ke Wang）</div>
+<div class="chapter-authors">王柯（Ke Wang）</div>
 
 ## 摘要
 

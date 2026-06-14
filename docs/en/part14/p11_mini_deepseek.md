@@ -76,7 +76,7 @@ This project aims to fully replicate the data recipe of DeepSeek-V3 using approx
 
 To achieve the objectives above, we designed a data pipeline consisting of four core components. The overall architecture is shown in Figure P11-1.
 
-![Mini-DeepSeek Data Pipeline](../../images/part14/p11_mini_deepseek_arch_en.png)
+![Mini-DeepSeek Data Pipeline](../../images/part14/p11_mini_deepseek_arch_en.svg)
 *Figure P11-1: Mini-DeepSeek Multi-Source Pre-Training Data Pipeline Architecture*
 
 The four core components of the pipeline are:

@@ -1,6 +1,6 @@
 # 第5章 清洗、去重与去污染
 
-<div class="chapter-authors">王珂（Ke Wang）</div>
+<div class="chapter-authors">王柯（Ke Wang）</div>
 
 ## 摘要
 
