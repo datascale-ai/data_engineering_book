@@ -93,6 +93,68 @@ class SpringerSubmissionPackageTest(unittest.TestCase):
             self.assertIn("assets/asset_0001.png", root_source.read_text(encoding="utf-8"))
             self.assertIn("LaTeX/chapters", (package_dir / "README.md").read_text(encoding="utf-8"))
 
+    def test_export_package_generates_missing_latex_sources_before_copying(self):
+        exporter = load_exporter()
+
+        with tempfile.TemporaryDirectory(dir=ROOT / "output") as tmp:
+            tmp_path = Path(tmp)
+            latex_chapters = tmp_path / "missing_chapters"
+            latex_parts = tmp_path / "missing_parts"
+            latex_assets = tmp_path / "missing_assets"
+            latex_root = tmp_path / "data_engineering_book_en_16k_latex.tex"
+            exporter.PDF_DIR = tmp_path
+            exporter.LATEX_CHAPTERS_DIR = latex_chapters
+            exporter.LATEX_PARTS_DIR = latex_parts
+            exporter.LATEX_ASSETS_DIR = latex_assets
+
+            calls: list[tuple[str, ...]] = []
+
+            def fake_run_latex_export(args: list[str]) -> None:
+                calls.append(tuple(args))
+                if args == ["--split"]:
+                    latex_chapters.mkdir(parents=True, exist_ok=True)
+                    latex_parts.mkdir(parents=True, exist_ok=True)
+                    latex_assets.mkdir(parents=True, exist_ok=True)
+                    (latex_chapters / "01-part1-ch01-data-change.tex").write_text(
+                        r"\chapter{One}\includegraphics{../latex_assets_en/asset_0001.png}",
+                        encoding="utf-8",
+                    )
+                    (latex_parts / "00-manuscript.tex").write_text(
+                        r"\input{../data_engineering_book_en_16k_latex_chapters/01-part1-ch01-data-change.tex}",
+                        encoding="utf-8",
+                    )
+                    (latex_assets / "asset_0001.png").write_bytes(b"png")
+                elif args == []:
+                    latex_root.write_text(
+                        r"\includegraphics{latex_assets_en/asset_0001.png}",
+                        encoding="utf-8",
+                    )
+
+            exporter.run_latex_export = fake_run_latex_export
+
+            package_dir = exporter.export_package(tmp_path, include_pdfs=False, include_figures=False)
+
+            self.assertEqual([("--split",), ()], calls)
+            self.assertTrue(
+                (
+                    package_dir
+                    / "Source_Files"
+                    / "LaTeX"
+                    / "chapters"
+                    / "01-part1-ch01-data-change.tex"
+                ).exists()
+            )
+            self.assertTrue((package_dir / "Source_Files" / "LaTeX" / "parts" / "00-manuscript.tex").exists())
+            self.assertTrue((package_dir / "Source_Files" / "LaTeX" / "assets" / "asset_0001.png").exists())
+            self.assertTrue(
+                (
+                    package_dir
+                    / "Source_Files"
+                    / "LaTeX"
+                    / "data_engineering_book_en_16k_latex.tex"
+                ).exists()
+            )
+
     def test_export_package_writes_publisher_facing_readme(self):
         exporter = load_exporter()
 

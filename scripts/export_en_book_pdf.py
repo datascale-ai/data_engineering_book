@@ -1045,8 +1045,16 @@ def generate_contents_pdf(path: Path, toc_entries: list[tuple[str, int, str]], s
         c.setFillColor(colors.HexColor("#182336") if level <= 2 else colors.HexColor("#333333"))
         max_title_width = usable_width - indent - 19 * mm
         text = title
-        while c.stringWidth(text, font, size) > max_title_width and len(text) > 18:
-            text = text[:-2].rstrip() + "..."
+        if c.stringWidth(text, font, size) > max_title_width and len(text) > 18:
+            available = max(1, len(text) - 3)
+            while available > 15:
+                candidate = text[:available].rstrip() + "..."
+                if c.stringWidth(candidate, font, size) <= max_title_width:
+                    text = candidate
+                    break
+                available -= 1
+            else:
+                text = text[:15].rstrip() + "..."
         x = left + indent
         c.drawString(x, y, text)
         page_x = page_width - right

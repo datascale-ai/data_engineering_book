@@ -334,6 +334,21 @@ class ExportEnglishBookPdfTest(unittest.TestCase):
             self.assertEqual([], self.embedded_font_gaps(opening))
             self.assertEqual([], self.embedded_font_gaps(contents))
 
+    def test_contents_pdf_handles_long_titles_without_hanging(self):
+        exporter = load_exporter()
+
+        with tempfile.TemporaryDirectory(dir=ROOT / "output") as tmp:
+            contents = Path(tmp) / "contents.pdf"
+            long_title = (
+                "Chapter 99: "
+                + "Very Long Multimodal Data Engineering Chapter Title " * 12
+            )
+
+            pages = exporter.generate_contents_pdf(contents, [(long_title, 2, "123")], 2)
+
+            self.assertEqual(1, pages)
+            self.assertGreater(contents.stat().st_size, 1_000)
+
 
 class ExportEnglishBookLatexTest(unittest.TestCase):
     def test_submission_latex_items_exclude_web_only_part_overviews(self):

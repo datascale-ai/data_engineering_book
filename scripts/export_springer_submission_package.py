@@ -15,6 +15,8 @@ import hashlib
 import json
 import re
 import shutil
+import subprocess
+import sys
 import zipfile
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
@@ -30,6 +32,7 @@ LATEX_PARTS_DIR = PDF_DIR / "data_engineering_book_en_16k_latex_parts"
 LATEX_CHAPTERS_DIR = PDF_DIR / "data_engineering_book_en_16k_latex_chapters"
 LATEX_ASSETS_DIR = PDF_DIR / "latex_assets_en"
 ACCESSIBILITY_DIR = ROOT / "publishing" / "accessibility"
+LATEX_EXPORT_SCRIPT = ROOT / "scripts" / "export_en_book_latex.py"
 
 
 @dataclass
@@ -63,6 +66,45 @@ def copy_tree(src: Path, dst: Path) -> None:
     shutil.copytree(src, dst)
 
 
+def latex_root_tex() -> Path:
+    return PDF_DIR / "data_engineering_book_en_16k_latex.tex"
+
+
+def has_tex_files(path: Path) -> bool:
+    return path.exists() and any(item.is_file() for item in path.glob("*.tex"))
+
+
+def latex_sources_complete() -> bool:
+    return (
+        latex_root_tex().exists()
+        and has_tex_files(LATEX_CHAPTERS_DIR)
+        and has_tex_files(LATEX_PARTS_DIR)
+        and LATEX_ASSETS_DIR.exists()
+    )
+
+
+def run_latex_export(args: list[str]) -> None:
+    subprocess.run([sys.executable, str(LATEX_EXPORT_SCRIPT), *args], cwd=ROOT, check=True)
+
+
+def ensure_latex_sources() -> None:
+    if not has_tex_files(LATEX_CHAPTERS_DIR) or not has_tex_files(LATEX_PARTS_DIR) or not LATEX_ASSETS_DIR.exists():
+        run_latex_export(["--split"])
+    if not latex_root_tex().exists():
+        run_latex_export([])
+    if not latex_sources_complete():
+        missing: list[str] = []
+        if not latex_root_tex().exists():
+            missing.append(str(latex_root_tex()))
+        if not has_tex_files(LATEX_CHAPTERS_DIR):
+            missing.append(str(LATEX_CHAPTERS_DIR))
+        if not has_tex_files(LATEX_PARTS_DIR):
+            missing.append(str(LATEX_PARTS_DIR))
+        if not LATEX_ASSETS_DIR.exists():
+            missing.append(str(LATEX_ASSETS_DIR))
+        raise RuntimeError("LaTeX source export incomplete; missing or empty: " + ", ".join(missing))
+
+
 def rewrite_latex_package_paths(package_dir: Path) -> None:
     latex_root = package_dir / "Source_Files" / "LaTeX"
     replacements = {
@@ -87,7 +129,7 @@ def copy_markdown_sources(package_dir: Path) -> None:
     copy_tree(LATEX_PARTS_DIR, source_root / "LaTeX" / "parts")
     copy_tree(LATEX_CHAPTERS_DIR, source_root / "LaTeX" / "chapters")
     copy_tree(LATEX_ASSETS_DIR, source_root / "LaTeX" / "assets")
-    copy_file(PDF_DIR / "data_engineering_book_en_16k_latex.tex", source_root / "LaTeX" / "data_engineering_book_en_16k_latex.tex")
+    copy_file(latex_root_tex(), source_root / "LaTeX" / "data_engineering_book_en_16k_latex.tex")
     rewrite_latex_package_paths(package_dir)
 
 
@@ -279,6 +321,7 @@ def export_package(output_root: Path = DEFAULT_OUTPUT_ROOT, *, include_pdfs: boo
         "Audit_Reports",
     ]:
         (package_dir / name).mkdir(parents=True, exist_ok=True)
+    ensure_latex_sources()
     copy_metadata(package_dir)
     copy_markdown_sources(package_dir)
     copy_permissions_and_audits(package_dir)
