@@ -44,7 +44,7 @@ This case reveals the core proposition of current VLM engineering research and d
 
 A close reading of the technical reports for Qwen2.5-VL or InternVL3 reveals that modern VLM data recipes have crystallized into a highly standardized "three-stage pipeline" (as shown in Figure 47-2). Even the pre-training stage alone has evolved beyond simple "concept binding" toward deep "visual feature structuring." Each stage exhibits order-of-magnitude differences in data quality requirements, type distribution, and volume, and blindly mixing data across the three stages is the leading cause of recipe failure for many teams.
 
-![Figure 47-2: VLM Three-Stage Data Engineering Pipeline](../../images/part13/ch47_02_vlm_three_stages_en.png)
+![Figure 47-2: VLM Three-Stage Data Engineering Pipeline](../../images/part13/ch47_02_vlm_three_stages_en.svg)
 
 <div align="center"><b>Figure 47-2: VLM Three-Stage Data Pipeline</b></div>
 
@@ -111,7 +111,7 @@ MiniCPM-V offers a fundamentally different data recipe paradigm: under constrain
 
 A persistent engineering pain point in the multimodal field is the **token explosion** caused by high-resolution images. If images are forcibly resized to 224×224, the model becomes "nearsighted" and can never parse the densely arranged text in invoices or mathematical formulas. To address this, two fundamentally divergent processing philosophies have emerged in data pipelines, with the fundamental divergence already manifesting during data preprocessing.
 
-![Figure 47-3: Native vs. Dynamic Resolution Data Pipeline Comparison](../../images/part13/ch47_03_resolution_handling_en.png)
+![Figure 47-3: Native vs. Dynamic Resolution Data Pipeline Comparison](../../images/part13/ch47_03_resolution_handling_en.svg)
 
 <div align="center"><b>Figure 47-3: Native vs. Dynamic Resolution Data Pipeline Comparison</b></div>
 
@@ -142,7 +142,7 @@ This recipe preserves the most complete global and local information, entirely e
 
 At the SFT stage, high-quality instruction data becomes the final piece that determines the model's capability ceiling. Since having humans draw bounding boxes around objects (Grounding) or compose complex visual logic problems is prohibitively expensive, a **"synthetic data factory"** has become standard practice for leading organizations.
 
-![Figure 47-4: Multimodal Instruction Synthesis Pipeline](../../images/part13/ch47_04_instruction_synthesis_en.png)
+![Figure 47-4: Multimodal Instruction Synthesis Pipeline](../../images/part13/ch47_04_instruction_synthesis_en.svg)
 
 <div align="center"><b>Figure 47-4: Multimodal Instruction Synthesis Pipeline</b></div>
 
