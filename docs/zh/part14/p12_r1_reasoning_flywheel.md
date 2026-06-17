@@ -94,7 +94,7 @@ OpenThoughts / GSM8K / MATH-500 / HumanEval
 
 本项目的架构可以拆成六个组件：冷启动数据抽取、多路推理采样、verifier 池、拒绝采样、二轮 SFT 数据合并、训练与评估。六个组件之间通过文件和统一 schema 交接，而不是强耦合在一个长脚本里。这样做的好处是每一层都可以单独重跑：采样失败可以只重跑采样，verifier 更新可以只重跑拒绝采样，训练配比变化可以只重做数据合并。
 
-![图 P12-1](../../images/part14/p12_r1_reasoning_flywheel_architecture.png)
+![图 P12-1](../../images/part14/p12/p12_r1_reasoning_flywheel_architecture.svg)
 *图 P12-1：从冷启动数据抽取、多路推理采样、verifier 池、拒绝采样到二轮 SFT 合并与训练评估的闭环结构。*
 
 第一个组件是 **冷启动数据抽取**。对应脚本为 `cold_start_data.py`。它负责从已有数据源中抽取适合 SFT 的样本，并统一为 `messages` 格式。数学样本会组织成 `Reasoning:` 和 `Final Answer:`，代码样本会组织成 `Reasoning:` 和 fenced Python code block。冷启动数据的作用不是直接训练出最高性能模型，而是让模型具备基本的推理输出结构、语言风格和可解析格式。

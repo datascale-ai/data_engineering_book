@@ -179,7 +179,7 @@ In this sense, the most important contribution of this chapter is not "training 
 
 > When a team wants the model to learn a better process rather than merely a better result, how should data engineering be redesigned?
 
-![Figure P06-1](../../images/part14/p06_01_prm_factory_overview.png)
+![Figure P06-1](../../images/part14/p06/p06_01_prm_factory_overview.svg)
 *Figure P06-1: CoT and PRM Data Factory Overview*
 
 ---
@@ -226,7 +226,7 @@ This layer addresses "whether these process data can be directly consumed by tra
 
 Only at this stage does the project transition from "having generated some reasoning traces" to "having established a process-supervision data pipeline."
 
-![Figure P06-2](../../images/part14/p06_02_step_validation_loop.png)
+![Figure P06-2](../../images/part14/p06/p06_02_step_validation_loop.svg)
 *Figure P06-2: Step-Level Validation and Training Feedback Loop*
 
 ---
@@ -343,7 +343,7 @@ The current project explicitly produces `seed_pool.jsonl` and `task_spec.json`, 
 * The task layer and trajectory layer can be iterated separately without rewriting the entire pipeline each time;
 * Interfaces are preserved for future extension to new task domains.
 
-![Figure P06-3](../../images/part14/p06_03_task_sampling.png)
+![Figure P06-3](../../images/part14/p06/p06_03_task_sampling.svg)
 *Figure P06-3: Task Sampling and Specification Generation Flowchart*
 
 ---
@@ -416,7 +416,7 @@ However, repair trajectories are also the most prone to introducing noise. If th
 
 Existing metrics show that the project generated 108 trajectories, with the three types perfectly symmetric: `positive=36`, `negative=36`, `repair=36`. This demonstrates that the project's trajectory structure is not the result of generating some samples ad hoc, but of explicitly designing all three process types as parallel supervision objects.
 
-![Figure P06-4](../../images/part14/p06_04_trace_types.png)
+![Figure P06-4](../../images/part14/p06/p06_04_trace_types.svg)
 *Figure P06-4: Schematic of the Three Trajectory Types*
 
 ---
@@ -470,7 +470,7 @@ Many process supervision projects fail not because the model is too weak, but be
 
 From this perspective, the step schema is not an ancillary design element—it is the foundation of the PRM data factory.
 
-![Figure P06-5](../../images/part14/p06_05_step_schema.png)
+![Figure P06-5](../../images/part14/p06/p06_05_step_schema.svg)
 *Figure P06-5: PRM Step Schema Schematic*
 
 ---
@@ -546,7 +546,7 @@ Therefore, a more appropriate strategy is not "blanket cleaning," but preserving
 
 Existing metrics show that the overall trajectory validation pass rate is `67.59%`, but the positive trajectory pass rate reaches `100.00%`, indicating that current issues are concentrated in the control of negative and repair trajectories. This result is highly valuable because it clearly identifies that the next optimization step should not be to blindly scale up, but to prioritize improving cleaning and validation quality.
 
-![Figure P06-6](../../images/part14/p06_06_validation_pipeline.png)
+![Figure P06-6](../../images/part14/p06/p06_06_validation_pipeline.svg)
 *Figure P06-6: Step Validation and Result Comparison Pipeline*
 
 ---
@@ -580,7 +580,7 @@ Existing metrics show that the project contains `144` process-only supervision s
 
 This is precisely why a PRM data factory is not simply "breaking answers into pieces," but building a new supervision layer beyond outcomes.
 
-![Figure P06-7](../../images/part14/p06_07_step_labels.png)
+![Figure P06-7](../../images/part14/p06/p06_07_step_labels.svg)
 *Figure P06-7: Step Labels and Process-Only Signal Schematic*
 
 ---
@@ -679,7 +679,7 @@ Many data projects focus attention on train/val while neglecting smoke tests and
 
 These artifacts do not directly improve model scores, but significantly improve project maintainability and reproducibility.
 
-![Figure P06-8](../../images/part14/p06_08_training_interface.png)
+![Figure P06-8](../../images/part14/p06/p06_08_training_interface.svg)
 *Figure P06-8: PRM Data Packaging and Training Interface*
 
 ---
@@ -752,7 +752,7 @@ A positive trajectory pass rate of `100.00%` certainly indicates good quality in
 
 This indicates that the next optimization direction is already clear, rather than the project being in a chaotic state where "problems could be anywhere."
 
-![Figure P06-9](../../images/part14/p06_09_validation_metrics.png)
+![Figure P06-9](../../images/part14/p06/p06_09_validation_metrics.svg)
 *Figure P06-9: Validation Pass Rate vs. Trajectory Type Comparison*
 
 ---
@@ -851,7 +851,7 @@ Existing reports clearly indicate that the shortfall in overall pass rate is con
 
 This is a very important engineering conclusion, because it narrows "what to do next" from vague generality into a specific, well-defined production pipeline problem.
 
-![Figure P06-10](../../images/part14/p06_10_noise_sources.png)
+![Figure P06-10](../../images/part14/p06/p06_10_noise_sources.svg)
 *Figure P06-10: Noise Sources in Negative and Repair Trajectories*
 
 ---

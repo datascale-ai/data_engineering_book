@@ -269,7 +269,7 @@ According to the project brief, P08 should cover versioning, scheduling, quality
 
 The current platform explicitly manages tenants, projects, roles, APIs, queues, UI panels, data versions, experiments, alerts, audit records, and incident reviews.
 
-![Figure 1: P08 DataOps platform overview](../../images/part14/p08_01_dataops_platform_overview.png)
+![Figure 1: P08 DataOps platform overview](../../images/part14/p08/p08_01_dataops_platform_overview.svg)
 
 *Figure 1: P08 DataOps platform overview*
 
@@ -325,7 +325,7 @@ This layer stores data versions, experiment results, evaluation reports, operati
 
 It ensures that the platform manages reusable data and governance assets, not just abstract processes.
 
-![Figure 2: Four-layer platform architecture](../../images/part14/p08_02_four_layer_architecture.png)
+![Figure 2: Four-layer platform architecture](../../images/part14/p08/p08_02_four_layer_architecture.svg)
 
 *Figure 2: Four-layer platform architecture*
 
@@ -359,7 +359,7 @@ This reflects a key platform principle:
 - define runtime and events second;
 - define metrics and acceptance last.
 
-![Figure 3: Spec generation, simulated run, evaluation, and check flow](../../images/part14/p08_03_specs_to_ops_pipeline.png)
+![Figure 3: Spec generation, simulated run, evaluation, and check flow](../../images/part14/p08/p08_03_specs_to_ops_pipeline.svg)
 
 *Figure 3: Specification generation, simulated operation, evaluation, and check flow*
 
@@ -435,7 +435,7 @@ Together, they show that P08 is not only an offline artifact.
 
 Even at prototype level, it considers how the system is called, executed, and observed.
 
-![Figure 4: Tenant, project, role, and API relationship](../../images/part14/p08_04_object_model.png)
+![Figure 4: Tenant, project, role, and API relationship](../../images/part14/p08/p08_04_object_model.svg)
 
 *Figure 4: Tenant, project, role, and API relationship*
 
@@ -555,7 +555,7 @@ In this structure, a version is no longer a static label.
 
 It is a governance object that participates in runtime, evaluation, and rollback.
 
-![Figure 5: Version lifecycle with release and rollback points](../../images/part14/p08_05_version_lifecycle.png)
+![Figure 5: Version lifecycle with release and rollback points](../../images/part14/p08/p08_05_version_lifecycle.svg)
 
 *Figure 5: Version lifecycle with release and rollback points*
 
@@ -624,7 +624,7 @@ experiment_run = {
 
 The role of this fragment is to turn the preceding process into a checkable structured representation.
 
-![Figure 6: Experiment status distribution and governance actions](../../images/part14/p08_06_experiment_tracking.png)
+![Figure 6: Experiment status distribution and governance actions](../../images/part14/p08/p08_06_experiment_tracking.svg)
 
 *Figure 6: Experiment status distribution and governance actions*
 
@@ -676,7 +676,7 @@ If versions, experiments, alerts, rollbacks, and reports are treated as connecte
 
 If they start as isolated tables, adding lineage later is usually more expensive.
 
-![Figure 7: Version, experiment, result, and rollback lineage](../../images/part14/p08_07_lineage_graph.png)
+![Figure 7: Version, experiment, result, and rollback lineage](../../images/part14/p08/p08_07_lineage_graph.svg)
 
 *Figure 7: Version, experiment, result, and rollback lineage*
 
@@ -724,7 +724,7 @@ The core risk is that stepping back is uncontrollable.
 
 A platform with rollback capability turns "what do we do if something goes wrong" from emergency firefighting into a standard action.
 
-![Figure 8: Rollback trigger and recovery flow](../../images/part14/p08_08_rollback_flow.png)
+![Figure 8: Rollback trigger and recovery flow](../../images/part14/p08/p08_08_rollback_flow.svg)
 
 *Figure 8: Rollback trigger and recovery flow*
 
@@ -792,7 +792,7 @@ alert = {
 
 The role of this fragment is to turn the preceding process into a checkable structured representation.
 
-![Figure 9: Metrics, logs, alerts, and audit loop](../../images/part14/p08_09_observability_loop.png)
+![Figure 9: Metrics, logs, alerts, and audit loop](../../images/part14/p08/p08_09_observability_loop.svg)
 
 *Figure 9: Metrics, logs, alerts, and audit loop*
 
@@ -838,7 +838,7 @@ If they exist separately, the platform only provides partial evidence.
 
 If they are linked, the platform gains learning capability.
 
-![Figure 10: Audit logs and incident review](../../images/part14/p08_10_audit_and_incident_review.png)
+![Figure 10: Audit logs and incident review](../../images/part14/p08/p08_10_audit_and_incident_review.svg)
 
 *Figure 10: Audit logs and incident review*
 
@@ -932,7 +932,7 @@ This check looks simple.
 
 It effectively moves platform engineering from "conceptually correct" to "delivery consistent."
 
-![Figure 11: Check pipeline and consistency validation](../../images/part14/p08_11_validation_pipeline.png)
+![Figure 11: Check pipeline and consistency validation](../../images/part14/p08/p08_11_validation_pipeline.svg)
 
 *Figure 11: Check pipeline and consistency validation*
 
