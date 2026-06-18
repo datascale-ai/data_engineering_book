@@ -12,15 +12,15 @@ The dataset is currently an annotation-stage benchmark without a companion produ
 
 ### 40.1.1 Boundary of Traditional Single-Chart VQA
 
-Mainstream chart VQA datasets such as ChartQA, FigureQA, and PlotQA usually follow a one-image, one-question, single-chart paradigm. One sample image contains one independent chart, and all data, legends, labels, and values needed for answering are contained in that single chart. The model mainly needs to locate coordinates, read annotated numbers, and perform a one-step arithmetic or classification operation.
+Mainstream chart VQA datasets such as ChartQA (Masry et al. 2022), FigureQA (Kahou et al. 2017), and PlotQA (Methani et al. 2020) usually follow a one-image, one-question, single-chart paradigm. One sample image contains one independent chart, and all data, legends, labels, and values needed for answering are contained in that single chart. The model mainly needs to locate coordinates, read annotated numbers, and perform a one-step arithmetic or classification operation (Kafle et al. 2018; Zhu et al. 2025).
 
-At the task level, single-chart VQA mostly stops at single-step extraction: maximum lookup, category sum, or one ratio calculation. It lacks cross-view data linkage. In standardized lab datasets, chart styles are usually cleaned up: legends are neat, axes are unambiguous, partitions are clear, and there are few surrounding notes. This differs fundamentally from native infographics in the open web and commercial publications.
+At the task level, single-chart VQA mostly stops at single-step extraction: maximum lookup, category sum, or one ratio calculation. It lacks cross-view data linkage  (Masry et al. 2025; Xie et al. 2026). In standardized lab datasets, chart styles are usually cleaned up: legends are neat, axes are unambiguous, partitions are clear, and there are few surrounding notes. This differs fundamentally from native infographics in the open web and commercial publications.
 
 In real deployments, models trained only on single-chart data become unbalanced. They may read local pixel-level values well but lack cross-region association. Annual-report infographics, public-health visualizations, market-research reports, and industry dashboards rarely use only one chart. Designers split indicators into multiple subcharts, each carrying category statistics, time trends, geographic distribution, risk comparison, or explanatory notes. Final conclusions often require integrating several subcharts, so the single-chart paradigm does not match the scenario.
 
 ### 40.1.2 Reasoning Characteristics of Compound Infographics
 
-A compound infographic is a nested visual carrier. It is one image file divided into several physical regions. Each region may contain a different chart type, accompanied by global legends, region notes, side text, and warning annotations. Compared with single charts, real compound infographic reasoning has three core requirements.
+A compound infographic is a nested visual carrier. It is one image file divided into several physical regions. Each region may contain a different chart type, accompanied by global legends, region notes, side text, and warning annotations (Mathew et al. 2021). Compared with single charts, real compound infographic reasoning has three core requirements.
 
 - **Cross-chart data aggregation.** Different statistical dimensions are split across subcharts. In the shark-attack case, county-level historical attacks, state-level attacks over the last decade, and accidental-death comparisons appear in separate regions. Complex questions require aggregating data from multiple views.
 - **Multi-step serial numerical calculation.** Real questions form chains. First identify a target region, then use that region's state to retrieve another value, then compare against another state. Earlier answers become later inputs.
@@ -28,7 +28,7 @@ A compound infographic is a nested visual carrier. It is one image file divided 
 
 ### 40.1.3 Benchmark Gap and Dataset Significance
 
-Public multimodal chart-reasoning benchmarks have a supply gap. Synthetic chart datasets dominate, while native compound infographics from web pages, newspapers, and science publications are rare. Many datasets split compound infographics into independent images to reduce annotation difficulty, but this destroys spatial association and contextual logic.
+Public multimodal chart-reasoning benchmarks have a supply gap. Synthetic chart datasets dominate, while native compound infographics from web pages, newspapers, and science publications are rare. Many datasets split compound infographics into independent images to reduce annotation difficulty, but this destroys spatial association and contextual logic (Foroutan et al. 2025).
 
 This dataset keeps the native structure: multiple subcharts on the same canvas, shared legends, interleaved notes, and original layout. It fills a gap in real-world cross-chart reasoning benchmarks. For algorithm research, it pushes VQA models beyond “single-chart reading” toward subchart segmentation, cross-view memory, and multi-step calculation.
 
@@ -87,13 +87,13 @@ The dataset's shark-attack example illustrates subchart partitioning, question c
 
 ![Figure 40-4: Shark-attack compound infographic example](../../images/part12/ch40_where_the_most_shark_attacks_occur_in_the_united_states_1.jpg)
 
-*Figure 40-4. Example of a multi-chart infographic sample from the dataset (Shark Attacks).*
+*Figure 40-4. Example of a multi-chart infographic sample from the dataset (Shark Attacks), consisting of four distinct subcharts covering three categories of statistics: historical shark-attack county ranking in the United States, state-level shark attacks in the last ten years, and average annual accidental deaths in the United States.*
 
 The example is one integrated science infographic with several subchart regions:
 
 - **Subchart A: Radial chart.** Historical shark-attack county ranking in the United States. Key value: Volusia, Florida has 343 attacks, the county maximum. It supports Q1.
 - **Subchart B: Map chart.** State-level shark attacks in the last ten years. Key values: Florida 242, Hawaii 71. It supports Q2 and Q3.
-- **Subchart C: Table chart / side annotation.** Fatal shark-attack species in Massachusetts in 2018. Key answer: Presumed Great White. It supports Q4.
+- **Subchart C: Tabular chart.** State-level shark attacks in the last ten years. Key answer: Presumed Great White. It supports Q4.
 - **Subchart D: Bar chart.** Average annual accidental deaths in the United States. Key values: falling from bed 450, cats none. It supports Q5 and Q6.
 
 ### 40.3.2 Full Question Chain
@@ -129,7 +129,7 @@ The dataset construction process has four core stages: collecting and filtering 
 
 ![Figure 40-5: Multi-chart infographic dataset construction pipeline](../../images/part12/ch40_pipeline_en_new.png)
 
-*Figure 40-5. Overview of the four-stage data construction pipeline for the Multi-Chart Infographic Reasoning Dataset.*
+*Figure 40-5. Overview of the four-stage data construction pipeline for the Multi-Chart Infographic Reasoning Dataset: collecting and filtering real compound infographics, manually partitioning subchart regions, designing layered question chains, and cross-checking answers.*
 
 ### 40.4.1 Collecting and Filtering Real Infographics
 
