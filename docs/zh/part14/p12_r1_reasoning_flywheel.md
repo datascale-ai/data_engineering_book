@@ -508,4 +508,4 @@ Hendrycks D, Burns C, Kadavath S, Arora A, Basart S, Tang E, Song D, Steinhardt 
 
 Hui B, Yang J, Cui Z, Yang J, Liu D, Zhang L, Liu B, Yu B, Lu K, Chi K, others (2024) Qwen2.5 Technical Report. arXiv preprint arXiv:2412.15115.
 
-Qwen Team (2025) QwQ-32B: Embracing the Power of Reinforcement Learning for Reasoning Models. Qwen Blog.
+Qwen Team (2025) QwQ-32B: Embracing the Power of Reinforcement Learning for Reasoning Models. Qwen Blog. https://qwenlm.github.io/blog/qwq-32b/.
