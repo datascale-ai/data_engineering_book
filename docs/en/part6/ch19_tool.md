@@ -305,7 +305,7 @@ When referring to the tool field table, it should not be treated as a fixed fiel
 
 ![Figure 19-1: Tool-Use Data Construction State Machine Diagram](../../images/part6/图19_1.svg)
 
-*Figure 19-1: Tool-Use Data Construction State Machine Diagram*
+*Figure 19-1: Tool-Use Data Construction State Machine Diagram.*
 
 
 Modeling Tool-Use data as a state machine is more useful for describing real execution processes than treating it as a set of independent function calls. As shown in Figure 19-1, after a user request enters the system, it does not jump directly to the "generate some function call" step. Instead, it sequentially passes through stages such as task understanding, judgment of whether a tool is needed, tool selection, parameter generation, parameter validation, call execution, environment feedback parsing, and result integration. Each stage corresponds to an observable state and also to a set of potential failure modes. When states and transitions are clearly written into the data, the model is more likely to learn stable execution paths rather than merely imitating local call formats.
@@ -442,7 +442,7 @@ In other words, log feedback cannot stop at the simple export layer—it is fund
 
 ![Figure 19-2: Call Failure Recovery Process Diagram](../../images/part6/图19_2.svg)
 
-*Figure 19-2: Call Failure Recovery Process Diagram*
+*Figure 19-2: Call Failure Recovery Process Diagram.*
 
 Abstracting the failure-recovery process separately rather than scattering it across various failure samples helps data teams clearly identify which nodes compose recovery capability. A single tool failure is not an indivisible event—it typically includes at least the stages of failure detection, failure attribution, recovery action selection, recovery execution, and recovery result judgment. If these stages are collapsed in the data into a single "retry after failure," the model will find it very hard to learn the internal structure of recovery. Conversely, if the process is clearly laid out, the model will more easily form a behavioral pattern of "different failures enter different branches, different branches correspond to different actions, different actions then lead to continuation or termination."
 

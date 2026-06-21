@@ -169,7 +169,7 @@ For a more intuitive illustration, Figure 20-1 shows a multi-turn state-transiti
 
 ![Figure 20-1: Multi-Turn Agent State Transition Diagram](../../images/part6/图20_1.svg)
 
-*Figure 20-1: Multi-Turn Agent State Transition Diagram*
+*Figure 20-1: Multi-Turn Agent State Transition Diagram.*
 
 
 ## 20.3 Memory Write, Update, and Recall
@@ -265,7 +265,7 @@ For example, if the user's long-term preference is "default output in Chinese," 
 
 ![Figure 20-2: Memory Layering and Update Flow for Task-Oriented Agents](../../images/part6/图20_2.svg)
 
-*Figure 20-2: Memory Layering and Update Flow for Task-Oriented Agents*
+*Figure 20-2: Memory Layering and Update Flow for Task-Oriented Agents.*
 
 ### Recall Hit Rate, Erroneous Recall, and Forgetting Strategies
 

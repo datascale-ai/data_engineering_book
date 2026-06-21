@@ -55,7 +55,7 @@ Collection from all sources can be abstracted into three layers: **connection la
 
 ![Unified architecture for four-source collection agents](../../images/part10/ai_agent_decision_workflow_ch32_01.svg)
 
-*Figure 32-1: Unified architecture for four-source collection agents*
+*Figure 32-1: Unified architecture for four-source collection agents.*
 
 Although web pages, PDFs, APIs, and repositories use different access methods, agent logic can be unified. The abstraction hides source differences behind adapters in the connection layer. Extraction and structuring share common logic.
 
@@ -131,7 +131,7 @@ Parsing exceptions fall into three types:
 
 ![Parsing exception handling decision flow](../../images/part10/ai_agent_decision_workflow_ch32_02.svg)
 
-*Figure 32-2: Parsing exception handling decision flow*
+*Figure 32-2: Parsing exception handling decision flow.*
 
 ### 32.2.2 Parser Selection and Repair Rule Generation
 
@@ -242,7 +242,7 @@ Quality filtering should follow "wide entry, strict exit, tiered filtering." Eac
 
 ![Tiered quality filtering pipeline](../../images/part10/ai_agent_decision_workflow_ch32_03.svg)
 
-*Figure 32-3: Tiered quality filtering pipeline*
+*Figure 32-3: Tiered quality filtering pipeline.*
 
 Thresholds should be configurable by business need and data characteristics:
 

@@ -343,7 +343,7 @@ In multi-model collaboration engineering implementations, timing and handoff poi
 
 
 ![Figure 16-1: Multi-Model Collaborative Generation Timing Diagram](../../images/part5/图16_1.svg)
-*Figure 16-1: Multi-Model Collaborative Generation Timing Diagram*
+*Figure 16-1: Multi-Model Collaborative Generation Timing Diagram.*
 
 ---
 
@@ -577,7 +577,7 @@ To make the validation pipeline more intuitive, Figure 16-2 illustrates the vali
 
 ![Figure 16-2: Distillation Sample Validation Flow Diagram](../../images/part5/图16_2.svg)
 
-*Figure 16-2: Distillation Sample Validation Flow Diagram*
+*Figure 16-2: Distillation Sample Validation Flow Diagram.*
 
 
 ### When to Stop Distillation and Shift to Real Data Supplementation

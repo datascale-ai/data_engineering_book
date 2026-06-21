@@ -69,7 +69,7 @@ As shown in the comparison in Figure 23-1, in real systems this divergence direc
 
 ![Figure 23-1: From Offline Evaluation to the Online Real Problem Distribution](../../images/part7/图23_1.svg)
 
-*Figure 23-1: From Offline Evaluation to the Online Real Problem Distribution*
+*Figure 23-1: From Offline Evaluation to the Online Real Problem Distribution.*
 
 
 
@@ -154,7 +154,7 @@ As shown in Figure 23-2, a complete data flywheel typically comprises six stages
 
 ![Figure 23-2: The Online Feedback Data Flywheel for Large-Model Applications](../../images/part7/图23_2.svg)
 
-*Figure 23-2: The Online Feedback Data Flywheel for Large-Model Applications*
+*Figure 23-2: The Online Feedback Data Flywheel for Large-Model Applications.*
 
 
 
@@ -272,7 +272,7 @@ At the implementation level, the event schema should not only serve log storage 
 
 ![Figure 23-3: Online Feedback Event Collection and Routing Pipeline](../../images/part7/图23_3.svg)
 
-*Figure 23-3: Online Feedback Event Collection and Routing Pipeline*
+*Figure 23-3: Online Feedback Event Collection and Routing Pipeline.*
 
 
 
@@ -379,7 +379,7 @@ Audited updates are appropriate for high-risk content, such as compliance polici
 
 ![Figure 23-4: Knowledge Update, Gray Release, and Rollback Governance Process](../../images/part7/图23_4.svg)
 
-*Figure 23-4: Knowledge Update, Gray Release, and Rollback Governance Process*
+*Figure 23-4: Knowledge Update, Gray Release, and Rollback Governance Process.*
 
 
 

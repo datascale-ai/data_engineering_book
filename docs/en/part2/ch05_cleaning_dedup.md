@@ -54,7 +54,7 @@ Faced with the problems above, industrial practice has demonstrated that no sing
 
 ![Figure 5-1: Overview Flowchart of the Cleaning and Decontamination Pipeline](../../images/part2/cleaning_pipeline_overview.svg)
 
-*Figure 5-1: Overview Flowchart of the Cleaning and Decontamination Pipeline — A multi-stage quality gate gradually refines raw corpus into candidate training corpus. The proportions in the figure are illustrative only; real retention rates depend on source quality, filtering thresholds, and compliance requirements. Source: original illustration from this book; Alt text: overview flowchart of the cleaning and decontamination pipeline, showing the sequential relationship among rule-based filtering, model scoring, deduplication, PII redaction, decontamination, and manual spot-checks.*
+*Figure 5-1: Overview Flowchart of the Cleaning and Decontamination Pipeline — A multi-stage quality gate gradually refines raw corpus into candidate training corpus. The proportions in the figure are illustrative only; real retention rates depend on source quality, filtering thresholds, and compliance requirements. Source: original illustration from this book.*
 
 ### 5.2.1 The First Gate: Rule-Based Filtering
 
@@ -409,7 +409,7 @@ The quality feedback loop is designed around **human-audit-driven rule iteration
 
 ![Figure 5-2: Quality Filtering Funnel and Spot-Check Feedback Loop](../../images/part2/quality_filter_funnel_loop.svg)
 
-*Figure 5-2: Quality Filtering Funnel and Spot-Check Feedback Loop — The funnel on the left shows the data retention rate at each stage; the feedback loop on the right shows how manual spot-checks drive continuous iterative optimization of filtering rules. Source: original illustration; Alt text: Quality filtering funnel and spot-check feedback loop diagram, showing the cyclic relationship among rule-based filtering, model scoring, deduplication, manual spot-checks, and rule write-back.*
+*Figure 5-2: Quality Filtering Funnel and Spot-Check Feedback Loop — The funnel on the left shows the data retention rate at each stage; the feedback loop on the right shows how manual spot-checks drive continuous iterative optimization of filtering rules. Source: original illustration.*
 
 After each cleaning batch is completed, the following "quality snapshot" procedure is executed on a fixed schedule: randomly sample a batch of records for manual annotation by data engineers (OK / noise / missed PII / erroneously discarded high-quality content / near-duplicate slippage), tally the occurrence rate of each error type, and trace which filtering step caused the error (false positive or false negative). When the error rate for any category exceeds the project waterline for multiple consecutive batches, a review and update of the corresponding rule or model threshold must be triggered. This mechanism transforms the cleaning pipeline from a "one-time engineering artifact" into a "continuously iterating quality engine."
 

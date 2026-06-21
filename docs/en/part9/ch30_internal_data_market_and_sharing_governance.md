@@ -91,7 +91,7 @@ An internal data market is also different from a pure permission system. A permi
 
 ![Internal data market architecture](../../images/part9/图30_1.svg)
 
-*Figure 30-1: Internal data market architecture*
+*Figure 30-1: Internal data market architecture.*
 
 ### 30.1.7 Section Summary
 
@@ -157,7 +157,7 @@ A standard process has seven stages:
 
 ![Authorization approval workflow](../../images/part9/图30_2.svg)
 
-*Figure 30-2: Authorization approval workflow*
+*Figure 30-2: Authorization approval workflow.*
 
 ### 30.2.8 Role Responsibility Matrix
 

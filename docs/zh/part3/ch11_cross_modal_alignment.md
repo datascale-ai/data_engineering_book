@@ -69,7 +69,7 @@
 
 ![图11-1：跨模态对齐的三级金字塔架构](../../images/part3/cross_modal_alignment_hierarchy.svg)
 
-*图11-1：跨模态对齐的三级金字塔架构 —— 展现从微观到宏观的三级对齐体系：底层为基于 BBox 的对象级对齐（Object-Level），中层为基于 DTW 时序同步的片段级对齐（Segment-Level），顶层为长上下文交错排序的文档级对齐（Document-Level）。来源：本书自绘；Alt text：跨模态对齐三级金字塔，展示对象级、片段级和文档级对齐之间的层级关系。*
+*图11-1：跨模态对齐的三级金字塔架构 —— 展现从微观到宏观的三级对齐体系：底层为基于 BBox 的对象级对齐（Object-Level），中层为基于 DTW 时序同步的片段级对齐（Segment-Level），顶层为长上下文交错排序的文档级对齐（Document-Level）。来源：本书自绘。*
 
 #### 1. 对象级（Object-level / Micro-alignment）：框与词的细粒度锚固
 
@@ -123,7 +123,7 @@
 
 ![图11-2：多模态融合与负样本挖掘管线](../../images/part3/fusion_training_sample_design.svg)
 
-*图11-2：多模态融合样本设计图 —— 左侧展示独立的图片、音频和文本池，中间展示数据拼装 JSONL 结构，右侧通过占位符技术（Placeholder Grid）映射为离散 Token，最终打包成统一维度的融合张量块供下游模型预训练。来源：本书自绘；Alt text：多模态融合样本设计图，展示图片、音频、文本池如何通过 JSONL 和 Placeholder 映射为统一训练样本。*
+*图11-2：多模态融合样本设计图 —— 左侧展示独立的图片、音频和文本池，中间展示数据拼装 JSONL 结构，右侧通过占位符技术（Placeholder Grid）映射为离散 Token，最终打包成统一维度的融合张量块供下游模型预训练。来源：本书自绘。*
 
 ### 11.3.2 多模态样本配比（Data Mixing）：控制能力遗忘
 

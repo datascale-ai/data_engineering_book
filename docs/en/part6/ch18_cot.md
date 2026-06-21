@@ -197,7 +197,7 @@ From an engineering standpoint, the degree of structure in reasoning trajectorie
 
 ![Figure 18-1: Reasoning Data Construction and Verification Workflow](../../images/part6/图18_1.svg)
 
-*Figure 18-1: Reasoning Data Construction and Verification Workflow*
+*Figure 18-1: Reasoning Data Construction and Verification Workflow.*
 
 ## 18.3 Automated Verification and Error Classification
 
@@ -324,7 +324,7 @@ In many pipelines, whole-problem correctness naturally becomes the most salient 
 
 
 ![Figure 18-2: Illustration of Process Supervision Labels](../../images/part6/图18_2.svg)
-*Figure 18-2: Illustration of Process Supervision Labels*
+*Figure 18-2: Illustration of Process Supervision Labels.*
 
 For example, a sample may ultimately produce an incorrect answer, but if ninety percent of the preceding steps are correct and the final step's error is clearly correctable, it still has substantial value for training local correction capability and process robustness. Conversely, a sample may ultimately produce the correct answer, but if it is filled with jumps, pseudo-explanations, and implicit hallucinations, it may not deserve a high score despite passing on the result. In other words, process scoring must be willing to assign low scores to samples that are "correct but process-poor," and must also be willing to distinguish "wrong but process-mainly-good" samples from ordinary failures. Only in this way does the scoring system avoid reinforcing old result-oriented habits. Systematic handling of typical manifestations, common causes, and recommended corrective actions for different error types can be done with reference to Table 18-2.
 

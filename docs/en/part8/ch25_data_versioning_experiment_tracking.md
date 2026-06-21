@@ -97,7 +97,7 @@ Data version management is not a problem of a single granularity; it requires ma
 
 ![Figure 25-1: Overview of the Version Management System](../../images/part8/图25_1.svg)
 
-*Figure 25-1: Panoramic view of the data version management and experiment tracking system—five-level version granularity with bidirectional association architecture*
+*Figure 25-1: Panoramic view of the data version management and experiment tracking system—five-level version granularity with bidirectional association architecture.*
 
 The Data Management Body of Knowledge typically treats data assets, metadata, lineage, quality, and lifecycle as shared governance objects; accordingly, version granularity should span multiple levels from individual samples to release packages (DAMA International 2017):
 
@@ -422,7 +422,7 @@ Edge semantics should also be carefully designed. Edges are not merely "connecti
 
 ![Figure 25-2: Data Lineage and Experiment Tracking Graph](../../images/part8/图25_2.svg)
 
-*Figure 25-2: Complete data lineage graph from data sources to model release, showing forward and reverse tracking paths*
+*Figure 25-2: Complete data lineage graph from data sources to model release, showing forward and reverse tracking paths.*
 
 ### 25.4.2 Change Audit Workflow
 

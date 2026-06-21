@@ -270,7 +270,7 @@ To help teams develop a unified understanding, Figure 12-1 provides an architect
 
 ![Figure 12-1: Architecture Diagram of the SFT Instruction System](../../images/part4/图12_1.svg)
 
-*Figure 12-1: Architecture Diagram of the SFT Instruction System*
+*Figure 12-1: Architecture Diagram of the SFT Instruction System.*
 
 ### 12.2.6 How to Implement the Four-Element Structure in Annotation Specifications
 
@@ -585,7 +585,7 @@ To help teams understand the overall flow from generation to revision, Figure 12
 
 ![Figure 12-2: Schematic of the Sample Generation and Acceptance Feedback Loop](../../images/part4/图12_2.svg)
 
-*Figure 12-2: Schematic of the Sample Generation and Acceptance Feedback Loop*
+*Figure 12-2: Schematic of the Sample Generation and Acceptance Feedback Loop.*
 
 ### 12.4.5 Embedding Quality Evaluation into Routine Production Workflows
 

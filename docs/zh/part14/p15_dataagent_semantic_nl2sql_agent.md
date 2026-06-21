@@ -148,13 +148,13 @@ DataAgent 的价值在于把这些环节组织成一个可配置的 Agent 数据
 
 ![DataAgent 企业语义问数助手分层架构](../../images/part14/p15_dataagent_semantic_bi_layered_architecture.svg)
 
-*图 P15-1：DataAgent 企业语义问数助手分层架构*
+*图 P15-1：DataAgent 企业语义问数助手分层架构。*
 
 DataAgent 仓库中的整体架构图如下：
 
 ![DataAgent 整体架构图](../../images/part14/p15_dataagent_agent_excalidraw.png)
 
-*图 P15-2：DataAgent 仓库整体架构图*
+*图 P15-2：DataAgent 仓库整体架构图。*
 
 ### 4.1 接口层
 
@@ -551,7 +551,7 @@ CORE:
 
 ![DataAgent 企业语义问数助手运行流程](../../images/part14/p15_dataagent_semantic_bi_sequence.svg)
 
-*图 P15-3：DataAgent 企业语义问数助手运行流程*
+*图 P15-3：DataAgent 企业语义问数助手运行流程。*
 
 ### 10.2 使用 SDK 运行
 

@@ -62,7 +62,7 @@ This cross-functional coordination is realized through the "operations flywheel.
 
 ![Figure 7-1: Data Operations Flywheel](../../images/part2/data_operations_flywheel.svg)
 
-*Figure 7-1: Data Operations Flywheel — The left side shows the high-cost startup zone; the right side shows the gradually accumulated cycle of automated, high-quality data assets formed after long-term model evaluation and root-cause analysis feedback. Source: Original illustration by the authors. Alt text: Data operations flywheel diagram showing the cyclical relationship among data production, model evaluation, root-cause analysis, rule write-back, and asset reuse.*
+*Figure 7-1: Data Operations Flywheel — The left side shows the high-cost startup zone; the right side shows the gradually accumulated cycle of automated, high-quality data assets formed after long-term model evaluation and root-cause analysis feedback. Source: Original illustration by the authors.*
 
 ---
 
@@ -279,7 +279,7 @@ An excellent quality dashboard should provide a top-down view of all metrics. It
 
 ![Figure 7-2: Data Evaluation Feedback Loop](../../images/part2/data_evaluation_loop.svg)
 
-*Figure 7-2: Data Evaluation Feedback Loop — A circular architecture proceeding from sampling-based blind review to root-cause investigation triggered by metric anomalies, followed by targeted system governance actions. Source: Original illustration by the authors. Alt text: Data evaluation feedback loop diagram showing the closed-loop relationship among sampling evaluation, metric anomalies, root-cause investigation, governance actions, and rule updates.*
+*Figure 7-2: Data Evaluation Feedback Loop — A circular architecture proceeding from sampling-based blind review to root-cause investigation triggered by metric anomalies, followed by targeted system governance actions. Source: Original illustration by the authors.*
 
 ### 7.4.2 Automated Quality Alert System Architecture
 

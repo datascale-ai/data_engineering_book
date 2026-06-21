@@ -54,7 +54,7 @@ As shown in Figure 28-1, the canvas organizes the key elements of a data product
 
 ![Data product canvas](../../images/part9/图28_1.svg)
 
-*Figure 28-1: Data product canvas*
+*Figure 28-1: Data product canvas.*
 
 Several elements are central:
 
@@ -123,7 +123,7 @@ Putting the five clause groups together forms a complete data contract. As shown
 
 ![Data contract template with five clause groups](../../images/part9/图28_2.svg)
 
-*Figure 28-2: Data contract template*
+*Figure 28-2: Data contract template.*
 
 ```yaml
 contract: user_interaction_feedback
@@ -201,7 +201,7 @@ To judge quickly and consistently how a change should be handled in engineering 
 
 ![Change compatibility decision tree](../../images/part9/图28_3.svg)
 
-*Figure 28-3: Change compatibility decision tree*
+*Figure 28-3: Change compatibility decision tree.*
 
 ### 28.3.3 Advance Notice and Canary Validation
 
@@ -260,7 +260,7 @@ This table turns the impact of one change from vague concern into a row-level ch
 
 ![Consumer impact analysis](../../images/part9/图28_4.svg)
 
-*Figure 28-4: Consumer impact analysis*
+*Figure 28-4: Consumer impact analysis.*
 
 ### 28.4.4 How Contracts and Rollback Contain the Damage
 

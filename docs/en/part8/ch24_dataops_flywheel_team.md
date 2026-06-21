@@ -284,7 +284,7 @@ The DataOps flywheel is a conceptual model describing the continuous improvement
 
 ![Figure 24-2: DataOps Team Organization Overview](../../images/part8/图24_2.svg)
 
-*Figure 24-2: LLM Data Team DataOps Overview—An Integrated View of Roles, Interfaces, Flywheel, and Governance*
+*Figure 24-2: LLM Data Team DataOps Overview—An Integrated View of Roles, Interfaces, Flywheel, and Governance.*
 
 In LLM data projects, the flywheel is driven by four core "pools":
 
@@ -317,7 +317,7 @@ Whether the flywheel can run continuously depends on whether feedback is suffici
 
 ![Figure 24-3: DataOps Flywheel Four-Pool Coordination Diagram](../../images/part8/图24_3.svg)
 
-*Figure 24-3: DataOps Flywheel Operating Mechanism—The Coordinated Cycle of Demand Pool, Data Pool, Experiment Pool, and Issue Pool*
+*Figure 24-3: DataOps Flywheel Operating Mechanism—The Coordinated Cycle of Demand Pool, Data Pool, Experiment Pool, and Issue Pool.*
 
 ### 24.3.2 Weekly Cadence Design
 

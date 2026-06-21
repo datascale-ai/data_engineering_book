@@ -57,7 +57,7 @@ Increasing the image side length by only 4.5x can therefore increase **attention
 
 ![Figure 8-1: Overview of image-text data engineering](../../images/part3/multimodal_data_panorama.svg)
 
-*Figure 8-1: Overview of multimodal image-text data engineering. The pipeline starts from DOM-tree crawling and PDF parsing, then moves through format parsing, watermark filtering, CLIP semantic alignment, interleaved-sequence assembly, and tokenized representation. Distributed computing and metadata form the foundation across the pipeline. Source: drawn for this book. Alt text: an overview of image-text data engineering showing DOM extraction, image download, format parsing, filtering, semantic alignment, recaptioning, and sequence assembly.*
+*Figure 8-1: Overview of multimodal image-text data engineering. The pipeline starts from DOM-tree crawling and PDF parsing, then moves through format parsing, watermark filtering, CLIP semantic alignment, interleaved-sequence assembly, and tokenized representation. Distributed computing and metadata form the foundation across the pipeline. Source: drawn for this book.*
 
 ---
 
@@ -255,7 +255,7 @@ Modern large-model engineering usually applies a **multi-granularity recaptionin
 
 ![Figure 8-2: Image semantic alignment and filtering flow](../../images/part3/image_semantic_alignment_flow.svg)
 
-*Figure 8-2: Image semantic alignment and filtering flow. A CLIP- and heuristic-rule-based quantitative decision tree filters out low-match samples, sends medium-match but high-value images to the recaptioning pipeline, and finally stores zero-padded or dynamically sliced images in the training pool. Source: drawn for this book. Alt text: an image semantic alignment and filtering flow showing quality filtering, CLIP scoring, recaptioning, dynamic slicing, and training-pool ingestion.*
+*Figure 8-2: Image semantic alignment and filtering flow. A CLIP- and heuristic-rule-based quantitative decision tree filters out low-match samples, sends medium-match but high-value images to the recaptioning pipeline, and finally stores zero-padded or dynamically sliced images in the training pool. Source: drawn for this book.*
 
 ---
 
@@ -271,7 +271,7 @@ Early VLMs, including CLIP-era models, usually resized all input images to a fix
 
 ![Figure 8-3: AnyRes dynamic multi-resolution patching](../../images/part3/anyres_dynamic_patching.svg)
 
-*Figure 8-3: AnyRes dynamic multi-resolution patching. The core idea is that the high-resolution panoramic input on the left is no longer forced into a square. Instead, it is divided by an adaptive grid into $1 \times 3$ native-resolution local patches and paired with a global thumbnail in the upper-right corner before entering the vision encoder, preserving both high-frequency local features and global semantics. Source: drawn for this book. Alt text: AnyRes dynamic multi-resolution patching showing a panorama divided into local patches and combined with a global thumbnail.*
+*Figure 8-3: AnyRes dynamic multi-resolution patching. The core idea is that the high-resolution panoramic input on the left is no longer forced into a square. Instead, it is divided by an adaptive grid into $1 \times 3$ native-resolution local patches and paired with a global thumbnail in the upper-right corner before entering the vision encoder, preserving both high-frequency local features and global semantics. Source: drawn for this book.*
 
 **AnyRes principles and core strategies:**
 

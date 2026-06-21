@@ -152,7 +152,7 @@ The data flywheel refers to a continuously self-reinforcing data loop: after a m
 
 ![Figure 1-1: LLM-Era Data Engineering Role Restructuring Diagram, showing the closed-loop interfaces among platform, data, algorithms, annotation, product, and compliance roles](../../images/part1/data_engineering_roles_1775830393574.svg)
 
-*Figure 1-1: LLM-Era Data Engineering Role Restructuring Diagram. Source: original illustration. The figure depicts the role flywheel loop spanning platform architecture, data collection, model fine-tuning and validation, and product-research iteration; Alt text: LLM-era data engineering role restructuring diagram showing the closed-loop interfaces among platform, data, algorithms, annotation, product, and compliance roles.*
+*Figure 1-1: LLM-Era Data Engineering Role Restructuring Diagram. Source: original illustration. The figure depicts the role flywheel loop spanning platform architecture, data collection, model fine-tuning and validation, and product-research iteration.*
 
 The prerequisite for this flywheel to operate at high speed is the existence of **clear, executable data handoff SLAs (service-level agreements)** between every pair of roles. Without them, any ambiguous interface—for example, "the product side says it will pass feedback data to the data team, but the format and field definitions are unspecified"—will stall the flywheel at its weakest link. Table 1-4 defines the data responsibilities, upstream/downstream deliverables, and key SLA metrics for the six core roles.
 
@@ -225,7 +225,7 @@ With the above paradigm shift in mind, a global map is needed to orient the read
 
 ![Figure 1-2: Full Fourteen-Part Lifecycle Map, showing the knowledge structure spanning general principles, pretraining, multimodal, alignment, applications, platform, compliance, and hands-on projects](../../images/part1/data_lifecycle_map_1775830407042.svg)
 
-*Figure 1-2: Full Fourteen-Part Lifecycle Map. Source: original illustration. The figure uses infrastructure as its foundation, threading through pretraining, multimodal data, alignment, applications, platform governance, compliance, and hands-on projects; Alt text: full fourteen-part lifecycle map showing the knowledge structure spanning general principles, pretraining, multimodal, alignment, applications, platform, compliance, and hands-on projects.*
+*Figure 1-2: Full Fourteen-Part Lifecycle Map. Source: original illustration. The figure uses infrastructure as its foundation, threading through pretraining, multimodal data, alignment, applications, platform governance, compliance, and hands-on projects.*
 
 
 ### 1.4.1 How the Fourteen Parts Cover Pain Points at Each Stage

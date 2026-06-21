@@ -121,7 +121,7 @@ Task boundaries must be constrained through layering. Each layer owns one type o
 
 ![Six-layer architecture for data engineering agents](../../images/part10/ai_agent_decision_workflow_ch31_01.svg)
 
-*Figure 31-1: Six-layer architecture for data engineering agents*
+*Figure 31-1: Six-layer architecture for data engineering agents.*
 
 *Table 31-2: Responsibility boundaries and failure modes of six layers*
 
@@ -333,7 +333,7 @@ The following steps must retain human review at any automation level:
 
 ![Human-AI collaboration flow by risk level](../../images/part10/ai_agent_decision_workflow_ch31_02.svg)
 
-*Figure 31-2: Human-AI collaboration flow by risk level*
+*Figure 31-2: Human-AI collaboration flow by risk level.*
 
 ## 31.4 Minimum Viable Data Engineering Agent
 

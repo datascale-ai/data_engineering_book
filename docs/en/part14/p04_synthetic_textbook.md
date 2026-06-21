@@ -82,7 +82,7 @@ Reproducibility materials should include data source descriptions, minimal sampl
 ## 1. Project Background: The Necessity of a Synthetic Mathematics and Code Textbook Factory
 
 ![Figure P04-1](../../images/part14/p04/p04_01_project_positioning.svg)
-*Figure P04-1: Synthetic Mathematics and Code Textbook Factory Project Positioning Diagram*
+*Figure P04-1: Synthetic Mathematics and Code Textbook Factory Project Positioning Diagram.*
 
 
 General-purpose large language models can already answer many basic mathematics questions and can write reasonably competent Python code, but once we actually treat their outputs as training data, we quickly encounter three problems.
@@ -107,7 +107,7 @@ Methodologically, this pipeline is arguably more important than the specific pro
 ## 2. Project Objectives and Scope
 
 ![Figure P04-2](../../images/part14/p04/p04_02_goals_and_scope.svg)
-*Figure P04-2: P04 Project Objectives and Scope Diagram*
+*Figure P04-2: P04 Project Objectives and Scope Diagram.*
 
 
 ### 2.1 Project Objectives
@@ -187,7 +187,7 @@ In this sense, P04 is not just a "small reasoning data project" but more aptly a
 ## 4. Overall Architecture: A Reasoning Data Pipeline from Seed Problems to Textbook Volumes
 
 ![Figure P04-3](../../images/part14/p04/p04_03_pipeline_overview.svg)
-*Figure P04-3: P04 Overall Architecture Overview Diagram*
+*Figure P04-3: P04 Overall Architecture Overview Diagram.*
 
 
 From an engineering perspective, P04 can be decomposed into three layers.
@@ -231,7 +231,7 @@ At this stage, the project truly upgrades from "able to generate problems" to an
 ## 5. Engineering Prerequisites: Key Responsibility Facets of the Textbook Factory
 
 ![Figure P04-4](../../images/part14/p04/p04_04_roles_and_responsibilities.svg)
-*Figure P04-4: Textbook Factory Responsibility Collaboration Diagram*
+*Figure P04-4: Textbook Factory Responsibility Collaboration Diagram.*
 
 
 For a textbook factory to operate stably, what matters more than emphasizing individual generation actions is first clearly defining **which responsibility facets must be covered**. At least four categories of responsibility facets need to be made explicit.
@@ -277,7 +277,7 @@ Stating these responsibility facets explicitly amounts to asserting that **a tex
 ## 6. Seed Layer: The Necessity of Problem Seeds
 
 ![Figure P04-5](../../images/part14/p04/p04_05_seed_to_plan.svg)
-*Figure P04-5: Mapping from Seed Problems to Chapter Plans*
+*Figure P04-5: Mapping from Seed Problems to Chapter Plans.*
 
 
 The most common misconception in synthetic textbook creation is to directly ask a large language model to "please help me generate a mathematics textbook." While this approach is fast, it typically has three problems.
@@ -316,7 +316,7 @@ From current results, the project has formed two textbook tracks (`math=30`, `co
 ## 7. Evol-Instruct: The Problem Evolution Mechanism
 
 ![Figure P04-6](../../images/part14/p04/p04_06_evol_path.svg)
-*Figure P04-6: Evol-Instruct Evolution Path Diagram*
+*Figure P04-6: Evol-Instruct Evolution Path Diagram.*
 
 
 If we merely restate "how long does it take a train traveling 240 miles" in a different phrasing, the training value does not increase significantly. What the project truly needs is to evolve problems from "single-step calculations" into "multi-constraint, multi-variable, programmatically solvable" questions.
@@ -355,7 +355,7 @@ Textbook data cannot tolerate such loss of control. Unlike open-ended writing, e
 ## 8. PoT Selection: The Programmatic Reasoning Path
 
 ![Figure P04-7](../../images/part14/p04/p04_07_cot_vs_pot.svg)
-*Figure P04-7: CoT vs. PoT Comparison Diagram*
+*Figure P04-7: CoT vs. PoT Comparison Diagram.*
 
 
 ### 8.1 The Value and Limitations of CoT
@@ -396,7 +396,7 @@ From a training perspective, this has greater generalization value than simply m
 ## 9. Generation Pipeline: Concrete Implementation from Prompt to Code Solution
 
 ![Figure P04-8](../../images/part14/p04/p04_08_generation_chain.svg)
-*Figure P04-8: Generation Pipeline Detail Diagram*
+*Figure P04-8: Generation Pipeline Detail Diagram.*
 
 
 The generation pipeline of this project can be understood as two steps.
@@ -426,7 +426,7 @@ Generation systems inevitably encounter network jitter, incomplete responses, or
 ## 10. Sandbox Validation: The Core Threshold of Generate-then-Verify
 
 ![Figure P04-9](../../images/part14/p04/p04_09_sandbox_validation.svg)
-*Figure P04-9: Sandbox Validation Execution Path Diagram*
+*Figure P04-9: Sandbox Validation Execution Path Diagram.*
 
 
 In P04, the sandbox is not a supplementary component but the **critical gate** that determines whether data is trustworthy.
@@ -472,7 +472,7 @@ The critical risk of textbook data is that content appears to resemble a teacher
 ## 11. Textbook Packaging: Curriculum-Oriented Asset Organization
 
 ![Figure P04-10](../../images/part14/p04/p04_10_packaging_outputs.svg)
-*Figure P04-10: Textbook Packaging Artifact Relationship Diagram*
+*Figure P04-10: Textbook Packaging Artifact Relationship Diagram.*
 
 
 Even after obtaining `verified_textbook.jsonl`, the project should not stop there. Both training and instruction require richer organizational layers.
@@ -516,7 +516,7 @@ Many engineering projects treat teacher guides as supplementary instructional ma
 ## 12. Training Encapsulation: Feeding Textbook Data into Training Systems
 
 ![Figure P04-11](../../images/part14/p04/p04_11_training_interface.svg)
-*Figure P04-11: Training Encapsulation Interface Diagram*
+*Figure P04-11: Training Encapsulation Interface Diagram.*
 
 
 One of the final project objectives is to convert textbook assets into data formats that the training side can consume directly.

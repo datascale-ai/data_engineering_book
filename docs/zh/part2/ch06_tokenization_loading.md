@@ -323,7 +323,7 @@ class MemmapDataset(torch.utils.data.Dataset):
 
 ![图6-1：吞吐瓶颈诊断流程图](../../images/part2/io_bottleneck_diagnosis_flow.svg)
 
-*图6-1：吞吐瓶颈诊断流程图 —— 从 GPU 利用率异常出发，通过三级决策树定位磁盘 I/O 瓶颈、CPU 预处理瓶颈和 PCIe 传输瓶颈，并给出对应的修复方案。来源：本书自绘；Alt text：吞吐瓶颈诊断流程图，展示从 GPU 利用率异常到磁盘 I/O、CPU 预处理和 PCIe 传输排查的决策路径。*
+*图6-1：吞吐瓶颈诊断流程图 —— 从 GPU 利用率异常出发，通过三级决策树定位磁盘 I/O 瓶颈、CPU 预处理瓶颈和 PCIe 传输瓶颈，并给出对应的修复方案。来源：本书自绘。*
 
 **Step 1 - 确认 GPU 是否在等数据**：运行 `nvidia-smi dmon -s u` 监控 SM 利用率；若 SM 利用率周期性下降且 `sm_active` 间歇性接近 0，说明 GPU 可能正在等待。同时检查 MFU（Model FLOPS Utilization）和 DataLoader wait time，判断问题是否来自数据管线。
 
@@ -399,7 +399,7 @@ dataloader = DataLoader(
 
 ![图6-2：训练输入管道分层图](../../images/part2/training_input_pipeline_layers.svg)
 
-*图6-2：LLM 训练输入管道分层架构 —— 从分词、序列化、数据混采、Packing 到 DataLoader GPU 馈送的五阶段完整路径，底部标注了两个最高频的瓶颈风险点（磁盘 I/O 和 CPU↔GPU 传输）。来源：本书自绘；Alt text：训练输入管道分层图，展示分词、序列化、混采、Packing、DataLoader 和 GPU 馈送之间的顺序关系。*
+*图6-2：LLM 训练输入管道分层架构 —— 从分词、序列化、数据混采、Packing 到 DataLoader GPU 馈送的五阶段完整路径，底部标注了两个最高频的瓶颈风险点（磁盘 I/O 和 CPU↔GPU 传输）。来源：本书自绘。*
 
 ### 案例：从 JSONL+在线分词 到 MDS+离线分词 的迁移收益
 

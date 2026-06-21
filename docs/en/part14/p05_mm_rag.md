@@ -175,7 +175,7 @@ In this sense, this chapter answers a larger question:
 ## 4. Overall Architecture: The Pipeline from Financial Report PDF to Multimodal Answer
 
 ![Figure P05-1](../../images/part14/p05/p05_01_overall_architecture.svg)
-*Figure P05-1: Overall architecture diagram of the multimodal RAG financial report assistant*
+*Figure P05-1: Overall architecture diagram of the multimodal RAG financial report assistant.*
 
 From an engineering perspective, this project can be decomposed into three layers.
 
@@ -257,7 +257,7 @@ The key to this design lies not in the model names themselves, but in the separa
 * Evaluation and logging are responsible for verifying whether the system truly finds, reads, and answers correctly.
 
 ![Figure P05-2](../../images/part14/p05/p05_02_vision_vs_ocr.svg)
-*Figure P05-2: Comparison of Vision-First and OCR-First approaches*
+*Figure P05-2: Comparison of Vision-First and OCR-First approaches.*
 
 ---
 
@@ -345,7 +345,7 @@ Without properly preserved page assets, it is very difficult to pinpoint which s
 The current project generates page-level assets and index-related artifacts, such as `page_units.jsonl`, `block_units.jsonl`, `rag_index.json`, and `data/page_images`. This demonstrates that it is not merely a temporary demonstration but already possesses a degree of asset accumulation awareness.
 
 ![Figure P05-3](../../images/part14/p05/p05_03_page_assets.svg)
-*Figure P05-3: Page assets and page number mapping diagram*
+*Figure P05-3: Page assets and page number mapping diagram.*
 
 ---
 
@@ -378,7 +378,7 @@ The true difficulties in indexing are typically not "whether the API can be call
 In complex document projects, indexing is not a preparatory step but part of the capability ceiling itself. If the indexing stage is done carelessly, even the most powerful generation model can only "guess" on ambiguous evidence.
 
 ![Figure P05-4](../../images/part14/p05/p05_04_indexing_pipeline.svg)
-*Figure P05-4: PDF page rendering and visual index construction diagram*
+*Figure P05-4: PDF page rendering and visual index construction diagram.*
 
 ---
 
@@ -431,7 +431,7 @@ Beyond table-of-contents page filtering, one can also consider:
 For example, numerical questions can prioritize pages with dense tables; trend questions can prioritize pages with charts.
 
 ![Figure P05-5](../../images/part14/p05/p05_05_topk_filtering.svg)
-*Figure P05-5: Top-K multi-page recall and table-of-contents page filtering diagram*
+*Figure P05-5: Top-K multi-page recall and table-of-contents page filtering diagram.*
 
 ---
 
@@ -503,7 +503,7 @@ Therefore, in multi-image scenarios it is especially important to prompt the mod
 * Avoid answers that consist only of sweeping generalizations.
 
 ![Figure P05-6](../../images/part14/p05/p05_06_multi_image_prompting.svg)
-*Figure P05-6: Multi-image context injection and answer constraint diagram*
+*Figure P05-6: Multi-image context injection and answer constraint diagram.*
 
 ---
 
@@ -663,7 +663,7 @@ It is recommended to establish at minimum the following metric categories:
 Because chart comprehension is not equivalent to text extraction. A model may be able to read the words "2024," "revenue," and "R&D expenditure," yet still misidentify the trend direction, or confuse year-over-year and quarter-over-quarter comparisons.
 
 ![Figure P05-7](../../images/part14/p05/p05_07_eval_framework.svg)
-*Figure P05-7: Dual-layer evaluation framework for retrieval and answer quality*
+*Figure P05-7: Dual-layer evaluation framework for retrieval and answer quality.*
 
 ---
 
@@ -810,7 +810,7 @@ For enterprise users, the answer ideally should not only be natural language but
 This facilitates integration with downstream systems.
 
 ![Figure P05-8](../../images/part14/p05/p05_08_optimization_roadmap.svg)
-*Figure P05-8: Multimodal RAG optimization roadmap*
+*Figure P05-8: Multimodal RAG optimization roadmap.*
 
 ---
 
@@ -874,7 +874,7 @@ In the long run, a more reasonable architecture is often not "using only one kin
 This preserves the efficiency advantages of text RAG while using multimodal RAG as a fallback for complex scenarios.
 
 ![Figure P05-9](../../images/part14/p05/p05_09_hybrid_rag.svg)
-*Figure P05-9: Collaborative architecture of text RAG and multimodal RAG*
+*Figure P05-9: Collaborative architecture of text RAG and multimodal RAG.*
 
 ---
 

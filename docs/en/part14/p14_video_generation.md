@@ -80,7 +80,7 @@ Figure P14-1 shows the English-annotated architecture diagram for this project. 
 
 ![P14 Video Generation Data Pipeline](../../images/part14/p14_video_generation_pipeline_en.svg)
 
-*Figure P14-1: English architecture diagram of the video generation data pipeline*
+*Figure P14-1: English architecture diagram of the video generation data pipeline.*
 
 The entire pipeline can be broken down into six components. The first is **video source loading**. It reads a Pexels manifest or local video filenames, re-probes each video for duration, fps, resolution, frame count, and file size, and writes the author, page URL, and license fields into a unified manifest. This component provides the foundational information for subsequent provenance tracing, resolution statistics, duration statistics, and authorization status checks.
 

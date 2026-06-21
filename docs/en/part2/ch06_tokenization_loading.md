@@ -323,7 +323,7 @@ When GPU utilization falls below expectations, follow these systematic steps to 
 
 ![Figure 6-1: Throughput Bottleneck Diagnosis Flowchart](../../images/part2/io_bottleneck_diagnosis_flow.svg)
 
-*Figure 6-1: Throughput bottleneck diagnosis flowchart — starting from abnormal GPU utilization, a three-level decision tree is used to locate disk I/O bottlenecks, CPU preprocessing bottlenecks, and PCIe transfer bottlenecks, with corresponding remediation steps. Source: original illustration from this book; Alt text: throughput bottleneck diagnosis flowchart showing the decision paths from abnormal GPU utilization to disk I/O, CPU preprocessing, and PCIe transfer investigation.*
+*Figure 6-1: Throughput bottleneck diagnosis flowchart — starting from abnormal GPU utilization, a three-level decision tree is used to locate disk I/O bottlenecks, CPU preprocessing bottlenecks, and PCIe transfer bottlenecks, with corresponding remediation steps. Source: original illustration from this book.*
 
 **Step 1 — Confirm whether the GPU is waiting for data**: Run `nvidia-smi dmon -s u` to monitor SM utilization; if SM utilization periodically drops to 0 and `sm_active` is intermittently 0, the GPU is waiting. Also check the MFU (Model FLOPS Utilization) metric and compare it with the project's historical baseline.
 
@@ -399,7 +399,7 @@ dataloader = DataLoader(
 
 ![Figure 6-2: Training Input Pipeline Layer Diagram](../../images/part2/training_input_pipeline_layers.svg)
 
-*Figure 6-2: LLM training input pipeline layered architecture — the complete five-stage path from tokenization, serialization, data mixing, and packing to DataLoader GPU feeding, with the two highest-frequency bottleneck risk points (disk I/O and CPU-GPU transfer) annotated at the bottom. Source: original illustration from this book; Alt text: training input pipeline layer diagram showing the sequential relationship between tokenization, serialization, mixing, packing, DataLoader, and GPU feeding.*
+*Figure 6-2: LLM training input pipeline layered architecture — the complete five-stage path from tokenization, serialization, data mixing, and packing to DataLoader GPU feeding, with the two highest-frequency bottleneck risk points (disk I/O and CPU-GPU transfer) annotated at the bottom. Source: original illustration from this book.*
 
 ### Case Study: Migration Benefits from JSONL + Online Tokenization to MDS + Offline Tokenization
 

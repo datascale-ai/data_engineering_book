@@ -166,7 +166,7 @@ This section follows five typical large-model reuse paths: pre-training, post-tr
 
 ![Multi-scenario data asset reuse paths](../../images/part9/图29_1.svg)
 
-*Figure 29-1: Data asset reuse paths*
+*Figure 29-1: Data asset reuse paths.*
 
 ### 29.3.2 Pre-training Reuse
 
@@ -302,7 +302,7 @@ The value axis combines benefit-side and usage-side metrics: how much benefit th
 
 ![Data asset cost-benefit matrix](../../images/part9/图29_2.svg)
 
-*Figure 29-2: Cost-benefit matrix*
+*Figure 29-2: Cost-benefit matrix.*
 
 The advantage of this two-dimensional positioning is that it does not require the fine-grained monetary calculation used in Section 29.4 for every asset. A relative judgment of value level and cost/risk level is enough to quickly classify many assets into quadrants and apply differentiated management strategies.
 
@@ -336,7 +336,7 @@ The final link in value governance is to turn valuation from a one-time action i
 
 ![Data asset review card](../../images/part9/图29_3.svg)
 
-*Figure 29-3: Asset review card*
+*Figure 29-3: Asset review card.*
 
 ### 29.6.2 Core Elements of a Review Card
 

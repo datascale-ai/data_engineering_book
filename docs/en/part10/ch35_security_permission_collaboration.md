@@ -79,7 +79,7 @@ Tool calls must be controlled by allowlists. The allowlist defines not only whic
 
 ![Layered approval flow for agent permissions](../../images/part10/ai_agent_decision_workflow_ch35_01.svg)
 
-*Figure 35-1: Layered approval flow for agent permissions*
+*Figure 35-1: Layered approval flow for agent permissions.*
 
 ## 35.2 Prompt Injection and Unauthorized Tool Call Defense
 
@@ -120,7 +120,7 @@ Prompt injection defense should be layered.
 
 ![Layered prompt injection defense flow](../../images/part10/ai_agent_decision_workflow_ch35_02.svg)
 
-*Figure 35-2: Layered prompt injection defense flow*
+*Figure 35-2: Layered prompt injection defense flow.*
 
 ### 35.2.3 Engineering Implementation
 
@@ -237,7 +237,7 @@ Security incidents require predefined response, not improvised decisions.
 
 ![Agent security incident response flow](../../images/part10/ai_agent_decision_workflow_ch35_03.svg)
 
-*Figure 35-3: Agent security incident response flow*
+*Figure 35-3: Agent security incident response flow.*
 
 *Incident response SLA*
 

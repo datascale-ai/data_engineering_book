@@ -82,7 +82,7 @@
 为了实现流水线作业，工厂被划分为五个核心组件。整体架构如图 P13-1 所示。
 
 ![Multimodal Instruction Factory](../../images/part14/p13_mm_instruction_factory_arch_en.svg)
-*图 P13-1：Qwen-VL 风格多模态指令合成流水线架构*
+*图 P13-1：Qwen-VL 风格多模态指令合成流水线架构。*
 
 1. **种子选择器 (Seed Selector)**：从百亿级海量图像库中，针对性地捞取 OCR 丰富、图表、真实复杂场景三类种子图像。
 2. **指令生成器 (Instruction Generator)**：定义了 6 类复杂的指令模板，并通过 vLLM (Kwon et al. 2023) 调用 Qwen2.5-VL 进行高速生成。

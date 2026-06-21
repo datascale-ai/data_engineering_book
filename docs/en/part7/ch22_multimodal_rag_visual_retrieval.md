@@ -53,7 +53,7 @@ Therefore, in multimodal RAG, OCR is only a foundational capability, not a compl
 
 ![Figure 22-1: The Capability Boundary Between OCR and Visual Understanding](../../images/part7/图22_1.svg)
 
-*Figure 22-1: The Capability Boundary Between OCR and Visual Understanding*
+*Figure 22-1: The Capability Boundary Between OCR and Visual Understanding.*
 
 
 
@@ -164,7 +164,7 @@ The joint representation of text and visual information is the ultimate goal of 
 
 ![Figure 22-2: Joint Representation and Alignment of Text and Visual Elements](../../images/part7/图22_2.svg)
 
-*Figure 22-2: Joint Representation and Alignment of Text and Visual Elements*
+*Figure 22-2: Joint Representation and Alignment of Text and Visual Elements.*
 
 
 
@@ -242,7 +242,7 @@ Cross-modal reranking relies primarily on the image and text embedding vectors i
 
 ![Figure 22-3: Cross-modal Retrieval and Reranking Pipeline](../../images/part7/图22_3.svg)
 
-*Figure 22-3: Cross-modal Retrieval and Reranking Pipeline*
+*Figure 22-3: Cross-modal Retrieval and Reranking Pipeline.*
 
 
 
@@ -352,7 +352,7 @@ In real systems, these metrics often do not change independently. For instance, 
 
 ![Figure 22-4: Multimodal RAG Evaluation Funnel](../../images/part7/图22_4.svg)
 
-*Figure 22-4: Multimodal RAG Evaluation Funnel*
+*Figure 22-4: Multimodal RAG Evaluation Funnel.*
 
 
 
@@ -385,7 +385,7 @@ When a team genuinely begins performing error attribution, they discover somethi
 
 ![Figure 22-5: The Closed Loop from Error Attribution to Repair Actions](../../images/part7/图22_5.svg)
 
-*Figure 22-5: The Closed Loop from Error Attribution to Repair Actions*
+*Figure 22-5: The Closed Loop from Error Attribution to Repair Actions.*
 
 
 

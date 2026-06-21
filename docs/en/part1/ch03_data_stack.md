@@ -71,7 +71,7 @@ After clarifying the fundamental difference between an AI-native data stack and 
 
 ![Figure 3-1: Five-layer architecture of an AI-native data stack](../../images/part1/ai_data_stack_architecture.svg)
 
-*Figure 3-1: Five-layer architecture of an AI-native data stack. Source: original illustration from this book. The figure shows how ingestion and access, processing orchestration, storage and indexing, evaluation operations, and governance and security layers jointly move data from raw corpus to trainable datasets; Alt text: five-layer architecture of an AI-native data stack showing the data flow among ingestion and access, processing orchestration, storage and indexing, evaluation operations, and governance and security layers.*
+*Figure 3-1: Five-layer architecture of an AI-native data stack. Source: original illustration from this book. The figure shows how ingestion and access, processing orchestration, storage and indexing, evaluation operations, and governance and security layers jointly move data from raw corpus to trainable datasets.*
 
 ### 3.2.1 Ingestion and Access Layer: Turning "Data Everywhere" into "Traceable Data"
 
@@ -263,7 +263,7 @@ Connecting planning, monitoring, evaluation, optimization, and postmortem into a
 
 ![Figure 3-2: Training-data cost-governance loop](../../images/part1/cost_governance_loop.svg)
 
-*Figure 3-2: Training-data cost-governance loop. Source: original illustration from this book. The figure shows a cross-version iteration cycle that starts from budget planning, passes through cost monitoring, ROI evaluation, and optimization decisions, and returns to budget review; Alt text: training-data cost-governance loop showing the cycle of budget planning, cost monitoring, ROI evaluation, optimization decisions, and budget review.*
+*Figure 3-2: Training-data cost-governance loop. Source: original illustration from this book. The figure shows a cross-version iteration cycle that starts from budget planning, passes through cost monitoring, ROI evaluation, and optimization decisions, and returns to budget review.*
 
 ---
 

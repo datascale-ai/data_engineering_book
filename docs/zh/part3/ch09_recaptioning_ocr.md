@@ -156,7 +156,7 @@
 
 ![图9-1：重标注与 OCR 双流线增强图](../../images/part3/recaptioning_ocr_pipeline.svg)
 
-*图9-1：重标注与 OCR 增强联合的双轨管道图（Dual-track Pipeline） —— 左侧展示语义密集叙述流（Semantic Vision Track），右侧展示包含 DOM 排版分割与表格矩阵的高密度结构流（Structural Text Track），最终融合为统一的混合监督模板格式。来源：本书自绘；Alt text：重标注与 OCR 双流线增强图，展示视觉重描述、OCR 结构提取、BBox 注入和混合监督格式之间的关系。*
+*图9-1：重标注与 OCR 增强联合的双轨管道图（Dual-track Pipeline） —— 左侧展示语义密集叙述流（Semantic Vision Track），右侧展示包含 DOM 排版分割与表格矩阵的高密度结构流（Structural Text Track），最终融合为统一的混合监督模板格式。来源：本书自绘。*
 
 至此，针对自然图像与纯景物类图片的重标注管线已经建立。真正影响企业级视觉模型落地能力的，是下一类高密度字符场景：长文档阅读推理与复杂商业报表的结构化解析。
 
@@ -189,7 +189,7 @@
 
 ![图9-2：文档结构 Layout-to-Token 映射图](../../images/part3/document_structure_sample.svg)
 
-*图9-2：文档结构 Layout-to-Token 映射图（Document Structure Layout-to-Token Mapping） —— 左半区展示一份双栏学术报告残页；系统首先通过 Bounding Box 阵列定位标题、正文、图表和公式区域；右半区展示 Nougat、PaddleOCR 等特化模型输出如何经脚本后处理，归并为层级化 Markdown 文本与离散坐标 `[x_y]` 的富文本数据流。来源：本书自绘；Alt text：文档结构 Layout-to-Token 映射图，展示文档页面被版面检测、OCR、公式解析和坐标标注转换为层级文本序列。*
+*图9-2：文档结构 Layout-to-Token 映射图（Document Structure Layout-to-Token Mapping） —— 左半区展示一份双栏学术报告残页；系统首先通过 Bounding Box 阵列定位标题、正文、图表和公式区域；右半区展示 Nougat、PaddleOCR 等特化模型输出如何经脚本后处理，归并为层级化 Markdown 文本与离散坐标 `[x_y]` 的富文本数据流。来源：本书自绘。*
 
 ### 9.3.2 文本引擎对超高分辨率输入的降维作用
 

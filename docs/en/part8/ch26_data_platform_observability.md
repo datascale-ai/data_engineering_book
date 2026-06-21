@@ -332,7 +332,7 @@ Attribution results should be written back into the issue backlog and knowledge 
 
 ![Figure 26-1: Anomaly Attribution Decision Tree](../../images/part8/图26_1.svg)
 
-*Figure 26-1: LLM Data Platform Anomaly Attribution Decision Tree — Four-Level Diagnostic Path from Alert Trigger to Root-Cause Identification*
+*Figure 26-1: LLM Data Platform Anomaly Attribution Decision Tree — Four-Level Diagnostic Path from Alert Trigger to Root-Cause Identification.*
 
 ### 26.3.4 Tiered Incident Response and Runbooks
 
@@ -482,7 +482,7 @@ Finally, dashboards should not grow without bound. Each view should retain a sma
 
 ![Figure 26-2: Data Platform Observability Panorama](../../images/part8/图26_2.svg)
 
-*Figure 26-2: LLM Data Platform Observability Panorama — Architecture of the Three-Layer Metric Hierarchy and the Three-Dimensional Operational Dashboard*
+*Figure 26-2: LLM Data Platform Observability Panorama — Architecture of the Three-Layer Metric Hierarchy and the Three-Dimensional Operational Dashboard.*
 
 ---
 

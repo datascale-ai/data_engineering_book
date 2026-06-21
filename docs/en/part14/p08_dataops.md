@@ -271,7 +271,7 @@ The current platform explicitly manages tenants, projects, roles, APIs, queues, 
 
 ![Figure 1: P08 DataOps platform overview](../../images/part14/p08/p08_01_dataops_platform_overview.svg)
 
-*Figure 1: P08 DataOps platform overview*
+*Figure 1: P08 DataOps platform overview.*
 
 ---
 
@@ -327,7 +327,7 @@ It ensures that the platform manages reusable data and governance assets, not ju
 
 ![Figure 2: Four-layer platform architecture](../../images/part14/p08/p08_02_four_layer_architecture.svg)
 
-*Figure 2: Four-layer platform architecture*
+*Figure 2: Four-layer platform architecture.*
 
 ---
 
@@ -361,7 +361,7 @@ This reflects a key platform principle:
 
 ![Figure 3: Spec generation, simulated run, evaluation, and check flow](../../images/part14/p08/p08_03_specs_to_ops_pipeline.svg)
 
-*Figure 3: Specification generation, simulated operation, evaluation, and check flow*
+*Figure 3: Specification generation, simulated operation, evaluation, and check flow.*
 
 ---
 
@@ -437,7 +437,7 @@ Even at prototype level, it considers how the system is called, executed, and ob
 
 ![Figure 4: Tenant, project, role, and API relationship](../../images/part14/p08/p08_04_object_model.svg)
 
-*Figure 4: Tenant, project, role, and API relationship*
+*Figure 4: Tenant, project, role, and API relationship.*
 
 ---
 
@@ -557,7 +557,7 @@ It is a governance object that participates in runtime, evaluation, and rollback
 
 ![Figure 5: Version lifecycle with release and rollback points](../../images/part14/p08/p08_05_version_lifecycle.svg)
 
-*Figure 5: Version lifecycle with release and rollback points*
+*Figure 5: Version lifecycle with release and rollback points.*
 
 ---
 
@@ -626,7 +626,7 @@ The role of this fragment is to turn the preceding process into a checkable stru
 
 ![Figure 6: Experiment status distribution and governance actions](../../images/part14/p08/p08_06_experiment_tracking.svg)
 
-*Figure 6: Experiment status distribution and governance actions*
+*Figure 6: Experiment status distribution and governance actions.*
 
 ---
 
@@ -678,7 +678,7 @@ If they start as isolated tables, adding lineage later is usually more expensive
 
 ![Figure 7: Version, experiment, result, and rollback lineage](../../images/part14/p08/p08_07_lineage_graph.svg)
 
-*Figure 7: Version, experiment, result, and rollback lineage*
+*Figure 7: Version, experiment, result, and rollback lineage.*
 
 ---
 
@@ -726,7 +726,7 @@ A platform with rollback capability turns "what do we do if something goes wrong
 
 ![Figure 8: Rollback trigger and recovery flow](../../images/part14/p08/p08_08_rollback_flow.svg)
 
-*Figure 8: Rollback trigger and recovery flow*
+*Figure 8: Rollback trigger and recovery flow.*
 
 ---
 
@@ -794,7 +794,7 @@ The role of this fragment is to turn the preceding process into a checkable stru
 
 ![Figure 9: Metrics, logs, alerts, and audit loop](../../images/part14/p08/p08_09_observability_loop.svg)
 
-*Figure 9: Metrics, logs, alerts, and audit loop*
+*Figure 9: Metrics, logs, alerts, and audit loop.*
 
 ---
 
@@ -840,7 +840,7 @@ If they are linked, the platform gains learning capability.
 
 ![Figure 10: Audit logs and incident review](../../images/part14/p08/p08_10_audit_and_incident_review.svg)
 
-*Figure 10: Audit logs and incident review*
+*Figure 10: Audit logs and incident review.*
 
 ---
 
@@ -934,7 +934,7 @@ It effectively moves platform engineering from "conceptually correct" to "delive
 
 ![Figure 11: Check pipeline and consistency validation](../../images/part14/p08/p08_11_validation_pipeline.svg)
 
-*Figure 11: Check pipeline and consistency validation*
+*Figure 11: Check pipeline and consistency validation.*
 
 ---
 

@@ -49,7 +49,7 @@ The labeling-assistance agent is an intelligent co-pilot for annotators. It does
 
 ![Four dimensions of labeling-assistance agents](../../images/part10/ai_agent_decision_workflow_ch33_01.svg)
 
-*Figure 33-1: Four dimensions of labeling-assistance agents*
+*Figure 33-1: Four dimensions of labeling-assistance agents.*
 
 **Task explanation.** When annotation guidelines change or new dimensions are added, the agent parses updates, generates examples, and highlights common mistakes. For complex tasks, such as multi-turn dialogue quality scoring, it decomposes standards into checklists.
 
@@ -119,7 +119,7 @@ The core loop is a controlled generate-verify-filter pipeline.
 
 ![Synthetic data agent closed-loop pipeline](../../images/part10/ai_agent_decision_workflow_ch33_02.svg)
 
-*Figure 33-2: Synthetic data agent closed-loop pipeline*
+*Figure 33-2: Synthetic data agent closed-loop pipeline.*
 
 **Seed expansion.** Diversity depends on seed diversity. The agent extracts semantic features, intent types, and difficulty levels from high-quality labeled samples, then identifies under-covered types and sparse difficulty bands.
 

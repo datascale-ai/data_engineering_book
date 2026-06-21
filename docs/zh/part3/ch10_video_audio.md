@@ -54,7 +54,7 @@
 
 ![图10-1：音视频对齐分布式管线图](../../images/part3/av_sample_pipeline.svg)
 
-*图10-1：音视频对齐分布式管线图（Audio-Video Pipeline: Temporal Alignment） —— 左侧原始 Video Lake 中的混合视频被剥离为视觉（Visual Track）和声学（Acoustic Track）双轨并行管线，视觉帧提取器与声学分离器各自提取特征后，最终汇集入跨模态时间对齐引擎（Temporal Alignment Engine），生成带时间戳闭合约束的多模态输入样本（Aligned Multimodal JSONL）。来源：本书自绘；Alt text：音视频对齐分布式管线图，展示原始视频被拆分为视觉轨、音频轨和文本轨，并通过时间对齐引擎生成 JSONL 样本。*
+*图10-1：音视频对齐分布式管线图（Audio-Video Pipeline: Temporal Alignment） —— 左侧原始 Video Lake 中的混合视频被剥离为视觉（Visual Track）和声学（Acoustic Track）双轨并行管线，视觉帧提取器与声学分离器各自提取特征后，最终汇集入跨模态时间对齐引擎（Temporal Alignment Engine），生成带时间戳闭合约束的多模态输入样本（Aligned Multimodal JSONL）。来源：本书自绘。*
 
 ### 10.2.1 视觉提取：镜头边界检测与场景动态切片（Scene Segmentation）
 
@@ -65,7 +65,7 @@
 
 ![图10-2：自适应镜头边界检测与语义防泄漏架构图](../../images/part3/av_shot_boundary_hsv.svg)
 
-*图10-2：自适应镜头边界检测与语义防泄漏架构图（Adaptive Shot Boundary Detection & Semantic Leakage Prevention） —— 展示双轨特征侦测逻辑：上层提取 HSV 多通道色彩空间聚合差分，下层提取光流像素位移（Optical Flow）以捕捉细微运动姿态。两种张量差分在右侧汇入“双重阈值路由（Dual-Threshold Triage）”。当突变分值 $\Delta$ 超过硬切阈值（Hard Cut Threshold）时，引擎切分片段，避免场景转换导致视觉切片语义泄漏。来源：本书自绘；Alt text：自适应镜头边界检测图，展示 HSV 差分、光流差分和双阈值路由如何共同判断镜头切分点。*
+*图10-2：自适应镜头边界检测与语义防泄漏架构图（Adaptive Shot Boundary Detection & Semantic Leakage Prevention） —— 展示双轨特征侦测逻辑：上层提取 HSV 多通道色彩空间聚合差分，下层提取光流像素位移（Optical Flow）以捕捉细微运动姿态。两种张量差分在右侧汇入“双重阈值路由（Dual-Threshold Triage）”。当突变分值 $\Delta$ 超过硬切阈值（Hard Cut Threshold）时，引擎切分片段，避免场景转换导致视觉切片语义泄漏。来源：本书自绘。*
 
 2. **自适应的抽帧过滤法（Adaptive Sub-sampling）**
    切片完成后，长达 20 秒的镜头虽然逻辑连贯，但在动作幅度上可能变化很小。工厂会部署小模型，持续验证当前帧与上一保留帧在稠密视觉特征（如 DINOv2 (Oquab et al. 2023) Embedding）上的位移距离。只有超过预设欧氏距离阈值时，才予以保留。最终，一段原本包含大量相邻帧的切片，会被压缩成少量关键帧。压缩比例取决于帧率、动作密度和阈值设置，应通过抽样回放确认没有切断关键动作。
@@ -80,7 +80,7 @@
 
 ![图10-3：大规模 ASR 提取与时间轴动态校准对比图](../../images/part3/asr_whisperx_comparison.svg)
 
-*图10-3：大规模 ASR 提取与时间轴动态校准对比图（Large-Scale ASR Extraction & Temporal Calibration） —— 展示传统 ASR 管道在长序列中可能产生累积性时间漂移（Cumulative Temporal Drift）和语义错误（将 `I love apples.` 误听写为 `maples.`）；中间展示 WhisperX 通过 VAD 切分、多路声学解码与 DTW（音素级强制对齐）矩阵进行时间校准；底部展示词汇 Token 与音频波谷通过垂直虚线对齐后的输出。来源：本书自绘；Alt text：ASR 提取与时间轴校准对比图，展示传统 ASR 漂移、WhisperX 校准和词级时间戳对齐结果。*
+*图10-3：大规模 ASR 提取与时间轴动态校准对比图（Large-Scale ASR Extraction & Temporal Calibration） —— 展示传统 ASR 管道在长序列中可能产生累积性时间漂移（Cumulative Temporal Drift）和语义错误（将 `I love apples.` 误听写为 `maples.`）；中间展示 WhisperX 通过 VAD 切分、多路声学解码与 DTW（音素级强制对齐）矩阵进行时间校准；底部展示词汇 Token 与音频波谷通过垂直虚线对齐后的输出。来源：本书自绘。*
 
 #### B. 底噪分离与语音增强（Denoiser Layer）
 并非所有视频都拥有演播室级别的隔音。大量野外采集数据混杂强风噪或机械共鸣。这就需要使用 Demucs (Défossez et al. 2019) 或基于深度学习的音频分离算法（Source Separation），从混响光谱中分离背景音乐（BGM）、环境声（Environment Noise）和人声（Vocal）。
@@ -99,7 +99,7 @@
 
 ![图10-4：跨模态时序校准与几何对齐架构图](../../images/part3/av_alignment_diagram.svg)
 
-*图10-4：跨模态时序校准与几何对齐架构图（Cross-Modal Geometric & Temporal Alignment） —— 顶端青色轨道表示视觉关键帧（Visual Modality），中段灰色轨道表示声学特征（Acoustic Modality），底端珊瑚色轨道表示离散文本 Token（Discrete Textual Tokens）。中央时间轴在 `t=4.2s` 处将“端起水杯的视觉动作”、“波谷处的声学特征”与 `<start:4.2s> "Water cup"` 文本标签绑定，最终生成统一的 Mixed Token Pipeline / JSONL 样本。来源：本书自绘；Alt text：跨模态时序校准图，展示视觉帧、音频波形和文本 Token 如何通过同一时间轴锚点绑定。*
+*图10-4：跨模态时序校准与几何对齐架构图（Cross-Modal Geometric & Temporal Alignment） —— 顶端青色轨道表示视觉关键帧（Visual Modality），中段灰色轨道表示声学特征（Acoustic Modality），底端珊瑚色轨道表示离散文本 Token（Discrete Textual Tokens）。中央时间轴在 `t=4.2s` 处将“端起水杯的视觉动作”、“波谷处的声学特征”与 `<start:4.2s> "Water cup"` 文本标签绑定，最终生成统一的 Mixed Token Pipeline / JSONL 样本。来源：本书自绘。*
 
 大型团队通常会基于时间戳矩阵部署 **Multi-modal Temporal Alignment Engine（多模时序融合校验门）**。一旦前端识别器给出类似 `<start:2.1s><end:4.5s>` 的坐标界限，代码需要通过浮点数判定逻辑，反切视频对应帧。最终，对齐信息不会只以视频形式交给大模型，而是被转换为包含元数据标签（Metadata Tags）、类似 HTML 的**多轨混拼长序列（Mixed Token Pipeline）**，以结构化 JSONL 方式交给训练 DataLoader。
 

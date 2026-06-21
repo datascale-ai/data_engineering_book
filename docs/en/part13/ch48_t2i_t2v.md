@@ -156,7 +156,7 @@ More sophisticated systems additionally route samples by data source, aesthetic 
 
 ![Figure 48-1: T2I Data Pipeline](../../images/part13/ch48_01_t2i_data_pipeline.svg)
 
-*Figure 48-1: T2I Data Pipeline*
+*Figure 48-1: T2I Data Pipeline.*
 
 ---
 
@@ -265,7 +265,7 @@ This reveals that a T2V data pipeline is not a linear "clean then output" proces
 
 ![Figure 48-2: T2V Data Pipeline](../../images/part13/ch48_02_t2v_data_pipeline.svg)
 
-*Figure 48-2: T2V Data Pipeline*
+*Figure 48-2: T2V Data Pipeline.*
 
 
 ---
@@ -370,7 +370,7 @@ The core principle of multi-tier filtering is therefore: safety risk takes prece
 
 ![Figure 48-3: Multi-Tier Aesthetic / Copyright / Safety Filtering Architecture](../../images/part13/ch48_03_multistage_filtering_architecture.svg)
 
-*Figure 48-3: Multi-Tier Aesthetic / Copyright / Safety Filtering Architecture*
+*Figure 48-3: Multi-Tier Aesthetic / Copyright / Safety Filtering Architecture.*
 
 
 

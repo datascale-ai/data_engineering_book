@@ -164,7 +164,7 @@ The final VLM-generated recaptioning data is packaged as JSONL with strict metad
 
 ![Figure 9-1: Recaptioning and OCR dual-track enhancement](../../images/part3/recaptioning_ocr_pipeline.svg)
 
-*Figure 9-1: Recaptioning and OCR dual-track enhancement. The left side shows a semantic vision track for dense narrative descriptions; the right side shows a structural text track containing DOM layout segmentation and table matrices. The two streams are fused into a unified hybrid supervision template. Source: drawn for this book. Alt text: a recaptioning and OCR dual-track enhancement diagram showing visual recaptioning, OCR structure extraction, BBox injection, and hybrid supervision.*
+*Figure 9-1: Recaptioning and OCR dual-track enhancement. The left side shows a semantic vision track for dense narrative descriptions; the right side shows a structural text track containing DOM layout segmentation and table matrices. The two streams are fused into a unified hybrid supervision template. Source: drawn for this book.*
 
 At this point, a recaptioning pipeline for natural images and pure scenes has been established. The next category, high-density text, most strongly affects enterprise VLM deployment: long-document reading and complex business-report structured parsing.
 
@@ -196,7 +196,7 @@ After multi-level OCR extraction, the core engineering difficulty is **absolute 
 
 ![Figure 9-2: Document structure layout-to-token mapping](../../images/part3/document_structure_sample.svg)
 
-*Figure 9-2: Document structure layout-to-token mapping. The left side shows a fragment of a two-column academic report. The system first uses bounding-box arrays to locate titles, body text, charts, and formula regions. The right side shows how outputs from specialized models such as Nougat and PaddleOCR are post-processed into hierarchical Markdown text and rich text streams with discrete coordinates `[x_y]`. Source: drawn for this book. Alt text: document layout-to-token mapping showing a page converted by layout detection, OCR, formula parsing, and coordinate labeling into hierarchical text.*
+*Figure 9-2: Document structure layout-to-token mapping. The left side shows a fragment of a two-column academic report. The system first uses bounding-box arrays to locate titles, body text, charts, and formula regions. The right side shows how outputs from specialized models such as Nougat and PaddleOCR are post-processed into hierarchical Markdown text and rich text streams with discrete coordinates `[x_y]`. Source: drawn for this book.*
 
 ### 9.3.2 How Text Engines Reduce Ultra-High-Resolution Input Burden
 

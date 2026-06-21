@@ -52,7 +52,7 @@ Against this backdrop, the simplistic understanding of RAG as merely "retrieval 
 
 ![Figure 21-1: Data transformation pipeline in a RAG system](../../images/part7/图21_1.svg)
 
-*Figure 21-1: Data transformation pipeline in a RAG system*
+*Figure 21-1: Data transformation pipeline in a RAG system.*
 
 
 
@@ -83,7 +83,7 @@ If this structural skeleton is destroyed during parsing and chunking, even if ev
 
 
 
-*Figure 21-2: Structural changes from a raw document to RAG-usable knowledge units*
+*Figure 21-2: Structural changes from a raw document to RAG-usable knowledge units.*
 
 
 
@@ -121,7 +121,7 @@ Evaluation studies such as RAGAS and RAGTruth emphasize that RAG errors must be 
 
 ![Figure 21-3: How RAG errors accumulate along the data pipeline](../../images/part7/图21_3.svg)
 
-*Figure 21-3: How RAG errors accumulate along the data pipeline*
+*Figure 21-3: How RAG errors accumulate along the data pipeline.*
 
 
 
@@ -295,7 +295,7 @@ Therefore, document parsing usually needs to be performed at three levels: layou
 
 ![Figure 21-5: Layout parsing and structure reconstruction of complex documents](../../images/part7/图21_5.svg)
 
-*Figure 21-5: Layout parsing and structure reconstruction of complex documents*
+*Figure 21-5: Layout parsing and structure reconstruction of complex documents.*
 
 
 
@@ -384,7 +384,7 @@ Fixed-length chunking is the most common initial approach. For example, slice ev
 
 ![Figure 21-6: How different chunking strategies affect semantic integrity](../../images/part7/图21_6.svg)
 
-*Figure 21-6: How different chunking strategies affect semantic integrity*
+*Figure 21-6: How different chunking strategies affect semantic integrity.*
 
 
 
@@ -444,7 +444,7 @@ Production-grade RAG systems therefore commonly use multi-granularity indexes or
 
 ![Figure 21-7: Parent–child indexes and multi-granularity retrieval](../../images/part7/图21_7.svg)
 
-*Figure 21-7: Parent–child indexes and multi-granularity retrieval*
+*Figure 21-7: Parent–child indexes and multi-granularity retrieval.*
 
 
 
@@ -492,7 +492,7 @@ The value of reranking is especially clear in complex questions. For simple fact
 
 ![Figure 21-8: Two-stage retrieval with hybrid search and reranking](../../images/part7/图21_8.svg)
 
-*Figure 21-8: Two-stage retrieval with hybrid search and reranking*
+*Figure 21-8: Two-stage retrieval with hybrid search and reranking.*
 
 
 
@@ -624,7 +624,7 @@ Online feedback must therefore be combined with full-pipeline logging. As shown 
 
 ![Figure 21-9: Evaluation, feedback, and optimization loop in a RAG system](../../images/part7/图21_9.svg)
 
-*Figure 21-9: Evaluation, feedback, and optimization loop in a RAG system*
+*Figure 21-9: Evaluation, feedback, and optimization loop in a RAG system.*
 
 
 

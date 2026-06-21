@@ -69,7 +69,7 @@ Production data platforms usually divide these alignment objects by granularity 
 
 ![Figure 11-1: Three-level cross-modal alignment pyramid](../../images/part3/cross_modal_alignment_hierarchy.svg)
 
-*Figure 11-1: Three-level cross-modal alignment pyramid. From micro to macro, the bottom is object-level alignment based on BBox, the middle is segment-level alignment based on DTW temporal synchronization, and the top is document-level alignment based on long-context interleaved ordering. Source: drawn for this book. Alt text: a cross-modal alignment pyramid showing object-level, segment-level, and document-level alignment.*
+*Figure 11-1: Three-level cross-modal alignment pyramid. From micro to macro, the bottom is object-level alignment based on BBox, the middle is segment-level alignment based on DTW temporal synchronization, and the top is document-level alignment based on long-context interleaved ordering. Source: drawn for this book.*
 
 #### 1. Object-level / micro-alignment: anchoring boxes to words
 
@@ -122,7 +122,7 @@ This JSONL schema is a foundation for fusion training data. It decouples text an
 
 ![Figure 11-2: Multimodal fusion and hard-negative mining pipeline](../../images/part3/fusion_training_sample_design.svg)
 
-*Figure 11-2: Multimodal fusion sample design. Independent image, audio, and text pools are assembled into JSONL in the middle. Placeholder grids map them into discrete tokens, and the final result is packed into uniform fusion tensor blocks for downstream pretraining. Source: drawn for this book. Alt text: a multimodal fusion sample design diagram showing image, audio, and text pools mapped through JSONL and placeholders into unified training samples.*
+*Figure 11-2: Multimodal fusion sample design. Independent image, audio, and text pools are assembled into JSONL in the middle. Placeholder grids map them into discrete tokens, and the final result is packed into uniform fusion tensor blocks for downstream pretraining. Source: drawn for this book.*
 
 ### 11.3.2 Multimodal Data Mixing: Controlling Capability Forgetting
 

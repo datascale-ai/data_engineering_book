@@ -139,7 +139,7 @@ A data asset typically passes through a standardized registration process before
 
 ![Complete workflow from data asset creation to use](../../images/part9/图27_1.svg)
 
-*Figure 27-1: Data Asset Registration and Onboarding Workflow*
+*Figure 27-1: Data Asset Registration and Onboarding Workflow.*
 
 
 
@@ -285,7 +285,7 @@ The true power of lineage is most fully realized in impact analysis scenarios. C
 
 ![Data Lineage Graph](../../images/part9/图27_2.svg)
 
-*Figure 27-2: Data Lineage Graph*
+*Figure 27-2: Data Lineage Graph.*
 
 
 
@@ -361,7 +361,7 @@ As shown in Figure 27-3, the states above can be abstracted as a state machine: 
 
 ![Data Asset Lifecycle State Transition Diagram](../../images/part9/图27_3.svg)
 
-*Figure 27-3: Data Asset Lifecycle State Machine*
+*Figure 27-3: Data Asset Lifecycle State Machine.*
 
 
 
@@ -501,7 +501,7 @@ In cross-team governance practice, the health of the permissions dimension is pa
 
 ![Permissions Management Matrix Based on Roles and Purposes](../../images/part9/图27_4.svg)
 
-*Figure 27-4: Permissions Management Matrix Example*
+*Figure 27-4: Permissions Management Matrix Example.*
 
 
 

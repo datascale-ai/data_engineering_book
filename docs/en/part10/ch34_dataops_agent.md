@@ -51,7 +51,7 @@ The first capability of a DataOps Agent is intelligent alert aggregation. The ag
 
 ![Alert-to-root-cause agent flow](../../images/part10/ai_agent_decision_workflow_ch34_01.svg)
 
-*Figure 34-1: Alert-to-root-cause agent flow*
+*Figure 34-1: Alert-to-root-cause agent flow.*
 
 Data sources:
 
@@ -143,7 +143,7 @@ Rollback is high risk and requires approval.
 
 ![Rollback approval workflow](../../images/part10/ai_agent_decision_workflow_ch34_02.svg)
 
-*Figure 34-2: Rollback approval workflow*
+*Figure 34-2: Rollback approval workflow.*
 
 *Table 34-3: Approval matrix for rollback and repair*
 
@@ -175,7 +175,7 @@ Self-healing is bounded. The agent may only execute operations in a predefined s
 
 ![Pipeline self-healing decision flow](../../images/part10/ai_agent_decision_workflow_ch34_03.svg)
 
-*Figure 34-3: Pipeline self-healing decision flow*
+*Figure 34-3: Pipeline self-healing decision flow.*
 
 The key principle is: **repair known failure patterns; do not explore unknown problems autonomously.** If a new failure pattern appears, the agent escalates it and records the pattern. After human-confirmed repair, that pattern may enter the future self-healing set.
 

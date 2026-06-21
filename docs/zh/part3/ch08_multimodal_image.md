@@ -57,7 +57,7 @@
 
 ![图8-1：图文数据工程全景图](../../images/part3/multimodal_data_panorama.svg)
 
-*图8-1：多模态图文数据工程全景图 —— 从最左侧的 DOM 树抓取与 PDF 解析起始，依次穿过格式解析、水印过滤、CLIP 语义对齐、直至最右侧的交错序列拼装与 Token 化表示。分布式计算与 Metadata 是横跨底层的核心支撑。来源：本书自绘；Alt text：图文数据工程全景图，展示 DOM 抽取、图片下载、格式解析、过滤、语义对齐、重标注和序列拼装之间的流程。*
+*图8-1：多模态图文数据工程全景图 —— 从最左侧的 DOM 树抓取与 PDF 解析起始，依次穿过格式解析、水印过滤、CLIP 语义对齐、直至最右侧的交错序列拼装与 Token 化表示。分布式计算与 Metadata 是横跨底层的核心支撑。来源：本书自绘。*
 
 ---
 
@@ -238,7 +238,7 @@ def filter_by_semantic_score(image, text_caption, threshold=0.25):
 
 ![图8-2：图像语义对齐与过滤流程图](../../images/part3/image_semantic_alignment_flow.svg)
 
-*图8-2：图像语义对齐与过滤流程图 —— 展示基于 CLIP 与启发式规则的量化决策树，将低匹配样本筛出，将中等匹配但高价值图片送往 Re-captioning 流水线，最后将图片 Zero-pad 或动态切分后存入训练池。来源：本书自绘；Alt text：图像语义对齐与过滤流程图，展示质量过滤、CLIP 打分、重标注、动态切分和训练池入库之间的路径。*
+*图8-2：图像语义对齐与过滤流程图 —— 展示基于 CLIP 与启发式规则的量化决策树，将低匹配样本筛出，将中等匹配但高价值图片送往 Re-captioning 流水线，最后将图片 Zero-pad 或动态切分后存入训练池。来源：本书自绘。*
 
 ---
 
@@ -254,7 +254,7 @@ def filter_by_semantic_score(image, text_caption, threshold=0.25):
 
 ![图8-3：AnyRes 动态多分辨率切割算法原理图](../../images/part3/anyres_dynamic_patching.svg)
 
-*图8-3：AnyRes 动态多分辨率切割算法原理图 —— 展示 AnyRes 的核心思想：左侧的超长全景图（High-Res Input）不再被强制压缩，而是被自适应网格（Adaptive Grid）划分为 $1 \times 3$ 个原生分辨率的局部图像块（Local Patches），同时结合右上方全局缩略图（Global Thumbnail）一同送入 Vision Encoder，以保留高频局部特征与宏观语义。来源：本书自绘；Alt text：AnyRes 动态多分辨率切割算法原理图，展示全景图被切成局部块并与全局缩略图共同输入视觉编码器。*
+*图8-3：AnyRes 动态多分辨率切割算法原理图 —— 展示 AnyRes 的核心思想：左侧的超长全景图（High-Res Input）不再被强制压缩，而是被自适应网格（Adaptive Grid）划分为 $1 \times 3$ 个原生分辨率的局部图像块（Local Patches），同时结合右上方全局缩略图（Global Thumbnail）一同送入 Vision Encoder，以保留高频局部特征与宏观语义。来源：本书自绘。*
 
 **AnyRes 原理与核心策略详解：**
 1. **基础补零（Zero-padding / Letterboxing）策略**：对于不想失去原始横纵比，且分辨率未溢出的图，在周围补全黑色或均值边框凑成正方块，使得模型能学到相对的无失真几何形状。

@@ -336,7 +336,7 @@ To more intuitively present the risk formation mechanism, the propagation path o
 
 ![Figure 17-1: Synthetic Data Risk Propagation Mechanism Diagram](../../images/part5/图17_1.svg)
 
-*Figure 17-1: Synthetic Data Risk Propagation Mechanism Diagram*
+*Figure 17-1: Synthetic Data Risk Propagation Mechanism Diagram.*
 
 
 ---
@@ -497,7 +497,7 @@ To more intuitively present the governance chain, the decision process by which 
 
 ![Figure 17-2: Synthetic Data Quality Gate and Rollback Strategy Flowchart](../../images/part5/图17_2.svg)
 
-*Figure 17-2: Synthetic Data Quality Gate and Rollback Strategy Flowchart*
+*Figure 17-2: Synthetic Data Quality Gate and Rollback Strategy Flowchart.*
 
 
 

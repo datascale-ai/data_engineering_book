@@ -373,7 +373,7 @@ Therefore, the relationship between task modeling and workflow should not be und
 
 ![Figure 14-1: LLM Annotation Platform Workflow Diagram](../../images/part4/图14_1.svg)
 
-*Figure 14-1: LLM Annotation Platform Workflow Diagram*
+*Figure 14-1: LLM Annotation Platform Workflow Diagram.*
 
 
 **Table 14-1: Annotation Role Responsibilities and Permissions**
@@ -472,7 +472,7 @@ From a management perspective, the core of human–machine collaborative QA lies
 
 ![Figure 14-2: Human–Machine Collaborative QA Loop Diagram](../../images/part4/图14_2.svg)
 
-*Figure 14-2: Human–Machine Collaborative QA Loop Diagram*
+*Figure 14-2: Human–Machine Collaborative QA Loop Diagram.*
 
 
 ## 14.4 Operational Metrics and Vendor Governance

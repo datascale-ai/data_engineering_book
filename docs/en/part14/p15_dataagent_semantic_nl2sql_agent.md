@@ -149,13 +149,13 @@ The project architecture has six layers. The following figure organizes entry, o
 
 ![Layered architecture for a DataAgent enterprise semantic BI assistant](../../images/part14/p15_dataagent_semantic_bi_layered_architecture_en.png)
 
-*Figure P15-1: Layered architecture for the DataAgent enterprise semantic BI assistant*
+*Figure P15-1: Layered architecture for the DataAgent enterprise semantic BI assistant.*
 
 The overall architecture diagram from the DataAgent repository is:
 
 ![DataAgent overall architecture](../../images/part14/p15_dataagent_agent_excalidraw_en.png)
 
-*Figure P15-2: Overall architecture of the DataAgent repository*
+*Figure P15-2: Overall architecture of the DataAgent repository.*
 
 ### 4.1 Interface Layer
 
@@ -585,7 +585,7 @@ A complete BI task can be described as:
 
 ![Runtime flow of the DataAgent enterprise semantic BI assistant](../../images/part14/p15_dataagent_semantic_bi_sequence_en.svg)
 
-*Figure P15-3: Runtime flow of the DataAgent enterprise semantic BI assistant*
+*Figure P15-3: Runtime flow of the DataAgent enterprise semantic BI assistant.*
 
 ### 10.2 Run with SDK
 
