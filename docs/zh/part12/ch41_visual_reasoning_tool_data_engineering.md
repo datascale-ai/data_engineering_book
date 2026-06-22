@@ -1,6 +1,6 @@
 # 第41章：视觉推理数据工程：图表证据、医学图像与工具调用轨迹
 
-<div class="chapter-authors">徐霖（Lin Xu）；陈昕宇（Xinyu Chen）</div>
+<div class="chapter-authors">徐霖（Lin Xu）；陈新宇（Xinyu Chen）</div>
 
 ## 摘要
 
@@ -98,9 +98,14 @@
 
 #### 案例A.3.1 单张复合信息图的子图分层结构
 
-![图41-4：多图表信息图样本（鲨鱼袭击）](../../images/part12/ch39_04_shark_attack_infographic.jpg)
+<div style="display: flex; gap: 4px; align-items: center;">
+    <img src="../../images/part12/ch39_where-the-most-shark-attacks-occur-in-the-united-states_1.jpg" height="300">
+    <img src="../../images/part12/ch39_where-the-most-shark-attacks-occur-in-the-united-states_2.jpg" height="300">
+    <img src="../../images/part12/ch39_where-the-most-shark-attacks-occur-in-the-united-states_3.jpg" height="300">
+    <img src="../../images/part12/ch39_where-the-most-shark-attacks-occur-in-the-united-states_4.jpg" height="300">
+</div>
 
-*图 41-4：多图表信息图样本（鲨鱼袭击）。该信息图包含四个独立子图，内容涉及美国历史累计鲨鱼袭击县域排行榜、美国近 10 年各州鲨鱼袭击汇总统计、全美年均意外死亡人数统计。*
+*图 41-4：多图表信息图样本（鲨鱼袭击）。该信息图包含四个独立子图，内容涉及美国历史累计鲨鱼袭击县域排行榜、美国近 10 年各州鲨鱼袭击汇总统计、全美年均意外死亡人数统计。原图纵向幅面远大于横向幅面，直接呈现可读性不佳，故拆解为多张子图横向排布展示。*
 
 案例原图为一张一体化科普信息图，内部被天然划分为四大独立子图分区，四个子图分属不同图表类型、不同统计口径、不同数据维度，同框排布、共用页面标题与侧边注释：
 
