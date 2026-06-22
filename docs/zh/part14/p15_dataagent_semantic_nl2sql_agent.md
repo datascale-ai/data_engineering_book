@@ -5,20 +5,13 @@
 ## 摘要
 本章以 DataAgent 为项目实战对象，构建一个面向企业结构化数据的语义问数助手。项目目标不是让模型直接“猜 SQL”，而是把自然语言问题、业务语义层、数据库元数据、NL2SQL 子 Agent、结果文件、报告生成和运行审计组织成一条可复用的数据工程链路。
 
-如果按工程顺序阅读，本章对应的是一条完整链路：
+如果按工程顺序阅读，本章对应的是一条从业务问题到可信交付的完整链路，如图 P15-1 所示。
 
-```text
-业务问题
-  -> 场景提示词与任务规划
-  -> 语义层 schema 召回
-  -> NL2SQL 子 Agent
-  -> SQL 校验与执行
-  -> CSV/SQL 资产落盘
-  -> 主 Agent 汇总与报告生成
-  -> 运行轨迹与评估验收
-```
+![DataAgent 语义问数助手工程链路](../../images/part14/p15_dataagent_engineering_chain_en.png)
 
-这一结构对应的核心目标，是把企业问数从一次性对话能力，改造成可配置、可审计、可扩展的数据应用能力。
+*图 P15-1：DataAgent 语义问数助手工程链路。*
+
+这条链路从业务问题开始，先由场景提示词和任务规划明确分析目标、指标口径和输出要求，再通过语义层完成 schema 召回，使模型能够获得表、字段、业务描述和关联关系等上下文。随后，主 Agent 将结构化查询任务委托给 NL2SQL 子 Agent，由子 Agent 生成 SQL，并经过校验与执行得到可信结果。执行后的 SQL 和 CSV 不只是临时中间产物，而是进入 workspace 的可复核资产；主 Agent 基于这些资产汇总结果并生成报告。最后，运行轨迹、工具调用状态和验收指标被保留下来，用于审计、回归测试和后续迭代。这一结构对应的核心目标，是把企业问数从一次性对话能力，改造成可配置、可审计、可扩展的数据应用能力。
 
 本章重点围绕四条主线展开：
 
@@ -144,11 +137,11 @@ DataAgent 的价值在于把这些环节组织成一个可配置的 Agent 数据
 
 ## 4. 整体架构：从业务问题到可审计数据资产
 
-本章的语义问数助手不是孤立的 NL2SQL 组件，而是 DataGallery 生态中的一个应用形态。它依赖 DataAgent 完成任务理解、工具编排和执行控制，依赖 Semantic Service 承载元数据、指标口径和语义检索能力，并通过 Data Studio 与 Data Ops 将问数能力进一步连接到业务应用、评测、观测和持续改进环节。图 P15-1 展示了这一项目所处的整体技术关系。
+本章的语义问数助手不是孤立的 NL2SQL 组件，而是 DataGallery 生态中的一个应用形态。它依赖 DataAgent 完成任务理解、工具编排和执行控制，依赖 Semantic Service 承载元数据、指标口径和语义检索能力，并通过 Data Studio 与 Data Ops 将问数能力进一步连接到业务应用、评测、观测和持续改进环节。图 P15-2 展示了这一项目所处的整体技术关系。
 
 ![围绕 DataAgent、Semantic Service、Data Studio、Data Ops 与基础设施展开的 DataGallery 生态架构](../../images/part14/p15_datagallery_architecture_vector.svg)
 
-*图 P15-1：围绕 DataAgent 展开的 DataGallery 生态架构。*
+*图 P15-2：围绕 DataAgent 展开的 DataGallery 生态架构。*
 
 从核心能力看，图中左侧的 DataGallery Core 是语义问数助手的主要承载区。Data Intelligence Framework 提供 DataAgent SDK，并通过 Data Agent Engine 完成意图理解、schema linking、SQL 生成、执行校验、反思修复和置信度选择；Data Agent Shell 则承担权限控制、工具护栏和隐私感知路由等运行边界控制。对于企业问数场景，这些能力共同决定了模型是否能够在受控范围内理解业务问题、选择合适工具，并把自然语言请求转化为可执行的数据操作。
 
@@ -551,7 +544,7 @@ CORE:
 
 ![DataAgent 企业语义问数助手运行流程](../../images/part14/p15_dataagent_semantic_bi_sequence.svg)
 
-*图 P15-2：DataAgent 企业语义问数助手运行流程。*
+*图 P15-3：DataAgent 企业语义问数助手运行流程。*
 
 ### 10.2 使用 SDK 运行
 

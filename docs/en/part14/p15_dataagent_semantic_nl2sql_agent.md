@@ -6,20 +6,13 @@
 
 This project uses DataAgent to build a semantic BI assistant for enterprise structured data. The goal is not to let a model directly "guess SQL." Instead, the project organizes natural-language questions, the business semantic layer, database metadata, an NL2SQL sub-agent, result files, report generation, and runtime audit trails into a reusable data engineering chain.
 
-Read in engineering order, the chain is:
+Read in engineering order, the project follows a complete chain from business question to trustworthy delivery, as shown in Figure P15-1.
 
-```text
-business question
-  -> scenario prompt and task planning
-  -> semantic-layer schema retrieval
-  -> NL2SQL sub-agent
-  -> SQL validation and execution
-  -> CSV/SQL asset persistence
-  -> main-agent summary and report generation
-  -> execution trace and acceptance evaluation
-```
+![DataAgent semantic BI assistant engineering chain](../../images/part14/p15_dataagent_engineering_chain_en.png)
 
-The core objective is to turn enterprise BI Q&A from a one-off conversational capability into a configurable, auditable, and extensible data application.
+*Figure P15-1: Engineering chain of the DataAgent semantic BI assistant.*
+
+The chain starts with a business question. A scenario prompt and task-planning step then clarifies the analysis goal, metric definitions, filters, and expected output. Semantic-layer schema retrieval supplies the model with table, field, business-description, and relationship context before the main agent delegates structured querying to the NL2SQL sub-agent. The generated SQL is validated and executed, and the resulting SQL and CSV files are persisted as reviewable workspace assets rather than treated as transient intermediate outputs. The main agent uses those assets to summarize results and generate a report. Finally, execution traces, tool states, and acceptance signals are retained for audit, regression testing, and future iteration. The core objective is to turn enterprise BI Q&A from a one-off conversational capability into a configurable, auditable, and extensible data application.
 
 The chapter follows four main threads:
 
@@ -145,11 +138,11 @@ This case highlights DataAgent's distinctive capabilities: NL2SQL, Semantic Serv
 
 ## 4. Overall Architecture: From Business Question to Auditable Data Asset
 
-The semantic BI assistant in this chapter is not an isolated NL2SQL component. It is an application form inside the broader DataGallery ecosystem. It uses DataAgent for task understanding, tool orchestration, and execution control; Semantic Service for metadata, metric definitions, and semantic retrieval; and Data Studio and Data Ops to connect BI capability with applications, evaluation, observation, and continuous improvement. Figure P15-1 shows the architectural relationships that support this project.
+The semantic BI assistant in this chapter is not an isolated NL2SQL component. It is an application form inside the broader DataGallery ecosystem. It uses DataAgent for task understanding, tool orchestration, and execution control; Semantic Service for metadata, metric definitions, and semantic retrieval; and Data Studio and Data Ops to connect BI capability with applications, evaluation, observation, and continuous improvement. Figure P15-2 shows the architectural relationships that support this project.
 
 ![DataGallery ecosystem architecture around DataAgent, Semantic Service, Data Studio, Data Ops, and foundation infrastructure](../../images/part14/p15_datagallery_architecture_vector.svg)
 
-*Figure P15-1: DataGallery ecosystem architecture around DataAgent.*
+*Figure P15-2: DataGallery ecosystem architecture around DataAgent.*
 
 At the core of the architecture, DataGallery Core provides the capabilities used most directly by the semantic BI assistant. The Data Intelligence Framework exposes the DataAgent SDK, while the Data Agent Engine is responsible for intent understanding, schema linking, SQL generation, execution validation, reflection and repair, and confidence selection. The Data Agent Shell defines runtime boundaries through privilege control, tool guardrails, and privacy-aware routing. In enterprise BI, these capabilities determine whether the model can understand a business question, select the right tool, and translate natural language into a controlled data operation.
 
@@ -585,7 +578,7 @@ A complete BI task can be described as:
 
 ![Runtime flow of the DataAgent enterprise semantic BI assistant](../../images/part14/p15_dataagent_semantic_bi_sequence_en.svg)
 
-*Figure P15-2: Runtime flow of the DataAgent enterprise semantic BI assistant.*
+*Figure P15-3: Runtime flow of the DataAgent enterprise semantic BI assistant.*
 
 ### 10.2 Run with SDK
 
