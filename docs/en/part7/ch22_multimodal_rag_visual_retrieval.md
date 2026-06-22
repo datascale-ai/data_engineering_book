@@ -542,17 +542,17 @@ At the evaluation level, the chapter decomposed visual retrieval errors into par
 
 ## References
 
-Xu Y, Li M, Cui L, Huang S, Wei F, Zhou M (2020) LayoutLM: Pre-training of Text and Layout for Document Image Understanding. In: Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining, pp 1192–1200.
+Xu Y, Li M, Cui L, Huang S, Wei F, Zhou M (2020) LayoutLM: Pre-training of Text and Layout for Document Image Understanding. In: Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining, pp 1192–1200. https://doi.org/10.1145/3394486.3403172.
 
-Huang Y, Lv T, Cui L, Lu Y, Wei F (2022) LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. In: Proceedings of the 30th ACM International Conference on Multimedia, pp 4083–4091.
+Huang Y, Lv T, Cui L, Lu Y, Wei F (2022) LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. In: Proceedings of the 30th ACM International Conference on Multimedia, pp 4083–4091. https://doi.org/10.1145/3503161.3548112.
 
-Appalaraju S, Jasani B, Kota B U, Xie Y, Manmatha R (2021) DocFormer: End-to-End Transformer for Document Understanding. In: Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pp 993–1003.
+Appalaraju S, Jasani B, Kota B U, Xie Y, Manmatha R (2021) DocFormer: End-to-End Transformer for Document Understanding. In: Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV), pp 993–1003. https://doi.org/10.1109/iccv48922.2021.00103.
 
-Kim G, Hong T, Yim M, Nam J, Park J, Yim J, Hwang W, Yun S, Han D, Park S (2022) OCR-free Document Understanding Transformer. In: Proceedings of the European Conference on Computer Vision (ECCV), pp 498–517.
+Kim G, Hong T, Yim M, Nam J, Park J, Yim J, Hwang W, Yun S, Han D, Park S (2022) OCR-free Document Understanding Transformer. In: Proceedings of the European Conference on Computer Vision (ECCV), pp 498–517. https://doi.org/10.1007/978-3-031-19815-1_29.
 
-Mathew M, Karatzas D, Jawahar C V (2021) DocVQA: A Dataset for VQA on Document Images. In: Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV), pp 2200–2209.
+Mathew M, Karatzas D, Jawahar C V (2021) DocVQA: A Dataset for VQA on Document Images. In: Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV), pp 2200–2209. https://doi.org/10.1109/wacv48630.2021.00225.
 
-Mathew M, Bagal V, Tito R, Karatzas D, Valveny E, Jawahar C V (2022) InfographicVQA. In: Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV), pp 1697–1706.
+Mathew M, Bagal V, Tito R, Karatzas D, Valveny E, Jawahar C V (2022) InfographicVQA. In: Proceedings of the IEEE/CVF Winter Conference on Applications of Computer Vision (WACV), pp 1697–1706. https://doi.org/10.1109/wacv51458.2022.00264.
 
 Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, Krueger G, Sutskever I (2021) Learning Transferable Visual Models From Natural Language Supervision. In: Proceedings of the 38th International Conference on Machine Learning (ICML), pp 8748–8763.
 
@@ -562,11 +562,11 @@ Li J, Li D, Savarese S, Hoi S (2023) BLIP-2: Bootstrapping Language-Image Pre-tr
 
 Lee K, Joshi M, Turc I, Hu H, Liu F, Eisenschlos J, Khandelwal U, Shaw P, Chang M-W, Toutanova K (2023) Pix2Struct: Screenshot Parsing as Pretraining for Visual Language Understanding. In: Proceedings of the 40th International Conference on Machine Learning (ICML), pp 18893–18912.
 
-Masry A, Long D X, Tan J Q, Joty S, Hoque E (2022) ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. In: Findings of the Association for Computational Linguistics: ACL 2022, pp 2263–2279.
+Masry A, Long D X, Tan J Q, Joty S, Hoque E (2022) ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. In: Findings of the Association for Computational Linguistics: ACL 2022, pp 2263–2279. https://doi.org/10.18653/v1/2022.findings-acl.177.
 
 Liu F, Piccinno F, Krichene S, Pang C, Lee K, Joshi M, Altun Y, Collier N, Eisenschlos J M (2023a) MatCha: Enhancing Visual Language Pretraining with Math Reasoning and Chart Derendering. In: Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics, pp 12756–12770.
 
-Liu F, Eisenschlos J M, Piccinno F, Krichene S, Pang C, Lee K, Joshi M, Chen W, Collier N, Altun Y (2023b) DePlot: One-shot Visual Language Reasoning by Plot-to-Table Translation. In: Findings of the Association for Computational Linguistics: ACL 2023, pp 10381–10399.
+Liu F, Eisenschlos J M, Piccinno F, Krichene S, Pang C, Lee K, Joshi M, Chen W, Collier N, Altun Y (2023b) DePlot: One-shot Visual Language Reasoning by Plot-to-Table Translation. In: Findings of the Association for Computational Linguistics: ACL 2023, pp 10381–10399. https://doi.org/10.18653/v1/2023.findings-acl.660.
 
 Ren S, He K, Girshick R, Sun J (2015) Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks. In: Advances in Neural Information Processing Systems 28, pp 91–99.
 
@@ -576,7 +576,7 @@ Kirillov A, Mintun E, Ravi N, Mao H, Rolland C, Gustafson L, Xiao T, Whitehead S
 
 Nogueira R, Cho K (2019) Passage Re-ranking with BERT. arXiv preprint arXiv:1901.04085.
 
-Es S, James J, Espinosa-Anke L, Schockaert S (2024) RAGAS: Automated Evaluation of Retrieval Augmented Generation. In: Proceedings of the 18th Conference of the European Chapter of the Association for Computational Linguistics: System Demonstrations, pp 150–158.
+Es S, James J, Espinosa-Anke L, Schockaert S (2024) RAGAS: Automated Evaluation of Retrieval Augmented Generation. In: Proceedings of the 18th Conference of the European Chapter of the Association for Computational Linguistics: System Demonstrations, pp 150–158. https://doi.org/10.18653/v1/2024.eacl-demo.16.
 
 Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503–2511.
 

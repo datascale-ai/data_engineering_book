@@ -62,7 +62,7 @@ Reproduction materials should include data source descriptions, minimal samples,
 
 ## Background and Objectives
 
-In pre-training data engineering, "Scaling Laws" (Kaplan et al. 2020) apply not only to model parameters but equally to the experimentation and validation of data recipes. In the earlier Project 1 (Mini-C4), we completed an end-to-end cleaning pipeline for a single-source corpus. However, real industrial-scale large models—such as DeepSeek-V3 (Liu et al. 2024)—are never trained on a single corpus; they are trained on a precise mixture of web pages, code, mathematics, academic papers, and other data sources.
+In pre-training data engineering, "Scaling Laws" (Kaplan et al. 2020) apply not only to model parameters but equally to the experimentation and validation of data recipes. In the earlier Project 1 (Mini-C4), we completed an end-to-end cleaning pipeline for a single-source corpus. However, real industrial-scale large models—such as DeepSeek-V3 (DeepSeek-AI et al. 2024)—are never trained on a single corpus; they are trained on a precise mixture of web pages, code, mathematics, academic papers, and other data sources.
 
 Why do we need a Mini pre-training pipeline?
 
@@ -171,7 +171,7 @@ unique.save_to_disk("./data/mixed_1b_dedup")
 
 ### Step 3: Training a 150K Super-Vocabulary Tokenizer
 
-DeepSeek-V3 (Liu et al. 2024) employs a super-vocabulary of approximately 150K entries (a substantial increase over Llama-2's 32K), which makes it highly efficient at processing Chinese text and code. In this step, we train a BPE tokenizer on the mixed and deduplicated data.
+DeepSeek-V3 (DeepSeek-AI et al. 2024) employs a super-vocabulary of approximately 150K entries (a substantial increase over Llama-2's 32K), which makes it highly efficient at processing Chinese text and code. In this step, we train a BPE tokenizer on the mixed and deduplicated data.
 
 ```python
 from tokenizers import Tokenizer, models, trainers, pre_tokenizers, normalizers
@@ -525,7 +525,7 @@ As part of Part 14, this chapter corresponds to the project-level validation of 
 
 ## References
 
-Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21–29.
+Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21–29. https://doi.org/10.1109/sequen.1997.666900.
 
 Kaplan J, McCandlish S, Henighan T, Brown T B, Chess B, Child R, Gray S, Radford A, Wu J, Amodei D (2020) Scaling Laws for Neural Language Models. arXiv preprint arXiv:2001.08361.
 

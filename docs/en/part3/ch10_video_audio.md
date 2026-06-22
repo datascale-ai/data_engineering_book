@@ -327,7 +327,7 @@ On this basis, the chapter added dense event labeling, audio-video mismatch dete
 
 Bain M, Huh J, Han T, Zisserman A (2023) WhisperX: Time-Accurate Speech Transcription of Long-Form Audio. arXiv preprint arXiv:2303.00747.
 
-Bredin H, Yin R, Coria J M, Gelly G, Korshunov P, Lavechin M, Fustes D, Titeux H, Bouaziz W, Gill M P (2020) pyannote.audio: Neural Building Blocks for Speaker Diarization. In: IEEE International Conference on Acoustics, Speech and Signal Processing, pp 7124-7128.
+Bredin H, Yin R, Coria J M, Gelly G, Korshunov P, Lavechin M, Fustes D, Titeux H, Bouaziz W, Gill M P (2020) pyannote.audio: Neural Building Blocks for Speaker Diarization. In: IEEE International Conference on Acoustics, Speech and Signal Processing, pp 7124-7128. https://doi.org/10.1109/icassp40776.2020.9052974.
 
 Brooks T, Peebles B, Holmes C, DePue W, Guo Y, Jing L, Schnurr D, Taylor J, Luhman T, Luhman E, others (2024) Video Generation Models as World Simulators (Sora). OpenAI Technical Report.
 

@@ -468,11 +468,11 @@ AgentOps 不是取代 DataOps，而是在其之上增加一层——Agent 管理
 
 ## 参考文献
 
-Amershi S, Begel A, Bird C, Devanbu P, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice, pp 291-300.
+Amershi S, Begel A, Bird C, Devanbu P, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice, pp 291-300. https://doi.org/10.1109/icse-seip.2019.00042.
 
 Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for Machine Learning. In: Proceedings of Machine Learning and Systems 1, pp 334-347.
 
-Dang Y, Lin Q, Huang P (2019) AIOps: Real-World Challenges and Research Innovations. In: Proceedings of the 41st International Conference on Software Engineering: Companion Proceedings, pp 4-5.
+Dang Y, Lin Q, Huang P (2019) AIOps: Real-World Challenges and Research Innovations. In: Proceedings of the 41st International Conference on Software Engineering: Companion Proceedings, pp 4-5. https://doi.org/10.1109/icse-companion.2019.00023.
 
 He S, He P, Chen Z, Yang T, Su Y, Lyu M R (2021) A Survey on Automated Log Analysis for Reliability Engineering. ACM Computing Surveys 54(6):1-37.
 
@@ -482,22 +482,22 @@ Kreuzberger D, Kühl N, Hirschl S (2023) Machine Learning Operations (MLOps): Ov
 
 Makinen S, Skogstrom H, Laaksonen E, Mikkonen T (2021) Who Needs MLOps: What Data Scientists Seek to Accomplish and How Can MLOps Help? In: Proceedings of the 2021 IEEE/ACM 1st Workshop on AI Engineering - Software Engineering for AI, pp 109-112.
 
-Lwakatare L E, Raj A, Crnkovic I, Bosch J, Olsson H H (2020) Large-scale Machine Learning Systems in Real-world Industrial Settings: A Review of Challenges and Solutions. Information and Software Technology 127:106368.
+Lwakatare L E, Raj A, Crnkovic I, Bosch J, Olsson H H (2020) Large-scale Machine Learning Systems in Real-world Industrial Settings: A Review of Challenges and Solutions. Information and Software Technology 127:106368. https://doi.org/10.1016/j.infsof.2020.106368.
 
 NIST (2023) Artificial Intelligence Risk Management Framework (AI RMF 1.0). National Institute of Standards and Technology.
 
 NIST (2024) Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile. NIST AI 600-1.
 
-Paleyes A, Urma R-G, Lawrence N D (2022) Challenges in Deploying Machine Learning: A Survey of Case Studies. ACM Computing Surveys 55(6):1-29.
+Paleyes A, Urma R-G, Lawrence N D (2022) Challenges in Deploying Machine Learning: A Survey of Case Studies. ACM Computing Surveys 55(6):1-29. https://doi.org/10.1145/3533378.
 
-Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1-15.
+Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1-15. https://doi.org/10.1145/3411764.3445518.
 
-Tamburri D A (2020) Sustainable MLOps: Trends and Challenges. In: Proceedings of the 22nd International Symposium on Symbolic and Numeric Algorithms for Scientific Computing, pp 17-23.
+Tamburri D A (2020) Sustainable MLOps: Trends and Challenges. In: Proceedings of the 22nd International Symposium on Symbolic and Numeric Algorithms for Scientific Computing, pp 17-23. https://doi.org/10.1109/synasc51798.2020.00015.
 
-Testi M, Ballabio M, Frontoni E, Iannello G, Moccia S, Soda P, Vessio G (2022) MLOps: A Taxonomy and a Methodology. IEEE Access 10:63606-63618.
+Testi M, Ballabio M, Frontoni E, Iannello G, Moccia S, Soda P, Vessio G (2022) MLOps: A Taxonomy and a Methodology. IEEE Access 10:63606-63618. https://doi.org/10.1109/access.2022.3181730.
 
 Treveil M, Omont N, Stenac C, Lefevre K, Phan D, Zentici J, Lavoillotte A, Miyazaki M, Heidmann L (2020) Introducing MLOps: How to Scale Machine Learning in the Enterprise. O'Reilly Media.
 
-Vela D, Sharp A, Zhang R, Nguyen T, Hoang A, Pianykh O S (2022) Temporal quality degradation in AI models. Scientific Reports 12:11654.
+Vela D, Sharp A, Zhang R, Nguyen T, Hoang A, Pianykh O S (2022) Temporal quality degradation in AI models. Scientific Reports 12:11654. https://doi.org/10.1038/s41598-022-15245-z.
 
 Zhu J, He S, Liu J, He P, Xie Q, Zheng Z, Lyu M R (2019) Tools and Benchmarks for Automated Log Parsing. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice, pp 121-130.

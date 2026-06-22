@@ -315,7 +315,7 @@ Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawf
 
 Kleppmann M (2017) Designing Data-Intensive Applications: The Big Ideas Behind Reliable, Scalable, and Maintainable Systems. O'Reilly Media, Sebastopol.
 
-Lwakatare L E, Raj A, Crnkovic I, Bosch J, Olsson H H (2020) Large-scale machine learning systems in real-world industrial settings: A review of challenges and solutions. Information and Software Technology 127:106368.
+Lwakatare L E, Raj A, Crnkovic I, Bosch J, Olsson H H (2020) Large-scale machine learning systems in real-world industrial settings: A review of challenges and solutions. Information and Software Technology 127:106368. https://doi.org/10.1016/j.infsof.2020.106368.
 
 Machado I A, Costa C, Santos M Y (2022) Data Mesh: Concepts and Principles of a Paradigm Shift in Data Architectures. Procedia Computer Science 196:263–271.
 

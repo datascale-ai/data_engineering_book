@@ -49,8 +49,8 @@ URL_RE = re.compile(r"https?://[^\s<>)]*[^\s<>).,;。；]")
 AUTHOR_TOKEN_RE = r"[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’`.-]+"
 CITATION_PATTERNS = [
     re.compile(r"\b(National Institute of Standards and Technology)\s*\(?((?:19|20)\d{2})\)?"),
-    re.compile(r"\b(Nait\s+Saada|Jimeno\s+Yepes|Ortiz\s+Suárez)\s+et\s+al\.\s*\(?((?:19|20)\d{2})\)?"),
-    re.compile(r"\b(Kimi\s+Team|Qwen\s+Team|Gemini\s+Team|Open-Sora\s+Team|Wan\s+Team)\s*\(?((?:19|20)\d{2})\)?"),
+    re.compile(r"\b(Gheshlaghi\s+Azar|Nait\s+Saada|Jimeno\s+Yepes|Ortiz\s+Suárez)\s+et\s+al\.\s*\(?((?:19|20)\d{2})\)?"),
+    re.compile(r"\b(DeepSeek-AI|Kimi\s+Team|Qwen\s+Team|Gemini\s+Team|Open-Sora\s+Team|Wan\s+Team)\s*\(?((?:19|20)\d{2})\)?"),
     re.compile(rf"\b({AUTHOR_TOKEN_RE}),\s+{AUTHOR_TOKEN_RE}\s+et\s+al\.\s*\(?((?:19|20)\d{{2}})\)?"),
     re.compile(rf"\b({AUTHOR_TOKEN_RE})\s+et\s+al\.\s*\(?((?:19|20)\d{{2}})\)?"),
     re.compile(rf"\b({AUTHOR_TOKEN_RE}),\s+{AUTHOR_TOKEN_RE}\s+and\s+{AUTHOR_TOKEN_RE}\s*\(?((?:19|20)\d{{2}})\)?"),
@@ -262,6 +262,8 @@ def first_author_from_entry(entry: str) -> str:
     entry = re.sub(r"^\d+\.\s*", "", entry).strip()
     if entry.startswith("National Institute of Standards and Technology"):
         return "NIST"
+    if entry.startswith("Gheshlaghi Azar"):
+        return "Gheshlaghi Azar"
     if entry.startswith("Nait Saada"):
         return "Nait Saada"
     if entry.startswith("Jimeno Yepes"):
@@ -270,6 +272,8 @@ def first_author_from_entry(entry: str) -> str:
         return "Ortiz Suárez"
     if entry.startswith("Team Kimi"):
         return "Kimi Team"
+    if entry.startswith("DeepSeek-AI"):
+        return "DeepSeek-AI"
     for team_name in ("Qwen Team", "Gemini Team", "Open-Sora Team", "Wan Team"):
         if entry.startswith(team_name):
             return team_name

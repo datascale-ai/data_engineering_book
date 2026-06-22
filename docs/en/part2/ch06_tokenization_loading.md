@@ -250,7 +250,7 @@ When $T = 1$, weights are proportional to data volume and large sources complete
 
 Curriculum learning is a strategy that **dynamically adjusts the data recipe** during training (Bengio et al. 2009): in the early stages of model training, "simpler" data (shorter sentences, more fluent language, more general domains) is used, with progressively longer and more complex samples introduced as training proceeds. This mimics the cognitive principle that humans learn "easy before hard."
 
-In engineering implementation, difficulty metrics for curriculum learning can come from multiple dimensions: token sequence length (short → long), perplexity score (low perplexity → high perplexity), and quality tier (High → Medium → Low). The LLaMA-3 (Dubey et al. 2024) technical report explicitly mentions substantially increasing the weight of high-quality curated data (code, mathematical reasoning, books) during the pretraining cooldown phase — this is essentially a **data quality curriculum**: first using massive general data to establish broad world knowledge, then using high-quality curated data in the final phase to strengthen specific capabilities.
+In engineering implementation, difficulty metrics for curriculum learning can come from multiple dimensions: token sequence length (short → long), perplexity score (low perplexity → high perplexity), and quality tier (High → Medium → Low). The Llama 3 technical report (Grattafiori et al. 2024) explicitly mentions substantially increasing the weight of high-quality curated data (code, mathematical reasoning, books) during the pretraining cooldown phase — this is essentially a **data quality curriculum**: first using massive general data to establish broad world knowledge, then using high-quality curated data in the final phase to strengthen specific capabilities.
 
 ---
 
@@ -462,7 +462,7 @@ This chapter echoes the cost governance perspective of Chapter 3: in pretraining
 
 Bengio Y, Louradour J, Collobert R, Weston J (2009) Curriculum Learning. In: Proceedings of the 26th Annual International Conference on Machine Learning, pp 41-48.
 
-Brown T B, Mann B, Ryder N, Subbiah M, Kaplan J, Dhariwal P, Neelakantan A, Shyam P, Sastry G, Askell A, Agarwal S, Herbert-Voss A, Krueger G, Henighan T, Child R, Ramesh A, Ziegler D M, Wu J, Winter C, Hesse C, Chen M, Sigler E, Litwin M, Gray S, Chess B, Clark J, Berner C, McCandlish S, Radford A, Sutskever I, Amodei D (2020) Language Models are Few-Shot Learners. In: Advances in Neural Information Processing Systems 33, pp 1877-1901.
+Brown T B, Mann B, Ryder N, Subbiah M, Kaplan J, Dhariwal P, Neelakantan A, Shyam P, Sastry G, Askell A, Agarwal S, Herbert-Voss A, Krueger G, Henighan T, Child R, Ramesh A, Ziegler D M, Wu J, Winter C, Hesse C, Chen M, Sigler E, Litwin M, Gray S, Chess B, Clark J, Berner C, McCandlish S, Radford A, Sutskever I, Amodei D (2020) Language Models are Few-Shot Learners. In: Advances in Neural Information Processing Systems 33, pp 1877-1901. arXiv:2005.14165.
 
 Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.
 

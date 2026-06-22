@@ -386,13 +386,13 @@ Evaluation and red-team agents generate challenge sets, red-team samples, and ev
 
 ## References
 
-Alemohammad S, Casco-Rodriguez J, Luzi L, et al. (2024) Self-Consuming Generative Models Go MAD. In: International Conference on Learning Representations.
+Alemohammad S, Casco-Rodriguez J, Luzi L, et al. (2024) Self-Consuming Generative Models Go MAD. In: International Conference on Learning Representations. arXiv:2307.01850.
 
 Bai Y, Kadavath S, Kundu S, et al. (2022) Constitutional AI: Harmlessness from AI Feedback. arXiv preprint arXiv:2212.08073.
 
 Cui G, Yuan L, Ding N, Yao G, Zhu W, Ni Y, Xie G, Liu Z, Sun M (2023) UltraFeedback: Boosting Language Models with Scaled AI Feedback. arXiv preprint arXiv:2310.01377.
 
-Dubois Y, Li X, Taori R, Zhang T, Gulrajani I, Ba J, Guestrin C, Liang P, Hashimoto T B (2023) AlpacaFarm: A Simulation Framework for Methods that Learn from Human Feedback. In: Advances in Neural Information Processing Systems 36.
+Dubois Y, Li X, Taori R, Zhang T, Gulrajani I, Ba J, Guestrin C, Liang P, Hashimoto T B (2023) AlpacaFarm: A Simulation Framework for Methods that Learn from Human Feedback. In: Advances in Neural Information Processing Systems 36. https://doi.org/10.52202/075280-1308.
 
 Gerstgrasser M, Schaeffer R, Dey A, et al. (2024) Is Model Collapse Inevitable? Breaking the Curse of Recursion by Accumulating Real and Synthetic Data. arXiv preprint arXiv:2404.01413.
 
@@ -404,26 +404,26 @@ Koh P W, Sagawa S, Marklund H, et al. (2021) WILDS: A Benchmark of in-the-Wild D
 
 Lambert N, Pyatkin V, Morrison J, Miranda L, Lin B Y, Chandu K, Dziri N, Kumar S, Zick T, Choi Y, Smith N A, Hajishirzi H (2024) RewardBench: Evaluating Reward Models for Language Modeling. arXiv preprint arXiv:2403.13787.
 
-Liang P, Bommasani R, Lee T, et al. (2023) Holistic Evaluation of Language Models. Transactions on Machine Learning Research.
+Liang P, Bommasani R, Lee T, et al. (2023) Holistic Evaluation of Language Models. Transactions on Machine Learning Research. arXiv:2211.09110.
 
-Liu Y, Iter D, Xu Y, et al. (2023) G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment. In: Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing, pp 2511-2522.
+Liu Y, Iter D, Xu Y, et al. (2023) G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment. In: Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing, pp 2511-2522. arXiv:2303.16634.
 
 Lin B Y, et al. (2024) WildBench: Benchmarking LLMs with Challenging Tasks from Real Users in the Wild. arXiv preprint arXiv:2406.04770.
 
-Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S, Slama K, Ray A, Schulman J, Hilton J, Kelton F, Miller L, Simens M, Askell A, Welinder P, Christiano P, Leike J, Lowe R (2022) Training language models to follow instructions with human feedback. In: Advances in Neural Information Processing Systems 35, pp 27730-27744.
+Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S, Slama K, Ray A, Schulman J, Hilton J, Kelton F, Miller L, Simens M, Askell A, Welinder P, Christiano P, Leike J, Lowe R (2022) Training language models to follow instructions with human feedback. In: Advances in Neural Information Processing Systems 35, pp 27730-27744. arXiv:2203.02155.
 
-Perez E, Huang S, Song F, Cai T, Ring R, Aslanides J, Glaese A, McAleese N, Irving G (2022) Red Teaming Language Models with Language Models. In: Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing, pp 3419-3448.
+Perez E, Huang S, Song F, Cai T, Ring R, Aslanides J, Glaese A, McAleese N, Irving G (2022) Red Teaming Language Models with Language Models. In: Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing, pp 3419-3448. arXiv:2202.03286.
 
-Rafailov R, Sharma A, Mitchell E, Manning C D, Ermon S, Finn C (2023) Direct Preference Optimization: Your Language Model is Secretly a Reward Model. In: Advances in Neural Information Processing Systems 36.
+Rafailov R, Sharma A, Mitchell E, Manning C D, Ermon S, Finn C (2023) Direct Preference Optimization: Your Language Model is Secretly a Reward Model. In: Advances in Neural Information Processing Systems 36. arXiv:2305.18290.
 
-Ribeiro M T, Wu T, Guestrin C, Singh S (2020) Beyond Accuracy: Behavioral Testing of NLP Models with CheckList. In: Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics, pp 4902-4912.
+Ribeiro M T, Wu T, Guestrin C, Singh S (2020) Beyond Accuracy: Behavioral Testing of NLP Models with CheckList. In: Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics, pp 4902-4912. https://doi.org/10.18653/v1/2020.acl-main.442.
 
-Shumailov I, Shumaylov Z, Zhao Y, et al. (2024) AI models collapse when trained on recursively generated data. Nature 631:755-759.
+Shumailov I, Shumaylov Z, Zhao Y, et al. (2024) AI models collapse when trained on recursively generated data. Nature 631:755-759. https://doi.org/10.1038/s41586-024-07566-y.
 
-Wang Y, Kordi Y, Mishra S, et al. (2023) Self-Instruct: Aligning Language Models with Self-Generated Instructions. In: Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics, pp 13484-13508.
+Wang Y, Kordi Y, Mishra S, et al. (2023) Self-Instruct: Aligning Language Models with Self-Generated Instructions. In: Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics, pp 13484-13508. https://doi.org/10.18653/v1/2023.acl-long.754.
 
-Zheng L, Chiang W-L, Sheng Y, et al. (2023) Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. In: Advances in Neural Information Processing Systems 36.
+Zheng L, Chiang W-L, Sheng Y, et al. (2023) Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. In: Advances in Neural Information Processing Systems 36. arXiv:2306.05685.
 
 Zhu L, Wang X, Wang Y, et al. (2023) JudgeLM: Fine-tuned Large Language Models are Scalable Judges. arXiv preprint arXiv:2310.17631.
 
-Zhou C, Liu P, Xu P, et al. (2023) LIMA: Less Is More for Alignment. In: Advances in Neural Information Processing Systems 36.
+Zhou C, Liu P, Xu P, et al. (2023) LIMA: Less Is More for Alignment. In: Advances in Neural Information Processing Systems 36. arXiv:2305.11206.

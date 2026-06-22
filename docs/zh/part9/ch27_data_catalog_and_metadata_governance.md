@@ -591,15 +591,15 @@ Abedjan Z, Golab L, Naumann F (2015) Profiling relational data: a survey. The VL
 
 Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for Machine Learning. In: Proceedings of the 2nd SysML Conference (MLSys).
 
-Buneman P, Khanna S, Tan W-C (2001) Why and Where: A Characterization of Data Provenance. In: Proceedings of the 8th International Conference on Database Theory (ICDT), pp 316–330.
+Buneman P, Khanna S, Tan W-C (2001) Why and Where: A Characterization of Data Provenance. In: Proceedings of the 8th International Conference on Database Theory (ICDT), pp 316–330. https://doi.org/10.1007/3-540-44503-x_20.
 
-Cai L, Zhu Y (2015) The challenges of data quality and data quality assessment in the big data era. Data science journal, 2015, 14: 2-2.
+Cai L, Zhu Y (2015) The challenges of data quality and data quality assessment in the big data era. Data science journal, 2015, 14: 2-2. https://doi.org/10.5334/dsj-2015-002.
 
 DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications, Basking Ridge.
 
-Fernandez R C, Abedjan Z, Koko F, Yuan G, Madden S, Stonebraker M (2018) Aurum: A Data Discovery System. In: 2018 IEEE 34th International Conference on Data Engineering (ICDE), pp 1001–1012.
+Fernandez R C, Abedjan Z, Koko F, Yuan G, Madden S, Stonebraker M (2018) Aurum: A Data Discovery System. In: 2018 IEEE 34th International Conference on Data Engineering (ICDE), pp 1001–1012. https://doi.org/10.1109/icde.2018.00094.
 
-Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86–92.
+Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86–92. https://doi.org/10.1145/3458723.
 
 Halevy A, Korn F, Noy N F, Olston C, Polyzotis N, Roy S, Whang S E (2016) Goods: Organizing Google's Datasets. In: Proceedings of the 2016 ACM SIGMOD International Conference on Management of Data, pp 795–806.
 
@@ -607,15 +607,15 @@ Hellerstein J M, Sreekanti V, Gonzalez J E, Dalton J, Dey A, Nag S, Ramachandran
 
 Herschel M, Diestelkämper R, Ben Lahmar H (2017) A survey on provenance: What for? What form? What from? The VLDB Journal 26(6):881–906.
 
-Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency (FAT*), pp 220–229.
+Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency (FAT*), pp 220–229. https://doi.org/10.1145/3287560.3287596.
 
 Noy N F, Musen M A (2000) PROMPT: Algorithm and Tool for Automated Ontology Merging and Alignment. In: Proceedings of the 17th National Conference on Artificial Intelligence (AAAI), pp 450–455.
 
-Polyzotis N, Roy S, Whang S E, Zinkevich M (2018) Data Lifecycle Challenges in Production Machine Learning: A Survey. ACM SIGMOD Record 47(2):17–28.
+Polyzotis N, Roy S, Whang S E, Zinkevich M (2018) Data Lifecycle Challenges in Production Machine Learning: A Survey. ACM SIGMOD Record 47(2):17–28. https://doi.org/10.1145/3299887.3299891.
 
 Rahm E, Bernstein P A (2001) A survey of approaches to automatic schema matching. The VLDB Journal 10(4):334–350.
 
-Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1–15.
+Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1–15. https://doi.org/10.1145/3411764.3445518.
 
 Sandhu R S, Coyne E J, Feinstein H L, Youman C E (1996) Role-Based Access Control Models. IEEE Computer 29(2):38–47.
 
@@ -625,4 +625,4 @@ Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young
 
 Stonebraker M, Bruckner D, Ilyas I F, Beskales G, Cherniack M, Zdonik S, Pagan A, Xu S (2013) Data Curation at Scale: The Data Tamer System. In: 6th Biennial Conference on Innovative Data Systems Research (CIDR).
 
-Wang R Y, Strong D M (1996) Beyond Accuracy: What Data Quality Means to Data Consumers. Journal of Management Information Systems 12(4):5–33.
+Wang R Y, Strong D M (1996) Beyond Accuracy: What Data Quality Means to Data Consumers. Journal of Management Information Systems 12(4):5–33. https://doi.org/10.1080/07421222.1996.11518099.

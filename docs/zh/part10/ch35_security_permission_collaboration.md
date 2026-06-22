@@ -485,9 +485,9 @@ Debenedetti E, Zhang J, Balunović M, et al. (2024) AgentDojo: A Dynamic Environ
 
 Ganguli D, Lovitt L, Kernion J, Askell A, Bai Y, Kadavath S, Mann B, Perez E, Schiefer N, Ndousse K, Jones A, Bowman S R, Chen A, Conerly T, DasSarma N, Drain D, Elhage N, El-Showk S, Fort S, Hatfield-Dodds Z, Henighan T, Hernandez D, Hume T, Johnston S, Joseph N, Kravec S, Nanda N, Olsson C, Olah C, Amodei D, Brown T, Clark J, Kaplan J, McCandlish S, Olsson C, Olah C, Amodei D (2022) Red Teaming Language Models to Reduce Harms: Methods, Scaling Behaviors, and Lessons Learned. arXiv preprint arXiv:2209.07858.
 
-Greshake K, Abdelnabi S, Mishra S, et al. (2023) Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection. In: Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security, pp 79-90.
+Greshake K, Abdelnabi S, Mishra S, et al. (2023) Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection. In: Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security, pp 79-90. https://doi.org/10.1145/3605764.3623985.
 
-Hendrycks D, Mazeika M, Zou A, Patel S, Zhu C, Navarro J, Mu J, Song D, Li B, Steinhardt J (2021) The Many Faces of Robustness: A Critical Analysis of Out-of-Distribution Generalization. In: Proceedings of the IEEE/CVF International Conference on Computer Vision, pp 8340-8349.
+Hendrycks D, Mazeika M, Zou A, Patel S, Zhu C, Navarro J, Mu J, Song D, Li B, Steinhardt J (2021) The Many Faces of Robustness: A Critical Analysis of Out-of-Distribution Generalization. In: Proceedings of the IEEE/CVF International Conference on Computer Vision, pp 8340-8349. https://doi.org/10.1109/iccv48922.2021.00823.
 
 Huang Y, Gupta S, Xia M, Li K, Chen D (2024) Catastrophic Jailbreak of Open-source LLMs via Exploiting Generation. In: International Conference on Learning Representations.
 
@@ -495,7 +495,7 @@ Lapid R, Langberg R, Sipper M (2023) Open Sesame! Universal Black Box Jailbreaki
 
 Liu Y, Deng G, Li Y, et al. (2023) Prompt Injection Attack against LLM-Integrated Applications. arXiv preprint arXiv:2306.05499.
 
-Perez E, Huang S, Song F, Cai T, Ring R, Aslanides J, Glaese A, McAleese N, Irving G (2022) Red Teaming Language Models with Language Models. In: Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing, pp 3419-3448.
+Perez E, Huang S, Song F, Cai T, Ring R, Aslanides J, Glaese A, McAleese N, Irving G (2022) Red Teaming Language Models with Language Models. In: Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing, pp 3419-3448. arXiv:2202.03286.
 
 Ruan Y, Dong H, Wang A, Pitis S, Zhou Y, Ba J, Dubois Y, Maddison C J, Hashimoto T B (2024) Identifying the Risks of LM Agents with an LM-Emulated Sandbox. In: International Conference on Learning Representations.
 
@@ -509,6 +509,6 @@ Wei A, Haghtalab N, Steinhardt J (2023) Jailbroken: How Does LLM Safety Training
 
 Yi J, Xie Y, Zhu B, Hines K, Kiciman E, Sun G, Xie X, Wu F (2023) Benchmarking and Defending Against Indirect Prompt Injection Attacks on Large Language Models. arXiv preprint arXiv:2312.14197.
 
-Zhan Q, Liang Z, Ying Z, Kang D (2024) InjecAgent: Benchmarking Indirect Prompt Injections in Tool-Integrated Large Language Model Agents. In: Findings of the Association for Computational Linguistics: ACL 2024, pp 10471-10506.
+Zhan Q, Liang Z, Ying Z, Kang D (2024) InjecAgent: Benchmarking Indirect Prompt Injections in Tool-Integrated Large Language Model Agents. In: Findings of the Association for Computational Linguistics: ACL 2024, pp 10471-10506. https://doi.org/10.18653/v1/2024.findings-acl.624.
 
 Zou A, Wang Z, Carlini N, Nasr M, Kolter J Z, Fredrikson M (2023) Universal and Transferable Adversarial Attacks on Aligned Language Models. arXiv preprint arXiv:2307.15043.

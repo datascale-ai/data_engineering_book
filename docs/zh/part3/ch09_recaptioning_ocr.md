@@ -270,9 +270,9 @@ Blecher L, Cucurull G, Scialom T, Stojnic R (2023) Nougat: Neural Optical Unders
 
 Fu C, Chen P, Shen Y, Qin Y, Zhang M, Lin X, Qiu Z, Lin W, Yang J, Zheng X, Li K, Sun X, Wu E (2023) MME: A Comprehensive Evaluation Benchmark for Multimodal Large Language Models. arXiv preprint arXiv:2306.13394.
 
-Dou Z Y, Xu Y, Gan Z, Wang J, Wang S, Wang L, Zhu C, Zhang P, Yuan L, Peng N, Liu Z (2022) Coarse-to-Fine Vision-Language Pre-training with Fusion in the Backbone (FIBER). Advances in Neural Information Processing Systems 35:32942-32956.
+Dou Z Y, Xu Y, Gan Z, Wang J, Wang S, Wang L, Zhu C, Zhang P, Yuan L, Peng N, Liu Z (2022) Coarse-to-Fine Vision-Language Pre-training with Fusion in the Backbone (FIBER). Advances in Neural Information Processing Systems 35:32942-32956. https://doi.org/10.52202/068431-2387.
 
-Huang Y, Lv T, Cui L, Lu Y, Wei F (2022) LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. In: Proceedings of the 30th ACM International Conference on Multimedia, pp 4083-4091.
+Huang Y, Lv T, Cui L, Lu Y, Wei F (2022) LayoutLMv3: Pre-training for Document AI with Unified Text and Image Masking. In: Proceedings of the 30th ACM International Conference on Multimedia, pp 4083-4091. https://doi.org/10.1145/3503161.3548112.
 
 Kim G, Moon S, Xu R, Yim J, Park J, Seo J, Baek J, Yoo M, Park S, Park S (2022) OCR-Free Document Understanding Transformer (Donut). In: European Conference on Computer Vision, pp 498-517.
 
@@ -280,17 +280,17 @@ Kirillov A, Mintun E, Ravi N, Mao H, Rolland C, Gustafson L, Xiao T, Whitehead S
 
 Lee J, Jia M, Sangkloy P, Krishnamurthy J, Han S, Chang S F, Hutchinson B (2023) Pix2Struct: Screenshot Parsing as Pretraining for Visual Language Understanding. In: Proceedings of the 40th International Conference on Machine Learning, pp 18893-18912.
 
-Li L H, Zhang P, Zhang H, Yang J, Li C, Zhong Y, Wang L, Yuan L, Zhang L, Hwang J N, Chang K W, Gao J (2022) Grounded Language-Image Pre-training (GLIP). In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 10965-10975.
+Li L H, Zhang P, Zhang H, Yang J, Li C, Zhong Y, Wang L, Yuan L, Zhang L, Hwang J N, Chang K W, Gao J (2022) Grounded Language-Image Pre-training (GLIP). In: Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pp 10965-10975. https://doi.org/10.1109/cvpr52688.2022.01069.
 
 Liu H, Li C, Wu Q, Lee Y J (2023b) MMBench: Is Your Multi-modal Model an All-around Player? arXiv preprint arXiv:2307.06281.
 
 Liu S, Zeng Z, Ren T, Li F, Zhang H, Yang J, Li C, Yang J, Su H, Zhu J, Zhang L (2023c) Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection. arXiv preprint arXiv:2303.05499.
 
-Liu H, Li C, Li Y, Lee Y J (2024) Improved Baselines with Visual Instruction Tuning (LLaVA-1.5). In: CVPR 2024, pp 26296-26306.
+Liu H, Li C, Li Y, Lee Y J (2024) Improved Baselines with Visual Instruction Tuning (LLaVA-1.5). In: CVPR 2024, pp 26296-26306. https://doi.org/10.1109/cvpr52733.2024.02484.
 
 Lu P, Qiu L, Chang K W, Zhu W, Rajpurohit T, Clark P, Kalyan A (2022) Dynamic Prompt Learning via Policy Gradient for Semi-structured Mathematical Reasoning (TabMWP). arXiv preprint arXiv:2209.14610.
 
-Masry A, Long D, Tan J Q, Joty S, Hoque E (2022) ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. In: Findings of the Association for Computational Linguistics: ACL 2022, pp 2263-2279.
+Masry A, Long D, Tan J Q, Joty S, Hoque E (2022) ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. In: Findings of the Association for Computational Linguistics: ACL 2022, pp 2263-2279. https://doi.org/10.18653/v1/2022.findings-acl.177.
 
 Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, Agarwal S, Sastry G, Askell A, Mishkin P, Clark J, Krueger G, Sutskever I (2021) Learning Transferable Visual Models From Natural Language Supervision (CLIP). In: ICML 2021, pp 8748-8763.
 

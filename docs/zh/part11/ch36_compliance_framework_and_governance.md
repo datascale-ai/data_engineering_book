@@ -1183,25 +1183,25 @@ Cavoukian A, others (2009) Privacy by Design: The 7 Foundational Principles. Inf
 
 Gürses S F, Troncoso C, Díaz C (2011) Engineering Privacy by Design. Technical report.
 
-Spiekermann S, Cranor L F (2009) Engineering Privacy. IEEE Transactions on Software Engineering, 35(1), 67-82.
+Spiekermann S, Cranor L F (2009) Engineering Privacy. IEEE Transactions on Software Engineering, 35(1), 67-82. https://doi.org/10.1109/tse.2008.88.
 
 European Union Agency for Cybersecurity (ENISA) (2022) Data Protection Engineering. ENISA Report.
 
 Zieni B, Spagnuelo D, Heckel R (2021) Transparency by Default: GDPR Patterns for Agile Development. In Electronic Government and the Information Systems Perspective, Springer International Publishing, pp 89-102.
 
-Kosenkov O, Zabardast E, Fucci D, Mendez D, Unterkalmsteiner M (2026) Privacy by Design: Aligning GDPR and Software Engineering Specifications with a Requirements Engineering Approach. Information and Software Technology, 190, 107946.
+Kosenkov O, Zabardast E, Fucci D, Mendez D, Unterkalmsteiner M (2026) Privacy by Design: Aligning GDPR and Software Engineering Specifications with a Requirements Engineering Approach. Information and Software Technology, 190, 107946. https://doi.org/10.1016/j.infsof.2025.107946.
 
-Hoepman J-H (2014) Privacy Design Strategies. In IFIP International Information Security Conference, pp 446-459.
+Hoepman J-H (2014) Privacy Design Strategies. In IFIP International Information Security Conference, pp 446-459. https://doi.org/10.1007/978-3-642-55415-5_38.
 
 Perera C, Liu C, Ranjan R, Wang L, Zomaya A Y (2016) Privacy-Knowledge Modeling for the Internet of Things: A Look Back. Computer, 49(12), 60-68.
 
-Dwork C (2008) Differential Privacy: A Survey of Results. In Theory and Applications of Models of Computation, Springer Berlin Heidelberg, pp 1-19.
+Dwork C (2008) Differential Privacy: A Survey of Results. In Theory and Applications of Models of Computation, Springer Berlin Heidelberg, pp 1-19. https://doi.org/10.1007/978-3-540-79228-4_1.
 
 Shokri R, Shmatikov V (2015) Privacy-Preserving Deep Learning. In 2015 53rd Annual Allerton Conference on Communication, Control, and Computing (Allerton), pp 909-910.
 
-Anthonysamy P, Rashid A, Chitchyan R (2017) Privacy Requirements: Present & Future. In 2017 IEEE/ACM 39th International Conference on Software Engineering: Software Engineering in Society Track (ICSE-SEIS), pp 13-22.
+Anthonysamy P, Rashid A, Chitchyan R (2017) Privacy Requirements: Present & Future. In 2017 IEEE/ACM 39th International Conference on Software Engineering: Software Engineering in Society Track (ICSE-SEIS), pp 13-22. https://doi.org/10.1109/icse-seis.2017.3.
 
-Oetzel M C, Spiekermann S (2014) A Systematic Methodology for Privacy Impact Assessments: A Design Science Approach. European Journal of Information Systems, 23(2), 126-150.
+Oetzel M C, Spiekermann S (2014) A Systematic Methodology for Privacy Impact Assessments: A Design Science Approach. European Journal of Information Systems, 23(2), 126-150. https://doi.org/10.1057/ejis.2013.18.
 
 Notario N, Crespo A, Martín Y-S, del Alamo J M, Le Métayer D, Antignac T, Kung A, Kroener I, Wright D (2015) PRIPARE: Integrating Privacy Best Practices into a Privacy Engineering Methodology. In 2015 IEEE Security and Privacy Workshops, pp 151-158.
 

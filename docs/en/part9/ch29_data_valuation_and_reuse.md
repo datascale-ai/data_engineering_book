@@ -593,15 +593,15 @@ Ultimately, data valuation and reuse aim to help an organization know its own da
 
 Brynjolfsson E, Hitt L M, Kim H H (2011) Strength in Numbers: How Does Data-Driven Decisionmaking Affect Firm Performance? Available at SSRN 1819486.
 
-Fleckenstein M, Obaidi A, Tryfona N (2023) A Review of Data Valuation Approaches and Building and Scoring a Data Valuation Model. Harvard Data Science Review 5(1).
+Fleckenstein M, Obaidi A, Tryfona N (2023) A Review of Data Valuation Approaches and Building and Scoring a Data Valuation Model. Harvard Data Science Review 5(1). https://doi.org/10.1162/99608f92.c18db966.
 
-Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daume III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92.
+Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daume III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92. https://doi.org/10.1145/3458723.
 
 Ghorbani A, Zou J (2019) Data Shapley: Equitable Valuation of Data for Machine Learning. In: Proceedings of the 36th International Conference on Machine Learning (ICML), pp 2242-2251.
 
 Gunasekar S, Zhang Y, Aneja J, Mendes C C T, Del Giorno A, Gopi S, Javaheripi M, Kauffmann P, de Rosa G, Saarikivi O, Salim A, Shah S, Behl H S, Wang X, Bubeck S, Eldan R, Kalai A T, Lee Y T, Li Y (2023) Textbooks Are All You Need. arXiv preprint arXiv:2306.11644.
 
-Hoffmann J, Borgeaud S, Mensch A, Buchatskaya E, Cai T, Rutherford E, de Las Casas D, Hendricks L A, Welbl J, Clark A, Hennigan T, Noland E, Millican K, van den Driessche G, Damoc B, Guy A, Osindero S, Simonyan K, Elsen E, Rae J W, Vinyals O, Sifre L (2022) Training Compute-Optimal Large Language Models. In: Advances in Neural Information Processing Systems 35.
+Hoffmann J, Borgeaud S, Mensch A, Buchatskaya E, Cai T, Rutherford E, de Las Casas D, Hendricks L A, Welbl J, Clark A, Hennigan T, Noland E, Millican K, van den Driessche G, Damoc B, Guy A, Osindero S, Simonyan K, Elsen E, Rae J W, Vinyals O, Sifre L (2022) Training Compute-Optimal Large Language Models. In: Advances in Neural Information Processing Systems 35. arXiv:2203.15556.
 
 Jia R, Dao D, Wang B, Hubis F A, Hynes N, Gurel N M, Li B, Zhang C, Song D, Spanos C J (2019) Towards Efficient Data Valuation Based on the Shapley Value. In: Proceedings of the 22nd International Conference on Artificial Intelligence and Statistics (AISTATS), pp 1167-1176.
 
@@ -611,21 +611,21 @@ Laney D B (2017) Infonomics: How to Monetize, Manage, and Measure Information as
 
 Lee K, Ippolito D, Nystrom A, Zhang C, Eck D, Callison-Burch C, Carlini N (2022) Deduplicating Training Data Makes Language Models Better. In: Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (ACL), pp 8424-8445.
 
-Lewis P, Perez E, Piktus A, Petroni F, Karpukhin V, Goyal N, Kuttler H, Lewis M, Yih W-t, Rocktaschel T, Riedel S, Kiela D (2020) Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. In: Advances in Neural Information Processing Systems 33, pp 9459-9474.
+Lewis P, Perez E, Piktus A, Petroni F, Karpukhin V, Goyal N, Kuttler H, Lewis M, Yih W-t, Rocktaschel T, Riedel S, Kiela D (2020) Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. In: Advances in Neural Information Processing Systems 33, pp 9459-9474. arXiv:2005.11401.
 
 Moody D, Walsh P (1999) Measuring the Value of Information: An Asset Valuation Approach. In: Proceedings of the 7th European Conference on Information Systems (ECIS), pp 496-512.
 
 Northcutt C G, Athalye A, Mueller J (2021) Pervasive Label Errors in Test Sets Destabilize Machine Learning Benchmarks. In: Proceedings of the Neural Information Processing Systems Track on Datasets and Benchmarks.
 
-Pei J (2022) A Survey on Data Pricing: From Economics to Data Science. IEEE Transactions on Knowledge and Data Engineering 34(10):4586-4608.
+Pei J (2022) A Survey on Data Pricing: From Economics to Data Science. IEEE Transactions on Knowledge and Data Engineering 34(10):4586-4608. https://doi.org/10.1109/tkde.2020.3045927.
 
-Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1-15.
+Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1-15. https://doi.org/10.1145/3411764.3445518.
 
 Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503-2511.
 
 Settles B (2009) Active Learning Literature Survey. Computer Sciences Technical Report 1648, University of Wisconsin-Madison.
 
-Sorscher B, Geirhos R, Shekhar S, Ganguli S, Morcos A S (2022) Beyond Neural Scaling Laws: Beating Power Law Scaling via Data Pruning. In: Advances in Neural Information Processing Systems 35, pp 19523-19536.
+Sorscher B, Geirhos R, Shekhar S, Ganguli S, Morcos A S (2022) Beyond Neural Scaling Laws: Beating Power Law Scaling via Data Pruning. In: Advances in Neural Information Processing Systems 35, pp 19523-19536. https://doi.org/10.52202/068431-1419.
 
 Thakur N, Reimers N, Ruckle A, Srivastava A, Gurevych I (2021) BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of Information Retrieval Models. In: Proceedings of the Neural Information Processing Systems Track on Datasets and Benchmarks.
 

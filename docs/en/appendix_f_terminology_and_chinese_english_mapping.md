@@ -404,8 +404,14 @@ This is especially risky around privacy, compliance, and release boundaries. Ter
 
 Bommasani R, Klyman K, Zhang D, Liang P (2023) The Foundation Model Transparency Index. arXiv preprint arXiv:2310.12941.
 
-Liang P, Bommasani R, Lee T, et al. (2023) Holistic Evaluation of Language Models. Transactions on Machine Learning Research.
+Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92. https://doi.org/10.1145/3458723.
 
-Wang B, Chen W, Pei H, et al. (2023) DecodingTrust: A Comprehensive Assessment of Trustworthiness in GPT Models. In: Advances in Neural Information Processing Systems 36.
+Liang P, Bommasani R, Lee T, et al. (2023) Holistic Evaluation of Language Models. Transactions on Machine Learning Research. arXiv:2211.09110.
 
-Weidinger L, Uesato J, Rauh M, Griffin C, Huang P-S, Mellor J, Glaese A, Cheng M, Balle B, Kasirzadeh A, Kenton Z, Brown S, Hawkins W, Stepleton T, Birhane A, Haas J, Rimell L, Hendricks L A, Isaac W, Legassick S, Irving G, Gabriel I (2022) Taxonomy of Risks posed by Language Models. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 214-229.
+Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229. https://doi.org/10.1145/3287560.3287596.
+
+Pushkarna M, Zaldivar A, Kjartansson O (2022) Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 1776-1826. https://doi.org/10.1145/3531146.3533231.
+
+Wang B, Chen W, Pei H, et al. (2023) DecodingTrust: A Comprehensive Assessment of Trustworthiness in GPT Models. In: Advances in Neural Information Processing Systems 36. https://doi.org/10.52202/075280-1361.
+
+Weidinger L, Uesato J, Rauh M, Griffin C, Huang P-S, Mellor J, Glaese A, Cheng M, Balle B, Kasirzadeh A, Kenton Z, Brown S, Hawkins W, Stepleton T, Birhane A, Haas J, Rimell L, Hendricks L A, Isaac W, Legassick S, Irving G, Gabriel I (2022) Taxonomy of Risks posed by Language Models. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 214-229. https://doi.org/10.1145/3531146.3533088.

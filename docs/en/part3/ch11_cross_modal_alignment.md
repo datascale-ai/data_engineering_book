@@ -349,10 +349,10 @@ Rombach R, Blattmann A, Lorenz D, Esser P, Ommer B (2022) High-Resolution Image 
 
 Sakoe H, Chiba S (1978) Dynamic Programming Algorithm Optimization for Spoken Word Recognition (DTW). IEEE Transactions on Acoustics, Speech, and Signal Processing 26(1):43-49.
 
-Salvador S, Chan P (2007) Toward Accurate Dynamic Time Warping in Linear Time and Space (FastDTW). Intelligent Data Analysis 11(5):561-580.
+Salvador S, Chan P (2007) Toward Accurate Dynamic Time Warping in Linear Time and Space (FastDTW). Intelligent Data Analysis 11(5):561-580. https://doi.org/10.3233/ida-2007-11508.
 
 van den Oord A, Vinyals O, Kavukcuoglu K (2017) Neural Discrete Representation Learning (VQ-VAE). Advances in Neural Information Processing Systems 30.
 
-Wu Y, Chen K, Zhang T, Hui Y, Berg-Kirkpatrick T, Dubnov S (2023) Large-Scale Contrastive Language-Audio Pretraining with Feature Fusion and Keyword-to-Caption Augmentation (CLAP). In: IEEE International Conference on Acoustics, Speech and Signal Processing, pp 1-5.
+Wu Y, Chen K, Zhang T, Hui Y, Berg-Kirkpatrick T, Dubnov S (2023) Large-Scale Contrastive Language-Audio Pretraining with Feature Fusion and Keyword-to-Caption Augmentation (CLAP). In: IEEE International Conference on Acoustics, Speech and Signal Processing, pp 1-5. https://doi.org/10.1109/icassp49357.2023.10095969.
 
 Dufumier B, Castillo-Navarro J, Tuia D, Thiran J P (2025) What to Align in Multimodal Contrastive Learning? In: Proceedings of the 13th International Conference on Learning Representations. arXiv preprint arXiv:2409.07402.

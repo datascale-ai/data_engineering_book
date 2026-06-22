@@ -114,7 +114,7 @@ The safest budget is not "the API bill for generating 100,000 samples." It is th
 
 ### C.6.1 Training Estimates Should Not Look Only at GPU Count
 
-Training budgets are often simplified to "how many cards for how many days." The real cost also depends on effective throughput, probability of failed reruns, and number of tuning rounds.
+Training budgets are often simplified to "how many cards for how many days." The real cost also depends on effective throughput, probability of failed reruns, and number of tuning rounds. Large-scale training systems such as Megatron-LM show that model parallelism, data parallelism, and pipeline parallelism can significantly affect throughput, memory footprint, and failure-recovery cost (Narayanan et al. 2021).
 
 | Item | Unit | Quantity | Unit Cost / Hours | Subtotal | Notes |
 | :-- | :-- | :-- | :-- | :-- | :-- |
@@ -128,7 +128,7 @@ If a team does not reserve resources for failed reruns, the budget usually becom
 
 ### C.6.2 Split Inference Cost by Scenario
 
-Inference cost should be split into at least three scenarios.
+Inference cost should be split into at least three scenarios. For long-context and high-concurrency serving, memory-management mechanisms such as PagedAttention have become important references for serving-cost estimation, and vLLM's engineering documentation provides a practical entry point for deployment and tuning (Kwon et al. 2023; vLLM Project 2026).
 
 | Scenario | Characteristics | Estimation Focus |
 | :-- | :-- | :-- |
@@ -186,7 +186,7 @@ Text projects can sometimes survive rough disk estimates. Document, image, audio
 | Release images | External release and course reproduction versions |
 | Archive layer | Cold storage and long-term preservation |
 
-Without this layering, teams often discover late that training was not the expensive part; permanently retaining every intermediate artifact was.
+Without this layering, teams often discover late that training was not the expensive part; permanently retaining every intermediate artifact was. If Kubernetes is used to host training, evaluation, or teaching environments, resource quotas, storage volumes, namespaces, and job lifecycle should also be included in the budget sheet, with resource objects and scheduling semantics following the official Kubernetes documentation (Kubernetes Authors 2026).
 
 ### C.8.2 Archival Strategy Determines Maintainability Over the Next Three Years
 
@@ -315,9 +315,9 @@ Third, mature cost management is not only about saving money. It makes the relat
 
 Patterson D, Gonzalez J, Le Q, Liang C, Munguia L, Rothchild D, So D, Texier M, Dean J (2021) Carbon Emissions and Large Neural Network Training. arXiv preprint arXiv:2104.10350.
 
-Narayanan D, Shoeybi M, Casper J, LeGresley P, Patwary M, Catanzaro B (2021) Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM. In: Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis.
+Narayanan D, Shoeybi M, Casper J, LeGresley P, Patwary M, Catanzaro B (2021) Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM. In: Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis. arXiv:2104.04473.
 
-Kwon W, Li Z, Zhuang S, Sheng Y, Zheng L, Yu C H, Gonzalez J E, Zhang H, Stoica I (2023) Efficient Memory Management for Large Language Model Serving with PagedAttention. In: Proceedings of the ACM SIGOPS 29th Symposium on Operating Systems Principles, pp 611-626.
+Kwon W, Li Z, Zhuang S, Sheng Y, Zheng L, Yu C H, Gonzalez J E, Zhang H, Stoica I (2023) Efficient Memory Management for Large Language Model Serving with PagedAttention. In: Proceedings of the ACM SIGOPS 29th Symposium on Operating Systems Principles, pp 611-626. https://doi.org/10.1145/3600006.3613165.
 
 Kubernetes Authors (2026) Kubernetes Documentation. Available at: https://kubernetes.io/docs/.
 

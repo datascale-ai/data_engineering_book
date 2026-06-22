@@ -671,35 +671,35 @@ print(route_feedback(event))
 
 ## 参考文献
 
-Amershi S, Begel A, Bird C, DeLine R, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice, pp 291–300.
+Amershi S, Begel A, Bird C, DeLine R, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice, pp 291–300. https://doi.org/10.1109/icse-seip.2019.00042.
 
 Breck E, Cai S, Nielsen E, Salib M, Sculley D (2017) The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction. In: Proceedings of the IEEE International Conference on Big Data, pp 1123–1132.
 
-Chapelle O, Zhang Y (2009) A Dynamic Bayesian Network Click Model for Web Search Ranking. In: Proceedings of the 18th International Conference on World Wide Web, pp 1–10.
+Chapelle O, Zhang Y (2009) A Dynamic Bayesian Network Click Model for Web Search Ranking. In: Proceedings of the 18th International Conference on World Wide Web, pp 1–10. https://doi.org/10.1145/1526709.1526711.
 
-Es S, James J, Espinosa-Anke L, Schockaert S (2024) RAGAS: Automated Evaluation of Retrieval Augmented Generation. In: Proceedings of the 18th Conference of the European Chapter of the Association for Computational Linguistics: System Demonstrations, pp 150–158.
+Es S, James J, Espinosa-Anke L, Schockaert S (2024) RAGAS: Automated Evaluation of Retrieval Augmented Generation. In: Proceedings of the 18th Conference of the European Chapter of the Association for Computational Linguistics: System Demonstrations, pp 150–158. https://doi.org/10.18653/v1/2024.eacl-demo.16.
 
-Gama J, Žliobaitė I, Bifet A, Pechenizkiy M, Bouchachia A (2014) A Survey on Concept Drift Adaptation. ACM Computing Surveys 46(4):1–37.
+Gama J, Žliobaitė I, Bifet A, Pechenizkiy M, Bouchachia A (2014) A Survey on Concept Drift Adaptation. ACM Computing Surveys 46(4):1–37. https://doi.org/10.1145/2523813.
 
 Gao Y, Xiong Y, Gao X, Jia K, Pan J, Bi Y, Dai Y, Sun J, Wang M, Wang H (2023) Retrieval-Augmented Generation for Large Language Models: A Survey. arXiv preprint arXiv:2312.10997.
 
-Hu Y, Koren Y, Volinsky C (2008) Collaborative Filtering for Implicit Feedback Datasets. In: Proceedings of the 2008 IEEE International Conference on Data Mining, pp 263–272.
+Hu Y, Koren Y, Volinsky C (2008) Collaborative Filtering for Implicit Feedback Datasets. In: Proceedings of the 2008 IEEE International Conference on Data Mining, pp 263–272. https://doi.org/10.1109/icdm.2008.22.
 
 Huyen C (2022) Designing Machine Learning Systems: An Iterative Process for Production-Ready Applications. O’Reilly Media.
 
-Joachims T (2002) Optimizing Search Engines Using Clickthrough Data. In: Proceedings of the Eighth ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, pp 133–142.
+Joachims T (2002) Optimizing Search Engines Using Clickthrough Data. In: Proceedings of the Eighth ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, pp 133–142. https://doi.org/10.1145/775066.775067.
 
-Joachims T, Swaminathan A, Schnabel T (2017) Unbiased Learning-to-Rank with Biased Feedback. In: Proceedings of the Tenth ACM International Conference on Web Search and Data Mining, pp 781–789.
+Joachims T, Swaminathan A, Schnabel T (2017) Unbiased Learning-to-Rank with Biased Feedback. In: Proceedings of the Tenth ACM International Conference on Web Search and Data Mining, pp 781–789. https://doi.org/10.1145/3018661.3018699.
 
 Koh P W, Sagawa S, Marklund H, Xie S M, Zhang M, Balsubramani A, Hu W, Yasunaga M, Phillips R L, Gao I, Lee T, David E, Stavness I, Guo W, Earnshaw B A, Haque I S, Beery S, Leskovec J, Kundaje A, Pierson E, Levine S, Finn C, Liang P (2021) WILDS: A Benchmark of in-the-Wild Distribution Shifts. In: Proceedings of the 38th International Conference on Machine Learning, pp 5637–5664.
 
 Kohavi R, Tang D, Xu Y (2020) Trustworthy Online Controlled Experiments: A Practical Guide to A/B Testing. Cambridge University Press.
 
-Kreuzberger D, Kühl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866–31879.
+Kreuzberger D, Kühl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866–31879. arXiv:2205.02302.
 
-Lewis P, Perez E, Piktus A, Petroni F, Karpukhin V, Goyal N, Küttler H, Lewis M, Yih W-t, Rocktäschel T, Riedel S, Kiela D (2020) Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. In: Advances in Neural Information Processing Systems 33, pp 9459–9474.
+Lewis P, Perez E, Piktus A, Petroni F, Karpukhin V, Goyal N, Küttler H, Lewis M, Yih W-t, Rocktäschel T, Riedel S, Kiela D (2020) Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. In: Advances in Neural Information Processing Systems 33, pp 9459–9474. arXiv:2005.11401.
 
-Mallen A, Asai A, Zhong V, Das R, Khashabi D, Hajishirzi H (2023) When Not to Trust Language Models: Investigating Effectiveness of Parametric and Non-Parametric Memories. In: Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics, pp 9802–9822.
+Mallen A, Asai A, Zhong V, Das R, Khashabi D, Hajishirzi H (2023) When Not to Trust Language Models: Investigating Effectiveness of Parametric and Non-Parametric Memories. In: Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics, pp 9802–9822. https://doi.org/10.18653/v1/2023.acl-long.546.
 
 Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503–2511.
 

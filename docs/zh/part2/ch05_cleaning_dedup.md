@@ -411,7 +411,7 @@ def detect_and_redact_pii(
     return text, found
 ```
 
-**命名实体识别（NER）模型**则覆盖规则难以枚举的 PII 类型，如真实人名、地址和机构名。推荐使用 spaCy (Honnibal et al. 2020) 的中文模型（`zh_core_web_trf`）或 HuggingFace 上开源的中文 NER 模型，对人名（PER）、地点（LOC）、机构（ORG）等命名实体进行识别，再根据上下文判断是否需要脱敏。
+**命名实体识别（NER）模型**则覆盖规则难以枚举的 PII 类型，如真实人名、地址和机构名。推荐使用 spaCy (Honnibal et al. 2023) 的中文模型（`zh_core_web_trf`）或 HuggingFace 上开源的中文 NER 模型，对人名（PER）、地点（LOC）、机构（ORG）等命名实体进行识别，再根据上下文判断是否需要脱敏。
 
 ---
 
@@ -624,11 +624,11 @@ class DocumentQualityScore:
 
 ## 参考文献
 
-Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.
+Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29. https://doi.org/10.1109/sequen.1997.666900.
 
 Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.
 
-Honnibal M, Montani I, Van Landeghem S, Boyd A (2020) spaCy: Industrial-strength Natural Language Processing in Python. Available at: https://spacy.io/ (Accessed 2024-11).
+Honnibal M, Montani I, Van Landeghem S, Boyd A (2023) explosion/spaCy: v3.7.2: Fixes for APIs and requirements. Zenodo. <https://doi.org/10.5281/zenodo.1212303>.
 
 Indyk P, Motwani R (1998) Approximate Nearest Neighbors: Towards Removing the Curse of Dimensionality. In: Proceedings of the 30th Annual ACM Symposium on Theory of Computing, pp 604-613.
 

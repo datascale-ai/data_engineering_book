@@ -6,7 +6,7 @@ This book addresses data engineering problems in the era of large models. It dis
 
 ![Book architecture of Data Engineering for Large Foundation Models, showing the data lifecycle, foundation layer, data collection and processing layer, cross-cutting capabilities, model alignment and capability enhancement layer, application governance layer, security and specialized practice layer, project case layer, DataOps flywheel, and platform support capabilities](../images/book_structure_en.png)
 
-*Book architecture. Source: original illustration by the authors. The figure organizes the fourteen parts, forty-eight chapters, fifteen projects, and eight appendices around the data lifecycle, with layers for foundations, collection and processing, cross-cutting capabilities, model alignment, application governance, security and compliance, specialized practice, and project delivery; Alt text: book architecture diagram showing the data lifecycle, layered manuscript structure, DataOps flywheel, platform support capabilities, and engineering principles that run through the book.*
+*Book architecture. Source: original illustration by the authors. The figure organizes the fourteen parts, forty-eight chapters, fifteen projects, and eight appendices around the data lifecycle, with layers for foundations, collection and processing, cross-cutting capabilities, model alignment, application governance, security and compliance, specialized practice, and project delivery.*
 
 The book's core contributions appear in four areas.
 

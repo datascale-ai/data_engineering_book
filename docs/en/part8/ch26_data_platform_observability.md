@@ -674,7 +674,7 @@ PagerDuty is the most widely used incident response tool in the industry, suppor
 
 ## References
 
-Amershi S, Begel A, Bird C, DeLine R, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice (ICSE-SEIP), pp 291-300.
+Amershi S, Begel A, Bird C, DeLine R, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice (ICSE-SEIP), pp 291-300. https://doi.org/10.1109/icse-seip.2019.00042.
 
 Baylor D, Breck E, Cheng H-T, Fiedel N, Foo C Y, Haque Z, Haykal S, Ispir M, Jain V, Koc L, Koo C Y, Lew L, Mewald C, Modi A N, Polyzotis N, Ramesh S, Roy S, Whang S E, Wicke M, Wilkiewicz J, Zhang X, Zinkevich M (2017) TFX: A TensorFlow-Based Production-Scale Machine Learning Platform. In: Proceedings of the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, pp 1387-1395.
 
@@ -686,15 +686,15 @@ Breck E, Cai S, Nielsen E, Salib M, Sculley D (2017) The ML Test Score: A Rubric
 
 Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for Machine Learning. In: Proceedings of Machine Learning and Systems 1, pp 334-347.
 
-Dean J, Barroso L A (2013) The Tail at Scale. Communications of the ACM 56(2):74-80.
+Dean J, Barroso L A (2013) The Tail at Scale. Communications of the ACM 56(2):74-80. https://doi.org/10.1145/2408776.2408794.
 
 Hellerstein J M, Sreekanti V, Gonzalez J E, Dalton J, Dey A, Nag S, Ramachandran K, Arora S, Bhattacharyya A, Das S, Donsky A, Fierro G, Kumar C, Mazzariol M, Narayanan S, Parameswaran A, Rahman T, Shah R, She C, Storey M, Turman C, Wu E (2017) Ground: A Data Context Service. In: Proceedings of CIDR.
 
 Kleppmann M (2017) Designing Data-Intensive Applications. O'Reilly Media.
 
-Kreuzberger D, Kühl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879.
+Kreuzberger D, Kühl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879. arXiv:2205.02302.
 
-National Institute of Standards and Technology (2006) Guide to Computer Security Log Management. NIST Special Publication 800-92.
+National Institute of Standards and Technology (2006) Guide to Computer Security Log Management. NIST Special Publication 800-92. https://doi.org/10.6028/nist.sp.800-92.
 
 Nygard M T (2018) Release It!: Design and Deploy Production-Ready Software, 2nd Edition. Pragmatic Bookshelf.
 
@@ -704,7 +704,7 @@ OpenTelemetry Authors (2024) OpenTelemetry Specification. Available at: https://
 
 Polyzotis N, Roy S, Whang S E, Zinkevich M (2017) Data Management Challenges in Production Machine Learning. In: Proceedings of the 2017 ACM International Conference on Management of Data (SIGMOD), pp 1723-1726.
 
-Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1-15.
+Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1-15. https://doi.org/10.1145/3411764.3445518.
 
 Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503-2511.
 
@@ -712,4 +712,4 @@ Sigelman B H, Barroso L A, Burrows M, Stephenson P, Moshchuk A, Osina D, Fikes J
 
 Turnbull J (2014) The Art of Monitoring. James Turnbull.
 
-Xu W, Huang L, Fox A, Patterson D, Jordan M I (2009) Detecting Large-Scale System Problems by Mining Console Logs. In: Proceedings of the ACM SIGOPS 22nd Symposium on Operating Systems Principles (SOSP), pp 117-132.
+Xu W, Huang L, Fox A, Patterson D, Jordan M I (2009) Detecting Large-Scale System Problems by Mining Console Logs. In: Proceedings of the ACM SIGOPS 22nd Symposium on Operating Systems Principles (SOSP), pp 117-132. https://doi.org/10.1145/1629575.1629587.

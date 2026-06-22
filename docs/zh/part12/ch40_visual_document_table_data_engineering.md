@@ -743,13 +743,13 @@ Levenshtein, V.I. (1965). Binary Codes Capable of Correcting Deletions, Insertio
 
 Liu, H., Xue, W., Chen, Y., et al. (2024). A Survey on Hallucination in Large Vision-Language Models. *arXiv preprint arXiv:2402.00253*. 
 
-Mathew, M., Karatzas, D., and Jawahar, C.V. (2021). DocVQA: A Dataset for VQA on Document Images. *Proc. WACV*.
+Mathew, M., Karatzas, D., and Jawahar, C.V. (2021). DocVQA: A Dataset for VQA on Document Images. *Proc. WACV*. https://doi.org/10.1109/wacv48630.2021.00225.
 
 Niu, J., Liu, Z., Gu, Z., et al. (2025). MinerU 2.5: A Decoupled Vision-Language Model for Efficient High-Resolution Document Parsing. *arXiv preprint*. 
 
 Park, S., Shin, S., Lee, B., et al. (2019). CORD: A Consolidated Receipt Dataset for Post-OCR Parsing. *NeurIPS Workshop on Document Intelligence*. 
 
-Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C.D., and Finn, C. (2024). Direct Preference Optimization: Your Language Model Is Secretly a Reward Model. *Proc. NeurIPS*. 
+Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C.D., and Finn, C. (2024). Direct Preference Optimization: Your Language Model Is Secretly a Reward Model. *Proc. NeurIPS*. arXiv:2305.18290. 
 
 Schulman, J., Wolski, F., Dhariwal, P., Radford, A., and Klimov, O. (2017). Proximal Policy Optimization Algorithms. *arXiv preprint arXiv:1707.06347*. 
 
@@ -775,7 +775,7 @@ Cui, C., Sun, T., Liang, S., et al. (2025). PaddleOCR-VL: Boosting Multilingual 
 
 Guo, D., Yang, D., Zhang, H., et al. (2025). DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning. *arXiv preprint arXiv:2501.12948*.
 
-Hunyuan Vision Team, Lyu, P., Wan, X., et al. (2025). HunyuanOCR Technical Report. *arXiv preprint*.
+Hunyuan Vision Team (2025). HunyuanOCR Technical Report. *arXiv preprint*.
 
 Li, Y., Yang, G., Liu, H., Wang, B., and Zhang, C. (2025a). Dots.OCR: Multilingual Document Layout Parsing in a Single Vision-Language Model. *arXiv preprint*.
 
@@ -787,9 +787,9 @@ Wang, W., Gao, Z., Gu, L., et al. (2025). InternVL3.5: Advancing Open-Source Mul
 
 Zhang, J., Liu, Y., Wu, Z., et al. (2025). MonkeyOCR v1.5 Technical Report: Unlocking Robust Document Parsing for Complex Patterns. *arXiv preprint*.
 
-Smock, B., Pesala, R., and Abraham, R. (2022). PubTables-1M: Towards Comprehensive Table Extraction From Unstructured Documents. *Proc. CVPR*.
+Smock, B., Pesala, R., and Abraham, R. (2022). PubTables-1M: Towards Comprehensive Table Extraction From Unstructured Documents. *Proc. CVPR*. https://doi.org/10.1109/cvpr52688.2022.00459.
 
-Zhu, F., Lei, W., Huang, Y., Wang, C., Zhang, S., Lv, J., Feng, F., and Chua, T.-S. (2021). TAT-QA: A Question Answering Benchmark on a Hybrid of Tabular and Textual Content in Finance. *Proc. ACL*.
+Zhu, F., Lei, W., Huang, Y., Wang, C., Zhang, S., Lv, J., Feng, F., and Chua, T.-S. (2021). TAT-QA: A Question Answering Benchmark on a Hybrid of Tabular and Textual Content in Finance. *Proc. ACL*. https://doi.org/10.18653/v1/2021.acl-long.254.
 
 Pandas Development Team. (2026). pandas Documentation. https://pandas.pydata.org/docs/.
 

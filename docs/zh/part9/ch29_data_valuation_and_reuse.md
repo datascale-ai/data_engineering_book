@@ -668,7 +668,7 @@ $$
 
 Brynjolfsson E, Hitt L M, Kim H H (2011) Strength in Numbers: How Does Data-Driven Decisionmaking Affect Firm Performance? Available at SSRN 1819486.
 
-Fleckenstein M, Obaidi A, Tryfona N (2023) A Review of Data Valuation Approaches and Building and Scoring a Data Valuation Model. Harvard Data Science Review 5(1).
+Fleckenstein M, Obaidi A, Tryfona N (2023) A Review of Data Valuation Approaches and Building and Scoring a Data Valuation Model. Harvard Data Science Review 5(1). https://doi.org/10.1162/99608f92.c18db966.
 
 Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86–92.
 
@@ -676,7 +676,7 @@ Ghorbani A, Zou J (2019) Data Shapley: Equitable Valuation of Data for Machine L
 
 Gunasekar S, Zhang Y, Aneja J, Mendes C C T, Del Giorno A, Gopi S, Javaheripi M, Kauffmann P, de Rosa G, Saarikivi O, Salim A, Shah S, Behl H S, Wang X, Bubeck S, Eldan R, Kalai A T, Lee Y T, Li Y (2023) Textbooks Are All You Need. arXiv preprint arXiv:2306.11644.
 
-Hoffmann J, Borgeaud S, Mensch A, Buchatskaya E, Cai T, Rutherford E, de Las Casas D, Hendricks L A, Welbl J, Clark A, Hennigan T, Noland E, Millican K, van den Driessche G, Damoc B, Guy A, Osindero S, Simonyan K, Elsen E, Rae J W, Vinyals O, Sifre L (2022) Training Compute-Optimal Large Language Models. In: Advances in Neural Information Processing Systems 35.
+Hoffmann J, Borgeaud S, Mensch A, Buchatskaya E, Cai T, Rutherford E, de Las Casas D, Hendricks L A, Welbl J, Clark A, Hennigan T, Noland E, Millican K, van den Driessche G, Damoc B, Guy A, Osindero S, Simonyan K, Elsen E, Rae J W, Vinyals O, Sifre L (2022) Training Compute-Optimal Large Language Models. In: Advances in Neural Information Processing Systems 35. arXiv:2203.15556.
 
 Jia R, Dao D, Wang B, Hubis F A, Hynes N, Gürel N M, Li B, Zhang C, Song D, Spanos C J (2019) Towards Efficient Data Valuation Based on the Shapley Value. In: Proceedings of the 22nd International Conference on Artificial Intelligence and Statistics (AISTATS), pp 1167–1176.
 

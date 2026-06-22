@@ -444,7 +444,7 @@ Combined with P09 and the medical and financial cases, a mature AI privacy gover
 
 Shokri R, Stronati M, Song C, Shmatikov V (2017) Membership Inference Attacks against Machine Learning Models. In 2017 IEEE Symposium on Security and Privacy (SP), pp 3-18.
 
-Zhu L, Liu Z, Han S (2019) Deep Leakage from Gradients. Advances in Neural Information Processing Systems, 32.
+Zhu L, Liu Z, Han S (2019) Deep Leakage from Gradients. Advances in Neural Information Processing Systems, 32. arXiv:1906.08935.
 
 Geiping J, Bauermeister H, Droge H, Moeller M (2020) Inverting Gradients: How Easy Is It to Break Privacy in Federated Learning? Advances in Neural Information Processing Systems, 33, 16937-16947.
 
@@ -452,17 +452,17 @@ Dwork C (2011) Differential Privacy. In Encyclopedia of Cryptography and Securit
 
 Abadi M, Chu A, Goodfellow I, McMahan H B, Mironov I, Talwar K, Zhang L (2016) Deep Learning with Differential Privacy. In Proceedings of the 2016 ACM SIGSAC Conference on Computer and Communications Security, pp 308-318.
 
-Erlingsson U, Pihur V, Korolova A (2014) RAPPOR: Randomized Aggregatable Privacy-Preserving Ordinal Response. In Proceedings of the 2014 ACM SIGSAC Conference on Computer and Communications Security, pp 1054-1067.
+Erlingsson U, Pihur V, Korolova A (2014) RAPPOR: Randomized Aggregatable Privacy-Preserving Ordinal Response. In Proceedings of the 2014 ACM SIGSAC Conference on Computer and Communications Security, pp 1054-1067. arXiv:1407.6981.
 
-McMahan H B, Ramage D, Talwar K, Zhang L (2018) Learning Differentially Private Recurrent Language Models. International Conference on Learning Representations.
+McMahan H B, Ramage D, Talwar K, Zhang L (2018) Learning Differentially Private Recurrent Language Models. International Conference on Learning Representations. arXiv:1710.06963.
 
-Kairouz P, McMahan H B (2021) Advances and Open Problems in Federated Learning. Foundations and Trends in Machine Learning, 14(1-2), 1-210.
+Kairouz P, McMahan H B (2021) Advances and Open Problems in Federated Learning. Foundations and Trends in Machine Learning, 14(1-2), 1-210. https://doi.org/10.1561/2200000083.
 
 Bagdasaryan E, Veit A, Hua Y, Estrin D, Shmatikov V (2020) How To Backdoor Federated Learning. In Proceedings of the Twenty Third International Conference on Artificial Intelligence and Statistics, pp 2938-2948.
 
 Yang Q, Liu Y, Chen T, Tong Y (2019) Federated Machine Learning: Concept and Applications. ACM Transactions on Intelligent Systems and Technology, 10(2), 1-19.
 
-Bonawitz K, Ivanov V, Kreuter B, Marcedone A, McMahan H B, Patel S, Ramage D, Segal A, Seth K (2017) Practical Secure Aggregation for Privacy-Preserving Machine Learning. In Proceedings of the 2017 ACM SIGSAC Conference on Computer and Communications Security, pp 1175-1191.
+Bonawitz K, Ivanov V, Kreuter B, Marcedone A, McMahan H B, Patel S, Ramage D, Segal A, Seth K (2017) Practical Secure Aggregation for Privacy-Preserving Machine Learning. In Proceedings of the 2017 ACM SIGSAC Conference on Computer and Communications Security, pp 1175-1191. https://doi.org/10.1145/3133956.3133982.
 
 McMahan B, Moore E, Ramage D, Hampson S, y Arcas B A (2017) Communication-Efficient Learning of Deep Networks from Decentralized Data. In Artificial Intelligence and Statistics, pp 1273-1282.
 
@@ -470,16 +470,16 @@ Zhao Y, Li M, Lai L, Suda N, Civin D, Chandra V (2018) Federated Learning with N
 
 Li T, Sahu A K, Zaheer M, Sanjabi M, Talwalkar A, Smith V (2020) Federated Optimization in Heterogeneous Networks. Proceedings of Machine Learning and Systems, 2, 429-450.
 
-Mohassel P, Zhang Y (2017) SecureML: A System for Scalable Privacy-Preserving Machine Learning. In 2017 IEEE Symposium on Security and Privacy (SP), pp 19-38.
+Mohassel P, Zhang Y (2017) SecureML: A System for Scalable Privacy-Preserving Machine Learning. In 2017 IEEE Symposium on Security and Privacy (SP), pp 19-38. https://doi.org/10.1109/sp.2017.12.
 
 Gilad-Bachrach R, Dowlin N, Laine K, Lauter K, Naehrig M, Wernsing J (2016) CryptoNets: Applying Neural Networks to Encrypted Data with High Throughput and Accuracy. In International Conference on Machine Learning, pp 201-210.
 
 Tramer F, Boneh D (2019) Slalom: Fast, Verifiable and Private Execution of Neural Networks in Trusted Hardware. International Conference on Learning Representations.
 
-Hu E J, Shen Y, Wallis P, Allen-Zhu Z, Li Y, Wang S, Wang L, Chen W, others (2022) LoRA: Low-Rank Adaptation of Large Language Models. International Conference on Learning Representations.
+Hu E J, Shen Y, Wallis P, Allen-Zhu Z, Li Y, Wang S, Wang L, Chen W, others (2022) LoRA: Low-Rank Adaptation of Large Language Models. International Conference on Learning Representations. arXiv:2106.09685.
 
-Kuang W, Qian B, Li Z, Chen D, Gao D, Pan X, Xie Y, Li Y, Ding B, Zhou J (2024) FederatedScope-LLM: A Comprehensive Package for Fine-Tuning Large Language Models in Federated Learning. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 5260-5271.
+Kuang W, Qian B, Li Z, Chen D, Gao D, Pan X, Xie Y, Li Y, Ding B, Zhou J (2024) FederatedScope-LLM: A Comprehensive Package for Fine-Tuning Large Language Models in Federated Learning. In Proceedings of the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining, pp 5260-5271. https://doi.org/10.1145/3637528.3671573.
 
 Blanchard P, El Mhamdi E M, Guerraoui R, Stainer J (2017) Machine Learning with Adversaries: Byzantine Tolerant Gradient Descent. Advances in Neural Information Processing Systems, 30.
 
-Sheller M J, Edwards B, Reina G A, others (2020) Federated Learning in Medicine: Facilitating Multi-Institutional Collaborations without Sharing Patient Data. Scientific Reports, 10(1), 12598.
+Sheller M J, Edwards B, Reina G A, others (2020) Federated Learning in Medicine: Facilitating Multi-Institutional Collaborations without Sharing Patient Data. Scientific Reports, 10(1), 12598. https://doi.org/10.1038/s41598-020-69250-1.

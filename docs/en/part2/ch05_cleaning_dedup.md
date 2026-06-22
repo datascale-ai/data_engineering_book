@@ -322,7 +322,7 @@ def detect_and_redact_pii(text: str) -> tuple[str, list]:
     return text, found
 ```
 
-**Named Entity Recognition (NER) models** cover PII types that are difficult to enumerate with rules, such as real personal names, addresses, and organization names. It is recommended to use spaCy (Honnibal et al. 2020) with its Chinese model (`zh_core_web_trf`) or open-source Chinese NER models available on HuggingFace to identify named entities such as persons (PER), locations (LOC), and organizations (ORG), then determine based on context whether redaction is necessary.
+**Named Entity Recognition (NER) models** cover PII types that are difficult to enumerate with rules, such as real personal names, addresses, and organization names. It is recommended to use spaCy (Honnibal et al. 2023) with its Chinese model (`zh_core_web_trf`) or open-source Chinese NER models available on HuggingFace to identify named entities such as persons (PER), locations (LOC), and organizations (ORG), then determine based on context whether redaction is necessary.
 
 ---
 
@@ -519,7 +519,7 @@ After cleaning, deduplication, and decontamination are complete, the raw corpus 
 
 ## References
 
-Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.
+Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29. https://doi.org/10.1109/sequen.1997.666900.
 
 Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.
 
@@ -528,6 +528,8 @@ Honnibal M, Montani I, Van Landeghem S, Boyd A (2023) explosion/spaCy: v3.7.2: F
 Indyk P, Motwani R (1998) Approximate Nearest Neighbors: Towards Removing the Curse of Dimensionality. In: Proceedings of the 30th Annual ACM Symposium on Theory of Computing, pp 604-613.
 
 Joulin A, Grave E, Bojanowski P, Douze M, Jegou H, Mikolov T (2017) FastText.zip: Compressing Text Classification Models. arXiv preprint arXiv:1612.03651.
+
+Nait Saada T, Bethune L, Klein M, Grangier D, Cuturi M, Ablin P (2025) The Data-Quality Illusion: Rethinking Classifier-Based Quality Filtering for LLM Pretraining. arXiv preprint arXiv:2510.00866.
 
 Penedo G, Kydlíček H, Ben Allal L, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.
 

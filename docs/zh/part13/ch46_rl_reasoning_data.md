@@ -610,7 +610,7 @@ Zelikman E, Wu Y, Mu J, Goodman N (2022) STaR: Bootstrapping Reasoning with Reas
 
 Madaan A, Tandon N, Gupta P, Hallinan S, Gao L, Wiegreffe S, Alon U, Dziri N, Prabhumoye S, Yang Y, Gupta S, Majumder B P, Hermann K, Welleck S, Yazdanbakhsh A, Clark P (2023) Self-Refine: Iterative Refinement with Self-Feedback. Advances in Neural Information Processing Systems, 36, 46534-46594.
 
-Lightman H, Kosaraju V, Burda Y, Edwards H, Baker B, Lee T, Leike J, Schulman J, Sutskever I, Cobbe K (2024) Let's Verify Step by Step. International Conference on Learning Representations.
+Lightman H, Kosaraju V, Burda Y, Edwards H, Baker B, Lee T, Leike J, Schulman J, Sutskever I, Cobbe K (2024) Let's Verify Step by Step. International Conference on Learning Representations. arXiv:2305.20050.
 
 Zheng L, Chiang W-L, Sheng Y, Zhuang S, Wu Z, Zhuang Y, Lin Z, Li Z, Li D, Xing E, Zhang H, Gonzalez J, Stoica I (2023) Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. Advances in Neural Information Processing Systems, 36, 46595-46623.
 
@@ -622,8 +622,8 @@ Shi F, Suzgun M, Freitag M, Wang X, Srivats S, Vosoughi S, Chung H W, Tay Y, Rud
 
 Jaech A, Kalai A, Lerer A, Richardson A, El-Kishky A, Low A, Helyar A, Madry A, Beutel A, Carney A, others (2024) OpenAI o1 System Card. arXiv preprint arXiv:2412.16720.
 
-Ott S, Hebenstreit K, Liévin V, others (2023) ThoughtSource: A Central Hub for Large Language Model Reasoning Data. Scientific Data, 10(1), 528.
+Ott S, Hebenstreit K, Liévin V, others (2023) ThoughtSource: A Central Hub for Large Language Model Reasoning Data. Scientific Data, 10(1), 528. https://doi.org/10.1038/s41597-023-02433-3.
 
 Hsieh C-Y, Li C-L, Yeh C-K, Nakhost H, Fujii Y, Ratner A, Krishna R, Lee C-Y, Pfister T (2023) Distilling Step-by-Step! Outperforming Larger Language Models with Less Training Data and Smaller Model Sizes. Findings of the Association for Computational Linguistics: ACL 2023, pp 8003-8017.
 
-Patil S G, Zhang T, Wang X, Gonzalez J E (2024) Gorilla: Large Language Model Connected with Massive APIs. Advances in Neural Information Processing Systems, 38.
+Patil S G, Zhang T, Wang X, Gonzalez J E (2024) Gorilla: Large Language Model Connected with Massive APIs. Advances in Neural Information Processing Systems, 38. arXiv:2305.15334.

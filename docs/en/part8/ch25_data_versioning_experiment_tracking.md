@@ -658,7 +658,7 @@ Zaharia et al.'s "Accelerating the Machine Learning Lifecycle with MLflow" (2018
 
 ## References
 
-Amershi S, Begel A, Bird C, DeLine R, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice (ICSE-SEIP), pp 291-300.
+Amershi S, Begel A, Bird C, DeLine R, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice (ICSE-SEIP), pp 291-300. https://doi.org/10.1109/icse-seip.2019.00042.
 
 Armbrust M, Ghodsi A, Xin R, Zaharia M (2020) Delta Lake: High-Performance ACID Table Storage over Cloud Object Stores. Proceedings of the VLDB Endowment 13(12):3411-3424.
 
@@ -668,31 +668,31 @@ Breck E, Cai S, Nielsen E, Salib M, Sculley D (2017) The ML Test Score: A Rubric
 
 Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for Machine Learning. In: Proceedings of Machine Learning and Systems 1, pp 334-347.
 
-Buneman P, Khanna S, Tan W-C (2001) Why and Where: A Characterization of Data Provenance. In: Proceedings of the 8th International Conference on Database Theory (ICDT), pp 316-330.
+Buneman P, Khanna S, Tan W-C (2001) Why and Where: A Characterization of Data Provenance. In: Proceedings of the 8th International Conference on Database Theory (ICDT), pp 316-330. https://doi.org/10.1007/3-540-44503-x_20.
 
 DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications.
 
 DVC Documentation (2024) Data Version Control Documentation. Available at: https://dvc.org/doc.
 
-Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92.
+Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92. https://doi.org/10.1145/3458723.
 
-Kreuzberger D, Kühl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879.
+Kreuzberger D, Kühl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879. arXiv:2205.02302.
 
-Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229.
+Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229. https://doi.org/10.1145/3287560.3287596.
 
 Moreau L, Missier P (eds.) (2013) PROV-DM: The PROV Data Model. W3C Recommendation.
 
-Peng R D (2011) Reproducible Research in Computational Science. Science 334(6060):1226-1227.
+Peng R D (2011) Reproducible Research in Computational Science. Science 334(6060):1226-1227. https://doi.org/10.1126/science.1213847.
 
 Polyzotis N, Roy S, Whang S E, Zinkevich M (2017) Data Management Challenges in Production Machine Learning. In: Proceedings of the 2017 ACM International Conference on Management of Data (SIGMOD), pp 1723-1726.
 
-Sandve G K, Nekrutenko A, Taylor J, Hovig E (2013) Ten Simple Rules for Reproducible Computational Research. PLOS Computational Biology 9(10):e1003285.
+Sandve G K, Nekrutenko A, Taylor J, Hovig E (2013) Ten Simple Rules for Reproducible Computational Research. PLOS Computational Biology 9(10):e1003285. https://doi.org/10.1371/journal.pcbi.1003285.
 
 Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503-2511.
 
-Simmhan Y L, Plale B, Gannon D (2005) A Survey of Data Provenance in e-Science. ACM SIGMOD Record 34(3):31-36.
+Simmhan Y L, Plale B, Gannon D (2005) A Survey of Data Provenance in e-Science. ACM SIGMOD Record 34(3):31-36. https://doi.org/10.1145/1084805.1084812.
 
-Stodden V, Leisch F, Peng R D (eds.) (2014) Implementing Reproducible Research. CRC Press.
+Stodden V, Leisch F, Peng R D (eds.) (2014) Implementing Reproducible Research. CRC Press. https://doi.org/10.1201/b16868.
 
 Vartak M, Subramanyam H, Lee W-E, Viswanathan S, Husnoo S, Madden S, Zaharia M (2016) ModelDB: A System for Machine Learning Model Management. In: Proceedings of the Workshop on Human-In-the-Loop Data Analytics (HILDA), Article 14.
 

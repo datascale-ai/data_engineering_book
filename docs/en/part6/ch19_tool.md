@@ -528,17 +528,17 @@ Parisi, A., Zhao, Y., & Fiedel, N. (2022). TALM: Tool Augmented Language Models.
 
 Nakano, R., Hilton, J., Balaji, S., et al. (2021). WebGPT: Browser-Assisted Question-Answering with Human Feedback. arXiv:2112.09332.
 
-Yao, S., Zhao, J., Yu, D., et al. (2023). ReAct: Synergizing Reasoning and Acting in Language Models. International Conference on Learning Representations.
+Yao, S., Zhao, J., Yu, D., et al. (2023). ReAct: Synergizing Reasoning and Acting in Language Models. International Conference on Learning Representations. arXiv:2210.03629.
 
-Schick, T., Dwivedi-Yu, J., Dessì, R., et al. (2023). Toolformer: Language Models Can Teach Themselves to Use Tools. Advances in Neural Information Processing Systems, 36.
+Schick, T., Dwivedi-Yu, J., Dessì, R., et al. (2023). Toolformer: Language Models Can Teach Themselves to Use Tools. Advances in Neural Information Processing Systems, 36. arXiv:2302.04761.
 
-Li, M., Zhao, Y., Yu, B., et al. (2023). API-Bank: A Comprehensive Benchmark for Tool-Augmented LLMs. Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing, 3102–3116.
+Li, M., Zhao, Y., Yu, B., et al. (2023). API-Bank: A Comprehensive Benchmark for Tool-Augmented LLMs. Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing, 3102–3116. https://doi.org/10.18653/v1/2023.emnlp-main.187.
 
 Qin, Y., Liang, S., Ye, Y., et al. (2024). ToolLLM: Facilitating Large Language Models to Master 16000+ Real-World APIs. International Conference on Learning Representations.
 
-Patil, S. G., Zhang, T., Wang, X., & Gonzalez, J. E. (2024). Gorilla: Large Language Model Connected with Massive APIs. Advances in Neural Information Processing Systems, 37.
+Patil, S. G., Zhang, T., Wang, X., & Gonzalez, J. E. (2024). Gorilla: Large Language Model Connected with Massive APIs. Advances in Neural Information Processing Systems, 37. arXiv:2305.15334.
 
-Zhuang, Y., Yu, Y., Wang, K., et al. (2023). ToolQA: A Dataset for LLM Question Answering with External Tools. Advances in Neural Information Processing Systems, 36.
+Zhuang, Y., Yu, Y., Wang, K., et al. (2023). ToolQA: A Dataset for LLM Question Answering with External Tools. Advances in Neural Information Processing Systems, 36. https://doi.org/10.52202/075280-2180.
 
 Huang, Y., Shi, J., Li, Y., et al. (2023). MetaTool Benchmark for Large Language Models: Deciding Whether to Use Tools and Which to Use. arXiv:2310.03128.
 
@@ -546,13 +546,13 @@ Patil, S. G., Mao, H., Yan, F., et al. (2025). The Berkeley Function Calling Lea
 
 Yao, S., Shinn, N., Razavi, P., & Narasimhan, K. (2025). τ-bench: A Benchmark for Tool-Agent-User Interaction in Real-World Domains. International Conference on Learning Representations.
 
-Shinn, N., Cassano, F., Gopinath, A., et al. (2023). Reflexion: Language Agents with Verbal Reinforcement Learning. Advances in Neural Information Processing Systems, 36.
+Shinn, N., Cassano, F., Gopinath, A., et al. (2023). Reflexion: Language Agents with Verbal Reinforcement Learning. Advances in Neural Information Processing Systems, 36. arXiv:2303.11366.
 
-Yang, J., Jimenez, C. E., Wettig, A., et al. (2024). SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering. Advances in Neural Information Processing Systems, 37.
+Yang, J., Jimenez, C. E., Wettig, A., et al. (2024). SWE-agent: Agent-Computer Interfaces Enable Automated Software Engineering. Advances in Neural Information Processing Systems, 37. https://doi.org/10.52202/079017-1601.
 
 Ruan, Y., Dong, H., Wang, A., et al. (2024). Identifying the Risks of LM Agents with an LM-Emulated Sandbox. International Conference on Learning Representations.
 
-Greshake, K., Abdelnabi, S., Mishra, S., et al. (2023). Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection. Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security, 79–90.
+Greshake, K., Abdelnabi, S., Mishra, S., et al. (2023). Not What You've Signed Up For: Compromising Real-World LLM-Integrated Applications with Indirect Prompt Injection. Proceedings of the 16th ACM Workshop on Artificial Intelligence and Security, 79–90. https://doi.org/10.1145/3605764.3623985.
 
 Liu, Y., Deng, G., Li, Y., et al. (2023). Prompt Injection Attack against LLM-Integrated Applications. arXiv:2306.05499.
 

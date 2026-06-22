@@ -534,7 +534,7 @@
 
 Abraham R, Schneider J, vom Brocke J (2019) Data governance: A conceptual framework, structured review, and research agenda. International Journal of Information Management 49:424-438.
 
-Alhassan I, Sammon D, Daly M (2016) Data governance activities: an analysis of the literature. Journal of Decision Systems 25(sup1):64-75.
+Alhassan I, Sammon D, Daly M (2016) Data governance activities: an analysis of the literature. Journal of Decision Systems 25(sup1):64-75. https://doi.org/10.1080/12460125.2016.1187397.
 
 DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications.
 
@@ -544,9 +544,9 @@ Ferraiolo D F, Kuhn D R (1992) Role-Based Access Controls. In: Proceedings of th
 
 Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92.
 
-Hu V C, Ferraiolo D, Kuhn R, Schnitzer A, Sandlin K, Miller R, Scarfone K (2014) Guide to Attribute Based Access Control (ABAC) Definition and Considerations. NIST Special Publication 800-162.
+Hu V C, Ferraiolo D, Kuhn R, Schnitzer A, Sandlin K, Miller R, Scarfone K (2014) Guide to Attribute Based Access Control (ABAC) Definition and Considerations. NIST Special Publication 800-162. https://doi.org/10.6028/nist.sp.800-162.
 
-Khatri V, Brown C V (2010) Designing data governance. Communications of the ACM 53(1):148-152.
+Khatri V, Brown C V (2010) Designing data governance. Communications of the ACM 53(1):148-152. https://doi.org/10.1145/1629175.1629210.
 
 Ladley J (2019) Data Governance: How to Design, Deploy, and Sustain an Effective Data Governance Program, 2nd Edition. Academic Press.
 
@@ -556,9 +556,9 @@ Moody D, Walsh P (1999) Measuring the Value of Information: An Asset Valuation A
 
 National Institute of Standards and Technology (2020a) Security and Privacy Controls for Information Systems and Organizations. NIST Special Publication 800-53 Revision 5.
 
-National Institute of Standards and Technology (2020b) NIST Privacy Framework: A Tool for Improving Privacy through Enterprise Risk Management, Version 1.0.
+National Institute of Standards and Technology (2020b) NIST Privacy Framework: A Tool for Improving Privacy through Enterprise Risk Management, Version 1.0. https://doi.org/10.6028/nist.cswp.10.
 
-Otto B (2011) Data Governance. Business & Information Systems Engineering 3(4):241-244.
+Otto B (2011) Data Governance. Business & Information Systems Engineering 3(4):241-244. https://doi.org/10.1002/9781118269053.ch4.
 
 Reis J, Housley M (2022) Fundamentals of Data Engineering. O'Reilly Media.
 
@@ -570,4 +570,4 @@ Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young
 
 Weber K, Otto B, Österle H (2009) One Size Does Not Fit All: A Contingency Approach to Data Governance. ACM Journal of Data and Information Quality 1(1):4.
 
-Wilkinson M D, Dumontier M, Aalbersberg I J, Appleton G, Axton M, Baak A, Blomberg N, Boiten J-W, da Silva Santos L B, Bourne P E, Bouwman J, Brookes A J, Clark T, Crosas M, Dillo I, Dumon O, Edmunds S, Evelo C T, Finkers R, Gonzalez-Beltran A, Gray A J G, Groth P, Goble C, Grethe J S, Heringa J, 't Hoen P A C, Hooft R, Kuhn T, Kok R, Kok J, Lusher S J, Martone M E, Mons A, Packer A L, Persson B, Rocca-Serra P, Roos M, van Schaik R, Sansone S-A, Schultes E, Sengstag T, Slater T, Strawn G, Swertz M A, Thompson M, van der Lei J, van Mulligen E, Velterop J, Waagmeester A, Wittenburg P, Wolstencroft K, Zhao J, Mons B (2016) The FAIR Guiding Principles for scientific data management and stewardship. Scientific Data 3:160018.
+Wilkinson M D, Dumontier M, Aalbersberg I J, Appleton G, Axton M, Baak A, Blomberg N, Boiten J-W, da Silva Santos L B, Bourne P E, Bouwman J, Brookes A J, Clark T, Crosas M, Dillo I, Dumon O, Edmunds S, Evelo C T, Finkers R, Gonzalez-Beltran A, Gray A J G, Groth P, Goble C, Grethe J S, Heringa J, 't Hoen P A C, Hooft R, Kuhn T, Kok R, Kok J, Lusher S J, Martone M E, Mons A, Packer A L, Persson B, Rocca-Serra P, Roos M, van Schaik R, Sansone S-A, Schultes E, Sengstag T, Slater T, Strawn G, Swertz M A, Thompson M, van der Lei J, van Mulligen E, Velterop J, Waagmeester A, Wittenburg P, Wolstencroft K, Zhao J, Mons B (2016) The FAIR Guiding Principles for scientific data management and stewardship. Scientific Data 3:160018. https://doi.org/10.1038/sdata.2016.18.

@@ -645,7 +645,7 @@ Wei, J., Bosma, M., Zhao, V. Y., et al. (2022). *Finetuned Language Models Are Z
 
 Ouyang, L., Wu, J., Jiang, X., et al. (2022). *Training Language Models to Follow Instructions with Human Feedback*. Advances in Neural Information Processing Systems, 35, 27730–27744. arXiv:2203.02155.
 
-Christiano, P. F., Leike, J., Brown, T. B., et al. (2017). *Deep Reinforcement Learning from Human Preferences*. Advances in Neural Information Processing Systems, 30.
+Christiano, P. F., Leike, J., Brown, T. B., et al. (2017). *Deep Reinforcement Learning from Human Preferences*. Advances in Neural Information Processing Systems, 30. arXiv:1706.03741.
 
 Stiennon, N., Ouyang, L., Wu, J., et al. (2020). *Learning to Summarize from Human Feedback*. Advances in Neural Information Processing Systems, 33, 3008–3021. arXiv:2009.01325.
 

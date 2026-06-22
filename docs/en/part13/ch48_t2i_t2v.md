@@ -404,17 +404,17 @@ This chapter also concludes Part XI. The preceding chapters addressed the collec
 
 PySceneDetect Contributors (2026) PySceneDetect Documentation. Available at: https://www.scenedetect.com/docs/latest/.
 
-Gadre S Y, Ilharco G, Fang A, Hayase J, Ilharco G, Marten T, Wortsman M, Goyal S, Guha E, Jain H, others (2023) DataComp: In Search of the Next Generation of Multimodal Datasets. In: Advances in Neural Information Processing Systems 36.
+Gadre S Y, Ilharco G, Fang A, Hayase J, Ilharco G, Marten T, Wortsman M, Goyal S, Guha E, Jain H, others (2023) DataComp: In Search of the Next Generation of Multimodal Datasets. In: Advances in Neural Information Processing Systems 36. Available at: https://arxiv.org/abs/2304.14108.
 
-Ghosh S, Bhatt U, Bhattacharya R, Parmar P, Patel S, Islam M, Reddy K K, others (2023) GenEval: An Object-Focused Framework for Evaluating Text-to-Image Alignment. In: Advances in Neural Information Processing Systems 36.
+Ghosh S, Bhatt U, Bhattacharya R, Parmar P, Patel S, Islam M, Reddy K K, others (2023) GenEval: An Object-Focused Framework for Evaluating Text-to-Image Alignment. In: Advances in Neural Information Processing Systems 36. https://doi.org/10.52202/075280-2270.
 
-Kirstain Y, Polyak A, Singer U, Matiana S, Penna J, Levy O (2023) Pick-a-Pic: An Open Dataset of User Preferences for Text-to-Image Generation (PickScore). In: Advances in Neural Information Processing Systems 36.
+Kirstain Y, Polyak A, Singer U, Matiana S, Penna J, Levy O (2023) Pick-a-Pic: An Open Dataset of User Preferences for Text-to-Image Generation (PickScore). In: Advances in Neural Information Processing Systems 36. https://doi.org/10.52202/075280-1594.
 
 Open-Sora Team (2024) Open-Sora: Democratizing Efficient Video Production for All. arXiv preprint arXiv:2412.20404.
 
-Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, others (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. In: Advances in Neural Information Processing Systems 35:25278-25294.
+Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, others (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. In: Advances in Neural Information Processing Systems 35:25278-25294. Available at: https://arxiv.org/abs/2210.08402.
 
-Wang W, Lv Q, Yu W, Hong W, Qi J, Wang Y, Ji J, Yang Z, Zhao L, Song X, others (2023) CogVLM: Visual Expert for Pretrained Language Models. In: Advances in Neural Information Processing Systems 36.
+Wang W, Lv Q, Yu W, Hong W, Qi J, Wang Y, Ji J, Yang Z, Zhao L, Song X, others (2023) CogVLM: Visual Expert for Pretrained Language Models. In: Advances in Neural Information Processing Systems 36. https://doi.org/10.52202/079017-3860.
 
 Wu X, Sun K, Zhu F, Zhao R, Li H (2023) Human Preference Score v2: A Solid Benchmark for Evaluating Human Preferences of Text-to-Image Synthesis (HPSv2). arXiv preprint arXiv:2306.09341.
 

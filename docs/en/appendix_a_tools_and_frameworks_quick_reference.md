@@ -66,7 +66,7 @@ Object storage stores files but does not automatically provide version semantics
 | lakeFS | Branches and commits over object storage | Lakehouse-style data governance and collaboration |
 | Delta Lake / Apache Iceberg | Large tabular data governance | Large-scale structured samples and metadata |
 
-For cross-institution dataset construction, public evaluation, and teaching reproduction, a minimal combination is often enough: **Git for scripts and specifications, DVC or an equivalent for data versions, object storage for large files, and release pages for external documentation**.
+For cross-institution dataset construction, public evaluation, and teaching reproduction, a minimal combination is often enough: **Git for scripts and specifications, DVC or an equivalent for data versions, object storage for large files, and release pages for external documentation**. This combination is easy to hand off, easy to reproduce in courses, and consistent with the governance language used in Part VIII and Part XII. Concrete data-versioning commands, remote configuration, and pipeline syntax should follow the official DVC documentation (DVC Contributors 2026).
 
 ## A.4 Cleaning, Validation, and Training Preparation Tools
 
@@ -124,7 +124,7 @@ If a project will become an open benchmark or course experiment, preserve annota
 
 ### A.5.2 Experiment Tracking Must Bind Data Versions
 
-Tools such as `MLflow` and `Weights & Biases` are often misused by recording only model parameters and metrics while omitting data versions, slice results, and evaluation-script versions. Logs then look rich but cannot explain where improvement came from.
+Tools such as `MLflow` and `Weights & Biases` are often misused by recording only model parameters and metrics while omitting data versions, slice results, and evaluation-script versions. Logs then look rich but cannot explain where improvement came from. If MLflow is used as the experiment-tracking entry point, run records, artifact management, and model registry details should follow the official MLflow documentation (MLflow Authors 2026).
 
 Track at least:
 
@@ -194,7 +194,7 @@ Without these capabilities, a team may get good final accuracy but still be unab
 
 This is suitable for cross-institution specialized datasets, course reproduction, and medium-scale research projects. It is lightweight and relatively easy to hand off.
 
-If a dataset is organized and distributed through the Hugging Face Datasets ecosystem, the loading script, dataset card, and split configuration should follow the Hugging Face Datasets Documentation.
+If a dataset is organized and distributed through the Hugging Face Datasets ecosystem, the loading script, dataset card, and split configuration should follow the official Hugging Face Datasets documentation (Hugging Face 2026).
 
 ### A.7.2 Enterprise Data Platform Combination
 
@@ -286,11 +286,11 @@ Third, for university collaboration, open benchmarks, and teaching reproduction,
 
 ## References
 
-Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12): 86-92.
+Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12): 86-92. https://doi.org/10.1145/3458723.
 
-Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229.
+Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229. https://doi.org/10.1145/3287560.3287596.
 
-Pushkarna M, Zaldivar A, Kjartansson O, Cicconi P, Chen V, Efrat A, Zou Y, Mueller J, Taly A, Ehyaei A, Karkkainen K, Marathe A, Han X, Mittal A, Schuster T, Yarmand M, Sohn H, Dwarakanath N C, McCann B (2022) Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 1776-1826.
+Pushkarna M, Zaldivar A, Kjartansson O, Cicconi P, Chen V, Efrat A, Zou Y, Mueller J, Taly A, Ehyaei A, Karkkainen K, Marathe A, Han X, Mittal A, Schuster T, Yarmand M, Sohn H, Dwarakanath N C, McCann B (2022) Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI. In: Proceedings of the 2022 ACM Conference on Fairness, Accountability, and Transparency, pp 1776-1826. https://doi.org/10.1145/3531146.3533231.
 
 DVC Contributors (2026) Data Version Control Documentation. Available at: https://dvc.org/doc.
 
