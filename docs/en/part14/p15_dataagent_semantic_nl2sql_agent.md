@@ -145,23 +145,17 @@ This case highlights DataAgent's distinctive capabilities: NL2SQL, Semantic Serv
 
 ## 4. Overall Architecture: From Business Question to Auditable Data Asset
 
-The project architecture has six layers. The following figure organizes entry, orchestration, query, asset, and governance relationships into a layered architecture.
-
-![Layered architecture for a DataAgent enterprise semantic BI assistant](../../images/part14/p15_dataagent_semantic_bi_layered_architecture_en.png)
-
-*Figure P15-1: Layered architecture for the DataAgent enterprise semantic BI assistant.*
-
-Figure P15-1 should be read from top to bottom rather than as a metric chart with axes. Natural-language questions first enter through users, external systems, analysis tasks, or system calls. The interface layer then normalizes these requests through the CLI, Python SDK, or A2A server. The main agent layer decomposes the request, applies the scenario prompt, and selects tools. The semantic and query layer retrieves schema and metric context through MetaVisor and GaussVector before delegating SQL generation and validation to the NL2SQL sub-agent. The execution and asset layer turns database execution results into SQL, CSV, report, and workspace files. Finally, the governance and review layer records traces, tool states, configuration versions, and acceptance tests. The left vertical rail summarizes the operational sequence from input and orchestration, through query and execution, to delivery and governance; the braces on the right distinguish the entry surface, the trusted-result path, and the continuous-improvement feedback area.
-
-Figure P15-2 places the project in the broader DataGallery ecosystem:
+The semantic BI assistant in this chapter is not an isolated NL2SQL component. It is an application form inside the broader DataGallery ecosystem. It uses DataAgent for task understanding, tool orchestration, and execution control; Semantic Service for metadata, metric definitions, and semantic retrieval; and Data Studio and Data Ops to connect BI capability with applications, evaluation, observation, and continuous improvement. Figure P15-1 shows the architectural relationships that support this project.
 
 ![DataGallery ecosystem architecture around DataAgent, Semantic Service, Data Studio, Data Ops, and foundation infrastructure](../../images/part14/p15_datagallery_architecture_vector.svg)
 
-*Figure P15-2: DataGallery ecosystem architecture around DataAgent.*
+*Figure P15-1: DataGallery ecosystem architecture around DataAgent.*
 
-Figure P15-2 is not a sequential pipeline and has no numeric axes. It should be read by spatial grouping. The left block is DataGallery Core, which contains the reusable capabilities used by this project. Within it, the Data Intelligence Framework exposes the DataAgent SDK, the Data Agent Engine covers intent understanding, schema linking, SQL generation, execution validation, reflection and repair, and confidence selection, and the Data Agent Shell provides privilege control, tool guardrails, and privacy-aware routing. Below the agent layer, the Semantic Distributed Runtime supplies the Semantic Service SDK, metadata ingestion, ontology modeling, and metric registry capabilities; the Data System Service provides data access, sandboxing, memory storage, and Agent UI/Web support.
+At the core of the architecture, DataGallery Core provides the capabilities used most directly by the semantic BI assistant. The Data Intelligence Framework exposes the DataAgent SDK, while the Data Agent Engine is responsible for intent understanding, schema linking, SQL generation, execution validation, reflection and repair, and confidence selection. The Data Agent Shell defines runtime boundaries through privilege control, tool guardrails, and privacy-aware routing. In enterprise BI, these capabilities determine whether the model can understand a business question, select the right tool, and translate natural language into a controlled data operation.
 
-The right block shows the product and operations surfaces built on top of the core capabilities. Data Studio contains application scenarios such as text-to-SQL, data analysis, data engineering, and business process automation. Data Ops contains lifecycle functions such as full-chain visual tuning, benchmark and evaluation, and observation. The bottom row is the foundation layer: models, data infrastructure, and hardware or chipsets. For the semantic BI assistant in this chapter, the most important path is from models and data infrastructure into DataGallery Core, then through DataAgent and Semantic Service capabilities, and finally into text-to-SQL and observation surfaces for delivery and continuous improvement.
+The semantic and data-support layers provide the context needed for reliable query generation. Semantic Distributed Runtime turns metadata ingestion, ontology modeling, and metric registry management into callable semantic services, so NL2SQL can use business descriptions, field meanings, metric definitions, and join relations instead of relying only on table and column names. Data System Service supplies data access, sandboxing, memory storage, and Agent UI/Web support, allowing SQL files, CSV outputs, reports, and runtime traces to become reviewable engineering artifacts.
+
+At the application and operations level, Data Studio corresponds to text-to-SQL, data analysis, data engineering, and business-process scenarios. Data Ops provides lifecycle capabilities such as full-chain visual tuning, benchmark evaluation, and observation. The foundation layer consists of models, data infrastructure, and hardware or chipsets. The key path in this project is therefore: a business question enters DataAgent; DataAgent uses semantic services to understand the data context and invoke NL2SQL capabilities; the resulting assets then flow into workspace, evaluation, and observation mechanisms so the answer can be audited, regressed, and improved over time.
 
 ### 4.1 Interface Layer
 
@@ -591,7 +585,7 @@ A complete BI task can be described as:
 
 ![Runtime flow of the DataAgent enterprise semantic BI assistant](../../images/part14/p15_dataagent_semantic_bi_sequence_en.svg)
 
-*Figure P15-3: Runtime flow of the DataAgent enterprise semantic BI assistant.*
+*Figure P15-2: Runtime flow of the DataAgent enterprise semantic BI assistant.*
 
 ### 10.2 Run with SDK
 

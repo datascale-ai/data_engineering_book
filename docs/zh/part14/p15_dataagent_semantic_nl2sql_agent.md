@@ -144,21 +144,17 @@ DataAgent 的价值在于把这些环节组织成一个可配置的 Agent 数据
 
 ## 4. 整体架构：从业务问题到可审计数据资产
 
-项目整体架构可以拆成六层。为了便于出版排版，下图将入口、编排、查询、资产和治理关系整理成分层架构。
-
-![DataAgent 企业语义问数助手分层架构](../../images/part14/p15_dataagent_semantic_bi_layered_architecture.svg)
-
-*图 P15-1：DataAgent 企业语义问数助手分层架构。*
-
-图 P15-2 将本项目放回更完整的 DataGallery 生态中观察：
+本章的语义问数助手不是孤立的 NL2SQL 组件，而是 DataGallery 生态中的一个应用形态。它依赖 DataAgent 完成任务理解、工具编排和执行控制，依赖 Semantic Service 承载元数据、指标口径和语义检索能力，并通过 Data Studio 与 Data Ops 将问数能力进一步连接到业务应用、评测、观测和持续改进环节。图 P15-1 展示了这一项目所处的整体技术关系。
 
 ![围绕 DataAgent、Semantic Service、Data Studio、Data Ops 与基础设施展开的 DataGallery 生态架构](../../images/part14/p15_datagallery_architecture_vector.svg)
 
-*图 P15-2：围绕 DataAgent 展开的 DataGallery 生态架构。*
+*图 P15-1：围绕 DataAgent 展开的 DataGallery 生态架构。*
 
-图 P15-2 不是按时间展开的顺序流程图，也没有数值坐标轴，应按空间分组理解。左侧的 DataGallery Core 是本项目最直接依赖的核心能力区。其中，Data Intelligence Framework 暴露 DataAgent SDK；Data Agent Engine 覆盖意图理解、schema linking、SQL 生成、执行校验、反思修复和置信度选择；Data Agent Shell 负责权限控制、工具护栏和隐私感知路由。Agent 层下方的 Semantic Distributed Runtime 通过 Semantic Service SDK 承载元数据接入、本体建模和指标注册；Data System Service 提供数据访问、系统沙箱、记忆存储和 Agent UI/Web 支持。
+从核心能力看，图中左侧的 DataGallery Core 是语义问数助手的主要承载区。Data Intelligence Framework 提供 DataAgent SDK，并通过 Data Agent Engine 完成意图理解、schema linking、SQL 生成、执行校验、反思修复和置信度选择；Data Agent Shell 则承担权限控制、工具护栏和隐私感知路由等运行边界控制。对于企业问数场景，这些能力共同决定了模型是否能够在受控范围内理解业务问题、选择合适工具，并把自然语言请求转化为可执行的数据操作。
 
-右侧区域表示构建在核心能力之上的产品与运营界面。Data Studio 面向 Text-to-SQL、数据分析、数据工程和业务流程等应用场景；Data Ops 面向全链路可视化调优、基准评估和观测等生命周期能力。底部的 Models、Data Infrastructure、Hardware/Chipsets 构成基础层。对本章的语义问数助手而言，关键关系是：模型与数据基础设施支撑 DataGallery Core，DataAgent 与 Semantic Service 在核心层完成问数编排和语义增强，最终将能力连接到 Text-to-SQL 与观测界面，用于业务交付和持续改进。
+从语义和数据支撑看，Semantic Distributed Runtime 将元数据接入、本体建模和指标注册沉淀为可调用的语义服务，使 NL2SQL 不只依赖表名和字段名，而能够利用业务描述、字段含义、指标口径和关联关系完成更稳健的 schema 召回。Data System Service 则提供数据访问、系统沙箱、记忆存储和 Agent UI/Web 等基础能力，使一次问数任务产生的 SQL、CSV、报告和运行轨迹能够进入可复核的工程闭环。
+
+从应用和运营看，右侧的 Data Studio 对应 Text-to-SQL、数据分析、数据工程和业务流程等上层场景，Data Ops 对应全链路可视化调优、基准评估和观测能力。底部的 Models、Data Infrastructure 和 Hardware/Chipsets 构成基础层，为模型调用、数据库访问和运行资源提供支撑。因此，本项目的关键链路可以概括为：业务问题进入 DataAgent，DataAgent 通过语义服务理解数据上下文并调用 NL2SQL 能力，结果再通过 workspace、评测和观测机制沉淀为可审计、可回归、可持续改进的数据资产。
 
 ### 4.1 接口层
 
@@ -555,7 +551,7 @@ CORE:
 
 ![DataAgent 企业语义问数助手运行流程](../../images/part14/p15_dataagent_semantic_bi_sequence.svg)
 
-*图 P15-3：DataAgent 企业语义问数助手运行流程。*
+*图 P15-2：DataAgent 企业语义问数助手运行流程。*
 
 ### 10.2 使用 SDK 运行
 
