@@ -67,7 +67,7 @@ VoiceStyleControl should therefore not be understood simply as a TTS dataset. Th
 
 ### VoiceStyleControl.3: Sample Schema: Separate Modeling of the Semantic Channel and Style Channel
 
-![Figure 42-1: Dual-channel schema for semantic response and style control](../../images/part12/ch42_fig02_dual_channel_schema.svg)
+![Figure 42-1: Dual-channel schema for semantic response and style control](../../images/part12/ch42_fig02_dual_channel_schema_en.svg)
 
 *Figure 42-1: Dual-channel schema for semantic response and style control. The semantic channel answers "what to say," the style channel answers "with which voice and emotion to say it," and the acoustic supervision channel binds both to audio files, speech tokens, and sampling configuration.*
 
@@ -268,7 +268,7 @@ Once training samples enter the dataloader, they are projected from the standard
 
 ### VoiceStyleControl.4: Construction Pipeline: From Text Conversation to Controllable Voice Records
 
-![Figure 42-2: VoiceStyleControl data construction pipeline](../../images/part12/ch42_fig01_data_pipeline.svg)
+![Figure 42-2: VoiceStyleControl data construction pipeline](../../images/part12/ch42_fig01_data_pipeline_en.svg)
 
 *Figure 42-2: VoiceStyleControl data construction pipeline. Text conversation or style content is first assigned speaker and emotion conditions, then audio is generated or collected through the authorized reference voice pool, and finally the samples are tokenized, quality-checked, balanced, and packaged.*
 
@@ -362,7 +362,7 @@ The packaging artifacts include not only JSONL, Parquet, or Hugging Face Dataset
 
 ### VoiceStyleControl.5: Quality Assessment and Closed-Loop Remediation
 
-![Figure 42-3: Quality assessment and data flywheel closed loop](../../images/part12/ch42_fig03_quality_loop.svg)
+![Figure 42-3: Quality assessment and data flywheel closed loop](../../images/part12/ch42_fig03_quality_loop_en.svg)
 
 *Figure 42-3: Quality assessment and data flywheel closed loop. Automated validation, reverse ASR, style assessment, and manual sampling together form a defective-sample queue that feeds back into re-synthesis, re-annotation, downweighting, or removal.*
 
