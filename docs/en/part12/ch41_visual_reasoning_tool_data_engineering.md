@@ -101,9 +101,14 @@ The dataset's shark-attack example illustrates subchart partitioning, question c
 
 #### Case A.3.1 Physical Layers of One Compound Infographic
 
-![Figure 41-4: Shark-attack compound infographic example](../../images/part12/ch39_04_shark_attack_infographic.jpg)
+<div style="display: flex; gap: 4px; align-items: center;">
+    <img src="../../images/part12/ch39_where-the-most-shark-attacks-occur-in-the-united-states_1.jpg" height="300">
+    <img src="../../images/part12/ch39_where-the-most-shark-attacks-occur-in-the-united-states_2.jpg" height="300">
+    <img src="../../images/part12/ch39_where-the-most-shark-attacks-occur-in-the-united-states_3.jpg" height="300">
+    <img src="../../images/part12/ch39_where-the-most-shark-attacks-occur-in-the-united-states_4.jpg" height="300">
+</div>
 
-*Figure 41-4. Example of a multi-chart infographic sample from the dataset (Shark Attacks), consisting of four distinct subcharts covering three categories of statistics: historical shark-attack county ranking in the United States, state-level shark attacks in the last ten years, and average annual accidental deaths in the United States.*
+*Figure 41-4. Example of a multi-chart infographic sample from the dataset (Shark Attacks), consisting of four distinct subcharts covering three categories of statistics: historical shark-attack county ranking in the United States, state-level shark attacks in the last ten years, and average annual accidental deaths in the United States. The original figure is vertically elongated and hard to read as a whole; it is thus divided into horizontally aligned subfigures.*
 
 The example is one integrated science infographic. Its internal regions belong to different chart types, statistical scopes, and data dimensions, while sharing the page title and side annotations:
 
