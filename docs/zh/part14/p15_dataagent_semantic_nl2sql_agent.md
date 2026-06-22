@@ -71,7 +71,7 @@ DataAgent；语义层；NL2SQL；企业问数；Agent 编排
 
 ## 可复现资源说明
 
-复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。若项目进一步接入企业指标口径、模型化语义层或数据构建流水线，可以参考 dbt 文档中的模型、测试和文档化机制 (dbt Labs 2026)，但本章不把 dbt 作为必需依赖。
+复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。若项目进一步接入企业指标口径、模型化语义层或数据构建流水线，可以参考 dbt 文档中的模型、测试和文档化机制（dbt Labs, 2026），但本章不把 dbt 作为必需依赖。
 
 ## 1. 项目背景：企业问数为什么需要 Agent 数据工程
 
@@ -150,11 +150,15 @@ DataAgent 的价值在于把这些环节组织成一个可配置的 Agent 数据
 
 *图 P15-1：DataAgent 企业语义问数助手分层架构。*
 
-DataAgent 仓库中的整体架构图如下：
+图 P15-2 将本项目放回更完整的 DataGallery 生态中观察：
 
-![DataAgent 整体架构图](../../images/part14/p15_dataagent_agent_excalidraw.png)
+![围绕 DataAgent、Semantic Service、Data Studio、Data Ops 与基础设施展开的 DataGallery 生态架构](../../images/part14/p15_datagallery_architecture_vector.svg)
 
-*图 P15-2：DataAgent 仓库整体架构图。*
+*图 P15-2：围绕 DataAgent 展开的 DataGallery 生态架构。*
+
+图 P15-2 不是按时间展开的顺序流程图，也没有数值坐标轴，应按空间分组理解。左侧的 DataGallery Core 是本项目最直接依赖的核心能力区。其中，Data Intelligence Framework 暴露 DataAgent SDK；Data Agent Engine 覆盖意图理解、schema linking、SQL 生成、执行校验、反思修复和置信度选择；Data Agent Shell 负责权限控制、工具护栏和隐私感知路由。Agent 层下方的 Semantic Distributed Runtime 通过 Semantic Service SDK 承载元数据接入、本体建模和指标注册；Data System Service 提供数据访问、系统沙箱、记忆存储和 Agent UI/Web 支持。
+
+右侧区域表示构建在核心能力之上的产品与运营界面。Data Studio 面向 Text-to-SQL、数据分析、数据工程和业务流程等应用场景；Data Ops 面向全链路可视化调优、基准评估和观测等生命周期能力。底部的 Models、Data Infrastructure、Hardware/Chipsets 构成基础层。对本章的语义问数助手而言，关键关系是：模型与数据基础设施支撑 DataGallery Core，DataAgent 与 Semantic Service 在核心层完成问数编排和语义增强，最终将能力连接到 Text-to-SQL 与观测界面，用于业务交付和持续改进。
 
 ### 4.1 接口层
 
@@ -244,12 +248,12 @@ DataAgent 的运行状态、消息轨迹、工具返回和 workspace 文件为�
 
 ### 5.2 安装项目
 
-DataAgent 是 DataGallery 开源生态中的 Agent 数据工程框架，DataGallery 开源入口见 [https://gitcode.com/datagallery](https://gitcode.com/datagallery)，DataAgent 项目仓库见 [https://gitcode.com/datagallery/DataAgent](https://gitcode.com/datagallery/DataAgent)。关于 DataGallery 在本书中的定位、复现边界和项目治理方式，可参见[附录G：DataGallery 开源生态简介](../appendix_g_datagallery_note.md)。
+DataAgent 是 DataGallery 开源生态中的 Agent 数据工程框架（DataGallery Contributors, 2026a）。DataGallery 开源入口见 [https://gitcode.com/datagallery](https://gitcode.com/datagallery)，DataAgent 项目仓库见 [https://gitcode.com/datagallery/dataagent](https://gitcode.com/datagallery/dataagent)（DataGallery Contributors, 2026b）。关于 DataGallery 在本书中的定位、复现边界和项目治理方式，可参见[附录G：DataGallery 开源生态简介](../appendix_g_datagallery_note.md)。
 
 建议先固定版本，再在仓库根目录安装依赖：
 
 ```bash
-git clone https://gitcode.com/datagallery/DataAgent.git
+git clone https://gitcode.com/datagallery/dataagent.git
 cd DataAgent
 git checkout <release-tag-or-commit>
 python -m venv .venv
@@ -906,5 +910,5 @@ NL2SQL -> CSV -> 图表 -> Markdown 报告 -> 业务交付
 3. Schick, T., Dwivedi-Yu, J., Dessì, R., Raileanu, R., Lomeli, M., Hambro, E., Zettlemoyer, L., Cancedda, N., & Scialom, T. (2023). Toolformer: Language Models Can Teach Themselves to Use Tools. arXiv:2302.04761.
 4. Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., & Cao, Y. (2023). ReAct: Synergizing Reasoning and Acting in Language Models. arXiv:2210.03629.
 5. dbt Labs. (2026). dbt Documentation. https://docs.getdbt.com/.
-6. DataGallery Contributors. (2026). DataGallery organization page. https://gitcode.com/datagallery.
-7. DataGallery Contributors. (2026). DataAgent source repository. https://gitcode.com/datagallery/DataAgent.
+6. DataGallery Contributors. (2026a). DataGallery organization page. https://gitcode.com/datagallery.
+7. DataGallery Contributors. (2026b). DataAgent source repository. https://gitcode.com/datagallery/dataagent.
