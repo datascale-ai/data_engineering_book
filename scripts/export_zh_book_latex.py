@@ -600,7 +600,7 @@ def latex_preamble(stats: ExportStats) -> str:
 \sloppy
 
 \title{{大模型数据工程：架构、算法及项目实战}}
-\author{{於俊、Changwen Chen、Fan Yu、王聪、骆阳、张然、杜文卓、徐鑫、王柯、汪志立、刘中一、曹旭宏、穆冠霖、刘冠君、邹月峰、徐霖、陈新宇、陈峰鑫、李轩、Gongpeng Zhao、王灿、Feng Zhao、Ye Yu、Fang Gao、Jiaen Liang、Wei Huang、Shengping Liu、Qingsong Liu、Jianqing Sun}}
+\author{{於俊、Changwen Chen、Fan Yu、王聪、骆阳、张然、杜文卓、徐鑫、王柯、汪志立、刘中一、曹旭宏、穆冠霖、刘冠君、邹月峰、徐霖、陈新宇、陈凤欣、李轩、Gongpeng Zhao、王灿、Feng Zhao、Ye Yu、Fang Gao、Jiaen Liang、Wei Huang、Shengping Liu、Qingsong Liu、Jianqing Sun}}
 \date{{Springer 16K LaTeX 审校样稿\\生成文件数：{stats.files}；图片：{stats.images}；代码块：{stats.code_blocks}；表格：{stats.tables}}}
 """
 

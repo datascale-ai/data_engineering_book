@@ -1,6 +1,6 @@
 # 第43章：推理轨迹数据工程：长链压缩、隐式计算与监督掩码
 
-<div class="chapter-authors">李轩（Xuan Li）；陈峰鑫（Fengxin Chen）</div>
+<div class="chapter-authors">李轩（Xuan Li）；陈凤欣（Fengxin Chen）</div>
 
 ## 摘要
 
