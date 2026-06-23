@@ -44,9 +44,13 @@ A compound infographic is a nested visual carrier. It is one image file divided 
 
 Current public multimodal chart-reasoning benchmark datasets worldwide show an obvious supply gap: there are many manually synthesized simulation chart datasets, while native real compound infographic samples crawled from web pages, newspapers, and popular-science publications remain scarce. To reduce annotation difficulty, most datasets manually split multi-subchart infographics into multiple independent images, destroying the original image's spatial associations and contextual logic (Foroutan et al. 2025).
 
-Against this background, the multi-chart infographic reasoning dataset starts from native real infographic crawling and preserves the original structure: multiple subcharts in the same on-screen layout, globally shared legends, and interleaved regional notes. Unlike the above construction methods that depend on web crawling, we use multimodal large models to automatically synthesize charts and question-answer pairs, filling the benchmark gap for real-scenario cross-chart reasoning evaluation. The self-built dataset is available on Hugging Face: <https://huggingface.co/datasets/xychen-zh/multi-chart-infographic-reasoning>, along with a similar dataset <https://huggingface.co/datasets/ustc-lab/ChartQwen>.
+Against this background, the multi-chart infographic reasoning dataset starts from native real infographic crawling and preserves the original structure: multiple subcharts in the same on-screen layout, globally shared legends, and interleaved regional notes. Unlike the above construction methods that depend on web crawling, we use multimodal large models to automatically synthesize charts and question-answer pairs, filling the benchmark gap for real-scenario cross-chart reasoning evaluation. 
 
 For algorithm research, this dataset pushes VQA models beyond “single-chart reading” toward subchart segmentation, cross-view memory storage, and multi-step calculation-chain reasoning, matching industrial scenarios such as financial data analysis, market-information interpretation, and public-health data assessment.
+
+The self-built dataset is available on Hugging Face: <https://huggingface.co/datasets/xychen-zh/multi-chart-infographic-reasoning>, along with a similar dataset <https://huggingface.co/datasets/ustc-lab/ChartQwen>.
+We recommend utilizing the MindSpore framework, with the corresponding GitHub repository available at <https://github.com/xychen-zh/multi-chart-infographic-reasoning-mindspore>.
+
 
 ### Case A.2: Dataset Overview
 
