@@ -47,7 +47,7 @@
 从算法研发视角，该数据集的落地可以倒逼 VQA 模型跳出 “单图读取” 固有架构，推动多模态模型新增子图区域分割、跨视图信息记忆存储、多轮计算链路推理三项能力，贴合金融数据分析、市场资讯解读、公共卫生数据研判等产业落地场景。
 
 项目自建数据集采用 huggingface 链接：<https://huggingface.co/datasets/xychen-zh/multi-chart-infographic-reasoning> ，以及相似数据集<https://huggingface.co/datasets/ustc-lab/ChartQwen>。
-推荐使用 MindSpore 体系，链接：<https://github.com/xychen-zh/multi-chart-infographic-reasoning-mindspore>。
+推荐使用 MindSpore 体系，github 链接：<https://github.com/xychen-zh/multi-chart-infographic-reasoning-mindspore>。
 
 ### 案例A.2：数据集概览：样本规模、领域覆盖与图表类型体系
 
