@@ -158,6 +158,8 @@ spm.SentencePieceTrainer.train(
 
 The choice of data format has a direct, order-of-magnitude impact on DataLoader throughput. The following summarizes the performance and engineering trade-offs of mainstream formats:
 
+Table 6-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table 6-1: Data format, compression, and access pattern comparison. Source: compiled by the authors; performance should be validated through pressure tests on target hardware, storage backend, compression method, and DataLoader implementation.*
 
 | Format | Type | Sequential Read Speed | Random Access | Compression Support | Cross-Framework Support | Applicable Scenarios |
@@ -396,6 +398,8 @@ dataloader = DataLoader(
 ## 6.5 Engineering Case Studies and Performance Optimization Checklist
 
 ### Figures and Case Studies
+
+Figure 6-2 illustrates the corresponding workflow or structure.
 
 ![Figure 6-2: Training Input Pipeline Layer Diagram](../../images/part2/Wang-Chap06-Fig02.svg)
 

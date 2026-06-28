@@ -27,7 +27,7 @@ Chapter 36 discusses data compliance frameworks and governance, focusing on clas
 
 ## Table of Contents
 
-- [Chapter 36: Data Compliance Framework and Governance](ch36_compliance_framework_and_governance.md)
+- [Chapter 36: Data Compliance Frameworks and Governance](ch36_compliance_framework_and_governance.md)
 - [Chapter 37: Federated Learning and Privacy-Preserving Technologies](ch37_federated_learning_and_privacy_preserving_technologies.md)
 
 ## Recommended Reading Order

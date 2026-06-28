@@ -53,6 +53,8 @@ Third, user objectives may shift across multi-turn interactions. A user might in
 
 The divergence between this real problem distribution and the offline evaluation distribution can be called "post-deployment distribution shift." It does not necessarily mean that model capabilities have degraded; rather, it indicates that the system has entered a more real and more complex data environment. Many RAG systems are unstable after deployment not because offline evaluation was fraudulent, but because offline evaluation cannot cover the long-tail distribution of production problems.
 
+Table 23-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table 23-1: Differences Between Offline Evaluation Questions and Online Real Questions.*
 
 | Dimension | Offline Evaluation Questions | Online Real Questions | Impact on the System |
@@ -91,6 +93,8 @@ For example, a user who does not downvote but reformulates the same question thr
 
 
 
+Table 23-2 summarizes the corresponding comparison and engineering considerations.
+
 *Table 23-2: Types and Value of Online Feedback Signals.*
 
 | Feedback Type | Typical Source | Problem Reflected | Optimization Actions That Can Be Driven |
@@ -124,6 +128,8 @@ The third type of degradation comes from accumulated errors. RAG and multimodal 
 The fourth type of degradation comes from organizational responsibility fragmentation. After deployment, the system may enter a state of unmaintained operation: the algorithm team considers the project delivered, the business team treats the problems as model capability issues, the platform team only cares about service availability, and content maintainers are only responsible for uploading documents. Without a unified feedback loop, user problems flow among multiple teams but cannot be resolved into clear remediation actions. Over time, the system remains nominally online while its actual quality continues to decline.
 
 
+
+Table 23-3 summarizes the corresponding comparison and engineering considerations.
 
 *Table 23-3: Typical Degradation Paths in the Absence of an Online Feedback Mechanism.*
 
@@ -206,6 +212,8 @@ Human handoffs are key feedback signals in high-risk or complex tasks. When the 
 
 
 
+Table 23-4 summarizes the corresponding comparison and engineering considerations.
+
 *Table 23-4: Online Feedback Sources and Data Value.*
 
 | Feedback Source | Typical Content | Advantages | Limitations | Suitable Downstream Actions |
@@ -233,6 +241,8 @@ The advantage of explicit feedback is semantic clarity. When a user downvotes or
 
 The advantage of implicit feedback is wide coverage. Almost all user behaviors can become implicit feedback signals, including dwell time, number of follow-up questions, question reformulation, citation clicks, answer copying, page navigation, human handoffs, and session abandonment. These signals do not require users to actively evaluate, so they are closer to the real usage process. However, implicit feedback is more difficult to interpret. A user continuing to ask follow-up questions may be because the answer was incomplete, or because the user wants to explore further; a user clicking on citations may be because the answer is trustworthy, or because the answer is suspicious; a user leaving the session may be because the problem has been resolved, or because the system provided no help. Therefore, implicit feedback generally cannot be used as a label alone but must be analyzed in combination with explicit feedback, log information, and business context.
 
+Table 23-5 summarizes the corresponding comparison and engineering considerations.
+
 *Table 23-5: Comparison of Explicit and Implicit Feedback.*
 
 | Dimension | Explicit Feedback | Implicit Feedback |
@@ -256,6 +266,8 @@ To transform online feedback into data assets, a unified event schema must be de
 
 A complete event schema should include at least six categories of information: user and session information, query information, retrieval information, generation information, feedback information, and governance information. User and session information identifies the context to which an interaction belongs. It does not necessarily need to store the user's real identity, but should record anonymous user ID, session ID, tenant, permission scope, language, terminal, and timestamp. For enterprise systems, it is also necessary to record the organizational unit, role, or permission group to which the user belongs, in order to determine whether certain answers involve unauthorized recall. Query information describes the user input itself, including the raw query, normalized query, query rewriting result, recognized intent, entities, constraint conditions, and context references. For example, when a user asks "Can I still expense this?", the system needs to record that "this" references the specific expense item from the previous turn, "expense" corresponds to a reimbursement intent, and missing conditions include expense type and location. Retrieval information is one of the most important parts of event collection in a RAG system. The system needs to record the index version being queried, recalled document IDs, chunk IDs, scores, re-ranking scores, fragments ultimately included in the context, filtered-out fragments, and reasons for filtering. Without this information, retrieval failures and generation failures are very difficult to distinguish. Generation information includes model version, prompt version, context length, final answer, citation sources, refusal strategy, generation latency, and safety policy hit status (Breck et al. 2017; Kreuzberger, Kühl and Hirschl 2023). For multimodal systems, it is also necessary to record image regions, bounding boxes, OCR text, table structures, and visual evidence IDs. Feedback information includes both explicit and implicit feedback. Explicit feedback includes upvotes, downvotes, ratings, user corrections, and text comments; implicit feedback includes follow-up questions, reformulations, citation clicks, answer copying, human handoffs, ticket submissions, and session abandonment. Governance information includes data desensitization status, log retention period, whether use for training is permitted, and whether the record enters the human review queue.
 
+Table 23-6 summarizes the corresponding comparison and engineering considerations.
+
 *Table 23-6: Core Fields of the Online Feedback Event Schema.*
 
 | Field Category | Core Fields | Description |
@@ -269,6 +281,8 @@ A complete event schema should include at least six categories of information: u
 | Governance information | pii_status, training_allowed, review_status, retention_policy | Used to control compliance, review, and data use boundaries |
 
 At the implementation level, the event schema should not only serve log storage but also downstream sample construction. That is, when designing fields, teams need to think ahead about how these data will eventually enter evaluation sets, failure sample repositories, knowledge update queues, and model training pipelines. For example, `index_version` and `prompt_version` may appear to be purely engineering fields, but they determine whether version attribution is possible after the fact; `citation_anchors` may appear to be only a display field, but it determines whether one can verify that the answer was based on correct evidence; `training_allowed` may appear to be only a compliance field, but it determines whether the data can enter subsequent training or fine-tuning pipelines.
+
+Figure 23-3 illustrates the corresponding workflow or structure.
 
 ![Figure 23-3: Online Feedback Event Collection and Routing Pipeline](../../images/part7/Yu-Chap23-Fig03-EN.svg)
 
@@ -330,6 +344,8 @@ A complete new knowledge injection process typically includes five steps: source
 
 Source validation is the first step in knowledge injection. The system needs to record where the new knowledge comes from, whether usage rights exist, whether it is an official version, and whether it has been confirmed by business or legal teams. For enterprise internal systems, the authority of the document source is very important. Formal policies, approved product manuals, and FAQs confirmed by business owners should have higher priority; meeting minutes, temporary chat records, and personally compiled documents should be assigned lower weight and used only as supplementary references. Content parsing converts documents into machine-processable structures. For PDFs, Word documents, web pages, tables, images, and scanned files, parsing quality will directly determine subsequent retrieval effectiveness. Knowledge injection after deployment should not skip parsing quality checks, especially for complex documents involving tables, charts, headers and footers, footnotes, version numbers, and chapter hierarchies. If the parsing stage loses applicable conditions, numerical units, table structures, or document versions, even a successfully indexed result may produce incorrect answers. Structured processing converts parsed content into knowledge units, requiring supplementation of metadata such as source document, chapter path, publication date, effective date, expiration date, applicable subjects, permission scope, document version, knowledge type, and authority level. For production-grade RAG systems, metadata is not supplementary information but an important basis for retrieval, filtering, ranking, and conflict governance. Index updates write knowledge units into the retrieval system. Depending on the system architecture, this may involve vector indices, keyword indices, structured indices, graph databases, table indices, and multimodal indices. When performing incremental updates, particular attention should be paid to index consistency: whether new knowledge has completed all index type writes, whether old indices need to be deleted or downweighted, whether parent-child indices are updated in sync, and whether multimodal chart regions are consistent with textual descriptions. Online validation is the final step before new knowledge enters production. The system should use relevant question sets for regression testing, verifying that new knowledge can be correctly recalled, correctly cited, and correctly generated. If new knowledge was added to fix a specific online failure problem, the original failure query should be re-run to confirm whether the problem has been resolved.
 
+Table 23-7 summarizes the corresponding comparison and engineering considerations.
+
 *Table 23-7: Key Checkpoints in the New Knowledge Injection Process.*
 
 | Stage | Key Question | Inspection Focus | Common Risks |
@@ -351,6 +367,8 @@ The most easily overlooked problem in knowledge updates is not that new knowledg
 Outdated knowledge typically takes three forms: temporal invalidation, version invalidation, and scope invalidation. Temporal invalidation refers to knowledge that is only valid within a specific time period. For example, temporary notices, phased policies, promotional rules, quarterly reports, and project schedules all have clear time boundaries. Temporally invalidated knowledge does not necessarily need to be deleted, but must be correctly downweighted or filtered during the retrieval and generation stages. Version invalidation refers to a new version superseding an old version. For example, after Product Manual v3.0 is released, certain feature descriptions in v2.0 may no longer apply; after the 2025 edition of a policy is released, processes in the 2023 edition may be deprecated. If the system has no document version and effective status fields, it is very difficult to prevent old versions from being recalled. Scope invalidation refers to knowledge that remains valid but does not apply to the current user or scenario. For example, a reimbursement policy applies only to full-time employees, not interns; a product feature applies only to the enterprise version, not the individual version; an operation process applies only to domestic operations, not overseas branches. Scope invalidation is not knowledge expiration but rather applicable conditions not being correctly identified.
 
 Knowledge conflicts can also be regarded as a data quality problem: when the same entity, rule, or metric appears inconsistently across different sources, the system must resolve the discrepancy through version, authority, and scope of applicability rather than handing conflicting evidence directly to the generation model to adjudicate on the fly (Breck et al. 2017; Gao et al. 2023). Conflict content governance requires joint handling at the knowledge, index, and generation levels. At the knowledge level, an authority level and scope of applicability need to be set for each piece of knowledge. Formal policies take precedence over FAQs; the latest version takes precedence over old versions; structured fields take precedence over informal descriptions; content confirmed by business owners takes precedence over user comments or meeting minutes. At the index level, the retrieval system needs to be able to identify time, version, permissions, and applicable subjects. For content that has already expired, options include deletion, archiving, downweighting, or making it visible only in historical query scenarios. For content that still needs to be retained but should not be recalled by default, its use scope should be controlled through metadata filters. At the generation level, the model needs to be instructed to recognize evidence conflicts. When the context contains multiple versions or mutually contradictory fragments, the model should not simply concatenate the answer but should select credible evidence based on version, date, and authority level—and if necessary, prompt the user that "the current knowledge base contains conflicts requiring human confirmation." However, this capability cannot rely entirely on the model's own judgment; upstream data governance remains key.
+
+Table 23-8 summarizes the corresponding comparison and engineering considerations.
 
 *Table 23-8: Strategies for Outdated Knowledge Invalidation and Conflict Governance.*
 
@@ -376,6 +394,8 @@ Hot updates are appropriate for low-risk, high-urgency content, such as FAQ addi
 Scheduled updates are appropriate for periodically changing knowledge, such as help center content synced daily, product documentation updated weekly, operational reports released monthly, quarterly financial reports, or policy packages. The advantage of scheduled updates is a stable cadence, which is convenient for batch validation and resource planning. They are typically suited to automatic execution via scheduling systems, generating an update report upon completion that includes the number of added documents, deleted documents, parsing failures, index updates, and regression evaluation results.
 
 Audited updates are appropriate for high-risk content, such as compliance policies, financial rules, medical guidelines, legal terms, permission policies, contract templates, and critical business processes. Audited updates cannot be automatically deployed directly but require responsible party confirmation, expert review, regression evaluation, approval documentation, and gray release. For this type of knowledge, update speed is not the only goal—correctness, traceability, and rollback capability are more important.
+
+Figure 23-4 illustrates the corresponding workflow or structure.
 
 ![Figure 23-4: Knowledge Update, Gray Release, and Rollback Governance Process](../../images/part7/Yu-Chap23-Fig04-EN.svg)
 
@@ -456,6 +476,8 @@ Specialized retrospectives address a category of problems that has been exposed 
 
 Major version upgrade reviews address larger-scope knowledge base updates, index strategy adjustments, model version upgrades, or prompt system changes. Major version upgrades cannot rely only on development team self-testing but must go through regression evaluation, gray releases, online monitoring, and rollback plans. Especially for updates involving high-frequency knowledge, critical business processes, or high-risk response strategies, impact scope and acceptance criteria must be made explicit before deployment.
 
+Table 23-10 summarizes the corresponding comparison and engineering considerations.
+
 *Table 23-10: Operational Cadence for the Online Feedback Loop.*
 
 | Operational Mechanism | Frequency | Primary Inputs | Primary Outputs | Participating Roles |
@@ -503,6 +525,8 @@ For production-grade RAG systems, knowledge updates are not simply a matter of u
 
 A complete online knowledge update SOP typically includes at least seven stages: change submission, source validation, parsing and structuring, conflict detection, index update, regression evaluation, and gray release with monitoring. For low-risk knowledge, the process can be condensed; for high-risk knowledge, human approval, compliance checks, and rollback plans must be added.
 
+Table 23-11 summarizes the corresponding comparison and engineering considerations.
+
 *Table 23-11: Online Knowledge Update SOP.*
 
 | Stage | Input | Key Actions | Output | Acceptance Criteria |
@@ -528,6 +552,8 @@ An enterprise deployed an internal knowledge assistant to answer employee questi
 
 This case exposed three data engineering problems: first, the knowledge base lacked management of effective and expiration dates; second, new policy publication did not trigger an index update; and third, the system did not run regression evaluations for high-frequency policy questions. Remediation actions should also focus on these three problems rather than simply correcting a single answer.
 
+Table 23-12 summarizes the corresponding comparison and engineering considerations.
+
 *Table 23-12: Error Attribution and Remediation Actions for the Knowledge Expiration Case.*
 
 | Problem Manifestation | Root Cause Classification | Specific Cause | Remediation Action |
@@ -549,6 +575,8 @@ In the online feedback loop, not every piece of user feedback is worth entering 
 High-value feedback samples typically have the following characteristics: they involve high-frequency questions, come from high-risk scenarios, are accompanied by strong negative feedback, contain user correction text, triggered a human handoff, are related to recent knowledge updates, or represent the same type of failure appearing in concentration over a short period. The system can compute a priority score for each feedback sample to determine whether it should enter human review, the knowledge update queue, or evaluation set expansion. Filtering this type of sample is analogous to the sample selection problem in active learning and online learning: the system should prioritize samples with high uncertainty, high risk, high frequency, or those that can represent an error cluster, rather than processing all logs uniformly (Settles 2009; Kohavi, Tang and Xu 2020).
 
 The following is a simplified example of feedback sample priority scoring. It is not complete production code but demonstrates how to combine explicit feedback, implicit behavior, risk level, and knowledge update status into an interpretable filtering rule.
+
+Listing 23-1 provides the corresponding code or configuration example.
 
 ```python
 from dataclasses import dataclass
@@ -621,6 +649,9 @@ event = FeedbackEvent(
 print(score_feedback(event))
 print(route_feedback(event))
 ```
+
+*Listing 23-1: Code or configuration example.*
+
 
 This code embodies an important principle: the value of a feedback sample is not determined solely by whether it was downvoted, but should be judged by multiple signals together. A low-risk question, even if downvoted, may not need immediate attention; a high-risk question, even if it appears only once, may require expert review; if a question appears at high frequency over a short period, it may represent a knowledge gap or systemic retrieval failure.
 

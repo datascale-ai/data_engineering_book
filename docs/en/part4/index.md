@@ -27,9 +27,9 @@ Chapter 12 answers what kinds of input-output samples are suitable for supervise
 
 ## Contents
 
-- [Chapter 12: SFT Data Design and Instruction Taxonomy](ch12_sft.md)
+- [Chapter 12: SFT Data Design and Instruction Systems](ch12_sft.md)
 - [Chapter 13: Preference Data and Reward Signals](ch13_preference.md)
-- [Chapter 14: Annotation Platforms, QA Systems, and Data Operations](ch14_qa.md)
+- [Chapter 14: Annotation Platforms, Quality Assurance Systems, and Data Operations](ch14_qa.md)
 
 ## Recommended Reading Order
 

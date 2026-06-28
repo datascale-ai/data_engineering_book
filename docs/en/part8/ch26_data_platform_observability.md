@@ -49,6 +49,8 @@ Understanding the distinction between these three layers is a prerequisite for b
 
 **Data correctness** is the most critical layer: the output data is healthy in content and meets the quality standards expected by the business. Data validation research indicates that schema checks, statistical constraints, distribution-shift detection, and anomaly-value detection should be integrated into routine pipelines rather than reserved for post-incident manual investigation (Breck et al. 2019). Data correctness cannot be inferred from task status; it can only be verified by inspecting the data content itself.
 
+Table 26-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table 26-1: Three-Layer Definitions of Success and Typical Blind Spots.*
 
 | Layer | What Is Inspected | Typical Tools | Common Blind Spots |
@@ -149,6 +151,8 @@ Business metrics assess the overall health of data assets from a business-value 
 - Data request fulfillment rate: proportion of data requests from the algorithm team completed on time
 - Compliant data ratio: proportion of total data that has passed compliance review
 
+Table 26-2 summarizes the corresponding comparison and engineering considerations.
+
 *Table 26-2: Tiered Monitoring Metrics.*
 
 | Metric Layer | Typical Metrics | Update Frequency | Primary Audience |
@@ -183,6 +187,8 @@ The four core observability tools — Logs, Traces, Audit Logs, and Lineage — 
 
 **Lineage**: As described in Chapter 25, lineage records dependency relationships between data assets. The key distinction between lineage and logs/traces is that lineage describes the static "derivation relationship," while logs and traces describe the dynamic "processing process." The lineage graph tells you "which data sources were used to produce dataset v2.3"; a trace tells you "what processing steps this specific sample went through."
 
+Table 26-3 summarizes the corresponding comparison and engineering considerations.
+
 *Table 26-3: Characteristics of Typical Observability Information.*
 
 | Tool | Records | Timeliness | Primary Use |
@@ -207,6 +213,8 @@ Additionally, audit logs and observability logs must not be conflated. Observabi
 Traditional infrastructure monitoring (CPU, memory, disk, network) combined with job-status monitoring covers only two dimensions: "compute resource health" and "process health." An LLM data platform also requires coverage of a third dimension: **data asset health**.
 
 The core of data asset health monitoring is establishing "dataset SLOs (Service Level Objectives)" — for each important dataset, defining its quality targets and monitoring rules. The SRE Workbook emphasizes that SLOs should serve actual user experience and error budget decisions; dataset SLOs should likewise serve the real risks of downstream training, evaluation, and business use (Beyer et al. 2018). For example:
+
+Listing 26-1 provides the corresponding code or configuration example.
 
 ```yaml
 dataset_slo:
@@ -236,6 +244,9 @@ dataset_slo:
   alert_channel: "#data-platform-alerts"
   on_violation: page_on_call
 ```
+
+*Listing 26-1: Code or configuration example.*
+
 
 This SLO-driven data asset monitoring enables data quality issues to be discovered before training rather than being traced back after model performance has declined. A dataset SLO should not contain only metrics, thresholds, and alert channels; it should also include operational closure fields: `owner` identifies the ultimate responsible party; `steward` identifies the day-to-day maintainer; `runbook_url` points to the troubleshooting guide; `severity` determines the alert tier; `escalation_policy` defines the escalation path; `dataset_version` binds the currently controlled version; and `contract_id` links to the data contract or data product interface. Without these fields, an SLO can detect problems but cannot ensure they are correctly handed off, escalated, and resolved.
 
@@ -276,6 +287,8 @@ Alerts should also carry sufficient context. An alert that merely says "duplicat
 Alert systems also require ongoing review. Each week or month, teams can track metrics such as alert count, false-positive rate, unacknowledged-alert proportion, mean time to acknowledge, mean time to recover, and repeat-alert proportion. A high false-positive rate indicates rules are too sensitive or lack context; a high unacknowledged proportion indicates problems with the notification channel or accountability mechanism; a high repeat-alert proportion indicates root causes have not been resolved. Alert hygiene is itself part of data platform operations.
 
 ### 26.3.2 Four-Tier Alert Framework
+
+Table 26-4 summarizes the corresponding comparison and engineering considerations.
 
 *Table 26-4: Alert Tiers and Corresponding Remediation Actions.*
 
@@ -329,6 +342,8 @@ Attribution should also follow the principle of "contain first, then diagnose pr
 When investigating data content issues, automatic metrics and manual sampling should be used together. Automatic metrics excel at detecting statistical anomalies but may not assess semantic quality; manual sampling can identify semantic errors but has limited coverage. A good approach is first to use metrics to identify the anomalous sources, categories, batches, or vendors, and then apply stratified sampling within those localized scopes. This avoids blind sampling while compensating for the semantic blind spots of automated detection.
 
 Attribution results should be written back into the issue backlog and knowledge base. Each incident investigation produces valuable troubleshooting paths — for example, a certain type of alert is typically caused by a specific data source going offline; a certain quality score drop is typically associated with a particular annotation task type; a certain dependency upgrade frequently affects specific language processing. Recording these observations in the troubleshooting handbook reduces the time to locate the next similar incident.
+
+Figure 26-1 illustrates the corresponding workflow or structure.
 
 ![Figure 26-1: Anomaly Attribution Decision Tree](../../images/part8/Du-Chap26-Fig01-EN.svg)
 
@@ -411,6 +426,8 @@ Capacity forecasting results should appear in the operational dashboard and trig
 
 The main cost categories of an LLM data platform are four. The cost of a cloud-based data system typically arises from a combination of compute, storage, networking, and platform services; cost observability must be designed together with capacity forecasting and retention policies (Nygard 2018):
 
+Table 26-5 summarizes the corresponding comparison and engineering considerations.
+
 *Table 26-5: Cost Driver and Optimization Direction Design.*
 
 | Cost Category | Primary Cost Drivers | Optimization Direction |
@@ -480,6 +497,8 @@ Operational dashboards should also offer multiple time scales. Minute-level view
 
 Finally, dashboards should not grow without bound. Each view should retain a small number of core metrics and clear action entry points. The Platform Health View is focused on whether on-call action is needed; the Data Quality View on whether data needs to be paused or repaired; the Business Operations View on whether model and product plans are affected. Additional diagnostic metrics can be placed on a dedicated diagnostic page rather than occupying the primary view. The goal of a monitoring dashboard is not to demonstrate how much data the team can collect but to help the team make correct decisions faster.
 
+Figure 26-2 illustrates the corresponding workflow or structure.
+
 ![Figure 26-2: Data Platform Observability Panorama](../../images/part8/Du-Chap26-Fig02-EN.svg)
 
 *Figure 26-2: LLM Data Platform Observability Panorama — Architecture of the Three-Layer Metric Hierarchy and the Three-Dimensional Operational Dashboard.*
@@ -501,6 +520,8 @@ Finally, dashboards should not grow without bound. Each view should retain a sma
 At the time of the incident, all job statuses at the platform layer were normal. Crawler jobs ran on schedule; cleaning jobs had no failures; and data writes showed no anomalies. The initial trigger was the category coverage metric, not a job failure alert. This is highly characteristic: data incidents do not always present as system failures — they present as data asset quality degradation. Had the team looked only at scheduling status, this incident might have remained hidden until model performance declined on medical and health Q&A tasks.
 
 The incident also exhibited clear latency. The code change occurred on May 15; the alert fired on May 21, spanning multiple batches. The coverage drop in any single batch had not reached the existing alert threshold, but the cumulative trend was unmistakable. After the incident was exposed, the team recognized that the existing monitoring attended only to point-in-time anomalies and lacked trend detection, as well as error-budget management for critical category coverage.
+
+Table 26-6 summarizes the corresponding comparison and engineering considerations.
 
 *Table 26-6: Case Timeline.*
 
@@ -570,6 +591,8 @@ The team also required the three affected experiments to rebind to the repaired 
 
 The following is a standardized incident post-mortem template applicable to all P0/P1 data incidents. Effective post-mortems should focus on systemic improvement rather than individual blame — a principle consistently emphasized in SRE incident post-mortem practice and resilience engineering (Beyer et al. 2016; Beyer et al. 2018):
 
+Table 26-7 summarizes the corresponding comparison and engineering considerations.
+
 *Table 26-7: Incident Post-Mortem Report.*
 
 | Field | Content |
@@ -597,6 +620,8 @@ After the post-mortem concludes, action items should be incorporated into the is
 
 Through the remediation of this incident, the team improved the following monitoring capabilities:
 
+Table 26-8 summarizes the corresponding comparison and engineering considerations.
+
 *Table 26-8: Metric Improvements.*
 
 | Improvement Item | Before | After |
@@ -612,6 +637,8 @@ The central lesson of the case study is that data platform observability must co
 From an implementation perspective, data platform observability should not be pursued as a complete system all at once. A prudent path is to first cover the high-value, high-risk data pipelines and then gradually extend coverage to all data assets. For early-stage teams, the primary objective is to record the task status, quality metrics, and version lineage of the core training set. For mid-size teams, the emphasis is on building alert tiering, SLOs, incident response, and dashboard drill-down capabilities. For platform-scale teams, further work is needed on audit logs, cost observability, capacity forecasting, cross-team operational views, and data asset health records.
 
 Observability construction should also follow a risk-first principle. Not every dataset requires the same monitoring intensity. Formal training sets, critical evaluation sets, production feedback data, and compliance-sensitive data should have more stringent SLOs, alerting, and auditing. Exploratory experimental data may use lighter-weight monitoring but must be clearly marked as ineligible for the formal pipeline. Temporary analytical data needs only basic access and lifecycle records. Tiered monitoring prevents the platform team from being overwhelmed by low-value signals and concentrates resources on the objects that truly affect models and the business.
+
+Table 26-9 summarizes the corresponding comparison and engineering considerations.
 
 *Table 26-9: Data Platform Observability Build Stages and Acceptance Questions.*
 

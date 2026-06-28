@@ -27,11 +27,11 @@ Chapter 31 first defines the architecture, capability boundaries, and automation
 
 ## Table of Contents
 
-- [Chapter 31: Architecture and Task Boundaries of the Data Engineering Agent](ch31_agent_architecture.md)
-- [Chapter 32: Automated Collection, Parsing, and Cleaning Agent](ch32_auto_collection_parsing_cleaning.md)
-- [Chapter 33: Annotation, Synthesis, and Evaluation Agent](ch33_labeling_synthesis_evaluation.md)
-- [Chapter 34: DataOps Agent and Platform Autonomy](ch34_dataops_agent.md)
-- [Chapter 35: Security, Permissions, and Human-Machine Collaboration for Data Engineering Agents](ch35_security_permission_collaboration.md)
+- [Chapter 31: Architecture and Task Boundaries for Data Engineering Agents](ch31_agent_architecture.md)
+- [Chapter 32: Automated Collection, Parsing, and Cleaning Agents](ch32_auto_collection_parsing_cleaning.md)
+- [Chapter 33: Labeling, Synthesis, and Evaluation Agents](ch33_labeling_synthesis_evaluation.md)
+- [Chapter 34: DataOps Agents and Platform Autonomy](ch34_dataops_agent.md)
+- [Chapter 35: Security, Permissions, and Human-AI Collaboration for Data Engineering Agents](ch35_security_permission_collaboration.md)
 
 ## Recommended Reading Order
 

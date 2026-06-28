@@ -171,6 +171,8 @@ The prerequisite for this flywheel to operate at high speed is the existence of 
 
 The following timeline illustrates the relationship between role interfaces and deliverables. The numbers are used only as a readable project-management convention and do not represent measured gains from any public project. Real projects must rely on preregistered evaluation sets, canary traffic splits, and statistical test reports.
 
+Listing 1-1 provides the corresponding code or configuration example.
+
 ```
 [Week T+0] Algorithm team discovers through evaluation that the model has a systematic hallucination defect on long-form legal Q&A
               ↓
@@ -190,6 +192,9 @@ The following timeline illustrates the relationship between role interfaces and 
               ↓
 [Week T+5] Product team confirms that key problem cases reproduce less often and no new high-risk regressions appear → Expand release and enter the next flywheel cycle
 ```
+
+*Listing 1-1: Code or configuration example.*
+
 
 The above is the complete timeline of a minimum viable data flywheel (MVP Data Flywheel). Without this level of role division and SLA constraints, the flywheel will experience information distortion or time delays at some stage, ultimately extending the model iteration cycle from weeks to months.
 

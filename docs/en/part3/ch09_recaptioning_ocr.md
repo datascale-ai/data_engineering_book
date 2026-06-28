@@ -194,6 +194,8 @@ In mature data-cleaning shops, document preprocessing is usually split into a hi
 
 After multi-level OCR extraction, the core engineering difficulty is **absolute geometric alignment across modalities**. If extracted text is not bound to its pixel region in the image, the model still does not know which page area it should attend to. A common practice is to append `<box_coord>` strings after each text span so the attention mechanism can use coordinate anchors.
 
+Figure 9-2 illustrates the corresponding workflow or structure.
+
 ![Figure 9-2: Document structure layout-to-token mapping](../../images/part3/Yu-Chap09-Fig02.svg)
 
 *Figure 9-2: Document structure layout-to-token mapping. The left side shows a fragment of a two-column academic report. The system first uses bounding-box arrays to locate titles, body text, charts, and formula regions. The right side shows how outputs from specialized models such as Nougat and PaddleOCR are post-processed into hierarchical Markdown text and rich text streams with discrete coordinates `[x_y]`. Source: drawn for this book.*
@@ -227,6 +229,8 @@ For hundreds of millions of samples, humans cannot cover enough data. Full autom
 Even if all machine quality metrics pass, a final **expert blind-sampling verification pool** is still necessary. Each day, the control center can randomly sample document cases with complex nested structures and send them to professional reviewers. A number such as 20,000 images per day is only an example for a large team; the real sampling volume should depend on data size, risk level, and budget.
 
 These experts not only judge quality but also provide error-attribution reports from long-document token lists to the model-development team. To reduce responsibility ambiguity after training divergence, for example vision engineers blaming the language base and language engineers blaming visual features, the evaluation group needs an incident classification tree.
+
+Table 9-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 9-2: OCR core error attribution and remediation matrix for cross-modal and advanced document recognition. Source: compiled by the authors from anonymized engineering patterns; error types and remediation actions should be reviewed by document type and OCR model version.*
 

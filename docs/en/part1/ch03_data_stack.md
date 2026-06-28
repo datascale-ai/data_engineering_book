@@ -69,6 +69,8 @@ Fourth is **storage cost**. The prices of object storage, block storage, and arc
 
 After clarifying the fundamental difference between an AI-native data stack and a traditional data warehouse, we can build the architecture systematically. A complete LLM data stack can be decomposed into five functional layers from bottom to top. Each layer has core responsibilities and key technical choices.
 
+Figure 3-1 illustrates the corresponding workflow or structure.
+
 ![Figure 3-1: Five-layer architecture of an AI-native data stack](../../images/part1/Yu-Chap03-Fig01.svg)
 
 *Figure 3-1: Five-layer architecture of an AI-native data stack. Source: original illustration from this book. The figure shows how ingestion and access, processing orchestration, storage and indexing, evaluation operations, and governance and security layers jointly move data from raw corpus to trainable datasets.*
@@ -80,6 +82,8 @@ The ingestion and access layer is the entry point of the stack. It brings data s
 LLM data engineering has highly diverse sources: public web pages from Common Crawl snapshots or custom crawlers, GitHub code repositories through API datasets or incremental mirrors, academic papers from arXiv, PubMed, and Semantic Scholar, high-quality books from sources such as Books3 or licensed channels, private enterprise documents, and online user feedback. Each source has distinct crawling methods, file formats, and update frequency.
 
 The core challenge of the ingestion layer is not "how to get data," which is mainly crawler and API development. It is **how to create a complete metadata record the moment data enters the platform**. When a batch lands, the platform must record key information: source, such as source URL or API endpoint; ingestion timestamp for freshness management; file format and version; data owner or license type for compliance audit; original file size and count; and the ingestion task ID for resume and traceability. Without this metadata, data becomes a black box after entering the platform. You know data exists, but you do not know where it came from, when it arrived, or which cleaning-pipeline version processed it. When a problem appears, root-cause analysis is impossible.
+
+Listing 3-1 provides the corresponding code or configuration example.
 
 ```python
 # Example metadata registration: automatically write a record during ingestion
@@ -119,6 +123,8 @@ The processing orchestration layer solves the core engineering problem: how to r
 
 Two mainstream industrial choices are **Apache Spark** (Zaharia et al. 2016) and **Ray Data** (Moritz et al. 2018). They differ fundamentally in design philosophy and use cases.
 
+Table 3-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table 3-1: Core feature comparison of Apache Spark vs. Ray Data. Source: compiled by the authors based on public documentation of open-source frameworks and LLM data-processing practice.*
 
 | Dimension | Apache Spark | Ray Data |
@@ -134,6 +140,8 @@ Two mainstream industrial choices are **Apache Spark** (Zaharia et al. 2016) and
 The right choice depends on team background and workload. If the team has traditional big-data experience and the pipeline contains much SQL logic or depends heavily on Hive/Iceberg, Spark is the more robust choice. If the team comes from AI/ML and frequently calls ML models during data processing, such as PPL classifiers or NER models for PII detection, Ray Data's Python-native runtime and GPU scheduling advantages are clear. Many large teams eventually use a hybrid: Spark handles massive coarse filtering, such as language identification and rule deduplication, while Ray Data handles fine-grained steps that require ML inference, such as quality scoring and benchmark-contamination detection.
 
 The following is a typical Ray Data cleaning pipeline.
+
+Listing 3-2 provides the corresponding code or configuration example.
 
 ```python
 import ray
@@ -180,6 +188,8 @@ An LLM data stack must manage three very different kinds of data. Each has disti
 
 The three mainstream lakehouse formats each have their own appropriate scenarios.
 
+Table 3-2 summarizes the corresponding comparison and engineering considerations.
+
 *Table 3-2: Lakehouse table format selection comparison: Apache Iceberg vs. Delta Lake vs. Apache Hudi. Source: compiled by the authors based on public documentation of open-source projects and lakehouse architecture practice.*
 
 | Feature | Apache Iceberg | Delta Lake | Apache Hudi |
@@ -196,6 +206,8 @@ For LLM data-engineering scenarios that require multi-engine collaboration and o
 **Vector data, or embeddings**, are the second storage need, mainly serving RAG. A vector database converts massive text chunks into high-dimensional dense vectors, builds indexes, and supports efficient approximate nearest-neighbor retrieval (Malkov and Yashunin 2020). Mainstream vector databases include Milvus, which is open source and suited for large distributed deployments; Qdrant, implemented in Rust and friendly for lightweight high-performance deployment; and Weaviate, which has built-in multimodal vector support and friendly schema management. The key selection factors are vector scale, such as below one million versus hundreds of millions; whether hybrid search is needed, combining dense vectors and BM25 sparse retrieval (Robertson and Zaragoza 2009); and whether the operations team can manage distributed systems.
 
 **Model checkpoints and experiment artifacts** are the third category. They include model weight files saved during training, often hundreds of GB, TensorBoard or W&B logs, tokenizer configuration, and related artifacts. These data are large and have uneven access frequency: frequent writes during training, mostly read-only afterward. Object storage is suitable as primary storage, with DVC (Data Version Control) (DVC 2024) or MLflow Artifacts for version tracking.
+
+Listing 3-3 provides the corresponding code or configuration example.
 
 ```bash
 # Use DVC to track a dataset version.
@@ -261,6 +273,8 @@ For example, if an investment in legal-domain SFT data brings a statistically si
 
 Connecting planning, monitoring, evaluation, optimization, and postmortem into a continuous loop forms the **cost-governance loop** of a large-model team, as shown below.
 
+Figure 3-2 illustrates the corresponding workflow or structure.
+
 ![Figure 3-2: Training-data cost-governance loop](../../images/part1/Yu-Chap03-Fig02.svg)
 
 *Figure 3-2: Training-data cost-governance loop. Source: original illustration from this book. The figure shows a cross-version iteration cycle that starts from budget planning, passes through cost monitoring, ROI evaluation, and optimization decisions, and returns to budget review.*
@@ -298,6 +312,8 @@ The core challenge is **multi-tenancy**. How can different LLM projects share th
 The recommended large-team pattern centers on a **unified data platform**. At the bottom, Kubernetes manages compute resources, including CPU and GPU nodes. Ray on Kubernetes or Spark on Kubernetes provides scheduling. Data isolation is implemented through S3 IAM policies at bucket level, with independent buckets for projects or shared buckets with strict prefix isolation. Metadata management uses data-catalog tools such as Apache Atlas or AWS Glue Data Catalog to manage company-wide data lineage. The platform team maintains a standardized data operator library, and business lines build their cleaning pipelines by calling its interfaces, ensuring unified quality-check logic.
 
 An important lesson is that large-team data platforms should be built in **three stages**, not all at once. Stage 1, taking one to three months, should connect the core path: storage ingestion, basic cleaning operators, and version management, so data can flow in a controlled way. Stage 2, taking three to six months, should build observability: quality dashboards, experiment tracking, and alerting systems, turning the platform into a transparent system. Stage 3, after six months, should add more complex multi-tenant isolation, cross-project lineage insight, and resource quota management. Entering Stage 3 too early can make platform complexity exceed real needs and reduce core data-flow efficiency.
+
+Table 3-3 summarizes the corresponding comparison and engineering considerations.
 
 *Table 3-3: Quick selection matrix for data stacks across three team types. Source: compiled by the authors; setup cycles are empirical planning ranges, and actual cycles depend on team experience, permission workflows, and data-source complexity.*
 

@@ -1,4 +1,4 @@
-# Project Seven: Agent Tool-Use Data Factory
+# Project 7: Agent Tool-Use Data Factory
 
 <div class="chapter-authors">Jun Yu; Xin Xu; Zhili Wang</div>
 
@@ -57,6 +57,8 @@ The main text retains only the key implementation snippets that illuminate desig
 
 Acceptance metrics include tool-call validity rate, parameter completeness, trajectory success rate, recovery path coverage, block scenario proportion, and format compliance rate. If the project enters production, course, or public reproduction experimental environments, version numbers, dependency environments, random seeds, sample audit results, and failure post-mortem records should also be documented.
 
+Table P07-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table P07-1: Agent Tool-Use Publication Acceptance Checklist.*
 
 | Acceptance Dimension | Metric / Evidence | Publication Review Criteria |
@@ -94,6 +96,8 @@ Therefore, the goal of P07 is not simply to collect function-call examples, but 
 This pipeline serves not a one-off experiment, but a methodology:
 
 > When a team later needs to migrate from simple single-tool question answering to complex multi-tool Agents, enterprise Copilots, workflow assistants, and embodied task agents, what is truly reusable is not some function-call prompt, but this engineering methodology of "from tool specification to supervised trajectory."
+
+Figure P07-1 illustrates the corresponding workflow or structure.
 
 ![Figure P07-1](../../images/part14/p07/Yu-Project07-Fig01.svg)
 *Figure P07-1: Agent Tool-Use Data Factory Overview.*
@@ -211,6 +215,8 @@ This layer addresses the question: "Are these trajectories truly usable for trai
 
 Only at this step does the project advance from "invocation example collection" to "engineering closure."
 
+Figure P07-2 illustrates the corresponding workflow or structure.
+
 ![Figure P07-2](../../images/part14/p07/Yu-Project07-Fig02.svg)
 *Figure P07-2: Agent Tool-Use Three-Layer Architecture Diagram.*
 
@@ -249,6 +255,8 @@ Many teams building Agent data for the first time stall not because they "don't 
 * Safety boundaries patched entirely at deployment time.
 
 Therefore, what needs to be explicitly written out is not a division of responsibilities, but the engineering constraints themselves. **Agent Tool-Use is more like system behavior data engineering than a showcase of prompting techniques.**
+
+Figure P07-3 illustrates the corresponding workflow or structure.
 
 ![Figure P07-3](../../images/part14/p07/Yu-Project07-Fig03.svg)
 *Figure P07-3: Key Engineering Facets of the Agent Data Factory.*
@@ -324,6 +332,8 @@ Many people understand schema as "tool name + parameter table," but in an Agent 
 
 Schema is not for aesthetics; it is to enable alignment among "tool definition — trajectory generation — environment execution — training encapsulation — evaluation inspection." Without this alignment, Agent projects easily degenerate into a collection of mutually isolated scripts.
 
+Figure P07-4 illustrates the corresponding workflow or structure.
+
 ![Figure P07-4](../../images/part14/p07/Yu-Project07-Fig04.svg)
 *Figure P07-4: Tool Schema Structure Diagram.*
 
@@ -398,6 +408,8 @@ Templates are not meant for mechanical copying, but to give different trajectory
 ### 7.4 Template Scale in the Current Project
 
 The current project contains `5` trajectory templates and generates `22` raw trajectories around them. This indicates that the project does not rely on massive data volumes, but on the representativeness of trajectory types to build a methodological prototype.
+
+Figure P07-5 illustrates the corresponding workflow or structure.
 
 ![Figure P07-5](../../images/part14/p07/Yu-Project07-Fig05.svg)
 *Figure P07-5: Relationship Diagram of Task Specifications and Trajectory Templates.*
@@ -489,6 +501,8 @@ These three capabilities are each indispensable.
 
 The variant distribution in the current project is: `success = 10`, `recovery = 9`, `block = 3`. This ratio is highly representative, because it shows that the project does not treat recovery as a marginal concern, but places it at nearly equal weight with success.
 
+Figure P07-6 illustrates the corresponding workflow or structure.
+
 ![Figure P07-6](../../images/part14/p07/Yu-Project07-Fig06.svg)
 *Figure P07-6: success / recovery / block Trajectory Taxonomy Diagram.*
 
@@ -560,6 +574,8 @@ The key value of this logic is that the project genuinely connects trajectories,
 
 The simulated environment is not an endpoint, but it is a strong starting point. It allows teams to first resolve foundational questions—whether trajectories are reasonable, whether fields are aligned, whether recovery logic is valid, and whether metrics are evaluable—before deciding how to migrate to a real environment. The project's overall report also clearly states that the current environment is primarily simulated execution rather than direct integration with real production tools.
 
+Figure P07-7 illustrates the corresponding workflow or structure.
+
 ![Figure P07-7](../../images/part14/p07/Yu-Project07-Fig07.svg)
 *Figure P07-7: Simulated Tool Environment Execution Closure Diagram.*
 
@@ -594,6 +610,8 @@ The project does not write the execution process directly as training samples, b
 
 Evaluation is not equivalent to inspection. Evaluation answers "how did it perform," while inspection answers "are the code, data, and reports consistent." Separating the two is a clear signal of engineering maturity.
 
+Figure P07-8 illustrates the corresponding workflow or structure.
+
 ![Figure P07-8](../../images/part14/p07/Yu-Project07-Fig08.svg)
 *Figure P07-8: P07 Six-Step Pipeline Diagram.*
 
@@ -623,6 +641,8 @@ The essence of recovery training is not to teach the model "to make mistakes," b
 In real user environments, tools fail, parameters are wrong, dependencies fluctuate, permissions change, and queries return empty. If the model has only seen smooth paths during training, it will be extremely fragile in production.
 
 In the current project, `recovery = 9`, almost equal in magnitude to `success = 10`. This shows that the data factory treats recovery behavior as a primary capability, not as "a few failure cases added for appearance."
+
+Figure P07-9 illustrates the corresponding workflow or structure.
 
 ![Figure P07-9](../../images/part14/p07/Yu-Project07-Fig09.svg)
 *Figure P07-9: Parameter Correction and Retry Flow Diagram.*
@@ -662,6 +682,8 @@ The current training set contains `103` records in total, of which `34` are memo
 
 Because correct memory behavior typically depends heavily on specification. If it is left entirely to organic online generation, obtaining high-quality, interpretable training signals is difficult. Conversely, explicit construction via controlled templates in the early stages makes it much easier to establish a stable foundation.
 
+Figure P07-10 illustrates the corresponding workflow or structure.
+
 ![Figure P07-10](../../images/part14/p07/Yu-Project07-Fig10.svg)
 *Figure P07-10: Memory Read/Write Trajectory Diagram.*
 
@@ -696,6 +718,8 @@ The current unsafe block rate is `100%`, the unauthorized tool-call rate is `0%`
 ### 13.4 Why Block Data Should Enter the Training Set Early
 
 Because if safety boundaries are only enforced on the inference side via rules, a confrontational state easily arises in which "the model wants to act, and the rules are holding it back." A better approach is to teach the model during training what it should not do.
+
+Figure P07-11 illustrates the corresponding workflow or structure.
 
 ![Figure P07-11](../../images/part14/p07/Yu-Project07-Fig11.svg)
 *Figure P07-11: Unsafe Block Decision Flow Diagram.*
@@ -758,6 +782,8 @@ The project's final output includes:
 * `data/training/training_manifest.json`
 
 This shows that the project's output is no longer "a few run results," but a set of assets directly consumable by the training side.
+
+Figure P07-12 illustrates the corresponding workflow or structure.
 
 ![Figure P07-12](../../images/part14/p07/Yu-Project07-Fig12.svg)
 *Figure P07-12: Event Log to Training Sample Reassembly Diagram.*
@@ -880,6 +906,8 @@ Inspection answers:
 
 This step is critically important, because it means this chapter is not merely "a notebook telling a story," but "an engineering closure in which code is verifiable, artifacts are auditable, and reports are traceable."
 
+Figure P07-13 illustrates the corresponding workflow or structure.
+
 ![Figure P07-13](../../images/part14/p07/Yu-Project07-Fig13.svg)
 *Figure P07-13: Evaluation and Inspection Dual-Closure Diagram.*
 
@@ -930,6 +958,8 @@ In the future, richer scenarios of unauthorized invocations, prompt injection, s
 ### 19.5 Expand Evaluation Dimensions
 
 Beyond current metrics, finer-grained metrics can be added, including tool selection accuracy, parameter correctness, retry efficiency, final answer quality, and multi-turn consistency.
+
+Figure P07-14 illustrates the corresponding workflow or structure.
 
 ![Figure P07-14](../../images/part14/p07/Yu-Project07-Fig14.svg)
 *Figure P07-14: P07 Future Evolution Roadmap.*

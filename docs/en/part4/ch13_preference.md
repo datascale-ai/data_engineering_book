@@ -82,6 +82,8 @@ Business preferences that do not enter annotation specifications cannot enter tr
 
 
 
+Figure 13-1 illustrates the corresponding workflow or structure.
+
 ![Figure 13-1: Flowchart from preference data to reward signal](../../images/part4/Yu-Chap13-Fig01-EN.svg)
 
 *Figure 13-1: Flowchart from preference data to reward signal.*
@@ -118,6 +120,8 @@ Furthermore, these three types correspond to three distinct problem orientations
 
 The same task input `x` can record supervisory signals using different "feedback interfaces." The three minimal viable structures below facilitate implementation in data pipelines and annotation platforms.
 
+Listing 13-1 provides the corresponding code or configuration example.
+
 ```json
 {"type":"pairwise","prompt":"User: Explain what DPO is in three sentences.","winner":"(A more concise answer that covers the key points)","loser":"(A more verbose answer that drifts off topic)","meta":{"task":"explain","dims":["helpful","concise"],"source":"human"}}
 {"type":"scalar","prompt":"User: Please summarize the following policy document...","response":"(candidate response)","score":4,"meta":{"task":"summary","rubric":"v1","rater":"r_1027"}}
@@ -127,6 +131,9 @@ The same task input `x` can record supervisory signals using different "feedback
   {"state":"Integrate evidence and respond","output":"(step3 final answer)","reward":1}
 ],"meta":{"task":"rag_agent","unit":"step"}}
 ```
+
+*Listing 13-1: Code or configuration example.*
+
 
 ### Which Tasks Are Suited to Each of the Three Reward Signal Types
 
@@ -212,6 +219,8 @@ Accordingly, from a preference learning maturity perspective, teams typically un
 
 When you do not want "overall scores" to mask conflicts, you can simultaneously retain dimension labels and aggregation strategies in the data (the aggregation strategy can be decided at the training/sampling stage rather than fixed irrevocably at annotation time).
 
+Listing 13-2 provides the corresponding code or configuration example.
+
 ```json
 {
   "type": "pairwise_multi_dim",
@@ -233,6 +242,9 @@ When you do not want "overall scores" to mask conflicts, you can simultaneously 
   "meta": {"scenario":"medical","risk_level":"high","policy":"medical_v2"}
 }
 ```
+
+*Listing 13-2: Code or configuration example.*
+
 
 ### Multi-Objective Preference Cannot Rely on an "Overall Score" to Mask Conflicts
 
@@ -271,6 +283,8 @@ From an engineering maturity perspective, preference learning rarely arrives at 
 This evolutionary path is important because it illustrates that preference learning should not be regarded as a static data format—it is a progressively upgradeable engineering capability. Teams do not need to implement all complex structures from the start, but they must have a clear picture of where they ultimately want to go. Otherwise, early data systems easily become bottlenecks in later stages due to excessive simplification.
 
 
+
+Figure 13-2 illustrates the corresponding workflow or structure.
 
 ![Figure 13-2: Schematic of multi-objective preference trade-offs](../../images/part4/Yu-Chap13-Fig02-EN.svg)
 
@@ -352,6 +366,8 @@ From an engineering perspective, arbitration, re-labeling, calibration, and gold
 
 Preference pairs are inherently "comparison problems" and are well suited to using agreement rates for routine health checks. The script below takes two rounds of annotation results for the same batch of samples and outputs the agreement rate and a list of high-disagreement sample IDs (for routing into the arbitration pool).
 
+Listing 13-3 provides the corresponding code or configuration example.
+
 ```python
 from collections import Counter
 from typing import Dict, List, Tuple
@@ -381,6 +397,9 @@ if __name__ == "__main__":
     print("Samples requiring arbitration:", disagreed)
 ```
 
+*Listing 13-3: Code or configuration example.*
+
+
 ### Debiasing Preference Data and Confidence Modeling
 
 Once a team has accepted the fact that "preference data is inherently noisy," the next step is no longer to treat all samples as equally trustworthy. A more reasonable approach is to perform **confidence modeling** on the samples themselves—in addition to process governance—and to apply systematic debiasing when necessary (Dawid & Skene 1979; Northcutt et al. 2021). Because preference data cannot be treated as binary facts—it is a class of observations carrying source, context, difficulty, and judgment stability. For data teams, this means the training set should not be a simple list of samples but a collection of reward signals with attached weights, confidence levels, and source labels.
@@ -394,6 +413,8 @@ Another important dimension of confidence modeling is **difficulty awareness**. 
 Debiasing further involves sampling strategy. Many teams, when expanding preference data, inadvertently over-sample the tasks the model handles best, retain the samples easiest to judge, and label the most obvious differences most heavily. This may cause offline metrics to improve rapidly, but it will lead to the model lacking sensitivity to difficult scenarios, boundary conflicts, and fine-grained stylistic differences. In other words, sampling bias itself is part of the bias in reward signals. What data teams must do extends beyond cleaning existing noise—it also means designing, at the data intake stage, a sampling strategy that is diverse, stratified, and covers critical conflict zones.
 
 Preference data governance should not stop at "improving agreement rates"; it should further advance toward modeling inconsistency and uncertainty. Only when a team can identify which samples are more trustworthy, which sources are more stable, which tasks are more prone to drift, and which conflicts are worth preserving rather than forcibly averaged, will reward signals possess long-term maintainability.
+
+Table 13-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 13-1: Reward Noise Sources and Governance Actions.*
 
@@ -423,6 +444,8 @@ Preference data becomes genuinely usable as a reward signal only when it is succ
 **PRM (Process Reward Model)** targets process rewards and has the most complex requirements. Teams must provide not only the final output but also intermediate steps, along with step-level positive/negative feedback or local scores. This means data teams must resolve in advance the problems of process segmentation, step semantic definition, and local reward attribution. PRM is most suited to complex tasks in which intermediate behavior quality determines overall reliability—such as multi-step reasoning, tool invocation, code repair, and Agent planning. Its returns are often very large, but the construction threshold is also highest. It is therefore typically not a default solution for all tasks but is better focused on high-value tasks where process supervision is most warranted.
 
 In practice, many mature teams do not treat DPO, RM, RLAIF, and PRM as mutually exclusive paths. They instead build a layered system: the base layer uses preference pairs for rapid DPO alignment; the platform layer trains reward models to form a unified scoring interface; the expansion layer uses RLAIF and rule judges to increase coverage; and the complex-task layer introduces PRM for process constraints. In other words, the diversity of training methods essentially requires data teams to build layered data interfaces rather than expecting one sample type to serve all methods.
+
+Table 13-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 13-2: Correspondence Between Preference Types and Training Methods.*
 

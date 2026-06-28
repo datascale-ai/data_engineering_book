@@ -116,6 +116,8 @@ For multi-turn data to be truly trainable, state representation must go beyond "
 
 The example below uses a "meeting scheduling" thread to illustrate: the trigger in this turn is the user providing a timezone; the action is a calendar tool call; the post-state updates `pending_slots` and `last_action_result`.
 
+Listing 20-1 provides the corresponding code or configuration example.
+
 ```json
 {
   "episode_id": "ep_0012",
@@ -148,6 +150,9 @@ The example below uses a "meeting scheduling" thread to illustrate: the trigger 
   }
 }
 ```
+
+*Listing 20-1: Code or configuration example.*
+
 
 The current state snapshot tells us what the system currently knows, what it is doing, and what it lacks. The triggering input may be a new user message, a tool observation, or a feedback signal. The decision action encompasses generating a response, invoking a tool, writing to memory, switching threads, suspending a task, and so on. The updated state records the changes that should occur internally in the system after this step. Only by linking these four parts together does the data truly form a "observe–decide–update" learning unit. If a sample contains only triggering input and response text without pre- and post-states, the model learns only "how to follow one sentence with another," not "how to advance a task given a state."
 
@@ -192,6 +197,8 @@ A memory write is therefore a decision action, not merely a storage action (Zhon
 
 **Code Example: A Long-Term Preference Memory Write Record (with Confidence and Decay Policy)**
 
+Listing 20-2 provides the corresponding code or configuration example.
+
 ```json
 {
   "memory_event": "upsert",
@@ -212,6 +219,9 @@ A memory write is therefore a decision action, not merely a storage action (Zhon
   "created_at": "2026-04-24"
 }
 ```
+
+*Listing 20-2: Code or configuration example.*
+
 
 ### The Relationship Between Memory Writes and the Task Closed Loop
 
@@ -295,6 +305,8 @@ Memory-dependency evaluation focuses on whether the system has genuinely learned
 
 If the state fields of one thread suddenly contain exclusive fields from another thread—for instance, the `recipient` field from the mail thread appearing in the resume thread—this is typically a cross-thread signal. The script below demonstrates how to perform this check on a replay log.
 
+Listing 20-3 provides the corresponding code or configuration example.
+
 ```python
 from typing import Dict, List
 
@@ -328,6 +340,9 @@ if __name__ == "__main__":
     ]
     print(detect_contamination(replay))
 ```
+
+*Listing 20-3: Code or configuration example.*
+
 
 ### The Basic Unit of Replay Evaluation Should Be State Transition, Not Response
 

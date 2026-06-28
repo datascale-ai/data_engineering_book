@@ -89,6 +89,8 @@ StructBill-CN 共包含 **2,300 张**高分辨率票据图像，覆盖 **6 类�
 
 下面的代码示例说明数据集如何接入 MindSpore 中的 SRPO 训练循环。它串起了完整的数据消费路径：读取样本、采样候选输出、用 SCL-Reward 为每个候选打分、计算组内相对优势，并通过 GRPO loss 更新策略模型，从而把数据集里的 schema 与逻辑约束转化为可训练的信号。
 
+代码清单40-1给出了相应的代码或配置示例。
+
 ```python
 import mindspore as ms
 from mindspore import nn, ops
@@ -152,6 +154,9 @@ for epoch in range(EPOCHS):
         loss = grpo_train_step(policy, batch, G=8)
 ```
 
+*代码清单40-1：代码或配置示例。*
+
+
 #### 40.2.2 任务定义
 
 形式上，给定一张文档图像 $X$ 与一份 schema 定义 $S=\{K, T, C\}$，其中 $K$ 是待抽取的全局键字段集合，$T$ 是表结构定义，$C$ 是确定性约束规则。目标是学习一个策略，使生成的结构化序列 $Y$ 在给定 $X$ 与 $S$ 条件下最大化后验概率 $P(Y\,|\,X, S)$。
@@ -206,6 +211,8 @@ schema 的三个部分 $\{K, T, C\}$ 与最终的层级 JSON 一一对应：$K$ 
 
 **StructBill-CN 样本结构示例（抽象化层级 JSON）：**
 
+代码清单40-2给出了相应的代码或配置示例。
+
 ```json
 {
   "key_information": {
@@ -230,9 +237,14 @@ schema 的三个部分 $\{K, T, C\}$ 与最终的层级 JSON 一一对应：$K$ 
 }
 ```
 
+*代码清单40-2：代码或配置示例。*
+
+
 这个样本框很小，但它把本章的闭环讲清楚了：`key_information` 与 `Fee_List` 是**结构**，注释里的等式是**逻辑约束**，两者都要被标注、被校验、被评测。后文的流水线、质检与指标，全部围绕「如何让这个 JSON 既结构合法又算术自洽」展开。
 
 **代码示例 1：Schema 的 Python 数据类定义。** 下面的代码展示了 schema $S=\{K, T, C\}$ 的程序化表示。每种业务文档类型对应一个 `Schema` 实例；三个约束字段（`price_field`、`qty_field`、`amount_field`）加上 `total_field` 在不改变 JSON 输出格式的前提下编码了算术规则 $C$。
+
+代码清单40-3给出了相应的代码或配置示例。
 
 ```python
 @dataclass
@@ -258,6 +270,9 @@ expense_schema = Schema(
     total_field="Total_Cost",
 )
 ```
+
+*代码清单40-3：代码或配置示例。*
+
 
 #### 40.3.4 字段类型、标注规则与评测指标的对应关系
 
@@ -305,6 +320,8 @@ StructBill-CN 通过一条多阶段流水线构建，核心诉求是**同时保�
 
 **代码示例 2：逻辑一致性校验门禁。** 下面的函数实现了图 40-3 中的结构门禁（$I_{gate}$）、行级检查（Row-ACR）与文档级检查（Doc-ACR）。它在构建流水线中拦截不自洽的标注，在评测流水线中给模型输出打分——同一份代码、两处复用。输入的 `Schema` 来自代码示例 1。
 
+代码清单40-4给出了相应的代码或配置示例。
+
 ```python
 def validate_logic(pred_text: str, schema: Schema, eps: float = 0.01
                    ) -> Tuple[bool, float, float]:
@@ -350,6 +367,9 @@ def validate_logic(pred_text: str, schema: Schema, eps: float = 0.01
     return True, row_acr, doc_acr
 ```
 
+*代码清单40-4：代码或配置示例。*
+
+
 **⑦ 版本切分。** 数据集按训练 : 测试 = **8:2** 切分。工程实践上建议：切分时保证 6 类 schema 在两侧的分布可控、留出真正的跨布局测试样本；并可从训练集再切出一个小验证子集用于调参，但不污染测试集。每一个版本都应带上数据指纹与统计快照，接入数据版本与实验追踪体系。
 
 #### 40.4.1 数据血缘与元数据：让每条记录都可回溯
@@ -384,6 +404,8 @@ SCVR 是本章为工程监控目的给出的派生指标定义（不引入任何
 
 **代码示例 3：批量计算 SCVR。** 基于代码示例 2 的 `validate_logic`，下面的函数在一批模型预测上计算 SCVR 及其伴随指标。它不需要额外标注，只复用已有的 schema 与算术约束。
 
+代码清单40-5给出了相应的代码或配置示例。
+
 ```python
 def compute_scvr(predictions: list, schema: Schema,
                  eps: float = 0.01) -> dict:
@@ -416,6 +438,9 @@ def compute_scvr(predictions: list, schema: Schema,
 # metrics = compute_scvr(model_outputs, expense_schema)
 # print(f"SCVR={metrics['scvr']:.1%}, 可入库率={metrics['ingestible_rate']:.1%}")
 ```
+
+*代码清单40-5：代码或配置示例。*
+
 
 #### 40.5.2 可复现评测的工程约定
 
@@ -477,6 +502,8 @@ def compute_scvr(predictions: list, schema: Schema,
 就基准数据而言，StructBill-CN 所采用的全部图像**均来自公开学术数据集**——CHIP-2022 与 SIBR-Med，两者在原始发布时已由数据集提供方完成去标识化处理，StructBill-CN 不额外接入任何受保护健康信息（PHI）。这是一个刻意的合规设计：把可公开发布的基准建立在已授权的公开来源之上，从源头消除 PHI 泄露风险。
 
 就生产扩展而言，当本章的方法论被应用于真实私有票据/病历数据时，必须在数据进入流水线的最早阶段执行字段级脱敏。下表给出医疗费用文档中各类敏感字段的具体遮盖规则，供生产部署时作为去标识化规范的起点。
+
+表40-4汇总了相应的对比和工程要点。
 
 *表 40-4：医疗费用文档字段级去标识化规则（面向生产扩展）*
 
@@ -571,6 +598,8 @@ https://huggingface.co/datasets/champion666/SparseTable_Bench_Dataset
 
 SparseTable-Bench 的一个核心设计是把每张表格图像表示为同步的多信号样本，而不是只保存一种目标格式。下面的示例展示了一个简化样本，其中第二个单元格为空，但它仍然是结构上有效的列位。
 
+代码清单40-6给出了相应的代码或配置示例。
+
 ```json
 {
   "html": "<table><tr><td>Revenue</td><td></td><td>$12.4M</td></tr></table>",
@@ -590,6 +619,9 @@ SparseTable-Bench 的一个核心设计是把每张表格图像表示为同步�
   ]
 }
 ```
+
+*代码清单40-6：代码或配置示例。*
+
 
 这里的 `[EMPTY_CELL]` 不是普通文本，而是用于表达“结构存在、内容为空”的占位符。它把单元格的结构身份和语义内容解耦：即使图像区域没有可读字符，该位置仍然有行列坐标、边界框和上下文关系。对于稀疏表格，这种占位符可以防止模型在生成时把空白区域当作不存在的区域，从而降低列坍缩和左移错误的概率。图 40-4 概括了同一表格样本中 HTML、文本和 bbox 三类监督信号的同步关系。
 

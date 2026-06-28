@@ -231,6 +231,8 @@ Lineage 层不只是记录"数据从哪里来"，还要记录"数据被谁改过
 
 Planner 向 Executor 下发的每条指令必须是一个结构化的 `TaskStep` 对象，包含以下字段：
 
+代码清单31-1给出了相应的代码或配置示例。
+
 ```json
 {
   "step_id": "step_20240601_042",
@@ -254,9 +256,14 @@ Planner 向 Executor 下发的每条指令必须是一个结构化的 `TaskStep`
 }
 ```
 
+*代码清单31-1：代码或配置示例。*
+
+
 **Executor → Verifier 通信协议：**
 
 Executor 完成工具调用后，向 Verifier 提交 `ExecutionResult` 对象：
+
+代码清单31-2给出了相应的代码或配置示例。
 
 ```json
 {
@@ -271,6 +278,9 @@ Executor 完成工具调用后，向 Verifier 提交 `ExecutionResult` 对象：
   "warnings": ["3 rows had ambiguous date formats, defaulted to yyyy-MM-dd"]
 }
 ```
+
+*代码清单31-2：代码或配置示例。*
+
 
 **Verifier → Human Gate 通信协议：**
 
@@ -391,6 +401,8 @@ DataAgent 可以被理解为一个面向企业数据任务的 Agentic Data Engin
 
 一个 DataAgent MVP 可以包含以下链路：
 
+代码清单31-3给出了相应的代码或配置示例。
+
 ```text
 业务问题
   -> 主 Agent 理解意图
@@ -400,6 +412,9 @@ DataAgent 可以被理解为一个面向企业数据任务的 Agentic Data Engin
   -> 主 Agent 基于结果生成解释或报告
   -> 轨迹、工具返回和文件产物进入审计记录
 ```
+
+*代码清单31-3：代码或配置示例。*
+
 
 这条链路对应的自动化等级通常是 L1 到 L2：Agent 可以自动读取元数据、生成 SQL、执行只读查询和保存结果，但不应自动改写表结构、上线指标口径或触发下游生产流水线。这样做有两个好处：一方面，业务人员能尽快获得自然语言问数能力；另一方面，数据团队可以在较低风险下观察 Agent 的 schema 召回质量、SQL 执行准确率、workspace 产物完整性和审计可追溯性。
 

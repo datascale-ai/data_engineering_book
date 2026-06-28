@@ -60,6 +60,8 @@ In a modern large-model development organization, the typical collaboration boun
 
 This cross-functional coordination is realized through the "operations flywheel."
 
+Figure 7-1 illustrates the corresponding workflow or structure.
+
 ![Figure 7-1: Data Operations Flywheel](../../images/part2/Wang-Chap07-Fig01.svg)
 
 *Figure 7-1: Data Operations Flywheel — The left side shows the high-cost startup zone; the right side shows the gradually accumulated cycle of automated, high-quality data assets formed after long-term model evaluation and root-cause analysis feedback. Source: Original illustration by the authors.*
@@ -170,6 +172,8 @@ Teams should treat all offline metrics as proxies rather than direct guarantees 
 
 Evaluation must never stop at merely "looking at metrics." A qualified evaluation report must culminate in concrete system governance actions. See the table below for reference:
 
+Table 7-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table 7-1: Evaluation Metric to Governance Action Mapping. Source: compiled by the authors; metric thresholds and governance actions should be calibrated according to project goals, historical baselines, and manual review results.*
 
 | Metric Observation (Offline/Online) | Common Root Cause and Manifestation | Corresponding Governance Action |
@@ -249,11 +253,11 @@ After establishing the facts, the team immediately executed a three-step respons
 
 This costly training interruption demonstrates that the data operations team must be able to trace from an anomalous batch back to the source document, parser version, and cleaning rule, and consolidate retrospective findings into automated checks.
 
+Table 7-2 summarizes the corresponding comparison and engineering considerations.
+
 *Table 7-2: Version Iteration Log Template. Source: compiled by the authors; the fields form a data-version retrospective template that production environments can extend according to auditing, experiment tracking, and permission workflows.*
 
 In a formal business iteration system, every data batch deployed to the main training cluster must be accompanied by a release log as rigorous as a software release note. The table below provides a benchmark log template from a production pipeline.
-
-*Table 7-2: Case Retrospective: Root-Cause Localization of a Training Loss Spike.*
 
 | Evaluation Dimension | Version Log Field Example |
 | :--- | :--- |
@@ -278,6 +282,8 @@ An excellent quality dashboard should provide a top-down view of all metrics. It
 2. **Cleaning funnel yield rate**: Stage-by-stage retention metrics, such as the proportion blocked by language identification, the reject rate from heuristic filtering, and the removal rate from fuzzy deduplication. Any sudden drop or spike in any stage should be flagged with a red alert.
 3. **Safety risk baseline monitoring**: Records the number of PII or highly sensitive harmful documents detected and the blocking logs for each cycle.
 4. **Spot-check audit traffic lights**: Displays scoring trends from the weekly blind review of 1,000 randomly sampled corpus items, showing a moving average of fluency and correctness on a scale of 1 to 5 (for automated data validation frameworks, see Breck et al. 2019).
+
+Figure 7-2 illustrates the corresponding workflow or structure.
 
 ![Figure 7-2: Data Evaluation Feedback Loop](../../images/part2/Wang-Chap07-Fig02.svg)
 

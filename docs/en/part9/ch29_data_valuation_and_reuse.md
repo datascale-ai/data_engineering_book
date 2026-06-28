@@ -234,6 +234,8 @@ The corpus can potentially serve all five reuse paths from Section 29.3: improvi
 
 Input cost includes one-time acquisition cost and continuing maintenance cost.
 
+Table 29-3 summarizes the corresponding comparison and engineering considerations.
+
 *Table 29-3: fin_domain_corpus input costs, annualized where applicable, in RMB 10k units.*
 
 | Cost item | Type | Amount | Description |
@@ -255,6 +257,8 @@ The corpus has three internal risks. First, licensed reports have use-boundary r
 The corpus also reduces downstream risk because its provenance, review, anonymization, and documentation are centralized. If expected annual loss from compliance and factuality issues would be RMB 500,000 without the corpus and RMB 150,000 with it, annual risk-reduction value is about RMB 350,000. The key insight is that compliance and freshness maintenance are not only cost items; for this asset, they are major value sources.
 
 ### 29.4.4 Cross-Path Benefit Calculation
+
+Table 29-4 summarizes the corresponding comparison and engineering considerations.
 
 *Table 29-4: Annual cross-path benefits for fin_domain_corpus, in RMB 10k units.*
 
@@ -300,6 +304,8 @@ Real organizations manage hundreds or thousands of data assets. Precise valuatio
 
 The value axis combines benefit-side and usage-side metrics: how much benefit the asset creates and how widely it is reused. The cost/risk axis combines maintenance cost and inherent risk: how much it costs to keep the asset and how much risk it carries. Placing each asset on these two dimensions yields a cost-benefit matrix.
 
+Figure 29-2 illustrates the corresponding workflow or structure.
+
 ![Data asset cost-benefit matrix](../../images/part9/Liu-Chap29-Fig02-EN.svg)
 
 *Figure 29-2: Cost-benefit matrix.*
@@ -333,6 +339,8 @@ The cost-benefit matrix lifts valuation from individual assessment to portfolio 
 Data value is not a static quantity that can be measured once and trusted forever. It decays over time and may also rise when a new scenario appears. Financial regulations become outdated, customer-service knowledge drifts away from real questions, and once-valuable labels may be replaced by better data. A one-time valuation at procurement or launch will drift out of date and eventually reproduce the illusions described earlier.
 
 The final link in value governance is to turn valuation from a one-time action into a normal mechanism. The lightweight mechanism proposed here is an **asset review card**: a one-page periodic record of value, cost, risk, reuse, and recommended action. It condenses the tools introduced above, including value metrics, reuse paths, and the cost-benefit matrix, into an operational checklist.
+
+Figure 29-3 illustrates the corresponding workflow or structure.
 
 ![Data asset review card](../../images/part9/Liu-Chap29-Fig03-EN.svg)
 
@@ -379,6 +387,8 @@ Without decision feedback, the pipeline is only another monitoring system.
 
 The first step in valuation is not calculation; it is forming a unified asset fact. Many organizations cannot value data not because they lack complex algorithms, but because they cannot answer basic questions: what is this asset, who owns it, who uses it, and can it be reused? Registration is the minimal fact table for valuation. It should connect the data catalog, lineage system, permission system, quality monitoring, and cost bills. If the organization has established data products and data contracts, the registration table should also reference the corresponding product ID and contract version.
 
+Table 29-5 summarizes the corresponding comparison and engineering considerations.
+
 *Table 29-5: Example fields for data asset registration.*
 
 | Field | Meaning | Valuation role |
@@ -409,6 +419,8 @@ Reuse rate cannot rely on manual forms forever. The pipeline should collect reus
 - Feature assets: online feature calls, offline training references, and model registry records.
 
 Each reuse event should record who used the asset, when, how, which version, and what result was observed.
+
+Table 29-6 summarizes the corresponding comparison and engineering considerations.
 
 *Table 29-6: Example reuse event log fields.*
 
@@ -448,6 +460,8 @@ Cost records should distinguish reducible and irreducible cost. Historical purch
 
 Valuation must become an actionable grade. One practical system is S/A/B/C/D:
 
+Table 29-7 summarizes the corresponding comparison and engineering considerations.
+
 *Table 29-7: Example data asset value grades.*
 
 | Grade | Criteria | Management action |
@@ -467,6 +481,8 @@ Valuation creates impact only when written back into governance systems. In the 
 Ordinary monitoring asks what happened. Valuation also asks where resources should go next.
 
 ### 29.7.8 Engineering Checklist
+
+Table 29-8 summarizes the corresponding comparison and engineering considerations.
 
 *Table 29-8: Data valuation engineering checklist.*
 
@@ -502,6 +518,8 @@ Mature value governance therefore needs cross-role collaboration. It does not ha
 ### 29.8.2 RACI: Clarifying Responsibility for Value Decisions
 
 RACI stands for Responsible, Accountable, Consulted, and Informed. It reduces ambiguity in value governance.
+
+Table 29-9 summarizes the corresponding comparison and engineering considerations.
 
 *Table 29-9: Example RACI for data value governance.*
 

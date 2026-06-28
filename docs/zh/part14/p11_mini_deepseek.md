@@ -26,9 +26,14 @@ Mini-DeepSeek；项目实战；可复现数据工程；数据流水线；验收�
 
 核心数据流可概括为：
 
+代码清单P11-1给出了相应的代码或配置示例。
+
 ```text
 候选语料 -> 配方采样 -> tokenizer 处理 -> packed dataset -> 训练烟测 -> loss 与样本质量报告
 ```
+
+*代码清单P11-1：代码或配置示例。*
+
 
 样本 schema 至少应保留 `id`、`source`、`content_or_payload`、`metadata`、`quality_signals`、`split_or_stage` 与 `audit_trace` 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。
 
@@ -115,6 +120,8 @@ Mini-DeepSeek；项目实战；可复现数据工程；数据流水线；验收�
 
 我们编写 `mix_sampler.py` 脚本，按设定比例进行抽样。
 
+代码清单P11-2给出了相应的代码或配置示例。
+
 ```python
 from datasets import load_dataset, concatenate_datasets
 
@@ -139,9 +146,14 @@ mixed = sample_multi_source(RECIPE, target_docs=500_000)
 mixed.save_to_disk("./data/mixed_1b_raw")
 ```
 
+*代码清单P11-2：代码或配置示例。*
+
+
 ### Step 2: 跨源 MinHash LSH 去重
 
 多源混合后，最大的隐患是不同来源间存在重复（例如 The Stack v2 中的代码片段，与 arXiv 论文中的代码段重复）。在 项目 1（Mini-C4）中，我们仅在单源内进行了 MinHash 去重；在此，我们需要全局去重。
+
+代码清单P11-3给出了相应的代码或配置示例。
 
 ```python
 from datasketch import MinHash, MinHashLSH
@@ -169,9 +181,14 @@ unique, dup_count = cross_source_dedup(load_stage("mixed_1b_raw"))
 unique.save_to_disk("./data/mixed_1b_dedup")
 ```
 
+*代码清单P11-3：代码或配置示例。*
+
+
 ### Step 3: 训练 150K 超大 Tokenizer
 
 DeepSeek-V3 (DeepSeek-AI et al. 2024) 采用了一个规模为 150K 左右的超大词表（相较于 Llama-2 的 32K 提升巨大），这使其在处理中文与代码时效率极高。在此步骤，我们将以混合且去重后的数据训练 BPE Tokenizer。
+
+代码清单P11-4给出了相应的代码或配置示例。
 
 ```python
 from tokenizers import Tokenizer, models, trainers, pre_tokenizers, normalizers
@@ -193,9 +210,14 @@ def train_large_tokenizer(dataset, vocab_size=150_000):
 train_large_tokenizer(load_stage("mixed_1b_dedup"))
 ```
 
+*代码清单P11-4：代码或配置示例。*
+
+
 ### Step 4: Pack & Shuffle 与 .arrow 分片产出
 
 为了让 GPU 在训练期间不用处理大量的 Padding，我们将变长的 Token 序列拼接成长度为 `4096` 或 `8192` 的连续片段（Pack），并加入特殊分隔符。
+
+代码清单P11-5给出了相应的代码或配置示例。
 
 ```python
 from tokenizers import Tokenizer
@@ -220,6 +242,9 @@ def pack_and_shuffle(dataset, tokenizer_path):
 packed = pack_and_shuffle(load_stage("mixed_1b_dedup"), "./data/mini_deepseek_tokenizer.json")
 packed.save_to_disk("./data/mixed_1b_final_packed")
 ```
+
+*代码清单P11-5：代码或配置示例。*
+
 
 ## 工程运行与最小复现路径
 

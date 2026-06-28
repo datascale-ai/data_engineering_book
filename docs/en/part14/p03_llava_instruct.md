@@ -59,6 +59,8 @@ The main text retains only the key implementation excerpts that illustrate desig
 
 Acceptance metrics include image-text consistency, task type coverage, OCR evidence usability, conversation turn distribution, format pass rate, and manual sampling quality. If the project enters a production, course, or public reproducibility environment, version numbers, dependency environments, random seeds, sample spot-check results, and failure sample review records should also be documented.
 
+Table P03-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table P03-1: LLaVA Multimodal Instruction Data Factory Publication Acceptance Table.*
 
 | Acceptance Dimension | Metric / Evidence | Publication Review Criteria |
@@ -180,6 +182,8 @@ In this sense, the most important aspect of this chapter is not "the model can s
 
 ## 4. Overall Architecture: The Data Pipeline from Multimodal Assets to Training Assets
 
+Figure P03-1 illustrates the corresponding workflow or structure.
+
 ![Figure P03-1](../../images/part14/p03/Yu-Project03-Fig01.svg)
 *Figure P03-1: LLaVA Multimodal Instruction Data Factory Overview.*
 
@@ -260,6 +264,8 @@ Many teams encounter a real problem the first time they do multimodal SFT: it is
 
 Therefore, writing out these responsibility domains clearly is essentially stating: **Multimodal SFT more closely resembles an engineering pipeline with visual quality inspection capability than a set of ad hoc sample assembly steps.**
 
+Figure P03-2 illustrates the corresponding workflow or structure.
+
 ![Figure P03-2](../../images/part14/p03/Yu-Project03-Fig02.svg)
 *Figure P03-2: Multimodal Data Factory Responsibility Collaboration Diagram.*
 
@@ -300,6 +306,8 @@ The project ultimately produced **87 assets**, with each of the three categories
 Many teams mistakenly assume "multimodal = natural photos." But in real-world business, document screenshots, reports, receipts, dashboards, charts, and web screenshots are often more important. Their difficulty lies not in object recognition but in mixed image-text and local structural understanding.
 
 Therefore, this project does not remain at COCO natural images but further derives document-style and chart-style assets, using a small-scale project to expand the multimodal task spectrum. The task design for document QA and chart QA draws respectively from the question types in DocVQA (Mathew et al. 2021) and ChartQA (Masry et al. 2022); for stages involving image-text similarity or visual semantic retrieval, the image-text alignment ideas of CLIP (Radford et al. 2021) are referenced.
+
+Figure P03-3 illustrates the corresponding workflow or structure.
 
 ![Figure P03-3](../../images/part14/p03/Yu-Project03-Fig03.svg)
 *Figure P03-3: Multimodal Asset Layering Diagram.*
@@ -439,6 +447,8 @@ Because in real-world multimodal tasks, many inputs are not natural photographs 
 
 Therefore, the significance of document image tasks in this project extends beyond expanding the sample pool — it pushes the factory from "describing what's in a picture" toward "joint image-text understanding."
 
+Figure P03-4 illustrates the corresponding workflow or structure.
+
 ![Figure P03-4](../../images/part14/p03/Yu-Project03-Fig04.svg)
 *Figure P03-4: Document Image Task Layering Diagram.*
 
@@ -538,6 +548,8 @@ This excerpt transforms the above workflow into a checkable structured represent
 The importance of bounding box alignment lies not merely in "knowing how to write a conversion function" but in the key principle it embodies:
 
 > In multimodal data engineering, any step that "looks like just a format change" may in fact determine whether the supervision ground truth remains valid.
+
+Figure P03-5 illustrates the corresponding workflow or structure.
 
 ![Figure P03-5](../../images/part14/p03/Yu-Project03-Fig05.svg)
 *Figure P03-5: Bounding Box Coordinate Conversion and Normalization Diagram.*
@@ -707,6 +719,8 @@ In multimodal projects, the low-quality sample library provides at least three b
 * Inversely guides prompt adjustments;
 * Helps classify common error types;
 * Provides an empirical foundation for subsequent training safety filtering.
+
+Figure P03-6 illustrates the corresponding workflow or structure.
 
 ![Figure P03-6](../../images/part14/p03/Yu-Project03-Fig06.svg)
 *Figure P03-6: Sample Quality Inspection and Rollback Closure Loop Diagram.*
@@ -922,6 +936,8 @@ These failure samples can be classified into at least the following types:
 * Grounding offset: coordinates shift to an adjacent target;
 * Multi-image confusion: information from the first and second images is conflated.
 
+Figure P03-7 illustrates the corresponding workflow or structure.
+
 ![Figure P03-7](../../images/part14/p03/Yu-Project03-Fig07.svg)
 *Figure P03-7: Failure Sample Attribution Diagram.*
 
@@ -976,6 +992,8 @@ Current inspection covers:
 Because it means the project is not "looks about right to the eye" but has established a consistency closure loop among code, data, training interface, and reports.
 
 From the perspective of engineering reuse, this type of closure information often has more transfer value than individual examples.
+
+Figure P03-8 illustrates the corresponding workflow or structure.
 
 ![Figure P03-8](../../images/part14/p03/Yu-Project03-Fig08.svg)
 *Figure P03-8: Project Validation Closure Loop Diagram.*

@@ -26,9 +26,14 @@ This project follows an architectural path of "corpus mixing, tokenization, trai
 
 The core data flow can be summarized as:
 
+Listing P11-2 provides the corresponding code or configuration example.
+
 ```text
 Candidate corpus -> Recipe sampling -> Tokenizer processing -> Packed dataset -> Training smoke test -> Loss and sample quality report
 ```
+
+*Listing P11-2: Code or configuration example.*
+
 
 The sample schema should retain at minimum the fields `id`, `source`, `content_or_payload`, `metadata`, `quality_signals`, `split_or_stage`, and `audit_trace`; specific fields are further refined by the data types, downstream tasks, and acceptance methods of this project.
 
@@ -115,6 +120,8 @@ According to the DeepSeek-V3 report, we need to fuse multiple data sources. In t
 
 We write the `mix_sampler.py` script to sample at the configured proportions.
 
+Listing P11-3 provides the corresponding code or configuration example.
+
 ```python
 from datasets import load_dataset, concatenate_datasets
 
@@ -139,9 +146,14 @@ mixed = sample_multi_source(RECIPE, target_docs=500_000)
 mixed.save_to_disk("./data/mixed_1b_raw")
 ```
 
+*Listing P11-3: Code or configuration example.*
+
+
 ### Step 2: Cross-Source MinHash LSH Deduplication
 
 After multi-source mixing, the greatest hidden risk is duplicates between different sources (for example, code snippets in The Stack v2 duplicating code segments in arXiv papers). In Project 1 (Mini-C4), we performed MinHash deduplication only within a single source; here we need global deduplication.
+
+Listing P11-4 provides the corresponding code or configuration example.
 
 ```python
 from datasketch import MinHash, MinHashLSH
@@ -169,9 +181,14 @@ unique, dup_count = cross_source_dedup(load_stage("mixed_1b_raw"))
 unique.save_to_disk("./data/mixed_1b_dedup")
 ```
 
+*Listing P11-4: Code or configuration example.*
+
+
 ### Step 3: Training a 150K Super-Vocabulary Tokenizer
 
 DeepSeek-V3 (DeepSeek-AI et al. 2024) employs a super-vocabulary of approximately 150K entries (a substantial increase over Llama-2's 32K), which makes it highly efficient at processing Chinese text and code. In this step, we train a BPE tokenizer on the mixed and deduplicated data.
+
+Listing P11-5 provides the corresponding code or configuration example.
 
 ```python
 from tokenizers import Tokenizer, models, trainers, pre_tokenizers, normalizers
@@ -193,9 +210,14 @@ def train_large_tokenizer(dataset, vocab_size=150_000):
 train_large_tokenizer(load_stage("mixed_1b_dedup"))
 ```
 
+*Listing P11-5: Code or configuration example.*
+
+
 ### Step 4: Pack & Shuffle and `.arrow` Shard Output
 
 To avoid having the GPU handle large amounts of padding during training, we concatenate variable-length token sequences into contiguous segments of length `4096` or `8192` (packing), inserting special separator tokens.
+
+Listing P11-6 provides the corresponding code or configuration example.
 
 ```python
 from tokenizers import Tokenizer
@@ -220,6 +242,9 @@ def pack_and_shuffle(dataset, tokenizer_path):
 packed = pack_and_shuffle(load_stage("mixed_1b_dedup"), "./data/mini_deepseek_tokenizer.json")
 packed.save_to_disk("./data/mixed_1b_final_packed")
 ```
+
+*Listing P11-6: Code or configuration example.*
+
 
 ## Engineering Execution and Minimal Reproduction Path
 

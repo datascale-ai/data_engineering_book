@@ -32,9 +32,9 @@
 
 ## 本篇目录
 
-- [第8章：图文对数据工程](ch08_multimodal_image.md)
-- [第9章：重标注与文档理解](ch09_recaptioning_ocr.md)
-- [第10章：视频与音频数据工程](ch10_video_audio.md)
-- [第11章：跨模态对齐与融合](ch11_cross_modal_alignment.md)
+- [第8章 图文对数据工程](ch08_multimodal_image.md)
+- [第9章 重标注与文档理解](ch09_recaptioning_ocr.md)
+- [第10章 视频与音频数据工程](ch10_video_audio.md)
+- [第11章 跨模态对齐与融合](ch11_cross_modal_alignment.md)
 
 建议按第8章至第11章顺序阅读。已有视觉语言模型经验的读者可以先读第11章理解跨模态对齐目标，再回读第8章、第9章与第10章，定位各类对齐信号的来源。

@@ -40,9 +40,14 @@ DataAgent；语义层；NL2SQL；企业问数；Agent 编排
 
 核心数据流可概括为：
 
+代码清单P15-1给出了相应的代码或配置示例。
+
 ```text
 业务问题 -> 语义层 schema 召回 -> NL2SQL 生成与校验 -> SQL 执行 -> CSV/SQL/报告落盘 -> 轨迹审计
 ```
+
+*代码清单P15-1：代码或配置示例。*
+
 
 样本 schema 至少应保留 `id`、`source`、`content_or_payload`、`metadata`、`quality_signals`、`split_or_stage` 与 `audit_trace` 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。
 
@@ -129,9 +134,14 @@ DataAgent 的价值在于把这些环节组织成一个可配置的 Agent 数据
 
 因此，本章最合适的 case 是：
 
+代码清单P15-2给出了相应的代码或配置示例。
+
 ```text
 基于 DataAgent 构建企业级语义问数助手
 ```
+
+*代码清单P15-2：代码或配置示例。*
+
 
 这个 case 能最大化体现 DataAgent 的特色：NL2SQL、Semantic Service、YAML 即 Agent、插件化工具、主子 Agent 协同、workspace 审计和 A2A 服务化。
 
@@ -159,6 +169,8 @@ DataAgent 提供三类常用入口：
 
 最小复现可以先使用 Python SDK：
 
+代码清单P15-3给出了相应的代码或配置示例。
+
 ```python
 import asyncio
 from pathlib import Path
@@ -179,6 +191,9 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 ```
+
+*代码清单P15-3：代码或配置示例。*
+
 
 ### 4.2 主 Agent 层
 
@@ -233,6 +248,8 @@ DataAgent 的运行状态、消息轨迹、工具返回和 workspace 文件为�
 | value match | 提供字段值匹配与字面值校验能力 | 记录服务 URL、字段值索引版本和刷新时间 |
 | A2A 服务 | 仅在需要外部 Agent 调用时启用 | 记录 host、port、鉴权 token 来源和暴露范围 |
 
+表P15-1汇总了相应的对比和工程要点。
+
 *表 P15-1：DataAgent 语义问数助手最小环境矩阵*
 
 ### 5.2 安装项目
@@ -240,6 +257,8 @@ DataAgent 的运行状态、消息轨迹、工具返回和 workspace 文件为�
 DataAgent 是 DataGallery 开源生态中的主要执行引擎之一。DataGallery 开源入口见 [https://gitcode.com/datagallery](https://gitcode.com/datagallery)，DataAgent 项目仓库见 [https://gitcode.com/datagallery/dataagent](https://gitcode.com/datagallery/dataagent)。关于 DataGallery 的整体技术版图、复现边界和项目治理方式，可参见[附录G：DataGallery 开源生态与复现说明](../appendix_g_datagallery_note.md)。
 
 建议先固定版本，再在仓库根目录安装依赖：
+
+代码清单P15-4给出了相应的代码或配置示例。
 
 ```bash
 git clone https://gitcode.com/datagallery/dataagent.git
@@ -250,19 +269,34 @@ python -m venv .venv
 python -m pip install -U pip uv
 ```
 
+*代码清单P15-4：代码或配置示例。*
+
+
 使用 `uv` 安装：
+
+代码清单P15-5给出了相应的代码或配置示例。
 
 ```bash
 uv sync
 ```
 
+*代码清单P15-5：代码或配置示例。*
+
+
 如果使用 pip，也可以执行：
+
+代码清单P15-6给出了相应的代码或配置示例。
 
 ```bash
 pip install -e .
 ```
 
+*代码清单P15-6：代码或配置示例。*
+
+
 安装完成后，至少记录以下信息：
+
+代码清单P15-7给出了相应的代码或配置示例。
 
 ```bash
 python --version
@@ -271,11 +305,16 @@ python -c "import dataagent; print(getattr(dataagent, '__version__', 'unknown'))
 git rev-parse --short HEAD
 ```
 
+*代码清单P15-7：代码或配置示例。*
+
+
 ### 5.3 配置模型环境变量
 
 DataAgent 的模型配置来自 YAML 的 `MODEL` 段。通常建议将密钥放入 `.env`，而不是直接写进 YAML。
 
 示例：
+
+代码清单P15-8给出了相应的代码或配置示例。
 
 ```bash
 export LLM_BASE_URL="https://your-compatible-endpoint/v1"
@@ -288,7 +327,12 @@ export VALUE_MATCH_URL="http://127.0.0.1:8000"
 export A2A_AUTH_TOKEN="replace-with-local-dev-token"
 ```
 
+*代码清单P15-8：代码或配置示例。*
+
+
 Windows PowerShell 可使用：
+
+代码清单P15-9给出了相应的代码或配置示例。
 
 ```powershell
 $env:LLM_BASE_URL="https://your-compatible-endpoint/v1"
@@ -300,6 +344,9 @@ $env:SEMANTIC_SERVICE_URL="http://127.0.0.1:32000"
 $env:VALUE_MATCH_URL="http://127.0.0.1:8000"
 $env:A2A_AUTH_TOKEN="replace-with-local-dev-token"
 ```
+
+*代码清单P15-9：代码或配置示例。*
+
 
 ### 5.4 准备业务数据库
 
@@ -337,9 +384,14 @@ workspace 是本项目的资产落盘位置。主 Agent 调用 NL2SQL 子 Agent 
 
 建议为每次任务或每个用户会话设置独立 workspace，例如：
 
+代码清单P15-10给出了相应的代码或配置示例。
+
 ```text
 /tmp/dataagent-semantic-bi-demo/session-001
 ```
+
+*代码清单P15-10：代码或配置示例。*
+
 
 ### 5.7 最小本地运行路径
 
@@ -367,6 +419,8 @@ uv run -m dataagent \
 
 DataAgent 的关键优势之一是“YAML 即 Agent”。一个可运行的语义问数助手可以从下面的配置开始。
 
+代码清单P15-11给出了相应的代码或配置示例。
+
 ```yaml
 AGENT_CONFIG:
   name: "Enterprise Semantic BI Agent"
@@ -393,6 +447,9 @@ DATABASE: {db_id: "enterprise_demo", engine: "sqlite", config: {path: "/absolute
 SEMANTIC_SERVICE: {semantic_service_url: "http://host:32000", value_match_url: "http://host:8000"}
 ```
 
+*代码清单P15-11：代码或配置示例。*
+
+
 这份配置有五个关键点。
 
 第一，主 Agent 使用 `type: "react"`。它负责规划，不直接充当 NL2SQL 专用 Agent。
@@ -409,11 +466,18 @@ SEMANTIC_SERVICE: {semantic_service_url: "http://host:32000", value_match_url: "
 
 DataAgent 内置 NL2SQL Agent 配置位于：
 
+代码清单P15-12给出了相应的代码或配置示例。
+
 ```text
 dataagent/agents/nl2sql/nl2sql_agent.yaml
 ```
 
+*代码清单P15-12：代码或配置示例。*
+
+
 它的核心链路是：
+
+代码清单P15-13给出了相应的代码或配置示例。
 
 ```text
 Coordinator
@@ -424,6 +488,9 @@ Coordinator
   -> Executor
   -> Selector
 ```
+
+*代码清单P15-13：代码或配置示例。*
+
 
 每个节点承担不同职责。
 
@@ -437,9 +504,13 @@ Coordinator
 | Executor | 执行 SQL，获得 columns、rows 和 rows_preview。 |
 | Selector | 选择最终 SQL、结果和置信度。 |
 
+表P15-2汇总了相应的对比和工程要点。
+
 *表 P15-2：NL2SQL 子 Agent 核心节点与职责*
 
 最小配置如下：
+
+代码清单P15-14给出了相应的代码或配置示例。
 
 ```yaml
 AGENT_CONFIG:
@@ -467,15 +538,23 @@ CORE:
     threshold: 0.9
 ```
 
+*代码清单P15-14：代码或配置示例。*
+
+
 在主 Agent 调子 Agent 的模式中，业务侧通常不需要直接修改这份基础配置。更推荐把业务数据库和 语义层服务 地址写在主 Agent YAML 中，通过 `nl2sql_sub_agent_tool` 运行时覆盖。
 
 ## 8. Semantic Service：把业务元数据变成可召回上下文
 
 企业问数中，schema 感知是决定 SQL 质量的关键。一个用户问题可能只说：
 
+代码清单P15-15给出了相应的代码或配置示例。
+
 ```text
 最近一个季度各渠道的新客转化率怎么样？
 ```
+
+*代码清单P15-15：代码或配置示例。*
+
 
 但 SQL 生成需要明确：
 
@@ -496,6 +575,8 @@ CORE:
 | value match | 校验 SQL 字面值是否真实存在。 |
 | 向量数据库 向量索引 | 将业务描述、指标口径和字段语义变成可检索资产。 |
 
+表P15-3汇总了相应的对比和工程要点。
+
 *表 P15-3：Semantic Service 关键能力与工程价值*
 
 在项目中，Semantic Service 不应该被理解为“额外文档”。它是 NL2SQL 的前置数据工程层。没有这一层，模型只能依赖表名和字段名猜测；有这一层，模型可以基于业务语义、字段描述和 join 关系生成 SQL。
@@ -509,6 +590,8 @@ CORE:
 | `query` | 交给 NL2SQL 子 Agent 的自然语言查询，应包含业务目标、指标口径、过滤条件、分组和输出字段。 |
 | `sql_filename` | 保存 SQL 的文件名。 |
 | `csv_filename` | 保存查询结果的 CSV 文件名。 |
+
+表P15-4汇总了相应的对比和工程要点。
 
 *表 P15-4：nl2sql_sub_agent_tool 输入参数说明*
 
@@ -531,6 +614,8 @@ CORE:
 
 运行前检查以下内容：
 
+代码清单P15-16给出了相应的代码或配置示例。
+
 ```text
 1. 模型环境变量已配置。
 2. 数据库路径或连接串可访问。
@@ -540,13 +625,20 @@ CORE:
 6. workspace 可写。
 ```
 
+*代码清单P15-16：代码或配置示例。*
+
+
 从运行时看，一次完整问数任务可以拆成以下流程：
+
+图P15-3展示了相应的流程或结构。
 
 ![DataAgent 企业语义问数助手运行流程](../../images/part14/Cao-Project15-Fig06-ZH.svg)
 
 *图 P15-3：DataAgent 企业语义问数助手运行流程。*
 
 ### 10.2 使用 SDK 运行
+
+代码清单P15-17给出了相应的代码或配置示例。
 
 ```python
 import asyncio
@@ -570,15 +662,25 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+*代码清单P15-17：代码或配置示例。*
+
+
 ### 10.3 使用命令行运行
+
+代码清单P15-18给出了相应的代码或配置示例。
 
 ```bash
 uv run -m dataagent --config dataagent/core/flex/examples/nl2sql_flex_e2e_subagent.yaml
 ```
 
+*代码清单P15-18：代码或配置示例。*
+
+
 ### 10.4 使用 A2A 服务化
 
 当问数助手需要被其他 Agent 或业务系统调用时，可以启动 A2A 服务：
+
+代码清单P15-19给出了相应的代码或配置示例。
 
 ```bash
 uv run -m dataagent serve-a2a \
@@ -587,6 +689,9 @@ uv run -m dataagent serve-a2a \
   --port 9999 \
   --auth-token "your-token"
 ```
+
+*代码清单P15-19：代码或配置示例。*
+
 
 启动后，外部系统可以通过 AgentCard 发现服务能力，再通过 JSON-RPC 或 REST 发送消息。
 
@@ -605,9 +710,14 @@ SQL 文件是最重要的可审计资产。它回答：
 
 示例：
 
+代码清单P15-20给出了相应的代码或配置示例。
+
 ```text
 /tmp/dataagent-semantic-bi-demo/customer_level_order_amount.sql
 ```
+
+*代码清单P15-20：代码或配置示例。*
+
 
 ### 11.2 CSV 结果
 
@@ -615,9 +725,14 @@ CSV 文件是后续分析、报告和人工复核的基础。
 
 示例：
 
+代码清单P15-21给出了相应的代码或配置示例。
+
 ```text
 /tmp/dataagent-semantic-bi-demo/customer_level_order_amount.csv
 ```
+
+*代码清单P15-21：代码或配置示例。*
+
 
 ### 11.3 Markdown 报告
 
@@ -650,6 +765,8 @@ CSV 文件是后续分析、报告和人工复核的基础。
 | 轨迹完整率 | 工具调用、输入、输出、错误和文件路径是否可追踪。 |
 | 安全违规率 | 是否出现越权路径、敏感字段泄露或不允许的 SQL 操作。 |
 
+表P15-5汇总了相应的对比和工程要点。
+
 *表 P15-5：企业语义问数助手评估指标*
 
 其中，SQL 执行成功率只是底线，不等于任务成功。真正的问数助手还要保证 schema 选对、口径解释清楚、结果可复核、失败可定位。
@@ -658,9 +775,14 @@ CSV 文件是后续分析、报告和人工复核的基础。
 
 DataAgent 仓库中已经包含主 Agent 调 NL2SQL 子 Agent 的端到端测试示例：
 
+代码清单P15-22给出了相应的代码或配置示例。
+
 ```bash
 uv run tests/e2e/test_nl2sql_flex_subagent.py
 ```
+
+*代码清单P15-22：代码或配置示例。*
+
 
 这个测试链路验证了：
 
@@ -681,6 +803,8 @@ uv run tests/e2e/test_nl2sql_flex_subagent.py
 | 口径敏感指标 | 新客、复购率、转化率、客单价。 |
 | 异常输入 | 不存在字段、模糊口径、越权查询。 |
 
+表P15-6汇总了相应的对比和工程要点。
+
 *表 P15-6：企业问数业务回归集问题类型*
 
 每个测试样本应包含：
@@ -698,9 +822,14 @@ uv run tests/e2e/test_nl2sql_flex_subagent.py
 
 通常是 `SCENARIO.chat.instructions` 不够明确。需要在提示词中写清楚：
 
+代码清单P15-23给出了相应的代码或配置示例。
+
 ```text
 当问题需要数据库查询时，必须调用 nl2sql_sub_agent_tool。
 ```
+
+*代码清单P15-23：代码或配置示例。*
+
 
 同时要求模型提供 `query`、`sql_filename` 和 `csv_filename`。
 
@@ -770,9 +899,14 @@ uv run tests/e2e/test_nl2sql_flex_subagent.py
 
 扩展后链路变成：
 
+代码清单P15-24给出了相应的代码或配置示例。
+
 ```text
 NL2SQL -> CSV -> 图表 -> Markdown 报告 -> 业务交付
 ```
+
+*代码清单P15-24：代码或配置示例。*
+
 
 ### 16.2 增加 A2A 服务化
 
@@ -786,9 +920,14 @@ NL2SQL -> CSV -> 图表 -> Markdown 报告 -> 业务交付
 
 当 Ontology 能力稳定后，可以在 NL2SQL 前增加业务对象确认步骤：
 
+代码清单P15-25给出了相应的代码或配置示例。
+
 ```text
 用户问题 -> 本体对象识别 -> 业务关系确认 -> NL2SQL 查询 -> 报告
 ```
+
+*代码清单P15-25：代码或配置示例。*
+
 
 这能进一步降低“业务对象猜错”导致的 SQL 错误。
 
@@ -869,6 +1008,8 @@ NL2SQL -> CSV -> 图表 -> Markdown 报告 -> 业务交付
 | 忠实度门禁 | 最终回答不得编造查询结果之外的数字。 |
 | 安全门禁 | 路径、数据库、敏感字段、SQL 类型和 A2A 鉴权均有边界控制。 |
 | 复盘门禁 | 工具调用、错误、文件路径和最终回答可追踪。 |
+
+表P15-7汇总了相应的对比和工程要点。
 
 *表 P15-7：DataAgent 语义问数助手上线前门禁清单*
 

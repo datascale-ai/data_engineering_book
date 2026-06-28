@@ -30,6 +30,8 @@ First, long CoT carries a high token cost. Derivations in mathematics, code, and
 
 Latent-Switch-69K emerged against this backdrop. It is neither a simple "shorter CoT dataset" nor a collection of Long-CoT samples summarized and directly used for SFT. It serves LaTER-style latent-then-explicit reasoning systems, while [Latent-Switch MindSpore](https://github.com/yuki10033/latent_switch_mindspore) implements the data loading, span materialization, and mask construction pieces as a MindSpore data pipeline: the model first passes through a bounded latent reasoning interval, completing high-level planning and compressed thinking in continuous hidden states, then switches back to visible text and uses a shorter explicit CoT for symbolic verification, before generating the final answer. The data engineering objective therefore shifts: samples must answer not only "what is the answer" but also "which content is appropriate for the hidden planning budget and which content still needs to serve as visible verification supervision."
 
+Figure 43-1 illustrates the corresponding workflow or structure.
+
 ![Figure 43-1: Latent-Switch-69K Construction Pipeline](../../images/part12/Li-Chap43-Fig01.svg)
 
 *Figure 43-1: Latent-Switch-69K distills reasoning traces from Dolci-Think-SFT-32B into solution intuitions, compressed CoT, latent budgets, student sequences, and mask-aligned SFT records.*
@@ -41,6 +43,8 @@ This chapter builds on Part V's synthetic data engineering and Part VI's reasoni
 The final training split of the [Latent-Switch-69K dataset](https://huggingface.co/datasets/Tioe/LATENT-SWITCH-69K) contains 69,745 samples. Each retained sample includes a user question, a distilled solution intuition, a shortened explicit CoT, a final answer, latent-step metadata, and masks that determine how different token spans are supervised during training. This structure distinguishes it from ordinary CoT/SFT data: standard SFT records typically require only a prompt and an assistant output, and standard CoT data typically requires only that reasoning and the answer be written inside `<think>` tags or natural-language paragraphs. Latent-Switch-69K additionally records a budget for hidden planning and renders that budget as latent placeholders in the student sequence.
 
 In terms of difficulty distribution, the dataset does not pursue perfect uniformity. Medium-difficulty samples constitute the majority at 45,650 samples (65.5%); hard samples account for 17,428 (25.0%); and easy samples account for 6,667 (9.5%). This distribution has a clear rationale for latent-switch training. Medium-difficulty questions typically require genuine reasoning rather than templated question-answering, yet they are not so complex as to destabilize the distillation process. Hard samples provide longer, more complex reasoning chains, exposing the model to higher-budget implicit planning scenarios. Easy samples help the model retain the ability to produce short answers and direct verifications, preventing all samples from being cast as long-reasoning tasks.
+
+Table 43-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 43-1: Dataset Overview: Scale, Difficulty, and Domain Composition.*
 
@@ -56,6 +60,8 @@ In terms of difficulty distribution, the dataset does not pursue perfect uniform
 | Latent steps median | 40.00 | The median sample has approximately 40 latent steps |
 
 In terms of domain composition, Latent-Switch-69K skews heavily toward reasoning-intensive tasks. Mathematics problems account for approximately 37%, code problems for approximately 34%, science-oriented questions for approximately 5%, and the remainder comes primarily from instruction-following and general-knowledge prompts. This proportion is not accidental. The tasks that most benefit from latent-then-explicit reasoning are those that involve "a high-level solution plan but where one does not want to unroll all derivations"; mathematics and code have strong verifiability, clear step structure, and high token costs. Science questions provide conceptual reasoning and multi-condition judgment scenarios, while general instruction and knowledge samples prevent the model from learning only the expression patterns of competition mathematics or code completion.
+
+Figure 43-2 illustrates the corresponding workflow or structure.
 
 ![Figure 43-2: Latent-Switch-69K Data Sources and Domain Composition](../../images/part12/Li-Chap43-Fig02.png)
 
@@ -78,6 +84,8 @@ The fourth group is supervision fields, including `prompt_mask`, `latent_interna
 The starting point for constructing Latent-Switch-69K is reasoning traces sampled from Dolci-Think-SFT-32B. These original traces, understood as source reasoning traces, contain the question, one or more assistant outputs, a possible ground truth or extractable answer, and source and metadata. The construction process does not directly filter for short answers; instead, it first decomposes long traces into two complementary objectives: a high-level problem-solving intent and a shorter explicit verification chain.
 
 The following pedagogical example shows the simplest way to extract source traces: load Dolci-Think-SFT-32B from Hugging Face, shuffle it with a fixed random seed, select a batch of records, and normalize the conversations into the minimum fields required for subsequent distillation. Within the responsibility boundary of Latent-Switch MindSpore, this step and the subsequent teacher API call are upstream data preparation; the MindSpore repository consumes already-distilled rows containing `stage1.correct_insight`, `stage2.distilled_cot`, and `stage2.answer`.
+
+Listing 43-1 provides the corresponding code or configuration example.
 
 ```python
 from datasets import load_dataset
@@ -114,11 +122,16 @@ for row in sampled:
     )
 ```
 
+*Listing 43-1: Code or configuration example.*
+
+
 The first stage is extracting the solution intuition. The data construction prompt asks the teacher to extract only key insights—neither writing a short CoT nor directly providing the final answer. This field should describe "the high-level plan for solving this problem," for example which equations to set up, which state space to enumerate, which data structure to use for a coding problem, or which causal relationship to isolate for a science question. Its granularity sits between a label and a full derivation: more specific than a domain label, yet more compressed than step-by-step reasoning. The core value of this approach is extracting the planning signal from Long-CoT that can be internalized, providing the basis for the subsequent latent budget.
 
 The second stage is generating a compressed explicit CoT. The teacher continues solving the problem conditioned on the original question and the solution intuition, producing a shorter reasoning process and a final answer. Because the teacher already has the high-level plan, it does not need to re-expand the full exploration process or repeat invalid branches from the original trace. Each retained sample therefore contains four main components: problem, intuition, compressed CoT, and final answer. Unlike ordinary summarization, the goal of the compressed CoT is not to "shorten the original text" but to retain sufficient visible verification paths so that the model, after latent reasoning, can still complete symbolic checks using text.
 
 The following minimal implementation connects the two stages through an OpenAI-compatible API. The first stage requests only a JSON-formatted `correct_insight`; the second stage continues from the problem and that intuition, recording the hidden reasoning returned by the API as `distilled_cot` and the visible content as the final answer. The API key, endpoint, and teacher model are all read from environment variables.
+
+Listing 43-2 provides the corresponding code or configuration example.
 
 ```python
 import asyncio
@@ -182,6 +195,11 @@ record = asyncio.run(
 )
 ```
 
+*Listing 43-2: Code or configuration example.*
+
+
+Figure 43-3 illustrates the corresponding workflow or structure.
+
 ![Figure 43-3: Comparison of Original CoT, Compressed CoT, and Latent Placeholders](../../images/part12/Li-Chap43-Fig03.svg)
 
 *Figure 43-3: The extensive visible reasoning in the source trace is split into two types of signal: solution intuition is used to estimate the latent budget, and the compressed CoT is used for explicit verification and answer supervision.*
@@ -194,6 +212,8 @@ $$
 $$
 
 The mean compression ratio across the final corpus is 0.612 and the median is 0.569. This indicates that the distilled visible CoT typically retains approximately 57% to 61% of the original reasoning length. This figure should not be interpreted as "forty percent of reasoning information has been deleted." A more accurate reading is: some details have been compressed into the high-level plan represented by the solution intuition and further mapped onto the latent placeholder budget, while the necessary derivations still retained inside `<think>` serve for explicit verification and to supervise the model's visible reasoning style.
+
+Figure 43-4 illustrates the corresponding workflow or structure.
 
 ![Figure 43-4: Distributions of Original and Distilled Reasoning Length and Compression Ratio](../../images/part12/Li-Chap43-Fig04.png)
 
@@ -237,6 +257,8 @@ Here $(l_1,\dots,l_m)$ are latent placeholder positions, $(t_1,\dots,t_n)$ are t
 
 The example below follows the real `build_sft_record` call pattern in Latent-Switch MindSpore `records.py`. The upstream distilled result enters through `stage1` and `stage2`, while `SFTBuildConfig` controls compression-ratio filtering, latent budget, loss weights, and the placeholder token. `validate_tokenizer_contract` in `tokens.py` first checks that `<latent_think>`, `</latent_think>`, `<think>`, `</think>`, `<|im_start|>`, `<|im_end|>`, and `<|endoftext|>` are encoded stably.
 
+Listing 43-3 provides the corresponding code or configuration example.
+
 ```python
 import os
 
@@ -273,9 +295,14 @@ if reason != "ok":
     raise ValueError(f"sample filtered during SFT build: {reason}")
 ```
 
+*Listing 43-3: Code or configuration example.*
+
+
 Production preprocessing additionally filters samples according to compression ratio and field completeness and records the loss weights for the CoT and answer. More importantly, the rendered record must still be passed to `materialize_sample` or `LatentSwitchSFTSource` in `dataset.py` to relocate special-token spans and construct supervision masks. Concatenating this string alone does not make the sample safe for training.
 
 If MindSpore is installed in the runtime, the constructed JSONL can be wrapped directly as a `mindspore.dataset.GeneratorDataset`. The minimal loading example below shows the training-side columns such as `input_ids`, `labels`, `teacher_kl_mask`, and `latent_positions`.
+
+Listing 43-4 provides the corresponding code or configuration example.
 
 ```python
 import os
@@ -300,7 +327,12 @@ for batch in dataset.create_dict_iterator(output_numpy=True, num_epochs=1):
     break
 ```
 
+*Listing 43-4: Code or configuration example.*
+
+
 Below is a pedagogical, simplified sample sequence. It is intended only to illustrate the schema and mask relationships and is not an actual training sample from the dataset.
+
+Listing 43-5 provides the corresponding code or configuration example.
 
 ```text
 <|im_start|>user
@@ -321,11 +353,19 @@ The final answer is 67.
 <|im_end|>
 ```
 
+*Listing 43-5: Code or configuration example.*
+
+
 In this example, `<latent_think>` and `</latent_think>` are structural boundaries; the four `<|endoftext|>` tokens in between are merely placeholders, and their count in real samples is determined by `n_latent_steps`; the region from `<think>` to `</think>` is the visible compressed CoT; and the following text is the answer. For training purposes, what matters is not whether this text looks like natural conversation, but whether each token span can be stably located. `build_spans` in [Latent-Switch MindSpore](https://github.com/yuki10033/latent_switch_mindspore) checks that a sample contains exactly one `<latent_think>`, one `</latent_think>`, one `<think>`, and one `</think>`, and verifies that they satisfy:
+
+Listing 43-6 provides the corresponding code or configuration example.
 
 ```text
 assistant_content_start <= latent_start < latent_end < think_start < think_end
 ```
+
+*Listing 43-6: Code or configuration example.*
+
 
 This ordering constraint is critical. If a boundary token is missing, duplicated, or out of order, masks will be misaligned: latent placeholders may be mistakenly treated as ordinary answer tokens, or the answer span may be truncated. For ordinary SFT data, a boundary error may be merely a formatting issue; for latent-switch data, a boundary misalignment directly changes the training objective.
 
@@ -353,6 +393,8 @@ x_i, & \text{otherwise}.
 
 Here \(\mathcal{S}_{\mathrm{prompt}}\) denotes positions in the user prompt and the context preceding the assistant prefix, and \(\mathcal{S}_{\mathrm{latent\_inner}}\) denotes the interior placeholder positions between `<latent_think>` and `</latent_think>`. Tokens set to `-100` are not directly fitted by ordinary CE. This avoids an erroneous objective: requiring the model to predict a specific fixed text token at latent interior positions. For latent-switch data, the value of latent interior positions lies not in outputting `<|endoftext|>` tokens but in reserving slots for hidden state updates; the MindSpore data pipeline writes these positions explicitly into `latent_internal_mask`, `latent_positions`, and `latent_slot_mask`.
 
+Figure 43-5 illustrates the corresponding workflow or structure.
+
 ![Figure 43-5: Supervision Mask Schematic](../../images/part12/Li-Chap43-Fig05.svg)
 
 *Figure 43-5: Prompt and latent interior tokens are masked from ordinary CE; latent boundaries, explicit CoT, answers, and end tokens are controlled by different weights and masks.*
@@ -364,6 +406,8 @@ Here \(\mathcal{S}_{\mathrm{prompt}}\) denotes positions in the user prompt and 
 `answer_mask` covers the answer span between `</think>` and `<|im_end|>`. Answer tokens should generally receive strong supervision, because the final answer is the primary site of task correctness. For mathematics problems it may be a boxed answer; for multiple-choice problems it may be A, B, C, or D; for code problems it may be a function implementation. Regardless of how the latent interval is designed, answer consistency must be strictly maintained.
 
 `teacher_kl_mask` is used for teacher-distribution supervision. Each sample also generates a teacher-reference conversation: it contains no student latent placeholders; instead, it merges the original question and the distilled solution intuition as teacher input and provides a distributional reference at the shortened `<think> ... </think>` and answer positions. The benefit is that the teacher does not need to simulate continuous latent placeholders; it supervises only the token distribution quality of explicit reasoning and the answer.
+
+Table 43-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 43-2: Supervision Masks: Which Tokens Contribute to the Loss.*
 
@@ -390,6 +434,8 @@ Another detail worth noting is the weight applied to explicit CoT. Latent-Switch
 ### 43.6 Quality Control: Five Categories of Risk in Compression, Boundaries, and Bias
 
 Quality control for Latent-Switch-69K is not merely about filtering dirty text. Because the dataset simultaneously contains compressed reasoning, latent budgets, and multiple masks, risks are distributed across multiple layers.
+
+Table 43-3 summarizes the corresponding comparison and engineering considerations.
 
 *Table 43-3: Quality Control: Five Categories of Risk in Compression, Boundaries, and Bias.*
 

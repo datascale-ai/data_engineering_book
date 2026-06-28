@@ -83,6 +83,8 @@ LLM 数据工程中的数据来源极为多元化：公开网页（通过 Common
 
 接入层的核心工程挑战不是"如何拿到数据"（这主要是爬虫和 API 开发的工作），而是**如何在数据进入平台的第一时间，就建立起完整的元数据档案**。每一批接入的数据，必须在落盘的同时记录以下关键元信息：数据来源（source URL 或 API endpoint）、采集时间戳（用于时效性管理）、文件格式与版本、数据所有者或许可证类型（用于合规审计）、原始文件大小和文件数量，以及本次接入的任务 ID（用于断点续传和问题溯源）。没有这份元数据档案，数据进入平台后就如同"黑匣子"——你知道里面有数据，但你不知道它从哪里来、什么时候来、在哪个版本的清洗管线中被处理过。一旦出现问题，你根本无法溯源。
 
+代码清单3-1给出了相应的代码或配置示例。
+
 ```python
 # 元数据登记示例：每次数据接入时自动写入元数据库
 from dataclasses import dataclass, asdict
@@ -121,6 +123,8 @@ def register_ingestion(record: DataIngestionRecord, metadata_db_path: str):
 
 目前工业界最主流的两种选择是 **Apache Spark** (Zaharia et al. 2016) 和 **Ray Data** (Moritz et al. 2018)，两者在设计哲学和适用场景上存在根本性的差异：
 
+表3-1汇总了相应的对比和工程要点。
+
 *表3-1：Apache Spark vs Ray Data 核心特性对比。来源：本书基于开源框架公开文档与 LLM 数据处理实践整理。*
 
 | 对比维度 | Apache Spark | Ray Data |
@@ -136,6 +140,8 @@ def register_ingestion(record: DataIngestionRecord, metadata_db_path: str):
 选择哪一个，取决于团队背景和工作负载特征。如果团队具备传统大数据背景，且数据处理管线中有大量 SQL 逻辑和对 Hive/Iceberg 的依赖，Spark 是更稳健的选择；如果团队是 AI/ML 背景，需要在数据处理中频繁调用 ML 模型（如用分类器打 PPL 分、用 NER 模型做 PII 检测），Ray Data 的 Python 原生和 GPU 调度优势则会非常明显。许多大型团队最终采用的是混合方案：Spark 负责海量粗过滤（语言识别、规则去重），Ray Data 负责需要 ML 推理的精细化处理（质量评分、基准污染检测）。
 
 以下是一个典型的 Ray Data 数据清洗 pipeline 示例：
+
+代码清单3-2给出了相应的代码或配置示例。
 
 ```python
 import ray
@@ -180,6 +186,8 @@ LLM 数据栈要同时管理三种性质截然不同的数据，每种数据对�
 
 目前主流的三种数据湖格式各有其适用场景：
 
+表3-2汇总了相应的对比和工程要点。
+
 *表3-2：数据湖表格式选型对比（Apache Iceberg vs Delta Lake vs Apache Hudi）。来源：本书基于开源项目公开文档与湖仓架构实践整理。*
 
 | 特性 | Apache Iceberg | Delta Lake | Apache Hudi |
@@ -196,6 +204,8 @@ LLM 数据栈要同时管理三种性质截然不同的数据，每种数据对�
 **向量数据（Embeddings）**是第二类存储需求，主要服务于 RAG（检索增强生成）场景。向量数据库的核心职责是将海量文本 Chunk 转化为高维稠密向量并建立索引，支持高效的近似最近邻（ANN）检索 (Malkov and Yashunin 2020)。目前主流的向量数据库有 Milvus（开源，支持大规模分布式部署）、Qdrant（Rust 实现，性能较强，轻量部署友好）和 Weaviate（内置多模态向量支持，Schema 友好）等。选型时的核心决策因素是：向量数量规模（100 万以下 vs 亿级）、是否需要 Hybrid Search（稠密向量 + BM25 (Robertson and Zaragoza 2009) 稀疏检索的混合）、以及运维团队对分布式系统的运维能力。
 
 **模型 Checkpoint 与实验产物**是第三类，包括训练过程中保存的模型权重文件（动辄数百 GB）、TensorBoard 或 W&B 的训练日志、以及 Tokenizer 配置等。这类数据量大、访问频率不均匀（训练中频繁写入，训练后几乎只读），适合以对象存储为主存储，配合 DVC（Data Version Control）(DVC 2024) 或 MLflow Artifacts 做版本追踪。
+
+代码清单3-3给出了相应的代码或配置示例。
 
 ```bash
 # 使用 DVC 为数据集建立版本追踪
@@ -301,6 +311,8 @@ $$\text{数据工程 ROI} = \frac{\Delta\text{模型性能} \times \text{模型�
 推荐的大型团队方案以**统一数据平台**为核心：底层采用 Kubernetes 统一管理计算资源（包括 CPU 和 GPU 节点），Ray on Kubernetes 或 Spark on Kubernetes 提供调度；数据隔离通过 S3 的 IAM 权限策略在 Bucket-level 实现（不同项目使用独立 Bucket 或带有严格 Prefix 隔离的共享 Bucket）；元数据管理引入专业的数据目录工具（如 Apache Atlas 或 AWS Glue Data Catalog），统一管理公司内所有数据资产的血缘关系；平台团队维护一套标准化的数据处理算子库（Data Operator Library），各业务线通过调用算子库的接口开发自己的清洗管线，确保质量检测逻辑的统一。
 
 一个重要经验是：大型团队的数据平台应当**分三个阶段建设**，而不是一步到位。第一阶段（1-3 个月）优先打通核心链路：存储接入、基础清洗算子和版本管理，确保数据能够以受控方式流转；第二阶段（3-6 个月）围绕可观测性建设，搭建质量看板、实验追踪和告警系统，让平台从缺少透明度的流程变成可观测系统（FineWeb (Penedo et al. 2024) 和 RedPajama (Together Computer 2023) 均采用了类似的分阶段建设路径）；第三阶段（6 个月以上）再引入更复杂的多租户隔离机制、跨项目数据血缘洞察和资源配额管理。过早进入第三阶段容易使平台复杂度超过实际需求，反而降低核心数据流转效率。
+
+表3-3汇总了相应的对比和工程要点。
 
 *表3-3：三类团队数据栈选型速查矩阵。来源：本书整理，搭建周期为经验性规划区间，实际周期取决于团队经验、权限流程和数据源复杂度。*
 

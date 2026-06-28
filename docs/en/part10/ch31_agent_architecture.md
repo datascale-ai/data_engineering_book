@@ -62,6 +62,8 @@ Four high-frequency task categories in LLM data engineering are naturally suited
 
 ### 31.1.2 Benefit and Risk Matrix
 
+Table 31-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table 31-1: Benefit and risk assessment for agentizing high-frequency data engineering tasks.*
 
 | Task type | Average manual time | Time after agentization | Risk level | Suggested automation level |
@@ -119,9 +121,13 @@ This chapter uses DataAgent as a reference for how the six-layer architecture la
 
 Task boundaries must be constrained through layering. Each layer owns one type of responsibility, communicates through structured protocols, and does not share internal mutable state with other layers. Multi-agent conversation frameworks and surveys of autonomous agents both emphasize that complex agent systems need role separation, message protocols, and state isolation to reduce runaway risk (Wu et al. 2023; Wang et al. 2023; Xi et al. 2023).
 
+Figure 31-1 illustrates the corresponding workflow or structure.
+
 ![Six-layer architecture for data engineering agents](../../images/part10/Yu-Chap31-Fig01.svg)
 
 *Figure 31-1: Six-layer architecture for data engineering agents.*
+
+Table 31-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 31-2: Responsibility boundaries and failure modes of six layers.*
 
@@ -150,6 +156,8 @@ Planner design principles:
 ### 31.2.3 Tool Executor: Tool Registry and Safe Calls
 
 The Tool Executor maps abstract plan steps to concrete tool calls. It maintains a **Tool Registry** where each tool declares capability boundaries, parameter schema, risk level, required permission, and rollback support.
+
+Table 31-3 summarizes the corresponding comparison and engineering considerations.
 
 *Table 31-3: Example agent tool registry.*
 
@@ -219,6 +227,8 @@ The six-layer architecture works only if adjacent layers communicate through str
 
 **Planner to Executor:**
 
+Listing 31-1 provides the corresponding code or configuration example.
+
 ```json
 {
   "step_id": "step_20240601_042",
@@ -242,7 +252,12 @@ The six-layer architecture works only if adjacent layers communicate through str
 }
 ```
 
+*Listing 31-1: Code or configuration example.*
+
+
 **Executor to Verifier:**
+
+Listing 31-2 provides the corresponding code or configuration example.
 
 ```json
 {
@@ -258,6 +273,9 @@ The six-layer architecture works only if adjacent layers communicate through str
 }
 ```
 
+*Listing 31-2: Code or configuration example.*
+
+
 **Verifier to Human Gate:** the Verifier submits a `VerificationReport` containing format, statistical, and semantic checks, confidence scores, and recommended action.
 
 Hard constraints:
@@ -267,6 +285,8 @@ Hard constraints:
 3. **Timeout and degradation.** Each layer call must have a timeout. On timeout, the system follows predefined degradation rules based on risk, usually escalating to Human Gate or safely terminating.
 
 ### 31.2.9 Failure Isolation and Degradation
+
+Table 31-4 summarizes the corresponding comparison and engineering considerations.
 
 *Table 31-4: Degradation strategies for six-layer failures.*
 
@@ -284,6 +304,8 @@ The key principle is that degradation must increase human involvement. When auto
 ### 31.2.10 Where DataAgent Fits
 
 DataAgent can be understood as an Agentic Data Engineering framework for enterprise data tasks. It does not put every capability into one large model. Instead, configuration, tools, sub-agents, semantic layer, and workspace turn natural-language tasks into manageable engineering units.
+
+Table 31-5 summarizes the corresponding comparison and engineering considerations.
 
 *Table 31-5: Mapping DataAgent to the six-layer architecture.*
 
@@ -310,6 +332,8 @@ DataAgent has three roles in this part:
 
 Not all data engineering tasks are suitable for fully automatic execution. This chapter proposes a four-level automation model, where each level corresponds to different agent permissions and human involvement.
 
+Table 31-6 summarizes the corresponding comparison and engineering considerations.
+
 *Table 31-6: Four-level automation matrix.*
 
 | Level | Name | Agent role | Human role | Typical tasks | Hard constraint |
@@ -331,6 +355,8 @@ The following steps must retain human review at any automation level:
 
 ### 31.3.3 Human-AI Collaboration Flow
 
+Figure 31-2 illustrates the corresponding workflow or structure.
+
 ![Human-AI collaboration flow by risk level](../../images/part10/Yu-Chap31-Fig02.svg)
 
 *Figure 31-2: Human-AI collaboration flow by risk level.*
@@ -349,6 +375,8 @@ A minimum viable Data Engineering Agent should complete this loop independently:
 
 ### 31.4.2 Technology Choices
 
+Table 31-7 summarizes the corresponding comparison and engineering considerations.
+
 *Table 31-7: Technology choices for MVP components.*
 
 | Component | Minimal implementation | Recommended implementation |
@@ -364,6 +392,8 @@ A minimum viable Data Engineering Agent should complete this loop independently:
 
 The previous MVP focuses on data quality repair. In DataAgent's semantic query scenario, the MVP can be narrower and lower risk: the agent does not modify production data. It converts natural language to structured queries, writes results to disk, and generates a report.
 
+Listing 31-3 provides the corresponding code or configuration example.
+
 ```text
 Business question
   -> main agent understands intent
@@ -374,7 +404,12 @@ Business question
   -> trajectory, tool returns, and artifacts enter audit records
 ```
 
+*Listing 31-3: Code or configuration example.*
+
+
 This usually maps to L1-L2. The agent may read metadata, generate SQL, execute read-only queries, and save results, but it should not rewrite schemas, publish metric definitions, or trigger downstream production pipelines.
+
+Table 31-8 summarizes the corresponding comparison and engineering considerations.
 
 *Table 31-8: Configuration gates for a DataAgent semantic query MVP.*
 
@@ -405,6 +440,8 @@ Input quality report for `orders`:
 - `amount`: 0.5 percent are negative, possibly refunds, about 250 rows.
 
 *Planner output*
+
+Table 31-9 summarizes the corresponding comparison and engineering considerations.
 
 *Table 31-9: Planner output.*
 
@@ -464,6 +501,8 @@ The value of layering is defense in depth:
 The architecture assumes every layer can fail and prevents one failure from becoming catastrophic.
 
 ### Production Agent Maturity Model
+
+Table 31-10 summarizes the corresponding comparison and engineering considerations.
 
 *Table 31-10: Data engineering agent maturity model.*
 

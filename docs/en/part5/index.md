@@ -27,7 +27,7 @@ Chapter 15 establishes the basic process of a synthetic data factory and explain
 
 ## Table of Contents
 
-- [Chapter 15: Synthetic Data Factory: From Seeds to Validation](ch15_data_synthesis.md)
+- [Chapter 15: The Synthetic Data Factory: From Seeds to Validation](ch15_data_synthesis.md)
 - [Chapter 16: Knowledge Distillation and Model Collaboration](ch16_distillation.md)
 - [Chapter 17: Synthetic Data Quality Control and Model Collapse](ch17_quality.md)
 

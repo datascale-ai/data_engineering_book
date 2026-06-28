@@ -33,8 +33,8 @@ This part uses "multimodal data engineering" to refer to the collection, cleanin
 ## Part Contents
 
 - [Chapter 8: Image-Text Pair Data Engineering](ch08_multimodal_image.md)
-- [Chapter 9: Re-captioning and Document Understanding](ch09_recaptioning_ocr.md)
+- [Chapter 9: Recaptioning and Document Understanding](ch09_recaptioning_ocr.md)
 - [Chapter 10: Video and Audio Data Engineering](ch10_video_audio.md)
-- [Chapter 11: Cross-modal Alignment and Fusion](ch11_cross_modal_alignment.md)
+- [Chapter 11: Cross-Modal Alignment and Fusion](ch11_cross_modal_alignment.md)
 
 Suggested order: read Chapters 8 through 11 sequentially. Readers with VLM experience may first read Chapter 11 to understand cross-modal alignment objectives, then return to Chapters 8, 9, and 10 to locate where each alignment signal comes from.

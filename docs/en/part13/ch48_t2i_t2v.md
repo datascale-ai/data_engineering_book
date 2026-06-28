@@ -139,6 +139,8 @@ T2I recaptioning commonly takes one of three forms:
 
 SD3's 50/50 mixing strategy is particularly worth emulating. Replacing all original captions wholesale with VLM-generated captions may cause concept forgetting and stylistic uniformity; retaining some original captions preserves the rough diversity of the data distribution. In engineering practice, this can be extended to random-length mixing: the same image is sometimes paired with a short caption, sometimes with a dense caption, and sometimes with a long caption assembled from structured fields. This prevents the model from adapting exclusively to one text length.
 
+Table 48-2 summarizes the corresponding comparison and engineering considerations.
+
 *Table 48-2: Comparison of Caption Rewriting Approaches (DALL·E 3 / SD3 / CogVLM2 Distillation).*
 
 | Approach | Training-side caption generator | Original caption retention strategy | Output form | Inference-side prompt rewriting | Advantages | Risks and costs |
@@ -153,6 +155,8 @@ Image generation models typically require bucketing by resolution, aspect ratio,
 
 More sophisticated systems additionally route samples by data source, aesthetic score, caption type, safety tier, presence of text, presence of human subjects, and presence of complex multi-subject scenes. This allows training-time control of batch composition, preventing any category of samples from overwhelming others. For example, if text-rendering capability is weak, increase the sampling weight for images containing text at low risk; if spatial relationship modeling is poor, increase the weight for samples with prominent positional relationships; if hand detail on human subjects is poor, create a dedicated bucket for relevant samples.
 
+
+Figure 48-1 illustrates the corresponding workflow or structure.
 
 ![Figure 48-1: T2I Data Pipeline](../../images/part13/Zhang-Chap48-Fig01.svg)
 
@@ -233,6 +237,8 @@ T2V data pipelines therefore typically include a layer of **spatiotemporal align
 
 Spatiotemporal alignment does not mean this chapter re-examines long-video timeline design. That subject is handled in Chapter 10. This chapter addresses a narrower question: **when training a T2V model, how to make captions more faithfully correspond to the action sequence and spatial changes within a clip.** The more precise this alignment, the better the model learns fine-grained processes such as "the character first turns around, then steps forward, and finally leaves the frame," rather than outputting vaguely animated sequences.
 
+Table 48-3 summarizes the corresponding comparison and engineering considerations.
+
 *Table 48-3: Spatiotemporal Alignment Strategies for Video Captioning.*
 
 | Strategy | Method | Representative Projects | Advantages | Limitations | Applicable Position |
@@ -262,6 +268,8 @@ Low-resolution stages prioritize scale, aiming to learn world knowledge, basic a
 This reveals that a T2V data pipeline is not a linear "clean then output" process, but a progressively converging training organization system. Video sources enter as a disordered large pool; shot segmentation transforms them into trainable units; motion detection selects clips with learning value; multi-frame captioning and spatiotemporal alignment produce supervisable samples; shot language annotation produces controllable samples; and finally samples are routed into different data buckets according to training stage. What ultimately determines model quality is typically not any single module in isolation, but whether these modules can operate in stable coordination.
 
 
+
+Figure 48-2 illustrates the corresponding workflow or structure.
 
 ![Figure 48-2: T2V Data Pipeline](../../images/part13/Zhang-Chap48-Fig02.svg)
 
@@ -367,6 +375,8 @@ Only the fourth layer addresses quality and training routing—including aesthet
 The core principle of multi-tier filtering is therefore: safety risk takes precedence over quality score; copyright status takes precedence over aesthetic score; watermark and OCR interference require independent modeling; quality scoring is responsible only for training routing. The system's final output should not be merely a `keep/drop` flag, but should include safety label, copyright label, watermark label, OCR ratio, aesthetic score, motion score, review status, and routing result. Only then, when a model later exhibits safety, copyright, or visual contamination issues, can the data team trace the problem to specific sample clusters and perform rollbacks or resampling on the training manifest.
 
 
+
+Figure 48-3 illustrates the corresponding workflow or structure.
 
 ![Figure 48-3: Multi-Tier Aesthetic / Copyright / Safety Filtering Architecture](../../images/part13/Zhang-Chap48-Fig03.svg)
 

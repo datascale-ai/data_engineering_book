@@ -69,6 +69,8 @@ Another function of standardization is to elevate the conversation from "is this
 
 The key to factory operations is traceability. Even when the sample text itself is simple, the metadata should record as completely as possible "how it was produced and how it passed the gates," facilitating downstream attribution and feedback loops.
 
+Listing 15-1 provides the corresponding code or configuration example.
+
 ```json
 {
   "id": "syn_qa_00010293",
@@ -94,6 +96,9 @@ The key to factory operations is traceability. Even when the sample text itself 
   ]
 }
 ```
+
+*Listing 15-1: Code or configuration example.*
+
 
 ### Differences Between Synthetic Data Engineering and Traditional Data Augmentation
 
@@ -168,6 +173,8 @@ A truly effective scheduling system should treat training feedback as an importa
 ### Cost, Throughput, and Quality Balance Table
 
 No factory configuration is universally superior or inferior; each represents an optimal solution under specific phases, task types, and budget conditions. The table below is intended to help teams understand the core of a synthetic data system—how to design a production pipeline matched to business objectives—rather than to provide a single answer or to reduce the problem to "which model to pick."
+
+Table 15-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 15-1: Cost, Throughput, and Quality Balance Table.*
 
@@ -297,6 +304,8 @@ The two therefore jointly determine not only the data ceiling but also the direc
 ### Seed Sources and Applicable Task Table
 
 The table below is intended to help teams develop the basic understanding that "seeds are not all the same thing." Seeds from different sources differ markedly in authenticity, cost, risk, and expansibility, and are therefore suited to different tasks.
+
+Table 15-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 15-2: Seed Sources and Applicable Task Table.*
 
@@ -443,6 +452,8 @@ This means the factory cannot cover all tasks with a single vague question of "i
 
 The example below demonstrates two common gates: JSON structure validation (preventing non-consumable samples from entering training) and simple deduplication (preventing templated repetition from drowning effective signals).
 
+Listing 15-2 provides the corresponding code or configuration example.
+
 ```python
 import json
 import hashlib
@@ -489,6 +500,9 @@ if __name__ == "__main__":
     kept, dropped = gate_dedup(responses)
     print("Dedup gate: kept =", kept, "dropped =", dropped)
 ```
+
+*Listing 15-2: Code or configuration example.*
+
 
 ### Readability Validation Focuses on Training-Friendliness, Not Aesthetics
 

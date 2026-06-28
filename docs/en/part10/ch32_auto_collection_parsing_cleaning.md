@@ -53,6 +53,8 @@ The problem is not that engineers are not working hard enough. The growth rate o
 
 Collection from all sources can be abstracted into three layers: **connection layer -> extraction layer -> structuring layer**. The agent plays different roles at each layer.
 
+Figure 32-1 illustrates the corresponding workflow or structure.
+
 ![Unified architecture for four-source collection agents](../../images/part10/Yu-Chap32-Fig01.svg)
 
 *Figure 32-1: Unified architecture for four-source collection agents.*
@@ -73,6 +75,8 @@ The first responsibility of a collection agent is **automatic task generation**.
 2. **Strategy generation.** It generates pagination, frequency control, concurrency, and retry strategy.
 3. **Provenance capture.** Every collection records URL, collection time, HTTP headers, and file hash. This matters for compliance audit and copyright tracing.
 
+Table 32-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table 32-1: Collection failure categories and retry strategies.*
 
 | Failure type | Detection | Retry strategy | Max retries | After limit |
@@ -88,6 +92,8 @@ Retry strategy must be polite. Aggressive retry can worsen access blocks or crea
 ### 32.1.3 Scheduling and Rate Limiting at Scale
 
 When an agent manages hundreds of sources, scheduling is no longer simple cron execution. It becomes a constrained optimization problem: maximize throughput and freshness while respecting access limits.
+
+Table 32-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 32-2: Collection scheduling constraints.*
 
@@ -128,6 +134,8 @@ Parsing exceptions fall into three types:
 **Encoding exceptions.** Declared encoding does not match actual encoding, files mix encodings, or special-character escaping fails.
 
 **Semantic exceptions.** Parsed values are syntactically valid but semantically impossible, such as "month 13 day 45" or a negative amount in a business context where negative amounts cannot occur.
+
+Figure 32-2 illustrates the corresponding workflow or structure.
 
 ![Parsing exception handling decision flow](../../images/part10/Yu-Chap32-Fig02.svg)
 
@@ -200,6 +208,8 @@ Sandbox validation is the last defense before rule release. The sandbox should s
 - **Full validation.** Run against all matching data, not only samples, to catch edge cases.
 - **Diff visualization.** Show before/after comparisons and highlight modified fields and modification volume.
 
+Table 32-3 summarizes the corresponding comparison and engineering considerations.
+
 *Table 32-3: Sandbox validation dimensions and pass conditions.*
 
 | Dimension | Check | Pass condition | If failed |
@@ -214,6 +224,8 @@ Sandbox validation is the last defense before rule release. The sandbox should s
 ### 32.4.1 Routing by Quality Uncertainty
 
 The hardest part of quality judgment is not deciding right or wrong. It is knowing how uncertain the agent is. A well-designed agent should request human help under uncertainty rather than forcing a possibly wrong decision.
+
+Table 32-4 summarizes the corresponding comparison and engineering considerations.
 
 *Table 32-4: Quality uncertainty routing.*
 
@@ -240,6 +252,8 @@ The following conditions must trigger human review:
 
 Quality filtering should follow "wide entry, strict exit, tiered filtering." Each layer handles one quality dimension. Failed data is routed to the appropriate handling path rather than simply discarded.
 
+Figure 32-3 illustrates the corresponding workflow or structure.
+
 ![Tiered quality filtering pipeline](../../images/part10/Yu-Chap32-Fig03.svg)
 
 *Figure 32-3: Tiered quality filtering pipeline.*
@@ -252,6 +266,8 @@ Thresholds should be configurable by business need and data characteristics:
 - **Consistency validation layer:** comparison mode. Compare across sources, history, and upstream/downstream dependencies.
 
 ### 32.4.4 Priority and SLA Management for Human Review
+
+Table 32-5 summarizes the corresponding comparison and engineering considerations.
 
 *Table 32-5: Human review priority and SLA management.*
 
@@ -273,6 +289,8 @@ A legal AI team transforms its manual collection process into an agent-driven ad
 **Stage 3: cleaning-rule generation and quality routing.** The agent generates over 40 cleaning-rule candidates from sampled defects; 35 pass sandbox validation and are released. Quality uncertainty routing reduces daily human review from over 500 documents to 80, focusing review on genuinely disputed cases.
 
 ### Key Metric Changes
+
+Table 32-6 summarizes the corresponding comparison and engineering considerations.
 
 *Table 32-6: Key Metric Changes.*
 

@@ -270,6 +270,8 @@ Many annotation platforms retain only a single final-result field in submission 
 
 Many platforms are fundamentally driven by task configuration to define workflows. The following example illustrates how a comparative annotation task can explicitly encode **fields, validation, randomization, and escalation rules** in configuration (this is a conceptual configuration for pedagogical purposes). The candidate randomization and hiding of model sources here primarily serve to reduce the influence of display position, source cues, and surface fluency on preference judgments (Bradley and Terry 1952; Zheng et al. 2023).
 
+Listing 14-1 provides the corresponding code or configuration example.
+
 ```json
 {
   "task_type": "preference_compare_v1",
@@ -295,6 +297,9 @@ Many platforms are fundamentally driven by task configuration to define workflow
   ]
 }
 ```
+
+*Listing 14-1: Code or configuration example.*
+
 
 For example, if a comparative annotation project retains only "A was selected," it is later difficult to know whether this was because A was more accurate or simply more fluent. If a review-style task retains only the revised text without preserving original-answer problem tags and revision rationales, it is impossible to analyze whether the team was primarily revising facts, structure, or tone. If a multi-turn task retains only a final holistic score without turn-level problem localization, subsequent training can only be very general. The leaner the submission structure, the harder it is for the organization to derive actionable insights from the data.
 
@@ -371,10 +376,14 @@ This means that task modeling is never a static action but is continuously refin
 Therefore, the relationship between task modeling and workflow should not be understood as a one-time linear sequence of "model first, then execute," but as a continuously self-correcting production loop. Front-end design affects back-end quality; back-end quality signals in turn correct front-end design. Only when this closed loop is truly established will the platform, QA, and operations form a stable and coordinated whole.
 
 
+Figure 14-1 illustrates the corresponding workflow or structure.
+
 ![Figure 14-1: LLM Annotation Platform Workflow Diagram](../../images/part4/Zhang-Chap14-Fig01-EN.svg)
 
 *Figure 14-1: LLM Annotation Platform Workflow Diagram.*
 
+
+Table 14-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 14-1: Annotation Role Responsibilities and Permissions.*
 
@@ -422,6 +431,8 @@ In essence, consistency metrics, error tags, and quality tiering all address the
 
 Agreement rate only checks "same / different," whereas Kappa additionally discounts "chance agreement" and is more appropriate for long-term comparison of stability across different task buckets. Cohen's original Kappa coefficient was proposed precisely to correct for chance agreement in nominal-scale annotation (Cohen 1960).
 
+Listing 14-2 provides the corresponding code or configuration example.
+
 ```python
 from collections import Counter
 from typing import List
@@ -447,6 +458,9 @@ if __name__ == "__main__":
     print("kappa =", round(cohen_kappa(r1, r2), 4))
 ```
 
+*Listing 14-2: Code or configuration example.*
+
+
 ### 14.3.3 How to Use Golden Sets, Trap Questions, and Audit Samples
 
 In any large-scale annotation system, routine review is insufficient on its own. Once the process becomes familiar to participants, the team may exhibit mechanical responses, sycophantic answers, declining attention, or "only being careful about the parts most likely to be observed." To prevent the system from gradually distorting behind a surface appearance of stability, organizations need to actively plant special samples with calibration and audit functions into the process. The three most important types are golden sets, trap questions, and audit samples. Crowdsourcing annotation research commonly uses expert labels, redundant annotation, task design, and behavioral verification to improve or assess annotation quality, providing the methodological basis for the use of golden sets and trap questions (Snow et al. 2008; Sheng et al. 2008; Kittur et al. 2008).
@@ -470,6 +484,8 @@ More importantly, this process should not stop at "the model takes a look first.
 From a management perspective, the core of human–machine collaborative QA lies not in automation rate but in observability and accountability boundaries. The system must be able to answer: was a given problem flagged by the model or actively discovered by a human; was a given rework triggered by a model false positive or a human missed judgment; why did a particular error tag suddenly increase—did a rule change, or did a model threshold change? Only when this information is traceable is human–machine collaboration under control; otherwise, it merely introduces a new opaque variable into the system.
 
 
+Figure 14-2 illustrates the corresponding workflow or structure.
+
 ![Figure 14-2: Human–Machine Collaborative QA Loop Diagram](../../images/part4/Zhang-Chap14-Fig02-EN.svg)
 
 *Figure 14-2: Human–Machine Collaborative QA Loop Diagram.*
@@ -492,6 +508,8 @@ Once annotation moves from project trial operation into continuous production, o
 **Code Example: Calculating "Per-Usable-Unit Cost / Pass Rate" Using SQL (Illustrative)**
 
 Once operational metrics are expressed in data tables, many conclusions no longer depend on "gut feeling." The example below assumes an `annotation_tasks` table (each row represents a submission/review event) and allows rapid derivation of commonly used KPIs.
+
+Listing 14-3 provides the corresponding code or configuration example.
 
 ```sql
 -- Illustrative only: adjust field names to match your actual schema
@@ -524,6 +542,9 @@ SELECT
   total_cost / NULLIF(accepted_samples, 0) AS cost_per_accepted_sample
 FROM base;
 ```
+
+*Listing 14-3: Code or configuration example.*
+
 
 ### 14.4.2 Outsourced Team Selection, Training, Assessment, and Replacement Mechanisms
 
@@ -572,6 +593,8 @@ True **annotation productivity** is not about how many items each person complet
 **Cost governance** should follow the same logic. Reducing per-unit price is certainly one approach, but it is by no means the most important. More important is reducing wasteful costs—for example, large amounts of rework caused by coarse templates, repeated training caused by chaotic rule updates, resource waste caused by excessively heavy review paths, and recurrence of the same type of error caused by insufficient knowledge retention. What a mature organization truly needs to calculate is not "how much cheaper was this batch today" but "does this system allow us to reduce wasteful consumption across the next several rounds of production?"
 
 Therefore, productivity governance and cost governance must be considered jointly with platform design, QA design, and knowledge retention. The more structured the platform makes tasks, the more reasonably human–machine collaboration is embedded, the clearer the QA path tiering, and the more timely the knowledge base is updated—typically the lower the per-usable-data-item cost. What LLM data production truly requires is not point-in-time savings but systematically directing expenditure toward the areas most capable of improving usable output.
+
+Table 14-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 14-2: Operational Metrics and SLA Reference Table.*
 

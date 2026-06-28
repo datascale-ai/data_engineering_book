@@ -15,20 +15,20 @@ Throughout this part, "project case study" denotes a runnable, verifiable, and a
 ## Table of Contents
 
 - [Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray](p01_mini_c4.md)
-- [Project 2: Vertical Domain Expert SFT (Legal)](p02_legal_sft.md)
+- [Project 2: Vertical-Domain Expert SFT (Legal)](p02_legal_sft.md)
 - [Project 3: LLaVA Multimodal Instruction Data Factory](p03_llava_instruct.md)
 - [Project 4: Synthetic Mathematics and Code Textbook Factory](p04_synthetic_textbook.md)
 - [Project 5: Multimodal RAG Enterprise Financial Report Assistant](p05_mm_rag.md)
 - [Project 6: CoT Reasoning Dataset Construction and PRM Training](p06_prm.md)
 - [Project 7: Agent Tool-Use Data Factory](p07_agent_tooluse.md)
-- [Project 8: Building an Enterprise-Grade DataOps Platform: From Data Projects to Organizational Governance Capability](p08_dataops.md)
+- [Project 8: Building an Enterprise DataOps Platform: From Data Projects to Organizational Governance](p08_dataops.md)
 - [Project 9: Privacy-Preserving Data Pipeline](p09_privacy_pipeline.md)
 - [Project 10: End-to-End LLM Data Flywheel](p10_flywheel.md)
-- [Project 11: Mini-DeepSeek Pre-training Replication](p11_mini_deepseek.md)
-- [Project 12: Pedagogical R1 Reasoning Data Flywheel](p12_r1_reasoning_flywheel.md)
+- [Project 11: Mini-DeepSeek Pre-Training Reproduction](p11_mini_deepseek.md)
+- [Project 12: A Pedagogical R1 Reasoning Data Flywheel](p12_r1_reasoning_flywheel.md)
 - [Project 13: Qwen-VL Multimodal Instruction Factory](p13_multimodal_instruction_factory.md)
-- [Project 14: Video Generation Dataset: From Raw Video Sources to a T2V-Ready Training Data Pipeline](p14_video_generation.md)
-- [Project 15: Building an Enterprise-Grade Semantic Question-Answering Assistant with DataAgent](p15_dataagent_semantic_nl2sql_agent.md)
+- [Project 14: Video Generation Dataset — From Video Sources to a T2V-Training-Ready Data Pipeline](p14_video_generation.md)
+- [Project 15: Building an Enterprise Semantic BI Assistant with DataAgent](p15_dataagent_semantic_nl2sql_agent.md)
 
 ## Capability Mapping
 

@@ -80,17 +80,22 @@ When a unified data quality assessment framework is lacking, the project will in
 
 2. **Noise Propagation Amplification**: Without a unified framework, small amounts of upstream data pipeline noise often cannot be intercepted early and propagate down the pipeline, producing order-of-magnitude harm downstream:
 
-    ```
-    [Crawl/Storage Layer]   A small number of base64-encoded images are mixed into the text stream
-          ↓  Not intercepted in time (no unified defect standard)
-    [Cleaning/Training Layer]  These garbled characters cause specific token frequencies to rise abnormally
-          ↓  Noise is repeatedly reinforced through gradient accumulation
-    [Inference/Alignment Layer]  The model is more likely to produce garbled or format-abnormal output for certain content types
-          ↓  Manifests as degraded online experience, triggering user feedback and version review
-    [Final Cost]     Model version forced to roll back, losing training compute and the market window
-    ```
+Listing 2-9 provides the corresponding code or configuration example.
 
-    This amplification effect—"a small upstream error → a midstream distribution anomaly → downstream experience loss"—can be understood as cross-stage error propagation in the data pipeline. The governance solution is the unified quality gate system that this chapter will establish.
+```
+[Crawl/Storage Layer]   A small number of base64-encoded images are mixed into the text stream
+      ↓  Not intercepted in time (no unified defect standard)
+[Cleaning/Training Layer]  These garbled characters cause specific token frequencies to rise abnormally
+      ↓  Noise is repeatedly reinforced through gradient accumulation
+[Inference/Alignment Layer]  The model is more likely to produce garbled or format-abnormal output for certain content types
+      ↓  Manifests as degraded online experience, triggering user feedback and version review
+[Final Cost]     Model version forced to roll back, losing training compute and the market window
+```
+
+*Listing 2-9: Code or configuration example.*
+
+
+This amplification effect—"a small upstream error → a midstream distribution anomaly → downstream experience loss"—can be understood as cross-stage error propagation in the data pipeline. The governance solution is the unified quality gate system that this chapter will establish.
 
 3. **Experience Loss**: Because there is no unified defect classification standard, post-mortem conclusions after model failures typically stop at "the data was bad; we need to be more careful next time." Was it because of high duplication rates, imbalanced domain ratios, or benchmark contamination? Without clear classification, these lessons cannot be translated into concrete rule modifications for the next version of the cleaning pipeline. After introducing a unified quality framework, every data issue can be attributed to a specific defect type (see Section 2.3) with corresponding remediation operators and quantified improvement targets. Post-mortem documents should evolve from "the data was bad" to "root cause of this incident: duplication rate exceeded the project threshold; remediation plan: recalibrate deduplication thresholds by domain and remeasure the deduplication rate in the next incremental validation."
 
@@ -157,6 +162,8 @@ For large language model training, we establish the following six core defect di
 
 Definition: Content containing residual HTML tags, garbled characters, meaningless symbol sequences, base64 encoding fragments, and similar artifacts. These produce abnormal inputs to the tokenizer and can cause gradient NaN values in severe cases.
 
+Listing 2-1 shows a minimal detector for text noise ratio.
+
 ```python
 import re
 
@@ -174,11 +181,13 @@ def noise_score(text: str) -> float:
 # Example: when noise_score exceeds the project-calibrated threshold, send it to quarantine or manual review.
 ```
 
-*Code Listing 2-1: Example of text noise ratio detection. In production, add language, encoding, HTML parser version, and exception sample inspection logs.*
+*Listing 2-1: Example of text noise ratio detection. In production, add language, encoding, HTML parser version, and exception sample inspection logs.*
 
 **2. Repetition**
 
 Definition: The same content (exact or approximate) appearing a large number of times in the training set, forcing the model to "memorize" these segments, causing memorization-based overfitting, and producing a "parrot" effect at inference time. Industry practice generally uses MinHash LSH for approximate deduplication.
+
+Listing 2-2 shows an approximate duplicate detector based on MinHash LSH.
 
 ```python
 import re
@@ -197,11 +206,13 @@ calibrated_threshold = 0.8
 lsh = MinHashLSH(threshold=calibrated_threshold, num_perm=128)
 ```
 
-*Code Listing 2-2: Example of approximate duplicate detection using MinHash LSH. In production, record the threshold, partitioning strategy, and sampling review results.*
+*Listing 2-2: Example of approximate duplicate detection using MinHash LSH. In production, record the threshold, partitioning strategy, and sampling review results.*
 
 **3. Benchmark Contamination**
 
 Definition: Web crawlers indiscriminately ingesting the original questions and answers from publicly available AI evaluation benchmarks (GSM8K (Cobbe et al. 2021), HumanEval (Chen et al. 2021), MMLU (Hendrycks et al. 2021), etc.) into the pre-training corpus, causing inflated benchmark scores (rote memorization rather than reasoning). Systematic surveys of automated detection methods for this problem are available in Shi et al. (2023) and Golchin and Surdeanu (2023).
+
+Listing 2-3 shows an N-gram overlap detector for benchmark contamination risk.
 
 ```python
 # Benchmark contamination detection: compute N-gram overlap rate
@@ -221,7 +232,7 @@ def ngram_overlap(text: str, benchmark_ngrams: set, n: int = 13) -> float:
 # flag it as suspected contamination and review manually.
 ```
 
-*Code Listing 2-3: Example of N-gram overlap detection for benchmark contamination. In production, maintain an independent evaluation set fingerprint database and a manual review workflow.*
+*Listing 2-3: Example of N-gram overlap detection for benchmark contamination. In production, maintain an independent evaluation set fingerprint database and a manual review workflow.*
 
 **4. Systematic Bias**
 
@@ -232,6 +243,8 @@ Detection approach: Use StereoSet (Nadeem et al. 2021) or WinoBias (Zhao et al. 
 **5. Structural Incompleteness**
 
 Definition: Long texts that have been truncated (only the first half of an article), QA pairs containing only the answer without the question, multimodal data in which images lack accompanying textual descriptions, etc.
+
+Listing 2-4 shows a simple structural completeness check for SFT samples.
 
 ```python
 def check_completeness(sample: dict) -> list:
@@ -248,13 +261,15 @@ def check_completeness(sample: dict) -> list:
     return issues
 ```
 
-*Code Listing 2-4: Example of SFT sample structural completeness checking. In production, add schema validation, field-length distribution checks, and sampling review rules by task type.*
+*Listing 2-4: Example of SFT sample structural completeness checking. In production, add schema validation, field-length distribution checks, and sampling review rules by task type.*
 
 **6. Staleness**
 
 Definition: The knowledge base or pre-training corpus is frozen at a certain cutoff date and cannot reflect factual changes occurring after that date. This is particularly high-risk in RAG deployment scenarios.
 
 Detection approach: Record a `crawl_timestamp` metadata field for every document in the corpus, and periodically compute the proportion of documents that have not been updated for more than N months. Dataset documentation standards such as Datasheets for Datasets provide detailed guidance for metadata fields (Gebru et al. 2021). Trigger a staleness alert when the proportion of outdated documents exceeds the project threshold.
+
+Listing 2-5 shows how to compute a staleness ratio from document timestamps.
 
 ```python
 from datetime import datetime, timedelta
@@ -271,7 +286,7 @@ def staleness_ratio(docs: list, threshold_days: int = 180) -> float:
 # trigger a knowledge base update task.
 ```
 
-*Code Listing 2-5: Example of knowledge base staleness detection. In production, set different thresholds by domain, data source, and business priority.*
+*Listing 2-5: Example of knowledge base staleness detection. In production, set different thresholds by domain, data source, and business priority.*
 
 ### 2.3.2 Establishing the Core Metrics Matrix
 
@@ -302,9 +317,7 @@ A quality assessment framework must ultimately materialize as concrete, engineer
 
 ### 2.4.1 Scorecard Design and Implementation
 
-The scorecard is a "data health report" derived from a combination of rule scripts and validation models. Its core design principles are: **objectively reproducible computation, configurable threshold baselines, and action-oriented blocking**. Before officially releasing any version of a training dataset, the scorecard script must be mandatorily triggered, and the evaluation results must be serialized into a standard JSON format and archived.
-
-**Code Listing 2-6: SFT Dataset Release Scorecard JSON Example**
+The scorecard is a "data health report" derived from a combination of rule scripts and validation models. Its core design principles are: **objectively reproducible computation, configurable threshold baselines, and action-oriented blocking**. Before officially releasing any version of a training dataset, the scorecard script must be mandatorily triggered, and the evaluation results must be serialized into a standard JSON format and archived. Listing 2-6 gives an example release scorecard schema.
 
 ```json
 {
@@ -357,7 +370,9 @@ The scorecard is a "data health report" derived from a combination of rule scrip
 }
 ```
 
-*Code Listing 2-7: GitHub Actions Example for CI/CD Pipeline Integration. This snippet demonstrates how quality gates are triggered; production environments should add credential management, log retention, and failed-run rollback strategies.*
+*Listing 2-6: SFT dataset release scorecard JSON example. The schema is illustrative; production environments should calibrate fields, thresholds, and gate decisions by dataset type and risk level.*
+
+Listing 2-7 shows a GitHub Actions workflow for triggering the scorecard in CI/CD.
 
 ```yaml
 # .github/workflows/data_quality_gate.yml
@@ -401,6 +416,8 @@ jobs:
           name: scorecard-report
           path: reports/scorecard_*.json
 ```
+
+*Listing 2-7: GitHub Actions example for CI/CD pipeline integration. This snippet demonstrates how quality gates are triggered; production environments should add credential management, log retention, and failed-run rollback strategies.*
 
 With this integration, every time a data engineer merges a new data batch, the CI pipeline automatically runs the scorecard check. If any hard gate metric exceeds its threshold, the PR merge is automatically blocked until the issue is resolved and the job is resubmitted.
 
@@ -453,7 +470,7 @@ The following timeline is an anonymized composite case used to explain how batch
 - **T+5 days**: Lock the dependency version, reprocess batch 6, and restart training from the checkpoint before contamination (losing approximately four days of compute)
 - **T+12 days**: After the fix, the frozen code evaluation set recovers to the pre-contamination baseline range
 
-Root cause: absence of rolling distribution stationarity monitoring at the batch level. If key character-frequency Z-score changes had been compared automatically at every batch ingestion and abnormal fluctuations above the project waterline had triggered alerts, this incident could have been intercepted at T+0.
+Root cause: absence of rolling distribution stationarity monitoring at the batch level. If key character-frequency Z-score changes had been compared automatically at every batch ingestion and abnormal fluctuations above the project waterline had triggered alerts, this incident could have been intercepted at T+0. Listing 2-8 shows a batch-level indentation drift detector.
 
 ```python
 def detect_tab_drift(prev_texts, curr_texts, z_threshold=2.0):
@@ -482,7 +499,7 @@ def detect_tab_drift(prev_texts, curr_texts, z_threshold=2.0):
     }
 ```
 
-*Code Listing 2-8: Example of batch-level indentation character drift detection. In production, replace the alert threshold with a statistical threshold based on historical distribution.*
+*Listing 2-8: Example of batch-level indentation character drift detection. In production, replace the alert threshold with a statistical threshold based on historical distribution.*
 
 **Complete Debugging Timeline (Case 2)**
 

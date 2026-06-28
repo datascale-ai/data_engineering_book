@@ -52,6 +52,8 @@ Minor defects in upstream data pipelines, accumulated through the gradient updat
 
 Faced with the problems above, industrial practice has demonstrated that no single technique can independently achieve high-quality data cleaning — an effective cleaning system must be a **collaborative combination of rule-based filtering, model-based filtering, and manual spot-checks**, with each method covering different defect types and having its own optimal use case.
 
+Figure 5-1 illustrates the corresponding workflow or structure.
+
 ![Figure 5-1: Overview Flowchart of the Cleaning and Decontamination Pipeline](../../images/part2/Yu-Chap05-Fig01.svg)
 
 *Figure 5-1: Overview Flowchart of the Cleaning and Decontamination Pipeline — A multi-stage quality gate gradually refines raw corpus into candidate training corpus. The proportions in the figure are illustrative only; real retention rates depend on source quality, filtering thresholds, and compliance requirements. Source: original illustration from this book.*
@@ -407,6 +409,8 @@ Stratified sampling strategy: High-tier data is given a 2x sampling weight durin
 
 The quality feedback loop is designed around **human-audit-driven rule iteration**, not "human processing of every record" (the latter is completely infeasible at PB-scale corpora).
 
+Figure 5-2 illustrates the corresponding workflow or structure.
+
 ![Figure 5-2: Quality Filtering Funnel and Spot-Check Feedback Loop](../../images/part2/Yu-Chap05-Fig02.svg)
 
 *Figure 5-2: Quality Filtering Funnel and Spot-Check Feedback Loop — The funnel on the left shows the data retention rate at each stage; the feedback loop on the right shows how manual spot-checks drive continuous iterative optimization of filtering rules. Source: original illustration.*
@@ -483,6 +487,8 @@ After understanding all the technical modules in this chapter, a practical quest
 ### 5.9.1 Lightweight Solution (1–3 Person Data Team, Data Scale < 100 GB)
 
 The lightweight solution focuses on "holding the baseline," filtering out the most harmful defects with minimal engineering investment:
+
+Table 5-3 summarizes the corresponding comparison and engineering considerations.
 
 *Table 5-3: Minimum viable combination for the lightweight cleaning solution. Source: compiled by the authors; the combination is a starting recommendation, and production environments should extend it according to risk level, corpus source, and compliance requirements.*
 

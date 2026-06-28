@@ -836,18 +836,6 @@ def build_book_html(
 def transform_section_opening(html_body: str, source_path: str) -> str:
     """Use a Springer-like title block in the PDF while keeping source headings stable."""
 
-    if not re.search(r"(?:part\d+/ch\d+_|part14/p\d+_|appendix_)", source_path):
-        return html_body
-
-    patterns = [
-        (r"<h1>Chapter\s+\d+:\s*([^<]+)</h1>", r"<h1>\1</h1>"),
-        (r"<h1>Project\s+\d+:\s*([^<]+)</h1>", r"<h1>\1</h1>"),
-        (r"<h1>Appendix\s+[A-H]:\s*([^<]+)</h1>", r"<h1>\1</h1>"),
-    ]
-    for pattern, replacement in patterns:
-        html_body, count = re.subn(pattern, replacement, html_body, count=1)
-        if count:
-            return html_body
     return html_body
 
 
@@ -995,9 +983,7 @@ def to_roman(number: int) -> str:
 
 
 def build_page_number_label(page_number: int, first_body_page: int) -> str:
-    if page_number < first_body_page:
-        return to_roman(page_number)
-    return str(page_number - first_body_page + 1)
+    return str(page_number)
 
 
 def generate_opening_front_pdf(path: Path, stats: dict[str, int]) -> int:

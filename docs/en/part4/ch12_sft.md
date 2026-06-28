@@ -150,6 +150,8 @@ That said, labels are not better for being more numerous. Many teams start out v
 
 Many teams store "sample text" and "sample metadata" separately. The text is used for training; the metadata is used for retrieval, sampling, statistics, and attribution. Below is a minimum viable metadata example suitable for textbook reading (the `meta` field in a JSON Lines record).
 
+Listing 12-1 provides the corresponding code or configuration example.
+
 ```json
 {
   "id": "sft_legal_extract_000127",
@@ -177,6 +179,9 @@ Many teams store "sample text" and "sample metadata" separately. The text is use
 }
 ```
 
+*Listing 12-1: Code or configuration example.*
+
+
 ### 12.2.3 Template Design for Single-Turn, Multi-Turn, Tool-Assisted, and Constrained-Output Formats
 
 Templates are the core of SFT engineering. Without templates, a dataset quickly degrades into a chaotic accumulation of samples with inconsistent style, missing constraints, and little extensibility. Nor can templates be reduced to mechanical sentence substitution; their function is to solidify task objectives into reusable sample frameworks.
@@ -197,6 +202,8 @@ Therefore, template design should follow the principle of "diverse forms, unifie
 
 The example below uses the conversational messages format to implement the four-element structure: the system message encodes system rules, the user message contains both instruction and context, and the assistant message corresponds to the response.
 
+Listing 12-2 provides the corresponding code or configuration example.
+
 ```json
 {
   "messages": [
@@ -216,9 +223,14 @@ The example below uses the conversational messages format to implement the four-
 }
 ```
 
+*Listing 12-2: Code or configuration example.*
+
+
 **Code Example: Multi-Turn Clarification Template (Ask for "Minimum Necessary Information" First)**
 
 When information is insufficient, the model should not "guess a reasonable answer"; it should be trained to ask for the minimum necessary information. In the example below, the assistant asks only one key question, avoiding repeated interrogation.
+
+Listing 12-3 provides the corresponding code or configuration example.
 
 ```json
 {
@@ -235,6 +247,9 @@ When information is insufficient, the model should not "guess a reasonable answe
   ]
 }
 ```
+
+*Listing 12-3: Code or configuration example.*
+
 
 ### 12.2.4 Common Errors in Template Design
 
@@ -398,6 +413,8 @@ Going further, teams should recognize that quality dimensions are used not only 
 
 When a task requires "output JSON only," a script can perform a hard validation pass before data ingestion, catching problems such as unclosed brackets, missing fields, and out-of-range enumeration values before they reach training.
 
+Listing 12-4 provides the corresponding code or configuration example.
+
 ```python
 import json
 from typing import Iterable, Dict, Any
@@ -472,6 +489,9 @@ if __name__ == "__main__":
     print(batch_check(sample_responses))
 ```
 
+*Listing 12-4: Code or configuration example.*
+
+
 ### 12.4.2 Supplementary Quality Dimensions Beyond the Core Three
 
 Looking only at clarity, correctness, and format consistency, many samples may superficially pass—yet when placed in the training set, problems still emerge. The reason is that some samples are "not wrong" in terms of their answers but are not necessarily appropriate for training a model. In industry-specific scenarios, such samples are not uncommon.
@@ -518,6 +538,8 @@ Freezing rules should also be quantified as much as possible. For example, criti
 
 Below is a common, practical, and traceable organization approach: templates, samples, and regression sets are separated; each training-ready version has a `MANIFEST` that clearly states "who I am, where I came from, and how I was validated."
 
+Listing 12-5 provides the corresponding code or configuration example.
+
 ```text
 datasets/
   sft_zh/
@@ -531,6 +553,11 @@ datasets/
         regression.jsonl            # Regression set for critical failure modes
         MANIFEST.json               # Version manifest (see below)
 ```
+
+*Listing 12-5: Code or configuration example.*
+
+
+Listing 12-6 provides the corresponding code or configuration example.
 
 ```json
 {
@@ -564,6 +591,9 @@ datasets/
   ]
 }
 ```
+
+*Listing 12-6: Code or configuration example.*
+
 
 To facilitate practical acceptance, Table 12-2 provides an example quality dimension scoring rubric for supervised fine-tuning.
 

@@ -28,9 +28,14 @@
 
 核心数据流可概括为：
 
+代码清单P13-1给出了相应的代码或配置示例。
+
 ```text
 视觉资产 -> 元数据/OCR/caption -> 指令任务 -> 多轮样本 -> 质量过滤 -> 多模态训练集
 ```
+
+*代码清单P13-1：代码或配置示例。*
+
 
 样本 schema 至少应保留 `id`、`source`、`content_or_payload`、`metadata`、`quality_signals`、`split_or_stage` 与 `audit_trace` 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。
 
@@ -113,6 +118,8 @@
 
 从开源 LAION 数据集子集 (Schuhmann et al. 2022) 中，利用已有的元数据（如图片宽高、原始 caption 长度、剪贴板标签等）筛选出有潜力生成高质量指令的种子。
 
+代码清单P13-2给出了相应的代码或配置示例。
+
 ```python
 from datasets import load_dataset
 
@@ -130,9 +137,14 @@ def select_seeds(dataset_name="laion/laion2B-en", num_samples=5000):
     return seeds
 ```
 
+*代码清单P13-2：代码或配置示例。*
+
+
 ### Step 2: 指令模板设计
 
 不同于固定问题的 LLaVA 数据，本项目需要为大模型定义多样化任务模板，并控制生成目标、输出格式和风险边界。
+
+代码清单P13-3给出了相应的代码或配置示例。
 
 ```python
 # code/zh/project_13_mm_instruction_factory/instruction_templates.py
@@ -156,9 +168,14 @@ def get_random_prompt(task_type):
     return random.choice(TEMPLATES.get(task_type, TEMPLATES["detailed_description"]))
 ```
 
+*代码清单P13-3：代码或配置示例。*
+
+
 ### Step 3: 使用 vLLM 高速生成指令
 
 借助 `vllm` 的并发吞吐能力，可以将筛选出的图片与指令模板送入基础多模态模型进行批量生成。
+
+代码清单P13-4给出了相应的代码或配置示例。
 
 ```python
 from vllm import LLM, SamplingParams
@@ -178,9 +195,14 @@ def generate_instructions(seeds, model_path="Qwen/Qwen2.5-VL-7B-Instruct"):
     return [to_instruction_record(req, out) for req, out in zip(requests, outputs)]
 ```
 
+*代码清单P13-4：代码或配置示例。*
+
+
 ### Step 4: LLM-as-Judge 质量过滤
 
 生成响应往往伴随幻觉，因此需要引入判别器，例如 Qwen2.5-72B-Instruct。由于纯文本 72B 模型无法直接接收图片，本项目采用 **Text-only Evaluation**：让 72B 评判多模态模型生成的“长描述”内部逻辑是否自洽、结构是否严密。
+
+代码清单P13-5给出了相应的代码或配置示例。
 
 ```python
 # code/zh/project_13_mm_instruction_factory/llm_judge.py
@@ -209,9 +231,14 @@ def score_with_llm_judge(generated_data):
     return scored_data
 ```
 
+*代码清单P13-5：代码或配置示例。*
+
+
 ### Step 5: 统一下游格式打包
 
 无论是单图、多图还是视频片段，最终统一按照开源社区（如 ShareGPT）或者特定模型（如 Qwen2.5-VL）的微调格式输出 JSONL。
+
+代码清单P13-6给出了相应的代码或配置示例。
 
 ```python
 import json
@@ -230,6 +257,9 @@ def pack_to_qwen_format(scored_data, output_path="./data/mm_sft_final.jsonl"):
             }
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
 ```
+
+*代码清单P13-6：代码或配置示例。*
+
 
 ## 工程运行与最小复现路径
 
@@ -425,6 +455,8 @@ P13 的交付物建议拆成 raw、scored、expanded、packed 和 reports 五类
 | `reports/task_distribution.json` | 任务分布报告 | 检查是否单一任务过多 |
 | `reports/human_review.md` | 人工抽检报告 | 发布门禁核心证据 |
 | `reports/license_audit.md` | 版权与来源审计 | 公开发布必备 |
+
+表P13-11汇总了相应的对比和工程要点。
 
 *表 P13-11：多模态指令工厂交付物目录*
 

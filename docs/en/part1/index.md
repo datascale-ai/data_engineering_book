@@ -42,8 +42,8 @@ Chapter 1 introduces the book's core proposition: data quality, data scale, and 
 
 ## Part Contents
 
-- [Chapter 1: The Data Revolution in the Era of Large Models](ch01_data_change.md)
-- [Chapter 2: LLM Data Lifecycle and Quality Evaluation Framework](ch02_quality_framework.md)
+- [Chapter 1: The Data Revolution in the Era of Large Language Models](ch01_data_change.md)
+- [Chapter 2: LLM Data Lifecycle and Quality Assessment Framework](ch02_quality_framework.md)
 - [Chapter 3: AI-Native Data Stack and Cost Governance](ch03_data_stack.md)
 
 ## Suggested Reading Order

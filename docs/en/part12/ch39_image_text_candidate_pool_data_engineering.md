@@ -54,7 +54,7 @@ where $\tau_{\ell}$ can be set by language or subset. This filtering improves im
 
 The LAION-5B paper reports 5.85B CLIP-filtered image-text pairs, including approximately 2.32B English pairs, 2.26B multilingual pairs, and 1.27B pairs with uncertain language. This split matters because language identification, CLIP models, filtering thresholds, and downstream tasks all affect sample value.
 
-*Table 39-1 Public Subset Structure of LAION-5B*
+Table 39-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 39-1: Public Subset Structure of LAION-5B.*
 
@@ -75,11 +75,13 @@ The final training sample is not a direct copy of the Web trace, but a structure
 
 Image-text candidate pools should also be modeled by channel. The Parquet metadata fields listed in the LAION-5B paper include a 64-bit integer id, image URL, text, image height and width, cosine similarity between image and text embeddings, and NSFW and watermark-detection scores. When reusing such corpora, engineering teams usually need to add governance fields such as download status, hash, authorization hints, and removal status.
 
+Figure 39-1 illustrates the corresponding workflow or structure.
+
 ![Figure 39-1 Multi-channel schema for LAION-5B image-text candidate records](../../images/part12/Mu-Chap39-Fig01-EN.svg)
 
 *Figure 39-1 Multi-channel schema for LAION-5B image-text candidate records. Source: original illustration based on the LAION-5B paper and LAION dataset-spec.*
 
-*Table 39-2 Image-text Candidate Record Schema*
+Table 39-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 39-2: Image-text Candidate Record Schema.*
 
@@ -92,6 +94,8 @@ Image-text candidate pools should also be modeled by channel. The Parquet metada
 | Release channel | `uid`, `dataset_version`, `shard_id`, `removal_status` | Metadata generation and version system | Locate samples, respond to removals, freeze versions |
 
 A sample record for an internal training set can be written as follows:
+
+Listing 39-1 provides the corresponding code or configuration example.
 
 ```json
 {
@@ -115,13 +119,16 @@ A sample record for an internal training set can be written as follows:
 }
 ```
 
+*Listing 39-1: Code or configuration example.*
+
+
 Channelized modeling locates failure sources. If generated text does not match the image, the issue usually lies in the alignment channel. If many samples cannot be downloaded during training, the issue lies in the visual channel or release view. If the model outputs watermark-like textures, the issue may lie in the risk channel. If evaluation contamination is hard to check, the issue lies in text hashes, image hashes, and version manifests.
 
 ## 39.4 From Common Crawl to Candidate Records
 
 LAION-5B construction can be divided into six stages: extract candidates from Common Crawl, download and parse images, identify language, compute image-text similarity, add risk labels, and publish metadata and indexes. This process is more like rendering Web traces into structured image-text records than simply downloading images.
 
-*Table 39-3 LAION-5B Construction Flow*
+Table 39-3 summarizes the corresponding comparison and engineering considerations.
 
 *Table 39-3: LAION-5B Construction Flow.*
 
@@ -139,6 +146,8 @@ The LAION-5B paper describes a CLIP cosine-similarity threshold of 0.28 for Engl
 ### 39.4.1 Code-like Expression of Filtering Gates
 
 The following pseudocode shows the core of a LAION-5B-like image-text processing flow. It is not the official implementation; it rewrites the paper process as a data-engineering task:
+
+Listing 39-2 provides the corresponding code or configuration example.
 
 ```python
 def build_image_text_candidates(wat_records, clip_model, lang_detector, thresholds):
@@ -178,6 +187,9 @@ def build_image_text_candidates(wat_records, clip_model, lang_detector, threshol
             }
 ```
 
+*Listing 39-2: Code or configuration example.*
+
+
 This flow decomposes sample retention into a set of auditable filtering gates. Each gate should enter configuration and manifests rather than remaining only as a script parameter.
 
 Common image-text data distribution formats in the LAION ecosystem include Parquet metadata and WebDataset shards. Parquet is suitable for storing URLs, text, scores, and labels. WebDataset places images, captions, and JSON metadata into tar shards, making sequential reading by training programs convenient. A shard of 10k samples can contain file combinations such as `0.jpg`, `0.txt`, and `0.json`, where the JSON records URL, original dimensions, safety labels, and other fields.
@@ -200,11 +212,13 @@ where $c$ is the filtering configuration, $r$ is the sampling random seed, and $
 
 Controllable speech data must validate semantics, style, and audio quality simultaneously; LAION-5B-like image-text data must likewise validate text, vision, alignment, risk, and reproducibility simultaneously. Looking only at CLIP scores is insufficient, and so is looking only at manual sampling. The quality system should combine automatic metrics with human review in a closed loop, sending problematic samples into redownload, refiltering, downweighting, isolation, or removal queues.
 
+Figure 39-2 illustrates the corresponding workflow or structure.
+
 ![Figure 39-2 Image-text candidate-pool quality evaluation and closed-loop repair](../../images/part12/Mu-Chap39-Fig02-EN.svg)
 
 *Figure 39-2 Image-text candidate-pool quality evaluation and closed-loop repair. Source: original illustration based on the LAION-5B paper and DataComp benchmark design.*
 
-*Table 39-4 Quality-evaluation Metrics for Image-text Candidate Pools*
+Table 39-4 summarizes the corresponding comparison and engineering considerations.
 
 *Table 39-4: Quality-evaluation Metrics for Image-text Candidate Pools.*
 
@@ -231,8 +245,6 @@ This formula shifts the question from "do samples look clean" to "under the same
 ## 39.6 Risk Governance and Reuse Boundaries
 
 Risks in image-text data are easier for the public to perceive and harder to fully automate. Images may contain faces, children, license plates, home environments, medical images, identity documents, trademarks, artworks, and watermarks. Even if the caption does not contain PII, the image itself may leak privacy. A public URL does not mean authorization is clear; a high CLIP score does not mean the content is safe; and a low NSFW score does not mean risk is zero.
-
-*Table 39-5 Risk-control Checklist for LAION-5B-like Image-text Data*
 
 *Table 39-5: Risk-control Checklist for LAION-5B-like Image-text Data.*
 

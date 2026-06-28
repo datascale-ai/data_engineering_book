@@ -167,6 +167,8 @@ In this sense, the most important question this chapter addresses is not a "tech
 ## 4. Overall Architecture: The Legal Data Pipeline from Regulatory PDFs to Training Assets
 
 
+Figure P02-1 illustrates the corresponding workflow or structure.
+
 ![Figure P02-1](../../images/part14/p02/Xu-Project02-Fig01.svg)
 *Figure P02-1: Legal-Domain SFT Data Factory Overview.*
 
@@ -245,6 +247,8 @@ Many teams tackling industry SFT for the first time find themselves genuinely st
 
 Clearly articulating role assignments is, in essence, a statement that **industry SFT resembles a content production line rather than a single-point script.**
 
+Figure P02-2 illustrates the corresponding workflow or structure.
+
 ![Figure P02-2](../../images/part14/p02/Xu-Project02-Fig02.svg)
 *Figure P02-2: Legal SFT Data Factory Role Assignment Diagram.*
 
@@ -295,6 +299,8 @@ When legal text is mis-parsed, two particularly harmful outcomes result:
 This not only degrades sample readability, but also causes downstream Self-Instruct to generate supervised data that "looks plausible but originates from a corrupted source."
 
 ### 7.2 Component Selection
+
+Table P02-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table P02-1: Components and Selection Rationale.*
 
@@ -364,8 +370,12 @@ For humans this does not impede reading, but for models it disrupts tokenization
 
 The first step in industry SFT is never "figure out how to generate more data," but rather **ensuring the seed layer is clean first**. So long as seed texts contain extensive layout damage, all subsequent templates, CoT, preferences, and QA will operate on a contaminated foundation — and costs will only escalate from there.
 
+Figure P02-3 illustrates the corresponding workflow or structure.
+
 ![Figure P02-3](../../images/part14/p02/Xu-Project02-Fig03.svg)
 *Figure P02-3: Legal PDF Intelligent Cleaning Pipeline Diagram.*
+
+Figure P02-4 illustrates the corresponding workflow or structure.
 
 ![Figure P02-4](../../images/part14/p02/Xu-Project02-Fig04.svg)
 *Figure P02-4: Examples of Embedded Page Number Removal and Chinese Word-Break Repair.*
@@ -415,6 +425,8 @@ Many data projects fail not because the model is poor, but because no unified fi
 * Version rollbacks have no starting point.
 
 The schema is the foundation of an industry SFT factory, not an accessory.
+
+Figure P02-5 illustrates the corresponding workflow or structure.
 
 ![Figure P02-5](../../images/part14/p02/Xu-Project02-Fig05.svg)
 *Figure P02-5: Legal Seed Sample Schema Diagram.*
@@ -472,6 +484,8 @@ Task decomposition is not intended to make a table look more impressive; it is d
 
 In the legal domain, this problem of "superficially diverse but substantively uniform" samples is especially pronounced. Only by explicitly distinguishing Q&A, interpretation, and analysis capabilities does the model have a chance to learn a more complete behavioral distribution.
 
+Figure P02-6 illustrates the corresponding workflow or structure.
+
 ![Figure P02-6](../../images/part14/p02/Xu-Project02-Fig06.svg)
 *Figure P02-6: Legal Task Taxonomy Stratification Diagram.*
 
@@ -498,6 +512,8 @@ Viewed purely by task type, the three sample categories are indeed balanced. But
 ### 10.2 The Importance of Sample Structure
 
 A total sample count can only answer "how large is the scale," not "toward what will the model be biased." In industry data engineering, distributional structure is often more important than absolute volume.
+
+Figure P02-7 illustrates the corresponding workflow or structure.
 
 ![Figure P02-7](../../images/part14/p02/Xu-Project02-Fig07.svg)
 *Figure P02-7: Task Distribution vs. Legal Domain Coverage Comparison Chart.*
@@ -532,6 +548,8 @@ To ensure the data distribution meets expectations, the project does not sample 
 * Task allocation ratios should be an explicitly adjustable engineering parameter, not a black box hidden inside a random-number generator.
 
 The value of this approach is that it turns "data distribution" into a controllable object rather than a post hoc statistical outcome.
+
+Figure P02-8 illustrates the corresponding workflow or structure.
 
 ![Figure P02-8](../../images/part14/p02/Xu-Project02-Fig08.svg)
 *Figure P02-8: Weighted Roulette Task Sampling Diagram.*
@@ -570,6 +588,8 @@ Within this project, CoT value is reflected primarily in two respects:
 
 * It helps the model learn an expression order more closely resembling legal analysis;
 * It provides QA reviewers with clearer intermediate evidence, making it easier to identify samples where "the conclusion is right but the reasoning is wrong."
+
+Figure P02-9 illustrates the corresponding workflow or structure.
 
 ![Figure P02-9](../../images/part14/p02/Xu-Project02-Fig09.svg)
 *Figure P02-9: CoT Structure Diagram for Case Analysis Tasks.*
@@ -610,6 +630,8 @@ Accordingly, this project includes review records as part of its artifacts. The 
 * Error patterns can be extracted from rejection reasons;
 * Evidence for the next round of template optimization is available.
 
+Figure P02-10 illustrates the corresponding workflow or structure.
+
 ![Figure P02-10](../../images/part14/p02/Xu-Project02-Fig10.svg)
 *Figure P02-10: Relationship Between Preference Pairs and Review Records.*
 
@@ -643,6 +665,8 @@ Risk refusal samples are, in essence, behavioral exemplars that teach the model 
 ### 14.3 Risk Boundary Development in the Current Project
 
 The existing artifacts contain 6 risk refusal samples and 6 risk register entries. While this quantity is small, it conveys an important signal: the project has already transformed risk boundaries from "verbal reminders" into **explicit data assets.**
+
+Figure P02-11 illustrates the corresponding workflow or structure.
 
 ![Figure P02-11](../../images/part14/p02/Xu-Project02-Fig11.svg)
 *Figure P02-11: Legal Scenario Risk Refusal Routing Diagram.*
@@ -692,8 +716,12 @@ It is recommended to attach error labels to rejected samples within QA records, 
 
 Without documenting QA protocols alongside generation logic, industry SFT degrades from a "data factory methodology" into a mere "description of data generation steps."
 
+Figure P02-12 illustrates the corresponding workflow or structure.
+
 ![Figure P02-12](../../images/part14/p02/Xu-Project02-Fig12.svg)
 *Figure P02-12: QA Review Closed-Loop Diagram.*
+
+Figure P02-13 illustrates the corresponding workflow or structure.
 
 ![Figure P02-13](../../images/part14/p02/Xu-Project02-Fig13.svg)
 *Figure P02-13: QA Accept / Revise / Reject Decision Table.*
@@ -731,6 +759,8 @@ This is especially true in legal contexts. A simple guideline asking reviewers t
 
 The word "factory" in "data factory" must ultimately be grounded in a collaboration mechanism. Documenting only models, templates, and scripts — without documenting people and process — makes it very difficult to achieve real-world team implementation.
 
+Figure P02-14 illustrates the corresponding workflow or structure.
+
 ![Figure P02-14](../../images/part14/p02/Xu-Project02-Fig14.svg)
 *Figure P02-14: Human-in-the-Loop and Vendor Tiered Review Diagram.*
 
@@ -767,6 +797,8 @@ Training packaging is therefore not simply exporting a JSONL file; it requires e
 ### 17.3 The Role of Smoke Tests
 
 The value of a smoke test is not to evaluate model performance, but to surface obvious problems in the training pipeline as early as possible — such as missing fields, encoding errors, inconsistent sample formats, or mismatches between reading logic and the manifest.
+
+Figure P02-15 illustrates the corresponding workflow or structure.
 
 ![Figure P02-15](../../images/part14/p02/Xu-Project02-Fig15.svg)
 *Figure P02-15: Training Packaging and Delivery Interface Diagram.*
@@ -824,6 +856,8 @@ This shows that the project is not building only primary SFT data, but concurren
 * Project inspection pipeline passes; training-side and report-side artifacts are mutually consistent
 
 This indicates that the project's output is not merely "a collection of JSONL files," but a set of assets directly consumable by the training side and consistently verifiable by inspection scripts.
+
+Figure P02-16 illustrates the corresponding workflow or structure.
 
 ![Figure P02-16](../../images/part14/p02/Xu-Project02-Fig16.svg)
 *Figure P02-16: P02 Core Metrics Dashboard.*
@@ -908,6 +942,8 @@ The emphasis in this type of experiment is not on claiming some extreme result, 
 * A minimal reproducible downstream validation has been added;
 * It directly validates the key design assumptions presented earlier;
 * It provides direction for subsequent, more rigorous training experiments, rather than attempting to resolve all evaluation problems in one pass.
+
+Figure P02-17 illustrates the corresponding workflow or structure.
 
 ![Figure P02-17](../../images/part14/p02/Xu-Project02-Fig17.svg)
 *Figure P02-17: 50-Sample Validation Protocol Diagram.*
@@ -1008,6 +1044,8 @@ The value of the fourth version is modeling high-risk behavior separately, givin
 
 It demonstrates very clearly that: a data factory does not emerge fully formed all at once; each version has its own core objective; not all problems need to be solved in the first version; and the trigger condition for a version upgrade should come from real problems, not abstract perfectionism.
 
+Figure P02-18 illustrates the corresponding workflow or structure.
+
 ![Figure P02-18](../../images/part14/p02/Xu-Project02-Fig18.svg)
 *Figure P02-18: P02 Version Evolution Roadmap.*
 
@@ -1069,6 +1107,8 @@ Command-level checks cover `py_compile`, `evaluate_factory`, and others; data/ar
 
 It embodies a very important engineering habit: the completion standard for a data project is not "a large number of files were generated," but "code, artifacts, statistics, and reports are mutually consistent."
 
+Figure P02-19 illustrates the corresponding workflow or structure.
+
 ![Figure P02-19](../../images/part14/p02/Xu-Project02-Fig19.svg)
 *Figure P02-19: Code–Artifact–Report Consistency Validation Diagram.*
 
@@ -1128,6 +1168,8 @@ These same characteristics also exist in taxation, finance, healthcare, and cust
 What is truly transferable is not any specific prompt, but this methodology chain:
 
 > Identify authoritative seeds → perform structured chunking → design the task taxonomy → apply controlled synthesis for expansion → establish QA and preferences → model risk boundaries separately → apply training packaging and consistency validation.
+
+Figure P02-20 illustrates the corresponding workflow or structure.
 
 ![Figure P02-20](../../images/part14/p02/Xu-Project02-Fig20.svg)
 *Figure P02-20: Cross-Industry Transfer Methodology Chain Diagram.*

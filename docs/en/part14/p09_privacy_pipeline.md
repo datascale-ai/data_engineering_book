@@ -59,6 +59,8 @@ The main text retains only the key implementation fragments needed to illustrate
 
 Acceptance metrics include PII detection rate, false-positive/false-negative samples, redacted field coverage, audit chain integrity, policy hit rate, and inspection pass rate. If the project enters a production, course, or publicly reproducible experimental environment, the version number, dependency environment, random seed, sample spot-check results, and failed-sample postmortem records should also be logged.
 
+Table P09-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table P09-1: Privacy Pipeline Publication Acceptance Table.*
 
 | Acceptance Dimension | Metrics / Evidence | Publication Review Criteria |
@@ -171,6 +173,8 @@ This reflects P09's engineering character as a privacy governance pipeline.
 
 ## 4. Overall Architecture: A Processing Pipeline from Privacy Specification to Project Inspection
 
+Figure P09-1 illustrates the corresponding workflow or structure.
+
 ![Figure P09-1](../../images/part14/p09/Liu-Project09-Fig01.svg)
 *Figure P09-1: P09 Privacy-Preserving Data Pipeline Overall Architecture.*
 
@@ -241,6 +245,8 @@ The most common failure mode for privacy projects is often not that the regex or
 * When a problem occurs, there is no traceable localization path.
 
 This means a privacy pipeline is first and foremost a control chain that must be completely defined, rather than a patchwork of redaction actions.
+
+Figure P09-2 illustrates the corresponding workflow or structure.
 
 ![Figure P09-2](../../images/part14/p09/Liu-Project09-Fig02.svg)
 *Figure P09-2: Key Engineering Dimensions of the P09 Privacy Pipeline.*
@@ -329,6 +335,8 @@ Many projects complete data processing first, then append a note saying "only ad
 
 This point is critical because the most costly errors in privacy controls are often not "the mask was incomplete," but "someone who should never have seen the raw data saw it first."
 
+Figure P09-3 illustrates the corresponding workflow or structure.
+
 ![Figure P09-3](../../images/part14/p09/Liu-Project09-Fig03.svg)
 *Figure P09-3: Relationships Among the Four Artifact Types in the Privacy Specification Layer.*
 
@@ -389,6 +397,8 @@ The advantage of this approach is that the entire pipeline logic can be fully un
 
 Saying merely "some samples were prepared" carries very little information. More important is to document: why these particular domains were chosen, which field patterns are covered, and which control actions they serve downstream.
 
+Figure P09-4 illustrates the corresponding workflow or structure.
+
 ![Figure P09-4](../../images/part14/p09/Liu-Project09-Fig04.svg)
 *Figure P09-4: Scenario Coverage of Raw Sensitive Records.*
 
@@ -443,6 +453,8 @@ This upgrades the project from "redaction was performed" to "detection evidence 
 
 The overall report shows that PII detection covers multiple field patterns, with email=5, phone=3, patient_id=2, and bank_account=2. This demonstrates that even on a small-scale dataset, the project already achieves minimum cross-field pattern coverage rather than handling only a single type of identifier.
 
+Figure P09-5 illustrates the corresponding workflow or structure.
+
 ![Figure P09-5](../../images/part14/p09/Liu-Project09-Fig05.svg)
 *Figure P09-5: PII Detection Rules and Hit Distribution.*
 
@@ -492,6 +504,8 @@ This is critically important from an engineering perspective because:
 ### 9.3 What the Current Results Reveal
 
 The overall report shows that 7 of the 8 raw records were classified as restricted, and all 7 were quarantined. This is consistent with the project's scenario choices: the majority of records in the sample set inherently carry high-sensitivity characteristics, and the purpose is to demonstrate the governance pipeline clearly rather than to artificially introduce large numbers of low-risk samples.
+
+Figure P09-6 illustrates the corresponding workflow or structure.
 
 ![Figure P09-6](../../images/part14/p09/Liu-Project09-Fig06.svg)
 *Figure P09-6: Classification Determination and Quarantine Trigger Relationship.*
@@ -550,6 +564,8 @@ The benefit of this approach is that the same original value maps to the same to
 
 Because the worst practice in privacy engineering is to describe all problems with a vague phrase like "redaction processing." A technically meaningful description must distinguish the control intent for different fields.
 
+Figure P09-7 illustrates the corresponding workflow or structure.
+
 ![Figure P09-7](../../images/part14/p09/Liu-Project09-Fig07.svg)
 *Figure P09-7: De-identification Strategies for Different PII Types.*
 
@@ -602,6 +618,8 @@ The significance of the quarantine_zone lies in:
 
 The overall report shows that there are currently 7 restricted records and 7 quarantined records. This indicates that the quarantine logic is consistent with the classification logic, rather than "classification is one thing, quarantine is another."
 
+Figure P09-8 illustrates the corresponding workflow or structure.
+
 ![Figure P09-8](../../images/part14/p09/Liu-Project09-Fig08.svg)
 *Figure P09-8: Storage Zones and Role Access Boundaries.*
 
@@ -648,6 +666,8 @@ Alerts tell the system "a risky action has occurred"; audit logs tell the system
 
 The overall report shows that the project currently has 2 alerts, a 100% alert resolution rate, and 5 audit events. This indicates that the project has moved beyond "generating some redacted files" and has begun to exhibit security operations semantics.
 
+Figure P09-9 illustrates the corresponding workflow or structure.
+
 ![Figure P09-9](../../images/part14/p09/Liu-Project09-Fig09.svg)
 *Figure P09-9: Relationships Among Alerts, Audit, and Incident Response.*
 
@@ -693,6 +713,8 @@ The overall report shows that the preflight pass rate is 100%. This means the pr
 Because it reflects a mature engineering practice:
 
 > Not "run first, then observe," but "confirm that minimum conditions are met first, then proceed to higher-risk processing and exercise stages."
+
+Figure P09-10 illustrates the corresponding workflow or structure.
 
 ![Figure P09-10](../../images/part14/p09/Liu-Project09-Fig10.svg)
 *Figure P09-10: Preflight Check Process.*
@@ -741,6 +763,8 @@ The overall report shows that incident response took 24 minutes and the postmort
 ### 14.3 The Independent Position of Incident and Postmortem
 
 Including incident and postmortem records makes one thing clearer: a privacy pipeline is not a static ETL pipeline, but a governance system that includes anomaly response capability.
+
+Figure P09-11 illustrates the corresponding workflow or structure.
 
 ![Figure P09-11](../../images/part14/p09/Liu-Project09-Fig11.svg)
 *Figure P09-11: Incident Response and Postmortem Feedback Loop.*
@@ -982,6 +1006,8 @@ The value of this structure lies not only in facilitating understanding of the c
 ### 21.1 The Purpose of Listing the Execution Chain Separately
 
 Because it recondenses the entire chapter's content from "narrative" back into "action." What tends to leave the strongest impression in a chapter is precisely this kind of step-by-step execution chain.
+
+Figure P09-12 illustrates the corresponding workflow or structure.
 
 ![Figure P09-12](../../images/part14/p09/Liu-Project09-Fig12.svg)
 *Figure P09-12: P09 Minimal Reproducible Execution Chain.*

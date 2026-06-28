@@ -57,6 +57,8 @@ The main text retains only the key implementation snippets that illustrate desig
 
 Acceptance metrics include validation pass rate, difficulty distribution, topic coverage, solution consistency, proportion of erroneous samples, and structural completeness of volumes. If the project enters production, curriculum, or public reproducibility environments, version numbers, dependency environments, random seeds, sample spot-check results, and failure sample post-mortem records should also be logged.
 
+Table P04-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table P04-1: Synthetic Textbook Factory Publication Acceptance Table.*
 
 | Acceptance Dimension | Metric / Evidence | Publication Review Criteria |
@@ -80,6 +82,8 @@ Common failures include input distribution drift, missing schema fields, quality
 Reproducibility materials should include data source descriptions, minimal samples, configuration files, run commands, metric scripts, audit reports, and artifact directories. The main text retains necessary snippets; complete notebooks, long scripts, and large files are maintained as independent companion resources. Textbook samples ultimately need to be organized into stable text-to-text or instruction training formats (Raffel et al. 2020); dataset management, parallel generation, experiment tracking, and quality inspection can reference Hugging Face Datasets (Hugging Face 2026), Ray Data (Ray Project 2026), MLflow (MLflow Authors 2026), and Great Expectations (Great Expectations Contributors 2026), respectively.
 
 ## 1. Project Background: The Necessity of a Synthetic Mathematics and Code Textbook Factory
+
+Figure P04-1 illustrates the corresponding workflow or structure.
 
 ![Figure P04-1](../../images/part14/p04/Xu-Project04-Fig01.svg)
 *Figure P04-1: Synthetic Mathematics and Code Textbook Factory Project Positioning Diagram.*
@@ -105,6 +109,8 @@ Methodologically, this pipeline is arguably more important than the specific pro
 ---
 
 ## 2. Project Objectives and Scope
+
+Figure P04-2 illustrates the corresponding workflow or structure.
 
 ![Figure P04-2](../../images/part14/p04/Xu-Project04-Fig02.svg)
 *Figure P04-2: P04 Project Objectives and Scope Diagram.*
@@ -186,6 +192,8 @@ In this sense, P04 is not just a "small reasoning data project" but more aptly a
 
 ## 4. Overall Architecture: A Reasoning Data Pipeline from Seed Problems to Textbook Volumes
 
+Figure P04-3 illustrates the corresponding workflow or structure.
+
 ![Figure P04-3](../../images/part14/p04/Xu-Project04-Fig03.svg)
 *Figure P04-3: P04 Overall Architecture Overview Diagram.*
 
@@ -229,6 +237,8 @@ At this stage, the project truly upgrades from "able to generate problems" to an
 ---
 
 ## 5. Engineering Prerequisites: Key Responsibility Facets of the Textbook Factory
+
+Figure P04-4 illustrates the corresponding workflow or structure.
 
 ![Figure P04-4](../../images/part14/p04/Xu-Project04-Fig04.svg)
 *Figure P04-4: Textbook Factory Responsibility Collaboration Diagram.*
@@ -276,6 +286,8 @@ Stating these responsibility facets explicitly amounts to asserting that **a tex
 
 ## 6. Seed Layer: The Necessity of Problem Seeds
 
+Figure P04-5 illustrates the corresponding workflow or structure.
+
 ![Figure P04-5](../../images/part14/p04/Xu-Project04-Fig05.svg)
 *Figure P04-5: Mapping from Seed Problems to Chapter Plans.*
 
@@ -315,6 +327,8 @@ From current results, the project has formed two textbook tracks (`math=30`, `co
 
 ## 7. Evol-Instruct: The Problem Evolution Mechanism
 
+Figure P04-6 illustrates the corresponding workflow or structure.
+
 ![Figure P04-6](../../images/part14/p04/Xu-Project04-Fig06.svg)
 *Figure P04-6: Evol-Instruct Evolution Path Diagram.*
 
@@ -353,6 +367,8 @@ Textbook data cannot tolerate such loss of control. Unlike open-ended writing, e
 ---
 
 ## 8. PoT Selection: The Programmatic Reasoning Path
+
+Figure P04-7 illustrates the corresponding workflow or structure.
 
 ![Figure P04-7](../../images/part14/p04/Xu-Project04-Fig07.svg)
 *Figure P04-7: CoT vs. PoT Comparison Diagram.*
@@ -395,6 +411,8 @@ From a training perspective, this has greater generalization value than simply m
 
 ## 9. Generation Pipeline: Concrete Implementation from Prompt to Code Solution
 
+Figure P04-8 illustrates the corresponding workflow or structure.
+
 ![Figure P04-8](../../images/part14/p04/Xu-Project04-Fig08.svg)
 *Figure P04-8: Generation Pipeline Detail Diagram.*
 
@@ -424,6 +442,8 @@ Generation systems inevitably encounter network jitter, incomplete responses, or
 ---
 
 ## 10. Sandbox Validation: The Core Threshold of Generate-then-Verify
+
+Figure P04-9 illustrates the corresponding workflow or structure.
 
 ![Figure P04-9](../../images/part14/p04/Xu-Project04-Fig09.svg)
 *Figure P04-9: Sandbox Validation Execution Path Diagram.*
@@ -471,6 +491,8 @@ The critical risk of textbook data is that content appears to resemble a teacher
 
 ## 11. Textbook Packaging: Curriculum-Oriented Asset Organization
 
+Figure P04-10 illustrates the corresponding workflow or structure.
+
 ![Figure P04-10](../../images/part14/p04/Xu-Project04-Fig10.svg)
 *Figure P04-10: Textbook Packaging Artifact Relationship Diagram.*
 
@@ -514,6 +536,8 @@ Many engineering projects treat teacher guides as supplementary instructional ma
 ---
 
 ## 12. Training Encapsulation: Feeding Textbook Data into Training Systems
+
+Figure P04-11 illustrates the corresponding workflow or structure.
 
 ![Figure P04-11](../../images/part14/p04/Xu-Project04-Fig11.svg)
 *Figure P04-11: Training Encapsulation Interface Diagram.*

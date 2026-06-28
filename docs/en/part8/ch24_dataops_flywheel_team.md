@@ -239,6 +239,8 @@ The second deviation is setting A too high. Many organizations habitually place 
 
 To give RACI real traction, teams can bind it to daily systems. For example, in the requirement-management tool, every data task must specify Responsible and Accountable; in the annotation platform, annotation-guide changes must record who was Consulted; on the data-version release page, all Informed parties should receive automatic notifications. In this way, RACI no longer depends on human memory but is embedded in workflows.
 
+Table 24-8 summarizes the corresponding comparison and engineering considerations.
+
 *Table 24-8: Applications of RACI in Everyday DataOps Scenarios.*
 
 | Application Scenario | Specific Use of RACI | Management Benefit | Problems to Avoid |
@@ -263,6 +265,8 @@ The core principle of exception-handling mechanisms is "allow exceptions, but pr
 
 In practice, exceptions can be classified into three types. The first is **time exceptions**: to meet a critical experiment window, data may be used before the quality report is fully complete. The second is **quality exceptions**: certain exploratory data may fall below the formal training-set quality standard, but must be labeled as experimental data. The third is **compliance exceptions**: these require the greatest caution and should typically be allowed only in isolated environments for preliminary analysis, with mandatory involvement of the legal compliance specialist in approval. Different exception types should not carry the same approval intensity; otherwise, the team will bear excessive process costs on low-risk items while potentially approving high-risk items insufficiently.
 
+Table 24-9 summarizes the corresponding comparison and engineering considerations.
+
 *Table 24-9: DataOps Exception Approval Types and Handling Requirements.*
 
 | Exception Type | Applicable Scenarios | Required Records | Approval Requirements | Upon Expiry |
@@ -281,6 +285,8 @@ Escalation paths should also include post-mortem requirements. Any item that tri
 ### 24.3.1 What Is the DataOps Flywheel
 
 The DataOps flywheel is a conceptual model describing the continuous improvement loop of a data team. The DataOps Manifesto—an online statement of principles—emphasizes customer collaboration, rapid feedback, repeatable processes, team collaboration, and the elimination of heroism; together, these principles sustain flywheel-style continuous improvement (DataOps Manifesto, accessed 2026). Its core idea is: through a fixed operational cadence, data requirements, data production, quality evaluation, and iterative feedback are chained into a self-reinforcing loop—each revolution of the loop more efficient and higher quality than the previous one.
+
+Figure 24-2 illustrates the corresponding workflow or structure.
 
 ![Figure 24-2: DataOps Team Organization Overview](../../images/part8/Yu-Chap24-Fig02-EN.svg)
 
@@ -304,6 +310,8 @@ From a systems perspective, the four pools are not simple task lists but differe
 
 Flywheel design should therefore emphasize traceability relationships between objects. A requirement should be traceable to its corresponding data batch; a data batch should be traceable to its corresponding experiment results; an experiment conclusion should be traceable to related issues and subsequent remediation actions. Only when these relationships are recorded can the team progress from "how many tasks did we complete this week" to "which data investments actually produced results." This is also what distinguishes DataOps from ordinary task management: DataOps focuses on value flow, not merely on workload.
 
+Table 24-10 summarizes the corresponding comparison and engineering considerations.
+
 *Table 24-10: Management Fields and Linkage Relationships of the Four DataOps Flywheel Pools.*
 
 | Flywheel Object | Key Fields | Relationships to Other Objects | Management Focus |
@@ -314,6 +322,8 @@ Flywheel design should therefore emphasize traceability relationships between ob
 | Issue Pool | Issue severity, discovery source, root cause, owner, remediation status | Linked to data batches, interface protocols, and post-mortem documents | Prevent recurring issues; drive process improvement |
 
 Whether the flywheel can run continuously depends on whether feedback is sufficiently short and precise. If feedback takes too long, the data team cannot timely judge whether this week's work was effective; if feedback is too coarse, the team knows only that the model improved or degraded overall but has no idea how to adjust the data. Ideally, each iteration should produce feedback at three levels: task-level feedback indicating whether deliverables were completed on time; quality-level feedback indicating whether the data met standards; and outcome-level feedback indicating whether the data improved model performance. Only when all three types of feedback complement each other can the team avoid pursuing delivery speed at the expense of data value.
+
+Figure 24-3 illustrates the corresponding workflow or structure.
 
 ![Figure 24-3: DataOps Flywheel Four-Pool Coordination Diagram](../../images/part8/Yu-Chap24-Fig03-EN.svg)
 
@@ -352,6 +362,8 @@ For the flywheel to keep running, fixed time nodes are needed to drive it. Conti
 - Objective: Freeze a stable version of the dataset as the quarter's "baseline dataset" for audit and retrospective purposes
 - Deliverable: Quarterly dataset version specification; data lineage report
 
+Table 24-11 summarizes the corresponding comparison and engineering considerations.
+
 *Table 24-11: DataOps Meeting Cadence and Deliverables.*
 
 | Cadence | Time | Participants | Core Deliverable |
@@ -365,6 +377,8 @@ For the flywheel to keep running, fixed time nodes are needed to drive it. Conti
 The key to a meeting system lies not in the number of meetings but in ensuring that each synchronization node has clearly defined inputs and outputs. The input to Monday's requirement sync should be a Demand Pool that has already been preliminarily organized, not an open forum where everyone improvises ideas; the input to Wednesday's quality inspection should be automated check results and sampled examples, not ad hoc judgments by quality evaluators; the input to Friday's delivery post-mortem should be this week's data versions, Issue Pool changes, and SLA achievement records, not a simple report of "what was done." Without verifiable inputs, meetings degenerate into status updates; without clear outputs, they fail to advance the flywheel to the next revolution.
 
 More mature teams further distinguish "decision meetings" from "learning meetings." Requirement syncs and version freezes are decision meetings, requiring clear prioritization, resource allocation, and responsibility assignment; quality inspections and incident post-mortems are learning meetings, requiring pattern identification, process updates, and knowledge preservation. The two types require different facilitation. Decision meetings emphasize clear boundaries and time control; learning meetings need adequate space to discuss root causes. Conflating the two types leads to decision meetings running too long, or post-mortems that produce only remediation conclusions without genuine learning.
+
+Table 24-12 summarizes the corresponding comparison and engineering considerations.
 
 *Table 24-12: Inputs, Outputs, and Common Deviations at DataOps Operational Nodes.*
 
@@ -383,6 +397,8 @@ To prevent meeting overhead from becoming excessive, teams should also establish
 An SLA (Service Level Agreement) is the data team's service commitment to its internal "customers" (algorithm and product teams). Reasonable SLA settings enable downstream teams to form reliable expectations about data delivery while giving the data team a clear work rhythm. Production machine learning system readiness assessments typically need to cover data, models, infrastructure, monitoring, and testing—not just offline metrics (Breck et al. 2017).
 
 The following is a reference SLA framework:
+
+Table 24-13 summarizes the corresponding comparison and engineering considerations.
 
 *Table 24-13: SLA Framework Example.*
 
@@ -406,6 +422,8 @@ SLA should not be understood purely as a delivery deadline. For LLM data teams, 
 
 SLA settings must also distinguish among different types of data tasks. Exploratory experimental data may allow lower quality thresholds, but must be clearly marked as ineligible for the formal training corpus; formal training data requires higher quality and compliance standards but may have longer delivery cycles; online-feedback data requires stricter privacy protection and access auditing. Placing all tasks under a single SLA causes high-risk tasks to receive insufficient review while excessively restricting low-risk exploratory tasks.
 
+Table 24-14 summarizes the corresponding comparison and engineering considerations.
+
 *Table 24-14: Multi-Dimensional SLA Design for DataOps.*
 
 | SLA Dimension | Core Question | Example Metrics | Management Significance |
@@ -426,6 +444,8 @@ Beyond SLAs and version freezing, DataOps requires an appropriately sized metric
 
 A reasonably comprehensive metrics system can be organized into four layers. The first layer is **flow efficiency**, focusing on the cycle time from requirement submission to delivery. The second layer is **quality stability**, focusing on whether data batches meet standards and whether issues recur. The third layer is **collaboration reliability**, focusing on whether interfaces, SLAs, and version records are followed. The fourth layer is **business and model outcomes**, focusing on whether data investment produces improvements in model metrics, user experience, or business results. Together, the four layers constitute the observation surface of the DataOps flywheel.
 
+Table 24-15 summarizes the corresponding comparison and engineering considerations.
+
 *Table 24-15: Layered Metrics System for the DataOps Flywheel.*
 
 | Metric Layer | Example Metrics | Data Source | Interpretation | Risk of Misuse |
@@ -441,6 +461,8 @@ The metrics system should also distinguish leading indicators from lagging indic
 When using metrics concretely, teams should guard against metric gaming. Any metric strongly tied to performance evaluation is susceptible to being optimized into a surface-level number. For example, if only annotation volume is evaluated, annotators may sacrifice quality of judgment; if only issue-closure time is evaluated, teams may split complex issues into smaller pieces or close them prematurely; if only reuse rate is evaluated, projects may reuse data that does not fit their scenarios. DataOps metrics should serve learning and improvement, not replace professional judgment.
 
 A sound practice is to accompany each metric with explanatory documentation specifying its meaning, calculation methodology, applicable scope, and inapplicable scenarios. Quality evaluators can add an "Interpretation of Metrics" section to monthly reports explaining whether this month's changes were caused by process improvements, task structure changes, or data-source changes. In this way, metrics become not merely numbers but shared evidence for cross-team discussion.
+
+Table 24-16 summarizes the corresponding comparison and engineering considerations.
 
 *Table 24-16: Basic Requirements for DataOps Metrics Governance.*
 
@@ -471,6 +493,8 @@ An effective mechanism for resolving these conflicts is to establish a **Data As
 A data asset registry is not a simple file inventory but the governance entry point for internal data collaboration. Whether a dataset is suitable for sharing depends on multiple dimensions: Is data quality stable? Are source authorizations clear? Is field semantics interpretable? Is the update frequency predictable? Are usage restrictions clearly stated? Are there sensitive information or copyright risks? If the registry only records names and storage paths, consumers still cannot determine whether they can use the data, and providers cannot control usage boundaries.
 
 Cross-team sharing should therefore follow a closed loop of "discoverable → requestable → traceable → revocable." Discoverable means consumers can find data assets by searching the registry. Requestable means users must explain intended use, scope, and duration before use. Traceable means the platform records access logs, download records, and version citations. Revocable means that when authorization expires or use-case changes occur, access permissions can be automatically revoked. Without all four elements, data sharing easily degrades into ad-hoc copying, creating new data silos and compliance risks.
+
+Table 24-17 summarizes the corresponding comparison and engineering considerations.
 
 *Table 24-17: Governance Closed Loop for Cross-Team Data Sharing.*
 
@@ -503,6 +527,8 @@ Post-mortem mechanisms should avoid two extremes. One extreme is "accountability
 
 For LLM data teams, knowledge-preservation objects include not only incidents but also success experiences. A data-augmentation strategy that significantly improved model performance, an annotation guide that reduced consistency disputes, a quality rule that detected a large number of anomalous samples in advance—all of these should enter the knowledge base. Recording only failures causes the knowledge base to become a problem archive, ignoring reusable positive practices. Mature teams categorize knowledge preservation into four types—incident post-mortems, best practices, standard templates, and decision records—with distinct maintenance responsibilities for each.
 
+Table 24-18 summarizes the corresponding comparison and engineering considerations.
+
 *Table 24-18: DataOps Knowledge-Preservation Objects and Maintenance Mechanisms.*
 
 | Document Type | Recorded Content | Maintenance Responsibility | Update Frequency | Primary Use |
@@ -530,6 +556,8 @@ For systemic risks affecting multiple project teams (e.g., major platform failur
 
 The design of risk-escalation mechanisms should follow a tiered principle. Low-risk issues can be handled within the execution team; medium-risk issues require Data Owner involvement; high-risk issues must enter cross-departmental decision-making. The basis for tiering includes not only problem severity but also impact scope, reversibility, compliance sensitivity, and whether external commitments are affected. For example, a small number of format anomalies in an experimental data batch with limited impact scope that is reversible can be treated as a routine issue; but if the same problem has already entered the online evaluation set and may affect product-quality judgments, it should be escalated to a high-priority risk.
 
+Table 24-19 summarizes the corresponding comparison and engineering considerations.
+
 *Table 24-19: DataOps Risk Tiering and Response Mechanisms.*
 
 | Risk Level | Typical Scenarios | Response Deadline | Decision Authority | Handling Requirements |
@@ -547,6 +575,8 @@ Cross-team risk governance must also incorporate access management. LLM data typ
 
 Access control design should follow the principle of minimum necessary privilege. Algorithm engineers do not necessarily need access to raw user identifiers; annotation outsourcing vendors do not necessarily need to see the full business context; quality evaluators do not necessarily need to download the entire dataset. Platforms should support access restrictions by field, version, task, and time as much as possible. For highly sensitive data, access should have a default expiry; if extension is needed, the intended use must be re-stated and approval obtained.
 
+Table 24-20 summarizes the corresponding comparison and engineering considerations.
+
 *Table 24-20: LLM Data Sensitivity Levels and Access Governance.*
 
 | Data Sensitivity Level | Example | Default Access Policy | Audit Requirements |
@@ -560,6 +590,8 @@ Access control design should follow the principle of minimum necessary privilege
 Outsourcing collaboration is also an important risk-governance scenario. Many LLM data projects rely on external annotation vendors, crowdsourcing platforms, or domain experts to complete data production. Outsourcing expands capacity but introduces standard-transmission, access-control, quality-consistency, and confidentiality-management challenges. DataOps cannot treat outsourcing only as a procurement process; outsourcing vendors must be integrated into the data production chain: task dispatch, guide training, sample calibration, quality spot-checking, feedback, and access revocation all need to be clearly recorded.
 
 The most common mistake in outsourcing management is specifying only delivery volume and acceptance rate in the contract without specifying in-process data. For example, annotator revision counts, low-confidence samples, disputed samples, calibration task results, and feedback response time are all important signals for judging outsourcing quality. If spot-checking is done only at final delivery, it is hard to detect standard-comprehension deviations in time. The more mature approach is to incorporate in-process metrics into the platform and observe inter-vendor differences during weekly quality inspections.
+
+Table 24-21 summarizes the corresponding comparison and engineering considerations.
 
 *Table 24-21: DataOps Control Points for Outsourcing Annotation Collaboration.*
 
@@ -611,6 +643,8 @@ The role workshop was not simply a renaming of job titles. It required each memb
 
 To resolve this, the team placed annotation guides under version control and stipulated that each guide change must include the reason for the change, affected fields, example samples, and effective date. Outsourcing vendors could only execute tasks according to the published version; if the algorithm team wished to adjust label definitions, they had to submit a change request through the Demand Pool. This practice increased process costs early on but significantly reduced subsequent rework.
 
+Table 24-22 summarizes the corresponding comparison and engineering considerations.
+
 *Table 24-22: Company E Phase-1 Role and Interface Clarification Results.*
 
 | Clarification Object | Pre-Restructuring State | Post-Restructuring Rules |
@@ -646,6 +680,8 @@ In response to this finding, the quality evaluator and instructional experts joi
 
 On knowledge preservation, Company E split post-mortem documents into two parts: "incident post-mortems" and "process changes." Incident post-mortems record what happened and why; process changes specify which templates, tool rules, or meeting mechanisms need modification. A post-mortem is considered closed only when the process change has been implemented in a system or document, preventing post-mortems from remaining at the level of text.
 
+Table 24-23 summarizes the corresponding comparison and engineering considerations.
+
 *Table 24-23: Company E DataOps Restructuring Phases and Organizational Benefits.*
 
 | Phase | Primary Objective | Key Actions | Organizational Benefit |
@@ -657,6 +693,8 @@ On knowledge preservation, Company E split post-mortem documents into two parts:
 ### Results
 
 Six months later, the main indicators for Company E's data team showed significant changes:
+
+Table 24-24 summarizes the corresponding comparison and engineering considerations.
 
 *Table 24-24: Company E Core Metrics Before and After DataOps Restructuring.*
 
@@ -678,6 +716,8 @@ From an organizational-culture perspective, DataOps restructuring gradually fost
 
 Company E's case also suggests that DataOps construction should not pursue a complete system all at once. For early-stage teams, the most important thing is first establishing role, interface, and version records; for rapidly expanding teams, the priority should be addressing weekly cadence, annotation quality, and data reuse; for platform-driven teams, the further need is building metrics systems, access auditing, and knowledge bases. The investment focus differs at each stage, but the shared objective is consistent: moving data work from individual-experience-driven to organizational-capability-driven.
 
+Table 24-25 summarizes the corresponding comparison and engineering considerations.
+
 *Table 24-25: Transferable Lessons from Company E's Case.*
 
 | Experience Theme | Specific Practice | Transferable Insight |
@@ -691,6 +731,8 @@ Company E's case also suggests that DataOps construction should not pursue a com
 Abstracting Company E's experience into an actionable checklist reveals that DataOps transformation covers five dimensions: organization, process, tools, metrics, and culture. The organizational dimension resolves who is responsible; the process dimension resolves how to collaborate; the tools dimension resolves how to institutionalize; the metrics dimension resolves how to determine whether improvements are effective; the cultural dimension resolves whether the team is willing to learn continuously based on facts. All five dimensions are indispensable. Organization and process without tools causes rules to remain in documents; tools and metrics without culture causes the team to treat systems as extra burdens; culture without interfaces and versions still makes collaboration difficult to scale.
 
 For companies preparing to replicate similar practices, starting with a lightweight checklist is advisable. The value of a checklist lies not in achieving all requirements at once but in helping the team identify its currently weakest areas. For example, some teams already have good platform tools but lack a Data Owner and RACI; some teams already have fixed meetings but lack meeting inputs, outputs, and quality metrics; some teams already have extensive documentation but the documentation is not linked to versions, issues, and experiment records. Different weak points correspond to different improvement paths.
+
+Table 24-26 summarizes the corresponding comparison and engineering considerations.
 
 *Table 24-26: Lightweight DataOps Transformation Checklist.*
 
@@ -715,6 +757,8 @@ DataOps transformation should not be described as a pure efficiency-improvement 
 
 In management communication, the benefits of DataOps can be broken down into three categories. The first is **short-term benefits**: for example, reduced delivery delay rates, shorter problem-localization time, fewer annotation rework instances. The second is **mid-term benefits**: for example, increased cross-project reuse, improved experiment reproducibility, faster onboarding for new members. The third is **long-term benefits**: for example, data-asset accumulation, platform-capability reuse, and organizational-risk control. Different levels of management focus on different benefits; the data lead needs to communicate the value of DataOps in appropriate terms for each audience, rather than emphasizing only engineering details.
 
+Table 24-27 summarizes the corresponding comparison and engineering considerations.
+
 *Table 24-27: Layered Communication of DataOps Transformation Benefits.*
 
 | Benefit Type | Typical Metrics | Primary Beneficiaries | Communication Approach |
@@ -727,6 +771,8 @@ In management communication, the benefits of DataOps can be broken down into thr
 Finally, the case also reminds us that DataOps construction requires restraint. Not every process needs to be automated, not every decision needs approval, and not every metric needs a dashboard. The complexity of organizational governance must match the corresponding risk and scale. Early-stage teams can use simple templates and fixed meetings to establish basic order; mid-sized teams can introduce platforms and automated checks; large teams can then build more complete access control, auditing, asset registries, and metrics systems. Excessive governance harms exploration capability; insufficient governance makes scale-up unsustainable. The practical wisdom of DataOps lies precisely in establishing a dynamic balance among speed, quality, compliance, and learning.
 
 In actual deployment, teams can also break the transformation plan into short cycles of approximately twelve weeks. Twelve weeks is not a fixed deadline but a sufficiently lightweight, verifiable organizational experiment window. The first three weeks focus on diagnosis and role confirmation; the middle six weeks focus on process and tool institutionalization; the final three weeks focus on metrics post-mortems and policy revision. Compared with planning a full-year platform blueprint at once, short-cycle transformation makes it easier for teams to see benefits and easier to adjust direction based on feedback.
+
+Table 24-28 summarizes the corresponding comparison and engineering considerations.
 
 *Table 24-28: Twelve-Week DataOps Pilot Transformation Roadmap.*
 
@@ -751,6 +797,8 @@ During the pilot, managers need to deliberately protect the transformation caden
 
 When the pilot moves to the rollout phase, the team should avoid mechanically copying the pilot template to all scenarios. Different data chains carry different risks, scales, and collaboration complexity; tiered governance should be applied. High-risk formal training data requires the complete process; exploratory data can use a simplified process; data involving user feedback requires strict access control and auditing, while public data can use lighter-weight authorization. Tiered governance reduces unnecessary process burdens and concentrates governance resources on genuinely high-risk, high-value scenarios.
 
+Table 24-29 summarizes the corresponding comparison and engineering considerations.
+
 *Table 24-29: Tiered Governance Intensity for Different Data Scenarios.*
 
 | Rollout Scenario | Recommended Governance Intensity | Applicable Processes | Rationale |
@@ -765,6 +813,8 @@ When the pilot moves to the rollout phase, the team should avoid mechanically co
 Through this approach, the Company E case no longer represents merely the experience of a single organization but can be generalized into a universal implementation method: first diagnose organizational friction, then select a pilot chain; first clarify roles and interfaces, then connect tools; first build version and quality evidence, then discuss more complex platform solutions; first validate with a small number of scenarios, then roll out in tiers based on risk and value. This path is more consistent with the fundamental spirit of DataOps: through small-batch, verifiable, post-mortem-driven improvements, progressively forming stable data-engineering organizational capability.
 
 To facilitate self-assessment after the transformation concludes, teams can also establish a concise set of verification questions. These do not replace formal metrics but help managers judge whether DataOps has truly entered daily operations rather than remaining in project documentation. If most questions cannot be answered clearly, the team is still in a formalistic construction phase; if the questions can be answered through system records, version descriptions, quality reports, and post-mortem documents, DataOps has begun to function as organizational infrastructure.
+
+Table 24-30 summarizes the corresponding comparison and engineering considerations.
 
 *Table 24-30: Self-Assessment Questions for DataOps Operational Status.*
 

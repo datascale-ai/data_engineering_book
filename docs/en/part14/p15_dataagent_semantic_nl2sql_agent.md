@@ -41,9 +41,14 @@ This project follows an architecture path built from a business entry point, a R
 
 The core data flow can be summarized as:
 
+Listing P15-2 provides the corresponding code or configuration example.
+
 ```text
 business question -> semantic-layer schema retrieval -> NL2SQL generation and validation -> SQL execution -> CSV/SQL/report persistence -> trace audit
 ```
+
+*Listing P15-2: Code or configuration example.*
+
 
 At minimum, the sample schema should retain fields such as `id`, `source`, `content_or_payload`, `metadata`, `quality_signals`, `split_or_stage`, and `audit_trace`. The exact fields should be refined according to the project's data type, downstream task, and acceptance method.
 
@@ -130,9 +135,14 @@ Compared with a multimodal RAG financial-report assistant, the core here is not 
 
 The best case is therefore:
 
+Listing P15-3 provides the corresponding code or configuration example.
+
 ```text
 Building an enterprise semantic BI assistant with DataAgent
 ```
+
+*Listing P15-3: Code or configuration example.*
+
 
 This case highlights DataAgent's distinctive capabilities: NL2SQL, Semantic Service, YAML-as-agent, plugin tools, main/sub-agent collaboration, workspace audit, and A2A service exposure.
 
@@ -160,6 +170,8 @@ DataAgent provides three common entry points:
 
 A minimal reproduction can start with the Python SDK:
 
+Listing P15-4 provides the corresponding code or configuration example.
+
 ```python
 import asyncio
 from pathlib import Path
@@ -180,6 +192,9 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 ```
+
+*Listing P15-4: Code or configuration example.*
+
 
 ### 4.2 Main Agent Layer
 
@@ -225,6 +240,8 @@ This chapter depends on DataAgent, Semantic Service, a value-match service, and 
 
 ### 5.1 Version and Minimal Environment Matrix
 
+Table P15-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table P15-1: Minimal environment matrix for the DataAgent semantic BI assistant.*
 
 | Component | Minimal Reproduction Requirement | Version Record |
@@ -242,6 +259,8 @@ DataAgent is one of the primary execution engines in the DataGallery open-source
 
 First pin the version, then install dependencies from the repository root:
 
+Listing P15-5 provides the corresponding code or configuration example.
+
 ```bash
 git clone https://gitcode.com/datagallery/dataagent.git
 cd DataAgent
@@ -251,19 +270,34 @@ python -m venv .venv
 python -m pip install -U pip uv
 ```
 
+*Listing P15-5: Code or configuration example.*
+
+
 Install with `uv`:
+
+Listing P15-6 provides the corresponding code or configuration example.
 
 ```bash
 uv sync
 ```
 
+*Listing P15-6: Code or configuration example.*
+
+
 Or install with pip:
+
+Listing P15-7 provides the corresponding code or configuration example.
 
 ```bash
 pip install -e .
 ```
 
+*Listing P15-7: Code or configuration example.*
+
+
 After installation, record at least:
+
+Listing P15-8 provides the corresponding code or configuration example.
 
 ```bash
 python --version
@@ -272,9 +306,14 @@ python -c "import dataagent; print(getattr(dataagent, '__version__', 'unknown'))
 git rev-parse --short HEAD
 ```
 
+*Listing P15-8: Code or configuration example.*
+
+
 ### 5.3 Configure Model Environment Variables
 
 DataAgent model configuration comes from the `MODEL` section of YAML. Put keys in `.env` or environment variables rather than directly in YAML.
+
+Listing P15-9 provides the corresponding code or configuration example.
 
 ```bash
 export LLM_BASE_URL="https://your-compatible-endpoint/v1"
@@ -287,7 +326,12 @@ export VALUE_MATCH_URL="http://127.0.0.1:8000"
 export A2A_AUTH_TOKEN="replace-with-local-dev-token"
 ```
 
+*Listing P15-9: Code or configuration example.*
+
+
 On Windows PowerShell, use:
+
+Listing P15-10 provides the corresponding code or configuration example.
 
 ```powershell
 $env:LLM_BASE_URL="https://your-compatible-endpoint/v1"
@@ -299,6 +343,9 @@ $env:SEMANTIC_SERVICE_URL="http://127.0.0.1:32000"
 $env:VALUE_MATCH_URL="http://127.0.0.1:8000"
 $env:A2A_AUTH_TOKEN="replace-with-local-dev-token"
 ```
+
+*Listing P15-10: Code or configuration example.*
+
 
 ### 5.4 Prepare the Business Database
 
@@ -338,9 +385,14 @@ The workspace is where project assets are persisted. After the main agent calls 
 
 Use an isolated workspace for each task or user session:
 
+Listing P15-11 provides the corresponding code or configuration example.
+
 ```text
 /tmp/dataagent-semantic-bi-demo/session-001
 ```
+
+*Listing P15-11: Code or configuration example.*
+
 
 ### 5.7 Minimal Local Run Path
 
@@ -367,6 +419,8 @@ This snippet connects installation, configuration, semantic services, and worksp
 ## 6. Configure the Main Agent: YAML as Application
 
 One key advantage of DataAgent is YAML-as-agent. A runnable semantic BI assistant can start from:
+
+Listing P15-12 provides the corresponding code or configuration example.
 
 ```yaml
 AGENT_CONFIG:
@@ -423,6 +477,9 @@ SWARM:
   enable: false
 ```
 
+*Listing P15-12: Code or configuration example.*
+
+
 Five points matter.
 
 First, the main agent uses `type: "react"`. It plans; it is not a dedicated NL2SQL agent.
@@ -439,11 +496,18 @@ Fifth, set temperature to `0.0`. Structured querying values stability and reprod
 
 The built-in NL2SQL agent config is located at:
 
+Listing P15-13 provides the corresponding code or configuration example.
+
 ```text
 dataagent/agents/nl2sql/nl2sql_agent.yaml
 ```
 
+*Listing P15-13: Code or configuration example.*
+
+
 Its core chain is:
+
+Listing P15-14 provides the corresponding code or configuration example.
 
 ```text
 Coordinator
@@ -455,7 +519,12 @@ Coordinator
   -> Selector
 ```
 
+*Listing P15-14: Code or configuration example.*
+
+
 Each node has a distinct responsibility.
+
+Table P15-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table P15-2: Core nodes and responsibilities of the NL2SQL sub-agent.*
 
@@ -470,6 +539,8 @@ Each node has a distinct responsibility.
 | Selector | Chooses final SQL, result, and confidence. |
 
 Minimal config:
+
+Listing P15-15 provides the corresponding code or configuration example.
 
 ```yaml
 AGENT_CONFIG:
@@ -501,15 +572,23 @@ CORE:
     threshold: 0.9
 ```
 
+*Listing P15-15: Code or configuration example.*
+
+
 When the main agent calls the sub-agent, business users usually do not need to edit this base config directly. It is better to place the business database and Semantic Service addresses in the main-agent YAML and let `nl2sql_sub_agent_tool` overlay them at runtime.
 
 ## 8. Semantic Service: Turning Business Metadata into Retrievable Context
 
 Schema awareness is decisive for enterprise BI. A user may ask:
 
+Listing P15-16 provides the corresponding code or configuration example.
+
 ```text
 How did new-customer conversion rate vary by channel in the most recent quarter?
 ```
+
+*Listing P15-16: Code or configuration example.*
+
 
 SQL generation must know:
 
@@ -520,6 +599,8 @@ SQL generation must know:
 - Which tables need to be joined.
 
 Semantic Service provides this structured context before SQL generation.
+
+Table P15-3 summarizes the corresponding comparison and engineering considerations.
 
 *Table P15-3: Key Semantic Service capabilities and engineering value.*
 
@@ -537,6 +618,8 @@ Semantic Service should not be treated as "extra documentation." It is the upstr
 ## 9. Tool Invocation: How the Main Agent Delegates to the NL2SQL Sub-agent
 
 `nl2sql_sub_agent_tool` is the core tool. Its parameters are:
+
+Table P15-4 summarizes the corresponding comparison and engineering considerations.
 
 *Table P15-4: Input parameters of nl2sql_sub_agent_tool.*
 
@@ -565,6 +648,8 @@ This turns a tool call into data asset production. The final answer can referenc
 
 Before running, confirm:
 
+Listing P15-17 provides the corresponding code or configuration example.
+
 ```text
 1. Model environment variables are configured.
 2. Database path or connection string is accessible.
@@ -574,13 +659,20 @@ Before running, confirm:
 6. The workspace is writable.
 ```
 
+*Listing P15-17: Code or configuration example.*
+
+
 A complete BI task can be described as:
+
+Figure P15-3 illustrates the corresponding workflow or structure.
 
 ![Runtime flow of the DataAgent enterprise semantic BI assistant](../../images/part14/Cao-Project15-Fig07-EN.svg)
 
 *Figure P15-3: Runtime flow of the DataAgent enterprise semantic BI assistant.*
 
 ### 10.2 Run with SDK
+
+Listing P15-18 provides the corresponding code or configuration example.
 
 ```python
 import asyncio
@@ -604,15 +696,25 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+*Listing P15-18: Code or configuration example.*
+
+
 ### 10.3 Run from the Command Line
+
+Listing P15-19 provides the corresponding code or configuration example.
 
 ```bash
 uv run -m dataagent --config dataagent/core/flex/examples/nl2sql_flex_e2e_subagent.yaml
 ```
 
+*Listing P15-19: Code or configuration example.*
+
+
 ### 10.4 Serve with A2A
 
 When the assistant must be called by other agents or business systems, start the A2A service:
+
+Listing P15-20 provides the corresponding code or configuration example.
 
 ```bash
 uv run -m dataagent serve-a2a \
@@ -621,6 +723,9 @@ uv run -m dataagent serve-a2a \
   --port 9999 \
   --auth-token "your-token"
 ```
+
+*Listing P15-20: Code or configuration example.*
+
 
 External systems can then discover capability through AgentCard and send messages through JSON-RPC or REST.
 
@@ -639,17 +744,27 @@ The SQL file is the most important auditable asset. It answers:
 
 Example:
 
+Listing P15-21 provides the corresponding code or configuration example.
+
 ```text
 /tmp/dataagent-semantic-bi-demo/customer_level_order_amount.sql
 ```
+
+*Listing P15-21: Code or configuration example.*
+
 
 ### 11.2 CSV Result
 
 The CSV file is the basis for follow-up analysis, reports, and human review.
 
+Listing P15-22 provides the corresponding code or configuration example.
+
 ```text
 /tmp/dataagent-semantic-bi-demo/customer_level_order_amount.csv
 ```
+
+*Listing P15-22: Code or configuration example.*
+
 
 ### 11.3 Markdown Report
 
@@ -671,6 +786,8 @@ For enterprise applications, traces are not merely debugging artifacts; they are
 
 Semantic BI assistant evaluation should cover SQL, data, answer, and engineering execution.
 
+Table P15-5 summarizes the corresponding comparison and engineering considerations.
+
 *Table P15-5: Evaluation metrics for the enterprise semantic BI assistant.*
 
 | Metric | Description |
@@ -690,9 +807,14 @@ SQL execution success is only the baseline. A real BI assistant must also choose
 
 The DataAgent repository includes an end-to-end example for a main agent calling an NL2SQL sub-agent:
 
+Listing P15-23 provides the corresponding code or configuration example.
+
 ```bash
 uv run tests/e2e/test_nl2sql_flex_subagent.py
 ```
+
+*Listing P15-23: Code or configuration example.*
+
 
 This test verifies:
 
@@ -702,6 +824,8 @@ This test verifies:
 - Flex workflow reaches a completed state.
 
 Enterprise deployment also needs a business regression set:
+
+Table P15-6 summarizes the corresponding comparison and engineering considerations.
 
 *Table P15-6: Business regression question types for enterprise BI.*
 
@@ -730,9 +854,14 @@ Each test sample should include:
 
 The usual cause is insufficiently explicit `SCENARIO.chat.instructions`. Add:
 
+Listing P15-24 provides the corresponding code or configuration example.
+
 ```text
 When the question requires database querying, you must call nl2sql_sub_agent_tool.
 ```
+
+*Listing P15-24: Code or configuration example.*
+
 
 Also require `query`, `sql_filename`, and `csv_filename`.
 
@@ -802,9 +931,14 @@ After SQL/CSV artifacts are stable, add:
 
 The extended chain becomes:
 
+Listing P15-25 provides the corresponding code or configuration example.
+
 ```text
 NL2SQL -> CSV -> chart -> Markdown report -> business delivery
 ```
+
+*Listing P15-25: Code or configuration example.*
+
 
 ### 16.2 Add A2A Service Exposure
 
@@ -818,9 +952,14 @@ If the enterprise already has data services, metric services, or permission serv
 
 Once ontology capability is stable, add a business-object confirmation step before NL2SQL:
 
+Listing P15-26 provides the corresponding code or configuration example.
+
 ```text
 user question -> ontology object recognition -> business relation confirmation -> NL2SQL query -> report
 ```
+
+*Listing P15-26: Code or configuration example.*
+
 
 This further reduces SQL errors caused by incorrectly guessed business objects.
 
@@ -891,6 +1030,8 @@ This is why DataAgent is a strong practice project: it combines Agent, Tool-Use,
 ## Topic: Pre-launch Gate Checklist
 
 Check at least these gates before launch:
+
+Table P15-7 summarizes the corresponding comparison and engineering considerations.
 
 *Table P15-7: Pre-launch gate checklist for the DataAgent semantic BI assistant.*
 

@@ -155,6 +155,8 @@ A standard process has seven stages:
 6. **Permission provisioning.** The platform writes the approval into permission systems and records scope, expiration, purpose limits, and responsible parties.
 7. **Usage audit and feedback.** The platform records logs, frequency, abnormal behavior, expiration, and feedback, then feeds results into product operations.
 
+Figure 30-2 illustrates the corresponding workflow or structure.
+
 ![Authorization approval workflow](../../images/part9/Luo-Chap30-Fig02-EN.svg)
 
 *Figure 30-2: Authorization approval workflow.*
@@ -162,6 +164,8 @@ A standard process has seven stages:
 ### 30.2.8 Role Responsibility Matrix
 
 A responsibility matrix makes the process executable and auditable. Governance organization design must fit business complexity, centralization, and decision rights; no single model fits all enterprises (Weber, Otto and Osterle 2009; Otto 2011; Alhassan, Sammon and Daly 2016).
+
+Table 30-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 30-1: Internal data market role responsibility matrix.*
 
@@ -288,6 +292,8 @@ After these steps, the data is no longer a passively shared resource; it is an i
 ### 30.4.3 Example Shared Data Product Catalog
 
 A data product catalog is the core interface of the market. It serves both consumer discovery and governance portfolio management. A good page tells consumers what the data is, what it is suitable for, who maintains it, how quality looks, whether it can be requested, what conditions apply, who already uses it, and what recently changed. Dataset documentation research emphasizes that provenance, composition, use, limits, and maintenance information must be explicit for responsible reuse (Gebru et al. 2021).
+
+Table 30-3 summarizes the corresponding comparison and engineering considerations.
 
 *Table 30-3: Example shared data product catalog.*
 

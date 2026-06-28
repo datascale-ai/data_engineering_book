@@ -68,6 +68,8 @@ Teacher model outputs are not inherently equivalent to high-value samples. Even 
 
 The following example demonstrates a common "representation mapping" approach: decomposing a long teacher response into three sections—`final` / rationale / constraints (which makes it easier for smaller models to learn stable boundaries)—while retaining the most critical metadata (teacher source, judge score, and whether the sample enters the main training set).
 
+Listing 16-1 provides the corresponding code or configuration example.
+
 ```python
 from dataclasses import dataclass
 
@@ -108,6 +110,9 @@ if __name__ == "__main__":
     s = compress_teacher_answer(p, t, teacher_id="teacher_v5", judge_score=5)
     print(s)
 ```
+
+*Listing 16-1: Code or configuration example.*
+
 
 This pattern is very common in real-world projects. Teams initially tend to place a natural trust in a strong teacher, reasoning that since its overall performance far exceeds the student's, directly saving its outputs must at least be more cost-effective than manually rewriting everything. This reasoning is not entirely wrong, but it skips one critical step of filtering: a strong teacher does not mean it is appropriate learning material for the student on every task and in every expressive form. Teacher models have their own generation habits—sometimes they favor elaboration, sometimes they lean toward over-explanation, and sometimes, to make an answer appear complete, they add tone and structure that the student should not learn. If all of this is retained without filtering, the student learns not only task capability but an entire expressive burden that may not suit its own profile at all.
 
@@ -265,6 +270,8 @@ In engineering practice, judge models often require greater stability than teach
 
 This type of structure simultaneously supports engineering needs such as "multi-teacher competition," "failure sample retention," and "confidence-weighted sampling."
 
+Listing 16-2 provides the corresponding code or configuration example.
+
 ```json
 {
   "id": "distill_000781",
@@ -285,6 +292,9 @@ This type of structure simultaneously supports engineering needs such as "multi-
   "meta": {"task_unit": "boundary_answering", "version": "v0.2.0"}
 }
 ```
+
+*Listing 16-2: Code or configuration example.*
+
 
 Going further, in multi-model collaboration, the judge model plays the role of "system memory." Teachers may change, experts may be swapped out, students may be retrained, but if judge standards can remain relatively stable, the entire sample repository will not experience criterion drift across different cycles. This is especially critical in long-cycle distillation projects. Systems without a stable judge easily end up with samples from the first cycle emphasizing correctness, the second emphasizing expressiveness, and the third emphasizing length compression—leaving the student learning conflicting signals.
 
@@ -523,6 +533,8 @@ Return accounting should therefore cover at least three dimensions. The first is
 
 **Code Example: A Minimal ROI Estimator (Placing "Saved Production Costs" and "Distillation Investment" on the Same Ledger)**
 
+Listing 16-3 provides the corresponding code or configuration example.
+
 ```python
 def distill_roi(
     *,
@@ -556,6 +568,9 @@ if __name__ == "__main__":
     )
     print("ROI =", round(roi, 3))
 ```
+
+*Listing 16-3: Code or configuration example.*
+
 
 Table 16-2 below presents a distillation returns and costs comparison suitable for helping teams make more systematic decisions. As shown, typical returns and costs differ across dimensions such as inference quality, latency performance, and cost control.
 

@@ -111,6 +111,8 @@ MiniCPM-V offers a fundamentally different data recipe paradigm: under constrain
 
 A persistent engineering pain point in the multimodal field is the **token explosion** caused by high-resolution images. If images are forcibly resized to 224×224, the model becomes "nearsighted" and can never parse the densely arranged text in invoices or mathematical formulas. To address this, two fundamentally divergent processing philosophies have emerged in data pipelines, with the fundamental divergence already manifesting during data preprocessing.
 
+Figure 47-3 illustrates the corresponding workflow or structure.
+
 ![Figure 47-3: Native vs. Dynamic Resolution Data Pipeline Comparison](../../images/part13/Cao-Chap47-Fig03-EN.svg)
 
 <div align="center"><b>Figure 47-3: Native vs. Dynamic Resolution Data Pipeline Comparison</b></div>
@@ -126,6 +128,8 @@ On the language model side, the input is a special sequence: `[Global Thumbnail 
 Represented by Qwen2-VL and Qwen2.5-VL. These models abandon rigid tiling logic; during the data loading stage, images are allowed to enter directly at their native resolution and native aspect ratio. By introducing M-RoPE (Multimodal Rotary Position Embedding) (Wang et al. 2024), the traditional 1D positional encoding is extended to 2D (x/y coordinates for images) and even 3D (for the temporal dimension t of video). During data organization, only the actual width and height token counts of each image need to be dynamically fed into the attention computation; no padding is required.
 
 This recipe preserves the most complete global and local information, entirely eliminating semantic discontinuity at patch boundaries, and is the highest-precision approach. However, its data engineering complexity is also the highest: training data must be precisely bucketed and packed by token count (rather than image count) to prevent extreme length variance within each batch causing OOM errors. Qwen2.5-VL specifically developed a "token-aware" data packer that constrains the total vision token count per batch within a fixed interval, sacrificing approximately 15% of training throughput in exchange for a near-zero OOM rate [I].
+
+Table 47-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 47-2: Native Resolution vs. Dynamic Hi-Res Data Processing Differences (2 rows × 6 columns).*
 
@@ -153,6 +157,8 @@ As shown in Figure 47-4, multimodal instruction synthesis has long surpassed the
 3. **Knowledge recombination with a capable LLM**: Feed the text enriched with bounding box and OCR information into a capable language model. Since the image has already been converted to precise text, even a pure-text GPT-4 (rather than GPT-4V) can complete this step—instructing it to generate complex reasoning questions such as: "Based on the invoice total in the upper right corner of the image and the line items on the left, calculate the tax rate."
 4. **Quality filtering and deduplication**: Use self-consistency (majority-vote across multiple samples) or LLM-as-Judge to score the quality of synthesized outputs, filtering out samples with severe hallucinations or logical incoherence; also perform semantic-level instruction deduplication to prevent a single image from spawning large numbers of homogeneous question-answer pairs.
 
+Table 47-3 summarizes the corresponding comparison and engineering considerations.
+
 *Table 47-3: Comparison of Multimodal Instruction Data Synthesis Methods (3 rows × 5 columns).*
 
 | Synthesis Approach                        | Core Dependent Models                    | Typical Application Scenarios              | Cost Estimate                    | Noise and Hallucination Risk                                   |
@@ -162,6 +168,8 @@ As shown in Figure 47-4, multimodal instruction synthesis has long surpassed the
 | **Rule-based Template Generalization** | Structured databases (e.g., knowledge graphs) | Simple attribute QA, chart value retrieval | Very low (script generation)    | Very low, but poor instruction diversity, stilted language       |
 
 Below is the core code framework for a Qwen2.5-VL-style self-distillation caption rewriting pipeline:
+
+Listing 47-1 provides the corresponding code or configuration example.
 
 ```python
 # Self-distillation caption rewriting core workflow (skeleton outline)
@@ -190,6 +198,9 @@ def recaption_batch(image_paths: list[str], model, processor) -> list[str]:
         results.append(caption)
     return results
 ```
+
+*Listing 47-1: Code or configuration example.*
+
 
 **Key Engineering Notes**:
 

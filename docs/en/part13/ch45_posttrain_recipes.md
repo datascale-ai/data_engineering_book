@@ -61,6 +61,8 @@ After deployment, user upvotes and downvotes, system refusal logs, difficult sam
 **Why can high-quality SFT data not replace preference data?**
 This is because SFT uses Maximum Likelihood Estimation (MLE): during training, the model is primarily encouraged to "imitate" the given target tokens and has no awareness of the relative quality of other potential responses. For a complex question with multiple reasonable but varying-quality answers, SFT struggles to teach the model to choose, at generation time, the response that is more aligned with human intuition, safer, or more thorough. Preference data, by introducing chosen/rejected contrastive signals, can suppress the response space of answers that are grammatically correct but misaligned with values or logic. Therefore, post-training data engineering must simultaneously manage the behavioral shape molded by SFT and the feedback loop formed by preference alignment and continuous optimization.
 
+Figure 45-1 illustrates the corresponding workflow or structure.
+
 ![Figure 45-1: Schematic of the LLM Three-Stage Post-Training Pipeline](../../images/part13/Wang-Chap45-Fig01.svg)
 *Figure 45-1: Data flow relationships among SFT, Preference Alignment, and Online Continuous Optimization.*
 
@@ -131,6 +133,8 @@ Another notable approach is Magpie. It minimizes dependency on manual seeds by d
 **Engineering Advantage:** Substantially reduces human intervention, and the resulting data distribution more closely approximates the distribution of real, natural user queries across the long tail. When discussing the post-training of open-source models such as Qwen2.5, Magpie can serve as a reference method for "how large-scale synthetic instructions can enhance diversity," rather than being attributed as an official recipe component of a specific model without a direct source.
 **Primary Risk:** Model self-generation can amplify the model's inherent biases and hallucinations. The data pipeline requires distribution filtering and safety filtering mechanisms.
 
+Table 45-2 summarizes the corresponding comparison and engineering considerations.
+
 *Table 45-2: Engineering Comparison of the Three SFT Synthesis Schools.*
 
 | School | Seed Dependency | Generation Method | Suitable Tasks | Primary Risk | Quality Control Focus | Representative Material | Relationship to This Chapter |
@@ -138,6 +142,8 @@ Another notable approach is Magpie. It minimizes dependency on manual seeds by d
 | **Self-Instruct** | Medium | Seed-inspired expansion | General instruction breadth coverage | Templatization, homogeneity | ROUGE deduplication, diversity evaluation, answerability checks | Self-Instruct paper | Foundational synthesis approach |
 | **Evol-Instruct** | Medium | Rule-based complexity evolution | Complex instruction-following, multi-step reasoning | Logical contradictions, intent drift | Difficulty calibration, code-level answer verification | WizardLM project | Complexity-escalation approach |
 | **Magpie** | Low | Seed-free self-generation using priors | Large-scale, realistic conversational instructions | Amplified inherent biases, hallucinations, unsafe content | Distribution diversity filtering, rigorous safety filtering | Magpie paper | Emerging open-source post-training approach |
+
+Figure 45-2 illustrates the corresponding workflow or structure.
 
 ![Figure 45-2: Pipeline Comparison of the Three SFT Synthesis Schools: Self-Instruct, Evol-Instruct, and Magpie](../../images/part13/Wang-Chap45-Fig02.svg)
 *Figure 45-2: Data entry points, generation methods, and quality control checkpoints for the three SFT synthesis approaches.*
@@ -189,6 +195,8 @@ Reinforcement Learning with Verifiable Rewards (RLVR) advances the source of pre
 * **Suitable tasks:** Mathematical problem-solving, code generation, format compliance, and tool invocation. Math problems can be verified against the final answer, code problems can run unit tests, structured outputs can undergo JSON/XML regex or schema validation, and tool calls can check API return status codes.
 * **Engineering challenge:** Writing verifiers that cover a sufficiently wide range of tasks without loopholes. This section introduces the data shape concept of RLVR to lay the groundwork for subsequent discussion; the R1-style reasoning flywheel will be detailed in Ch46.
 
+Table 45-3 summarizes the corresponding comparison and engineering considerations.
+
 *Table 45-3: Different Data Requirements Across Preference Paradigms.*
 
 | Paradigm | Core Data Shape | Reward Source | Suitable Tasks | Data Engineering Challenges | Interface with Ch46 |
@@ -234,6 +242,8 @@ Finally, Tülu-3 introduces the RLVR stage.
 **Introducing a Verifier:** For problems that can be measured by clear correct/incorrect outcomes, human annotation is both expensive and error-prone. Tülu-3 constructs a rule-based Verifier module.
 **Applicable scope:** Not all tasks are suitable for RLVR. Tülu-3 primarily applies it to tasks from which a definitive terminal state can be extracted: the numerical value of the final step in a math problem, AST parsing of code, and unit test execution results. This section establishes the conceptual interface for RLVR; how to leverage rule-based verification signals to build an R1-style reasoning data flywheel will be elaborated in Ch46.
 
+Figure 45-3 illustrates the corresponding workflow or structure.
+
 ![Figure 45-3: Tülu-3 Three-Stage Data Flow and Scale Schematic](../../images/part13/Wang-Chap45-Fig03.svg)
 *Figure 45-3: Data flow and stage relationships in Tülu-3 from SFT-Mix and DPO mix to RLVR.*
 
@@ -261,6 +271,8 @@ In engineering, Llama-3 uses RSFT as a bridge between RLHF and SFT. In each roun
 The value of multi-round iteration lies in the continuous absorption of boundary data. Failure samples and boundary samples identified in each round of red-blue adversarial testing or evaluation are systematically captured. High-scoring samples can be re-integrated to reinforce positive strategies, while failure samples can be constructed as rejected samples for DPO or RM training sets, forming a continuous online optimization loop. This contrasts with Tülu-3's open reproducible recipe: the former demonstrates an industrial system's capacity for continuous iteration, while the latter provides a publicly reviewable methodological asset more readily accessible to external teams.
 
 This re-integration is still, in essence, reconstructing preference signals or reward signals; it is not simply continuing to expand the SFT instruction pool. It should be managed separately from the sample-generation tasks in Section 45.3, so that "creating samples" and "creating signals" are not conflated.
+
+Table 45-4 summarizes the corresponding comparison and engineering considerations.
 
 *Table 45-4: Case Study B: Interpreting Llama-3's Multi-Round RLHF Iteration.*
 
@@ -314,6 +326,8 @@ In post-training, contamination means not only repeated problem statements, but 
 3. **Implicit filtering contamination:** During rejection sampling, using the pass rate on external evaluation sets as a filtering signal is equivalent to leaking test set metrics into the model.
 4. **Feedback loop contamination:** In online feedback systems, directly re-integrating user-submitted test set prompts into daily training tasks causes severe data leakage.
 
+Table 45-5 summarizes the corresponding comparison and engineering considerations.
+
 *Table 45-5: Data Contamination in the Post-Training Phase.*
 
 | Contamination Type | Occurrence Location | Typical Symptoms | Inspection Method | Remediation |
@@ -355,6 +369,8 @@ Post-training involves not only technical route selection, but also cost, organi
 
 **Engineering costs that must not be overlooked:**
 Advancing a full-chain post-training effort requires teams to reserve budget across several cost categories. First is the **human preference annotation cost**: building a high-consistency RM training set typically requires an annotation team with domain expertise. Second is the **synthetic data inference cost**: whether using Evol-Instruct or multi-path sampling, both consume substantial GPU time. Once the alignment stage begins, **multi-candidate sampling costs** and **Reward Model / Verifier maintenance and retraining costs** continue to accumulate. Finally, the **data audit and contamination detection cost** that runs throughout is an essential investment for ensuring the final model's trustworthiness.
+
+Table 45-6 summarizes the corresponding comparison and engineering considerations.
 
 *Table 45-6: Implementation Risks, Costs, and Applicability Boundaries.*
 

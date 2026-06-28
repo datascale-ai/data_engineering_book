@@ -67,6 +67,8 @@ The dataset samples across 28 vertical fields covering public life, industry, re
 
 Multi-domain design reduces overfitting to a single theme. Chart conventions, legends, and domain abbreviations differ across fields, raising the difficulty of visual-context reasoning.
 
+Figure 41-1 illustrates the corresponding workflow or structure.
+
 ![Figure 41-1: Domain distribution in the multi-chart infographic reasoning dataset](../../images/part12/Xu-Chap41-Fig01-EN.png)
 
 *Figure 41-1. Distribution of domain coverage in the Multi-Chart Infographic Reasoning Dataset, spanning 28 fine-grained domains.*
@@ -77,6 +79,8 @@ The dataset contains more than 20 common visualization styles, including bar cha
 
 Each infographic uses whatever mixed layout the original creator used, such as “map + tabular + stacked bar + pictogram” or “pie + ranking card + line.” Different chart types store data differently: tables use rows and columns, maps use geographic regions, pictograms use icon counts, and line charts use temporal sequences. The model must adapt reading rules across formats and then aggregate across them.
 
+Figure 41-2 illustrates the corresponding workflow or structure.
+
 ![Figure 41-2: Chart type distribution](../../images/part12/Xu-Chap41-Fig02-EN.png)
 
 *Figure 41-2. Distribution of sub-chart types in the Multi-Chart Infographic Reasoning Dataset, covering 23 distinct chart categories.*
@@ -86,6 +90,8 @@ Each infographic uses whatever mixed layout the original creator used, such as �
 The subquestions are not limited to one extraction style. They cover 17 mainstream reasoning types: value, categorization, sum, average, median, extrema, count, ranking, proportion, trend, difference, anomaly, assuming, visual, condition, calculation, and other.
 
 Questions within one infographic are randomly mixed across types, creating chains such as “maximum lookup + difference calculation + conditional reasoning” or “counting + ratio calculation + visual reasoning.” Extraction questions focus on reading; calculation questions combine multiple values; conditional questions use legends and filters; visual questions use symbols and visual context.
+
+Figure 41-3 illustrates the corresponding workflow or structure.
 
 ![Figure 41-3: Question type distribution](../../images/part12/Xu-Chap41-Fig03-EN.png)
 
@@ -112,6 +118,8 @@ The dataset's shark-attack example illustrates subchart partitioning, question c
 ![Shark-attack infographic subfigure 4 comparing average annual accidental deaths](../../images/part12/Xu-Chap41-Fig04-Alt05.jpg)
 </div>
 
+Figure 41-4 illustrates the corresponding workflow or structure.
+
 *Figure 41-4. Example of a multi-chart infographic sample from the dataset (Shark Attacks), consisting of four distinct subcharts covering three categories of statistics: historical shark-attack county ranking in the United States, state-level shark attacks in the last ten years, and average annual accidental deaths in the United States. The original figure is vertically elongated and hard to read as a whole; it is thus divided into horizontally aligned subfigures.*
 
 The example is one integrated science infographic. Its internal regions belong to different chart types, statistical scopes, and data dimensions, while sharing the page title and side annotations:
@@ -122,6 +130,8 @@ The example is one integrated science infographic. Its internal regions belong t
 - **Subchart D: Bar chart.** Average annual accidental deaths in the United States. Key values: falling from bed 450, cats none. It supports Q5 and Q6.
 
 #### Case A.3.2 Full Question Chain
+
+Table 41-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 41-1: Case A.3.2 Full Question Chain.*
 
@@ -157,6 +167,8 @@ Each infographic includes one question that cannot be answered from the image, s
 ### Case A.4: Construction Pipeline
 
 The dataset construction process has four core stages: collecting and filtering real compound infographics, manually partitioning subchart regions, designing layered question chains, and cross-checking answers. No synthetic charts are generated. Large models can help propose questions, but humans verify and revise them.
+
+Figure 41-5 illustrates the corresponding workflow or structure.
 
 ![Figure 41-5: Multi-chart infographic dataset construction pipeline](../../images/part12/Xu-Chap41-Fig05-EN.png)
 
@@ -280,6 +292,8 @@ The basic idea of MedImage-ToolVQA can therefore be summarized as follows: trans
 
 MedImage-ToolVQA targets medical image multiple-choice QA. Samples are built on region-level information from BiomedParse (Zhao et al. 2025), including original image, target region, mask, bbox, target description, question, candidate options, correct answer, and local observation images returned by tools. The final training data has **24,992 records**.
 
+Table 41-2 summarizes the corresponding comparison and engineering considerations.
+
 *Table 41-2: Case B.3: Data Objects and Scale.*
 
 | Metric | Value | Data-Engineering Meaning |
@@ -349,6 +363,8 @@ MedImage-ToolVQA construction has six stages: region sample organization, questi
 
 `merge` converts region evidence from different parsing tools or intermediate results into a MindSpore-readable data asset. The example keeps only the core contract: deduplicate by `image_id` and `region_id`, preserve bbox, mask, target description, and source fields, and write the result into MindRecord.
 
+Listing 41-1 provides the corresponding code or configuration example.
+
 ```python
 from mindspore.mindrecord import FileWriter
 
@@ -367,9 +383,14 @@ writer.write_raw_data(deduplicate_regions(raw_regions, keys=["image_id", "region
 writer.commit()
 ```
 
+*Listing 41-1: Code or configuration example.*
+
+
 #### Case B.5.2 LLM Serving: Use vllm-mindspore
 
 `make_vqa` and `makereasoning` call a locally deployed LLM. In the MindSpore stack, `vllm-mindspore` can expose an OpenAI-compatible service. Its official codebase is hosted on AtomGit at <https://atomgit.com/mindspore/vllm-mindspore>.
+
+Listing 41-2 provides the corresponding code or configuration example.
 
 ```bash
 vllm-mindspore serve Qwen/Qwen3-vl-8B \
@@ -377,15 +398,25 @@ vllm-mindspore serve Qwen/Qwen3-vl-8B \
   --port 8000
 ```
 
+*Listing 41-2: Code or configuration example.*
+
+
+Listing 41-3 provides the corresponding code or configuration example.
+
 ```python
 from openai import OpenAI
 
 client = OpenAI(base_url="http://127.0.0.1:8000/v1", api_key="EMPTY")
 ```
 
+*Listing 41-3: Code or configuration example.*
+
+
 #### Case B.5.3 Question Generation: Read Region Evidence from MindDataset
 
 `make_vqa` reads region evidence from `MindDataset` and generates the question, candidate options, and reference answer. The prompt hides bbox, mask paths, and region IDs to avoid leaking annotation mechanics into the question.
+
+Listing 41-4 provides the corresponding code or configuration example.
 
 ```python
 import mindspore.dataset as ds
@@ -402,9 +433,14 @@ for row in dataset.create_dict_iterator(output_numpy=True):
     write_jsonl("vqa_candidates.jsonl", parse_vqa(reply.choices[0].message.content, row))
 ```
 
+*Listing 41-4: Code or configuration example.*
+
+
 #### Case B.5.4 Quality Verification: Produce Gate Results
 
 `verify` does not rewrite the answer directly. It attaches quality-gate results to each sample. Only samples with complete fields, clear image dependency, region consistency, and valid tool JSON move into trajectory synthesis.
+
+Listing 41-5 provides the corresponding code or configuration example.
 
 ```python
 gates = {
@@ -418,9 +454,14 @@ sample["review_status"] = "pass" if all(gates.values()) else "revise"
 sample["quality_gates"] = gates
 ```
 
+*Listing 41-5: Code or configuration example.*
+
+
 #### Case B.5.5 Trajectory Synthesis: Return Tool Observations to Dialogue
 
 `makereasoning` is not about generating longer explanations. Its core task is to place tool calls and returned observation images into the next dialogue turn. If local evidence is unnecessary, the sample keeps a direct visual reasoning path.
+
+Listing 41-6 provides the corresponding code or configuration example.
 
 ```python
 observation = run_visual_tool(sample) if needs_local_evidence(sample) else None
@@ -434,9 +475,14 @@ reply = client.chat.completions.create(
 sample["trajectory"] = build_tool_trajectory(sample, observation, reply)
 ```
 
+*Listing 41-6: Code or configuration example.*
+
+
 #### Case B.5.6 SFT Packaging: Store Training Records in MindRecord
 
 `make_sft` writes multi-turn messages, image references, answers, and quality labels into a training MindRecord. The SFT side then loads it through `mindspore.dataset.MindDataset` and batches it for fine-tuning.
+
+Listing 41-7 provides the corresponding code or configuration example.
 
 ```python
 schema = {
@@ -453,6 +499,11 @@ writer.commit()
 
 train_ds = ds.MindDataset("tool_sft.mindrecord").shuffle(4096).batch(8)
 ```
+
+*Listing 41-7: Code or configuration example.*
+
+
+Figure 41-6 illustrates the corresponding workflow or structure.
 
 ![Figure 41-6: MedImage-ToolVQA conceptual construction flow](../../images/part12/Xu-Chap41-Fig06-EN.svg)
 
@@ -482,6 +533,8 @@ MedImage-ToolVQA uses three visual tools: `Zoom-in`, `BiomedParse`, and `SAM2`. 
 
 `SAM2` is a general bbox-prompted segmentation tool (Ravi et al. 2025). It does not rely on medical semantics; instead, it generates a finer mask from a geometric prompt. For samples that already have a candidate box but need a clearer boundary, `SAM2` can provide supplementary observation. Its main risk is strong dependence on bbox quality: if the bbox covers background or adjacent structures, the segmentation result will also be affected.
 
+Table 41-3 summarizes the corresponding comparison and engineering considerations.
+
 *Table 41-3: Case B.6: Three Tools and Their Boundaries.*
 
 | Tool | Main Input | Return | Best For | Risks to Control |
@@ -498,11 +551,15 @@ Tool boundaries must also be stated clearly in system prompts and dataset docume
 
 The core of a tool trajectory is multi-turn structure. It is not a matter of writing a tool call into the same text paragraph; it separates the tool action from the tool observation so the model experiences an "act, observe, continue judging" process during training (Yao et al. 2023).
 
+Figure 41-7 illustrates the corresponding workflow or structure.
+
 ![Figure 41-7: Multi-turn structure of tool-call trajectories](../../images/part12/Xu-Chap41-Fig07-EN.svg)
 
 *Figure 41-7: Multi-turn structure of a tool-call trajectory. Tool observations return as new image inputs; the model must continue reasoning from the observation image rather than merely produce a formally correct call.*
 
 A simplified trajectory has four steps. The user provides the original image, question, and options. The assistant decides local evidence is needed and outputs a structured tool call. The environment returns a new observation image. The assistant uses both original and observation images to answer.
+
+Listing 41-8 provides the corresponding code or configuration example.
 
 ```text
 User:
@@ -532,6 +589,9 @@ boundary compared with the background. It is not diffuse change and is less like
 to be only artifact.
 <answer>A</answer>
 ```
+
+*Listing 41-8: Code or configuration example.*
+
 
 Tool arguments must be structured. Tool returns must become new multimodal input, not a text note saying “already zoomed.” The final answer should consume the observation. The trajectory should avoid diagnostic claims and stay within the option-comparison task.
 
@@ -575,11 +635,15 @@ In SFT, clarity and stability matter most. The model must learn that `<tool_call
 
 Medical image SFT records should also keep an imaging-task schema. Here “diagnosis” means structuring the training task, candidate labels, evidence region, and safety boundary; it does not ask the model to provide clinical conclusions.
 
+Figure 41-8 illustrates the corresponding workflow or structure.
+
 ![Figure 41-8: Real image and bbox evidence in the SFT schema](../../images/part12/Xu-Chap41-Fig08-EN.svg)
 
 *Figure 41-8: Bbox is a structured field and should be recoverable as reviewable visual evidence.*
 
 Image source: VQA-RAD test split, Hugging Face dataset [flaviagiammarino/vqa-rad](https://huggingface.co/datasets/flaviagiammarino/vqa-rad), [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/). The figure is a resampled derived image used to illustrate correspondence among original image, bbox overlay, and local crop.
+
+Listing 41-9 provides the corresponding code or configuration example.
 
 ```json
 {
@@ -671,6 +735,9 @@ Image source: VQA-RAD test split, Hugging Face dataset [flaviagiammarino/vqa-rad
 }
 ```
 
+*Listing 41-9: Code or configuration example.*
+
+
 The point of this schema is not to teach the model "how to diagnose a chest X-ray." It lets a training record answer five engineering questions at the same time: what medical imaging task this is, where the candidate-label boundaries are, which ROI provides the visual evidence, whether the tool call is executable, and whether the final answer stays within the candidates allowed by the question. Without `diagnosis_schema`, an SFT sample can still train format, but later quality checks, stratified evaluation, and human review will struggle to distinguish "medical label error," "region evidence error," and "tool behavior error."
 
 In RL, the data must further expose reward and environment interfaces. After the model outputs a tool call, the environment can validate whether the tool name is legal, whether parameters conform to the schema, whether the bbox is out of bounds, and whether the image index exists. After the model outputs an answer, rule rewards can compare whether the final option is correct. More complex rewards can also consider whether tool use was necessary, whether the model over-called tools, and whether it actually used the observation image.
@@ -695,6 +762,8 @@ The fifth failure is observation not consumed. The model calls a tool and the to
 
 The sixth failure is over-calling. The model calls a tool even when the whole image is sufficient, or it calls multiple tools in sequence without gaining new information. Over-calling increases inference cost and can introduce latency and error accumulation in a real system. The training set therefore needs to preserve a certain proportion of direct visual reasoning samples, and evaluation should distinguish necessary tool use from formalized tool use.
 
+Table 41-4 summarizes the corresponding comparison and engineering considerations.
+
 *Table 41-4: Case B.9: Common Failure Modes.*
 
 | Failure Mode | Symptom | Risk | Governance Method |
@@ -711,6 +780,8 @@ These failure modes show that tool-use data quality is not determined by answer 
 ### Case B.10: Quality Control and Human Review
 
 Quality control for medical image tool-use data should be layered, rather than postponed until final packaging. A more reasonable approach is to set gates separately at question generation, region validation, tool-observation generation, trajectory synthesis, and training packaging.
+
+Figure 41-9 illustrates the corresponding workflow or structure.
 
 ![Figure 41-9: Quality-control and human-review gates](../../images/part12/Xu-Chap41-Fig09-EN.svg)
 

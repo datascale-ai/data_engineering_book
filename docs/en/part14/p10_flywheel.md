@@ -61,9 +61,14 @@ It avoids compressing all logic into a one-off script.
 
 The core data flow can be summarized as:
 
+Listing P10-4 provides the corresponding code or configuration example.
+
 ```text
 project assets -> registry -> stage plan -> training/evaluation feedback -> data revision -> release decision -> flywheel report
 ```
+
+*Listing P10-4: Code or configuration example.*
+
 
 Sample records should at least preserve `id`, `source`, `content_or_payload`, `metadata`, `quality_signals`, `split_or_stage`, and `audit_trace`.
 
@@ -82,6 +87,8 @@ The code shown here focuses on input/output contracts, quality thresholds, excep
 Acceptance metrics include asset coverage, feedback-loop rate, version iteration cycle, evaluation-regression localization, release pass rate, and milestone completion.
 
 For production, course, or public reproduction settings, reports should also record version numbers, dependency environments, random seeds, sampled inspection results, and failed-sample review records.
+
+Table P10-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table P10-1: Publication acceptance table for the LLM data flywheel.*
 
@@ -767,6 +774,8 @@ This turns the claim "the flywheel creates value" from a slogan into specific be
 
 The following code illustrates this calculation.
 
+Listing P10-5 provides the corresponding code or configuration example.
+
 ```python
 total_manual_review_hours = round(sum(item["estimated_manual_review_hours"] for item in registry), 2)
 total_manual_review_cost_rmb = round(sum(item["estimated_manual_review_cost_rmb"] for item in registry), 2)
@@ -779,6 +788,9 @@ bottlenecks = [
     {"name": "platform_regression_handling", "severity": "low", "reason": "P8 still observed one regressed run and one failed run, so release gates should stay strict."},
 ]
 ```
+
+*Listing P10-5: Code or configuration example.*
+
 
 This computation turns system-level judgment into structured metrics and structured conclusions.
 
@@ -848,6 +860,8 @@ P10's `src/run_p10_checks.py` writes assembly-layer acceptance rules as executab
 
 The following code shows the basic structure of the check script.
 
+Listing P10-6 provides the corresponding code or configuration example.
+
 ```python
 def run_command(command: list[str], name: str) -> dict:
     result = subprocess.run(command, capture_output=True, text=True)
@@ -860,6 +874,9 @@ def run_command(command: list[str], name: str) -> dict:
         "stderr": result.stderr.strip(),
     }
 ```
+
+*Listing P10-6: Code or configuration example.*
+
 
 This structure reflects several requirements:
 

@@ -49,6 +49,8 @@ The on-call engineer wakes up and starts checking alerts one by one. The alerts 
 
 The first capability of a DataOps Agent is intelligent alert aggregation. The agent reads four data categories and turns scattered alerts into root-cause candidates.
 
+Figure 34-1 illustrates the corresponding workflow or structure.
+
 ![Alert-to-root-cause agent flow](../../images/part10/Luo-Chap34-Fig01.svg)
 
 *Figure 34-1: Alert-to-root-cause agent flow.*
@@ -63,6 +65,8 @@ Data sources:
 ### 34.1.2 Root Cause Candidate Generation
 
 The agent aligns timelines and uses causal signals to generate candidates.
+
+Table 34-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 34-1: Root cause candidate types and detection logic.*
 
@@ -87,6 +91,8 @@ Calibration methods:
 3. **Bias correction.** If high-confidence buckets are less accurate than claimed, show corrected confidence in alerts.
 
 *Confidence-to-action mapping*
+
+Table 34-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 34-2: Confidence-to-action mapping.*
 
@@ -119,6 +125,8 @@ Aggregation strategies:
 2. **Time-window aggregation.** Merge repeated alerts of the same type within a window, such as five minutes, and attach count and trend.
 3. **Dynamic priority adjustment.** Adjust priority based on business impact and data volume. Low-priority 3 a.m. alerts can wait until working hours.
 
+Table 34-3 summarizes the corresponding comparison and engineering considerations.
+
 *Table 34-3: Example alert aggregation effect.*
 
 | Raw alerts | Aggregated alerts | Aggregation rate | Daily alerts handled by engineers |
@@ -143,9 +151,13 @@ Rollback plan generation:
 
 Rollback is high risk and requires approval.
 
+Figure 34-2 illustrates the corresponding workflow or structure.
+
 ![Rollback approval workflow](../../images/part10/Luo-Chap34-Fig02.svg)
 
 *Figure 34-2: Rollback approval workflow.*
+
+Table 34-4 summarizes the corresponding comparison and engineering considerations.
 
 *Table 34-4: Approval matrix for rollback and repair.*
 
@@ -164,6 +176,8 @@ Beyond rollback and repair, a DataOps Agent can attempt limited self-healing aft
 
 Self-healing is bounded. The agent may only execute operations in a predefined safe operation set. Anything outside that set requires human approval.
 
+Table 34-5 summarizes the corresponding comparison and engineering considerations.
+
 *Table 34-5: Self-healing permissions by data classification.*
 
 | Self-healing operation | L0 public data | L1 internal data | L2 sensitive data | L3 confidential data |
@@ -174,6 +188,8 @@ Self-healing is bounded. The agent may only execute operations in a predefined s
 | Skip noncritical step | Automatic | Approval | Approval | Not allowed |
 | Field-level data repair | Automatic | Approval | Approval | Not allowed |
 | Scale compute resources | Automatic with quota | Approval | Approval | Approval |
+
+Figure 34-3 illustrates the corresponding workflow or structure.
 
 ![Pipeline self-healing decision flow](../../images/part10/Luo-Chap34-Fig03.svg)
 
@@ -193,6 +209,8 @@ Rollback plans must include:
 4. **Notification.** Inform model training, analytics, labeling, and other consumers of affected time range and recommended action.
 
 ### 34.2.5 Decision Support Matrix for Data Rollback
+
+Table 34-6 summarizes the corresponding comparison and engineering considerations.
 
 *Table 34-6: Rollback versus repair decision support.*
 
@@ -221,6 +239,8 @@ Data platform cost is often ignored because billing is monthly. By the time the 
 
 ### 34.3.2 Automatic Optimization Suggestions
 
+Table 34-7 summarizes the corresponding comparison and engineering considerations.
+
 *Table 34-7: Cost anomaly detection and optimization suggestions.*
 
 | Cost anomaly | Detection | Suggestion | Estimated saving |
@@ -244,6 +264,8 @@ DataOps Agents should warn before resource exhaustion.
 ### 34.3.4 Cost Attribution and Team Accountability
 
 Optimization requires knowing who spends what. Agents allocate platform cost by team, project, task type, and data source.
+
+Table 34-8 summarizes the corresponding comparison and engineering considerations.
 
 *Table 34-8: Cost attribution dimensions.*
 
@@ -274,6 +296,8 @@ When human intervention is needed, the DataOps Agent creates a structured ticket
 Postmortems are central to the DataOps flywheel, but engineers often skip them after intense repair work. Agents can draft postmortems from operation logs and lineage.
 
 *Postmortem draft template*
+
+Table 34-9 summarizes the corresponding comparison and engineering considerations.
 
 *Table 34-9: Postmortem draft template.*
 
@@ -349,6 +373,8 @@ The rollout is gradual:
 
 ### Continuous MTTR Improvement
 
+Table 34-10 summarizes the corresponding comparison and engineering considerations.
+
 *Table 34-10: Continuous MTTR Improvement.*
 
 | Stage | MTTR | Agent automation | Engineer satisfaction |
@@ -394,6 +420,8 @@ Technical path:
 3. **Preventive intervention.** When risk exceeds threshold, scale resources, adjust scheduling, or notify teams.
 
 *Reactive versus predictive operations*
+
+Table 34-11 summarizes the corresponding comparison and engineering considerations.
 
 *Table 34-11: Reactive versus predictive operations.*
 

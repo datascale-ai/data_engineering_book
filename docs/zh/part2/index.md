@@ -30,9 +30,9 @@
 
 ## 本篇目录
 
-- [第4章：数据源、采集与版权](ch04_data_sources.md)
-- [第5章：清洗、去重与去污染](ch05_cleaning_dedup.md)
-- [第6章：分词、序列化与高效加载](ch06_tokenization_loading.md)
-- [第7章：数据评估、质量闭环与运营迭代](ch07_data_operations.md)
+- [第4章 数据源、采集与版权](ch04_data_sources.md)
+- [第5章 清洗、去重与去污染](ch05_cleaning_dedup.md)
+- [第6章 分词、序列化与高效加载](ch06_tokenization_loading.md)
+- [第7章 数据评估、质量闭环与运营迭代](ch07_data_operations.md)
 
 建议按第4章至第7章顺序阅读。已有预训练经验的读者可以先读第7章建立质量闭环视角，再回到第4至第6章检查自己的数据管线是否具备可追溯、可诊断和可复现能力。

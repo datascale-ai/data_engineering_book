@@ -109,6 +109,8 @@ A tool schema is not merely a developer-facing copy of an API specification—it
 
 The following example uses a "calendar query" tool to illustrate which information is most critical for model learning: field types, required fields, enumerations, time-range constraints, and the semantics of common error codes.
 
+Listing 19-1 provides the corresponding code or configuration example.
+
 ```json
 {
   "name": "calendar_search",
@@ -139,6 +141,9 @@ The following example uses a "calendar query" tool to illustrate which informati
   }
 }
 ```
+
+*Listing 19-1: Code or configuration example.*
+
 
 Parameter schema design must pay special attention to decidability. Benchmarks such as the Berkeley Function Calling Leaderboard (BFCL) also treat function, parameter, and call structure as core evaluation objects (Patil et al. 2025). Parameter names should avoid semantic overlap; field types must be explicit; whether a field is required, its allowable value range, default behavior, mutual exclusions, and dependencies should all be expressed explicitly. For example, a "search calendar events" tool that simultaneously includes fields such as `date`, `start_time`, `end_time`, and `timezone` should clearly define their coverage relationships and the interpretation rules when any of them is absent. Otherwise, the model will easily oscillate between related fields, producing calls that are formally valid but semantically incorrect.
 
@@ -210,6 +215,8 @@ The difficulty of Tool-Use data lies not in whether to use JSON, but in whether 
 
 The following presents a "successfully closed" sample: first querying the schedule, then giving an actionable recommendation based on the conflict result. The key is to treat the tool result as an **environment feedback** entry in the trajectory rather than mixing it into ordinary text (Shinn et al. 2023).
 
+Listing 19-2 provides the corresponding code or configuration example.
+
 ```json
 {
   "messages": [
@@ -245,6 +252,9 @@ The following presents a "successfully closed" sample: first querying the schedu
   ]
 }
 ```
+
+*Listing 19-2: Code or configuration example.*
+
 
 If these layers of information are scattered across different sample systems, training will easily produce fragmentation. For example, natural-language understanding data is placed in one location, function-call format data in another, and error recovery data somewhere else—the result is a model that learns each local capability but cannot connect them within the same context. The value of a unified format is that it lets the model see the continuous process from "language to action, action to observation, observation back to action" (Schick et al. 2023).
 

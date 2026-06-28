@@ -356,6 +356,8 @@ Repetition rate detection (Lee et al. 2022; Carlini et al. 2023) must look not o
 
 The following demonstrates the idea of "self-similarity monitoring" in a very straightforward way: vectorize the text, then count what proportion of samples have a nearest-neighbor similarity above a threshold (the higher the proportion, the more the data tends to collapse into a few patterns).
 
+Listing 17-1 provides the corresponding code or configuration example.
+
 ```python
 from typing import List
 import math
@@ -395,6 +397,9 @@ if __name__ == "__main__":
     print("Proportion of nearest-neighbor similarities >= threshold:", ratio)
 ```
 
+*Listing 17-1: Code or configuration example.*
+
+
 Perplexity and evaluation degradation metrics provide another angle. If the model's perplexity on synthetic data continuously declines but performance on real validation sets, long-tail validation sets, or cross-distribution validation sets does not improve in tandem (Shumailov et al. 2024), or even begins to decline, this usually indicates the model is overfitting to the synthetic distribution. A genuinely healthy synthetic data system should keep "better on real tasks" and "more fluent on training sets" basically consistent, avoiding the two progressively diverging.
 
 ### Synthetic Ratio Gradient Experiments and Ablation Design
@@ -404,6 +409,8 @@ One of the most effective methods for determining whether synthetic data is crea
 **Code Example: Turning "Synthetic Ratio Gradient Experiments" into a Reproducible Experiment Matrix**
 
 The `notes` field in the code below contains illustrative values and is included only to demonstrate the recording structure; actual values must be filled in by the training and evaluation pipeline.
+
+Listing 17-2 provides the corresponding code or configuration example.
 
 ```python
 from dataclasses import dataclass
@@ -440,6 +447,9 @@ if __name__ == "__main__":
     print(run_experiment(plans))
 ```
 
+*Listing 17-2: Code or configuration example.*
+
+
 Ablation design must also revolve around risk mechanisms rather than only around model architecture. For example, one can separately remove judge filtering, remove template diversification, remove real-data infusion, and remove retention of failed samples, then observe the manner in which the system degrades. The purpose is to identify "which governance link is truly suppressing collapse." Without such controlled experiments, even if degradation is observed, it is very difficult to know whether the problem comes from an excessively high synthetic ratio, judge bias, template rigidity, or an aging validation set.
 
 ### Correlation Analysis Between Online Effect Degradation and Offline Metric Drift
@@ -447,6 +457,8 @@ Ablation design must also revolve around risk mechanisms rather than only around
 One of the most troublesome aspects of synthetic data risk is that offline and online do not always synchronize (Koh et al. 2021; Ribeiro et al. 2020). Offline evaluation sets may be too clean and too stable to promptly reflect real business changes. Online traffic, while the most realistic, is mixed with multiple factors such as product logic, user behavior, and temporal changes. Teams therefore cannot focus solely on offline metrics or rely only on online complaints; correlation analysis between the two is also needed.
 
 One viable approach is to establish a mapping between "online problem types" and "offline proxy metrics." For example, if style uniformity and off-target answers appear online, one should check whether the offline style diversity metrics and open-ended Q&A robustness metrics are drifting synchronously; if complex scenario success rates are declining online, one should check whether degradation in long-tail sets, hard sets, and cross-domain sets occurred earlier. Only by decomposing online problems into signals that can be proxied by offline measurements can the governance system form a truly closed loop.
+
+Table 17-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 17-2: Detection Metrics, Thresholds, and Governance Actions.*
 

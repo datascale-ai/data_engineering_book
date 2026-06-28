@@ -77,6 +77,8 @@ VoiceStyleControl 共包含 154,906 条样本。其中，S2SEmoControl 包含 20
 
 S2SEmoControl 的记录表达了从用户侧 `(query_audio, query_text, query_gender, query_mood)` 到助手侧 `(answer_text, answer_audio, answer_gender, answer_mood)` 的映射。中文对话内容、声音条件、情绪标签、音频文件和 speech token 被绑定在同一条记录中，因此它不是“文本问答 + 附件音频”的松散组合，而是一条完整的语音交互训练样本。
 
+代码清单42-1给出了相应的代码或配置示例。
+
 ```json
 {
   "uuid": "1977946a067ee3442",
@@ -102,9 +104,14 @@ S2SEmoControl 的记录表达了从用户侧 `(query_audio, query_text, query_ge
 }
 ```
 
+*代码清单42-1：代码或配置示例。*
+
+
 这条样本中，用户说“给我讲个小故事呗。”，助手回答“好的，让我给您编一个小故事。从前有一个非常勤奋的小夜莺...”。`query_gender` 为 `female`，`answer_gender` 为 `male`；`query_mood` 和 `answer_mood` 都是 `neutral`。训练时，`query_audio_path` 和 `query_token_25hz` 可以作为语音理解输入，`query` 提供转写后的语义锚点；`answer` 是语义目标，`answer_token_25hz` 和 `answer_audio_path` 是语音生成监督；`answer_gender` 与 `answer_mood` 规定输出声音的风格条件。
 
 TTSSpeakerControl 则把控制能力集中到 text-to-speech 形态。输入文本被拆成两部分：`text` 描述声音应该如何表达，`answer` 才是要读出的内容。例如 `text` 为“女，有点害怕，手心冒汗，声音发抖”，`answer` 为“你快跑，这里不安全”。这样的记录表明，TTS 子集不是给句子随机贴 mood，而是在构造 style-content pair：自然语言风格描述、结构化标签和待合成内容要相互支持。
+
+代码清单42-2给出了相应的代码或配置示例。
 
 ```json
 {
@@ -126,6 +133,9 @@ TTSSpeakerControl 则把控制能力集中到 text-to-speech 形态。输入文�
 }
 ```
 
+*代码清单42-2：代码或配置示例。*
+
+
 综合 S2S 与 TTS 两类样本，VoiceStyleControl 的字段可以分成六层：任务标识、文本内容、声音条件、情绪条件、语音监督、基础音频配置。S2S 样本同时包含用户侧和助手侧，因此字段会区分查询侧与回答侧；TTS 样本只生成回答侧语音，因此字段更集中。`language` 固定语种，`sample_rate` 固定音频采样配置；这些基础字段是训练加载和评测复现的底层契约，不能只靠路径名或文件夹约定隐式推断。
 
 **表42-2：说话人、情绪与采样标签字段说明**
@@ -144,6 +154,8 @@ TTSSpeakerControl 则把控制能力集中到 text-to-speech 形态。输入文�
 落到数据合成阶段，上述字段差异会体现为两套条件组织方式：S2SEmoControl 需要同时处理 query/answer 两侧的参考语音选择与情绪注入，TTSSpeakerControl 则把风格描述与待朗读内容拆开后再合成回答侧语音。具体合成逻辑见 42.4 第四步与第五步；本节先把字段契约固定下来。
 
 联合 JSON Schema 按任务类型约束必填字段；生产级 manifest 还应增加枚举约束、路径存在性校验、文件哈希、授权 ID、tokenizer 名称、tokenizer 版本和 token 帧率声明。
+
+代码清单42-3给出了相应的代码或配置示例。
 
 ```json
 {
@@ -262,11 +274,16 @@ TTSSpeakerControl 则把控制能力集中到 text-to-speech 形态。输入文�
 }
 ```
 
+*代码清单42-3：代码或配置示例。*
+
+
 联合 schema 将训练入口拆成三部分：语义输入是 `query`、`text` 或 `answer` 文本 token，风格输入是 `query_gender`、`answer_gender`、`query_mood`、`answer_mood` 与参考声音 ID，声学目标是回答侧 speech token 或音频。`answer_gender`、`answer_mood` 不能只留在离线 metadata 中，它们必须在 dataloader 中被映射为控制条件或条件文本，否则模型不会真正获得可控生成能力。
 
 训练样本进入 dataloader 后，会从标准 schema 投影成不同任务视图。S2S 视图可以是 `query_audio + answer_gender + answer_mood -> answer_token`，也可以加入 `query` 转写作为辅助语义输入；TTS 视图可以是 `text + answer + answer_gender + answer_mood -> answer_token`。评测视图则反向固定某些字段、改变另一些字段，例如固定 `answer` 改变 `answer_mood`，或固定 `answer_mood` 改变 `answer_id`。这种“记录契约稳定、训练视图可变”的设计，服务的是可控语音生成实验，而不是额外的身份识别或声纹建模实验。
 
 ### 42.4 构建流水线：从文本对话到可控语音记录
+
+图42-2展示了相应的流程或结构。
 
 ![图42-2：VoiceStyleControl 数据构建流水线](../../images/part12/Chen-Chap42-Fig02-ZH.svg)
 
@@ -289,6 +306,8 @@ VoiceStyleControl 的构建可以分为七步：文本对话或风格内容生�
 第四步是语音合成或采集。S2S 需要分别生成 query speech 和 answer speech，并让两侧音频与文本逐条绑定；TTS 则按 `text` 和 `answer` 生成回答侧语音（具体实现见第五步示例）。合成时应固定或显式记录采样率，控制响度、静音、最大时长和文件编码，避免 dataloader 在训练时因为音频长度或格式异常而不稳定。若采用真实采集，还要额外处理环境噪声、麦克风差异、说话人疲劳和第三方背景声。
 
 以下以 S2SEmoControl 为例，展示 schema 字段如何进入合成过程：`query_id` 与 `answer_id` 选择两侧参考语音；当 `answer_mood` 不是 `neutral` 时，情绪指令会拼入 query 侧合成文本，使输入语音携带输出风格控制意图。
+
+代码清单42-4给出了相应的代码或配置示例。
 
 ```python
 def build_synthesis_inputs(record):
@@ -324,11 +343,16 @@ a_tokens, a_speech = backend.compute_zeroshot_speech_token(
 )
 ```
 
+*代码清单42-4：代码或配置示例。*
+
+
 这个示例体现了 S2S 侧的关键分支：`answer_mood` 决定是否注入情绪指令，`q_tokens`、`a_tokens` 与对应波形则与 manifest 中的 `query_token_25hz`、`answer_token_25hz` 字段对接。
 
 第五步是离散语音标记。语音生成训练需要把声学目标整理为离散 speech token，使生成任务可以被组织为序列建模问题。通用做法是对已有波形用 S3Tokenizer 等 tokenizer 编码；VoiceStyleControl 则走 CosyVoice 生成式路径——合成时同步产出 speech token 并解码为可播放音频，因此本仓库并不存在单独的「先合成、再标记」后处理步骤。S2S 记录写入 `query_token_25hz` 和 `answer_token_25hz`，TTS 记录写入回答侧 `answer_token_25hz`；帧率为 25Hz（CosyVoice2 的 `token_frame_rate`），manifest 字段名与之对应。数据发布时仍应绑定 tokenizer 名称、版本、帧率、码本配置和重建方式。训练集最怕“同名字段不同含义”：如果同一字段在不同批次中被不同帧率或不同 tokenizer 版本生成，模型会在时序长度和声学粒度上接收到混乱监督。
 
 TTSSpeakerControl 采用另一条合成路径：`answer` 是要说出的内容，`text` 或 `prompt` 是风格描述。从数据工程角度看，关键不是展开 CosyVoice 内部 flow 与 vocoder 的全部参数，而是把一条稳定的数据流固定下来：先从记录中抽取内容和风格指令，再调用合成函数得到回答侧 token 与音频，最后把监督地址写回同一条 manifest 记录。
+
+代码清单42-5给出了相应的代码或配置示例。
 
 ```python
 for sample_idx, record in id2meta:
@@ -352,6 +376,9 @@ for sample_idx, record in id2meta:
     write_jsonl_record(jsonlf, record)
 ```
 
+*代码清单42-5：代码或配置示例。*
+
+
 这个示例对应的是“自然语言风格描述如何变成可训练语音监督”的核心链路：`instruction_text` 进入合成函数，`speech_token` 成为后续训练可以直接建模的离散目标，`speech_audio` 用于听感质检、反向 ASR 和人工抽检。token offset、audio offset 和 wav 路径被写回同一条记录后，样本才真正具备可追溯性。
 
 第六步是质检、配平和切分。质检不应只看音频能否播放，还要检查文本与音频是否一致、目标声音条件是否匹配、emotion 是否可感知、音质是否稳定、路径是否存在、token 是否能读取。配平也不只按 emotion 总量做，还要按 `task`、`language`、`sample_rate`、参考声音 ID、文本长度和音频时长监控。切分时应按参考声音 ID 做隔离，避免同一参考音色同时出现在训练集和测试集，造成声音条件评测虚高。
@@ -361,6 +388,8 @@ for sample_idx, record in id2meta:
 封装产物不只是 JSONL、Parquet 或 Hugging Face Dataset，还包括描述数据边界的数据卡。数据卡记录样本总量、子集构成、emotion 分布、gender 字段分布、参考声音 ID、语言、采样率、tokenizer 版本、授权范围和切分策略，并区分训练条件、审计元数据与公开版本中的匿名化字段。这个边界说明可以防止 `answer_id` 被误用为真实身份标签，也可以防止 `mood` 被当成无需验证的可靠事实。
 
 ### 42.5 质量评估与闭环修复
+
+图42-3展示了相应的流程或结构。
 
 ![图42-3：质量评估与数据飞轮闭环](../../images/part12/Chen-Chap42-Fig03-ZH.svg)
 

@@ -67,6 +67,8 @@ Cross-modal alignment in multimodal model training is not limited to image-text 
 
 Production data platforms usually divide these alignment objects by granularity into three levels, forming a cross-modal alignment pyramid.
 
+Figure 11-1 illustrates the corresponding workflow or structure.
+
 ![Figure 11-1: Three-level cross-modal alignment pyramid](../../images/part3/Wang-Chap11-Fig01.svg)
 
 *Figure 11-1: Three-level cross-modal alignment pyramid. From micro to macro, the bottom is object-level alignment based on BBox, the middle is segment-level alignment based on DTW temporal synchronization, and the top is document-level alignment based on long-context interleaved ordering. Source: drawn for this book.*
@@ -88,6 +90,8 @@ How do 105 visual frames correspond to 7 English words? Data engineers often use
 After a model can handle short image-text pairs and short video segments, it still needs to handle long contexts, multi-page documents, and multi-round image-text reference.
 
 Here the object is no longer an isolated segment, but a manual, paper, research report, webpage archive, or continuous frame sequence from a long video. The data-production focus shifts from local coordinates to **interleaved ordering** across a 100K or even 1M-token training window. Images, text, and audio signals must be ordered by interpretable rules so the model can use earlier figures, table structures, or audio-video clues for reference and reasoning later in the context.
+
+Table 11-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 11-1: Three heterogeneous alignment strategies, cost characteristics, and applicable tasks. Source: compiled by the authors; cost characteristics are relative descriptions, and actual solutions should be evaluated according to modality type, sequence length, and annotation budget.*
 
@@ -120,6 +124,8 @@ In synthetic training streams, JSON samples usually do not directly store massiv
 
 This JSONL schema is a foundation for fusion training data. It decouples text and visual pipelines: data engineers maintain metadata and placeholder logic in JSON, while the deep-learning framework's DataLoader reads the dense tensor from `visual_features_path` only at the final step and injects it into the computation graph.
 
+Figure 11-2 illustrates the corresponding workflow or structure.
+
 ![Figure 11-2: Multimodal fusion and hard-negative mining pipeline](../../images/part3/Wang-Chap11-Fig02.svg)
 
 *Figure 11-2: Multimodal fusion sample design. Independent image, audio, and text pools are assembled into JSONL in the middle. Placeholder grids map them into discrete tokens, and the final result is packed into uniform fusion tensor blocks for downstream pretraining. Source: drawn for this book.*
@@ -146,6 +152,8 @@ In contrastive alignment (Dufumier et al. 2025 (ICLR) argue that effective multi
 3. **In-batch online hard negative mining (OHNM)** (Chen et al. 2020): dynamically compute pairwise similarities within each training batch and choose pairs with high similarity but mismatched semantics. OHNM does not need a static database; the model decides in real time which difficult samples are most valuable.
 4. **Temporal perturbation for video-text**: misalign video subtitles with adjacent time windows, such as pairing the positive text `<00:03-00:06> the athlete starts running` with the video window `<00:10-00:13> the athlete crosses the finish line.` This strengthens the model's ability to distinguish temporal causality.
 5. **LLM-generated synthetic hard negatives**: provide a positive description to an LLM and ask it to generate adversarial text that is semantically similar but contains key factual errors. Compared with dictionary replacement, this approach is more diverse and is a common scalable production method.
+
+Table 11-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 11-2: Comparison of five hard-negative mining strategies. Source: compiled by the authors; strategy effects should be validated jointly through manual review, training stability, and downstream cross-modal evaluations.*
 
@@ -230,6 +238,8 @@ Listing 11-2 shows an anonymized alignment-loss divergence log.
 
 *Listing 11-2: Alignment loss divergence error log example. The log content is anonymized and is intended to illustrate troubleshooting patterns rather than reproduce a public incident.*
 
+Listing 11-3 provides the corresponding code or configuration example.
+
 ```bash
 [WARNING] node-001.storage-backend.local:
 Infinity detected in temporal grounding cross-attention matrix!
@@ -250,6 +260,8 @@ Cross-Modal Feature Match Score dropped from 0.89 to 0.00000000003.
 
 *Listing 11-3: BBox coordinate flip error log example. The log content is anonymized; production environments should record coordinate-system conventions and conversion versions.*
 
+Listing 11-4 provides the corresponding code or configuration example.
+
 ```bash
 [ERROR] grounding_eval_worker_05:
 Region match failure: predicted bbox [x1:680, y1:200, x2:920, y2:450],
@@ -269,6 +281,8 @@ Suspected data augmentation mirror flip applied AFTER bbox annotation.
 
 *Listing 11-4: Hard-negative contamination error log example. The log content is anonymized; negative-sample strategies should be calibrated through manual review and downstream evaluation.*
 
+Listing 11-5 provides the corresponding code or configuration example.
+
 ```bash
 [WARN] hard_negative_miner_worker_2:
 False negative rate in batch 3421: 38.7% (threshold: < 5%).
@@ -287,6 +301,8 @@ Contrastive loss variance: 4.82 (expected < 0.8). Training instability detected.
 **Symptom**: when processing video segments longer than 90 seconds, DTW alignment workers are killed by the OOM killer, the alignment pipeline pauses, and pending tasks accumulate.
 
 *Listing 11-5: DTW memory overflow error log example. The log content is anonymized; window size and downsampling strategy should be set according to sequence length and memory budget.*
+
+Listing 11-6 provides the corresponding code or configuration example.
 
 ```bash
 [FATAL] dtw_alignment_worker_08: Killed (signal 9).
@@ -320,6 +336,8 @@ Affected batch: 256 samples. Training step 28,441 aborted.
 - **Fix**: serialize placeholder fields with `ensure_ascii=False` and skip HTML escaping; add assertions in DataLoader `__getitem__` to ensure each multimodal sample contains paired `<|image_start|>...<|image_end|>` sentinels; build an ingestion linter that scans 100% of JSONL files for placeholder integrity.
 
 ### 11.6.6 Frequent Error Quick Reference
+
+Table 11-4 summarizes the corresponding comparison and engineering considerations.
 
 *Table 11-4: Frequent cross-modal alignment error types and remediation strategies. Source: compiled by the authors; error types and remediation strategies are anonymized engineering patterns.*
 

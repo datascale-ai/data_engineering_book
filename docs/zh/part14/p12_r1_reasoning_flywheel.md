@@ -49,6 +49,8 @@ Listing P12-1 给出了流程或路径示例，用于说明本节中的输入输
 | 筛选回流 | verifier 覆盖、候选保留率、回流样本质量和格式合格率 | 每条回流样本应能追踪到原任务、候选轨迹和验证结果 |
 | 风险控制 | 自我强化错误、验证器偏差和过长轨迹噪声复盘 | 不把拒绝采样通过直接等同于推理能力提升 |
 
+表P12-1汇总了相应的对比和工程要点。
+
 *表 P12-1：教学化 R1 推理数据飞轮出版验收表*
 
 ## 成本、风险与合规边界
@@ -94,6 +96,8 @@ OpenThoughts / GSM8K / MATH-500 / HumanEval
 
 本项目的架构可以拆成六个组件：冷启动数据抽取、多路推理采样、verifier 池、拒绝采样、二轮 SFT 数据合并、训练与评估。六个组件之间通过文件和统一 schema 交接，而不是强耦合在一个长脚本里。这样做的好处是每一层都可以单独重跑：采样失败可以只重跑采样，verifier 更新可以只重跑拒绝采样，训练配比变化可以只重做数据合并。
 
+图P12-1展示了相应的流程或结构。
+
 ![图 P12-1](../../images/part14/p12/Wang-Project12-Fig01.svg)
 *图 P12-1：从冷启动数据抽取、多路推理采样、verifier 池、拒绝采样到二轮 SFT 合并与训练评估的闭环结构。*
 
@@ -121,6 +125,8 @@ OpenThoughts / GSM8K / MATH-500 / HumanEval
 | 数据合并 | `data/training/merged_sft_data.jsonl` | 二轮 SFT 输入 |
 | 训练记录 | `data/training/training_manifest.json` | 训练数据组成 |
 | 评估结果 | `data/reports/eval_results_gsm8k_math.json` | GSM8K / MATH 对比结果 |
+
+表P12-2汇总了相应的对比和工程要点。
 
 *表 P12-2：阶段与含义对照表*
 
@@ -211,8 +217,14 @@ Code:
 ```python
 def solve(...):
     ...
+
+代码清单P12-1给出了相应的代码或配置示例。
+
 ```
 ````
+
+*代码清单P12-1：代码或配置示例。*
+
 
 该片段的作用是把上述流程转化为可检查的结构化表示。
 
@@ -469,6 +481,8 @@ data/reports/eval_results_gsm8k_math.json
 | `training_manifest.json` | 记录合并规模与领域分布 |
 | `eval_results_gsm8k_math.json` | 能比较 base 与 LoRA 的评估结果 |
 
+表P12-3汇总了相应的对比和工程要点。
+
 *表 P12-3：产物与检查点对照表*
 
 从工程角度看，验收可以分成三层。第一层是链路验收：`pytest -q` 通过，mock 模式可以完成冷启动、采样、验证、拒绝采样、合并、训练和评估。第二层是真实采样验收：vLLM 服务可以被 `sample_traces.py` 调用，采样结果进入 `sampled_traces`，并能被 verifier 处理。第三层是效果验收：LoRA 训练后在 GSM8K / MATH 上相对 base model 有稳定收益。当前项目优先保证前两层，第三层需要更大规模数据和多轮调参。
@@ -483,6 +497,8 @@ data/reports/eval_results_gsm8k_math.json
 | 回流样本不足 | 扩大候选采样，而不是盲目放宽 verifier |
 | LoRA 训练慢 | 先用 `--max-train-samples 1024` 做 smoke train |
 | 评估耗时长 | 先用 `--max-examples 100`，再扩大评估规模 |
+
+表P12-4汇总了相应的对比和工程要点。
 
 *表 P12-4：资源瓶颈与降级方式对照表*
 

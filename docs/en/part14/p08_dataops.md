@@ -61,9 +61,14 @@ It avoids compressing all logic into a one-off script.
 
 The core data flow can be summarized as:
 
+Listing P08-8 provides the corresponding code or configuration example.
+
 ```text
 platform specification -> data version -> experiment record -> lineage event -> alert/audit -> rollback and incident review -> check report
 ```
+
+*Listing P08-8: Code or configuration example.*
+
 
 Sample records should at least preserve `id`, `source`, `content_or_payload`, `metadata`, `quality_signals`, `split_or_stage`, and `audit_trace`.
 
@@ -82,6 +87,8 @@ The code shown here focuses on input/output contracts, quality thresholds, excep
 Acceptance metrics include version traceability, experiment-record completeness, lineage coverage, alert closure, rollback usability, check-script pass rate, and SLA records.
 
 If the project enters production, coursework, or public reproduction, reports should also record version numbers, dependency environments, random seeds, sampled inspection results, and failed-sample reviews.
+
+Table P08-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table P08-1: Publication acceptance table for the DataOps platform.*
 
@@ -458,6 +465,8 @@ Core specifications are materialized as structured files.
 
 The following implementation illustrates how platform specifications become structured artifacts:
 
+Listing P08-9 provides the corresponding code or configuration example.
+
 ```python
 from pathlib import Path
 import json
@@ -483,6 +492,9 @@ platform_scope = {
 with open(OUTPUT_DIR / "platform_scope.json", "w", encoding="utf-8") as f:
     json.dump(platform_scope, f, ensure_ascii=False, indent=2)
 ```
+
+*Listing P08-9: Code or configuration example.*
+
 
 This structure reflects three platform-design characteristics:
 
@@ -536,6 +548,8 @@ True version governance should include at least:
 
 ### 8.3 Version Structure Example
 
+Listing P08-10 provides the corresponding code or configuration example.
+
 ```python
 dataset_version = {
     "version_id": "ds_v005",
@@ -550,6 +564,9 @@ dataset_version = {
     "rollback_candidate": True,
 }
 ```
+
+*Listing P08-10: Code or configuration example.*
+
 
 In this structure, a version is no longer a static label.
 

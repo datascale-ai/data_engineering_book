@@ -69,6 +69,8 @@ $$
 
 FineWeb 的公开形态包括完整数据集、按 Common Crawl dump 切分的数据配置，以及较小的 sample 版本。官方数据卡说明，可以加载全量数据，也可以指定某个 crawl/dump；dump 名称采用 `CC-MAIN-(year)-(week number)` 格式。样本版本包括约 350B、100B 和 10B GPT-2 tokens 的随机子集，便于研究者在较低成本下复现实验或调试处理代码。
 
+表38-1汇总了相应的对比和工程要点。
+
 *表38-1 FineWeb 公开数据形态和工程用途*
 
 | 形态 | 公开口径 | 工程用途 | 使用注意 |
@@ -113,6 +115,8 @@ FineWeb 留给工程团队的判断主要有三类。第一类是正文抽取问
 
 FineWeb 官方数据卡说明，样本会带有 `language`、`language_score` 和 `token_count` 注释；这些字段分别来自语言过滤器和 GPT-2 tokenizer 统计。若在企业内部复刻 FineWeb 类流程，还需要把处理状态、来源、去重和风险字段一起保留下来。否则一旦训练结果异常，就无法判断问题来自抽取、过滤、去重还是采样。
 
+表38-2汇总了相应的对比和工程要点。
+
 *表38-2 FineWeb 类 Web 文档记录 schema*
 
 | 字段组 | 典型字段 | 来源或生成方式 | 工程用途 |
@@ -130,6 +134,8 @@ FineWeb 官方数据卡说明，样本会带有 `language`、`language_score` �
 #### 案例A.3.1 一条样本不能只保存 text
 
 下面是一条抽象化的 FineWeb 类文档记录。它不是 FineWeb 原始样本，而是根据 FineWeb 数据卡和 DataTrove 管线整理的工程示例。
+
+代码清单38-1给出了相应的代码或配置示例。
 
 ```json
 {
@@ -162,6 +168,9 @@ FineWeb 官方数据卡说明，样本会带有 `language`、`language_score` �
 }
 ```
 
+*代码清单38-1：代码或配置示例。*
+
+
 这个例子展示了 FineWeb 类语料的基本思想：`text` 是训练入口，但它不能单独解释样本质量。真正支撑复查的是来源、语言分数、过滤状态、去重范围和隐私处理记录。
 
 #### 案例A.3.2 schema 与训练评估的关系
@@ -188,6 +197,8 @@ FineWeb 的一个重要特点是处理过程有公开脚本。DataTrove 仓库�
 
 主处理流水线可抽象为以下顺序。类名来自 DataTrove 的 FineWeb 示例脚本，文字说明为本章整理。
 
+表38-3汇总了相应的对比和工程要点。
+
 *表38-3 FineWeb 主处理流水线中的关键模块*
 
 | 顺序 | DataTrove 模块 | 输入 | 输出 | 作用 |
@@ -206,6 +217,8 @@ FineWeb 的一个重要特点是处理过程有公开脚本。DataTrove 仓库�
 
 主处理阶段的代码结构可以概括为：
 
+代码清单38-2给出了相应的代码或配置示例。
+
 ```python
 pipeline = [
     WarcReader(common_crawl_warc_path),
@@ -220,6 +233,9 @@ pipeline = [
 ]
 ```
 
+*代码清单38-2：代码或配置示例。*
+
+
 这段是概念化伪代码，用于说明 FineWeb 示例脚本中的模块顺序；真实参数、日志目录、S3 路径、任务数和 Slurm 资源配置以 DataTrove 仓库脚本为准。
 
 #### 案例A.4.2 去重和隐私处理流水线
@@ -232,6 +248,8 @@ $$
 
 MinHash 用多个哈希函数近似这个相似度。FineWeb 论文说明其去重参数为 5-grams、112 个哈希函数，拆成 14 个 bucket，每个 bucket 8 个 hash；任一 bucket 的 8 个 MinHash 相同即可判为重复候选。DataTrove 示例脚本中的 `MinhashConfig` 也对应 `n_grams=5`、`num_buckets=14`、`hashes_per_bucket=8`。
 
+图38-1展示了相应的流程或结构。
+
 ![图38-1 FineWeb MinHash 去重和 PII 处理流程](../../images/part12/Mu-Chap38-Fig01-ZH.svg)
 
 *图38-1 FineWeb MinHash 去重和 PII 处理流程。Source: original illustration based on Hugging Face DataTrove `examples/fineweb.py` and FineWeb dataset card.*
@@ -241,6 +259,8 @@ MinHash 用多个哈希函数近似这个相似度。FineWeb 论文说明其去�
 直觉上，全局去重似乎更彻底：把 96 个 crawl 放在一起，删除所有近似重复文档。FineWeb 的消融实验却给了相反信号。论文描述了一个关键现象：从最新 crawl 开始向旧 crawl 做全局去重时，旧 crawl 会被大量删除；在某个旧 snapshot 中，保留下来的 10% 数据反而比被删除的 90% 更差，包含更多广告、关键词列表和格式异常文本。最终，FineWeb 选择对每个 crawl 独立 MinHash 去重。
 
 这个结果对工程实践很重要。去重不是数学上越彻底越好，而是要看它如何改变数据分布。全局去重会让新旧 crawl 之间的时间分布、站点覆盖和重复簇结构发生复杂变化；如果只看“删除了多少重复”，可能误删更有价值的样本，保留低质量长尾。
+
+图38-2展示了相应的流程或结构。
 
 ![图38-2 FineWeb 数据处理选择的消融评估回路](../../images/part12/Mu-Chap38-Fig02-ZH.svg)
 
@@ -287,6 +307,8 @@ $$
 #### 案例A.5.2 常见失败和修复动作
 
 FineWeb 的经验可以转化为一张 Web 预训练语料错误归因表。它不是 FineWeb 官方表格，而是本章根据 FineWeb 论文和数据卡整理的工程复盘。
+
+表38-5汇总了相应的对比和工程要点。
 
 *表38-5 FineWeb 类 Web 语料常见失败与修复动作*
 
@@ -366,6 +388,8 @@ Dolma 数据卡直接体现了这种设计取向：它列出版本、summary sta
 ### 案例B.2：数据集概览：版本、规模与来源结构
 
 Dolma 不是单一静态文件，而是带版本演进的语料资产。Hugging Face 数据卡列出 `v1`、`v1_5`、`v1_5-sample`、`v1_6`、`v1_6-sample` 和 `v1_7` 等版本；其中 `v1_7` 用于训练 OLMo 7B-v1.7，并引入新来源、更多质量过滤和 fuzzy deduplication。
+
+表38-6汇总了相应的对比和工程要点。
 
 *表38-6 Dolma 公开版本和用途*
 
@@ -449,6 +473,8 @@ Dolma v1.7 数据卡中同时列出 source token 数和 sample proportion，正�
 
 透明语料不是把 `text` 打包上传就结束。至少需要三层记录：单条文档记录、source card 和训练版本 manifest。单条文档用于训练和定位，source card 用于解释数据来源和处理规则，训练 manifest 用于复现某次模型训练实际消费的数据。
 
+表38-8汇总了相应的对比和工程要点。
+
 *表38-8 Dolma 类透明语料记录 schema*
 
 | 层级 | 典型字段 | 来源或生成方式 | 工程用途 |
@@ -464,6 +490,8 @@ Dolma v1.7 数据卡中同时列出 source token 数和 sample proportion，正�
 表中字段是作者根据 Dolma 数据卡、Dolma Toolkit 文档和透明训练审计需求整理的工程 schema，不表示 Dolma 官方逐项发布了这些字段。
 
 下面是一个抽象化的 Dolma 类文档记录，用于说明透明语料如何把样本、source 和训练版本连接起来。
+
+代码清单38-3给出了相应的代码或配置示例。
 
 ```json
 {
@@ -490,6 +518,9 @@ Dolma v1.7 数据卡中同时列出 source token 数和 sample proportion，正�
 }
 ```
 
+*代码清单38-3：代码或配置示例。*
+
+
 这条记录不能只看单层字段。放到 Dolma 中，文档层、source 层和训练层必须能相互指回。若文档有 `source` 但没有 source card，只能定位样本，不能解释来源；若 source card 有统计但没有训练 manifest，只能说明数据集里有什么，不能说明模型实际看了什么；若 manifest 有采样比例但没有文档 hash，撤回和污染检查就会断链。
 
 ### 案例B.4：Dolma Toolkit 让证据链可执行
@@ -499,6 +530,8 @@ Dolma GitHub 仓库说明，Dolma 同时是数据集和工具包。Dolma Toolkit
 #### 案例B.4.1 四个动作对应四类证据
 
 Dolma Toolkit 文档把数据整理概括为四个动作：tag、dedup、mix、tokenize。它们不是孤立脚本，而是证据链的生成器：tag 记录文档属性，dedup 记录保留和删除，mix 记录采样比例，tokenize 记录进入训练的 token 口径。
+
+表38-9汇总了相应的对比和工程要点。
 
 *表38-9 Dolma Toolkit 处理动作与证据输出*
 
@@ -510,6 +543,8 @@ Dolma Toolkit 文档把数据整理概括为四个动作：tag、dedup、mix、t
 | 4 | Tokenization | 使用 Hugging Face 兼容 tokenizer | token 计数、tokenizer 版本、训练流 | tokenizer 变化会改变 token 数和训练预算 |
 
 数据来源 Dolma Toolkit documentation README。
+
+图38-3展示了相应的流程或结构。
 
 ![图38-3 Dolma 透明语料证据链](../../images/part12/Mu-Chap38-Fig03-ZH.svg)
 
@@ -533,11 +568,15 @@ $$
 
 当 $\Delta_s$ 在代码任务、科学问答或长文本任务上明显变化时，数据团队才能把能力变化回溯到 source mix，而不是泛泛归因于“模型参数”。
 
+图38-4展示了相应的流程或结构。
+
 ![图38-4 Dolma source mix 与训练诊断回路](../../images/part12/Mu-Chap38-Fig04-ZH.svg)
 
 *图38-4 Dolma source mix 与训练诊断回路。Source: original illustration based on Dolma dataset card and OLMo training use.*
 
 #### 案例B.5.2 诊断清单
+
+表38-10汇总了相应的对比和工程要点。
 
 *表38-10 Dolma 类透明语料评估和诊断表*
 
@@ -550,6 +589,8 @@ $$
 | 版本间不可比 | dolma_version、filter_config、dedup_policy | manifest diff | 固定版本或重跑对照实验 |
 
 #### 案例B.5.3 常见失败模式
+
+表38-11汇总了相应的对比和工程要点。
 
 *表38-11 Dolma 类透明语料常见失败与修复动作*
 

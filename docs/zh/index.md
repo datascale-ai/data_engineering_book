@@ -36,29 +36,29 @@
 建立大模型数据工程的核心认知，说明数据生命周期、质量评估、平台栈和成本治理的基本框架。
 
 - [本篇目录](part1/index.md)
-- [第1章：大模型时代的数据变革](part1/ch01_data_change.md)
+- [第1章 大模型时代的数据变革](part1/ch01_data_change.md)
 - [第2章：LLM数据生命周期与质量评估框架](part1/ch02_quality_framework.md)
-- [第3章：AI原生数据栈与成本治理](part1/ch03_data_stack.md)
+- [第3章 AI原生数据栈与成本治理](part1/ch03_data_stack.md)
 
 ## 第二篇：文本预训练数据工程
 
 面向大规模文本语料，覆盖数据来源、采集版权、清洗去重、分词序列化、高效加载和质量闭环。
 
 - [本篇目录](part2/index.md)
-- [第4章：数据源、采集与版权](part2/ch04_data_sources.md)
-- [第5章：清洗、去重与去污染](part2/ch05_cleaning_dedup.md)
-- [第6章：分词、序列化与高效加载](part2/ch06_tokenization_loading.md)
-- [第7章：数据评估、质量闭环与运营迭代](part2/ch07_data_operations.md)
+- [第4章 数据源、采集与版权](part2/ch04_data_sources.md)
+- [第5章 清洗、去重与去污染](part2/ch05_cleaning_dedup.md)
+- [第6章 分词、序列化与高效加载](part2/ch06_tokenization_loading.md)
+- [第7章 数据评估、质量闭环与运营迭代](part2/ch07_data_operations.md)
 
 ## 第三篇：多模态数据工程
 
 处理图文、文档、视频、音频与跨模态对齐数据，关注样本结构、质量控制、标注增强和融合训练。
 
 - [本篇目录](part3/index.md)
-- [第8章：图文对数据工程](part3/ch08_multimodal_image.md)
-- [第9章：重标注与文档理解](part3/ch09_recaptioning_ocr.md)
-- [第10章：视频与音频数据工程](part3/ch10_video_audio.md)
-- [第11章：跨模态对齐与融合](part3/ch11_cross_modal_alignment.md)
+- [第8章 图文对数据工程](part3/ch08_multimodal_image.md)
+- [第9章 重标注与文档理解](part3/ch09_recaptioning_ocr.md)
+- [第10章 视频与音频数据工程](part3/ch10_video_audio.md)
+- [第11章 跨模态对齐与融合](part3/ch11_cross_modal_alignment.md)
 
 ## 第四篇：指令微调与偏好数据
 
@@ -67,7 +67,7 @@
 - [本篇目录](part4/index.md)
 - [第12章：SFT数据设计与指令体系](part4/ch12_sft.md)
 - [第13章：偏好数据与奖励信号](part4/ch13_preference.md)
-- [第14章：标注平台、QA体系与数据运营](part4/ch14_qa.md)
+- [第14章 标注平台、质量保障体系与数据运营](part4/ch14_qa.md)
 
 ## 第五篇：合成数据工程
 
@@ -85,7 +85,7 @@
 - [本篇目录](part6/index.md)
 - [第18章：思维链与推理数据工程](part6/ch18_cot.md)
 - [第19章：Tool-Use 与函数调用数据](part6/ch19_tool.md)
-- [第20章：Agent 记忆与多轮交互数据](part6/ch20_agent.md)
+- [第20章：Agent记忆与多轮交互数据](part6/ch20_agent.md)
 
 ## 第七篇：应用级数据工程
 
@@ -173,7 +173,7 @@
 - [项目九：隐私保护数据流水线](part14/p09_privacy_pipeline.md)
 - [项目十：端到端 LLM 数据飞轮](part14/p10_flywheel.md)
 - [项目十一：Mini-DeepSeek 预训练复现](part14/p11_mini_deepseek.md)
-- [项目十二：R1 推理飞轮](part14/p12_r1_reasoning_flywheel.md)
+- [项目十二：教学化 R1 推理数据飞轮](part14/p12_r1_reasoning_flywheel.md)
 - [项目十三：Qwen-VL 多模态指令工厂](part14/p13_multimodal_instruction_factory.md)
 - [项目十四：视频生成数据集：从视频源到可用于 T2V 训练的数据流水线](part14/p14_video_generation.md)
 - [项目十五：基于 DataAgent 构建企业级语义问数助手](part14/p15_dataagent_semantic_nl2sql_agent.md)

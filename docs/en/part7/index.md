@@ -27,7 +27,7 @@ Chapter 21 establishes the basic pipeline for document RAG, focusing on ingestio
 
 ## Table of Contents
 
-- [Chapter 21: RAG Data Pipelines](ch21_rag_pipeline.md)
+- [Chapter 21: The RAG Data Pipeline](ch21_rag_pipeline.md)
 - [Chapter 22: Multimodal RAG and Visual Retrieval](ch22_multimodal_rag_visual_retrieval.md)
 - [Chapter 23: Online Feedback Loops and Knowledge Updates](ch23_online_feedback_knowledge_update.md)
 

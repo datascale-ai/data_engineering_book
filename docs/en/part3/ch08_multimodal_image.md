@@ -55,6 +55,8 @@ Consider a mainstream visual encoder based on ViT (Vision Transformer) (Dosovits
 
 Increasing the image side length by only 4.5x can therefore increase **attention-layer compute** by nearly **410x**. This refers to the quadratic self-attention portion, not the full model FLOPs; FFN layers scale linearly with sequence length, so the actual total training-compute increase is still substantial but somewhat lower than 410x. One core task in image-text data engineering is therefore to balance local-detail preservation against training cost through dynamic cropping, dimensionality reduction, and multi-scale patching.
 
+Figure 8-1 illustrates the corresponding workflow or structure.
+
 ![Figure 8-1: Overview of image-text data engineering](../../images/part3/Yu-Chap08-Fig01.svg)
 
 *Figure 8-1: Overview of multimodal image-text data engineering. The pipeline starts from DOM-tree crawling and PDF parsing, then moves through format parsing, watermark filtering, CLIP semantic alignment, interleaved-sequence assembly, and tokenized representation. Distributed computing and metadata form the foundation across the pipeline. Source: drawn for this book.*
@@ -116,6 +118,8 @@ For real business use cases such as reading financial reports or invoices, natur
 - **Format**: the input is a rendered high-frequency, high-resolution document screenshot, such as an arXiv paper page or a dense Excel screenshot. The output is a structured JSON value sequence or bounding-box coordinates marked with `<box>`.
 - **Applicable stage**: depends on high-resolution patching and OCR assistance. It is mainly used in SFT to teach precise value extraction and logical-structure understanding, such as formula and chart references in page layouts.
 - **Coordinate normalization**: in grounding tasks, the model must output concrete pixel coordinates. Because training images have very different resolutions, the original absolute pixel coordinate `(X, Y)` is usually mapped into a discrete token bucket in `[0, 1000]`, such as `[<loc_255>, <loc_899>]`. This discretization turns continuous spatial coordinates into a vocabulary-like form that an LLM can process.
+
+Table 8-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 8-1: Image-text sample types, characteristics, and applicable tasks. Source: compiled by the authors; applicable tasks are engineering generalizations, and production environments should review them against model architecture, the vision encoder, and data licensing.*
 
@@ -269,6 +273,8 @@ In common pure-text packing, 1,000 written characters may require only 300 token
 
 Early VLMs, including CLIP-era models, usually resized all input images to a fixed square size: a landscape photo and a vertical long document were both compressed to $224 \times 224$, causing severe aspect-ratio distortion. To solve this, modern data factories widely introduce **AnyRes**, or dynamic high-resolution preservation, in preprocessing.
 
+Figure 8-3 illustrates the corresponding workflow or structure.
+
 ![Figure 8-3: AnyRes dynamic multi-resolution patching](../../images/part3/Yu-Chap08-Fig03.svg)
 
 *Figure 8-3: AnyRes dynamic multi-resolution patching. The core idea is that the high-resolution panoramic input on the left is no longer forced into a square. Instead, it is divided by an adaptive grid into $1 \times 3$ native-resolution local patches and paired with a global thumbnail in the upper-right corner before entering the vision encoder, preserving both high-frequency local features and global semantics. Source: drawn for this book.*
@@ -288,6 +294,8 @@ A balanced MLLM pretraining mix must allocate weights to different sources caref
 1. **General natural images**: provide basic world-object knowledge, such as cats and dogs, cars, landscapes, color calibration, and human expressions. This portion is usually handled by strictly CLIP/SigLIP-filtered open datasets, such as the core filtered subset of DataComp-1B (Gadre et al. 2023), or licensed stock-image sources.
 2. **Charts, plots, and mathematical or code diagrams**: provide abstract mathematical reasoning capability. Without this portion, the model may misinterpret line charts, stock candlestick charts, or complex mind maps.
 3. **High-density OCR document screenshots**: scanned white papers, single-page PDFs, receipt and invoice images. This data is crucial for models that act as contract-review assistants or invoice helpers because it trains the rare "fine-grained text focus" capability that natural images almost never contain. The Qwen-VL and Qwen2.5-VL technical reports both list OCR, document understanding, grounding, and multi-resolution processing as core capability sources (Bai et al. 2023, 2025).
+
+Table 8-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 8-2: Image-cleaning strategies and cost comparison. Source: compiled by the authors; cost descriptions are relative complexity, and actual cost depends on image resolution, model version, concurrency, and manual spot-check ratio.*
 

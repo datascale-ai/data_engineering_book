@@ -127,6 +127,8 @@ At smaller data scales, it is easier to inspect intermediate artifacts, conduct 
 
 ## 3. Overall Project Architecture
 
+Figure P01-1 illustrates the corresponding workflow or structure.
+
 ![Figure P01-1](../../images/part14/p01/Xu-Project01-Fig01.svg)
 *Figure P01-1: Mini-C4 Data Pipeline Overview.*
 
@@ -225,9 +227,13 @@ Therefore, the goal of the body text extraction phase is not "to capture as many
 
 ### 5.2 Core Component Selection
 
+Figure P01-2 illustrates the corresponding workflow or structure.
+
 ![Figure P01-2](../../images/part14/p01/Xu-Project01-Fig02.svg)
 *Figure P01-2: Parsing Path from WARC to Body Text.*
 
+
+Table P01-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table P01-1: Component and Reason for Choice Reference Table.*
 
@@ -292,6 +298,8 @@ From an engineering perspective, this stage answers:
 ---
 
 ## 6. Heuristic Cleaning: First-Pass Noise Removal
+
+Figure P01-3 illustrates the corresponding workflow or structure.
 
 ![Figure P01-3](../../images/part14/p01/Xu-Project01-Fig03.svg)
 *Figure P01-3: Heuristic Cleaning Rules Illustration.*
@@ -381,6 +389,8 @@ The significance of this stage is:
 ---
 
 ## 7. Deduplication: Near-Duplicate Handling in Web Corpora
+
+Figure P01-4 illustrates the corresponding workflow or structure.
 
 ![Figure P01-4](../../images/part14/p01/Xu-Project01-Fig04.svg)
 *Figure P01-4: MinHash + LSH Deduplication Approach.*
@@ -477,6 +487,8 @@ On the contrary, the importance of deduplication is reflected in its ability to 
 
 ## 8. Language Splitting: The Necessity of Language-Based Processing
 
+Figure P01-5 illustrates the corresponding workflow or structure.
+
 ![Figure P01-5](../../images/part14/p01/Xu-Project01-Fig05.svg)
 *Figure P01-5: Language Splitting and Branch Processing.*
 
@@ -511,6 +523,8 @@ From an engineering organization perspective, language splitting elevates the pi
 ---
 
 ## 9. Quality Filtering: From "Looks Like Text" to "Suitable for Training"
+
+Figure P01-6 illustrates the corresponding workflow or structure.
 
 ![Figure P01-6](../../images/part14/p01/Xu-Project01-Fig06.svg)
 *Figure P01-6: Quality Filtering Decision Illustration.*
@@ -573,6 +587,8 @@ This also means that in industrial-scale multilingual data engineering, language
 ---
 
 ## 10. Three-Round Experimental Review: The Iterative Formation of the Pipeline
+
+Figure P01-7 illustrates the corresponding workflow or structure.
 
 ![Figure P01-7](../../images/part14/p01/Xu-Project01-Fig07.svg)
 *Figure P01-7: Three-Round Experimental Iteration Path.*
@@ -691,12 +707,16 @@ Its significance lies in making the dataset not merely a collection of scattered
 
 ## 12. Data Evaluation: Pipeline Value Assessment
 
+Figure P01-8 illustrates the corresponding workflow or structure.
+
 ![Figure P01-8](../../images/part14/p01/Xu-Project01-Fig08.svg)
 *Figure P01-8: Data Retention Funnel.*
 
 ### 12.1 Data Retention Funnel
 
 The final retention funnel obtained by this project is as follows:
+
+Table P01-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table P01-2: Stage and Typical Interception Reasons Reference Table.*
 
@@ -738,6 +758,8 @@ This indicates that the final dataset is no longer merely a collection of texts,
 
 ## 13. Cost Analysis: Resource Accounting and Bottlenecks
 
+Figure P01-9 illustrates the corresponding workflow or structure.
+
 ![Figure P01-9](../../images/part14/p01/Xu-Project01-Fig09.svg)
 *Figure P01-9: Resource and Cost Breakdown.*
 
@@ -768,6 +790,8 @@ If the process design is unreasonable, CPU and I/O will quickly become real bott
 
 
 ## 14. Validation Loop: Project Consistency Checks
+
+Figure P01-10 illustrates the corresponding workflow or structure.
 
 ![Figure P01-10](../../images/part14/p01/Xu-Project01-Fig10.svg)
 *Figure P01-10: Project Validation Loop.*
@@ -891,6 +915,8 @@ This way, when tuning parameters, developers know not only "results changed" but
 ---
 
 ## 17. Engineering Practice Summary: The Methodological Value of Mini-C4
+
+Figure P01-11 illustrates the corresponding workflow or structure.
 
 ![Figure P01-11](../../images/part14/p01/Xu-Project01-Fig11.svg)
 *Figure P01-11: Mini-C4 Engineering Methodology Summary.*

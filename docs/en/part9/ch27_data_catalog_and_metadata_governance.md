@@ -84,6 +84,8 @@ In recent years, the machine learning community has further established "writing
 
 This transition involves a fundamental shift in mindset. A file inventory is concerned with "where is the data," while a data asset catalog is concerned with "what is the data, where did it come from, what can it do, who is responsible for it, and what is its quality." Below is a concise partial example of structured metadata that binds the answers to these questions directly to the data:
 
+Listing 27-1 provides the corresponding code or configuration example.
+
 ```yaml
 asset_id: user_interaction_feedback_v3      # globally unique identifier
 owner: Data Governance Team (data-governance@company.com)
@@ -117,6 +119,9 @@ restrictions:                               # usage restrictions
 end_of_life: 2025-12-31                      # planned retirement date
 ```
 
+*Listing 27-1: Code or configuration example.*
+
+
 The `restrictions` field is particularly noteworthy: it explicitly declares what the data "must not be used for." In a traditional file inventory, such constraints typically exist only in the memory of select individuals; once written into metadata, however, they become hard rules that can be enforced by systems and tracked in audits. It is precisely this contextual information that elevates a collection of files into a data asset that can be used with confidence.
 
 ### 27.1.4 Section Summary
@@ -146,6 +151,8 @@ A data asset typically passes through a standardized registration process before
 ### 27.2.2 Complete Definition of the Metadata Model
 
 A production-grade dataset registry typically organizes metadata fields into the following categories. The design of these fields must serve both discovery and usage while also supporting governance and compliance.
+
+Table 27-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 27-1: Core Metadata Field Categories for the Data Asset Registry.*
 
@@ -241,6 +248,8 @@ Data lineage has a more classical name in database research—data provenance. A
 
 In practice, lineage can be fully described through structured records. The concise example below illustrates the core lineage information for a feature dataset—sources, key transformation steps, downstream consumers, and most importantly, impact analysis:
 
+Listing 27-2 provides the corresponding code or configuration example.
+
 ```yaml
 dataset: user_preference_features_v2
 sources:
@@ -277,6 +286,9 @@ impact_analysis:
     severity: high
 ```
 
+*Listing 27-2: Code or configuration example.*
+
+
 The example above is highly condensed for brevity, but retains the essential skeleton of a lineage record. In production environments, each transformation step would also record more detailed processing logic, execution time, data volume ratios, and field changes. The **`impact_analysis` field** is particularly critical—it explicitly captures both "which downstream assets would be affected by an upstream change" and "which downstream systems would be impacted if this dataset has a problem," along with severity levels and mitigation actions. It is this field that transforms lineage from a static "data flow diagram" into a governance tool capable of driving incident investigation and change assessment.
 
 As shown in Figure 27-2, a single piece of raw data may simultaneously enter multiple processing chains and flow through multiple layers of transformation before reaching downstream applications such as training, retrieval, and evaluation, forming a directed acyclic graph (DAG). Complete lineage records enable an organization to trace data destinations forward along this graph and locate problem sources in reverse.
@@ -307,6 +319,8 @@ The theoretical foundation for these permission levels is the widely adopted Rol
 
 In large language model applications, a key permissions scenario is **differentiated data access**: the same dataset is accessed at different levels of granularity by different teams according to their respective purposes. For example:
 
+Listing 27-3 provides the corresponding code or configuration example.
+
 ```yaml
 dataset: user_interaction_feedback
 permissions:
@@ -326,6 +340,9 @@ permissions:
     includes_audit_logs: true
 ```
 
+*Listing 27-3: Code or configuration example.*
+
+
 The example above lists only the access level for each team; a complete configuration would also include a justification for the grant, accessible fields, row-level conditions, approval requirements, and audit sampling rate for each entry. The design logic is: the training team needs full raw data for best results, but this comes with full-coverage access auditing; the RAG team uses only de-identified text and features; the business analytics team can only run aggregation queries to prevent reverse-engineering of individuals from aggregate results; the governance team has administrative access including audit logs. Through this purpose-scoped control at the field, row, and query levels, the organization minimizes exposure of sensitive information while meeting the data needs of all parties.
 
 **Access approval and periodic review:**
@@ -344,6 +361,8 @@ The other half of permissions governance is audit and anomaly detection. Configu
 Data assets are not permanent. From creation, active use, and gradual deprecation to eventual deletion or archival, each stage requires a clear definition and management strategy.
 
 The importance of lifecycle management stems from the fact that the "exit" of a data asset, like its "entry," produces engineering consequences. If outdated data is not retired in a timely manner, it will continue to consume storage, pollute search results, and potentially be misused by new projects. Conversely, if data is suddenly deleted or its schema is changed without the knowledge of downstream consumers, it will directly break pipelines that depend on it. Such problems are a significant source of technical debt in production-grade machine learning systems: unmanaged data dependencies accumulate in hidden ways, steadily increasing system maintenance costs and typically only coming to light when something breaks (Sculley et al. 2015). Modeling the lifecycle as a state machine with explicit transition conditions is essentially providing an explicit contract for data dependencies, ensuring that every state change undergoes evaluation, notification, and approval, thus transforming "implicit data debt" into a "visible, manageable, controlled process" (Polyzotis et al. 2018).
+
+Table 27-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 27-2: Lifecycle States of a Data Asset.*
 
@@ -422,6 +441,8 @@ In a real catalog, each asset would also include fields for owner, update freque
 
 To illustrate how complete a production data asset's metadata can be, the following uses `user_preference_sft_v2` (User Preference Fine-Tuning Training Dataset v2) as a simplified example, retaining only representative fields in each module:
 
+Listing 27-4 provides the corresponding code or configuration example.
+
 ```yaml
 # Identity and ownership
 asset_id: user_preference_sft_v2
@@ -474,6 +495,9 @@ status: ACTIVE
 retention: 3y
 expected_active_until: 2026-12-31
 ```
+
+*Listing 27-4: Code or configuration example.*
+
 
 The structural definition documents each field's type and value range; version history records each change and its compatibility; quality metrics provide numerical values for each dimension alongside known issues; and the permissions, usage records, and lifecycle modules are each detailed down to the team, downstream application, and individual timestamps.
 
@@ -546,6 +570,8 @@ The collaboration among these roles is essentially the explicit assignment of "k
 ### 27.5.3 Implementation Checklist for Data Asset Governance
 
 To translate the foregoing methods into actionable acceptance criteria, a governance checklist can be established. Its purpose is not to replace specific implementations, but to help teams systematically verify that key steps are in place whenever a data asset goes live or a governance capability is built.
+
+Table 27-5 summarizes the corresponding comparison and engineering considerations.
 
 *Table 27-5: Data Asset Governance Implementation Checklist.*
 

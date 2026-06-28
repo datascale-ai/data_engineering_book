@@ -114,10 +114,14 @@ Compliance sits at the intersection of data governance, model governance, and bu
 
 When these are separated, a familiar misalignment appears: the business asks for a new capability, the model quickly connects new features, the platform exposes the interface, but no one judges the compliance of the full data path. A unified metadata center, policy center, and audit center are needed to connect requirements that otherwise sit in different teams.
 
+Figure 36-1 illustrates the corresponding workflow or structure.
+
 ![Figure 36-1: Compliance shift-left and governance coordination architecture](../../images/part11/Wang-Chap36-Fig01-EN.svg)
 *Figure 36-1: Compliance review shifts from pre-launch review into requirements analysis and architecture design.*
 
 ### 36.1.4 Traditional Flow vs. Shift-Left Governance
+
+Table 36-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 36-1: Traditional Flow vs. Shift-Left Governance.*
 
@@ -159,6 +163,8 @@ If compliance shift-left explains why governance must move earlier, this section
 Not all data should be governed with the same intensity. Treating all data as highest sensitivity makes the system rigid and slow. Treating all data loosely exposes sensitive information. Organizations therefore need differentiated classification (Perera et al. 2016; ENISA 2022).
 
 This chapter uses a three-level baseline:
+
+Table 36-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 36-2: Data Classification Architecture.*
 
@@ -222,13 +228,20 @@ Risk assessment should consider:
 
 In engineering practice, this can be compressed into executable logic:
 
+Listing 36-1 provides the corresponding code or configuration example.
+
 ```text
 risk_level = data_sensitivity * processing_intensity * business_impact_scope
 ```
 
+*Listing 36-1: Code or configuration example.*
+
+
 When the data level is high, the action is strong, and the impact scope is broad, the policy engine should require more approvals, stricter masking, and higher audit levels.
 
 ### 36.2.5 Example Risk Matrix
+
+Table 36-3 summarizes the corresponding comparison and engineering considerations.
 
 *Table 36-3: Example Risk Matrix.*
 
@@ -240,12 +253,16 @@ When the data level is high, the action is strong, and the impact scope is broad
 | C3 | Automated decision | Training / scoring | High | DPIA, legal approval, strong audit, release blocking |
 | C3 | Third-party sharing | Export / API call | Very high | DPA, masking gateway, minimum field set, dedicated assessment |
 
+Figure 36-2 illustrates the corresponding workflow or structure.
+
 ![Figure 36-2: Risk matrix formed by data level, purpose, and processing action](../../images/part11/Wang-Chap36-Fig02-EN.svg)
 *Figure 36-2: Risk matrix formed by data level, purpose, and processing action.*
 
 ### 36.2.6 Accountability Chain: RACI Matrix
 
 Without a clear accountability chain, even good rules distort during execution. Governance must define who proposes the need, who judges legality, who provides technical controls, who is responsible for compliant use, and who audits execution.
+
+Table 36-4 summarizes the corresponding comparison and engineering considerations.
 
 *Table 36-4: Accountability Chain: RACI Matrix.*
 
@@ -312,6 +329,8 @@ Without RoPA, a team cannot explain which data was used by whom and for what rea
 
 #### Minimal RoPA Form
 
+Table 36-5 summarizes the corresponding comparison and engineering considerations.
+
 *Table 36-5: Minimal RoPA Form.*
 
 | Field | Description |
@@ -366,6 +385,8 @@ DPIA is not about writing a long report. It asks:
 
 #### DPIA Risk Scoring Example
 
+Table 36-6 summarizes the corresponding comparison and engineering considerations.
+
 *Table 36-6: DPIA Risk Scoring Example.*
 
 | Dimension | Score Description |
@@ -416,6 +437,8 @@ A mature audit system should record:
 
 #### Audit Log Design Example
 
+Table 36-7 summarizes the corresponding comparison and engineering considerations.
+
 *Table 36-7: Audit Log Design Example.*
 
 | Field | Description |
@@ -451,6 +474,8 @@ Typical preflight checks include:
 
 When any high-risk item is missing, the pipeline should block build, deployment, or training-task execution.
 
+Figure 36-3 illustrates the corresponding workflow or structure.
+
 ![Figure 36-3: Compliance gate flow from data onboarding to model training](../../images/part11/Wang-Chap36-Fig03-EN.svg)
 *Figure 36-3: Compliance gate flow from data onboarding to model training.*
 
@@ -466,6 +491,8 @@ Once compliance requirements enter engineering, governance objects must become e
 
 This chain reflects a key fact: **compliance is not a single action. It is a pipeline from policy generation, data processing, alert response, to evaluation and verification**.
 
+Figure 36-4 illustrates the corresponding workflow or structure.
+
 ![Figure 36-4: Privacy specification and policy generation flow](../../images/part11/Wang-Chap36-Fig04-EN.svg)
 *Figure 36-4: Privacy specification and policy generation flow.*
 
@@ -480,6 +507,8 @@ Governance metrics matter not because of large sample counts, but because they s
 - 13 total checks all passing shows that current rules, artifacts, and inspection logic are self-consistent in the sample scope.
 
 The point is not the absolute value. These metrics turn governance from an abstract ideal into inspectable, reviewable, and repeatable system behavior.
+
+Figure 36-5 illustrates the corresponding workflow or structure.
 
 ![Figure 36-5: Engineering approval flow for DPIA and RoPA](../../images/part11/Wang-Chap36-Fig05-EN.svg)
 *Figure 36-5: Data compliance lifecycle from business initiation to automated blocking and audit.*
@@ -524,6 +553,8 @@ Many teams do well before release and loosen controls after launch. Real risks o
 - deletion requests, remediation tasks, and audit inquiries arrive during operation
 
 Runtime governance should therefore include periodic permission review, export audit, new-purpose assessment, abnormal-access detection, deletion-request SLA tracking, incident response, and postmortem mechanisms.
+
+Figure 36-6 illustrates the corresponding workflow or structure.
 
 ![Figure 36-6: Closed loop of audit logs, alerts, incident response, and postmortem review](../../images/part11/Wang-Chap36-Fig06-EN.svg)
 *Figure 36-6: Closed loop of audit logs, alerts, incident response, and postmortem review.*
@@ -596,6 +627,8 @@ Typical risks include:
 
 A boundary gateway should automatically perform field detection, plaintext identification, masking replacement, rule-based blocking, request tracing, and high-risk call approval before requests leave the domain.
 
+Figure 36-7 illustrates the corresponding workflow or structure.
+
 ![Figure 36-7: Boundary gateway for third-party APIs and large-model calls](../../images/part11/Wang-Chap36-Fig07-EN.svg)
 *Figure 36-7: Boundary gateway for third-party APIs and large-model calls.*
 
@@ -620,6 +653,8 @@ Privacy-preserving methods for prompt tuning, text generation, and LLM services 
 
 ### 36.4.7 High-Risk Scenario Summary
 
+Table 36-8 summarizes the corresponding comparison and engineering considerations.
+
 *Table 36-8: High-Risk Scenario Summary.*
 
 | Scenario | Main Risks | Core Controls |
@@ -641,6 +676,8 @@ The previous sections covered principles, methods, and processes. This section g
 ### 36.5.1 Governance Toolkit: RoPA Declaration Configuration
 
 On the platform side, every data application should submit a compliance configuration file before launch. The CI/CD pipeline can pull and validate it automatically.
+
+Listing 36-2 provides the corresponding code or configuration example.
 
 ```yaml
 # P09-User-Insight-Model RoPA Declaration
@@ -718,10 +755,17 @@ pipeline_gate:
   block_if_deletion_path_missing: true
 ```
 
+*Listing 36-2: Code or configuration example.*
+
+
+Figure 36-8 illustrates the corresponding workflow or structure.
+
 ![Figure 36-8: Full-path propagation and cleanup for user deletion requests](../../images/part11/Wang-Chap36-Fig08-EN.svg)
 *Figure 36-8: Full-path propagation and cleanup for user deletion requests.*
 
 ### 36.5.2 Data Classification Policy
+
+Listing 36-3 provides the corresponding code or configuration example.
 
 ```json
 {
@@ -762,7 +806,12 @@ pipeline_gate:
 }
 ```
 
+*Listing 36-3: Code or configuration example.*
+
+
 ### 36.5.3 Access Control Policy
+
+Listing 36-4 provides the corresponding code or configuration example.
 
 ```yaml
 policy_id: "p09_access_policy"
@@ -810,7 +859,12 @@ approval_rules:
       plaintext_forbidden: true
 ```
 
+*Listing 36-4: Code or configuration example.*
+
+
 ### 36.5.4 DPIA Template
+
+Listing 36-5 provides the corresponding code or configuration example.
 
 ```md
 # DPIA Assessment Form
@@ -864,7 +918,12 @@ approval_rules:
 |  |  |  |  |
 ```
 
+*Listing 36-5: Code or configuration example.*
+
+
 ### 36.5.5 Audit Log Structure
+
+Listing 36-6 provides the corresponding code or configuration example.
 
 ```json
 {"event_time":"2026-03-10T10:15:01Z","actor":"algo_user_a","role":"algo_reader","action":"query","dataset":"dim_user_profile_masked","fields":["hashed_phone","age_band"],"record_count":200,"purpose":"feature_validation","approval_id":"APR-1029","policy_result":"allow_masked","trace_id":"trace-001"}
@@ -873,7 +932,12 @@ approval_rules:
 {"event_time":"2026-03-10T10:33:56Z","actor":"ops_user_b","role":"ops_admin","action":"export","dataset":"user_precise_location","fields":["geo_hash_12"],"record_count":50,"purpose":"troubleshooting","approval_id":"APR-1099","policy_result":"blocked","trace_id":"trace-004"}
 ```
 
+*Listing 36-6: Code or configuration example.*
+
+
 ### 36.5.6 Preflight Checklist
+
+Listing 36-7 provides the corresponding code or configuration example.
 
 ```json
 {
@@ -898,7 +962,12 @@ approval_rules:
 }
 ```
 
+*Listing 36-7: Code or configuration example.*
+
+
 ### 36.5.7 Incident Response and Postmortem Template
+
+Listing 36-8 provides the corresponding code or configuration example.
 
 ```md
 # Privacy Incident Postmortem
@@ -942,9 +1011,14 @@ approval_rules:
 - [ ] Related projects checked
 ```
 
+*Listing 36-8: Code or configuration example.*
+
+
 ### 36.5.8 Governance Deliverable Mapping
 
 Governance templates are not paper designs. The table below maps common deliverables in a privacy-governance pipeline to the governance capabilities they represent.
+
+Table 36-9 summarizes the corresponding comparison and engineering considerations.
 
 *Table 36-9: Governance Deliverable Mapping.*
 

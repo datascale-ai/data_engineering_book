@@ -1,4 +1,4 @@
-# Chapter 44: LLM Pretraining Data Engineering in Practice: From Recipe to Deployment
+# Chapter 44: LLM Pre-Training Data Engineering in Practice: From Recipe to Deployment
 
 <div class="chapter-authors">Ke Wang; Jiaen Liang; Jun Yu</div>
 
@@ -48,13 +48,19 @@ As shown in Figure 44-1, the data recipe funnel narrows progressively from top t
 3. **Black-box (closed source)**:
    Only vague references appear in the technical report—"we collected a large and high-quality multilingual corpus"—with no source breakdown, no specific ratios, no code, and no data downloads. The figures disclosed in such cases typically serve only public-relations purposes and carry minimal engineering value.
 
+Figure 44-2 illustrates the corresponding workflow or structure.
+
 ![Figure 44-2: Data Transparency Spectrum for Large Language Models](../../images/part13/Wang-Chap44-Fig02-EN.svg)
 <div align="center"><b>Figure 44-2: Data Transparency Spectrum for Large Language Models</b></div>
 
 > **Note**: The foundational methodologies for general data collection, cleaning (e.g., MinHash LSH deduplication), and tokenization have already been covered in detail in Ch04 (Data Sources), Ch05 (Cleaning), and Ch06 (Tokenization). The hierarchical map of pretraining data sources presented in Chapter 4, for instance, forms the foundation for the discussions in this chapter. This chapter and this section of the book will not revisit those lower-level infrastructures, focusing instead on the specific engineering trade-offs each model makes at the recipe stage.
 
+Figure 44-3 illustrates the corresponding workflow or structure.
+
 ![Figure 44-3: Hierarchical Map of Pretraining Data Sources](../../images/part13/Wang-Chap44-Fig03.png)
 <div align="center"><b>Figure 44-3: Hierarchical Map of Pretraining Data Sources (redrawn from the foundational figure in Chapter 4)</b></div>
+
+Table 44-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 44-1: Data Transparency Spectrum of Leading Open-Source LLMs (6 rows × 5 columns).*
 
@@ -145,6 +151,8 @@ As a fully open-source project, OLMo-2's code data sources are more transparent,
 
 OLMo-2 emphasizes multi-language coverage and project structure preservation in its code data processing: each sample attempts to retain the original project's directory and file hierarchy so the model can learn modular design, dependency relationships, and naming conventions. Deduplication is strictly enforced to prevent the model from memorizing templated code patterns, while in mathematical derivation and algorithm implementation code, complete logic and comments are preserved to assist the model in learning higher-order logical reasoning.
 
+Table 44-3 summarizes the corresponding comparison and engineering considerations.
+
 *Table 44-3: Code Data Sources and Scale for Leading Models (4 rows × 6 columns).*
 
 | Model Family | Estimated Total Code Scale | GitHub Source Code Share | Interactive Notebooks / Q&A Share | Cross-File Parsing (Repo-level) | Format Preservation Strategy |
@@ -203,6 +211,8 @@ In practice, all three strategies—natural long-form text, synthetically genera
 
 This multi-strategy approach to long-text construction embodies the principle of "balancing quantity and quality, structure and coverage" in large model training. It provides a practical pathway for achieving stable and efficient long-context learning, and offers a replicable reference framework for downstream model transfer and data engineering design.
 
+Table 44-4 summarizes the corresponding comparison and engineering considerations.
+
 *Table 44-4: Long-Context Data Strategies for Leading Models (4 rows × 6 columns).*
 
 | Model Family | Maximum Context Window | Long-Text Data Sources | Short-Document Packing Strategy | RoPE Scaling and Fine-Tuning Phase | Performance Penalty Control |
@@ -249,6 +259,8 @@ The third level is post-training. The Qwen2.5 technical report mentions that its
 Examining Llama-3, OLMo-2, and Qwen2.5 together yields a clear conclusion: an effective data recipe is not a static mixture table but a phased data pipeline. Phase 1 addresses coverage; Phase 2 addresses quality and domain capability; the long-context phase addresses input length and global dependency; annealing or high-quality late-stage training addresses model convergence; and SFT and RL phases address usability and instruction-following behavior.
 
 Therefore, when reproducing a large model under a 1B-token or smaller budget, one cannot simply scale down all settings proportionally. A more principled approach is to partition the token budget into phases: the early phase uses clean general text; the middle phase progressively increases the proportion of code, math, encyclopedias, and books; the late phase concentrates high-quality data for annealing or capability consolidation. If long-context capability is required, a dedicated window-extension phase should be scheduled separately, with short-context and long-text retrieval evaluations jointly monitoring degradation. The essence of a training schedule is ensuring that the model encounters data of appropriate difficulty at the appropriate time. Only in this way can limited tokens be converted into stable capabilities rather than being diluted by uniform sampling.
+
+Figure 44-5 illustrates the corresponding workflow or structure.
 
 ![Figure 44-5: Llama-3 Annealing Phase Data Composition Timeline (Curriculum Learning Schedule)](../../images/part13/Wang-Chap44-Fig05-EN.svg)
 <div align="center"><b>Figure 44-5: Llama-3 Annealing Phase Data Composition Timeline (Curriculum Learning Schedule)</b></div>

@@ -109,7 +109,7 @@ class ExportEnglishBookPdfTest(unittest.TestCase):
         self.assertEqual(6.2, exporter.CONTENTS_ENTRY_GAP_MM)
         self.assertEqual(5.2, exporter.CONTENTS_SUBENTRY_GAP_MM)
 
-    def test_section_opening_uses_title_and_author_without_number_block(self):
+    def test_section_opening_keeps_chapter_and_project_prefixes_for_submission_review(self):
         exporter = load_exporter()
         html_body = (
             "<h1>Chapter 1: The Data Revolution in the Era of Large Models</h1>\n"
@@ -118,9 +118,21 @@ class ExportEnglishBookPdfTest(unittest.TestCase):
 
         transformed = exporter.transform_section_opening(html_body, "part1/ch01_data_change.md")
 
-        self.assertIn("<h1>The Data Revolution in the Era of Large Models</h1>", transformed)
+        self.assertIn("<h1>Chapter 1: The Data Revolution in the Era of Large Models</h1>", transformed)
         self.assertIn('<div class="chapter-authors">Ke Wang</div>', transformed)
         self.assertNotIn("chapter-number", transformed)
+
+        project = exporter.transform_section_opening(
+            "<h1>Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray</h1>",
+            "part14/p01_mini_c4.md",
+        )
+        self.assertIn("<h1>Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray</h1>", project)
+
+    def test_submission_page_labels_use_absolute_pdf_pages(self):
+        exporter = load_exporter()
+
+        self.assertEqual("3", exporter.build_page_number_label(3, first_body_page=17))
+        self.assertEqual("19", exporter.build_page_number_label(19, first_body_page=17))
 
     def test_submission_pdfs_are_limited_to_actual_manuscript_units(self):
         exporter = load_exporter()

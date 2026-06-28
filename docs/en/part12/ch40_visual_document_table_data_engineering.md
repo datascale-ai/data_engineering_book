@@ -69,6 +69,8 @@ This is why arithmetic self-consistency must be a first-class object. In high-ri
 
 StructBill-CN contains **2,300 high-resolution bill images** across **six business schemas**, all from two public medical datasets: CHIP-2022 and SIBR-Med. The mixture intentionally includes wired-grid tables, text-dense records, and borderless tables so the model cannot simply memorize one layout.
 
+Table 40-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table 40-1: StructBill-CN composition and characteristics.*
 
 | Source Subset | Document Type | Count | Table Form |
@@ -86,6 +88,8 @@ Using public academic sources is a deliberate compliance choice. A publishable b
 **Code and data resources.** The StructBill-CN dataset, schema definitions and annotation tools are available at [github.com/vanvan6992/StructBill-CN](https://github.com/vanvan6992/StructBill-CN). The SRPO algorithm implementation (including MindSpore-based GRPO and SCL-Reward) is available at [github.com/Yuefeng-Zou/SRPO_CODE](https://github.com/Yuefeng-Zou/SRPO_CODE). 
 
 The code below sketches how the dataset connects to the SRPO training loop in MindSpore. It traces the full data-consumption path — load samples, sample candidate outputs, score each with SCL-Reward, compute group-relative advantages, and update the policy via the GRPO loss — making concrete how the dataset's schema and logic constraints become trainable signals. 
+
+Listing 40-1 provides the corresponding code or configuration example.
 
 ```python
 import mindspore as ms
@@ -144,6 +148,9 @@ for epoch in range(EPOCHS):
         loss = grpo_train_step(policy, batch, G=8)
 ```
 
+*Listing 40-1: Code or configuration example.*
+
+
 #### 40.2.2 Task Definition
 
 Given a document image $X$ and a schema $S=\{K,T,C\}$, where $K$ is the set of global key fields, $T$ is the table definition, and $C$ is the set of deterministic constraints, the goal is to learn a policy that generates a structured sequence $Y$ maximizing $P(Y\,|\,X,S)$.
@@ -184,6 +191,8 @@ In practice, semantic-ownership annotation can be counterintuitive. If a line is
 
 The three schema parts map to the final JSON as follows: $K$ becomes the global `key_information` object, $T$ becomes the `Fee_List` array and its row fields, and $C$ becomes validation relationships attached to numeric fields rather than visible JSON nodes.
 
+Figure 40-1 illustrates the corresponding workflow or structure.
+
 ![Figure 40-1: Schema-to-JSON mapping](../../images/part12/Liu-Chap40-Fig01-EN.png)
 
 *Figure 40-1: Schema-to-JSON mapping. Key fields and table structure become visible JSON nodes; constraints remain verifiable relationships attached to numeric fields.*
@@ -193,6 +202,8 @@ This “constraints as relationships, not fields” design lets the same JSON se
 This design is also the basis for backward-compatible data-contract evolution. A schema can add a new rule in $C$ without changing existing fields or historical annotations. The constraint remains outside the JSON node set but becomes active during construction-time validation and evaluation-time scoring.
 
 #### 40.3.3 Complete Sample Structure
+
+Listing 40-2 provides the corresponding code or configuration example.
 
 ```json
 {
@@ -218,9 +229,14 @@ This design is also the basis for backward-compatible data-contract evolution. A
 }
 ```
 
+*Listing 40-2: Code or configuration example.*
+
+
 In this small sample, `key_information` and `Fee_List` are structure. The row-level and document-level arithmetic equations are logic constraints. Both must be annotated, validated, and evaluated. The construction pipeline, quality checks, and metrics that follow all revolve around making this JSON both structurally legal and arithmetically self-consistent.
 
 **Code Example 1: Schema definition as a Python dataclass.** The following snippet shows how the schema $S=\{K, T, C\}$ is represented programmatically. Each business document type corresponds to one `Schema` instance. The three constraint fields (`price_field`, `qty_field`, `amount_field`) plus `total_field` encode the arithmetic rules $C$ without modifying the JSON output format.
+
+Listing 40-3 provides the corresponding code or configuration example.
 
 ```python
 @dataclass
@@ -247,7 +263,12 @@ expense_schema = Schema(
 )
 ```
 
+*Listing 40-3: Code or configuration example.*
+
+
 #### 40.3.4 Field Types, Annotation Rules, and Metrics
+
+Table 40-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 40-2: Field type, annotation rule, and metric mapping.*
 
@@ -264,6 +285,8 @@ This table acts as a contract between annotation rules and evaluation scripts.
 ### Case A.4: Construction Pipeline
 
 StructBill-CN uses a multi-stage pipeline whose goal is to preserve semantic content and business-logic topology while creating traceable quality gates.
+
+Figure 40-2 illustrates the corresponding workflow or structure.
 
 ![Figure 40-2: StructBill-CN construction pipeline](../../images/part12/Liu-Chap40-Fig02-EN.png)
 
@@ -288,6 +311,8 @@ StructBill-CN uses a multi-stage pipeline whose goal is to preserve semantic con
 *Figure 40-3: Logic-consistency validation. The same gate is reused during construction to block inconsistent labels and during evaluation/training to score model output.*
 
 **Code Example 2: Logic-consistency validation gate.** This function implements the structure gate ($I_{gate}$), row-level check (Row-ACR), and document-level check (Doc-ACR) from Figure 40-3. The same code is reused in both the construction pipeline (to block inconsistent labels) and the evaluation pipeline (to score model outputs). It takes the `Schema` defined in Code Example 1.
+
+Listing 40-4 provides the corresponding code or configuration example.
 
 ```python
 def validate_logic(pred_text: str, schema: Schema, eps: float = 0.01
@@ -334,6 +359,9 @@ def validate_logic(pred_text: str, schema: Schema, eps: float = 0.01
     return True, row_acr, doc_acr
 ```
 
+*Listing 40-4: Code or configuration example.*
+
+
 **7. Version split.** The dataset uses an 8:2 train-test split. In practice, the split should preserve the six schema distributions, reserve true cross-layout test samples, and attach data fingerprints and statistics to each version.
 
 #### 40.4.1 Lineage and Metadata
@@ -361,6 +389,8 @@ Academic metrics tend to be positive: how much is correct. Production monitoring
 SCVR adds no new labels. It reuses the existing structure and logic validation flow.
 
 **Code Example 3: Batch SCVR computation.** Using `validate_logic` from Code Example 2, the following function computes SCVR and companion metrics over a batch of model predictions. It requires no additional labels beyond the existing schema and arithmetic constraints.
+
+Listing 40-5 provides the corresponding code or configuration example.
 
 ```python
 def compute_scvr(predictions: list, schema: Schema,
@@ -395,11 +425,16 @@ def compute_scvr(predictions: list, schema: Schema,
 # print(f"SCVR={metrics['scvr']:.1%}, ingestible={metrics['ingestible_rate']:.1%}")
 ```
 
+*Listing 40-5: Code or configuration example.*
+
+
 #### 40.5.2 Engineering Conventions for Reproducible Evaluation
 
 Reproducible evaluation requires a fixed test split fingerprint, fixed schema version, fixed metric implementation, and controlled random seeds. For generative models, decoding parameters and repeated runs matter. The reported setup uses `temperature=0.9`, `top_p=1.0`, and averages **8 independent runs** per model to absorb decoding variance. Engineering teams should archive decoding parameters, run count, and seeds with the results.
 
 #### 40.5.3 Error Attribution and Repair Actions
+
+Table 40-3 summarizes the corresponding comparison and engineering considerations.
 
 *Table 40-3: Common errors and repair actions.*
 
@@ -445,6 +480,8 @@ Medical-expense documents are high-risk data. Even though this benchmark uses pu
 Regarding the benchmark data, all images in StructBill-CN **come exclusively from public academic datasets** — CHIP-2022 and SIBR-Med — which were de-identified by their original publishers before public release. StructBill-CN does not ingest any Protected Health Information (PHI). 
 
 Regarding production extension, when this chapter's methodology is applied to real private bills or medical records, field-level masking must be performed at the earliest stage of the pipeline. The table below provides concrete masking rules for each sensitive-field type in medical-expense documents.
+
+Table 40-4 summarizes the corresponding comparison and engineering considerations.
 
 *Table 40-4: Field-level de-identification rules for medical-expense documents (for production extension)*
 
@@ -519,6 +556,8 @@ https://huggingface.co/datasets/champion666/SparseTable_Bench_Dataset
 
 In terms of scale, dataset documentation typically summarizes STB as "approximately 11,000 table images"; by split-level counts, the precise sample count is 10,983. To avoid ambiguity, this chapter uses the numbers from the split table as the authoritative reference.
 
+Table 40-5 summarizes the corresponding comparison and engineering considerations.
+
 *Table 40-5: Case B.2: Dataset Overview and Task Boundaries.*
 
 | Split | Image Count | Annotation Format | Primary Purpose |
@@ -541,6 +580,8 @@ The third is mask pressure testing. STB-Mask-Stress actively reduces text cues t
 
 A core design principle of SparseTable-Bench is to represent each table image as a synchronized multi-signal sample, rather than retaining only a single target format. The example below illustrates a simplified sample in which the second cell is empty, yet it remains a structurally valid column slot.
 
+Listing 40-6 provides the corresponding code or configuration example.
+
 ```json
 {
   "html": "<table><tr><td>Revenue</td><td></td><td>$12.4M</td></tr></table>",
@@ -561,11 +602,16 @@ A core design principle of SparseTable-Bench is to represent each table image as
 }
 ```
 
+*Listing 40-6: Code or configuration example.*
+
+
 The `[EMPTY_CELL]` token here is not ordinary text; it is a placeholder expressing "structure exists, content is absent." It decouples a cell's structural identity from its semantic content: even if the corresponding image region contains no readable characters, that position still has row-column coordinates, a bounding box, and contextual relationships. For sparse tables, this placeholder prevents the model from treating blank regions as non-existent during generation, thereby reducing the probability of column collapse and left-shift errors. Figure 40-4 summarizes the synchronized relationship among the three supervision signals — HTML, text, and bounding boxes — within the same table sample.
 
 ![Figure 40-4: Three synchronized supervision signals in a table sample](../../images/part12/Liu-Chap40-Fig04-EN.png)
 
 From a data engineering perspective, the sample schema of STB includes at least the following fields and validation rules.
+
+Table 40-6 summarizes the corresponding comparison and engineering considerations.
 
 *Table 40-6: Case B.3: Sample Schema: Synchronized Representation of HTML, Text, and Bounding Boxes.*
 
@@ -624,6 +670,8 @@ These structural errors are further reflected in evaluation results. In sparse t
 
 Errors in sparse tables can be classified into five types.
 
+Table 40-7 summarizes the corresponding comparison and engineering considerations.
+
 *Table 40-7: Case B.5: How Empty Cells and Sparse Layouts Induce Structural Errors.*
 
 | Error Type | Manifestation | Primary Cause | Observation Method in STB |
@@ -667,6 +715,8 @@ These two metrics are appropriate for cross-model comparison, but must not be in
 
 In extremely sparse tables or tables with many empty cells, lower TEDS/TEDS-S scores usually originate from structural prediction errors. Numerous empty positions weaken visible text anchors. A model may fill nonexistent content into empty cells, skip empty columns, or assign neighboring-column content to the wrong column position. Once these errors enter the HTML output, the number of `<td>` nodes, node order, and row-column expansion relationships change, ultimately reducing TEDS or TEDS-S. TEDS-S further focuses on structural topology and empty-cell positions, making it especially useful for exposing such row-column alignment errors.
 
+Table 40-8 summarizes the corresponding comparison and engineering considerations.
+
 *Table 40-8: Case B.7: Evaluation Protocol: TEDS, TEDS-S, and Error Interpretation.*
 
 | Metric Pattern | Possible Interpretation | Conclusion That Should Not Be Drawn | Supplementary Check |
@@ -704,6 +754,8 @@ Fourth, standard test results and pressure test results must be reported separat
 Fifth, error cases should be traced back to data objects. A single failure can be decomposed into several questions: Is the HTML parseable? Is the row-column expansion consistent? Were any empty cells missed? Was any text misread? Were any bounding boxes offset? Only by doing so do model fix actions become concrete: whether more empty-cell samples are needed, position supervision needs improvement, the tokenizer needs correction, or annotations need re-validation.
 
 For reproducibility, using STB should not stop at the coarse-grained procedure of "load data, train model, report score." A more rigorous approach is to decompose each experiment into four auditable stages. Stage one is data loading verification: randomly sample training, validation, standard test, and pressure test samples to confirm that the image, HTML, cell list, and bounding boxes can all be associated through a single sample ID. Stage two is schema rendering verification: expand the HTML into a two-dimensional grid and overlay bounding boxes on the original image to confirm that empty cells, merged cells, and non-empty text are visually interpretable. Stage three is model input-output verification: clarify whether the model receives the original image, a cropped image, or a patch-based image, and whether it outputs pure HTML, HTML with coordinate tokens, or multi-task HTML and bbox results. Stage four is evaluation and attribution verification: compute Standard-Test and STB-Mask-Stress scores separately, then sample and review failures by the four error categories of empty-position miss, column shift, text error, and spatial drift.
+
+Table 40-9 summarizes the corresponding comparison and engineering considerations.
 
 *Table 40-9: Case B.8: Data Engineering Practice: Using STB for Training and Reproduction.*
 

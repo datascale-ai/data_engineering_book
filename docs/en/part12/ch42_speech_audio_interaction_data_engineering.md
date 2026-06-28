@@ -77,6 +77,8 @@ Separate channel modeling enables precise failure attribution. If the model gene
 
 An S2SEmoControl record expresses the mapping from the user side `(query_audio, query_text, query_gender, query_mood)` to the assistant side `(answer_text, answer_audio, answer_gender, answer_mood)`. Conversational content, acoustic conditions, emotion labels, audio files, and speech tokens are bound together in a single record, making it not a loose combination of "text Q&A plus attached audio" but a complete voice interaction training sample.
 
+Listing 42-1 provides the corresponding code or configuration example.
+
 ```json
 {
   "uuid": "1977946a067ee3442",
@@ -102,9 +104,14 @@ An S2SEmoControl record expresses the mapping from the user side `(query_audio, 
 }
 ```
 
+*Listing 42-1: Code or configuration example.*
+
+
 In this sample, the user says "Tell me a short story." and the assistant replies "Sure, let me make up a short story for you. Once upon a time there was a very diligent little nightingale...". `query_gender` is `female` and `answer_gender` is `male`; both `query_mood` and `answer_mood` are `neutral`. During training, `query_audio_path` and `query_token_25hz` can serve as speech understanding inputs, with `query` providing the transcribed semantic anchor; `answer` is the semantic target, and `answer_token_25hz` together with `answer_audio_path` provide the speech generation supervision; `answer_gender` and `answer_mood` specify the style conditions for the output voice.
 
 TTSSpeakerControl concentrates the control capability in a text-to-speech form. The input text is split into two parts: `text` describes how the voice should express itself, while `answer` is the content to be spoken. For example, `text` may read "female, somewhat fearful, sweaty palms, trembling voice," and `answer` may read "Run, it's not safe here." This type of record indicates that the TTS subset does not randomly assign mood labels to sentences; instead, it constructs style–content pairs in which the natural-language style description, the structured label, and the content to be synthesized must mutually reinforce each other.
+
+Listing 42-2 provides the corresponding code or configuration example.
 
 ```json
 {
@@ -126,7 +133,12 @@ TTSSpeakerControl concentrates the control capability in a text-to-speech form. 
 }
 ```
 
+*Listing 42-2: Code or configuration example.*
+
+
 Combining samples from both S2S and TTS, the fields in VoiceStyleControl can be organized into six layers: task identifier, text content, acoustic conditions, emotion conditions, speech supervision, and basic audio configuration. S2S samples contain both user-side and assistant-side fields and therefore distinguish query-side from answer-side; TTS samples generate only assistant-side speech and therefore have a more concentrated set of fields. `language` fixes the language, and `sample_rate` fixes the audio sampling configuration; these foundational fields are the underlying contract for training loading and evaluation reproducibility and must not be inferred implicitly from path names or directory conventions alone.
+
+Table 42-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 42-2: Field Descriptions for Speaker, Emotion, and Sampling Labels.*
 
@@ -144,6 +156,8 @@ In VoiceStyleControl, emotion distribution is only the first layer of balancing 
 At the data-synthesis stage, this field difference manifests as two ways of organizing conditions: S2SEmoControl must handle reference-voice selection and emotion injection on both the query and answer sides, while TTSSpeakerControl separates the style description from the content to be spoken before synthesizing answer-side speech. The concrete synthesis logic is covered in Section 42.4, steps four and five; this section first fixes the field contract.
 
 A unified JSON Schema constrains required fields by task type; a production-grade manifest should further add enum constraints, path-existence validation, file hashes, authorization IDs, tokenizer name, tokenizer version, and token frame rate declarations.
+
+Listing 42-3 provides the corresponding code or configuration example.
 
 ```json
 {
@@ -262,11 +276,16 @@ A unified JSON Schema constrains required fields by task type; a production-grad
 }
 ```
 
+*Listing 42-3: Code or configuration example.*
+
+
 The unified schema splits the training entry point into three parts: semantic input consists of `query`, `text`, or `answer` text tokens; style input consists of `query_gender`, `answer_gender`, `query_mood`, `answer_mood`, and reference voice ID; and the acoustic target is the answer-side speech token or audio. `answer_gender` and `answer_mood` must not remain only in offline metadata — they must be mapped to control conditions or conditioning text in the dataloader; otherwise the model will never acquire genuine controllable generation capability.
 
 Once training samples enter the dataloader, they are projected from the standard schema into task-specific views. The S2S view may take the form `query_audio + answer_gender + answer_mood -> answer_token`, optionally augmented with the `query` transcription as an auxiliary semantic input; the TTS view may take the form `text + answer + answer_gender + answer_mood -> answer_token`. The evaluation view, conversely, fixes certain fields while varying others — for example, fixing `answer` while varying `answer_mood`, or fixing `answer_mood` while varying `answer_id`. This design principle — stable record contract, variable training view — serves controllable speech generation experiments, not auxiliary speaker identification or voice-print modeling experiments.
 
 ### 42.4 Construction Pipeline: From Text Conversation to Controllable Voice Records
+
+Figure 42-2 illustrates the corresponding workflow or structure.
 
 ![Figure 42-2: VoiceStyleControl data construction pipeline](../../images/part12/Chen-Chap42-Fig02-EN.svg)
 
@@ -289,6 +308,8 @@ The third step is preparing the reference voice pool. VoiceStyleControl uses a m
 The fourth step is speech synthesis or collection. S2S requires generating both query speech and answer speech and binding each audio file to its corresponding text record; TTS generates answer-side speech from `text` and `answer` (see the step-five example for the concrete implementation). During synthesis, sampling rate should be fixed or explicitly recorded; loudness, silence, maximum duration, and file encoding should be controlled to prevent instability caused by abnormal audio lengths or formats in the dataloader during training. If real recordings are used, additional handling is required for environmental noise, microphone variation, speaker fatigue, and third-party background sounds.
 
 The following example from S2SEmoControl shows how schema fields enter the synthesis process: `query_id` and `answer_id` select reference voices for the two sides; when `answer_mood` is not `neutral`, an emotion instruction is attached to the query-side synthesis text so that the input speech carries the output style control intent.
+
+Listing 42-4 provides the corresponding code or configuration example.
 
 ```python
 def build_synthesis_inputs(record):
@@ -324,11 +345,16 @@ a_tokens, a_speech = backend.compute_zeroshot_speech_token(
 )
 ```
 
+*Listing 42-4: Code or configuration example.*
+
+
 This example illustrates the key S2S branch: `answer_mood` determines whether an emotion instruction is injected, and `q_tokens`, `a_tokens`, and their corresponding waveforms map to the `query_token_25hz` and `answer_token_25hz` fields in the manifest.
 
 The fifth step is discrete speech tokenization. Speech generation training needs acoustic targets to be organized as discrete speech tokens so that generation can be formulated as a sequence modeling problem. A common approach is to encode existing waveforms with tokenizers such as S3Tokenizer; VoiceStyleControl instead follows the CosyVoice generative path — speech tokens are produced synchronously during synthesis and decoded into playable audio, so this repository has no separate "synthesize first, tokenize later" post-processing step. S2S records write `query_token_25hz` and `answer_token_25hz`; TTS records write the answer-side `answer_token_25hz`. The frame rate is 25 Hz (CosyVoice2 `token_frame_rate`), and manifest field names reflect this. When releasing the data, the manifest should still bind the tokenizer name, version, frame rate, codebook configuration, and reconstruction method. The worst scenario for a training set is "same field name, different meanings": if the same field is generated by different frame rates or different tokenizer versions across batches, the model will receive inconsistent supervision in sequence length and acoustic granularity.
 
 TTSSpeakerControl uses another synthesis path: `answer` is the content to be spoken, while `text` or `prompt` is the style description. From a data-engineering perspective, the important part is not every internal parameter of CosyVoice's flow model and vocoder, but a stable data flow: extract content and style instruction from the record, call the synthesis function to produce answer-side tokens and audio, then write the supervision locations back into the same manifest record.
+
+Listing 42-5 provides the corresponding code or configuration example.
 
 ```python
 for sample_idx, record in id2meta:
@@ -352,6 +378,9 @@ for sample_idx, record in id2meta:
     write_jsonl_record(jsonlf, record)
 ```
 
+*Listing 42-5: Code or configuration example.*
+
+
 This example corresponds to the core chain by which a natural-language style description becomes trainable speech supervision: `instruction_text` enters the synthesis function, `speech_token` becomes the discrete target that later training can model directly, and `speech_audio` supports listening checks, reverse ASR, and human review. Once the token offset, audio offset, and wav path are written back to the same record, the sample becomes traceable.
 
 The sixth step is quality inspection, balancing, and splitting. Quality inspection must go beyond checking whether audio can be played; it must also verify whether text and audio are consistent, whether the target acoustic condition matches, whether the emotion is perceptible, whether audio quality is stable, whether paths exist, and whether tokens are readable. Balancing should not be performed only by total emotion count; it must also monitor across `task`, `language`, `sample_rate`, reference voice ID, text length, and audio duration. Splitting should apply isolation by reference voice ID to prevent the same reference timbre from appearing in both the training set and the test set, which would inflate acoustic condition evaluation scores.
@@ -362,6 +391,8 @@ The packaging artifacts include not only JSONL, Parquet, or Hugging Face Dataset
 
 ### 42.5 Quality Assessment and Closed-Loop Remediation
 
+Figure 42-3 illustrates the corresponding workflow or structure.
+
 ![Figure 42-3: Quality assessment and data flywheel closed loop](../../images/part12/Chen-Chap42-Fig03-EN.svg)
 
 *Figure 42-3: Quality assessment and data flywheel closed loop. Automated validation, reverse ASR, style assessment, and manual sampling together form a defective-sample queue that feeds back into re-synthesis, re-annotation, downweighting, or removal.*
@@ -369,6 +400,8 @@ The packaging artifacts include not only JSONL, Parquet, or Hugging Face Dataset
 Quality assessment for controllable voice interaction data must simultaneously cover semantics, voice, emotion, audio, and safety. A sample that "sounds human" in isolation is not necessarily acceptable: it may contain misread text, a mismatched voice identity, overly intense emotion, or inappropriate fearful delivery in a hazardous scenario. The quality system should combine automated metrics with human review in a closed loop; defective samples enter queues for re-synthesis, re-annotation, downweighting, or removal.
 
 Quality gates should be divided into "hard failures" and "soft risks." Missing paths, incorrect sampling rates, corrupted audio, unreadable tokens, and severe ASR reverse-transcription inconsistency typically constitute hard failures and should be blocked immediately. Slightly weak emotion intensity, average naturalness, or borderline acoustic condition perception can enter a soft-risk queue, where the decision to re-synthesize, downweight, or manually review is made based on task criticality. Treating every issue as a disqualifying veto wastes remediable samples; allowing every issue to pass dilutes the control signal with noise.
+
+Table 42-3 summarizes the corresponding comparison and engineering considerations.
 
 *Table 42-3: Quality Assessment Metrics.*
 

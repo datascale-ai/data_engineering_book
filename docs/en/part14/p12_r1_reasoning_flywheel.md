@@ -43,6 +43,8 @@ The main text retains only the key implementation excerpts that illuminate desig
 
 Acceptance metrics include reasoning accuracy, candidate retention rate, verification coverage, long-chain length distribution, recirculated sample quality, and cost per sample. If the project enters production, a course, or a public reproducibility experiment environment, the version number, dependency environment, random seeds, sample spot-check results, and failed-sample post-mortem records should also be logged.
 
+Table P12-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table P12-1: Publication Acceptance Table for the Pedagogical R1 Reasoning Data Flywheel.*
 
 | Acceptance Dimension | Metric / Evidence | Publication Review Criterion |
@@ -94,6 +96,8 @@ Upon completing this project, readers should understand three things. First, the
 
 This project's architecture can be decomposed into six components: cold-start data extraction, multi-path reasoning sampling, verifier pool, rejection sampling, second-round SFT data merging, and training and evaluation. The six components communicate via files and a unified schema, rather than being tightly coupled in a single long script. The benefit of this approach is that each layer can be re-run independently: if sampling fails, only the sampling step needs to be re-run; if the verifier is updated, only rejection sampling needs to be re-run; if training proportions change, only the data merge needs to be redone.
 
+Figure P12-1 illustrates the corresponding workflow or structure.
+
 ![Figure P12-1](../../images/part14/p12/Wang-Project12-Fig01.svg)
 *Figure P12-1: The closed-loop structure from cold-start data extraction, multi-path reasoning sampling, verifier pool, and rejection sampling to second-round SFT merging and training evaluation.*
 
@@ -110,6 +114,8 @@ The fifth component is **second-round SFT data merging**. The corresponding scri
 The sixth component is **training and evaluation**. `train_lora.py` provides a minimal LoRA demonstration training, and `eval_gsm8k_math.py` provides a GSM8K/MATH evaluation entry point. In this project, training and evaluation serve as validation interfaces for the data flywheel rather than being written as a complete experiment platform. Their primary function is to verify: can the merged data enter training, and after training, can a unified evaluation script compare the base model against the LoRA adapter?
 
 The main artifacts are as follows:
+
+Table P12-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table P12-2: Stage and Description Reference Table.*
 
@@ -211,8 +217,14 @@ Code:
 ```python
 def solve(...):
     ...
+
+Listing P12-23 provides the corresponding code or configuration example.
+
 ```
 ````
+
+*Listing P12-23: Code or configuration example.*
+
 
 This excerpt translates the above process into an inspectable, structured representation.
 
@@ -458,6 +470,8 @@ It should be emphasized that LoRA and the evaluation script in this project are 
 
 The final output of this project is not a single score table but a set of reviewable data assets. The minimum acceptable results should include:
 
+Table P12-3 summarizes the corresponding comparison and engineering considerations.
+
 *Table P12-3: Artifact and Checkpoint Reference Table.*
 
 | Artifact | Checkpoint |
@@ -474,6 +488,8 @@ The final output of this project is not a single score table but a set of review
 From an engineering perspective, acceptance can be divided into three tiers. The first tier is pipeline acceptance: `pytest -q` passes, and mock mode can complete cold start, sampling, verification, rejection sampling, merging, training, and evaluation. The second tier is real-sampling acceptance: the vLLM service can be called by `sample_traces.py`, sampling results enter `sampled_traces`, and can be processed by the verifier. The third tier is performance acceptance: after LoRA training, there is a stable gain over the base model on GSM8K/MATH. The current project prioritizes the first two tiers; the third tier requires larger-scale data and multiple rounds of hyperparameter tuning.
 
 In terms of cost, the primary expenses come from multi-path sampling and training. If resources are constrained, the following fallback strategies can be applied:
+
+Table P12-4 summarizes the corresponding comparison and engineering considerations.
 
 *Table P12-4: Resource Bottleneck and Fallback Strategy Reference Table.*
 

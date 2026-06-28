@@ -1,4 +1,4 @@
-# Project Six: CoT Reasoning Dataset Construction and PRM Training
+# Project 6: CoT Reasoning Dataset Construction and PRM Training
 
 <div class="chapter-authors">Cong Wang; Xin Xu; Ke Wang</div>
 
@@ -56,6 +56,8 @@ The main text retains only the key implementation excerpts that illustrate desig
 ## Experimental or Acceptance Metrics
 
 Acceptance metrics include step annotation consistency, validation pass rate, positive-to-negative sample ratio, repair coverage, PRM discriminability, and spot-check error rate. If the project enters production, a curriculum, or a public reproduction environment, version numbers, dependency environments, random seeds, sample spot-check results, and failure sample post-mortem records should also be documented.
+
+Table P06-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table P06-1: Process Supervision Data Publication Acceptance Table.*
 
@@ -179,6 +181,8 @@ In this sense, the most important contribution of this chapter is not "training 
 
 > When a team wants the model to learn a better process rather than merely a better result, how should data engineering be redesigned?
 
+Figure P06-1 illustrates the corresponding workflow or structure.
+
 ![Figure P06-1](../../images/part14/p06/Wang-Project06-Fig01.svg)
 *Figure P06-1: CoT and PRM Data Factory Overview.*
 
@@ -225,6 +229,8 @@ This layer addresses "whether these process data can be directly consumed by tra
 * Project inspection scripts
 
 Only at this stage does the project transition from "having generated some reasoning traces" to "having established a process-supervision data pipeline."
+
+Figure P06-2 illustrates the corresponding workflow or structure.
 
 ![Figure P06-2](../../images/part14/p06/Wang-Project06-Fig02.svg)
 *Figure P06-2: Step-Level Validation and Training Feedback Loop.*
@@ -343,6 +349,8 @@ The current project explicitly produces `seed_pool.jsonl` and `task_spec.json`, 
 * The task layer and trajectory layer can be iterated separately without rewriting the entire pipeline each time;
 * Interfaces are preserved for future extension to new task domains.
 
+Figure P06-3 illustrates the corresponding workflow or structure.
+
 ![Figure P06-3](../../images/part14/p06/Wang-Project06-Fig03.svg)
 *Figure P06-3: Task Sampling and Specification Generation Flowchart.*
 
@@ -416,6 +424,8 @@ However, repair trajectories are also the most prone to introducing noise. If th
 
 Existing metrics show that the project generated 108 trajectories, with the three types perfectly symmetric: `positive=36`, `negative=36`, `repair=36`. This demonstrates that the project's trajectory structure is not the result of generating some samples ad hoc, but of explicitly designing all three process types as parallel supervision objects.
 
+Figure P06-4 illustrates the corresponding workflow or structure.
+
 ![Figure P06-4](../../images/part14/p06/Wang-Project06-Fig04.svg)
 *Figure P06-4: Schematic of the Three Trajectory Types.*
 
@@ -469,6 +479,8 @@ Many process supervision projects fail not because the model is too weak, but be
 * No handle for noise analysis.
 
 From this perspective, the step schema is not an ancillary design element—it is the foundation of the PRM data factory.
+
+Figure P06-5 illustrates the corresponding workflow or structure.
 
 ![Figure P06-5](../../images/part14/p06/Wang-Project06-Fig05.svg)
 *Figure P06-5: PRM Step Schema Schematic.*
@@ -546,6 +558,8 @@ Therefore, a more appropriate strategy is not "blanket cleaning," but preserving
 
 Existing metrics show that the overall trajectory validation pass rate is `67.59%`, but the positive trajectory pass rate reaches `100.00%`, indicating that current issues are concentrated in the control of negative and repair trajectories. This result is highly valuable because it clearly identifies that the next optimization step should not be to blindly scale up, but to prioritize improving cleaning and validation quality.
 
+Figure P06-6 illustrates the corresponding workflow or structure.
+
 ![Figure P06-6](../../images/part14/p06/Wang-Project06-Fig06.svg)
 *Figure P06-6: Step Validation and Result Comparison Pipeline.*
 
@@ -579,6 +593,8 @@ Therefore, P06's introduction of a joint structure of step labels and reward buc
 Existing metrics show that the project contains `144` process-only supervision signal steps. The engineering significance of this number is clear: process supervision genuinely provides additional signals that outcome-only supervision cannot replace. If only final results are examined, the value of these 144 steps is completely discarded.
 
 This is precisely why a PRM data factory is not simply "breaking answers into pieces," but building a new supervision layer beyond outcomes.
+
+Figure P06-7 illustrates the corresponding workflow or structure.
 
 ![Figure P06-7](../../images/part14/p06/Wang-Project06-Fig07.svg)
 *Figure P06-7: Step Labels and Process-Only Signal Schematic.*
@@ -679,6 +695,8 @@ Many data projects focus attention on train/val while neglecting smoke tests and
 
 These artifacts do not directly improve model scores, but significantly improve project maintainability and reproducibility.
 
+Figure P06-8 illustrates the corresponding workflow or structure.
+
 ![Figure P06-8](../../images/part14/p06/Wang-Project06-Fig08.svg)
 *Figure P06-8: PRM Data Packaging and Training Interface.*
 
@@ -751,6 +769,8 @@ P06's overall pass rate of `67.59%`, while not high, genuinely exposes the noise
 A positive trajectory pass rate of `100.00%` certainly indicates good quality in positive sample generation, but it also points to something else: the project's primary pressure is no longer on positive examples, but on cleaning and controlling erroneous and repair trajectories.
 
 This indicates that the next optimization direction is already clear, rather than the project being in a chaotic state where "problems could be anywhere."
+
+Figure P06-9 illustrates the corresponding workflow or structure.
 
 ![Figure P06-9](../../images/part14/p06/Wang-Project06-Fig09.svg)
 *Figure P06-9: Validation Pass Rate vs. Trajectory Type Comparison.*
@@ -850,6 +870,8 @@ If these questions are not clearly addressed at the schema and validation layers
 Existing reports clearly indicate that the shortfall in overall pass rate is concentrated in negative and repair trajectories, and that subsequent optimization should prioritize trace validation and repair trajectory quality control rather than blindly expanding scale.
 
 This is a very important engineering conclusion, because it narrows "what to do next" from vague generality into a specific, well-defined production pipeline problem.
+
+Figure P06-10 illustrates the corresponding workflow or structure.
 
 ![Figure P06-10](../../images/part14/p06/Wang-Project06-Fig10.svg)
 *Figure P06-10: Noise Sources in Negative and Repair Trajectories.*

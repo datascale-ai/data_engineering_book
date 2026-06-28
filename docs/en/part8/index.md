@@ -28,7 +28,7 @@ Chapter 24 starts from team organization and operating cadence, explaining how t
 ## Table of Contents for This Part
 
 - [Chapter 24: The DataOps Flywheel and Team Organization](ch24_dataops_flywheel_team.md)
-- [Chapter 25: Data Versioning and Experiment Tracking](ch25_data_versioning_experiment_tracking.md)
+- [Chapter 25: Data Version Management and Experiment Tracking](ch25_data_versioning_experiment_tracking.md)
 - [Chapter 26: Data Platform Observability](ch26_data_platform_observability.md)
 
 ## Recommended Reading Order

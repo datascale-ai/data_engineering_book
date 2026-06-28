@@ -46,9 +46,14 @@ This project follows an architectural path of "video acquisition, segmentation a
 
 The core data flow can be summarized as:
 
+Listing P14-2 provides the corresponding code or configuration example.
+
 ```text
 Video sources -> Clip segmentation -> Frames/subtitles/motion features -> Caption and quality scoring -> Filtering and deduplication -> T2V training samples
 ```
+
+*Listing P14-2: Code or configuration example.*
+
 
 The sample schema should retain at minimum the fields `id`, `source`, `content_or_payload`, `metadata`, `quality_signals`, `split_or_stage`, and `audit_trace`; specific fields are further refined by the data types, downstream tasks, and acceptance methods of this project.
 
@@ -120,6 +125,8 @@ An important implication of Table P14-1 is that this project does not store inte
 
 The video loading stage first establishes a reliable source data manifest, without yet entering training or filtering. Pexels (Pexels 2014) video files are typically already downloaded to a local directory, accompanied by a `pexels_manifest.jsonl`. The manifest stores video IDs, page URLs, author information, and local save paths; if the manifest is missing, minimal records can also be recovered from `pexels_*.mp4` filenames. To avoid relying on stale metadata from the download stage, the script re-runs `ffprobe` on each mp4 to fill in duration, fps, width, height, nb_frames, and file_size. The resulting `source_videos.jsonl` serves as the stable entry point for the downstream pipeline.
 
+Listing P14-3 provides the corresponding code or configuration example.
+
 ```python
 from pathlib import Path
 import json
@@ -139,6 +146,9 @@ def load_source_videos(src_dir: Path) -> list[dict]:
     return records
 ```
 
+*Listing P14-3: Code or configuration example.*
+
+
 Two points deserve attention here. First, all source videos are organized into structurally consistent JSONL rows; subsequent stages no longer scan the mp4 directory directly but instead read from this manifest. Second, the loading process supports checkpoint resumption: `video_id` entries already written are not reprocessed, and new videos are only appended to the end of the file. At the scale of 1,000+ videos, this approach is more robust than a full rerun and makes it easier to remove corrupted videos mid-process.
 
 ---
@@ -146,6 +156,8 @@ Two points deserve attention here. First, all source videos are organized into s
 ### Step 2: Shot Segmentation with PySceneDetect
 
 T2V training samples are typically organized by shot rather than by the original video boundaries. A Pexels video may have a single long shot or may contain multiple cut points. Without segmentation, captions easily conflate multiple scenes, causing text-frame mismatches during training. This step uses PySceneDetect's ContentDetector for shot detection (PySceneDetect Contributors 2026) and treats the entire video as a single shot when no boundary is detected. The segmentation stage also filters out excessively short clips — shots shorter than one second are generally discarded.
+
+Listing P14-4 provides the corresponding code or configuration example.
 
 ```python
 from scenedetect import open_video, SceneManager, ContentDetector
@@ -167,6 +179,9 @@ def split_one_video(record: dict, out_root: Path, min_shot_len: float = 1.0):
     return [build_shot_record(record, idx, scene, path) for idx, (scene, path) in enumerate(zip(kept, sorted(shot_dir.glob("*.mp4"))))]
 ```
 
+*Listing P14-4: Code or configuration example.*
+
+
 In practice, if 1,000 videos average 8 to 15 shots each, approximately 10,000 clips are produced. This figure is only a reference for experimental scale, not a fixed requirement. Note that PySceneDetect's threshold significantly affects the number of clips: a lower threshold yields finer segmentation; a higher threshold is more conservative. It is advisable to first inspect a sample of segmentation results and then fix the threshold, to avoid producing large numbers of semantically incomplete fragments.
 
 ---
@@ -176,6 +191,8 @@ In practice, if 1,000 videos average 8 to 15 shots each, approximately 10,000 cl
 After shot segmentation, the resulting clips are still only "candidate training clips" and cannot yet be treated as final training data. Among public videos, many clips are sharp but contain almost no motion — static landscapes, fixed product shots, posed subjects, and slow-motion stills. They offer limited benefit for T2V temporal modeling, and an excess of them will bias the model toward generating static video. Therefore, the third step uses optical flow to estimate clip motion intensity.
 
 Rather than performing complex action recognition, the script simply computes the average optical flow magnitude between consecutive frames. Videos are scaled to a proxy resolution of 480×270, frames are sampled at a given stride with a cap on the maximum number of frame pairs to avoid slow processing of long videos. The final output is `motion_strength`, `n_pairs`, and `pass_motion`.
+
+Listing P14-5 provides the corresponding code or configuration example.
 
 ```python
 def motion_filter_one(shot: dict, threshold: float = 0.5) -> dict:
@@ -198,6 +215,9 @@ def motion_filter_one(shot: dict, threshold: float = 0.5) -> dict:
         return failed_motion_record(shot["shot_id"], str(exc))
 ```
 
+*Listing P14-5: Code or configuration example.*
+
+
 The motion threshold should not be fixed solely by intuition in a single pass. It is advisable to first compute the `motion_strength` distribution across all clips, then spot-check low-, mid-, and high-scoring samples. For typical public videos, starting experiments around a threshold of 0.5 is reasonable; if the data contains many slow-motion, natural scenery, or micro-motion clips, the threshold should be lowered to avoid discarding valid samples. At this stage, failed clips need not be immediately deleted — records with `pass_motion=False` can be retained and the decision deferred to the training stage.
 
 ---
@@ -207,6 +227,8 @@ The motion threshold should not be fixed solely by intuition in a single pass. I
 Motion filtering examines whether temporal change exists in a clip; quality filtering examines whether the visual content is worth retaining. A clip may have strong motion yet suffer from overexposure, blur, severe compression, or disorganized composition. Generative models inherit the visual distribution of their training set, so quality scoring is needed to stratify samples.
 
 This project uses CLIP ViT-L/14 to extract image features, then feeds them into the LAION-Aesthetic MLP to compute aesthetic scores. Each shot uniformly samples 4 frames, which are individually scored and then averaged. Compared to using only the first or middle frame, multi-frame averaging is more stable, since a video clip may contain brief blurriness, subject occlusion, or exposure variation.
+
+Listing P14-6 provides the corresponding code or configuration example.
 
 ```python
 import torch
@@ -230,6 +252,9 @@ def score_shot_aesthetic(segment_path, clip_model, clip_processor, aesthetic_mlp
     return {"aesthetic_score": avg, "pass_aesthetic": avg >= 5.0, "status": "ok"}
 ```
 
+*Listing P14-6: Code or configuration example.*
+
+
 Engineering implementation must also handle multi-GPU sharding and GPU memory degradation. In this project, scripts use deterministic sharding: samples are first sorted by `shot_id`, then assigned by index modulo `num_shards`, with each GPU processing only its own shard. This sharding approach avoids redundant computation and facilitates resumption from a specific shard upon failure. Aesthetic thresholds should not be used solely as deletion criteria. Scores can be written into the manifest first, with sampling weights or data buckets set by score at the training stage.
 
 ---
@@ -239,6 +264,8 @@ Engineering implementation must also handle multi-GPU sharding and GPU memory de
 After motion and quality filtering, the retained shots require video-level captions. The caption here serves as the language supervision signal in T2V training, not merely a brief title for the video. It should cover subjects, scenes, actions, camera framing, lighting and color, and overall atmosphere. To avoid frame-by-frame enumeration, the prompt explicitly requires a single English paragraph output and disallows enumeration such as "frame 1," "frame 2."
 
 In implementation, the script samples 8 frames from each shot in temporal order and saves them to `frames/pexels_<video_id>/shot_<idx>/`. Saving frames allows verification of caption inputs during review, and also allows Step 6's cinematic language annotation to reuse the same frame set, avoiding redundant video decoding.
+
+Listing P14-7 provides the corresponding code or configuration example.
 
 ```python
 CAPTION_PROMPT = """
@@ -259,6 +286,9 @@ def generate_video_caption(frame_paths, model, processor, frames_n=8):
     return {"caption_en": caption, "n_words": len(caption.split()), "caption_short": len(caption.split()) < 50}
 ```
 
+*Listing P14-7: Code or configuration example.*
+
+
 If a caption is too short on the first attempt, increasing the temperature and retrying up to twice is acceptable, but unlimited retries are not recommended. Excessive retries may make captions longer without improving accuracy. For training data, it is preferable to retain the `caption_short` flag and handle it uniformly in a post-processing stage, preventing the model from fabricating details not present in the frame in order to fill word count. InternVL3 integration is similar to Qwen2.5-VL — only the model loading and input organization interfaces need to be replaced; the data-level workflow remains "sample multiple frames in temporal order → generate a single video description."
 
 ---
@@ -266,6 +296,8 @@ If a caption is too short on the first attempt, increasing the temperature and r
 ### Step 6: Cinematic Language Annotation — Camera Movement, Composition, and Lighting
 
 Multi-frame captioning focuses on describing video content; cinematic language annotation supplements the shooting style. This step uses two parallel paths. The first path has the VLM output structured tags from a controlled vocabulary, covering shot size, camera angle, composition, lighting, color, and style. The second path estimates camera motion from optical flow, outputting categories such as static, pan, tilt, zoom, jitter, or complex. After merging both components, the sample carries both a semantic caption and a cinematic language tag set.
+
+Listing P14-8 provides the corresponding code or configuration example.
 
 ```python
 VOCAB = {
@@ -288,9 +320,14 @@ def tag_shot_language(shot_id: str, segment_path: str, frame_paths: list[str]) -
     }
 ```
 
+*Listing P14-8: Code or configuration example.*
+
+
 Using a controlled vocabulary is strongly recommended here, to avoid letting the model generate tags freely. Free-text tags appear richer but are difficult to use for retrieval, bucketing, and training sampling; controlled tags have a limited expressive range but group similar samples under consistent fields. For example, `close_up`, `medium`, and `wide` can be used directly for shot-size stratification; `golden_hour`, `backlit`, and `low_key` can be used for lighting distribution statistics; `pan_left`, `zoom_in`, and `jitter` can be used to construct camera motion control samples. In T2V training, these structured fields enter engineering workflows more readily than a polished but uncontrollable prose description.
 
 After completing Step 6, the final sample can be organized as follows:
+
+Listing P14-9 provides the corresponding code or configuration example.
 
 ```python
 final_sample = {
@@ -308,6 +345,9 @@ final_sample = {
     },
 }
 ```
+
+*Listing P14-9: Code or configuration example.*
+
 
 This structure already has the basic form of trainable data. Safety filtering (NSFW), OCR/watermark filtering, deduplication, class resampling, and WebDataset packaging can all be added subsequently. The key principle to keep in mind throughout this pipeline is the sample organization approach: video samples progressively accumulate learnable supervision signals at each stage, and are finally organized into training data. Shot segmentation provides temporal boundaries, motion filtering provides dynamic quality, aesthetic filtering provides visual quality, multi-frame captioning provides semantic supervision, and cinematic language annotation provides shooting control information. Used together, these fields make it substantially easier for T2V models to establish stable "text—action—shot" correspondences.
 
@@ -518,6 +558,8 @@ Table P14-10 presents the integration approach between the two.
 This integration avoids rebuilding video instruction data from scratch. P14 handles video material and temporal quality; P13 handles instruction diversity and language quality. If the scope later expands to video generation control training, the `shot_language` fields can also be converted into prompt conditions — for example, "a cinematic wide shot with natural lighting and a slow zoom-in over ocean cliffs" — and paired with video clips for T2V training.
 
 ## Results and Analysis
+
+Table P14-11 summarizes the corresponding comparison and engineering considerations.
 
 *Table P14-11: Example of multi-frame sampling from a video clip.*
 

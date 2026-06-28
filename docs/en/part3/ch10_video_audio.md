@@ -53,6 +53,8 @@ Videos are usually stored in compressed formats such as H.264, H.265, or VP9. To
 
 For long-temporal data, the cleaning factory cannot reuse the old image-text-pair pattern of "one image, one sentence." We need an automated audio-video sample-building platform that separates and processes visual, acoustic, and text tracks.
 
+Figure 10-1 illustrates the corresponding workflow or structure.
+
 ![Figure 10-1: Distributed audio-video alignment pipeline](../../images/part3/Wang-Chap10-Fig01.svg)
 
 *Figure 10-1: Distributed audio-video alignment pipeline. Raw mixed videos in the video lake are split into visual and acoustic tracks. Visual-frame extractors and acoustic separators extract features independently before the streams meet in a temporal alignment engine, which produces aligned multimodal JSONL samples with closed timestamp constraints. Source: drawn for this book.*
@@ -64,6 +66,8 @@ Before training, very long videos, such as two-hour films, must be cut into clip
 1. **Shot-boundary detection**
 
 The visual pipeline needs a fast detection node, such as dual-threshold color-histogram comparison, with a high threshold for hard cuts and a low threshold for fades or dissolves, or lightweight optical-flow difference between adjacent frames. The goal is to capture hard and soft transitions caused by camera movement or editing. Only continuous frames within the same shot are suitable as one complete knowledge concept, or event grounding unit, for pretraining a visual model.
+
+Figure 10-2 illustrates the corresponding workflow or structure.
 
 ![Figure 10-2: Adaptive shot-boundary detection and semantic leakage prevention](../../images/part3/Wang-Chap10-Fig02.svg)
 
@@ -80,6 +84,8 @@ The lower track running in parallel with visual frame extraction extracts acoust
 #### A. Core semantic extraction: large-scale WhisperX ASR
 
 For speech tracks, a common approach is to use open-source Whisper (Radford et al. 2023), WhisperX (Bain et al. 2023), or similar frameworks to transcribe accented, noisy, and pause-filled audio into structured text with timestamps.
+
+Figure 10-3 illustrates the corresponding workflow or structure.
 
 ![Figure 10-3: Large-scale ASR extraction and temporal calibration](../../images/part3/Wang-Chap10-Fig03.svg)
 
@@ -102,6 +108,8 @@ Raw ASR often misrecognizes specialized vocabulary in code, medicine, finance, a
 After the visual key-frame array, ASR subtitles, and audio waveform are collected, the hard part is binding these signals to the same timeline: **cross-modal geometric and temporal lock**.
 
 An ASR subtitle may say "Hello World!", but for a 10-second temporal segment, which milliseconds, frames, and lip shapes correspond to that sound must be specified with temporal anchors. Without this binding, a model cannot learn audiovisual synchronization or lip-motion prediction.
+
+Figure 10-4 illustrates the corresponding workflow or structure.
 
 ![Figure 10-4: Cross-modal temporal calibration and geometric alignment](../../images/part3/Wang-Chap10-Fig04.svg)
 
@@ -134,6 +142,8 @@ These reinforced labels and category tags, which include cause, process, and res
 One of the most serious alignment failures in long-temporal data is unrelated audio and video. For example, the video may show a quiet giraffe eating grass while the editor has mixed in electronic music or unrelated game commentary. If such samples enter foundation-model training, the model may incorrectly associate giraffes with unrelated music or commentary and form cross-modal hallucinations.
 
 Strict mismatch detection and review are therefore required.
+
+Table 10-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 10-1: Temporal audio-video data defects and multi-layer detection/remediation strategies. Source: compiled by the authors; detection and remediation strategies are engineering patterns, and thresholds should be calibrated through sampled playback and downstream evaluation.*
 
@@ -215,6 +225,8 @@ Listing 10-1 shows an example error log for S3 concurrent streaming overload.
 
 *Listing 10-1: S3 concurrent streaming overload error log example. The log content is anonymized; metrics and paths do not correspond to a public incident.*
 
+Listing 10-2 provides the corresponding code or configuration example.
+
 ```bash
 [FATAL] node-001.gpu-cluster.internal:
 Connection reset by peer. Timeout extracting frame chunk from blob: /bucket-v/dataset/vid_slice_0001.mp4
@@ -233,6 +245,8 @@ AVSync_Module: Subtitle timestamp [1.21s] completely drifts out of matched acous
 **Symptom**: when NVIDIA NVDEC decodes high-resolution 4K videos concurrently, GPU memory is exhausted, decoding stops, and training nodes are affected.
 
 *Listing 10-2: NVDEC concurrent decoding OOM log example. The log content is anonymized; hardware limits must be based on actual device specifications and stress-test results.*
+
+Listing 10-3 provides the corresponding code or configuration example.
 
 ```bash
 [FATAL] node-007.gpu-cluster.internal:
@@ -253,6 +267,8 @@ Decoder context invalidated. All queued frames dropped (estimated loss: 2.3TB).
 
 *Listing 10-3: WhisperX timestamp drift error log example. The log content is anonymized; drift thresholds should be calibrated through sampled playback and downstream evaluation.*
 
+Listing 10-4 provides the corresponding code or configuration example.
+
 ```bash
 [WARN] whisperx_worker_3: Timestamp drift detected at segment 847.
 Expected anchor: [1823.4s], Model output: [1831.8s]. Delta: +8.4s.
@@ -270,6 +286,8 @@ Alignment quality score: 0.23 (threshold: 0.75). Segment rejected and quarantine
 **Symptom**: when pyannote-audio (Bredin et al. 2020) diarization runs in bulk for a long time, process memory increases linearly by batch. After roughly four hours, the system OOM killer terminates the process and all processed results are lost.
 
 *Listing 10-4: Diarization memory-leak error log example. The log content is anonymized; memory watermarks and batch sizes should be stress-tested according to node configuration.*
+
+Listing 10-5 provides the corresponding code or configuration example.
 
 ```bash
 [ERROR] diarization_worker_12: Killed by OOM Killer (signal 9).
@@ -303,6 +321,8 @@ DataLoader worker 0: Pipe broken, resetting shard iterator. Skipping shard.
 - **Fix**: allocate an independent shard file per worker, named by `worker_id`; merge in the main process after writing or upload directly to S3; use `wids` (WebDataset Indexed Shards) instead of `.tar` when safe random writes and indexing are needed.
 
 ## 10.6.6 Frequent Error Quick Reference
+
+Table 10-3 summarizes the corresponding comparison and engineering considerations.
 
 *Table 10-3: Frequent audio-video pipeline error types and remediation strategies. Source: compiled by the authors; error codes and remediation strategies are anonymized engineering patterns.*
 

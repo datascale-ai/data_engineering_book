@@ -95,6 +95,8 @@ It should be emphasized that the value of version management is not equivalent t
 
 Data version management is not a problem of a single granularity; it requires maintaining version information simultaneously at five levels.
 
+Figure 25-1 illustrates the corresponding workflow or structure.
+
 ![Figure 25-1: Overview of the Version Management System](../../images/part8/Du-Chap25-Fig01-EN.svg)
 
 *Figure 25-1: Panoramic view of the data version management and experiment tracking system—five-level version granularity with bidirectional association architecture.*
@@ -111,6 +113,8 @@ The Data Management Body of Knowledge typically treats data assets, metadata, li
 
 **Release package level (Release)**: An externally released model version. Version information includes release version number, the corresponding model checkpoint, the dataset version used, the list of evaluation sets passed, and the release approval record.
 
+Table 25-1 summarizes the corresponding comparison and engineering considerations.
+
 *Table 25-1: Data version granularity and applicable scenarios.*
 
 | Version Granularity | Primary Use | Key Fields | Retention Policy |
@@ -126,6 +130,8 @@ These five levels are not parallel—they form a hierarchical aggregation. Sampl
 In practice, teams need not automate management of all granularities from the start, but must clearly define the responsibility boundaries for each granularity. Sample-level information is typically produced by collection and annotation systems; shard-level information is maintained by data pipelines and annotation platforms; dataset-level information is maintained by version management tools; experiment-level information is maintained by experiment tracking systems; release-package-level information is maintained by model registration and release systems. If these systems share no unified IDs or association tables, data will remain only partially traceable.
 
 Granularity design must also account for cost. Sample-level versioning is the most fine-grained but incurs the highest storage and indexing costs; dataset-level versioning is the most widely used but insufficient for explaining fine-grained quality issues; release-package-level versioning is best suited to compliance auditing but cannot directly answer questions about processing details. Teams should therefore adopt a strategy of "fine granularity for critical paths, moderate granularity for ordinary paths." For formal training sets, evaluation sets, high-sensitivity data, and online feedback data, sample-level or shard-level records should be retained where possible. For one-off exploratory data, only dataset-level and experiment-level records may be needed, but these must be marked as ineligible for formal release.
+
+Table 25-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 25-2: Recommended version granularity by data type.*
 
@@ -226,6 +232,8 @@ The following is a standard experiment card field design:
 
 **Basic Information**
 
+Table 25-3 summarizes the corresponding comparison and engineering considerations.
+
 *Table 25-3: Field Design for Experiment Cards.*
 
 | Field | Type | Description |
@@ -239,6 +247,8 @@ The following is a standard experiment card field design:
 
 **Data Configuration**
 
+Table 25-4 summarizes the corresponding comparison and engineering considerations.
+
 *Table 25-4: Field Design for Experiment Cards.*
 
 | Field | Type | Description |
@@ -251,6 +261,8 @@ The following is a standard experiment card field design:
 
 **Model Configuration**
 
+Table 25-5 summarizes the corresponding comparison and engineering considerations.
+
 *Table 25-5: Field Design for Experiment Cards.*
 
 | Field | Type | Description |
@@ -261,6 +273,8 @@ The following is a standard experiment card field design:
 | training_code_commit | string | Git commit hash of the training code |
 
 **Runtime Environment Configuration**
+
+Table 25-6 summarizes the corresponding comparison and engineering considerations.
 
 *Table 25-6: Field Design for Experiment Cards.*
 
@@ -276,6 +290,8 @@ The following is a standard experiment card field design:
 
 **Evaluation Results**
 
+Table 25-7 summarizes the corresponding comparison and engineering considerations.
+
 *Table 25-7: Field Design for Experiment Cards.*
 
 | Field | Type | Description |
@@ -286,6 +302,8 @@ The following is a standard experiment card field design:
 | eval_timestamp | datetime | Evaluation completion time |
 
 **Experiment Records**
+
+Table 25-8 summarizes the corresponding comparison and engineering considerations.
 
 *Table 25-8: Sample experiment card fields.*
 
@@ -359,6 +377,8 @@ Failed experiment preservation also requires distinguishing among different fail
 
 For example, an experiment that terminates due to insufficient VRAM during training does not imply that the data recipe is invalid. An experiment that produces anomalous results due to evaluation set contamination does not imply a genuine improvement in model capability. An experiment that regresses because newly added data is mismatched to the task objective can clearly rule out that data direction. Failure classification enables the team to decide whether to re-run, fix the data, adjust evaluation, or add the direction to the exclusion list.
 
+Table 25-9 summarizes the corresponding comparison and engineering considerations.
+
 *Table 25-9: Failed experiment types and preservation requirements.*
 
 | Failure Type | Typical Manifestation | Should Re-Run? | Information to Preserve |
@@ -376,6 +396,8 @@ For R&D teams, carefully recording failures also has cultural significance. It s
 ### 25.3.4 The Minimum Information Set for an Audit Trail
 
 A complete audit trail must be able to answer the following core questions. Research on both data cards and model cards emphasizes that data sources, usage boundaries, evaluation conditions, and model behavior must be documented to support auditing and accountability tracing (Gebru et al. 2021; Mitchell et al. 2019):
+
+Table 25-10 summarizes the corresponding comparison and engineering considerations.
 
 *Table 25-10: Audit trail information requirements.*
 
@@ -430,6 +452,8 @@ Lineage graphs also need complexity control. LLM data pipelines often contain la
 
 Edge semantics should also be carefully designed. Edges are not merely "connections"—they should also specify the type of relationship. For example, `derived_from` denotes derivation, `filtered_by` denotes filtering, `annotated_by` denotes annotation, `evaluated_with` denotes evaluation, `approved_by` denotes approval, and `released_as` denotes release. The more clearly edge semantics are defined, the more precise queries become. Otherwise, a lineage graph can only display paths without explaining the governance meaning of those paths.
 
+Figure 25-2 illustrates the corresponding workflow or structure.
+
 ![Figure 25-2: Data Lineage and Experiment Tracking Graph](../../images/part8/Du-Chap25-Fig02-EN.svg)
 
 *Figure 25-2: Complete data lineage graph from data sources to model release, showing forward and reverse tracking paths.*
@@ -447,6 +471,8 @@ The standard change audit workflow is as follows:
 5. **Change execution**: Execute the change after creating a rollback point.
 6. **Change verification**: Run automated quality checks and compare against the expected impact described in the change request.
 7. **Change recording**: Write the change log into the dataset's metadata and update the lineage graph.
+
+Table 25-11 summarizes the corresponding comparison and engineering considerations.
 
 *Table 25-11: Data change audit workflow.*
 
@@ -502,6 +528,8 @@ Any data version entering model training must pass automated quality checks. Aut
 Governance rules must also be tied to the data lifecycle. From collection, cleaning, annotation, training, and evaluation through release to archival, the operations permitted at each stage differ. The collection stage allows relatively flexible source exploration but requires recording authorization and provenance. The cleaning stage allows iterative rule adjustment but should retain processing script versions. The annotation stage allows guideline revisions but must record the effective date. The training stage requires stable dataset versions. After release, the emphasis shifts to freezing, auditing, and rollback. Applying a single uniform set of rules to all stages makes early exploration overly burdensome and makes the release stage insufficiently rigorous.
 
 Governance rule enforcement should also be tiered. Low-risk operations can be completed through system prompts and automatic recording. Medium-risk operations require lightweight approval. High-risk operations require formal approval and auditing. Prohibited operations should be blocked directly by the system. Text-based policies alone cannot guarantee compliance because people under project pressure tend to bypass processes. Embedding rules into tools—such as frozen versions being read-only, failing quality checks blocking release, and unauthorized data sources being blocked from the mainline—is what genuinely reduces the probability of violations.
+
+Table 25-12 summarizes the corresponding comparison and engineering considerations.
 
 *Table 25-12: Lineage governance rules by data lifecycle stage.*
 
@@ -592,6 +620,8 @@ The entire retrospection took approximately 85 minutes from "problem report" to 
 Without version management, this investigation would likely have taken a very different path: the algorithm team first suspects training parameters and re-examines training logs; the data team then searches through recent weeks' data folders to determine which files were used for `v3.0.0`; the quality team needs to manually ask reviewers whether they processed refund samples; and the business team needs to recall when the refund process was updated. Every step depends on human memory, and different team members may give inconsistent timelines. Even if the cause is eventually identified, it is difficult to prove which operation caused the performance degradation.
 
 With version management, the retrospection path flows from model to experiment, experiment to dataset, dataset to shard, shard to quality review, and review record to business rule. This is a structured evidence chain. It not only shortens investigation time but also changes the way the team discusses problems: discussions are no longer centered on "who might have changed the data" but on "where the evidence chain shows a rule produced an unintended effect."
+
+Table 25-13 summarizes the corresponding comparison and engineering considerations.
 
 *Table 25-13: Comparison of retrospection approaches with and without version management.*
 

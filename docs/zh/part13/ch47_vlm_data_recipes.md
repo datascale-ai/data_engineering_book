@@ -111,6 +111,8 @@ MiniCPM-V 提供了一个截然不同的数据配方范式：在总体规模受�
 
 多模态领域存在一个长期的工程痛点：高分辨率（High-Resolution）图像带来的 Token 爆炸。如果强制把图片统一 Resize 到 224×224，模型就变成了"近视眼"，永远无法读懂密集排列的发票和数学公式。为了解决这个问题，数据管线中演化出了两派截然不同的处理哲学，它们在数据预处理阶段就已经产生了本质分歧。
 
+图47-3展示了相应的流程或结构。
+
 ![图47-3：Native vs Dynamic Resolution 数据 pipeline 对比 (Resolution Handling)](../../images/part13/Cao-Chap47-Fig03-EN.svg)
 
 <div align="center"><b>图47-3：Native vs Dynamic Resolution 数据 pipeline 对比</b></div>
@@ -163,6 +165,8 @@ MiniCPM-V 提供了一个截然不同的数据配方范式：在总体规模受�
 
 以下是一个 Qwen2.5-VL 风格自蒸馏 Caption 重写管线的核心代码框架：
 
+代码清单47-1给出了相应的代码或配置示例。
+
 ```python
 # 自蒸馏 Caption 重写核心流程（骨架示意）
 from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
@@ -189,6 +193,9 @@ def recaption_batch(image_paths: list[str], model, processor) -> list[str]:
         results.append(caption)
     return results
 ```
+
+*代码清单47-1：代码或配置示例。*
+
 
 **工程要点说明**：
 

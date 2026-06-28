@@ -70,6 +70,8 @@ Tasks unsuitable for direct entry into the first round of RL also need to be ide
 
 The R1-style reasoning data flywheel can be broken into four stages: cold-start SFT, large-scale RL, rejection sampling, and second-round SFT. These four stages are not a linear one-time process but a closed loop that can be run repeatedly.
 
+Figure 46-1 illustrates the corresponding workflow or structure.
+
 ![Figure 46-1: The four stages of the R1-style reasoning data flywheel](../../images/part13/Xu-Chap46-Fig01.svg)
 *Figure 46-1: The data feedback relationships among cold-start SFT, large-scale RL, rejection sampling, and second-round SFT.*
 
@@ -101,6 +103,8 @@ After cold-start SFT, evaluation should not stop at benchmark scores. More impor
 
 In the RL stage, the model no longer merely imitates given answers; instead it performs multi-path sampling over a task pool and updates its policy based on reward signals. The key data object here is no longer a single SFT sample but a group of trajectories:
 
+Listing 46-1 provides the corresponding code or configuration example.
+
 ```json
 {
   "task_id": "math_000123",
@@ -118,6 +122,9 @@ In the RL stage, the model no longer merely imitates given answers; instead it p
   "model_version": "policy_step_0200"
 }
 ```
+
+*Listing 46-1: Code or configuration example.*
+
 
 This structure shows that RL data engineering must record the task, samples, answers, verifier, rewards, and model version. If only the final trained model weights are saved, it is impossible to diagnose why the model improved or to localize reward hacking.
 
@@ -177,6 +184,8 @@ On the data versioning side, second-round SFT should generate an independent man
 
 The core of R1-paradigm data engineering lies in reward signal and verifier design. Without reliable rewards, RL merely amplifies the model's existing biases; without a traceable data structure, rejection sampling cannot be audited.
 
+Figure 46-2 illustrates the corresponding workflow or structure.
+
 ![Figure 46-2: Reward signal and verifier architecture for reasoning data](../../images/part13/Xu-Chap46-Fig02.svg)
 *Figure 46-2: The relationship among rule-based rewards, model-based rewards, and human audits.*
 
@@ -195,6 +204,8 @@ In training systems, rewards should ideally not be stored as a single floating-p
 The greatest advantage of rule-based rewards is reproducibility, but they also incentivize the model to find rule loopholes. If the verifier only reads the final answer, the model may ignore the process; if test cases have insufficient coverage, the model may write code that overfits the tests; if the JSON schema only checks for field existence, the model may fill in meaningless content. Therefore, rule-based rewards are not "reliable as soon as written" but need unit testing, regression testing, and anomalous-sample testing, just like production code.
 
 The advantage of model-based rewards is coverage of more complex human preferences, but they must be constrained to appropriate positions. Allowing a judge model to directly decide all rewards risks the training system inheriting the judge's tastes—for example, preferring longer explanations, more polite phrasing, or more confident tone. For reasoning tasks, a judge is better suited as a supplementary evaluator: checking whether the reasoning process is self-consistent, whether conditions were missed, or whether obvious hallucinations are present—not substituting for verifiable answers. Judge prompts must also be saved in data records; otherwise, when evaluation standards change, different data batches cannot be compared.
+
+Table 46-1 summarizes the corresponding comparison and engineering considerations.
 
 *Table 46-1: Rule-Based Rewards and Model-Based Rewards.*
 
@@ -224,6 +235,8 @@ Code task verifiers are more complex. They must isolate the filesystem, restrict
 
 Long-CoT trajectory quality can also be observed from internal structure. Three common segment types are Reflection, Verification, and Backtrack: Reflection is used to re-examine assumptions, Verification checks intermediate conclusions or the final answer, and Backtrack retreats and changes the solution approach when a path is found to be incorrect. These three patterns should not be mechanically encoded as fixed templates but should serve as structural labels when analyzing reasoning trajectories.
 
+Figure 46-3 illustrates the corresponding workflow or structure.
+
 ![Figure 46-3: Long-CoT data sample cross-section](../../images/part13/Xu-Chap46-Fig03.svg)
 *Figure 46-3: A cross-section of a Long-CoT data sample illustrating three reasoning trajectory patterns: Reflection, Verification, and Backtrack.*
 
@@ -242,6 +255,8 @@ For data filtering, a lightweight language detector can calculate the language r
 ### 46.3.4 Trajectory Storage and Version Control
 
 Reasoning data relies more heavily on metadata than ordinary SFT data. The recommended minimum fields are:
+
+Table 46-2 summarizes the corresponding comparison and engineering considerations.
 
 *Table 46-2: Trajectory Storage and Version Control.*
 
@@ -321,6 +336,8 @@ The shared value of OpenThoughts and Sky-T1 is that they transform reasoning dat
 
 However, open-source data cannot be equated directly with business data. The problem types, languages, difficulty levels, and answer styles of datasets like OpenThoughts have their own distributions, and Sky-T1's training objectives may not align with enterprise scenarios. Before using them in a project, three checks are required: whether the target language is consistent, whether the target task types are covered, and whether evaluation set contamination risk is present. Only after passing these checks is open-source data suitable as cold-start data or control-experiment data.
 
+Table 46-3 summarizes the corresponding comparison and engineering considerations.
+
 *Table 46-3: Comparison of Long-CoT Data Characteristics.*
 
 | Model/Dataset | Core Driving Stages | Reasoning Trajectory Source | Open-Source/Downloadable | Distinctive Strategy | Annotation |
@@ -330,6 +347,8 @@ However, open-source data cannot be equated directly with business data. The pro
 | Kimi k1.5 | Long-context RL | Not fully disclosed by developers | Not released as a complete dataset | Long-context scaling and policy optimization | [D] |
 | OpenThoughts-114K | SFT / open-source reproduction | Community synthesis and curation | Dataset open | 114K-scale Long-CoT data | [D] |
 | Sky-T1 | Small-scale Long-CoT SFT | QwQ distillation and curation | Model, data, and code open | Low-cost reproduction of reasoning capability | [D] |
+
+Table 46-4 summarizes the corresponding comparison and engineering considerations.
 
 *Table 46-4: Comparison of Long-CoT Data Characteristics.*
 
@@ -375,6 +394,8 @@ Distilled reasoning data also needs to record the relationship among the teacher
 
 An actionable data catalog is as follows:
 
+Table 46-5 summarizes the corresponding comparison and engineering considerations.
+
 *Table 46-5: Case A: Anatomy of the OpenThoughts-114K Dataset.*
 
 | Subset | Entry Condition | Use |
@@ -397,6 +418,8 @@ A rule-based reward verification pool can be decomposed into three layers.
 
 The basic workflow for a math verification pool is as follows:
 
+Listing 46-2 provides the corresponding code or configuration example.
+
 ```python
 def verify_math(predicted, reference):
     pred_expr = normalize_and_parse(predicted)
@@ -409,7 +432,12 @@ def verify_math(predicted, reference):
     }
 ```
 
+*Listing 46-2: Code or configuration example.*
+
+
 The code verification pool requires stricter security boundaries:
+
+Listing 46-3 provides the corresponding code or configuration example.
 
 ```python
 def verify_code(code, tests, timeout=5):
@@ -420,6 +448,9 @@ def verify_code(code, tests, timeout=5):
         "runtime_ms": result.runtime_ms
     }
 ```
+
+*Listing 46-3: Code or configuration example.*
+
 
 These two examples are structural illustrations only. Real systems must handle malicious code, infinite loops, environment dependencies, floating-point errors, multiple valid answers, and insufficient test coverage.
 
@@ -447,6 +478,8 @@ The goal of rejection sampling is to select high-quality trajectories from a lar
 
 Rejection sampling should retain failed samples. Failed samples are not garbage; they help the team analyze common model errors and can serve as future PRM or hard-case data. It is recommended to classify samples into four categories:
 
+Table 46-6 summarizes the corresponding comparison and engineering considerations.
+
 *Table 46-6: Case C: Rejection Sampling in Practice.*
 
 | Type | Meaning | Downstream Use |
@@ -466,6 +499,8 @@ Rejection sampling can output two data files. The first is `sft_selected.jsonl`,
 
 A complete filtering decision can be written with the following fields:
 
+Listing 46-4 provides the corresponding code or configuration example.
+
 ```json
 {
   "sample_id": "math_000123_s07",
@@ -478,11 +513,16 @@ A complete filtering decision can be written with the following fields:
 }
 ```
 
+*Listing 46-4: Code or configuration example.*
+
+
 This explicit decision record allows the team to reuse old trajectories when adjusting thresholds later. For example, the first pass selects only samples with `quality_score >= 0.85`; if more data is needed in a subsequent pass, samples scoring 0.75 to 0.85 can be re-selected without resampling all tasks.
 
 ### 46.5.1 Interface Mapping to Part XIV Project 12
 
 Chapter 46 defines the theory and paradigm, while Part XIV Project 12 turns the paradigm into a runnable project. To avoid mixing the chapter explanation with the project implementation, the core objects are mapped as follows.
+
+Table 46-7 summarizes the corresponding comparison and engineering considerations.
 
 *Table 46-7: Interface Mapping to Part XIV Project 12.*
 
@@ -557,6 +597,8 @@ For small teams, starting with full RL training is not recommended. A more reali
 * Finally, validate the gains using LoRA or short-step SFT.
 
 The focus of this path is to first validate the data production closed loop, then consider scaling the model and task volume.
+
+Table 46-8 summarizes the corresponding comparison and engineering considerations.
 
 *Table 46-8: Cost, Risk, and Applicability Boundaries.*
 

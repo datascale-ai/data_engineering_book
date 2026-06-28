@@ -129,6 +129,8 @@ In mathematics tasks, a good schema often includes the problem, known conditions
 
 The example below illustrates a structured trajectory with "action labels + intermediate expressions." The `expr` field can be subjected to equivalence/executability checks; the `action` field can be checked against a whitelist; and the `vars` field can be checked for consistency.
 
+Listing 18-1 provides the corresponding code or configuration example.
+
 ```json
 {
   "id": "math_trace_00031",
@@ -143,6 +145,9 @@ The example below illustrates a structured trajectory with "action labels + inte
   "meta": {"difficulty": "basic", "verifier": "arith_v1"}
 }
 ```
+
+*Listing 18-1: Code or configuration example.*
+
 
 For code tasks, the schema is better suited to a structure of "problem localization—root cause analysis—fix plan—code change—verification result"; SWE-bench organizes GitHub issues, code repositories, and corresponding patches as real-world software engineering solving tasks, providing a canonical reference for this type of schema (Jimenez et al. 2024). Unlike mathematics, the intermediate process in code tasks more closely resembles a solution process directly tied to program state rather than an abstract chain of thought. A high-quality code sample should ideally contain not only the code snippet before and after the fix, but also the test that triggered the error, the failure log, the localization rationale, candidate fix strategies, and the final verification result. Otherwise, the model tends to remain at the level of local patch mapping and struggles to form complete debugging logic.
 
@@ -230,6 +235,8 @@ Execution verification applies to intermediate processes that can be "run." Exam
 
 Without introducing additional dependencies, a "controlled expression" executor can first be implemented: allowing only numerals and `+ - * / ( )`, verifying whether the right-hand side of each step's equation can be evaluated and matches the given target.
 
+Listing 18-2 provides the corresponding code or configuration example.
+
 ```python
 import ast
 import operator as op
@@ -278,6 +285,9 @@ if __name__ == "__main__":
     print(verify_step("x = 10 - 3"))  # True
     print(verify_step("x = __import__('os').system('rm -rf /')"))  # False
 ```
+
+*Listing 18-2: Code or configuration example.*
+
 
 Unit tests primarily serve code repair, program synthesis, and structured tool-invocation tasks; HumanEval, APPS, and MBPP all treat test cases or program behavior as important criteria for evaluating code generation (Chen et al. 2021; Austin et al. 2021). They check not only whether the final program runs, but whether the fix truly satisfies expected behavior. For code tasks, looking at the generated text alone is often insufficient; the true quality standard lies in whether the program behavior is correct, whether edge conditions are covered, and whether new side effects have been introduced. Unit tests serve the role of "behavioral ground truth" here—they are closer to real-world usage standards than text similarity or superficial explanation quality.
 

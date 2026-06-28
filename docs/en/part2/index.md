@@ -32,7 +32,7 @@ This part uses "pre-training corpus" to refer to text data assets before they en
 
 - [Chapter 4: Data Sources, Acquisition, and Copyright](ch04_data_sources.md)
 - [Chapter 5: Cleaning, Deduplication, and Decontamination](ch05_cleaning_dedup.md)
-- [Chapter 6: Tokenization, Serialization, and Efficient Loading](ch06_tokenization_loading.md)
-- [Chapter 7: Data Evaluation, Quality Closed Loop, and Operational Iteration](ch07_data_operations.md)
+- [Chapter 6: Tokenization, Serialization, and Efficient Data Loading](ch06_tokenization_loading.md)
+- [Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration](ch07_data_operations.md)
 
 Suggested order: read Chapters 4 through 7 sequentially. Readers with pre-training experience may read Chapter 7 first to establish the quality-loop view, then return to Chapters 4 through 6 to check whether their own pipelines are traceable, diagnosable, and reproducible.

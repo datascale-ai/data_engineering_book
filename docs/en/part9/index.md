@@ -29,8 +29,8 @@ Chapter 27 establishes the foundation for asset catalogs and metadata governance
 
 - [Chapter 27: Data Asset Catalog and Metadata Governance](ch27_data_catalog_and_metadata_governance.md)
 - [Chapter 28: Data Productization and Data Contracts](ch28_data_productization_and_data_contracts.md)
-- [Chapter 29: Data Asset Valuation and Reuse Mechanisms](ch29_data_valuation_and_reuse.md)
-- [Chapter 30: Enterprise Internal Data Marketplace and Sharing Governance](ch30_internal_data_market_and_sharing_governance.md)
+- [Chapter 29: Data Valuation and Reuse Mechanisms](ch29_data_valuation_and_reuse.md)
+- [Chapter 30: Internal Data Markets and Sharing Governance](ch30_internal_data_market_and_sharing_governance.md)
 
 ## Recommended Reading Order
 

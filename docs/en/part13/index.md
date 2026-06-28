@@ -14,11 +14,11 @@ Throughout this part, "data recipe" is used consistently to describe the combina
 
 ## Table of Contents for This Part
 
-- [Chapter 44: LLM Pretraining Data Engineering in Practice: From Recipe to Production](ch44_pretrain_recipes.md)
+- [Chapter 44: LLM Pre-Training Data Engineering in Practice: From Recipe to Deployment](ch44_pretrain_recipes.md)
 - [Chapter 45: LLM Post-Training Data Engineering in Practice: SFT and Preference Alignment](ch45_posttrain_recipes.md)
-- [Chapter 46: Reasoning Models and RL Data Engineering: The R1 / QwQ Paradigm](ch46_rl_reasoning_data.md)
-- [Chapter 47: Multimodal Large Model (VLM) Data Recipes: From Pretraining to Visual Alignment](ch47_vlm_data_recipes.md)
-- [Chapter 48: Generative Multimodal Model Data Engineering: T2I and T2V Data Pipelines](ch48_t2i_t2v.md)
+- [Chapter 46: Reasoning Models and RL Data Engineering: The R1/QwQ Paradigm](ch46_rl_reasoning_data.md)
+- [Chapter 47: Multimodal Large Model (VLM) Data Recipes: From Pre-Training to Visual Alignment](ch47_vlm_data_recipes.md)
+- [Chapter 48: Data Engineering for Multimodal Generative Models: T2I and T2V Data Pipelines](ch48_t2i_t2v.md)
 
 ## Recipe Paradigms
 
