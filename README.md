@@ -30,6 +30,10 @@
 
 **在线阅读**: [https://datascale-ai.github.io/data_engineering_book/](https://datascale-ai.github.io/data_engineering_book/)
 
+### 扫码访问 GitHub 仓库
+
+![GitHub 仓库二维码](qr_helper.png)
+
 ## 全书架构
 
 ![大模型数据工程全书架构](images/Yu-Book-Fig01.png)
