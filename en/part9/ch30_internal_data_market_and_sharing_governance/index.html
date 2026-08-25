@@ -1,0 +1,4895 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part9/ch30_internal_data_market_and_sharing_governance/">
+      
+      
+        <link rel="prev" href="../ch29_data_valuation_and_reuse/">
+      
+      
+        <link rel="next" href="../../part10/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 30: Internal Data Markets and Sharing Governance - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-30-internal-data-markets-and-sharing-governance" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 30: Internal Data Markets and Sharing Governance
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part9/ch30_internal_data_market_and_sharing_governance/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part9/ch30_internal_data_market_and_sharing_governance/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Guide
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#301-why-enterprises-need-internal-data-markets" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1 Why Enterprises Need Internal Data Markets
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30.1 Why Enterprises Need Internal Data Markets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3011-the-cost-of-data-silos-is-more-than-inconvenience" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1.1 The Cost of Data Silos Is More Than Inconvenience
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3012-duplicate-collection-invisible-budget-consumption" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1.2 Duplicate Collection: Invisible Budget Consumption
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3013-duplicate-cleaning-similar-data-inconsistent-answers" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1.3 Duplicate Cleaning: Similar Data, Inconsistent Answers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3014-unclear-permissions-sharing-becomes-risk" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1.4 Unclear Permissions: Sharing Becomes Risk
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3015-opaque-quality-a-market-cannot-build-trust" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1.5 Opaque Quality: A Market Cannot Build Trust
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3016-core-value-proposition-of-an-internal-data-market" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1.6 Core Value Proposition of an Internal Data Market
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3017-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1.7 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#302-roles-and-processes-in-a-data-market" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2 Roles and Processes in a Data Market
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30.2 Roles and Processes in a Data Market">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3021-a-market-is-a-collaboration-model-not-just-a-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.1 A Market Is a Collaboration Model, Not Just a System
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3022-data-providers-from-owning-data-to-supplying-products" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.2 Data Providers: From Owning Data to Supplying Products
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3023-data-consumers-from-asking-for-data-to-declaring-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.3 Data Consumers: From Asking for Data to Declaring Purpose
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3024-approvers-institutionalizing-business-reasonableness" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.4 Approvers: Institutionalizing Business Reasonableness
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3025-platform-teams-turning-process-into-executable-capability" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.5 Platform Teams: Turning Process Into Executable Capability
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3026-security-and-compliance-teams-making-sharing-boundaries-explicit" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.6 Security and Compliance Teams: Making Sharing Boundaries Explicit
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3027-standard-market-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.7 Standard Market Process
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3028-role-responsibility-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.8 Role Responsibility Matrix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3029-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.9 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#303-sharing-authorization-and-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3 Sharing, Authorization, and Audit
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30.3 Sharing, Authorization, and Audit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3031-core-principles-of-sharing-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.1 Core Principles of Sharing Governance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3032-data-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.2 Data Requests
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3033-authorization-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.3 Authorization Models
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3034-purpose-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.4 Purpose Limits
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3035-access-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.5 Access Logs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3036-expiration-and-reclaim" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.6 Expiration and Reclaim
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3037-violation-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.7 Violation Handling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3038-authorization-workflow-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.8 Authorization Workflow Table
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3039-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.9 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#304-from-sharing-to-a-product-ecosystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4 From Sharing to a Product Ecosystem
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30.4 From Sharing to a Product Ecosystem">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3041-sharing-is-the-starting-point-productization-is-long-term-supply" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4.1 Sharing Is the Starting Point; Productization Is Long-Term Supply
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3042-turning-high-value-shared-assets-into-data-products" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4.2 Turning High-Value Shared Assets Into Data Products
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3043-example-shared-data-product-catalog" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4.3 Example Shared Data Product Catalog
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3044-product-tiers-and-operating-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4.4 Product Tiers and Operating Strategies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3045-from-one-time-authorization-to-long-term-subscription" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4.5 From One-Time Authorization to Long-Term Subscription
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3046-feedback-ratings-and-product-improvement" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4.6 Feedback, Ratings, and Product Improvement
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3047-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4.7 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#305-operating-metrics-and-incentives" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5 Operating Metrics and Incentives
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30.5 Operating Metrics and Incentives">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3051-why-operating-metrics-are-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5.1 Why Operating Metrics Are Needed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3052-supply-side-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5.2 Supply-Side Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3053-demand-side-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5.3 Demand-Side Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3054-efficiency-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5.4 Efficiency Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3055-quality-and-risk-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5.5 Quality and Risk Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3056-value-metrics-and-incentives" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5.6 Value Metrics and Incentives
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3057-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5.7 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#306-case-customer-risk-data-product-enters-the-internal-data-market" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.6 Case: Customer Risk Data Product Enters the Internal Data Market
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30.6 Case: Customer Risk Data Product Enters the Internal Data Market">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3061-case-background" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.6.1 Case Background
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3062-product-listing" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.6.2 Product Listing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3063-authorization-and-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.6.3 Authorization and Use
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3064-audit-and-feedback" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.6.4 Audit and Feedback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3065-from-shared-asset-to-core-product" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.6.5 From Shared Asset to Core Product
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3066-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.6.6 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#307-implementation-anti-patterns-and-acceptance-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7 Implementation Anti-Patterns and Acceptance Checklist
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30.7 Implementation Anti-Patterns and Acceptance Checklist">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3071-anti-pattern-1-turning-the-market-into-a-static-catalog" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7.1 Anti-Pattern 1: Turning the Market Into a Static Catalog
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3072-anti-pattern-2-emphasizing-control-without-improving-experience" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7.2 Anti-Pattern 2: Emphasizing Control Without Improving Experience
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3073-anti-pattern-3-no-maintenance-after-listing" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7.3 Anti-Pattern 3: No Maintenance After Listing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3074-anti-pattern-4-ignoring-consumer-feedback" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7.4 Anti-Pattern 4: Ignoring Consumer Feedback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3075-anti-pattern-5-no-retirement-mechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7.5 Anti-Pattern 5: No Retirement Mechanism
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3076-implementation-acceptance-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7.6 Implementation Acceptance Checklist
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3077-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7.7 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Guide
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#301-why-enterprises-need-internal-data-markets" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1 Why Enterprises Need Internal Data Markets
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30.1 Why Enterprises Need Internal Data Markets">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3011-the-cost-of-data-silos-is-more-than-inconvenience" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1.1 The Cost of Data Silos Is More Than Inconvenience
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3012-duplicate-collection-invisible-budget-consumption" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1.2 Duplicate Collection: Invisible Budget Consumption
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3013-duplicate-cleaning-similar-data-inconsistent-answers" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1.3 Duplicate Cleaning: Similar Data, Inconsistent Answers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3014-unclear-permissions-sharing-becomes-risk" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1.4 Unclear Permissions: Sharing Becomes Risk
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3015-opaque-quality-a-market-cannot-build-trust" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1.5 Opaque Quality: A Market Cannot Build Trust
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3016-core-value-proposition-of-an-internal-data-market" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1.6 Core Value Proposition of an Internal Data Market
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3017-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.1.7 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#302-roles-and-processes-in-a-data-market" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2 Roles and Processes in a Data Market
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30.2 Roles and Processes in a Data Market">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3021-a-market-is-a-collaboration-model-not-just-a-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.1 A Market Is a Collaboration Model, Not Just a System
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3022-data-providers-from-owning-data-to-supplying-products" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.2 Data Providers: From Owning Data to Supplying Products
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3023-data-consumers-from-asking-for-data-to-declaring-purpose" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.3 Data Consumers: From Asking for Data to Declaring Purpose
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3024-approvers-institutionalizing-business-reasonableness" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.4 Approvers: Institutionalizing Business Reasonableness
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3025-platform-teams-turning-process-into-executable-capability" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.5 Platform Teams: Turning Process Into Executable Capability
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3026-security-and-compliance-teams-making-sharing-boundaries-explicit" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.6 Security and Compliance Teams: Making Sharing Boundaries Explicit
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3027-standard-market-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.7 Standard Market Process
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3028-role-responsibility-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.8 Role Responsibility Matrix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3029-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.2.9 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#303-sharing-authorization-and-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3 Sharing, Authorization, and Audit
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30.3 Sharing, Authorization, and Audit">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3031-core-principles-of-sharing-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.1 Core Principles of Sharing Governance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3032-data-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.2 Data Requests
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3033-authorization-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.3 Authorization Models
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3034-purpose-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.4 Purpose Limits
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3035-access-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.5 Access Logs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3036-expiration-and-reclaim" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.6 Expiration and Reclaim
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3037-violation-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.7 Violation Handling
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3038-authorization-workflow-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.8 Authorization Workflow Table
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3039-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.3.9 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#304-from-sharing-to-a-product-ecosystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4 From Sharing to a Product Ecosystem
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30.4 From Sharing to a Product Ecosystem">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3041-sharing-is-the-starting-point-productization-is-long-term-supply" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4.1 Sharing Is the Starting Point; Productization Is Long-Term Supply
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3042-turning-high-value-shared-assets-into-data-products" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4.2 Turning High-Value Shared Assets Into Data Products
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3043-example-shared-data-product-catalog" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4.3 Example Shared Data Product Catalog
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3044-product-tiers-and-operating-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4.4 Product Tiers and Operating Strategies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3045-from-one-time-authorization-to-long-term-subscription" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4.5 From One-Time Authorization to Long-Term Subscription
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3046-feedback-ratings-and-product-improvement" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4.6 Feedback, Ratings, and Product Improvement
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3047-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.4.7 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#305-operating-metrics-and-incentives" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5 Operating Metrics and Incentives
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30.5 Operating Metrics and Incentives">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3051-why-operating-metrics-are-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5.1 Why Operating Metrics Are Needed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3052-supply-side-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5.2 Supply-Side Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3053-demand-side-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5.3 Demand-Side Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3054-efficiency-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5.4 Efficiency Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3055-quality-and-risk-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5.5 Quality and Risk Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3056-value-metrics-and-incentives" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5.6 Value Metrics and Incentives
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3057-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.5.7 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#306-case-customer-risk-data-product-enters-the-internal-data-market" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.6 Case: Customer Risk Data Product Enters the Internal Data Market
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30.6 Case: Customer Risk Data Product Enters the Internal Data Market">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3061-case-background" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.6.1 Case Background
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3062-product-listing" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.6.2 Product Listing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3063-authorization-and-use" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.6.3 Authorization and Use
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3064-audit-and-feedback" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.6.4 Audit and Feedback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3065-from-shared-asset-to-core-product" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.6.5 From Shared Asset to Core Product
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3066-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.6.6 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#307-implementation-anti-patterns-and-acceptance-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7 Implementation Anti-Patterns and Acceptance Checklist
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="30.7 Implementation Anti-Patterns and Acceptance Checklist">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3071-anti-pattern-1-turning-the-market-into-a-static-catalog" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7.1 Anti-Pattern 1: Turning the Market Into a Static Catalog
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3072-anti-pattern-2-emphasizing-control-without-improving-experience" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7.2 Anti-Pattern 2: Emphasizing Control Without Improving Experience
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3073-anti-pattern-3-no-maintenance-after-listing" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7.3 Anti-Pattern 3: No Maintenance After Listing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3074-anti-pattern-4-ignoring-consumer-feedback" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7.4 Anti-Pattern 4: Ignoring Consumer Feedback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3075-anti-pattern-5-no-retirement-mechanism" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7.5 Anti-Pattern 5: No Retirement Mechanism
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3076-implementation-acceptance-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7.6 Implementation Acceptance Checklist
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3077-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      30.7.7 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-30-internal-data-markets-and-sharing-governance">Chapter 30: Internal Data Markets and Sharing Governance<a class="headerlink" href="#chapter-30-internal-data-markets-and-sharing-governance" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Yang Luo; Fang Gao; Wenzhuo Du</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>Many organizations do not lack data; their data is trapped behind team, system, and permission boundaries, causing duplicate collection, duplicate cleaning, unclear permissions, and opaque quality. The cost is scattered across projects and rarely measured in one place. This chapter discusses internal data markets and sharing governance, connecting data assets, data products, authorization workflows, usage audit, value feedback, and sharing incentives into a sustainable governance system. It first analyzes the hidden cost of data silos and introduces the value proposition of an internal data market grounded in FAIR principles: findability, accessibility, interoperability, and reusability. It then defines five roles: providers, consumers, approvers, platform teams, and security/compliance teams, together with standard collaboration processes and responsibility matrices. Next, it explains core sharing-governance mechanisms: data requests, an authorization model combining role-based access control (RBAC) and attribute-based access control (ABAC), purpose limits, access logs, expiration and reclamation, and violation handling. It also explains how high-value shared assets become long-term data products. Finally, it provides operating metrics and sharing incentives, and connects the method through an end-to-end case in which a customer-risk data product enters the market and is reused across multiple paths.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>Internal data market; sharing governance; data products; authorization audit; value feedback; sharing incentives</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Explain the hidden cost of data silos and use FAIR principles to describe the value proposition of an internal data market.</li>
+<li>Define the collaboration process and responsibility matrix for providers, consumers, approvers, platform teams, and security/compliance teams.</li>
+<li>Design an authorization model combining RBAC and ABAC, and implement sharing-governance mechanisms such as purpose limits, access logs, expiration, reclamation, and violation handling.</li>
+<li>Design a path for turning high-value shared assets into long-term data products.</li>
+<li>Build operating metrics and incentive mechanisms for an internal data market so sharing behavior can be observed, evaluated, and improved.</li>
+</ul>
+<h2 id="chapter-guide">Chapter Guide<a class="headerlink" href="#chapter-guide" title="Permanent link">&para;</a></h2>
+<p>The previous chapters discussed data catalogs, metadata governance, data productization, data contracts, and data valuation. Together they answer several foundational questions: can data be found, understood, depended on, and measured for value? Findability, accessibility, interoperability, and reusability are the conditions that allow data assets to enter an organization's collaboration network (Wilkinson et al. 2016). Inside an enterprise, however, data creates value only after one more barrier is crossed: can the right people reuse the right data, within the right boundaries, in the right way?</p>
+<p>Many organizations do not lack data. Their data is trapped behind team, system, and permission boundaries. One team cleans customer master data while another repeats the same work. One project standardizes field definitions while another reparses raw logs. A high-quality metric definition works inside one business domain but cannot be discovered or requested by other departments.</p>
+<p>This state is expensive. Duplicate collection consumes business-system capacity and external data budgets. Duplicate cleaning creates similar but inconsistent datasets. Unclear permissions push access requests through email and chat. Opaque quality makes consumers discover unreliability only after integrating the data. Worse, these costs are scattered across projects and rarely accounted for at the organizational level. Each team sees a small local shortcut; the organization absorbs duplicate construction, audit risk, and fractured definitions.</p>
+<p>An internal data market addresses this "data exists but does not flow" problem. It is not merely a prettier catalog or an approval form. It connects data assets, data products, authorization processes, usage audit, value feedback, and sharing incentives into a continuing governance system. Research on data marketplaces emphasizes not only listings, but also matching supply and demand, transaction rules, quality signals, and trust mechanisms (Schomm, Stahl and Vossen 2013).</p>
+<p>The goal is not unconditional openness. Quite the opposite: an internal data market should make sharing more bounded, evidence-based, and accountable. It should define which data can be self-served, which requires approval, which can be used only for limited purposes, and which requires anonymization or isolated computation. Data governance research treats decision rights, accountability, and control mechanisms as central to governance design (Khatri and Brown 2010; Abraham, Schneider and vom Brocke 2019).</p>
+<p>This chapter addresses four questions. First, why enterprises need internal data markets, and how markets reduce the cost of duplicate collection, duplicate cleaning, unclear permissions, and opaque quality. Second, how to design roles and processes for providers, consumers, approvers, platform teams, and security/compliance teams. Third, how to govern sharing, authorization, and audit, including purpose limits, access logs, expiration, and violation handling. Fourth, how to move from sharing to a data product ecosystem. The chapter also covers operating metrics, incentives, an end-to-end customer-risk data product case, anti-patterns, and an acceptance checklist.</p>
+<h2 id="301-why-enterprises-need-internal-data-markets">30.1 Why Enterprises Need Internal Data Markets<a class="headerlink" href="#301-why-enterprises-need-internal-data-markets" title="Permanent link">&para;</a></h2>
+<h3 id="3011-the-cost-of-data-silos-is-more-than-inconvenience">30.1.1 The Cost of Data Silos Is More Than Inconvenience<a class="headerlink" href="#3011-the-cost-of-data-silos-is-more-than-inconvenience" title="Permanent link">&para;</a></h3>
+<p>Data silos are often described as a collaboration problem: Team B cannot access data held by Team A. That is true, but incomplete. The deeper issue is that silos continuously produce duplicate cost, quality divergence, risk blind spots, and delayed decisions.</p>
+<p>When data cannot be shared reliably, each team tends to collect a copy it can control. This may look faster in the short term. Over time, the organization accumulates many similar sources with different definitions and quality levels. Those copies enter reports, models, risk rules, customer profiles, and operational systems. As dependencies grow, they become hard to reconcile. When metrics disagree, teams spend time explaining why "my customer count" differs from "your customer count." This explanation cost is one of the most common and persistent wastes in enterprise data governance.</p>
+<p>Silos also destroy economies of scale in data quality. If one shared asset serves many teams, one quality fix benefits many downstream uses. If every team creates a copy, each team separately handles missing values, duplicates, anomalies, and definition changes. One team fills nulls as "unknown," another drops them, and a third interprets them as "not applicable." Downstream answers diverge even when everyone began with the same raw data.</p>
+<p>An internal data market reorganizes these scattered efforts. It lets high-quality assets be discovered, requested, authorized, reused, and reviewed under controlled conditions. Treating information as a measurable and operable asset is a core theme of information asset management and data value management (Moody and Walsh 1999; Laney 2017).</p>
+<h3 id="3012-duplicate-collection-invisible-budget-consumption">30.1.2 Duplicate Collection: Invisible Budget Consumption<a class="headerlink" href="#3012-duplicate-collection-invisible-budget-consumption" title="Permanent link">&para;</a></h3>
+<p>Duplicate collection is one of the first problems an internal data market should reduce. In large enterprises, the same data category is often collected independently by multiple teams: customer profiles by marketing, service, risk, and finance; supplier data by procurement, contract, finance, and risk systems; device status by production, operations, and quality systems.</p>
+<p>Each team can usually justify the local copy: its system needs fresher data, its fields fit the business better, its permission process is easier to control, or its project schedule cannot wait for enterprise governance. The problem is that if the organization does not record total duplicate cost, duplication becomes the default.</p>
+<p>Duplicate collection includes interface cost, external purchase cost, processing cost, and reconciliation cost. The market changes the default. Before launching a new collection effort, consumers should search the market for reusable data products. If an existing product meets the need, they request authorization. If it partially meets the need, they request product enhancement. Some scenarios still need independent pipelines, such as ultra-low-latency risk decisions, isolated sensitive computation, or legally required data separation. But duplication should require a reason; it should not be the path of least resistance.</p>
+<h3 id="3013-duplicate-cleaning-similar-data-inconsistent-answers">30.1.3 Duplicate Cleaning: Similar Data, Inconsistent Answers<a class="headerlink" href="#3013-duplicate-cleaning-similar-data-inconsistent-answers" title="Permanent link">&para;</a></h3>
+<p>Duplicate cleaning is even more hidden. Multiple teams may use the same raw data, yet produce different assets because their cleaning rules differ. For example, order amount may involve refunds, discounts, taxes, and fees. Marketing may exclude refunded orders, finance may count refunds as negative amounts, and risk may use transaction initiation amount. Their views of customer spending power will differ. Phone-number deduplication may also vary by phone, ID number, or phone plus name, producing different customer counts.</p>
+<p>The market should not force one universal cleaning rule for every purpose. Instead, it should productize, document, and make choices explicit. A shared data product must explain its business definition, cleaning rules, suitable scenarios, and unsuitable scenarios. If the same raw source legitimately supports several definitions, the market may list several derived products, but their lineage and documentation must show the relationship. Consumers then choose knowingly rather than receiving a result that only appears standard.</p>
+<h3 id="3014-unclear-permissions-sharing-becomes-risk">30.1.4 Unclear Permissions: Sharing Becomes Risk<a class="headerlink" href="#3014-unclear-permissions-sharing-becomes-risk" title="Permanent link">&para;</a></h3>
+<p>Many organizations still handle data access through email, chat, offline confirmation, and temporary permissions. Applicants do not know whom to ask. Data owners do not know whether they can approve. Security teams do not know the purpose. Platform teams open access but do not own the business judgment.</p>
+<p>This creates two opposite failures. Legitimate use is delayed, and inappropriate access may be granted through informal communication or stale permissions. The root cause is the absence of institutionalized decision rights for data sharing.</p>
+<p>An internal data market must split authorization responsibility clearly. Providers confirm content, quality, and definitions. Business approvers judge whether the purpose is reasonable. Security and compliance teams judge sensitivity, anonymization, and use limits. Platform teams execute permissions, record logs, and reclaim access at expiration. Once these roles are formalized, sharing becomes auditable, reviewable, and optimizable rather than dependent on personal relationships.</p>
+<p>The point is not to make approval heavy. It is to make approval evidence-based. Clear low-risk requests can use fast paths. Sensitive data, vague purposes, external sharing, or model training should trigger stricter review.</p>
+<h3 id="3015-opaque-quality-a-market-cannot-build-trust">30.1.5 Opaque Quality: A Market Cannot Build Trust<a class="headerlink" href="#3015-opaque-quality-a-market-cannot-build-trust" title="Permanent link">&para;</a></h3>
+<p>Every market needs trust. If consumers cannot see quality status, they will not connect a data product to core production workflows. A catalog with many products can still become a rich-looking but unused directory.</p>
+<p>Quality opacity usually appears in four ways: consumers do not know whether data is fresh, whether fields are stable, what the missing/duplicate/anomaly rates are, or who will fix quality problems. Each shared data product should therefore carry quality information: update time, quality grade, key-field completeness, recent incidents, SLA, owner, and feedback channel. High-value products should also show quality trends.</p>
+<p>Quality transparency changes consumer behavior. A stable, well-documented, responsive product will be reused. A low-quality product without ownership will not circulate even if it is listed. The market must govern quality, responsibility, and feedback, not only listings.</p>
+<h3 id="3016-core-value-proposition-of-an-internal-data-market">30.1.6 Core Value Proposition of an Internal Data Market<a class="headerlink" href="#3016-core-value-proposition-of-an-internal-data-market" title="Permanent link">&para;</a></h3>
+<p>An internal data market has four basic value propositions:</p>
+<ol>
+<li><strong>Make data discoverable.</strong> Consumers can search existing assets and products before creating new pipelines.</li>
+<li><strong>Make sharing bounded.</strong> Use is authorized, purpose-constrained, and audited rather than uncontrolled.</li>
+<li><strong>Make quality judgeable.</strong> Consumers can see definitions, quality status, SLA, and historical issues before using data.</li>
+<li><strong>Make reuse sustainable.</strong> High-value shared data becomes maintained data products with feedback and stable supply.</li>
+</ol>
+<p>This is what distinguishes a market from an ordinary catalog. A catalog answers what data exists. A market further answers who can use it, how it can be used, how well it is used, and whether it deserves continued supply.</p>
+<p>An internal data market is also different from a pure permission system. A permission system focuses on access control; a data market also focuses on product quality, consumer experience, reuse benefits, and asset operations. It is therefore the intersection of data governance, data platforms, and data product management. Figure 30-1 shows the overall architecture of an internal data market and the relationships among data assets, product catalogs, authorization workflows, usage audit, and value feedback.</p>
+<p><a class="glightbox" href="../../../images/part9/Luo-Chap30-Fig01-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Internal data market architecture" src="../../../images/part9/Luo-Chap30-Fig01-EN.svg" /></a></p>
+<p><em>Figure 30-1: Internal data market architecture</em></p>
+<h3 id="3017-section-summary">30.1.7 Section Summary<a class="headerlink" href="#3017-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section explained why enterprises need internal data markets. Duplicate collection, duplicate cleaning, unclear permissions, and opaque quality create continuing cost, risk, and definition fragmentation. A market turns data from scattered resources into governable internal assets that can flow efficiently within clear boundaries.</p>
+<h2 id="302-roles-and-processes-in-a-data-market">30.2 Roles and Processes in a Data Market<a class="headerlink" href="#302-roles-and-processes-in-a-data-market" title="Permanent link">&para;</a></h2>
+<h3 id="3021-a-market-is-a-collaboration-model-not-just-a-system">30.2.1 A Market Is a Collaboration Model, Not Just a System<a class="headerlink" href="#3021-a-market-is-a-collaboration-model-not-just-a-system" title="Permanent link">&para;</a></h3>
+<p>When building an internal data market, teams often start from system functions: search, request button, approval page, permission provisioning, access logs, and ratings. These functions matter, but they are only the surface. Data management bodies of knowledge place these capabilities across governance, metadata, quality, security, and architecture rather than in one isolated system (DAMA International 2017).</p>
+<p>The real market is a set of cross-role collaboration relationships. If role boundaries are unclear, even a complete system will fail: providers do not know what to maintain, consumers do not know how to express needs, approvers do not know approval standards, platform teams only open access, and compliance teams can only punish after the fact.</p>
+<p>This chapter divides market roles into five categories: data providers, data consumers, approvers, platform teams, and security/compliance teams. These are governance responsibilities, not fixed organization names. One team may hold several roles; one role may be shared by several teams. Every sharing action must still have accountable parties.</p>
+<h3 id="3022-data-providers-from-owning-data-to-supplying-products">30.2.2 Data Providers: From Owning Data to Supplying Products<a class="headerlink" href="#3022-data-providers-from-owning-data-to-supplying-products" title="Permanent link">&para;</a></h3>
+<p>Providers produce and maintain shared data. In a market, they must take product responsibility rather than merely "owning" a table. Data mesh's data-as-a-product idea similarly emphasizes that domain teams should own discoverability, understandability, trustworthiness, and usability (Dehghani 2022).</p>
+<p>Providers define asset boundaries: a table, a table group, a metric package, a tag package, an API, or a product containing documents, examples, quality reports, and a contract. They explain business definitions, maintain quality, configure monitoring and incident response, and manage change. Field additions, deprecations, definition changes, source replacements, and refresh-cadence changes must be communicated through contracts or change notices. Providers do not finish their work by "putting data out"; they operate a dependable product.</p>
+<h3 id="3023-data-consumers-from-asking-for-data-to-declaring-purpose">30.2.3 Data Consumers: From Asking for Data to Declaring Purpose<a class="headerlink" href="#3023-data-consumers-from-asking-for-data-to-declaring-purpose" title="Permanent link">&para;</a></h3>
+<p>Consumers use shared data. They should not merely ask for "table X." They should state purpose, scenario, access method, data scope, usage duration, and downstream impact.</p>
+<p>Purpose declaration is central. The same data used for reporting, model training, customer outreach, risk decisions, or external disclosure has different risk. Without purpose, approvers and compliance teams cannot judge whether access is reasonable. Consumers should also follow least privilege: request the minimum fields, time range, and access needed. Regional sales analysis may need city-level aggregates, not customer-level details. Feature development may need anonymized behavior features, not raw identifiers.</p>
+<p>Consumers should also provide feedback after use: whether the data met the need, whether fields were clear, whether quality was stable, and whether the request process worked.</p>
+<h3 id="3024-approvers-institutionalizing-business-reasonableness">30.2.4 Approvers: Institutionalizing Business Reasonableness<a class="headerlink" href="#3024-approvers-institutionalizing-business-reasonableness" title="Permanent link">&para;</a></h3>
+<p>Approvers judge whether a sharing request is reasonable for the business. They may come from the data's business domain, a governance committee, or the data owner organization. They should not simply approve or reject; they should decide based on data classification, purpose, consumer identity, historical authorization, and risk requirements.</p>
+<p>Approvers should ask whether the purpose is real and clear, whether requested data matches the purpose, whether lower-sensitivity alternatives exist, whether access duration is reasonable, whether data will be reshared, and whether model training or automated decision making is involved.</p>
+<p>For low-sensitivity routine uses, approvers can define auto-approval or fast-approval rules. High-sensitivity, cross-domain, external, or personal-rights-affecting uses require stricter approval.</p>
+<h3 id="3025-platform-teams-turning-process-into-executable-capability">30.2.5 Platform Teams: Turning Process Into Executable Capability<a class="headerlink" href="#3025-platform-teams-turning-process-into-executable-capability" title="Permanent link">&para;</a></h3>
+<p>Platform teams implement the market process as system capability: catalog, search, listing, request forms, approval flows, permission provisioning, access control, log collection, expiration, quality display, and feedback. Modern data platforms connect ingestion, storage, processing, service, governance, and observability across the data lifecycle (Reis and Housley 2022).</p>
+<p>Platform teams also standardize interfaces. Products may appear as tables, APIs, files, metrics, features, vector indexes, or knowledge bases, but the market should provide a unified discovery, request, and audit experience. The platform should not replace business approval or compliance judgment. It makes the process executable, traceable, and automatable.</p>
+<p>If a platform can list data but cannot write authorization into permission systems, the market remains a display layer. If it can open access but cannot record purpose and expiration, audit fails. The market must integrate identity management, permission systems, catalogs, lineage, quality monitoring, ticketing, and audit platforms.</p>
+<h3 id="3026-security-and-compliance-teams-making-sharing-boundaries-explicit">30.2.6 Security and Compliance Teams: Making Sharing Boundaries Explicit<a class="headerlink" href="#3026-security-and-compliance-teams-making-sharing-boundaries-explicit" title="Permanent link">&para;</a></h3>
+<p>Security and compliance teams define sharing boundaries based on sensitivity, regulations, internal policies, and scenario risk. Policies include data classification, anonymization requirements, access control, purpose limits, retention, audit, cross-border or external sharing restrictions, and violation handling.</p>
+<p>Compliance should not appear only as a final veto. Better practice is to embed rules into the market platform: some high-sensitive fields are never shared in plaintext, some data can be used only in isolated analysis environments, some requests require a project ID and business owner, and some authorizations expire within 90 days. Systematized rules improve efficiency because routine cases can be handled automatically and high-risk cases receive human attention.</p>
+<h3 id="3027-standard-market-process">30.2.7 Standard Market Process<a class="headerlink" href="#3027-standard-market-process" title="Permanent link">&para;</a></h3>
+<p>A standard process has seven stages:</p>
+<ol>
+<li><strong>Data product listing.</strong> The provider registers the product with definitions, fields, quality indicators, sensitivity level, SLA, owner, examples, and request conditions.</li>
+<li><strong>Consumer discovery.</strong> The consumer searches by keyword, domain, tag, metric, scenario, and lineage.</li>
+<li><strong>Request submission.</strong> The consumer selects scope, access method, purpose, duration, project, and high-risk use flags such as model training or external disclosure.</li>
+<li><strong>Policy evaluation.</strong> The platform routes the request to auto-approval, fast approval, or multi-party review based on data level, purpose, consumer identity, and authorization history.</li>
+<li><strong>Approval decision.</strong> Business approvers and compliance teams decide, possibly requiring reduced scope, anonymized versions, or more explanation.</li>
+<li><strong>Permission provisioning.</strong> The platform writes the approval into permission systems and records scope, expiration, purpose limits, and responsible parties.</li>
+<li><strong>Usage audit and feedback.</strong> The platform records logs, frequency, abnormal behavior, expiration, and feedback, then feeds results into product operations.</li>
+</ol>
+<p>Figure 30-2 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part9/Luo-Chap30-Fig02-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Authorization approval workflow" src="../../../images/part9/Luo-Chap30-Fig02-EN.svg" /></a></p>
+<p><em>Figure 30-2: Authorization approval workflow</em></p>
+<h3 id="3028-role-responsibility-matrix">30.2.8 Role Responsibility Matrix<a class="headerlink" href="#3028-role-responsibility-matrix" title="Permanent link">&para;</a></h3>
+<p>A responsibility matrix makes the process executable and auditable. Governance organization design must fit business complexity, centralization, and decision rights; no single model fits all enterprises (Weber, Otto and Osterle 2009; Otto 2011; Alhassan, Sammon and Daly 2016).</p>
+<p>Table 30-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 30-1: Internal data market role responsibility matrix</em></p>
+<table>
+<thead>
+<tr>
+<th>Governance action</th>
+<th>Data provider</th>
+<th>Data consumer</th>
+<th>Approver</th>
+<th>Platform team</th>
+<th>Security/compliance team</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Product listing</td>
+<td>Define definitions, fields, quality, and owner</td>
+<td>Provide demand feedback</td>
+<td>Confirm business ownership</td>
+<td>Provide listing tools and templates</td>
+<td>Confirm sensitivity rules</td>
+</tr>
+<tr>
+<td>Data discovery</td>
+<td>Maintain searchable descriptions and tags</td>
+<td>Search and compare products</td>
+<td>Monitor key-asset coverage</td>
+<td>Provide search, recommendation, and catalog capability</td>
+<td>Provide compliance tags</td>
+</tr>
+<tr>
+<td>Data request</td>
+<td>Answer product questions</td>
+<td>State purpose, scope, and duration</td>
+<td>Judge business reasonableness</td>
+<td>Provide request forms and workflow</td>
+<td>Judge risk and restrictions</td>
+</tr>
+<tr>
+<td>Authorization approval</td>
+<td>Confirm content and supply capability</td>
+<td>Add purpose details</td>
+<td>Make business decision</td>
+<td>Orchestrate approval flow</td>
+<td>Make compliance decision</td>
+</tr>
+<tr>
+<td>Permission provisioning</td>
+<td>Confirm authorized scope</td>
+<td>Use within scope</td>
+<td>Confirm approval result</td>
+<td>Write to permission systems</td>
+<td>Define controls</td>
+</tr>
+<tr>
+<td>Usage audit</td>
+<td>Watch abnormal-use feedback</td>
+<td>Accept logging and checks</td>
+<td>Review authorization reasonableness</td>
+<td>Collect access logs</td>
+<td>Monitor violation risk</td>
+</tr>
+<tr>
+<td>Quality maintenance</td>
+<td>Fix issues and notify changes</td>
+<td>Report quality problems</td>
+<td>Coordinate cross-domain impact</td>
+<td>Display quality metrics</td>
+<td>Assess quality risk</td>
+</tr>
+<tr>
+<td>Expiration and reclaim</td>
+<td>Confirm renewal eligibility</td>
+<td>Renew or stop use</td>
+<td>Approve renewal</td>
+<td>Reclaim permissions automatically</td>
+<td>Review long-term access</td>
+</tr>
+</tbody>
+</table>
+<p>The matrix can be adjusted, but each action needs an accountable owner, not only participants.</p>
+<h3 id="3029-section-summary">30.2.9 Section Summary<a class="headerlink" href="#3029-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section decomposed the market into five roles and seven process stages. Providers productize data, consumers declare purpose and least-privilege scope, approvers judge business reasonableness, platform teams automate process, and security/compliance teams define boundaries. With these roles connected, the market becomes an executable sharing governance mechanism rather than a static directory.</p>
+<h2 id="303-sharing-authorization-and-audit">30.3 Sharing, Authorization, and Audit<a class="headerlink" href="#303-sharing-authorization-and-audit" title="Permanent link">&para;</a></h2>
+<h3 id="3031-core-principles-of-sharing-governance">30.3.1 Core Principles of Sharing Governance<a class="headerlink" href="#3031-core-principles-of-sharing-governance" title="Permanent link">&para;</a></h3>
+<p>Sharing governance must balance efficiency and safety. If every request passes through heavy approval, consumers will bypass the market. If everything is self-service, sensitive data loses boundaries and the organization fails audit and privacy obligations. Security and privacy control systems emphasize risk-based access, audit, purpose constraints, and accountability rather than uniform control strength (NIST 2020a; NIST 2020b).</p>
+<p>Four principles form the baseline:</p>
+<ol>
+<li><strong>Least privilege.</strong> Consumers receive only the minimum data scope and permission needed for the declared purpose.</li>
+<li><strong>Purpose binding.</strong> Authorization is tied to a project, purpose, and time window, not a permanent opening for a person.</li>
+<li><strong>Traceability.</strong> Who accessed what data, when, and for what purpose must be auditable.</li>
+<li><strong>Dynamic reclaim.</strong> Permissions expire or change when projects end, purposes change, people move, or risks change.</li>
+</ol>
+<h3 id="3032-data-requests">30.3.2 Data Requests<a class="headerlink" href="#3032-data-requests" title="Permanent link">&para;</a></h3>
+<p>A good request form should not only ask "which table." It should help consumers express the need clearly. Required information should include applicant, team, project ID, business owner, data product, fields, time range, access method, duration, purpose, downstream system, model-training flag, customer-outreach flag, and external-sharing flag.</p>
+<p>For sensitive data, the form should ask why anonymized, aggregated, or lower-sensitivity alternatives cannot be used. Templates should help consumers describe purposes correctly. Purpose categories such as business analysis, risk modeling, customer operations, product experimentation, audit, regulatory reporting, and R&amp;D testing can drive different approval routes.</p>
+<h3 id="3033-authorization-models">30.3.3 Authorization Models<a class="headerlink" href="#3033-authorization-models" title="Permanent link">&para;</a></h3>
+<p>Traditional data permissions focus on tables, databases, directories, or system accounts. That works for simple analytics, but not for an internal data market. Role-based access control provides a foundation, while attribute-based access control extends decisions with subject, resource, environment, and purpose attributes (Ferraiolo and Kuhn 1992; Sandhu et al. 1996; Hu et al. 2014).</p>
+<p>The market should move from table permissions to purpose permissions. A purpose permission combines data object, field scope, row scope, access method, use scenario, validity period, environment, and reshare limits. For the same customer dataset, a finance audit project may access customer IDs, transaction amounts, and contract status; a marketing analysis project may access only anonymized IDs and aggregated tags; a model training project may be forced into an isolated environment with no plaintext export.</p>
+<p>Approval results should therefore produce structured authorization policies, not merely "allow table A." Permission systems, query engines, API gateways, anonymization systems, and audit systems should execute the same policy.</p>
+<h3 id="3034-purpose-limits">30.3.4 Purpose Limits<a class="headerlink" href="#3034-purpose-limits" title="Permanent link">&para;</a></h3>
+<p>Data authorization is often mistaken for ownership transfer. Once a team receives data, it may continue using it in other projects, models, reports, or even share it further. This invalidates the original approval. The approved object is a specific purpose, not unlimited use.</p>
+<p>Purpose limits may prohibit external sharing, customer outreach, automated decisions, model training, plaintext export, joining with certain data classes, or use outside a specified environment. These limits should appear in the request page, approval record, permission policy, and product documentation.</p>
+<p>For high-risk data, technical controls can enforce limits: sensitive data is queried only inside a secure sandbox, exports are aggregate-only, model training jobs must register experiment IDs, and API calls must carry project tokens. Purpose limits make sharing sustainable because providers and compliance teams can trust that data will not spread without boundaries.</p>
+<h3 id="3035-access-logs">30.3.5 Access Logs<a class="headerlink" href="#3035-access-logs" title="Permanent link">&para;</a></h3>
+<p>Access logs are the foundation of sharing governance. Without logs, the organization cannot know whether authorization was used as intended or trace impact after an incident. Auditability and traceability are also core capabilities in security-control baselines (NIST 2020a).</p>
+<p>Logs should record actor, time, data product, version, field scope, query conditions, access method, purpose identifier, authorization ID, returned row count, and anomaly flags. Highly sensitive data may also require source device, network context, export behavior, and downstream processing lineage.</p>
+<p>Logs are not only for blame. They support market operations. High access frequency may identify core assets. Many requests but little actual use may indicate request friction, poor documentation, or quality issues. Frequent access near expiration suggests renewal or migration reminders. Abnormal downloads, off-hours access, expanded query scope, or use inconsistent with purpose should trigger review.</p>
+<h3 id="3036-expiration-and-reclaim">30.3.6 Expiration and Reclaim<a class="headerlink" href="#3036-expiration-and-reclaim" title="Permanent link">&para;</a></h3>
+<p>Data permissions without lifecycle accumulate. After staff transfers, project closure, model retirement, report deprecation, or system migration, historical access often remains. The market should make every authorization expire by default. Low-sensitivity data can have longer terms; high-sensitivity data should have shorter terms; project access should follow the project lifecycle; temporary debugging access should be brief.</p>
+<p>Before expiration, the platform should ask consumers to renew or stop use. Renewal should revalidate purpose, scope, consumer identity, and risk level. Without renewal, permissions should be reclaimed automatically and the reclaim event recorded. Stable high-frequency use may become a subscription, but subscriptions should still undergo periodic review.</p>
+<h3 id="3037-violation-handling">30.3.7 Violation Handling<a class="headerlink" href="#3037-violation-handling" title="Permanent link">&para;</a></h3>
+<p>Governance needs consequences. Violations include use beyond declared purpose, unapproved resharing, sensitive-data export, bypassing the platform, long-term occupation of expired permissions, privacy or compliance incidents, and refusal to cooperate with audit.</p>
+<p>Minor violations can require correction, explanation, or reapplication. Repeated violations can suspend authorization, restrict request eligibility, or notify team leaders. Serious violations should enter security-incident handling, audit, accountability, and compliance procedures. Rules should be visible in market policies, and consumers should acknowledge use limits and consequences when requesting data.</p>
+<p>Providers and approvers also have obligations. If providers fail to maintain promised quality or approvers leave requests stuck for long periods, those failures should enter market operations review. Sharing governance constrains the whole market ecosystem, not only consumers.</p>
+<h3 id="3038-authorization-workflow-table">30.3.8 Authorization Workflow Table<a class="headerlink" href="#3038-authorization-workflow-table" title="Permanent link">&para;</a></h3>
+<p>For implementation, the authorization workflow can be decomposed into executable nodes. Table 30-2 breaks the process from need submission to expiration review and marks each node's main action, responsible role, and output.</p>
+<p><em>Table 30-2: Authorization workflow nodes</em></p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Main action</th>
+<th>Responsible role</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Need submission</td>
+<td>Fill in purpose, scope, duration, and project</td>
+<td>Data consumer</td>
+<td>Data request</td>
+</tr>
+<tr>
+<td>Automatic validation</td>
+<td>Check identity, data level, and required fields</td>
+<td>Platform team</td>
+<td>Initial risk judgment</td>
+</tr>
+<tr>
+<td>Business approval</td>
+<td>Judge reasonableness and necessary scope</td>
+<td>Approver</td>
+<td>Business decision</td>
+</tr>
+<tr>
+<td>Compliance review</td>
+<td>Judge sensitivity, anonymization, and restrictions</td>
+<td>Security/compliance team</td>
+<td>Compliance controls</td>
+</tr>
+<tr>
+<td>Authorization execution</td>
+<td>Write to permission system and generate authorization ID</td>
+<td>Platform team</td>
+<td>Executable permission policy</td>
+</tr>
+<tr>
+<td>Usage monitoring</td>
+<td>Collect logs and detect abnormal behavior</td>
+<td>Platform team, security/compliance team</td>
+<td>Audit records and alerts</td>
+</tr>
+<tr>
+<td>Expiration review</td>
+<td>Renew, reduce scope, or reclaim</td>
+<td>Consumer, approver, platform team</td>
+<td>Permission lifecycle record</td>
+</tr>
+</tbody>
+</table>
+<p>The process can be simplified or strengthened by risk level. Low-risk data can automate more nodes; high-risk data needs fuller human review.</p>
+<h3 id="3039-section-summary">30.3.9 Section Summary<a class="headerlink" href="#3039-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section covered sharing, authorization, and audit. Authorization should move from table access to purpose-bound policies covering scope, duration, environment, and reshare limits. Requests, access logs, expiration, reclaim, and violation handling form the closed loop that lets data flow without losing control.</p>
+<h2 id="304-from-sharing-to-a-product-ecosystem">30.4 From Sharing to a Product Ecosystem<a class="headerlink" href="#304-from-sharing-to-a-product-ecosystem" title="Permanent link">&para;</a></h2>
+<h3 id="3041-sharing-is-the-starting-point-productization-is-long-term-supply">30.4.1 Sharing Is the Starting Point; Productization Is Long-Term Supply<a class="headerlink" href="#3041-sharing-is-the-starting-point-productization-is-long-term-supply" title="Permanent link">&para;</a></h3>
+<p>The early goal of a data market is to let data be found and requested. If the market stops at sharing, new problems appear: many listed datasets but few dependable products, request flows without clear consumer choice, and providers with little incentive to maintain after one authorization.</p>
+<p>Sharing means "letting others use existing data." Productization means "continuously supplying dependable data capability around stable demand." This aligns with data productization and data mesh: data is not a one-time deliverable but a product capability that must be operated over time (Dehghani 2022). A shared table may lack SLA, consumer feedback, or a roadmap. A data product must have clear definitions, quality commitments, contracts, documentation, owner, change process, and support channel. Market maturity should be measured by durable consumed products, not listing count.</p>
+<h3 id="3042-turning-high-value-shared-assets-into-data-products">30.4.2 Turning High-Value Shared Assets Into Data Products<a class="headerlink" href="#3042-turning-high-value-shared-assets-into-data-products" title="Permanent link">&para;</a></h3>
+<p>Not all shared data needs productization. One-off analysis, low-frequency niche use, and exploratory data may remain lightweight. Productization is appropriate for assets with high reuse frequency, many consumers, clear business value, stable quality requirements, and sustainable ownership.</p>
+<p>Usage logs reveal candidates. Repeated requests from multiple teams suggest horizontal reuse. High access frequency and repeated renewals suggest stable production dependency. Frequent quality feedback suggests consumers already depend on the asset but the supply capability is insufficient.</p>
+<p>Productization usually has five steps:</p>
+<ol>
+<li>Redefine the asset boundary.</li>
+<li>Complete field descriptions, definitions, and examples.</li>
+<li>Establish quality monitoring and SLA.</li>
+<li>Create a data contract and change process.</li>
+<li>Build a product catalog page and support workflow.</li>
+</ol>
+<p>After these steps, the data is no longer a passively shared resource; it is an internal data product that can be subscribed to and reused.</p>
+<h3 id="3043-example-shared-data-product-catalog">30.4.3 Example Shared Data Product Catalog<a class="headerlink" href="#3043-example-shared-data-product-catalog" title="Permanent link">&para;</a></h3>
+<p>A data product catalog is the core interface of the market. It serves both consumer discovery and governance portfolio management. A good page tells consumers what the data is, what it is suitable for, who maintains it, how quality looks, whether it can be requested, what conditions apply, who already uses it, and what recently changed. Dataset documentation research emphasizes that provenance, composition, use, limits, and maintenance information must be explicit for responsible reuse (Gebru et al. 2021).</p>
+<p>Table 30-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 30-3: Example shared data product catalog</em></p>
+<table>
+<thead>
+<tr>
+<th>Product name</th>
+<th>Domain</th>
+<th>Main content</th>
+<th>Suitable scenarios</th>
+<th>Sensitivity</th>
+<th>Quality status</th>
+<th>Request method</th>
+<th>Owner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unified Customer Profile</td>
+<td>Customer</td>
+<td>Basic attributes, lifecycle, tags</td>
+<td>Operations analysis, customer segmentation</td>
+<td>Medium</td>
+<td>Normal, daily refresh</td>
+<td>Subscribe after approval</td>
+<td>Customer data team</td>
+</tr>
+<tr>
+<td>Transaction Detail Wide Table</td>
+<td>Transaction</td>
+<td>Order, payment, refund, channel fields</td>
+<td>Business analysis, finance reconciliation</td>
+<td>High</td>
+<td>Normal, hourly refresh</td>
+<td>Strict approval</td>
+<td>Transaction data team</td>
+</tr>
+<tr>
+<td>Risk Event Labels</td>
+<td>Risk</td>
+<td>Fraud, overdue, blacklist, device risk</td>
+<td>Risk modeling, strategy validation</td>
+<td>High</td>
+<td>Normal, daily refresh</td>
+<td>Isolated environment</td>
+<td>Risk data team</td>
+</tr>
+<tr>
+<td>Product Metric Definition Pack</td>
+<td>Product</td>
+<td>Active use, retention, conversion, funnel metrics</td>
+<td>Product analysis, experiment evaluation</td>
+<td>Low</td>
+<td>Normal, daily refresh</td>
+<td>Self-service subscription</td>
+<td>Product analytics team</td>
+</tr>
+<tr>
+<td>Contract Master Data</td>
+<td>Legal</td>
+<td>Contract parties, status, term, amount</td>
+<td>Finance audit, fulfillment analysis</td>
+<td>Medium</td>
+<td>Some fields under repair</td>
+<td>Subscribe after approval</td>
+<td>Legal data team</td>
+</tr>
+<tr>
+<td>Knowledge Document Index</td>
+<td>Knowledge</td>
+<td>Policies, processes, FAQ, procedure documents</td>
+<td>RAG, intelligent Q&amp;A</td>
+<td>Medium</td>
+<td>Normal, weekly refresh</td>
+<td>Access after approval</td>
+<td>Knowledge management team</td>
+</tr>
+</tbody>
+</table>
+<p>The fields are simple, but they put the consumer's key questions in one place. Consumers can compare products before deciding whether to request access, and providers can see whether their products are described sufficiently.</p>
+<h3 id="3044-product-tiers-and-operating-strategies">30.4.4 Product Tiers and Operating Strategies<a class="headerlink" href="#3044-product-tiers-and-operating-strategies" title="Permanent link">&para;</a></h3>
+<p>Shared products should be operated by tier. A practical system classifies them as core products, key products, ordinary products, observation products, and retirement candidates.</p>
+<p>Core products support multiple key business chains and require SLA, monitoring, change notices, dedicated maintenance, and quarterly review. Key products are important within a domain and should receive stable maintenance and active feedback collection. Ordinary products have stable but limited use and can follow standard maintenance. Observation products have unclear value and should be kept at low cost while use trends are watched. Retirement candidates have long-term nonuse, poor quality, or high risk and should enter shutdown evaluation.</p>
+<p>This tiering connects directly to the valuation work in Chapter 29: the market provides use facts, valuation provides grading evidence, and product operations take action.</p>
+<h3 id="3045-from-one-time-authorization-to-long-term-subscription">30.4.5 From One-Time Authorization to Long-Term Subscription<a class="headerlink" href="#3045-from-one-time-authorization-to-long-term-subscription" title="Permanent link">&para;</a></h3>
+<p>Market relationships can evolve from one-time authorization to long-term subscription. One-time authorization fits temporary analysis, short projects, experiments, and low-frequency audits. Long-term subscription fits stable reporting, production models, RAG knowledge bases, core metric services, and cross-system synchronization.</p>
+<p>When a consumer repeatedly requests the same product with stable purpose, high access frequency, and controllable risk, the platform can recommend subscription. Subscription should include purpose, data scope, refresh frequency, SLA, change notification, quality feedback, renewal cycle, and exit mechanism. Subscription is not permanent authorization; it simplifies repeated approval into periodic review.</p>
+<h3 id="3046-feedback-ratings-and-product-improvement">30.4.6 Feedback, Ratings, and Product Improvement<a class="headerlink" href="#3046-feedback-ratings-and-product-improvement" title="Permanent link">&para;</a></h3>
+<p>A market ecosystem requires feedback. Consumers should report quality, documentation, request process, response speed, and suitability issues. Star ratings alone are not enough; they are emotional and hard to diagnose. Useful feedback includes issue type, impact, reproduction steps, expected fix time, whether business is blocked, and whether alternatives exist.</p>
+<p>The platform can aggregate feedback into operating metrics: average response time, unresolved issue count, quality recurrence rate, approval pass rate, consumer satisfaction, and number of reuse teams. These metrics guide provider improvement and investment. High-value products with repeated quality feedback need more governance investment. Low-value products with no use or feedback may become retirement candidates.</p>
+<h3 id="3047-section-summary">30.4.7 Section Summary<a class="headerlink" href="#3047-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section explained how an internal data market moves from sharing to a product ecosystem. Sharing answers whether others can use data. Productization answers whether they can use it reliably over time. High-value shared assets become sustainable products through asset-boundary definition, documentation, monitoring, contracts, catalog pages, subscription, and feedback.</p>
+<h2 id="305-operating-metrics-and-incentives">30.5 Operating Metrics and Incentives<a class="headerlink" href="#305-operating-metrics-and-incentives" title="Permanent link">&para;</a></h2>
+<h3 id="3051-why-operating-metrics-are-needed">30.5.1 Why Operating Metrics Are Needed<a class="headerlink" href="#3051-why-operating-metrics-are-needed" title="Permanent link">&para;</a></h3>
+<p>After launch, a market should not be judged by listing count alone. A market may list thousands of entries while only a few are used. It may record many requests but fail to support business because approval is slow, quality is poor, or documentation is unclear. Operating metrics turn subjective impressions into observable facts. They help platform teams find process bottlenecks, providers identify maintainable products, governance teams detect risk, and managers allocate resources. Without observable governance feedback, data platforms easily accumulate hidden technical debt and ownerless dependencies (Sculley et al. 2015).</p>
+<p>Metrics should cover supply, demand, efficiency, quality, risk, and value.</p>
+<h3 id="3052-supply-side-metrics">30.5.2 Supply-Side Metrics<a class="headerlink" href="#3052-supply-side-metrics" title="Permanent link">&para;</a></h3>
+<p>Supply metrics describe what products exist and whether they are reusable. Examples include listed product count, active product count, percentage with owners, percentage with quality indicators, percentage with field documentation, percentage with SLA, and percentage with contracts.</p>
+<p>Listing count is insufficient. A product without owner, quality indicators, documentation, or request rules is closer to a catalog entry than a market-consumable product. Supply metrics should also track coverage by business domain, data type, sensitivity level, and scenario. If a core business domain has few reusable products, the market has a structural supply gap.</p>
+<h3 id="3053-demand-side-metrics">30.5.3 Demand-Side Metrics<a class="headerlink" href="#3053-demand-side-metrics" title="Permanent link">&para;</a></h3>
+<p>Demand metrics describe consumer behavior: search count, product views, request count, subscriptions, reuse teams, cross-domain reuse, repeated requests, and request conversion rate.</p>
+<p>Searches with no result are a crucial signal. They may indicate missing assets or poor naming and tagging. Rejected requests should also be analyzed. Rejections may come from unreasonable purposes, excessive scope, sensitivity, absence of anonymized versions, or unclear product documentation. Demand signals should drive product construction.</p>
+<h3 id="3054-efficiency-metrics">30.5.4 Efficiency Metrics<a class="headerlink" href="#3054-efficiency-metrics" title="Permanent link">&para;</a></h3>
+<p>Efficiency metrics describe process flow: average approval duration, auto-approval ratio, fast-approval ratio, permission-provisioning time, on-time reclaim rate, renewal handling time, and number of returned requests.</p>
+<p>Approval duration should be segmented by data level and purpose type. Slow approval for low-risk data means the process is too heavy. Very fast approval for high-risk data may mean risk detection is weak. Permission provisioning time also matters; if approval is complete but access is delayed, consumers still experience the market as inefficient.</p>
+<h3 id="3055-quality-and-risk-metrics">30.5.5 Quality and Risk Metrics<a class="headerlink" href="#3055-quality-and-risk-metrics" title="Permanent link">&para;</a></h3>
+<p>Quality metrics include quality-incident count, repair duration, SLA attainment, field-change count, consumer complaints, and recurrence rate. Risk metrics include high-sensitive requests, expired permissions, abnormal-access alerts, violation incidents, long-term unreviewed authorizations, and accesses inconsistent with declared purpose.</p>
+<p>Quality and risk should be observed together. A high-quality but high-risk product needs strict authorization and audit. A low-risk but low-quality product should not be recommended for critical workflows.</p>
+<h3 id="3056-value-metrics-and-incentives">30.5.6 Value Metrics and Incentives<a class="headerlink" href="#3056-value-metrics-and-incentives" title="Permanent link">&para;</a></h3>
+<p>Value metrics ask whether the market reduces duplicate construction, promotes reuse, and creates products. Examples include hours saved through reuse, duplicate procurement avoided, number of reuse teams, number of new pipelines avoided through sharing, number of shared assets upgraded into products, and downstream scenarios supported by core products.</p>
+<p>These metrics support incentives. Providers should receive recognition for organizational value created through reuse; otherwise they bear maintenance cost without visible benefit. Consumers should also receive recognition for reusing existing products rather than rebuilding. Reuse is not laziness; it is organizational efficiency. Platform teams should be measured by process efficiency, consumer experience, and governance closure, not only listing count.</p>
+<h3 id="3057-section-summary">30.5.7 Section Summary<a class="headerlink" href="#3057-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section proposed an operating metric system for internal data markets. Supply, demand, efficiency, quality, risk, and value metrics together show whether the market is healthy. Continuous operation prevents the market from becoming a static directory and helps it grow into a sustainable data product ecosystem.</p>
+<h2 id="306-case-customer-risk-data-product-enters-the-internal-data-market">30.6 Case: Customer Risk Data Product Enters the Internal Data Market<a class="headerlink" href="#306-case-customer-risk-data-product-enters-the-internal-data-market" title="Permanent link">&para;</a></h2>
+<h3 id="3061-case-background">30.6.1 Case Background<a class="headerlink" href="#3061-case-background" title="Permanent link">&para;</a></h3>
+<p>Imagine a financial services company with a customer risk label system. Initially, the risk team uses it internally for loan approval, anti-fraud, and overdue prediction. As the business grows, the service team wants to prioritize high-risk complaint handling, the marketing team wants to exclude unsuitable high-risk users from certain campaigns, the compliance team wants to locate historical risk events during complaints, and the data science team wants risk events for model evaluation.</p>
+<p>If every team asks the risk system separately, the company will repeat requests, explanations, anonymization, and reviews. The enterprise therefore turns the label system into a shared data product in the internal data market named <code>customer_risk_profile</code>.</p>
+<h3 id="3062-product-listing">30.6.2 Product Listing<a class="headerlink" href="#3062-product-listing" title="Permanent link">&para;</a></h3>
+<p>The risk data team defines the product boundary. <code>customer_risk_profile</code> does not expose raw rules or sensitive details. It provides customer-level risk grade, risk type, latest risk event time, label confidence, and label update time. The documentation states suitable scenarios: risk analysis, service prioritization, compliance investigation, and model evaluation. It also states unsuitable scenarios: unapproved customer marketing, external sharing, and automated refusal of customer service.</p>
+<p>Security and compliance classify the product as highly sensitive. All access must bind to project purpose. Plaintext identity export is prohibited. Model-training use must occur in an isolated environment. The platform creates a catalog page with field documentation, quality status, refresh frequency, request conditions, owner, SLA, and change history.</p>
+<h3 id="3063-authorization-and-use">30.6.3 Authorization and Use<a class="headerlink" href="#3063-authorization-and-use" title="Permanent link">&para;</a></h3>
+<p>The service team requests access for prioritizing high-risk complaint tickets. Approvers accept the purpose but allow only anonymized customer ID, risk grade, and risk type; detailed rule-hit records remain closed. The platform provisions API access for 180 days and requires service-ticket IDs in calls.</p>
+<p>The marketing team requests access to exclude high-risk customers from a campaign. Compliance judges that this may affect customer rights, so the team must use an aggregated audience package rather than customer-level labels, and the campaign strategy must pass compliance review.</p>
+<p>The data science team requests evaluation use. Approval allows use inside an isolated environment but prohibits plaintext customer identifier export.</p>
+<p>The same data product can therefore serve several scenarios, each with different scope and purpose limits.</p>
+<h3 id="3064-audit-and-feedback">30.6.4 Audit and Feedback<a class="headerlink" href="#3064-audit-and-feedback" title="Permanent link">&para;</a></h3>
+<p>After three months, platform metrics show that <code>customer_risk_profile</code> is reused by four teams, with six authorizations and three long-term subscriptions. Logs show that the service team has the highest call frequency, with several off-hours query clusters. Security review finds that these are normal night batch tasks and registers them to reduce future false alerts.</p>
+<p>Consumer feedback shows that risk-label freshness is critical for service. The original daily update is insufficient for some high-risk complaints. The risk data team changes the high-risk event field to hourly incremental update while keeping low-risk fields daily, and records the change in the data contract. Feedback improves the product for all consumers.</p>
+<h3 id="3065-from-shared-asset-to-core-product">30.6.5 From Shared Asset to Core Product<a class="headerlink" href="#3065-from-shared-asset-to-core-product" title="Permanent link">&para;</a></h3>
+<p>After two quarters, reuse teams increase, quality complaints decline, authorization stabilizes, and repeated data extraction and anonymization work are reduced. The data governance committee classifies <code>customer_risk_profile</code> as a core data product. This brings several changes: home-page recommendation in the market, stronger quality monitoring, automatic alerts for key fields, advance change notification to subscribers, and quarterly reports on reuse value, risk events, and improvement plans.</p>
+<p>The case shows that an internal data market is not one-time openness. It lets data become a stable product through controlled sharing and usage evidence.
+When product value is proven by usage facts, the organization has a reason to keep investing in quality, documentation, SLA, and automation.</p>
+<h3 id="3066-section-summary">30.6.6 Section Summary<a class="headerlink" href="#3066-section-summary" title="Permanent link">&para;</a></h3>
+<p>The customer-risk product case showed the end-to-end market process: listing, purpose declaration, differentiated authorization, audit, feedback, product tiering, and core-product operation. Sharing value comes from controlled flow, not boundaryless openness.</p>
+<h2 id="307-implementation-anti-patterns-and-acceptance-checklist">30.7 Implementation Anti-Patterns and Acceptance Checklist<a class="headerlink" href="#307-implementation-anti-patterns-and-acceptance-checklist" title="Permanent link">&para;</a></h2>
+<h3 id="3071-anti-pattern-1-turning-the-market-into-a-static-catalog">30.7.1 Anti-Pattern 1: Turning the Market Into a Static Catalog<a class="headerlink" href="#3071-anti-pattern-1-turning-the-market-into-a-static-catalog" title="Permanent link">&para;</a></h3>
+<p>The most common anti-pattern is building a prettier catalog. Teams invest in names, tags, and descriptions but do not connect requests, authorization, audit, quality feedback, and product operations. Governance literature repeatedly emphasizes that policies, processes, roles, and controls must be designed together with the technical platform, or governance remains at the documentation layer (Ladley 2019; Abraham, Schneider and vom Brocke 2019).</p>
+<p>The symptom is simple: consumers can find data but still do not know how to request it; after requesting, they still need offline approval; after access is granted, there is no purpose record; quality issues have no feedback route. A static catalog improves discovery efficiency but does not solve sharing governance. A real market closes the loop from discovery to request, approval, permission, usage record, feedback, and value review. A simple diagnostic question is whether consumers can complete the main steps from search to usable data inside the platform. If key steps still depend on email, chat, and manual permission provisioning, the market has not truly formed.</p>
+<h3 id="3072-anti-pattern-2-emphasizing-control-without-improving-experience">30.7.2 Anti-Pattern 2: Emphasizing Control Without Improving Experience<a class="headerlink" href="#3072-anti-pattern-2-emphasizing-control-without-improving-experience" title="Permanent link">&para;</a></h3>
+<p>Another anti-pattern is turning the market into a new approval gate. Every dataset requires a request, every request requires multiple approvers, every permission waits for manual provisioning, and consumers find the market slower than the old informal path. They then bypass it through private sharing, old accounts, temporary files, and copied scripts. Heavy governance can increase real risk by pushing use outside the governed path.</p>
+<p>Good sharing governance is layered. Low-sensitive, low-risk, routine data should be self-service or fast approval. High-sensitive, cross-domain, external, model-training, and customer-outreach scenarios deserve stricter review. User experience is not the enemy of governance. Clear catalogs, standard request templates, automatic policy evaluation, transparent approval progress, automatic provisioning, and expiration reminders all improve governance quality.</p>
+<h3 id="3073-anti-pattern-3-no-maintenance-after-listing">30.7.3 Anti-Pattern 3: No Maintenance After Listing<a class="headerlink" href="#3073-anti-pattern-3-no-maintenance-after-listing" title="Permanent link">&para;</a></h3>
+<p>The third anti-pattern is listing without maintenance. Providers complete the listing task, then field documentation goes stale, quality incidents are unanswered, feedback accumulates, and changes are not announced. This quickly drains market trust. If one critical project is harmed by poor data, consumers lose confidence not only in that product but in the market.</p>
+<p>Avoid this by making owner, SLA, quality indicators, and feedback response part of listing requirements. Data without a clear owner should not be listed as a formal product. Data without a quality commitment should appear only as an observation or exploration asset. Market operators should regularly find products with no owner, no access, repeated quality incidents, or unresolved feedback and move them into remediation or retirement.</p>
+<h3 id="3074-anti-pattern-4-ignoring-consumer-feedback">30.7.4 Anti-Pattern 4: Ignoring Consumer Feedback<a class="headerlink" href="#3074-anti-pattern-4-ignoring-consumer-feedback" title="Permanent link">&para;</a></h3>
+<p>Some markets record requests and access but not user experience. Feedback reveals problems that metrics do not: unclear field documentation, broken sample queries, ambiguous request conditions, quality indicators that do not explain business anomalies, or refresh frequency that misses real needs. If feedback is ignored, the market develops supply without trust, and consumers rebuild data privately.</p>
+<p>Feedback should be categorized into consultation, quality issue, definition issue, permission issue, performance issue, and enhancement request, each with response targets. Repeated enhancement requests should feed the product roadmap.</p>
+<h3 id="3075-anti-pattern-5-no-retirement-mechanism">30.7.5 Anti-Pattern 5: No Retirement Mechanism<a class="headerlink" href="#3075-anti-pattern-5-no-retirement-mechanism" title="Permanent link">&para;</a></h3>
+<p>A market that only lists and never retires will accumulate old, duplicate, unmaintained, and low-quality products. Consumers then find it harder, not easier, to locate trusted data.</p>
+<p>Retirement must be possible and orderly. It should include impact analysis, consumer notification, alternative-product recommendation, observation period, permission reclaim, and archive strategy. Low-frequency audit value may justify downgrading a product to archive status rather than deleting it. High-risk unused products should stop receiving new authorization and be decommissioned after dependencies are cleared.</p>
+<h3 id="3076-implementation-acceptance-checklist">30.7.6 Implementation Acceptance Checklist<a class="headerlink" href="#3076-implementation-acceptance-checklist" title="Permanent link">&para;</a></h3>
+<p>Use the following checklist to judge whether an internal data market has basic production capability:</p>
+<ol>
+<li>Key data products have owner, business definition, field documentation, quality status, and request rules.</li>
+<li>Consumers can complete search, request, approval-status tracking, and access provisioning within the platform.</li>
+<li>Authorization binds purpose, scope, duration, and access method rather than granting permanent table-level access.</li>
+<li>Highly sensitive data has anonymization, isolated environments, access logs, and anomaly alerts.</li>
+<li>Permissions support expiration reminders, renewal review, and automatic reclaim.</li>
+<li>The market records access frequency, request conversion, approval duration, quality feedback, and reuse-team count.</li>
+<li>High-value shared assets can be upgraded into data products, and low-value or high-risk assets can be downgraded, archived, or retired.</li>
+</ol>
+<p>If these questions can be answered systematically, the market has moved from a display catalog to a governance market.</p>
+<h3 id="3077-section-summary">30.7.7 Section Summary<a class="headerlink" href="#3077-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section described five implementation anti-patterns: static catalog, excessive control, no maintenance, ignored feedback, and no retirement. Their common root is treating the data market as a one-time system build rather than a continuous operating mechanism. A useful internal market promotes sharing, controls risk, improves consumer experience, creates data products, and allows low-value assets to exit.</p>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter discussed internal data markets and sharing governance. Enterprises need internal data markets because duplicate collection, duplicate cleaning, unclear permissions, and opaque quality continuously create cost, risk, and fractured definitions. A market is neither an ordinary catalog nor a pure permission system. It connects data products, authorization, quality transparency, usage audit, and reuse feedback.</p>
+<p>In role design, providers turn data into products, consumers declare purpose and least-privilege scope, approvers judge business reasonableness, platform teams automate process, and security/compliance teams define sharing boundaries. In process design, the market covers product listing, consumer discovery, request submission, policy evaluation, approval, permission provisioning, usage audit, and feedback.</p>
+<p>In sharing governance, authorization should move from table permissions to purpose permissions, with structured policies for data scope, field scope, access method, duration, environment, and reshare limits. Access logs, expiration, reclaim, and violation handling make sharing traceable, reviewable, and controllable.</p>
+<p>In the long term, the market should not accumulate listings. It should help high-value shared assets become sustainable data products with definitions, quality commitments, contracts, SLA, owners, and feedback. Operating metrics and incentives across supply, demand, efficiency, quality, risk, and value keep the market healthy.</p>
+<p>Ultimately, the internal data market solves the problem of how data can flow credibly inside an organization. It upgrades data sharing from personal favors, temporary permissions, and project-by-project extraction into a governed system with catalogs, products, approval, audit, feedback, and continuous improvement.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Abraham R, Schneider J, vom Brocke J (2019) Data governance: A conceptual framework, structured review, and research agenda. International Journal of Information Management 49:424-438.</p>
+<p>Alhassan I, Sammon D, Daly M (2016) Data governance activities: an analysis of the literature. Journal of Decision Systems 25(sup1):64-75. https://doi.org/10.1080/12460125.2016.1187397.</p>
+<p>DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications.</p>
+<p>Dehghani Z (2022) Data Mesh: Delivering Data-Driven Value at Scale. O'Reilly Media.</p>
+<p>Ferraiolo D F, Kuhn D R (1992) Role-Based Access Controls. In: Proceedings of the 15th National Computer Security Conference, pp 554-563.</p>
+<p>Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daume III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92. https://doi.org/10.1145/3458723.</p>
+<p>Hu V C, Ferraiolo D, Kuhn R, Schnitzer A, Sandlin K, Miller R, Scarfone K (2014) Guide to Attribute Based Access Control (ABAC) Definition and Considerations. NIST Special Publication 800-162. https://doi.org/10.6028/nist.sp.800-162.</p>
+<p>Khatri V, Brown C V (2010) Designing data governance. Communications of the ACM 53(1):148-152. https://doi.org/10.1145/1629175.1629210.</p>
+<p>Ladley J (2019) Data Governance: How to Design, Deploy, and Sustain an Effective Data Governance Program, 2nd Edition. Academic Press.</p>
+<p>Laney D B (2017) Infonomics: How to Monetize, Manage, and Measure Information as an Asset for Competitive Advantage. Routledge, New York.</p>
+<p>Moody D, Walsh P (1999) Measuring the Value of Information: An Asset Valuation Approach. In: Proceedings of the 7th European Conference on Information Systems (ECIS), pp 496-512.</p>
+<p>National Institute of Standards and Technology (2020a) Security and Privacy Controls for Information Systems and Organizations. NIST Special Publication 800-53 Revision 5.</p>
+<p>National Institute of Standards and Technology (2020b) NIST Privacy Framework: A Tool for Improving Privacy through Enterprise Risk Management, Version 1.0. https://doi.org/10.6028/nist.cswp.10.</p>
+<p>Otto B (2011) Data Governance. Business &amp; Information Systems Engineering 3(4):241-244. https://doi.org/10.1002/9781118269053.ch4.</p>
+<p>Reis J, Housley M (2022) Fundamentals of Data Engineering. O'Reilly Media.</p>
+<p>Sandhu R S, Coyne E J, Feinstein H L, Youman C E (1996) Role-Based Access Control Models. IEEE Computer 29(2):38-47.</p>
+<p>Schomm F, Stahl F, Vossen G (2013) Marketplaces for data: an initial survey. ACM SIGMOD Record 42(1):15-26.</p>
+<p>Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503-2511.</p>
+<p>Weber K, Otto B, Osterle H (2009) One Size Does Not Fit All: A Contingency Approach to Data Governance. ACM Journal of Data and Information Quality 1(1):4. https://doi.org/10.1145/1515693.1515696.</p>
+<p>Wilkinson M D, Dumontier M, Aalbersberg I J, Appleton G, Axton M, Baak A, Blomberg N, Boiten J-W, da Silva Santos L B, Bourne P E, Bouwman J, Brookes A J, Clark T, Crosas M, Dillo I, Dumon O, Edmunds S, Evelo C T, Finkers R, Gonzalez-Beltran A, Gray A J G, Groth P, Goble C, Grethe J S, Heringa J, 't Hoen P A C, Hooft R, Kuhn T, Kok R, Kok J, Lusher S J, Martone M E, Mons A, Packer A L, Persson B, Rocca-Serra P, Roos M, van Schaik R, Sansone S-A, Schultes E, Sengstag T, Slater T, Strawn G, Swertz M A, Thompson M, van der Lei J, van Mulligen E, Velterop J, Waagmeester A, Wittenburg P, Wolstencroft K, Zhao J, Mons B (2016) The FAIR Guiding Principles for scientific data management and stewardship. Scientific Data 3:160018. https://doi.org/10.1038/sdata.2016.18.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ch29_data_valuation_and_reuse/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Chapter 29: Data Valuation and Reuse Mechanisms">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Chapter 29: Data Valuation and Reuse Mechanisms
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../part10/" class="md-footer__link md-footer__link--next" aria-label="Next: Part Overview">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Part Overview
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

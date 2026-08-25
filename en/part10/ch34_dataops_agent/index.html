@@ -1,0 +1,4677 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part10/ch34_dataops_agent/">
+      
+      
+        <link rel="prev" href="../ch33_labeling_synthesis_evaluation/">
+      
+      
+        <link rel="next" href="../ch35_security_permission_collaboration/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 34: DataOps Agents and Platform Autonomy - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-34-dataops-agents-and-platform-autonomy" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 34: DataOps Agents and Platform Autonomy
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part10/ch34_dataops_agent/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part10/ch34_dataops_agent/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-an-alert-storm-at-3-am" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario: An Alert Storm at 3 A.M.
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scenario: An Alert Storm at 3 A.M.">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-engineering-pain-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Engineering Pain Points
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#341-alert-to-root-cause-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.1 Alert-to-Root-Cause Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="34.1 Alert-to-Root-Cause Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3411-alert-aggregation-and-prioritization" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.1.1 Alert Aggregation and Prioritization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3412-root-cause-candidate-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.1.2 Root Cause Candidate Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34121-confidence-calibration-for-root-cause-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.1.2.1 Confidence Calibration for Root Cause Analysis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34122-cross-system-root-cause-correlation" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.1.2.2 Cross-System Root Cause Correlation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3413-alert-fatigue-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.1.3 Alert Fatigue Governance
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#342-version-rollback-and-repair-plan-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.2 Version Rollback and Repair Plan Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="34.2 Version Rollback and Repair Plan Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3421-automatic-rollback-plan-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.2.1 Automatic Rollback Plan Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3422-rollback-approval-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.2.2 Rollback Approval Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3423-pipeline-self-healing" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.2.3 Pipeline Self-Healing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3424-data-consistency-during-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.2.4 Data Consistency During Rollback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3425-decision-support-matrix-for-data-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.2.5 Decision Support Matrix for Data Rollback
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#343-cost-alerting-and-capacity-optimization-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.3 Cost Alerting and Capacity Optimization Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="34.3 Cost Alerting and Capacity Optimization Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3431-automatic-cost-anomaly-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.3.1 Automatic Cost Anomaly Detection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3432-automatic-optimization-suggestions" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.3.2 Automatic Optimization Suggestions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3433-capacity-planning-and-forecasting" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.3.3 Capacity Planning and Forecasting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3434-cost-attribution-and-team-accountability" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.3.4 Cost Attribution and Team Accountability
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#344-ticket-and-postmortem-automation-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.4 Ticket and Postmortem Automation Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="34.4 Ticket and Postmortem Automation Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3441-automatic-ticket-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.4.1 Automatic Ticket Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3442-automatic-postmortem-drafts" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.4.2 Automatic Postmortem Drafts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3443-linking-experiment-tracking-and-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.4.3 Linking Experiment Tracking and Agents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3444-automatic-operations-knowledge-base" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.4.4 Automatic Operations Knowledge Base
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#345-case-review-dataops-agent-in-a-real-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.5 Case Review: DataOps Agent in a Real Platform
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="34.5 Case Review: DataOps Agent in a Real Platform">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-lessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key Lessons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extended-case-from-reactive-operations-to-active-autonomy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extended Case: From Reactive Operations to Active Autonomy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#success-factors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Success Factors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#continuous-mttr-improvement" class="md-nav__link">
+    <span class="md-ellipsis">
+      Continuous MTTR Improvement
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#346-checklist-dataops-agent-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.6 Checklist: DataOps Agent Deployment
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#347-chapter-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.7 Chapter Links
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#348-further-reading-deepening-dataops-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.8 Further Reading: Deepening DataOps Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="34.8 Further Reading: Deepening DataOps Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#from-reactive-to-predictive-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      From Reactive to Predictive Operations
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rethinking-permission-boundaries-for-platform-autonomy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rethinking Permission Boundaries for Platform Autonomy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from-devops-to-dataops-to-agentops" class="md-nav__link">
+    <span class="md-ellipsis">
+      From DevOps to DataOps to AgentOps
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-an-alert-storm-at-3-am" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario: An Alert Storm at 3 A.M.
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scenario: An Alert Storm at 3 A.M.">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-engineering-pain-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Engineering Pain Points
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#341-alert-to-root-cause-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.1 Alert-to-Root-Cause Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="34.1 Alert-to-Root-Cause Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3411-alert-aggregation-and-prioritization" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.1.1 Alert Aggregation and Prioritization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3412-root-cause-candidate-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.1.2 Root Cause Candidate Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34121-confidence-calibration-for-root-cause-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.1.2.1 Confidence Calibration for Root Cause Analysis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34122-cross-system-root-cause-correlation" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.1.2.2 Cross-System Root Cause Correlation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3413-alert-fatigue-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.1.3 Alert Fatigue Governance
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#342-version-rollback-and-repair-plan-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.2 Version Rollback and Repair Plan Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="34.2 Version Rollback and Repair Plan Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3421-automatic-rollback-plan-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.2.1 Automatic Rollback Plan Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3422-rollback-approval-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.2.2 Rollback Approval Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3423-pipeline-self-healing" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.2.3 Pipeline Self-Healing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3424-data-consistency-during-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.2.4 Data Consistency During Rollback
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3425-decision-support-matrix-for-data-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.2.5 Decision Support Matrix for Data Rollback
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#343-cost-alerting-and-capacity-optimization-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.3 Cost Alerting and Capacity Optimization Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="34.3 Cost Alerting and Capacity Optimization Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3431-automatic-cost-anomaly-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.3.1 Automatic Cost Anomaly Detection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3432-automatic-optimization-suggestions" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.3.2 Automatic Optimization Suggestions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3433-capacity-planning-and-forecasting" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.3.3 Capacity Planning and Forecasting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3434-cost-attribution-and-team-accountability" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.3.4 Cost Attribution and Team Accountability
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#344-ticket-and-postmortem-automation-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.4 Ticket and Postmortem Automation Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="34.4 Ticket and Postmortem Automation Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3441-automatic-ticket-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.4.1 Automatic Ticket Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3442-automatic-postmortem-drafts" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.4.2 Automatic Postmortem Drafts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3443-linking-experiment-tracking-and-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.4.3 Linking Experiment Tracking and Agents
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3444-automatic-operations-knowledge-base" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.4.4 Automatic Operations Knowledge Base
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#345-case-review-dataops-agent-in-a-real-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.5 Case Review: DataOps Agent in a Real Platform
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="34.5 Case Review: DataOps Agent in a Real Platform">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-lessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key Lessons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extended-case-from-reactive-operations-to-active-autonomy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extended Case: From Reactive Operations to Active Autonomy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#success-factors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Success Factors
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#continuous-mttr-improvement" class="md-nav__link">
+    <span class="md-ellipsis">
+      Continuous MTTR Improvement
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#346-checklist-dataops-agent-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.6 Checklist: DataOps Agent Deployment
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#347-chapter-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.7 Chapter Links
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#348-further-reading-deepening-dataops-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      34.8 Further Reading: Deepening DataOps Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="34.8 Further Reading: Deepening DataOps Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#from-reactive-to-predictive-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      From Reactive to Predictive Operations
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rethinking-permission-boundaries-for-platform-autonomy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Rethinking Permission Boundaries for Platform Autonomy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from-devops-to-dataops-to-agentops" class="md-nav__link">
+    <span class="md-ellipsis">
+      From DevOps to DataOps to AgentOps
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-34-dataops-agents-and-platform-autonomy">Chapter 34: DataOps Agents and Platform Autonomy<a class="headerlink" href="#chapter-34-dataops-agents-and-platform-autonomy" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Yang Luo; Zhili Wang; Jun Yu</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>Data platform operations have long been treated as necessary but low-value labor: monitoring alerts, debugging incidents, rolling back versions, and analyzing cost. Each task consumes engineering time, yet none directly creates business value. As data platforms scale to hundreds of pipelines, PB-level storage, and thousands of tables, manual operations reach their limit. Alert fatigue causes missed signals, root cause analysis depends on personal experience, rollback decisions become hesitant, and cost black holes go unnoticed.</p>
+<p>The goal of DataOps Agents is to upgrade the data platform from "being operated" to "self-operating." Agents aggregate alerts and locate root causes, generate rollback and repair plans for approval, analyze cost anomalies and propose optimizations, and draft tickets and postmortems. Autonomy does not mean unattended operation. High-risk actions such as data rollback, index rebuild, and pipeline restart must pass approval gates.</p>
+<p>This chapter builds on Chapters 24-26: DataOps flywheel, version management, experiment tracking, and platform observability. It turns manual operations into agent-driven autonomous loops.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>DataOps Agent; platform autonomy; root-cause localization; data rollback; cost governance; operations automation</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After reading this chapter, you should be able to:</p>
+<ul>
+<li>Design an agent pipeline from alert aggregation to root cause analysis.</li>
+<li>Understand how agents generate rollback and repair plans and route them through approval.</li>
+<li>Analyze cost anomalies such as storage growth, reprocessing cost, and GPU feeding failures.</li>
+<li>Build workflows for automatic ticket generation and postmortem drafts.</li>
+<li>Evaluate MTTR improvement from DataOps Agents in production platforms.</li>
+</ul>
+<h2 id="scenario-an-alert-storm-at-3-am">Scenario: An Alert Storm at 3 A.M.<a class="headerlink" href="#scenario-an-alert-storm-at-3-am" title="Permanent link">&para;</a></h2>
+<p>At 3:14 a.m., a data platform monitoring system sends the first alert: <code>user_behavior_etl</code> is delayed by more than 30 minutes. During the next 15 minutes, alerts arrive in a flood:</p>
+<ul>
+<li>3:17: <code>recommendation_feature</code> fails because it depends on <code>user_behavior_etl</code>.</li>
+<li>3:19: <code>training_data_export</code> has abnormal volume: expected 2 million rows, produced 300,000.</li>
+<li>3:22: <code>model_training_pipeline</code> pauses due to missing training data.</li>
+<li>3:25: storage usage spikes; intermediate tables grow to three times the usual size.</li>
+<li>3:28: the labeling platform errors because some tasks reference rolled-back data batches.</li>
+</ul>
+<p>The on-call engineer wakes up and starts checking alerts one by one. The alerts are scattered across systems, with no aggregation and no context. It takes 40 minutes to locate the root cause: an upstream business database schema change added a required field, causing an ETL <code>WHERE</code> condition to filter out 85 percent of records. The schema-change email had arrived eight hours earlier and sat unread.</p>
+<h3 id="core-engineering-pain-points">Core Engineering Pain Points<a class="headerlink" href="#core-engineering-pain-points" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>No alert aggregation or prioritization.</strong> Twelve alerts have one root cause, but the engineer must inspect them one by one.</li>
+<li><strong>Root cause analysis depends on personal experience.</strong> The engineer who knows the pipeline is on vacation.</li>
+<li><strong>Rollback decisions are uncertain.</strong> No system suggests whether to roll back, which version to use, or which downstream systems will be affected.</li>
+<li><strong>Cost anomalies are not tracked in time.</strong> Storage growth and reprocessing cost appear on the monthly bill after losses are real.</li>
+</ol>
+<h2 id="341-alert-to-root-cause-agents">34.1 Alert-to-Root-Cause Agents<a class="headerlink" href="#341-alert-to-root-cause-agents" title="Permanent link">&para;</a></h2>
+<h3 id="3411-alert-aggregation-and-prioritization">34.1.1 Alert Aggregation and Prioritization<a class="headerlink" href="#3411-alert-aggregation-and-prioritization" title="Permanent link">&para;</a></h3>
+<p>The first capability of a DataOps Agent is intelligent alert aggregation. The agent reads four data categories and turns scattered alerts into root-cause candidates.</p>
+<p>Figure 34-1 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part10/Luo-Chap34-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Alert-to-root-cause agent flow" src="../../../images/part10/Luo-Chap34-Fig01.svg" /></a></p>
+<p><em>Figure 34-1: Alert-to-root-cause agent flow</em></p>
+<p>Data sources:</p>
+<ol>
+<li><strong>Metrics:</strong> job latency, volume, error rate, resource usage.</li>
+<li><strong>Logs:</strong> task execution logs, stack traces, data quality check logs.</li>
+<li><strong>Lineage:</strong> upstream dependencies, field-level lineage, data flow graph.</li>
+<li><strong>Change records:</strong> code commits, configuration changes, schema changes, dependency upgrades.</li>
+</ol>
+<h3 id="3412-root-cause-candidate-generation">34.1.2 Root Cause Candidate Generation<a class="headerlink" href="#3412-root-cause-candidate-generation" title="Permanent link">&para;</a></h3>
+<p>The agent aligns timelines and uses causal signals to generate candidates.</p>
+<p>Table 34-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 34-1: Root cause candidate types and detection logic</em></p>
+<table>
+<thead>
+<tr>
+<th>Root cause type</th>
+<th>Pattern</th>
+<th>Detection logic</th>
+<th>Confidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Upstream schema change</td>
+<td>Change precedes first alert and affects all downstream tasks</td>
+<td>Cross-check change records and alert timeline</td>
+<td>0.90</td>
+</tr>
+<tr>
+<td>Volume spike/drop</td>
+<td>Volume deviates &gt; 3 sigma from historical mean</td>
+<td>Time-series anomaly detection</td>
+<td>0.85</td>
+</tr>
+<tr>
+<td>Insufficient resources</td>
+<td>CPU or memory reaches limit</td>
+<td>Correlate resource metrics with job performance</td>
+<td>0.80</td>
+</tr>
+<tr>
+<td>Code defect</td>
+<td>Alert coincides with recent deployment</td>
+<td>Cross-check deployment records and alert timeline</td>
+<td>0.75</td>
+</tr>
+<tr>
+<td>External dependency failure</td>
+<td>Multiple jobs fail while depending on the same API</td>
+<td>Dependency-graph topology analysis</td>
+<td>0.70</td>
+</tr>
+</tbody>
+</table>
+<p>The agent outputs three to five candidates ranked by confidence. Each candidate includes evidence: log snippets, metric charts, and change records. High-confidence candidates, such as above 0.85, may receive direct repair suggestions. Medium and low-confidence candidates require human confirmation.</p>
+<h3 id="34121-confidence-calibration-for-root-cause-analysis">34.1.2.1 Confidence Calibration for Root Cause Analysis<a class="headerlink" href="#34121-confidence-calibration-for-root-cause-analysis" title="Permanent link">&para;</a></h3>
+<p>The confidence score itself must be calibrated. If the agent says "90 percent confidence," is it actually correct 90 percent of the time? Overconfident scoring will erode engineer trust.</p>
+<p>Calibration methods:</p>
+<ol>
+<li><strong>Historical backtesting.</strong> Review the previous month's root-cause candidates and compare them with confirmed causes.</li>
+<li><strong>Calibration curve.</strong> Bucket confidence from 0 to 1 and compute actual accuracy in each bucket.</li>
+<li><strong>Bias correction.</strong> If high-confidence buckets are less accurate than claimed, show corrected confidence in alerts.</li>
+</ol>
+<p><em>Confidence-to-action mapping</em></p>
+<p>Table 34-2 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 34-2: Confidence-to-action mapping</em></p>
+<table>
+<thead>
+<tr>
+<th>Raw confidence</th>
+<th>Calibrated confidence</th>
+<th>Automation action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&gt; 0.90</td>
+<td>Usually consistent</td>
+<td>Push root cause and repair suggestion</td>
+</tr>
+<tr>
+<td>0.75-0.90</td>
+<td>Check for bias</td>
+<td>Push candidate and recommend confirmation</td>
+</tr>
+<tr>
+<td>0.50-0.75</td>
+<td>Usually lower than raw</td>
+<td>Push candidate and require human analysis</td>
+</tr>
+<tr>
+<td>&lt; 0.50</td>
+<td>Usually lower than raw</td>
+<td>Push alert aggregation only; no root-cause guess</td>
+</tr>
+</tbody>
+</table>
+<h3 id="34122-cross-system-root-cause-correlation">34.1.2.2 Cross-System Root Cause Correlation<a class="headerlink" href="#34122-cross-system-root-cause-correlation" title="Permanent link">&para;</a></h3>
+<p>Data platform incidents often span upstream ETL, storage, downstream consumers, and schedulers. Analysis cannot stay inside one log system.</p>
+<p>Implementation strategies:</p>
+<ul>
+<li><strong>Unified timeline.</strong> Align all logs to one timezone and one minute-level event sequence.</li>
+<li><strong>Dependency graph overlay.</strong> Overlay alerts on the lineage graph to show propagation.</li>
+<li><strong>Change-event correlation.</strong> Overlay deployments, config changes, and schema changes on the timeline.</li>
+</ul>
+<p>If an alert cluster starts within five minutes of a change event, the agent should mark that change as highly suspicious even before direct proof is available.</p>
+<h3 id="3413-alert-fatigue-governance">34.1.3 Alert Fatigue Governance<a class="headerlink" href="#3413-alert-fatigue-governance" title="Permanent link">&para;</a></h3>
+<p>Alert fatigue is one of the most common anti-patterns in data platform operations. When alerts are too frequent, engineers start ignoring them and miss real incidents.</p>
+<p>Aggregation strategies:</p>
+<ol>
+<li><strong>Causal aggregation.</strong> Merge alerts from the same root cause into one group.</li>
+<li><strong>Time-window aggregation.</strong> Merge repeated alerts of the same type within a window, such as five minutes, and attach count and trend.</li>
+<li><strong>Dynamic priority adjustment.</strong> Adjust priority based on business impact and data volume. Low-priority 3 a.m. alerts can wait until working hours.</li>
+</ol>
+<p>Table 34-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 34-3: Example alert aggregation effect</em></p>
+<table>
+<thead>
+<tr>
+<th>Raw alerts</th>
+<th>Aggregated alerts</th>
+<th>Aggregation rate</th>
+<th>Daily alerts handled by engineers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>200+</td>
+<td>15-20</td>
+<td>~90%</td>
+<td>From 50+ to 12</td>
+</tr>
+<tr>
+<td>500+</td>
+<td>25-35</td>
+<td>~93%</td>
+<td>From 80+ to 18</td>
+</tr>
+</tbody>
+</table>
+<h2 id="342-version-rollback-and-repair-plan-agents">34.2 Version Rollback and Repair Plan Agents<a class="headerlink" href="#342-version-rollback-and-repair-plan-agents" title="Permanent link">&para;</a></h2>
+<h3 id="3421-automatic-rollback-plan-generation">34.2.1 Automatic Rollback Plan Generation<a class="headerlink" href="#3421-automatic-rollback-plan-generation" title="Permanent link">&para;</a></h3>
+<p>After a data quality issue is confirmed, the agent generates rollback and repair plans. Rollback is not simply "return to the previous version." It must account for dependencies, data loss, and repair cost.</p>
+<p>Rollback plan generation:</p>
+<ol>
+<li><strong>Impact analysis.</strong> Use lineage to identify downstream tables and jobs.</li>
+<li><strong>Rollback candidate generation.</strong> List recent snapshots, usually three to five, with data differences and rollback cost.</li>
+<li><strong>Repair versus rollback comparison.</strong> Compare fixing current data with rolling back to a historical version.</li>
+<li><strong>Rerun plan.</strong> List downstream jobs that must rerun and estimate duration.</li>
+</ol>
+<h3 id="3422-rollback-approval-workflow">34.2.2 Rollback Approval Workflow<a class="headerlink" href="#3422-rollback-approval-workflow" title="Permanent link">&para;</a></h3>
+<p>Rollback is high risk and requires approval.</p>
+<p>Figure 34-2 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part10/Luo-Chap34-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Rollback approval workflow" src="../../../images/part10/Luo-Chap34-Fig02.svg" /></a></p>
+<p><em>Figure 34-2: Rollback approval workflow</em></p>
+<p>Table 34-4 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 34-4: Approval matrix for rollback and repair</em></p>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Risk</th>
+<th>Approval</th>
+<th>Rollback plan</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Field-level data repair</td>
+<td>Low</td>
+<td>Agent automatic plus post-hoc audit</td>
+<td>Keep original values</td>
+</tr>
+<tr>
+<td>Table-level data repair</td>
+<td>Medium</td>
+<td>Owner single review</td>
+<td>Snapshot rollback</td>
+</tr>
+<tr>
+<td>Single-table rollback</td>
+<td>Medium</td>
+<td>Owner single review</td>
+<td>Pre-rollback snapshot</td>
+</tr>
+<tr>
+<td>Multi-table rollback</td>
+<td>High</td>
+<td>Multi-level approval</td>
+<td>Global snapshot plus downstream notice</td>
+</tr>
+<tr>
+<td>Rule revocation</td>
+<td>Medium</td>
+<td>Owner plus rule author</td>
+<td>Rule version rollback</td>
+</tr>
+<tr>
+<td>Index rebuild</td>
+<td>High</td>
+<td>Platform admin approval</td>
+<td>Keep old index until new one passes validation</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3423-pipeline-self-healing">34.2.3 Pipeline Self-Healing<a class="headerlink" href="#3423-pipeline-self-healing" title="Permanent link">&para;</a></h3>
+<p>Beyond rollback and repair, a DataOps Agent can attempt limited self-healing after detecting known failures.</p>
+<p>Self-healing is bounded. The agent may only execute operations in a predefined safe operation set. Anything outside that set requires human approval.</p>
+<p>Table 34-5 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 34-5: Self-healing permissions by data classification</em></p>
+<table>
+<thead>
+<tr>
+<th>Self-healing operation</th>
+<th>L0 public data</th>
+<th>L1 internal data</th>
+<th>L2 sensitive data</th>
+<th>L3 confidential data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Job rerun</td>
+<td>Automatic</td>
+<td>Automatic</td>
+<td>Automatic, once</td>
+<td>Approval</td>
+</tr>
+<tr>
+<td>Parameter adjustment, such as longer timeout</td>
+<td>Automatic</td>
+<td>Automatic</td>
+<td>Approval</td>
+<td>Approval</td>
+</tr>
+<tr>
+<td>Switch data source replica</td>
+<td>Automatic</td>
+<td>Automatic</td>
+<td>Approval</td>
+<td>Not allowed</td>
+</tr>
+<tr>
+<td>Skip noncritical step</td>
+<td>Automatic</td>
+<td>Approval</td>
+<td>Approval</td>
+<td>Not allowed</td>
+</tr>
+<tr>
+<td>Field-level data repair</td>
+<td>Automatic</td>
+<td>Approval</td>
+<td>Approval</td>
+<td>Not allowed</td>
+</tr>
+<tr>
+<td>Scale compute resources</td>
+<td>Automatic with quota</td>
+<td>Approval</td>
+<td>Approval</td>
+<td>Approval</td>
+</tr>
+</tbody>
+</table>
+<p>Figure 34-3 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part10/Luo-Chap34-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Pipeline self-healing decision flow" src="../../../images/part10/Luo-Chap34-Fig03.svg" /></a></p>
+<p><em>Figure 34-3: Pipeline self-healing decision flow</em></p>
+<p>The key principle is: <strong>repair known failure patterns; do not explore unknown problems autonomously.</strong> If a new failure pattern appears, the agent escalates it and records the pattern. After human-confirmed repair, that pattern may enter the future self-healing set.</p>
+<h3 id="3424-data-consistency-during-rollback">34.2.4 Data Consistency During Rollback<a class="headerlink" href="#3424-data-consistency-during-rollback" title="Permanent link">&para;</a></h3>
+<p>The hardest part of rollback is not restoring a snapshot. It is preserving business consistency after rollback. If table A is rolled back but table B, which depends on A, is not, B may contain orphan data.</p>
+<p>Rollback plans must include:</p>
+<ol>
+<li><strong>Dependency analysis.</strong> Query all downstream tables and jobs.</li>
+<li><strong>Consistency validation.</strong> Check references, foreign keys, and aggregate correctness.</li>
+<li><strong>Cascade rollback suggestions.</strong> If downstream risk exists, suggest cascading rollback or downstream repair.</li>
+<li><strong>Notification.</strong> Inform model training, analytics, labeling, and other consumers of affected time range and recommended action.</li>
+</ol>
+<h3 id="3425-decision-support-matrix-for-data-rollback">34.2.5 Decision Support Matrix for Data Rollback<a class="headerlink" href="#3425-decision-support-matrix-for-data-rollback" title="Permanent link">&para;</a></h3>
+<p>Table 34-6 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 34-6: Rollback versus repair decision support</em></p>
+<table>
+<thead>
+<tr>
+<th>Factor</th>
+<th>Rollback option</th>
+<th>Repair option</th>
+<th>Agent analysis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Time cost</td>
+<td>Snapshot restore plus downstream reruns</td>
+<td>Script development plus validation</td>
+<td>Estimate both using historical data</td>
+</tr>
+<tr>
+<td>Data loss</td>
+<td>New data after snapshot may be lost</td>
+<td>Repair may introduce new errors</td>
+<td>Quantify data loss</td>
+</tr>
+<tr>
+<td>Downstream impact</td>
+<td>Downstream jobs must rerun and delivery may delay</td>
+<td>Downstream jobs may not be affected</td>
+<td>Estimate impact through lineage</td>
+</tr>
+<tr>
+<td>Risk</td>
+<td>Rollback may fail</td>
+<td>Incomplete repair may be found later</td>
+<td>Estimate from historical success rates</td>
+</tr>
+</tbody>
+</table>
+<p>The agent does not decide for the team. It ensures decision-makers have enough information: if rollback takes three hours, loses two hours of new data, and affects three downstream teams, while repair takes eight hours with medium integrity risk, the tradeoff is explicit.</p>
+<h2 id="343-cost-alerting-and-capacity-optimization-agents">34.3 Cost Alerting and Capacity Optimization Agents<a class="headerlink" href="#343-cost-alerting-and-capacity-optimization-agents" title="Permanent link">&para;</a></h2>
+<h3 id="3431-automatic-cost-anomaly-detection">34.3.1 Automatic Cost Anomaly Detection<a class="headerlink" href="#3431-automatic-cost-anomaly-detection" title="Permanent link">&para;</a></h3>
+<p>Data platform cost is often ignored because billing is monthly. By the time the bill shows an anomaly, the loss has happened. Cost alerting agents provide real-time monitoring.</p>
+<p><strong>Storage growth detection.</strong> Monitor table growth rates and alert when growth exceeds historical baseline. Common causes include uncleared intermediate tables, unbounded logs, and overly aggressive snapshots.</p>
+<p><strong>Reprocessing cost analysis.</strong> When pipelines need reruns, estimate compute cost and compare it with repair cost.</p>
+<p><strong>Labeling backlog cost.</strong> Annotation backlog causes schedule delay, overtime, idle work, and wasted training compute. The agent monitors backlog level and trend.</p>
+<p><strong>GPU feeding anomalies.</strong> Training jobs consume data at stable rates. If data supply stops or quality fails and training idles, GPU spend is wasted. The agent monitors data starvation in training jobs.</p>
+<h3 id="3432-automatic-optimization-suggestions">34.3.2 Automatic Optimization Suggestions<a class="headerlink" href="#3432-automatic-optimization-suggestions" title="Permanent link">&para;</a></h3>
+<p>Table 34-7 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 34-7: Cost anomaly detection and optimization suggestions</em></p>
+<table>
+<thead>
+<tr>
+<th>Cost anomaly</th>
+<th>Detection</th>
+<th>Suggestion</th>
+<th>Estimated saving</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Intermediate table growth</td>
+<td>Table size growth &gt; daily mean by 5%</td>
+<td>Set TTL and archive old partitions</td>
+<td>20-40% storage</td>
+</tr>
+<tr>
+<td>Duplicate computation</td>
+<td>Same input triggers repeated reruns</td>
+<td>Add intermediate-result cache</td>
+<td>15-30% compute</td>
+</tr>
+<tr>
+<td>Excessive snapshots</td>
+<td>Snapshot frequency exceeds business need</td>
+<td>Reduce frequency and use tiered retention</td>
+<td>30-50% snapshot storage</td>
+</tr>
+<tr>
+<td>Inefficient queries</td>
+<td>Full scans &gt; 20% of queries</td>
+<td>Add index or partition pruning</td>
+<td>10-25% query cost</td>
+</tr>
+<tr>
+<td>Idle resources</td>
+<td>CPU/GPU utilization &lt; 30%</td>
+<td>Shrink cluster or use Spot instances</td>
+<td>20-50% compute</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3433-capacity-planning-and-forecasting">34.3.3 Capacity Planning and Forecasting<a class="headerlink" href="#3433-capacity-planning-and-forecasting" title="Permanent link">&para;</a></h3>
+<p>DataOps Agents should warn before resource exhaustion.</p>
+<p><strong>Storage forecast.</strong> Use historical growth and upcoming business plans, such as new sources or model training, to predict one-, three-, and six-month storage needs. If storage is forecast to reach 80 percent capacity within 30 days, generate an expansion suggestion.</p>
+<p><strong>Compute forecast.</strong> Analyze training workload patterns: periodic peaks, event-driven spikes after releases, and trends caused by data growth. The agent can recommend reserved instances, identify batch jobs that can run off-peak, and expand elastic resources when Spot prices are low.</p>
+<p><strong>Labeling capacity forecast.</strong> Based on downstream training plans and historical annotation speed, forecast whether labeling will become a bottleneck. If so, notify project managers to adjust priority, add annotators, or change quality standards.</p>
+<h3 id="3434-cost-attribution-and-team-accountability">34.3.4 Cost Attribution and Team Accountability<a class="headerlink" href="#3434-cost-attribution-and-team-accountability" title="Permanent link">&para;</a></h3>
+<p>Optimization requires knowing who spends what. Agents allocate platform cost by team, project, task type, and data source.</p>
+<p>Table 34-8 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 34-8: Cost attribution dimensions</em></p>
+<table>
+<thead>
+<tr>
+<th>Attribution dimension</th>
+<th>Cost types</th>
+<th>Attribution method</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Team</td>
+<td>Storage, compute, labeling labor</td>
+<td>Resource owner tags</td>
+</tr>
+<tr>
+<td>Project</td>
+<td>GPU training, inference</td>
+<td>Project labels on training jobs</td>
+</tr>
+<tr>
+<td>Data source</td>
+<td>Collection, storage, cleaning</td>
+<td>Source tags and lineage</td>
+</tr>
+<tr>
+<td>Experiment</td>
+<td>Training, evaluation</td>
+<td>Experiment tracking ID</td>
+</tr>
+</tbody>
+</table>
+<p>Each month, the agent generates team cost reports showing storage, compute, labeling, and collection trends. If a team's cost exceeds budget by more than 20 percent, the agent explains whether the driver is data growth or inefficient use.</p>
+<h2 id="344-ticket-and-postmortem-automation-agents">34.4 Ticket and Postmortem Automation Agents<a class="headerlink" href="#344-ticket-and-postmortem-automation-agents" title="Permanent link">&para;</a></h2>
+<h3 id="3441-automatic-ticket-generation">34.4.1 Automatic Ticket Generation<a class="headerlink" href="#3441-automatic-ticket-generation" title="Permanent link">&para;</a></h3>
+<p>When human intervention is needed, the DataOps Agent creates a structured ticket with:</p>
+<ol>
+<li><strong>Issue summary.</strong> One sentence explaining what happened.</li>
+<li><strong>Impact scope.</strong> Affected tables, jobs, and downstream teams.</li>
+<li><strong>Root cause candidates.</strong> Ranked by confidence.</li>
+<li><strong>Suggested actions.</strong> Repair plan and estimated duration.</li>
+<li><strong>Urgency.</strong> P0-P3 based on impact and business priority.</li>
+<li><strong>Related links.</strong> Monitoring dashboards, log queries, and lineage analysis.</li>
+</ol>
+<h3 id="3442-automatic-postmortem-drafts">34.4.2 Automatic Postmortem Drafts<a class="headerlink" href="#3442-automatic-postmortem-drafts" title="Permanent link">&para;</a></h3>
+<p>Postmortems are central to the DataOps flywheel, but engineers often skip them after intense repair work. Agents can draft postmortems from operation logs and lineage.</p>
+<p><em>Postmortem draft template</em></p>
+<p>Table 34-9 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 34-9: Postmortem draft template</em></p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Auto-fill source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Event timeline</td>
+<td>Alert times, operation logs, approval records</td>
+</tr>
+<tr>
+<td>Root cause analysis</td>
+<td>Root-cause agent output</td>
+</tr>
+<tr>
+<td>Impact assessment</td>
+<td>Lineage analysis and downstream scope</td>
+</tr>
+<tr>
+<td>Response process</td>
+<td>Human Gate timestamps and agent execution logs</td>
+</tr>
+<tr>
+<td>Repair plan</td>
+<td>Executed rollback or repair operations and results</td>
+</tr>
+<tr>
+<td>Prevention</td>
+<td>Rule suggestions based on failure pattern</td>
+</tr>
+<tr>
+<td>Action items</td>
+<td>Generated TODO list with owners</td>
+</tr>
+<tr>
+<td>Acceptance criteria</td>
+<td>Metrics and thresholds to verify next week</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3443-linking-experiment-tracking-and-agents">34.4.3 Linking Experiment Tracking and Agents<a class="headerlink" href="#3443-linking-experiment-tracking-and-agents" title="Permanent link">&para;</a></h3>
+<p>DataOps Agents should connect to experiment tracking. When a model experiment shows data-related regression, the agent links it to data changes.</p>
+<p>Example: <code>math_reasoning</code> accuracy drops from 78 percent to 71 percent. The agent:</p>
+<ol>
+<li>Queries all training-data changes for that dimension during the experiment window.</li>
+<li>Finds a cleaning rule released last week that affected 3 percent of math reasoning samples.</li>
+<li>Correlates the rule change with performance regression and writes a report.</li>
+<li>Recommends rolling back the rule and retraining for validation.</li>
+</ol>
+<p>This closes the loop from data change to model performance and can reduce diagnosis from days to hours.</p>
+<h3 id="3444-automatic-operations-knowledge-base">34.4.4 Automatic Operations Knowledge Base<a class="headerlink" href="#3444-automatic-operations-knowledge-base" title="Permanent link">&para;</a></h3>
+<p>Long-term value comes from accumulating reusable knowledge. After each incident, the agent writes these items into the operations knowledge base:</p>
+<ul>
+<li><strong>Failure fingerprint:</strong> metric combinations and log keywords.</li>
+<li><strong>Handling steps:</strong> executed steps and whether each was effective.</li>
+<li><strong>Timeline:</strong> complete sequence from incident to recovery.</li>
+<li><strong>Related information:</strong> alerts, change records, and communication records.</li>
+</ul>
+<p>For future incidents, the agent retrieves similar cases: "this pattern is 87 percent similar to incident-2024-0315; the previous repair was..." Experience reuse is how DataOps Agents move from smart to wise.</p>
+<h2 id="345-case-review-dataops-agent-in-a-real-platform">34.5 Case Review: DataOps Agent in a Real Platform<a class="headerlink" href="#345-case-review-dataops-agent-in-a-real-platform" title="Permanent link">&para;</a></h2>
+<p>After six months of deployment on a large data platform:</p>
+<p><strong>Alert response.</strong> The agent reduces more than 200 daily alerts into 15-20 root-cause candidates. MTTR drops from 45 minutes to 12 minutes. High-confidence root-cause candidates above 0.85 reach 91 percent accuracy.</p>
+<p><strong>Cost control.</strong> The agent detects seven storage-growth issues and helps clean 30 TB of unused intermediate data. Reprocessing-cost analysis helps teams choose repair instead of rerun in five incidents, saving about $8,000 in compute.</p>
+<p><strong>Postmortem culture.</strong> Automatic drafts reduce postmortem preparation from two hours to 15 minutes. The team moves from occasional postmortems to one postmortem for every incident.</p>
+<h3 id="key-lessons">Key Lessons<a class="headerlink" href="#key-lessons" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Alert aggregation must distinguish causality from correlation.</strong> Simultaneous alerts are not always causally linked.</li>
+<li><strong>Rollback approval cannot wait too long.</strong> One incident spreads because a reviewer is on vacation; timeout escalation is added afterward.</li>
+<li><strong>Cost suggestions need a soft landing.</strong> A table that looks unused may be someone's manual backup; optimization requires confirmation.</li>
+</ol>
+<h3 id="extended-case-from-reactive-operations-to-active-autonomy">Extended Case: From Reactive Operations to Active Autonomy<a class="headerlink" href="#extended-case-from-reactive-operations-to-active-autonomy" title="Permanent link">&para;</a></h3>
+<p>The rollout is gradual:</p>
+<p><strong>Stage 1, months 0-2: shadow mode.</strong> The agent analyzes alerts and root causes in the background but performs no actions. Initial root-cause accuracy is 62 percent and rises to 85 percent after rule and feedback tuning.</p>
+<p><strong>Stage 2, months 3-4: recommendation mode.</strong> The agent sends aggregated alerts and root-cause analysis to on-call engineers. Engineers can view alert groups, candidates, and evidence in one click. MTTR drops from 45 minutes to 18 minutes.</p>
+<p><strong>Stage 3, months 5-6: semi-automatic mode.</strong> For high-confidence candidates above 0.85, the agent generates repair suggestions that engineers confirm before execution. Trust grows through retrospective comparisons between agent suggestions and actual repair results.</p>
+<p><strong>Stage 4, after month 7: conditional autonomy.</strong> The agent receives bounded automatic permissions for low-risk operations on L0 and L1 data, such as reruns and parameter adjustments, followed by audit.</p>
+<h3 id="success-factors">Success Factors<a class="headerlink" href="#success-factors" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Shadow mode builds trust cheaply.</strong></li>
+<li><strong>Accuracy is not the only trust metric; explainability and predictability matter.</strong></li>
+<li><strong>Gradual authorization is safer than one-time authorization.</strong></li>
+<li><strong>Rollback capability is the foundation of authority.</strong></li>
+</ol>
+<h3 id="continuous-mttr-improvement">Continuous MTTR Improvement<a class="headerlink" href="#continuous-mttr-improvement" title="Permanent link">&para;</a></h3>
+<p>Table 34-10 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 34-10: Continuous MTTR Improvement</em></p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>MTTR</th>
+<th>Agent automation</th>
+<th>Engineer satisfaction</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Manual baseline</td>
+<td>45 min</td>
+<td>0%</td>
+<td>3.2/5, alert fatigue</td>
+</tr>
+<tr>
+<td>Shadow mode</td>
+<td>40 min</td>
+<td>0%, analysis only</td>
+<td>3.5/5</td>
+</tr>
+<tr>
+<td>Recommendation mode</td>
+<td>18 min</td>
+<td>0%, suggestions</td>
+<td>4.1/5</td>
+</tr>
+<tr>
+<td>Semi-automatic mode</td>
+<td>12 min</td>
+<td>30%, low-risk automatic</td>
+<td>4.3/5</td>
+</tr>
+<tr>
+<td>Conditional autonomy</td>
+<td>8 min</td>
+<td>60%</td>
+<td>4.5/5</td>
+</tr>
+</tbody>
+</table>
+<h2 id="346-checklist-dataops-agent-deployment">34.6 Checklist: DataOps Agent Deployment<a class="headerlink" href="#346-checklist-dataops-agent-deployment" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[ ] Does the alert aggregation agent read metrics, logs, lineage, and change records?</li>
+<li>[ ] Are root-cause candidates ranked by confidence with supporting evidence?</li>
+<li>[ ] Do rollback plans include impact analysis, candidate comparison, and rerun plans?</li>
+<li>[ ] Is rollback approval tiered by impact scope?</li>
+<li>[ ] Does cost monitoring cover storage growth, reprocessing, labeling backlog, and GPU feeding?</li>
+<li>[ ] Are cost optimization suggestions human-confirmed before execution?</li>
+<li>[ ] Do tickets include summary, impact scope, root-cause candidates, suggested actions, and urgency?</li>
+<li>[ ] Do postmortem drafts include timeline, root cause, impact, and action items?</li>
+<li>[ ] Are MTTR baseline and improvement targets defined?</li>
+<li>[ ] Does approval timeout escalate rather than auto-approve?</li>
+</ul>
+<h2 id="347-chapter-links">34.7 Chapter Links<a class="headerlink" href="#347-chapter-links" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Chapter 24:</strong> DataOps flywheel and team organization are extended with agent-driven operational autonomy.</li>
+<li><strong>Chapter 25:</strong> rollback depends on version management and experiment tracking.</li>
+<li><strong>Chapter 26:</strong> alert agents depend on platform observability.</li>
+<li><strong>Chapter 31:</strong> this chapter follows the six-layer architecture, especially Human Gate and Lineage.</li>
+<li><strong>Chapter 32:</strong> collection and cleaning pipelines are part of what this chapter monitors.</li>
+<li><strong>Chapter 35:</strong> rollback approvals connect to the permission model and human-AI collaboration.</li>
+</ul>
+<h2 id="348-further-reading-deepening-dataops-agents">34.8 Further Reading: Deepening DataOps Agents<a class="headerlink" href="#348-further-reading-deepening-dataops-agents" title="Permanent link">&para;</a></h2>
+<h3 id="from-reactive-to-predictive-operations">From Reactive to Predictive Operations<a class="headerlink" href="#from-reactive-to-predictive-operations" title="Permanent link">&para;</a></h3>
+<p>Most DataOps Agents today are reactive: detect, locate, and repair after failure. The next stage is predictive operations: predict and prevent before failure.</p>
+<p>Technical path:</p>
+<ol>
+<li><strong>Anomaly pattern learning.</strong> Analyze metrics during the 24 hours before historical incidents and learn precursor patterns.</li>
+<li><strong>Risk scoring.</strong> Score every pipeline run using recent changes, volume fluctuation, dependency health, and failure history.</li>
+<li><strong>Preventive intervention.</strong> When risk exceeds threshold, scale resources, adjust scheduling, or notify teams.</li>
+</ol>
+<p><em>Reactive versus predictive operations</em></p>
+<p>Table 34-11 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 34-11: Reactive versus predictive operations</em></p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Reactive operations</th>
+<th>Predictive operations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trigger</td>
+<td>After failure</td>
+<td>Before failure</td>
+</tr>
+<tr>
+<td>Detection</td>
+<td>Alert thresholds</td>
+<td>Pattern recognition and risk scoring</td>
+</tr>
+<tr>
+<td>Intervention</td>
+<td>Emergency repair</td>
+<td>Preventive adjustment</td>
+</tr>
+<tr>
+<td>Business impact</td>
+<td>Interruption already happened</td>
+<td>Interruption avoided</td>
+</tr>
+<tr>
+<td>Maturity</td>
+<td>Available</td>
+<td>Requires historical data</td>
+</tr>
+<tr>
+<td>Current accuracy</td>
+<td>~85% root-cause localization</td>
+<td>~60% failure prediction, needs tuning</td>
+</tr>
+</tbody>
+</table>
+<h3 id="rethinking-permission-boundaries-for-platform-autonomy">Rethinking Permission Boundaries for Platform Autonomy<a class="headerlink" href="#rethinking-permission-boundaries-for-platform-autonomy" title="Permanent link">&para;</a></h3>
+<p>As autonomy increases, the question becomes: where is the final boundary?</p>
+<p>Humans should retain final decision rights for:</p>
+<ol>
+<li><strong>Architectural changes.</strong> Platform topology, core storage migration, and infrastructure upgrades.</li>
+<li><strong>Cost and budget tradeoffs.</strong> Whether to spend more money for faster processing is a business decision.</li>
+<li><strong>Cross-team priority coordination.</strong> Agents should not decide whose workloads run first during resource contention.</li>
+<li><strong>Legal and compliance decisions.</strong> Agents can analyze gray areas, but legal teams decide.</li>
+</ol>
+<p>The boundary can expand as reliability and trust grow, but every expansion requires evidence and rollback capability.</p>
+<h3 id="from-devops-to-dataops-to-agentops">From DevOps to DataOps to AgentOps<a class="headerlink" href="#from-devops-to-dataops-to-agentops" title="Permanent link">&para;</a></h3>
+<p>The operations paradigm is evolving:</p>
+<ul>
+<li><strong>DevOps</strong> automates software delivery through CI/CD and infrastructure as code.</li>
+<li><strong>DataOps</strong> automates data delivery through pipelines, quality monitoring, and version management.</li>
+<li><strong>AgentOps</strong> automates agent operations: deployment, monitoring, evaluation, update, and retirement.</li>
+</ul>
+<p>AgentOps does not replace DataOps. It adds a layer above it: agents manage data pipelines, and AgentOps manages agents. Operations dashboards must therefore combine data quality metrics with agent behavior metrics.</p>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>Starting from a 3 A.M. alert storm, this chapter discussed how DataOps Agents can move platform operations from passive response toward bounded autonomy. For alert-to-root-cause workflows, it presented alert aggregation and prioritization, root-cause candidate generation, and alert-fatigue governance to reduce mean time to repair. For recovery, it discussed automatic rollback-plan generation and approval workflows, pipeline self-healing, data consistency during version rollback, and decision-support matrices that keep human judgment in the loop for high-risk data rollback.</p>
+<p>The methods in this chapter should be applied by jointly considering data sources, business goals, model capability, cost budget, and compliance requirements. For scenarios involving sensitive information, cross-system calls, automated decisions, or public release, human review, version freeze, permission control, and exception rollback should be retained. Example flows should not be generalized directly into production commitments; the governance, mapping, measurement, and management requirements of AI risk-management frameworks also apply to autonomy boundaries for DataOps Agents.</p>
+<p>In the book's structure, this chapter sits in the agent-automation layer. It connects earlier platform foundations with later privacy, compliance, and specialized dataset cases. Readers can combine the chapter's frameworks, figures, references, and appendix checklists to turn the methods into reproducible, inspectable, and deliverable engineering workflows.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Amershi S, Begel A, Bird C, Devanbu P, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice, pp 291-300. https://doi.org/10.1109/icse-seip.2019.00042.</p>
+<p>Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for Machine Learning. In: Proceedings of Machine Learning and Systems 1, pp 334-347.</p>
+<p>Dang Y, Lin Q, Huang P (2019) AIOps: Real-World Challenges and Research Innovations. In: Proceedings of the 41st International Conference on Software Engineering: Companion Proceedings, pp 4-5. https://doi.org/10.1109/icse-companion.2019.00023.</p>
+<p>He S, He P, Chen Z, Yang T, Su Y, Lyu M R (2021) A Survey on Automated Log Analysis for Reliability Engineering. ACM Computing Surveys 54(6):1-37.</p>
+<p>Huyen C (2022) Designing Machine Learning Systems: An Iterative Process for Production-Ready Applications. O'Reilly Media.</p>
+<p>Kreuzberger D, Kuhl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879. arXiv:2205.02302.</p>
+<p>Makinen S, Skogstrom H, Laaksonen E, Mikkonen T (2021) Who Needs MLOps: What Data Scientists Seek to Accomplish and How Can MLOps Help? In: Proceedings of the 2021 IEEE/ACM 1st Workshop on AI Engineering - Software Engineering for AI, pp 109-112.</p>
+<p>Lwakatare L E, Raj A, Crnkovic I, Bosch J, Olsson H H (2020) Large-scale Machine Learning Systems in Real-world Industrial Settings: A Review of Challenges and Solutions. Information and Software Technology 127:106368. https://doi.org/10.1016/j.infsof.2020.106368.</p>
+<p>NIST (2023) Artificial Intelligence Risk Management Framework (AI RMF 1.0). National Institute of Standards and Technology.</p>
+<p>NIST (2024) Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile. NIST AI 600-1.</p>
+<p>Paleyes A, Urma R-G, Lawrence N D (2022) Challenges in Deploying Machine Learning: A Survey of Case Studies. ACM Computing Surveys 55(6):1-29. https://doi.org/10.1145/3533378.</p>
+<p>Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1-15. https://doi.org/10.1145/3411764.3445518.</p>
+<p>Tamburri D A (2020) Sustainable MLOps: Trends and Challenges. In: Proceedings of the 22nd International Symposium on Symbolic and Numeric Algorithms for Scientific Computing, pp 17-23. https://doi.org/10.1109/synasc51798.2020.00015.</p>
+<p>Testi M, Ballabio M, Frontoni E, Iannello G, Moccia S, Soda P, Vessio G (2022) MLOps: A Taxonomy and a Methodology. IEEE Access 10:63606-63618. https://doi.org/10.1109/access.2022.3181730.</p>
+<p>Treveil M, Omont N, Stenac C, Lefevre K, Phan D, Zentici J, Lavoillotte A, Miyazaki M, Heidmann L (2020) Introducing MLOps: How to Scale Machine Learning in the Enterprise. O'Reilly Media.</p>
+<p>Vela D, Sharp A, Zhang R, Nguyen T, Hoang A, Pianykh O S (2022) Temporal quality degradation in AI models. Scientific Reports 12:11654. https://doi.org/10.1038/s41598-022-15245-z.</p>
+<p>Zhu J, He S, Liu J, He P, Xie Q, Zheng Z, Lyu M R (2019) Tools and Benchmarks for Automated Log Parsing. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice, pp 121-130.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ch33_labeling_synthesis_evaluation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Chapter 33: Labeling, Synthesis, and Evaluation Agents">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Chapter 33: Labeling, Synthesis, and Evaluation Agents
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch35_security_permission_collaboration/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 35: Agent Security and Human-AI Collaboration">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 35: Agent Security and Human-AI Collaboration
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

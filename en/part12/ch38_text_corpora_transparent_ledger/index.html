@@ -1,0 +1,4978 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part12/ch38_text_corpora_transparent_ledger/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../ch39_image_text_candidate_pool_data_engineering/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 38: Text Corpus Engineering: Web and Ledgers - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-38-text-corpus-engineering-web-and-ledgers" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 38: Text Corpus Engineering: Web and Ledgers
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part12/ch38_text_corpora_transparent_ledger/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part12/ch38_text_corpora_transparent_ledger/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_15" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#case-a-fineweb-open-web-text-corpora-filtering-deduplication-and-processing-choices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A: FineWeb: Open Web Text Corpora, Filtering, Deduplication, and Processing Choices
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case A: FineWeb: Open Web Text Corpora, Filtering, Deduplication, and Processing Choices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-a-learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A: Learning Objectives
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a-opening-scenario" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A: Opening Scenario
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a1-common-crawl-is-a-web-snapshot-not-a-training-corpus" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.1: Common Crawl Is a Web Snapshot, Not a Training Corpus
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case A.1: Common Crawl Is a Web Snapshot, Not a Training Corpus">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-a11-processing-layers-from-web-snapshot-to-training-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.1.1 Processing Layers from Web Snapshot to Training Text
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a12-filtering-strength-determines-the-training-signal" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.1.2 Filtering Strength Determines the Training Signal
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a2-fineweb-data-definition-and-public-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.2: FineWeb Data Definition and Public Form
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case A.2: FineWeb Data Definition and Public Form">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-a21-task-definition" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.2.1 Task Definition
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a3-key-fields-in-fineweb-document-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.3: Key Fields in FineWeb Document Records
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case A.3: Key Fields in FineWeb Document Records">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-a31-a-sample-cannot-store-only-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.3.1 A Sample Cannot Store Only text
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a32-relationship-between-schema-and-training-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.3.2 Relationship Between Schema and Training Evaluation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a4-finewebs-code-based-processing-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.4: FineWeb's Code-based Processing Flow
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case A.4: FineWeb's Code-based Processing Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-a41-main-processing-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.4.1 Main Processing Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a42-deduplication-and-privacy-processing-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.4.2 Deduplication and Privacy-processing Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a43-finewebs-per-crawl-deduplication-judgment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.4.3 FineWeb's Per-crawl Deduplication Judgment
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a5-evaluating-fineweb-data-processing-choices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.5: Evaluating FineWeb Data-processing Choices
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case A.5: Evaluating FineWeb Data-processing Choices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-a51-fixed-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.5.1 Fixed Variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a52-common-failures-and-repair-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.5.2 Common Failures and Repair Actions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a6-usage-boundaries-of-public-web-corpora" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.6: Usage Boundaries of Public Web Corpora
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A: Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#case-b-dolma-transparent-pre-training-corpus-ledgers-and-attributable-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B: Dolma: Transparent Pre-training Corpus Ledgers and Attributable Evaluation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case B: Dolma: Transparent Pre-training Corpus Ledgers and Attributable Evaluation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-b-learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B: Learning Objectives
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b1-problem-scenario-open-weights-still-cannot-explain-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.1: Problem Scenario: Open Weights Still Cannot Explain the Model
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case B.1: Problem Scenario: Open Weights Still Cannot Explain the Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-b11-open-model-research-needs-data-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.1.1 Open-model Research Needs Data Evidence
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b2-dataset-overview-versions-scale-and-source-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.2: Dataset Overview: Versions, Scale, and Source Structure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case B.2: Dataset Overview: Versions, Scale, and Source Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-b21-v16-source-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.2.1 v1.6 Source Structure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b3-decomposing-a-transparent-chain-through-the-source-ledger" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.3: Decomposing a Transparent Chain Through the Source Ledger
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case B.3: Decomposing a Transparent Chain Through the Source Ledger">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-b31-from-source-to-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.3.1 From Source to Document
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b32-token-accounting-should-track-actual-training-consumption" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.3.2 Token Accounting Should Track Actual Training Consumption
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b33-three-ways-to-read-a-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.3.3 Three Ways to Read a Document
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b4-dolma-toolkit-makes-the-evidence-chain-executable" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.4: Dolma Toolkit Makes the Evidence Chain Executable
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case B.4: Dolma Toolkit Makes the Evidence Chain Executable">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-b41-four-actions-correspond-to-four-kinds-of-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.4.1 Four Actions Correspond to Four Kinds of Evidence
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b5-evaluation-shifts-from-highest-score-to-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.5: Evaluation Shifts from Highest Score to Attribution
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case B.5: Evaluation Shifts from Highest Score to Attribution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-b51-source-ablation-locates-capability-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.5.1 Source Ablation Locates Capability Sources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b52-diagnosis-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.5.2 Diagnosis Checklist
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b53-common-failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.5.3 Common Failure Modes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b6-reuse-boundaries-of-transparent-corpora" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.6: Reuse Boundaries of Transparent Corpora
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B: Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#case-a-fineweb-open-web-text-corpora-filtering-deduplication-and-processing-choices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A: FineWeb: Open Web Text Corpora, Filtering, Deduplication, and Processing Choices
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case A: FineWeb: Open Web Text Corpora, Filtering, Deduplication, and Processing Choices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-a-learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A: Learning Objectives
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a-opening-scenario" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A: Opening Scenario
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a1-common-crawl-is-a-web-snapshot-not-a-training-corpus" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.1: Common Crawl Is a Web Snapshot, Not a Training Corpus
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case A.1: Common Crawl Is a Web Snapshot, Not a Training Corpus">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-a11-processing-layers-from-web-snapshot-to-training-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.1.1 Processing Layers from Web Snapshot to Training Text
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a12-filtering-strength-determines-the-training-signal" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.1.2 Filtering Strength Determines the Training Signal
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a2-fineweb-data-definition-and-public-form" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.2: FineWeb Data Definition and Public Form
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case A.2: FineWeb Data Definition and Public Form">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-a21-task-definition" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.2.1 Task Definition
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a3-key-fields-in-fineweb-document-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.3: Key Fields in FineWeb Document Records
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case A.3: Key Fields in FineWeb Document Records">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-a31-a-sample-cannot-store-only-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.3.1 A Sample Cannot Store Only text
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a32-relationship-between-schema-and-training-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.3.2 Relationship Between Schema and Training Evaluation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a4-finewebs-code-based-processing-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.4: FineWeb's Code-based Processing Flow
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case A.4: FineWeb's Code-based Processing Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-a41-main-processing-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.4.1 Main Processing Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a42-deduplication-and-privacy-processing-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.4.2 Deduplication and Privacy-processing Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a43-finewebs-per-crawl-deduplication-judgment" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.4.3 FineWeb's Per-crawl Deduplication Judgment
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a5-evaluating-fineweb-data-processing-choices" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.5: Evaluating FineWeb Data-processing Choices
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case A.5: Evaluating FineWeb Data-processing Choices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-a51-fixed-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.5.1 Fixed Variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a52-common-failures-and-repair-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.5.2 Common Failures and Repair Actions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a6-usage-boundaries-of-public-web-corpora" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A.6: Usage Boundaries of Public Web Corpora
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-a-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case A: Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#case-b-dolma-transparent-pre-training-corpus-ledgers-and-attributable-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B: Dolma: Transparent Pre-training Corpus Ledgers and Attributable Evaluation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case B: Dolma: Transparent Pre-training Corpus Ledgers and Attributable Evaluation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-b-learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B: Learning Objectives
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b1-problem-scenario-open-weights-still-cannot-explain-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.1: Problem Scenario: Open Weights Still Cannot Explain the Model
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case B.1: Problem Scenario: Open Weights Still Cannot Explain the Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-b11-open-model-research-needs-data-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.1.1 Open-model Research Needs Data Evidence
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b2-dataset-overview-versions-scale-and-source-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.2: Dataset Overview: Versions, Scale, and Source Structure
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case B.2: Dataset Overview: Versions, Scale, and Source Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-b21-v16-source-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.2.1 v1.6 Source Structure
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b3-decomposing-a-transparent-chain-through-the-source-ledger" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.3: Decomposing a Transparent Chain Through the Source Ledger
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case B.3: Decomposing a Transparent Chain Through the Source Ledger">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-b31-from-source-to-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.3.1 From Source to Document
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b32-token-accounting-should-track-actual-training-consumption" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.3.2 Token Accounting Should Track Actual Training Consumption
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b33-three-ways-to-read-a-document" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.3.3 Three Ways to Read a Document
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b4-dolma-toolkit-makes-the-evidence-chain-executable" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.4: Dolma Toolkit Makes the Evidence Chain Executable
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case B.4: Dolma Toolkit Makes the Evidence Chain Executable">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-b41-four-actions-correspond-to-four-kinds-of-evidence" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.4.1 Four Actions Correspond to Four Kinds of Evidence
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b5-evaluation-shifts-from-highest-score-to-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.5: Evaluation Shifts from Highest Score to Attribution
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Case B.5: Evaluation Shifts from Highest Score to Attribution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-b51-source-ablation-locates-capability-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.5.1 Source Ablation Locates Capability Sources
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b52-diagnosis-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.5.2 Diagnosis Checklist
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b53-common-failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.5.3 Common Failure Modes
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b6-reuse-boundaries-of-transparent-corpora" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B.6: Reuse Boundaries of Transparent Corpora
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-b-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case B: Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-38-text-corpus-engineering-web-and-ledgers">Chapter 38: Text Corpus Engineering: Web and Ledgers<a class="headerlink" href="#chapter-38-text-corpus-engineering-web-and-ledgers" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Guanlin Mu; Xuhong Cao</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>This chapter uses FineWeb and Dolma as complementary cases to explain how text-corpus data engineering turns open Web snapshots into trainable, traceable, and diagnosable data assets. FineWeb emphasizes Common Crawl extraction, filtering, deduplication, privacy processing, and processing-choice evaluation. Dolma emphasizes source ledgers, token consumption, source ablation, and transparent release. Together they show that pre-training corpora are not defined by scale alone, but by provenance, processing, versions, evidence chains, and reproducibility conditions.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>text corpora; open Web; FineWeb; Dolma; filtering and deduplication; transparent ledger; pre-training data</p>
+<h2 id="case-a-fineweb-open-web-text-corpora-filtering-deduplication-and-processing-choices">Case A: FineWeb: Open Web Text Corpora, Filtering, Deduplication, and Processing Choices<a class="headerlink" href="#case-a-fineweb-open-web-text-corpora-filtering-deduplication-and-processing-choices" title="Permanent link">&para;</a></h2>
+<h3 id="case-a-learning-objectives">Case A: Learning Objectives<a class="headerlink" href="#case-a-learning-objectives" title="Permanent link">&para;</a></h3>
+<p>After completing this chapter, readers should be able to:</p>
+<ul>
+<li>Distinguish Common Crawl WARC files, WET text files, extracted Web-page text, filtered FineWeb documents, and the final token stream.</li>
+<li>Explain why FineWeb re-extracts text from WARC instead of directly using Common Crawl WET text.</li>
+<li>Understand the data-engineering roles of <code>WarcReader</code>, <code>URLFilter</code>, <code>Trafilatura</code>, <code>LanguageFilter</code>, <code>GopherRepetitionFilter</code>, <code>GopherQualityFilter</code>, <code>C4QualityFilter</code>, <code>FineWebQualityFilter</code>, <code>MinhashDedup*</code>, and <code>PIIFormatter</code> in the official FineWeb processing script.</li>
+<li>Design a Web pre-training document schema that allows each sample to be traced to its source, filters, deduplication state, token statistics, and privacy-processing status.</li>
+<li>Compare different data-processing strategies under fixed model scale, fixed token budget, fixed evaluation sets, and repeated random seeds.</li>
+<li>Identify copyright, privacy, removal, evaluation-contamination, and cross-lingual transfer boundaries when adapting FineWeb-style processing to enterprise or research projects.</li>
+</ul>
+<h3 id="case-a-opening-scenario">Case A: Opening Scenario<a class="headerlink" href="#case-a-opening-scenario" title="Permanent link">&para;</a></h3>
+<p>A team is preparing to train an English foundation model at the 7B-parameter scale. The first data plan is straightforward: download recent Common Crawl WET files, filter non-English pages, run simple deduplication, and send the text into the tokenizer. Offline samples look decent: many pages are indeed natural language, and the token volume is large enough. The team starts small-model pre-training, but after several weeks it encounters three hard-to-explain problems.</p>
+<p>First, the model does not improve stably on several commonsense tasks as training progresses. When the team inspects training snippets, it finds that many texts are actually Web menus, footers, cookie banners, SEO keyword lists, and automatically generated on-site recommendations. Second, the same classes of template pages repeatedly appear across months and sites. Training loss seems stable, but model outputs become increasingly prone to repeating templated short phrases. Third, the legal team asks the data team to locate samples from a particular domain and suspected email addresses, but the data team can only fuzzy-search already shuffled token shards; it cannot reconstruct which crawl dump and URL a text came from, which filters it passed, or whether it was retained after deduplication.</p>
+<p>These three problems show that Common Crawl is a Web snapshot, not a training set. The real data-engineering task is not to "download more Web pages," but to transform each Web sample into a traceable, filterable, deduplicable, evaluable, and removable training record. FineWeb is a public case study built around exactly this problem.</p>
+<h3 id="case-a1-common-crawl-is-a-web-snapshot-not-a-training-corpus">Case A.1: Common Crawl Is a Web Snapshot, Not a Training Corpus<a class="headerlink" href="#case-a1-common-crawl-is-a-web-snapshot-not-a-training-corpus" title="Permanent link">&para;</a></h3>
+<p>Common Crawl WARC files preserve the original responses captured during Web crawling, including HTML, request metadata, and page structure. WET files are Common Crawl's extracted text version. For pre-training data engineering, WET is attractive: it avoids HTML parsing cost and has a size closer to the text needed for model training. However, FineWeb's experiments found that directly using WET leaves too much boilerplate, menu text, and page noise, so FineWeb re-extracts main text from WARC.</p>
+<h4 id="case-a11-processing-layers-from-web-snapshot-to-training-text">Case A.1.1 Processing Layers from Web Snapshot to Training Text<a class="headerlink" href="#case-a11-processing-layers-from-web-snapshot-to-training-text" title="Permanent link">&para;</a></h4>
+<p>At least five transformation layers separate Web snapshots from training text.</p>
+<p>The first layer is URL-level filtering. Some domains, paths, or subword patterns carry high risk by themselves, such as malicious sites, adult-content sites, or obvious spam pages. The official FineWeb dataset card places URL filtering at the first step of the pipeline, using block lists and subword detection to remove documents from malicious and NSFW websites.</p>
+<p>The second layer is main-text extraction. An HTML page is not the main text; navigation, footers, scripts, recommendation lists, and advertisements may all be mixed into it. FineWeb uses Trafilatura to extract main text from raw WARC HTML, and the paper compares WARC+Trafilatura with WET through ablation experiments.</p>
+<p>The third layer is language identification. FineWeb is an English corpus, so it uses FastText language filtering and retains documents whose English score reaches a threshold. The official dataset card states that FineWeb removes documents whose <code>en</code> language score is below 0.65.</p>
+<p>The fourth layer is quality filtering. Web text commonly contains repeated n-grams, abnormal line lengths, too many short lines, list-like pages, and formatting errors. FineWeb combines Gopher repetition and quality filters, part of the C4 filters, and FineWeb-specific filters to control these problems.</p>
+<p>The fifth layer is deduplication and privacy processing. FineWeb performs MinHash deduplication independently within each crawl and uses <code>PIIFormatter</code> during public release to anonymize email addresses and public IP addresses.</p>
+<p>Together, these steps are not merely a collection of cleaning scripts, but a set of pre-training data contracts. Each step should have inputs, outputs, failure records, and reviewable parameters.</p>
+<h4 id="case-a12-filtering-strength-determines-the-training-signal">Case A.1.2 Filtering Strength Determines the Training Signal<a class="headerlink" href="#case-a12-filtering-strength-determines-the-training-signal" title="Permanent link">&para;</a></h4>
+<p>Web-corpus cleaning most easily produces two opposite errors.</p>
+<p>If filtering is too weak, the model absorbs templates, garbled text, advertisements, duplicate pages, and non-natural language. These may contribute many tokens statistically, but they do not help downstream tasks and may even damage the language distribution. If filtering is too strict, corpus size drops, content coverage narrows, and some long-tail knowledge, forum Q&amp;A, and non-standard writing may be mistakenly removed. For pre-training, a filter is not better simply because it is stricter; it must find a verifiable balance between preserving the token budget and improving the training signal.</p>
+<p>This trade-off can be described with a simple training-utility function:</p>
+<div class="arithmatex">\[
+U(F)=S_{eval}(D_F)-\lambda \cdot R_{risk}(D_F)-\mu \cdot \max(0, T_{target}-T_F)
+\]</div>
+<p>Here, <span class="arithmatex">\(F\)</span> denotes the filtering strategy, <span class="arithmatex">\(D_F\)</span> is the filtered dataset, <span class="arithmatex">\(S_{eval}\)</span> is the model score under a fixed evaluation protocol, <span class="arithmatex">\(R_{risk}\)</span> is privacy, copyright, toxicity, and contamination risk, <span class="arithmatex">\(T_F\)</span> is the retained token count, and <span class="arithmatex">\(T_{target}\)</span> is the lower token bound required by the training budget. This is not an original formula from the FineWeb paper; it is an engineering abstraction of the FineWeb experimental logic: when selecting filters, one cannot look only at whether samples appear "clean"; one must also evaluate whether the model improves under a fixed training budget and whether risk decreases.</p>
+<h3 id="case-a2-fineweb-data-definition-and-public-form">Case A.2: FineWeb Data Definition and Public Form<a class="headerlink" href="#case-a2-fineweb-data-definition-and-public-form" title="Permanent link">&para;</a></h3>
+<p>FineWeb is publicly available as a full dataset, configurations split by Common Crawl dump, and smaller sample versions. The official dataset card states that users can load the full dataset or specify a particular crawl/dump; dump names follow the <code>CC-MAIN-(year)-(week number)</code> format. Sample versions include random subsets of approximately 350B, 100B, and 10B GPT-2 tokens, enabling researchers to reproduce experiments or debug processing code at lower cost.</p>
+<p>Table 38-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 38-1: Public FineWeb Forms and Engineering Uses</em></p>
+<table>
+<thead>
+<tr>
+<th>Form</th>
+<th style="text-align: right;">Public Description</th>
+<th>Engineering Use</th>
+<th>Usage Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FineWeb full dataset</td>
+<td style="text-align: right;">The initial paper reports 15T tokens; the official dataset card continues listing later dumps</td>
+<td>Large-scale English Web pre-training, data ablation, filtering-strategy research</td>
+<td>The data continues to update; cite the dataset-card access time and scale convention</td>
+</tr>
+<tr>
+<td>Per-dump config</td>
+<td style="text-align: right;">Organized as <code>CC-MAIN-YYYY-WW</code></td>
+<td>Sampling by time window, reproducing experiments, locating distribution shifts</td>
+<td>Different dumps differ in site coverage and quality; do not assume identical distributions</td>
+</tr>
+<tr>
+<td><code>sample-350BT</code></td>
+<td style="text-align: right;">Approximately 350B GPT-2 tokens</td>
+<td>Medium-scale data experiments, deduplication and filtering validation</td>
+<td>Suitable for larger ablations, but not equivalent to full FineWeb</td>
+</tr>
+<tr>
+<td><code>sample-100BT</code></td>
+<td style="text-align: right;">Approximately 100B GPT-2 tokens</td>
+<td>Prototype training, quick evaluation, cost-constrained experiments</td>
+<td>Record sampling source and randomness</td>
+</tr>
+<tr>
+<td><code>sample-10BT</code></td>
+<td style="text-align: right;">Approximately 10B GPT-2 tokens</td>
+<td>Pipeline debugging, field checks, read/write performance tests</td>
+<td>Not suitable for final data-quality conclusions</td>
+</tr>
+</tbody>
+</table>
+<p>Sources: Hugging Face FineWeb dataset card download configurations, sample-version descriptions, and dump naming convention; initial scale reported by the FineWeb paper.</p>
+<h4 id="case-a21-task-definition">Case A.2.1 Task Definition<a class="headerlink" href="#case-a21-task-definition" title="Permanent link">&para;</a></h4>
+<p>FineWeb's task is not to annotate supervised-learning labels, but to build a pre-training token stream for autoregressive language models. Given a collection of Common Crawl Web snapshots <span class="arithmatex">\(C=\{c_i\}\)</span>, the goal is to learn a data-processing function:</p>
+<div class="arithmatex">\[
+P_\theta: C \rightarrow D=\{d_j\}
+\]</div>
+<p>Each output document <span class="arithmatex">\(d_j\)</span> should at least include extracted text, source metadata, language information, token statistics, filtering status, and deduplication status. The tokenizer then maps the document collection into training sequences:</p>
+<div class="arithmatex">\[
+\tau(D)=\left[x_1,x_2,\ldots,x_N\right]
+\]</div>
+<p>The standard pre-training objective remains minimizing next-token negative log likelihood:</p>
+<div class="arithmatex">\[
+\mathcal{L}(\theta)=-\sum_{t=1}^{N}\log p_\theta(x_t|x_{&lt;t})
+\]</div>
+<p>FineWeb focuses on the part before this objective function: how to choose <span class="arithmatex">\(P_\theta\)</span> so that, under the same model, the same training tokens, and the same evaluation sets, the resulting model is better.</p>
+<p>FineWeb leaves engineering teams with three main judgments. The first concerns main-text extraction. WET text is already "text," but not necessarily "trainable main text." FineWeb's replacement of WET with WARC+Trafilatura shows that text extraction itself must be treated as a core variable affecting model capability.</p>
+<p>The second concerns deduplication granularity. Global deduplication appears more thorough, but FineWeb's ablation results show that running global MinHash deduplication across all crawls is not necessarily better; independent per-crawl deduplication performs more strongly. This reminds data-engineering teams that the goal of deduplication is not to remove the maximum possible repetition, but to remove repetition that harms training.</p>
+<p>The third concerns filter validation. FineWeb does not choose filters solely from manual rules. Instead, it trains multiple data-ablation models and compares scores on fixed evaluation sets. Filter thresholds, C4-rule choices, and custom heuristics are determined through training validation.</p>
+<h3 id="case-a3-key-fields-in-fineweb-document-records">Case A.3: Key Fields in FineWeb Document Records<a class="headerlink" href="#case-a3-key-fields-in-fineweb-document-records" title="Permanent link">&para;</a></h3>
+<p>The official FineWeb dataset card states that samples include <code>language</code>, <code>language_score</code>, and <code>token_count</code> annotations, derived respectively from the language filter and GPT-2 tokenizer statistics. When reproducing a FineWeb-like pipeline inside an enterprise, processing status, provenance, deduplication, and risk fields should also be retained. Otherwise, when training results become abnormal, it is impossible to determine whether the issue came from extraction, filtering, deduplication, or sampling.</p>
+<p>Table 38-2 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 38-2: FineWeb-like Web Document Record Schema</em></p>
+<table>
+<thead>
+<tr>
+<th>Field Group</th>
+<th>Typical Fields</th>
+<th>Source or Generation Method</th>
+<th>Engineering Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Provenance fields</td>
+<td><code>url</code>, <code>dump</code>, <code>warc_record_id</code>, <code>fetch_time</code></td>
+<td>WARC metadata and reader supplements</td>
+<td>Trace original Web pages, locate crawls, respond to removals</td>
+</tr>
+<tr>
+<td>Text fields</td>
+<td><code>text</code>, <code>raw_html_hash</code>, <code>text_hash</code></td>
+<td>Trafilatura extraction and hash computation</td>
+<td>Support training reads, extraction-quality checks, and precise location</td>
+</tr>
+<tr>
+<td>Language fields</td>
+<td><code>language</code>, <code>language_score</code></td>
+<td>FastText <code>LanguageFilter</code></td>
+<td>Control English-corpus boundary and diagnose language-identification errors</td>
+</tr>
+<tr>
+<td>Quality fields</td>
+<td><code>gopher_flags</code>, <code>c4_flags</code>, <code>fineweb_flags</code></td>
+<td>Gopher, C4, and FineWeb filters</td>
+<td>Explain why a sample was retained or removed</td>
+</tr>
+<tr>
+<td>Dedup fields</td>
+<td><code>minhash_signature</code>, <code>dedup_cluster_id</code>, <code>dedup_keep</code></td>
+<td>MinHash deduplication stage</td>
+<td>Control near-duplicates and review removed samples</td>
+</tr>
+<tr>
+<td>Statistics fields</td>
+<td><code>token_count</code>, <code>char_count</code>, <code>line_count</code></td>
+<td><code>TokensCounter</code> and document statistics</td>
+<td>Estimate training budget and analyze filtering impact</td>
+</tr>
+<tr>
+<td>Privacy fields</td>
+<td><code>pii_email_replaced</code>, <code>pii_ip_replaced</code></td>
+<td><code>PIIFormatter</code></td>
+<td>Record email and public-IP anonymization status</td>
+</tr>
+</tbody>
+</table>
+<p>Fields such as <code>gopher_flags</code>, <code>c4_flags</code>, and <code>fineweb_flags</code> are field groups added by the author to explain the engineering structure; they do not imply that the official FineWeb dataset card publishes each of these columns. The official annotations explicitly published by FineWeb include <code>language</code>, <code>language_score</code>, and <code>token_count</code>.</p>
+<h4 id="case-a31-a-sample-cannot-store-only-text">Case A.3.1 A Sample Cannot Store Only <code>text</code><a class="headerlink" href="#case-a31-a-sample-cannot-store-only-text" title="Permanent link">&para;</a></h4>
+<p>The following is an abstract FineWeb-like document record. It is not an original FineWeb sample; it is an engineering example organized from the FineWeb dataset card and the DataTrove pipeline.</p>
+<p>Listing 38-1 provides a JSON data example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CC-MAIN-2023-50/segment-x/warc-record-y&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.org/article&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;dump&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CC-MAIN-2023-50&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;main text extracted by Trafilatura&gt;&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">&quot;language&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;en&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nt">&quot;language_score&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.94</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">&quot;token_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1267</span><span class="p">,</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="nt">&quot;filters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="nt">&quot;url_filter&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kept&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="nt">&quot;gopher_repetition&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kept&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="nt">&quot;gopher_quality&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kept&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="nt">&quot;c4_quality&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kept&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">    </span><span class="nt">&quot;fineweb_quality&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kept&quot;</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">  </span><span class="nt">&quot;dedup&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;minhash&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">    </span><span class="nt">&quot;scope&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;per_dump&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="nt">&quot;ngram&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">    </span><span class="nt">&quot;buckets&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">14</span><span class="p">,</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">    </span><span class="nt">&quot;hashes_per_bucket&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">    </span><span class="nt">&quot;keep&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">  </span><span class="nt">&quot;pii&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="w">    </span><span class="nt">&quot;email_formatted&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="w">    </span><span class="nt">&quot;public_ip_formatted&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>Listing 38-1: JSON data example</em></p>
+<p>This example illustrates the basic idea of a FineWeb-like corpus: <code>text</code> is the training entry point, but by itself it cannot explain sample quality. What supports review is the combination of provenance, language score, filtering status, deduplication scope, and privacy-processing records.</p>
+<h4 id="case-a32-relationship-between-schema-and-training-evaluation">Case A.3.2 Relationship Between Schema and Training Evaluation<a class="headerlink" href="#case-a32-relationship-between-schema-and-training-evaluation" title="Permanent link">&para;</a></h4>
+<p>FineWeb does not evaluate individual samples directly; it evaluates data versions generated by processing strategies. Let a processing version <span class="arithmatex">\(v\)</span> correspond to dataset <span class="arithmatex">\(D_v\)</span>, which is used to train model <span class="arithmatex">\(M_v\)</span>. If the evaluation suite is <span class="arithmatex">\(B=\{b_1,\ldots,b_k\}\)</span> and each task score is <span class="arithmatex">\(s(M_v,b_i)\)</span>, an aggregate score can be defined as:</p>
+<div class="arithmatex">\[
+S(M_v)=\frac{1}{k}\sum_{i=1}^{k}s(M_v,b_i)
+\]</div>
+<p>The FineWeb paper compares data versions using fixed models, fixed training tokens, fixed evaluation tasks, repeated random samples, and different initialization seeds. In engineering practice, each data version should further record its processing manifest:</p>
+<div class="arithmatex">\[
+Manifest(v)=\{code\_commit, dump\_set, filter\_params, dedup\_params, tokenizer, sample\_seed\}
+\]</div>
+<p>Without this manifest, even if the evaluation script is reproduced, one cannot reproduce "which exact data version was trained."</p>
+<h3 id="case-a4-finewebs-code-based-processing-flow">Case A.4: FineWeb's Code-based Processing Flow<a class="headerlink" href="#case-a4-finewebs-code-based-processing-flow" title="Permanent link">&para;</a></h3>
+<p>One important feature of FineWeb is that its processing pipeline has a public script. <code>examples/fineweb.py</code> in the DataTrove repository states that it is used to process and create the FineWeb dataset. The script has two major parts: first, it performs the main processing for each dump; then it applies MinHash deduplication and PII formatting to the processed output.</p>
+<h4 id="case-a41-main-processing-pipeline">Case A.4.1 Main Processing Pipeline<a class="headerlink" href="#case-a41-main-processing-pipeline" title="Permanent link">&para;</a></h4>
+<p>The main processing pipeline can be abstracted in the following order. Class names come from the DataTrove FineWeb example script; explanations are organized by this chapter.</p>
+<p>Table 38-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 38-3: Key Modules in the FineWeb Main Processing Pipeline</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Order</th>
+<th>DataTrove Module</th>
+<th>Input</th>
+<th>Output</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td><code>WarcReader</code></td>
+<td>Common Crawl WARC segments</td>
+<td>Raw HTML document stream</td>
+<td>Reads Web snapshots from <code>s3://commoncrawl/crawl-data/.../warc/</code></td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td><code>URLFilter</code></td>
+<td>URL and raw document</td>
+<td>Retained or removed documents</td>
+<td>Removes sources matching malicious, NSFW, or block-list patterns</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td><code>Trafilatura</code></td>
+<td>Raw HTML</td>
+<td>Extracted main text</td>
+<td>Reduces menu, footer, and page-template noise</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td><code>LanguageFilter</code></td>
+<td>Text</td>
+<td>English document stream and non-English exclusion logs</td>
+<td>Retains documents whose English score reaches the threshold</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td><code>GopherRepetitionFilter</code></td>
+<td>English text</td>
+<td>Repetition-pattern filtering result</td>
+<td>Removes repeated n-grams and abnormally repetitive content</td>
+</tr>
+<tr>
+<td style="text-align: right;">6</td>
+<td><code>GopherQualityFilter</code></td>
+<td>Text statistics</td>
+<td>Quality-filtering result</td>
+<td>Applies MassiveText/Gopher-style quality rules</td>
+</tr>
+<tr>
+<td style="text-align: right;">7</td>
+<td><code>C4QualityFilter</code></td>
+<td>Text statistics</td>
+<td>C4-rule filtering result</td>
+<td>Applies the subset of C4 rules adopted by FineWeb</td>
+</tr>
+<tr>
+<td style="text-align: right;">8</td>
+<td><code>FineWebQualityFilter</code></td>
+<td>Text statistics</td>
+<td>Custom-filtering result</td>
+<td>Removes list-like, repeated-line, and abnormal-newline documents</td>
+</tr>
+<tr>
+<td style="text-align: right;">9</td>
+<td><code>JsonlWriter</code></td>
+<td>Retained documents</td>
+<td>JSONL shards</td>
+<td>Writes documents entering the deduplication stage</td>
+</tr>
+</tbody>
+</table>
+<p>Sources: imported modules and main-processing pipeline in DataTrove <code>examples/fineweb.py</code>; FineWeb dataset card data-processing steps.</p>
+<p>The code structure of the main processing stage can be summarized as:</p>
+<p>Listing 38-2 provides a Python implementation excerpt.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">pipeline</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">WarcReader</span><span class="p">(</span><span class="n">common_crawl_warc_path</span><span class="p">),</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">URLFilter</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">Trafilatura</span><span class="p">(</span><span class="n">favour_precision</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">LanguageFilter</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="n">GopherRepetitionFilter</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="n">GopherQualityFilter</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">C4QualityFilter</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">FineWebQualityFilter</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">JsonlWriter</span><span class="p">(</span><span class="n">base_processing_output</span><span class="p">)</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="p">]</span>
+</code></pre></div>
+<p><em>Listing 38-2: Python implementation excerpt</em></p>
+<p>This is conceptual pseudocode used to explain the module order in the FineWeb example script. Real parameters, log directories, S3 paths, task counts, and Slurm resource configurations should follow the DataTrove repository script.</p>
+<h4 id="case-a42-deduplication-and-privacy-processing-pipeline">Case A.4.2 Deduplication and Privacy-processing Pipeline<a class="headerlink" href="#case-a42-deduplication-and-privacy-processing-pipeline" title="Permanent link">&para;</a></h4>
+<p>FineWeb uses MinHash for approximate deduplication. The goal of MinHash is to estimate the Jaccard similarity between two documents. If documents <span class="arithmatex">\(A\)</span> and <span class="arithmatex">\(B\)</span> are represented as sets of 5-grams, their similarity is:</p>
+<div class="arithmatex">\[
+J(A,B)=\frac{|G_5(A)\cap G_5(B)|}{|G_5(A)\cup G_5(B)|}
+\]</div>
+<p>MinHash approximates this similarity with multiple hash functions. The FineWeb paper states that its deduplication parameters are 5-grams and 112 hash functions, split into 14 buckets with 8 hashes per bucket; if the 8 MinHash values in any bucket match, the pair is considered a duplicate candidate. The <code>MinhashConfig</code> in the DataTrove example script also corresponds to <code>n_grams=5</code>, <code>num_buckets=14</code>, and <code>hashes_per_bucket=8</code>.</p>
+<p>Figure 38-1 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part12/Mu-Chap38-Fig01-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 38-1 FineWeb MinHash deduplication and PII-processing flow" src="../../../images/part12/Mu-Chap38-Fig01-EN.svg" /></a></p>
+<p><em>Figure 38-1: FineWeb MinHash deduplication and PII-processing flow</em></p>
+<h4 id="case-a43-finewebs-per-crawl-deduplication-judgment">Case A.4.3 FineWeb's Per-crawl Deduplication Judgment<a class="headerlink" href="#case-a43-finewebs-per-crawl-deduplication-judgment" title="Permanent link">&para;</a></h4>
+<p>Intuitively, global deduplication seems more thorough: put all 96 crawls together and remove all near-duplicate documents. FineWeb's ablation experiments, however, produce the opposite signal. The paper describes a key phenomenon: when global deduplication is performed from the newest crawls toward older crawls, older crawls are heavily removed; in one older snapshot, the retained 10% of the data is actually worse than the removed 90%, containing more advertisements, keyword lists, and abnormally formatted text. FineWeb ultimately chooses to run MinHash deduplication independently for each crawl.</p>
+<p>This result matters for engineering practice. Deduplication is not mathematically better simply because it is more exhaustive; what matters is how it changes the data distribution. Global deduplication can alter the time distribution, site coverage, and duplicate-cluster structure across old and new crawls in complex ways. If one looks only at "how much duplication was removed," valuable samples may be removed while low-quality long-tail samples remain.</p>
+<p>Figure 38-2 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part12/Mu-Chap38-Fig02-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 38-2 FineWeb data-processing-choice ablation loop" src="../../../images/part12/Mu-Chap38-Fig02-EN.svg" /></a></p>
+<p><em>Figure 38-2: FineWeb data-processing-choice ablation loop</em></p>
+<h3 id="case-a5-evaluating-fineweb-data-processing-choices">Case A.5: Evaluating FineWeb Data-processing Choices<a class="headerlink" href="#case-a5-evaluating-fineweb-data-processing-choices" title="Permanent link">&para;</a></h3>
+<p>FineWeb's evaluation method differs from a typical dataset introduction. It treats data-processing steps as experimental variables and trains ablation models to compare different data versions. The paper states that ablation models keep model parameters, architecture hyperparameters, training token count, and training steps consistent. To reduce random-sampling effects, each data version is used to train two models with different random subsets and different initialization seeds, and their average scores are compared.</p>
+<h4 id="case-a51-fixed-variables">Case A.5.1 Fixed Variables<a class="headerlink" href="#case-a51-fixed-variables" title="Permanent link">&para;</a></h4>
+<p>FineWeb's evaluation protocol can be summarized in Table 38-4.</p>
+<p><em>Table 38-4: FineWeb Data-ablation Evaluation Protocol</em></p>
+<table>
+<thead>
+<tr>
+<th>Control Item</th>
+<th>FineWeb Paper Practice</th>
+<th>Data-engineering Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Model scale</td>
+<td>Ablation model has 1.82B parameters and Llama architecture</td>
+<td>Prevents model-scale changes from hiding data differences</td>
+</tr>
+<tr>
+<td>Tokenizer</td>
+<td>GPT-2 tokenizer</td>
+<td>Fixes token-statistics convention</td>
+</tr>
+<tr>
+<td>Training budget</td>
+<td>Filtering ablations use about 28B tokens; some deduplication and cumulative-improvement experiments use 350B tokens</td>
+<td>Separates quick screening from high-cost validation</td>
+</tr>
+<tr>
+<td>Repeated experiments</td>
+<td>Two models per data version, with different random subsets and initialization seeds</td>
+<td>Reduces sampling and initialization noise</td>
+</tr>
+<tr>
+<td>Training framework</td>
+<td>Nanotron</td>
+<td>Fixes training implementation</td>
+</tr>
+<tr>
+<td>Evaluation framework</td>
+<td>lighteval</td>
+<td>Fixes evaluation implementation</td>
+</tr>
+<tr>
+<td>Evaluation tasks</td>
+<td>CommonSense QA, HellaSwag, OpenBook QA, PIQA, SIQA, WinoGrande, ARC, MMLU</td>
+<td>Uses multitask signals to evaluate data-processing effects</td>
+</tr>
+</tbody>
+</table>
+<p>If data version <span class="arithmatex">\(v\)</span> is trained twice, producing models <span class="arithmatex">\(M_{v,1}\)</span> and <span class="arithmatex">\(M_{v,2}\)</span>, and each model is evaluated on <span class="arithmatex">\(k\)</span> tasks, the version score can be written as:</p>
+<div class="arithmatex">\[
+\bar{S}_v=\frac{1}{2k}\sum_{r=1}^{2}\sum_{i=1}^{k}s(M_{v,r},b_i)
+\]</div>
+<p>This formula is also an engineering expression of the FineWeb evaluation protocol. It emphasizes that the evaluation object is not a single sample, but a data version generated by a processing strategy.</p>
+<p>Filters cannot be decided once based only on rule intuition. FineWeb's filter selection can be divided into three steps.</p>
+<p>First, build baseline filtering. After extracting text from WARC, FineWeb first applies URL block lists, English language identification, and Gopher/MassiveText-style quality filtering. The paper reports that after applying these baseline steps to WARC-extracted text from 96 snapshots, the result is about 36T GPT-2 tokens.</p>
+<p>Second, compare existing rules. When studying C4 rules, FineWeb finds that the terminal-punctuation rule alone brings a clear improvement but removes about 30% of tokens. FineWeb ultimately adopts a subset of C4 rules excluding terminal punctuation, because it removes less data and yields a more suitable training benefit.</p>
+<p>Third, design custom filters. FineWeb collects more than 50 document-level and cross-document statistical indicators, compares distributions between "higher-quality" and "lower-quality" data, chooses thresholds that distinguish the two, and validates them with 28B-token ablation runs. The adopted custom filters focus on three issues: low ratio of lines ending in punctuation, high ratio of repeated-line characters, and abnormal ratio of short lines.</p>
+<h4 id="case-a52-common-failures-and-repair-actions">Case A.5.2 Common Failures and Repair Actions<a class="headerlink" href="#case-a52-common-failures-and-repair-actions" title="Permanent link">&para;</a></h4>
+<p>FineWeb's experience can be converted into an error-attribution table for Web pre-training corpora. This is not an official FineWeb table, but an engineering retrospective organized by this chapter from the FineWeb paper and dataset card.</p>
+<p>Table 38-5 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 38-5: Common Failures and Repair Actions for FineWeb-like Web Corpora</em></p>
+<table>
+<thead>
+<tr>
+<th>Error Type</th>
+<th>Symptom</th>
+<th>Possible Root Cause</th>
+<th>Data-engineering Repair Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Page-template residue</td>
+<td>Model repeats menus, footers, or cookie text</td>
+<td>Direct WET usage or poor main-text extraction</td>
+<td>Return to WARC, re-extract with Trafilatura or similar tools, and sample-check template residue</td>
+</tr>
+<tr>
+<td>Non-English mixing</td>
+<td>Multilingual garbling and mixed scripts appear during English-model training</td>
+<td>Loose language threshold or untreated mixed-language paragraphs</td>
+<td>Preserve <code>language_score</code>, sample by score buckets, and apply paragraph-level filtering if needed</td>
+</tr>
+<tr>
+<td>Oversized duplicate clusters</td>
+<td>Loss appears stable but downstream tasks do not improve</td>
+<td>Template sites, mirrored sites, cross-month repetition</td>
+<td>Use MinHash deduplication and record duplicate clusters and deduplication scope</td>
+</tr>
+<tr>
+<td>Global deduplication hurts distribution</td>
+<td>Model does not improve after large deletion of older crawl content</td>
+<td>Global deduplication changes time and quality distributions</td>
+<td>Compare per-crawl and global deduplication under a fixed training budget</td>
+</tr>
+<tr>
+<td>Overly strict filters</td>
+<td>Token scale drops and long-tail knowledge is removed</td>
+<td>A single rule removes too many tokens</td>
+<td>Record token-removal rate per filter and decide thresholds through ablation</td>
+</tr>
+<tr>
+<td>Residual privacy samples</td>
+<td>Emails, public IPs, or other identifiable information enter release data</td>
+<td>Missing PII processing or false negatives</td>
+<td>Use <code>PIIFormatter</code> or similar rules and record replacement strategy and boundaries</td>
+</tr>
+</tbody>
+</table>
+<h3 id="case-a6-usage-boundaries-of-public-web-corpora">Case A.6: Usage Boundaries of Public Web Corpora<a class="headerlink" href="#case-a6-usage-boundaries-of-public-web-corpora" title="Permanent link">&para;</a></h3>
+<p>FineWeb is a strong public case for open Web pre-training corpus engineering, but it should not be understood simply as "all Web text that can be used directly for commercial training." Public datasets, open code, and the ODC-By license reduce the barrier to research reproduction, but they do not automatically remove copyright, privacy, safety, or removal responsibilities in the user's jurisdiction, business scenario, or downstream model release.</p>
+<p>FineWeb is suitable for English foundation-model pre-training, Web-data filtering research, deduplication-strategy ablations, debugging DataTrove-like large-scale text-processing pipelines, and teaching version governance for pre-training corpora. It is especially suitable for answering questions such as "does a particular data-processing step make the model better," because the public materials provide code, dataset cards, paper ablations, and evaluation protocols.</p>
+<p>FineWeb is not suitable for answering all training-data questions across all languages, domains, and compliance environments. It mainly consists of English Web content from Common Crawl; it is not equivalent to Chinese corpora, professionally licensed corpora, medical/legal/financial corpora, or SFT/preference data for conversational assistants.</p>
+<p>When enterprises reproduce the FineWeb idea, the most valuable transferable pieces are not fixed thresholds, but four engineering objects.</p>
+<p>First, processing code should be versioned. <code>code_commit</code>, filter parameters, tokenizer, sampling seed, and dump list should all enter the manifest. Second, filters should have exclusion logs. Ideally, every deleted sample can explain which rule deleted it. Third, deduplication should preserve scope and parameters. Per-dump, per-domain, and global deduplication have different effects; it is not enough to record only "deduplicated." Fourth, evaluation must fix variables. If model architecture, training tokens, training steps, evaluation sets, and random seeds are not fixed, conclusions about data processing are not comparable.</p>
+<p>FineWeb should not be used as an unreviewed commercial training corpus. Commercial models still require license, robots/terms, data-removal, privacy, and sensitive-content reviews. FineWeb should also not be treated as the only standard for a "high-quality English corpus." Its quality definition comes from fixed ablation models and a set of academic benchmarks, which do not necessarily cover helpfulness, safety, factual freshness, or instruction-following needs in real products.</p>
+<p>For Chinese or multilingual training, one cannot directly copy FineWeb's English FastText threshold, English tokenizer statistics, or assumptions about English page formats. Migration requires recalibrating language identification, simplified/traditional Chinese handling, site templates, domain distributions, low-quality-page rules, and evaluation tasks.</p>
+<h3 id="case-a-summary">Case A: Summary<a class="headerlink" href="#case-a-summary" title="Permanent link">&para;</a></h3>
+<p>FineWeb clarifies an often underestimated issue: a Web pre-training corpus is not the result of downloading Common Crawl; it is a data asset jointly formed by code, filters, deduplication strategy, evaluation protocol, and release documentation. This chapter's core conclusions are threefold.</p>
+<p>First, Web main-text extraction is a model-capability variable. FineWeb re-extracts text from WARC with Trafilatura precisely because WET text can retain too much template and menu noise. Second, deduplication strategy must be validated through training results. FineWeb's experiments show that global MinHash deduplication is not necessarily better than independent per-crawl deduplication, and removing more duplicates does not equal obtaining better training data. Third, filter selection should enter a fixed evaluation protocol. Through isomorphic ablation models, fixed token budgets, lighteval evaluation, and repeated random seeds, FineWeb turns data-processing choices into reviewable engineering experiments.</p>
+<p>For readers of this book, what is most worth learning from FineWeb is not copying a particular token scale, but turning pre-training corpus engineering into a traceable, reproducible, evaluable, and auditable system.</p>
+<h2 id="case-b-dolma-transparent-pre-training-corpus-ledgers-and-attributable-evaluation">Case B: Dolma: Transparent Pre-training Corpus Ledgers and Attributable Evaluation<a class="headerlink" href="#case-b-dolma-transparent-pre-training-corpus-ledgers-and-attributable-evaluation" title="Permanent link">&para;</a></h2>
+<h3 id="case-b-learning-objectives">Case B: Learning Objectives<a class="headerlink" href="#case-b-learning-objectives" title="Permanent link">&para;</a></h3>
+<p>After completing this chapter, readers should be able to:</p>
+<ul>
+<li>Explain why open weights cannot substitute for training-data transparency.</li>
+<li>Read Dolma's versions, source statistics, sampling proportions, and ODC-BY usage boundaries.</li>
+<li>Distinguish the roles of document records, source cards, and training manifests in audits.</li>
+<li>Use token-accounting formulas to describe the relationship among raw tokens, filtered tokens, sample proportions, and seen tokens.</li>
+<li>Understand the evidence chain of transparent corpora through the four Dolma Toolkit actions: tag, dedup, mix, and tokenize.</li>
+<li>Design source ledgers, removal ledgers, contamination checks, and version-freezing mechanisms for internal enterprise pre-training corpora.</li>
+</ul>
+<h3 id="case-b1-problem-scenario-open-weights-still-cannot-explain-the-model">Case B.1: Problem Scenario: Open Weights Still Cannot Explain the Model<a class="headerlink" href="#case-b1-problem-scenario-open-weights-still-cannot-explain-the-model" title="Permanent link">&para;</a></h3>
+<p>Two teams obtain the same 7B open-model weights. The first team wants to continue pre-training the model to improve code and scientific-question-answering capabilities. The second team wants to analyze why the model gives outdated answers on several factual questions. The weights, inference code, and part of the evaluation scripts are downloadable, but they quickly encounter the same problem: no one can answer what data the model actually saw.</p>
+<p>The continued-pretraining team needs to know how much code, papers, encyclopedic content, Web text, and social media were present in the original model corpus, so that it does not repeatedly oversample the same data types. The bias-analysis team needs to know whether certain Web pages, papers, forum discussions, or benchmark solutions entered training, so it can judge whether a problem comes from knowledge gaps, sampling weights, contamination, or model training itself. Without training corpora and processing records, every explanation remains guesswork.</p>
+<p>Dolma is designed to solve exactly this problem. It turns an English pre-training corpus from an invisible data recipe into a set of downloadable, measurable, processable, removable, and auditable sources. OLMo is not a parallel protagonist in this chapter, but a downstream example of Dolma being consumed by a transparent training chain. It reminds us that open model research should not only open weights; it should open training data, processing tools, and evaluation code as far as possible.</p>
+<h4 id="case-b11-open-model-research-needs-data-evidence">Case B.1.1 Open-model Research Needs Data Evidence<a class="headerlink" href="#case-b11-open-model-research-needs-data-evidence" title="Permanent link">&para;</a></h4>
+<p>"Open" has different levels. Releasing only weights allows users to run a model, but does not allow researchers to explain it. Releasing training code allows users to reproduce the training framework, but still does not explain what the model actually saw. Data transparency that supports scientific research must answer at least six classes of questions.</p>
+<ul>
+<li>Source: Does each document come from Common Crawl, code repositories, papers, books, encyclopedias, or social platforms?</li>
+<li>Version: What were the source acquisition time, processing-script version, and filtering rules?</li>
+<li>Scale: Are raw tokens, filtered tokens, sampled tokens, and seen tokens consistent?</li>
+<li>Contamination: Did evaluation sets, solutions, or customer test sets overlap with the training corpus?</li>
+<li>License: How do the dataset release license and original-source terms jointly constrain users?</li>
+<li>Removal: If a user requests removal of personal data, can the corresponding document be located and handled?</li>
+</ul>
+<p>The Dolma dataset card directly reflects this design orientation: it lists versions, summary statistics, download methods, license information, and a personal-data removal entry point. The Dolma GitHub repository further provides data and tools, so transparency is not limited to paper descriptions.</p>
+<p>For corpora like Dolma, the core object of transparency is a ledger; a single <code>text</code> field is not the only object. More important are three ledgers formed around <code>text</code>.</p>
+<p>The first is the source ledger, recording where each data type comes from, how large it is, what cutoff date it uses, and how it was processed. The second is the processing ledger, recording how taggers, filters, deduplication strategies, mixers, and tokenizers changed raw documents. The third is the training ledger, recording which sources a training run actually sampled, what the sampling proportions were, and how seen tokens were distributed across training steps.</p>
+<p>If these three ledgers are disconnected, transparency degrades into "downloadability." The data can be downloaded, but cannot explain the model; the model can be trained, but cannot be audited; versions can be updated, but cannot be compared.</p>
+<h3 id="case-b2-dataset-overview-versions-scale-and-source-structure">Case B.2: Dataset Overview: Versions, Scale, and Source Structure<a class="headerlink" href="#case-b2-dataset-overview-versions-scale-and-source-structure" title="Permanent link">&para;</a></h3>
+<p>Dolma is not a single static file, but a corpus asset with version evolution. The Hugging Face dataset card lists versions such as <code>v1</code>, <code>v1_5</code>, <code>v1_5-sample</code>, <code>v1_6</code>, <code>v1_6-sample</code>, and <code>v1_7</code>. Among them, <code>v1_7</code> is used to train OLMo 7B-v1.7 and introduces new sources, more quality filtering, and fuzzy deduplication.</p>
+<p>Table 38-6 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 38-6: Public Dolma Versions and Uses</em></p>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Release Date</th>
+<th style="text-align: right;">Compressed Size</th>
+<th>Dataset-card Description</th>
+<th>Engineering Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>v1</code></td>
+<td>2023-08-18</td>
+<td style="text-align: right;">6.0 TB</td>
+<td>First Dolma release</td>
+<td>Trace the earliest public corpus form</td>
+</tr>
+<tr>
+<td><code>v1_5</code></td>
+<td>2023-10-31</td>
+<td style="text-align: right;">6.4 TB</td>
+<td>Used to train OLMo-1B, about 3T tokens</td>
+<td>Review early OLMo training corpus</td>
+</tr>
+<tr>
+<td><code>v1_5-sample</code></td>
+<td>2023-10-31</td>
+<td style="text-align: right;">2.9 TB</td>
+<td>Sample of about 1.9T tokens, used for OLMo-7B</td>
+<td>Track training samples below full scale</td>
+</tr>
+<tr>
+<td><code>v1_6</code></td>
+<td>2024-01-31</td>
+<td style="text-align: right;">5.4 TB</td>
+<td>Adds partial deduplication and repeated n-gram filtering on top of v1.5</td>
+<td>Study filtering and deduplication evolution</td>
+</tr>
+<tr>
+<td><code>v1_6-sample</code></td>
+<td>2024-01-31</td>
+<td style="text-align: right;">16.4 GB</td>
+<td>Exploratory sample of about 10B tokens</td>
+<td>Quick debugging and data browsing</td>
+</tr>
+<tr>
+<td><code>v1_7</code></td>
+<td>2024-04-15</td>
+<td style="text-align: right;">4.5 TB</td>
+<td>Used to train OLMo 7B-v1.7, with new sources, more quality filtering, and fuzzy deduplication</td>
+<td>Current default version and transparent-training reference</td>
+</tr>
+</tbody>
+</table>
+<h4 id="case-b21-v16-source-structure">Case B.2.1 v1.6 Source Structure<a class="headerlink" href="#case-b21-v16-source-structure" title="Permanent link">&para;</a></h4>
+<p>Dolma covers Web, code, papers, social media, books, and encyclopedic sources. To avoid mixing versions, Table 38-7 uses the coarse-grained statistics from the dataset card's v1.6 summary statistics. The v1.7 sources are more fine-grained, adding Refined Web, StarCoder, arXiv, StackExchange, Flan, OpenWebMath, Algebraic Stack, MegaWika, and other sources. Subsequent writing or experiments should explicitly state which version is used.</p>
+<p><em>Table 38-7: Dolma v1.6 Source Statistics</em></p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Document Type</th>
+<th style="text-align: right;">UTF-8 Bytes</th>
+<th style="text-align: right;">Documents</th>
+<th style="text-align: right;">Unicode Words</th>
+<th style="text-align: right;">Llama Tokens</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Common Crawl</td>
+<td>web pages</td>
+<td style="text-align: right;">9,022 GB</td>
+<td style="text-align: right;">3,370M</td>
+<td style="text-align: right;">1,775B</td>
+<td style="text-align: right;">2,281B</td>
+</tr>
+<tr>
+<td>The Stack</td>
+<td>code</td>
+<td style="text-align: right;">1,043 GB</td>
+<td style="text-align: right;">210M</td>
+<td style="text-align: right;">260B</td>
+<td style="text-align: right;">411B</td>
+</tr>
+<tr>
+<td>C4</td>
+<td>web pages</td>
+<td style="text-align: right;">790 GB</td>
+<td style="text-align: right;">364M</td>
+<td style="text-align: right;">153B</td>
+<td style="text-align: right;">198B</td>
+</tr>
+<tr>
+<td>Reddit</td>
+<td>social media</td>
+<td style="text-align: right;">339 GB</td>
+<td style="text-align: right;">377M</td>
+<td style="text-align: right;">72B</td>
+<td style="text-align: right;">89B</td>
+</tr>
+<tr>
+<td>PeS2o</td>
+<td>STEM papers</td>
+<td style="text-align: right;">268 GB</td>
+<td style="text-align: right;">38.8M</td>
+<td style="text-align: right;">50B</td>
+<td style="text-align: right;">70B</td>
+</tr>
+<tr>
+<td>Project Gutenberg</td>
+<td>books</td>
+<td style="text-align: right;">20.4 GB</td>
+<td style="text-align: right;">0.056M</td>
+<td style="text-align: right;">4.0B</td>
+<td style="text-align: right;">6.0B</td>
+</tr>
+<tr>
+<td>Wikipedia and Wikibooks</td>
+<td>encyclopedic</td>
+<td style="text-align: right;">16.2 GB</td>
+<td style="text-align: right;">6.2M</td>
+<td style="text-align: right;">3.7B</td>
+<td style="text-align: right;">4.3B</td>
+</tr>
+<tr>
+<td>Total</td>
+<td>mixed</td>
+<td style="text-align: right;">11,519 GB</td>
+<td style="text-align: right;">4,367M</td>
+<td style="text-align: right;">2,318B</td>
+<td style="text-align: right;">3,059B</td>
+</tr>
+</tbody>
+</table>
+<p>Table 38-7 should not be read only as a scale display. It reveals three engineering facts.</p>
+<p>First, Dolma is a source mix, not a single Web dump. Common Crawl accounts for a large share, but code, papers, social media, books, and encyclopedic content all enter the corpus in different forms. Changes in model capability cannot be vaguely attributed to "more Web data."</p>
+<p>Second, different statistical conventions serve different questions. UTF-8 bytes help estimate storage and processing cost, document count helps observe sample granularity, while Unicode words and Llama tokens are closer to the training budget. Mixing these conventions distorts discussions of data scale.</p>
+<p>Third, versions cannot be directly compared without care. v1.6 and v1.7 differ in source decomposition, filtering rules, and sample proportions. If a model is trained with v1.7, one cannot explain its training behavior using only the v1.6 coarse table.</p>
+<h3 id="case-b3-decomposing-a-transparent-chain-through-the-source-ledger">Case B.3: Decomposing a Transparent Chain Through the Source Ledger<a class="headerlink" href="#case-b3-decomposing-a-transparent-chain-through-the-source-ledger" title="Permanent link">&para;</a></h3>
+<p>This section does not begin from an individual text, but from Dolma's source ledger to decompose the chain of a transparent pre-training corpus. The "sample" here is not an image or a question, but an evidence path from source to document and then to the training manifest.</p>
+<h4 id="case-b31-from-source-to-document">Case B.3.1 From Source to Document<a class="headerlink" href="#case-b31-from-source-to-document" title="Permanent link">&para;</a></h4>
+<p>Dolma's task is not to annotate supervised labels for each text, but to make records consumed by training reconstructable. Let the source set be <span class="arithmatex">\(S=\{s_1,\ldots,s_m\}\)</span>. Each source is processed by a function <span class="arithmatex">\(P_s\)</span> into a document set <span class="arithmatex">\(D_s\)</span>:</p>
+<div class="arithmatex">\[
+D_s=P_s(R_s, C_s)
+\]</div>
+<p>Here, <span class="arithmatex">\(R_s\)</span> is the raw source, and <span class="arithmatex">\(C_s\)</span> is the processing configuration for that source, including taggers, filters, deduplication strategy, sampling proportion, and tokenizer. The final training corpus is a mixture of multiple sources:</p>
+<div class="arithmatex">\[
+D=\bigcup_{s \in S} Sample(D_s, r_s)
+\]</div>
+<p>Dolma's transparency lies in recording <span class="arithmatex">\(S\)</span>, <span class="arithmatex">\(R_s\)</span>, <span class="arithmatex">\(C_s\)</span>, <span class="arithmatex">\(r_s\)</span>, and version information as publicly as possible. Model training is no longer just "used three trillion tokens"; it can be traced to which sources contributed how much, how they were processed, and how they were sampled.</p>
+<h4 id="case-b32-token-accounting-should-track-actual-training-consumption">Case B.3.2 Token Accounting Should Track Actual Training Consumption<a class="headerlink" href="#case-b32-token-accounting-should-track-actual-training-consumption" title="Permanent link">&para;</a></h4>
+<p>The easiest part of a multi-source corpus to misread is token scale. A source with many raw tokens does not necessarily contribute the same proportion during training; filtering, deduplication, sample proportion, and multiple epochs all change the final seen tokens.</p>
+<p>The actual contribution of a source <span class="arithmatex">\(s\)</span> during training can be written as:</p>
+<div class="arithmatex">\[
+T^{seen}_s = T^{filtered}_s \times r_s \times e_s
+\]</div>
+<p>where <span class="arithmatex">\(T^{filtered}_s\)</span> is the number of filtered tokens, <span class="arithmatex">\(r_s\)</span> is the sampling proportion, and <span class="arithmatex">\(e_s\)</span> is the epoch count or equivalent sampling count during training. The proportion of that source in the training mix is:</p>
+<div class="arithmatex">\[
+p_s=\frac{T^{seen}_s}{\sum_j T^{seen}_j}
+\]</div>
+<p>The Dolma v1.7 dataset card lists both source token counts and sample proportions precisely so that users can distinguish "what is in the dataset" from "how much the model actually saw."</p>
+<h4 id="case-b33-three-ways-to-read-a-document">Case B.3.3 Three Ways to Read a Document<a class="headerlink" href="#case-b33-three-ways-to-read-a-document" title="Permanent link">&para;</a></h4>
+<p>Transparent corpora do not end with packaging and uploading <code>text</code>. At least three layers of records are needed: an individual document record, a source card, and a training-version manifest. The document record supports training and location; the source card explains data origin and processing rules; the training manifest reproduces the data actually consumed by a model run.</p>
+<p>Table 38-8 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 38-8: Dolma-like Transparent Corpus Record Schema</em></p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Typical Fields</th>
+<th>Source or Generation Method</th>
+<th>Engineering Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Document level</td>
+<td><code>id</code>, <code>source</code>, <code>text</code>, <code>text_hash</code></td>
+<td>Data reader and hash computation</td>
+<td>Locate samples, deduplicate, read during training</td>
+</tr>
+<tr>
+<td>Document level</td>
+<td><code>created_at</code>, <code>url_or_origin</code>, <code>license_hint</code></td>
+<td>Original source metadata</td>
+<td>License review and time tracking</td>
+</tr>
+<tr>
+<td>Document level</td>
+<td><code>language_tag</code>, <code>toxicity_tag</code>, <code>perplexity_score</code></td>
+<td>Dolma Toolkit taggers or custom taggers</td>
+<td>Quality filtering and risk bucketing</td>
+</tr>
+<tr>
+<td>Source level</td>
+<td><code>source_name</code>, <code>source_version</code>, <code>raw_size</code>, <code>filtered_size</code></td>
+<td>Source card and statistics scripts</td>
+<td>Explain data composition</td>
+</tr>
+<tr>
+<td>Source level</td>
+<td><code>dedup_policy</code>, <code>filter_config</code>, <code>sample_proportion</code></td>
+<td>Dolma mixer and processing configs</td>
+<td>Reproduce source mix</td>
+</tr>
+<tr>
+<td>Training level</td>
+<td><code>dolma_version</code>, <code>tokenizer</code>, <code>sample_seed</code>, <code>seen_tokens</code></td>
+<td>Training manifest</td>
+<td>Reproduce experiments and explain metric changes</td>
+</tr>
+<tr>
+<td>Governance level</td>
+<td><code>removal_status</code>, <code>known_limitations</code>, <code>release_constraints</code></td>
+<td>Dataset card and governance records</td>
+<td>Handle removal, bias, and usage boundaries</td>
+</tr>
+</tbody>
+</table>
+<p>These fields are an engineering schema organized by the author from the Dolma dataset card, Dolma Toolkit documentation, and transparent-training audit needs. They do not imply that Dolma officially publishes each field exactly as listed.</p>
+<p>The following is an abstract Dolma-like document record showing how a transparent corpus connects samples, sources, and training versions.</p>
+<p>Listing 38-3 provides a JSON data example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dolma-v1_7/common-crawl/doc-000001&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Dolma&#39;s CC&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;source_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1_7&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;document text&gt;&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="nt">&quot;text_hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:...&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="nt">&quot;tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="nt">&quot;language&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;en&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="nt">&quot;toxicity_bucket&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;low&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="nt">&quot;perplexity_bucket&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;normal&quot;</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">  </span><span class="nt">&quot;processing&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="nt">&quot;tagger_config&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;dolma-toolkit-config-x&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">    </span><span class="nt">&quot;dedup_policy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;fuzzy_dedup&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">    </span><span class="nt">&quot;sample_proportion&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">  </span><span class="nt">&quot;training_manifest&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">    </span><span class="nt">&quot;tokenizer&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;OLMo tokenizer version&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">    </span><span class="nt">&quot;dolma_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;v1_7&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">    </span><span class="nt">&quot;included_in_run&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>Listing 38-3: JSON data example</em></p>
+<p>This record cannot be read at only one layer. In Dolma, the document layer, source layer, and training layer must point back to one another. If a document has a <code>source</code> but no source card, it can locate a sample but cannot explain the origin. If a source card has statistics but no training manifest, it can explain what is in the dataset but not what the model actually saw. If a manifest has sampling proportions but no document hash, removal and contamination checks break.</p>
+<h3 id="case-b4-dolma-toolkit-makes-the-evidence-chain-executable">Case B.4: Dolma Toolkit Makes the Evidence Chain Executable<a class="headerlink" href="#case-b4-dolma-toolkit-makes-the-evidence-chain-executable" title="Permanent link">&para;</a></h3>
+<p>The Dolma GitHub repository states that Dolma is both a dataset and a toolkit. Dolma Toolkit supports single-machine, cluster, and cloud environments. It includes language detection, toxicity detection, perplexity scoring, and common filtering recipes such as Gopher, C4, and OpenWebText; its deduplication component uses a Rust Bloom filter for acceleration.</p>
+<h4 id="case-b41-four-actions-correspond-to-four-kinds-of-evidence">Case B.4.1 Four Actions Correspond to Four Kinds of Evidence<a class="headerlink" href="#case-b41-four-actions-correspond-to-four-kinds-of-evidence" title="Permanent link">&para;</a></h4>
+<p>Dolma Toolkit documentation summarizes data organization as four actions: tag, dedup, mix, and tokenize. They are not isolated scripts, but evidence-chain generators: tag records document attributes, dedup records what is retained and removed, mix records sampling proportions, and tokenize records the token convention that enters training.</p>
+<p>Table 38-9 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 38-9: Dolma Toolkit Processing Actions and Evidence Outputs</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">Order</th>
+<th>Action</th>
+<th>Official Documentation Description</th>
+<th>Evidence Output</th>
+<th>Main Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td>Taggers</td>
+<td>Assign language, toxicity, perplexity, and other attribute tags to document spans</td>
+<td>Document quality labels and risk labels</td>
+<td>Tagger-version changes alter filtering results</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td>Deduplication</td>
+<td>Deduplicate documents by content or metadata</td>
+<td>Deduplication strategy, retention priority, deletion records</td>
+<td>Cross-source deduplication changes source mix</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td>Mixer</td>
+<td>Remove, filter, or mix documents based on attribute values</td>
+<td>Sample proportion, source mix, data version</td>
+<td>Opaque sample proportions cause token-accounting errors</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td>Tokenization</td>
+<td>Use Hugging Face-compatible tokenizers</td>
+<td>Token counts, tokenizer version, training stream</td>
+<td>Tokenizer changes alter token counts and training budget</td>
+</tr>
+</tbody>
+</table>
+<p>Figure 38-3 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part12/Mu-Chap38-Fig03-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 38-3 Dolma transparent-corpus evidence chain" src="../../../images/part12/Mu-Chap38-Fig03-EN.svg" /></a></p>
+<p><em>Figure 38-3: Dolma transparent-corpus evidence chain</em></p>
+<p>The boundary between toolchains and manual audits matters. A toolchain can stably generate statistics, tags, hashes, and manifests, but it cannot replace all audits. License boundaries, PII removal, evaluation contamination, and source representativeness still require human rules, sample review, or dedicated detection tasks.</p>
+<p>This is also the difference between a Dolma-like transparent corpus and an ordinary "collection of cleaning scripts." Ordinary scripts only answer "what did I delete"; a transparent toolchain must also answer "why was it deleted, how did the post-deletion distribution change, did training actually benefit, and can it be removed later." If a processing action cannot leave interpretable evidence, it is hard for it to support transparent training.</p>
+<h3 id="case-b5-evaluation-shifts-from-highest-score-to-attribution">Case B.5: Evaluation Shifts from Highest Score to Attribution<a class="headerlink" href="#case-b5-evaluation-shifts-from-highest-score-to-attribution" title="Permanent link">&para;</a></h3>
+<p>The evaluation focus of transparent corpora is not the "highest score," but whether score changes can be explained. Dolma-like source-level corpora let model evaluation move beyond leaderboards and trace training logs back to sources, versions, and sampling proportions.</p>
+<h4 id="case-b51-source-ablation-locates-capability-sources">Case B.5.1 Source Ablation Locates Capability Sources<a class="headerlink" href="#case-b51-source-ablation-locates-capability-sources" title="Permanent link">&para;</a></h4>
+<p>To judge whether a source affects model capability, one can run source ablation. Let full training produce model <span class="arithmatex">\(M_{all}\)</span>, and training with source <span class="arithmatex">\(s\)</span> removed produce model <span class="arithmatex">\(M_{-s}\)</span>. The average difference over task set <span class="arithmatex">\(B\)</span> is:</p>
+<div class="arithmatex">\[
+\Delta_s=\frac{1}{|B|}\sum_{b \in B} \left[score(M_{all}, b)-score(M_{-s}, b)\right]
+\]</div>
+<p>When <span class="arithmatex">\(\Delta_s\)</span> changes clearly on code tasks, scientific QA, or long-context tasks, the data team can trace capability changes back to source mix instead of vaguely attributing them to "model parameters."</p>
+<p>Figure 38-4 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part12/Mu-Chap38-Fig04-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 38-4 Dolma source mix and training-diagnosis loop" src="../../../images/part12/Mu-Chap38-Fig04-EN.svg" /></a></p>
+<p><em>Figure 38-4: Dolma source mix and training-diagnosis loop</em></p>
+<h4 id="case-b52-diagnosis-checklist">Case B.5.2 Diagnosis Checklist<a class="headerlink" href="#case-b52-diagnosis-checklist" title="Permanent link">&para;</a></h4>
+<p>Table 38-10 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 38-10: Dolma-like Transparent Corpus Evaluation and Diagnosis Table</em></p>
+<table>
+<thead>
+<tr>
+<th>Evaluation Question</th>
+<th>Required Records</th>
+<th>Metric or Evidence</th>
+<th>Possible Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Which source drives a capability</td>
+<td>Source mix, sample proportion, seen tokens</td>
+<td>Source ablation, task-score difference <span class="arithmatex">\(\Delta_s\)</span></td>
+<td>Adjust source weight or add data</td>
+</tr>
+<tr>
+<td>Whether an evaluation set is contaminated</td>
+<td>Document hash, n-gram index, eval-set hash</td>
+<td>Overlap rate, contamination span</td>
+<td>Remove contaminated samples and freeze a new version</td>
+</tr>
+<tr>
+<td>Training loss fluctuates abnormally</td>
+<td>Batch source records, tokenizer version</td>
+<td>Source-specific loss, token distribution</td>
+<td>Inspect sampler and source shards</td>
+</tr>
+<tr>
+<td>Social-media risk increases</td>
+<td>Toxicity tag, PII tag, source card</td>
+<td>Risk-tag rate, manual sample review</td>
+<td>Tighten filtering or reduce sampling proportion</td>
+</tr>
+<tr>
+<td>Versions are incomparable</td>
+<td><code>dolma_version</code>, <code>filter_config</code>, <code>dedup_policy</code></td>
+<td>Manifest diff</td>
+<td>Freeze version or rerun controlled experiments</td>
+</tr>
+</tbody>
+</table>
+<h4 id="case-b53-common-failure-modes">Case B.5.3 Common Failure Modes<a class="headerlink" href="#case-b53-common-failure-modes" title="Permanent link">&para;</a></h4>
+<p>Table 38-11 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 38-11: Common Failures and Repair Actions for Dolma-like Transparent Corpora</em></p>
+<table>
+<thead>
+<tr>
+<th>Failure Mode</th>
+<th>Symptom</th>
+<th>Possible Root Cause</th>
+<th>Governance Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source-mix drift</td>
+<td>A task category suddenly regresses in a new version</td>
+<td>Sample proportion or filtering rules changed</td>
+<td>Compare manifest diff, roll back, or resample by strata</td>
+</tr>
+<tr>
+<td>Inconsistent token accounting</td>
+<td>Reported scale does not match training seen tokens</td>
+<td>Raw, filtered, and sampled tokens are mixed</td>
+<td>Report raw, filtered, sampled, and seen tokens together</td>
+</tr>
+<tr>
+<td>Cross-source duplication</td>
+<td>Paper abstracts, encyclopedia mirrors, or code fragments repeat</td>
+<td>Deduplication only within source</td>
+<td>Add cross-source deduplication and record retention priority</td>
+</tr>
+<tr>
+<td>Evaluation contamination</td>
+<td>Benchmark scores become abnormally high</td>
+<td>Web or forum data contains questions and solutions</td>
+<td>Build eval hash/n-gram decontamination index</td>
+</tr>
+<tr>
+<td>Removal cannot be located</td>
+<td>PII removal request cannot be handled</td>
+<td>Missing source/id/hash mapping</td>
+<td>Build removal ledger and shard reverse index</td>
+</tr>
+<tr>
+<td>Ambiguous license boundary</td>
+<td>ODC-BY is mistaken for authorization from original sources</td>
+<td>Original source terms are ignored</td>
+<td>Preserve original terms and restrictions in source cards</td>
+</tr>
+</tbody>
+</table>
+<p>These failure modes show that transparent-corpus quality is not only about whether text is clean. A transparent training sample must pass three kinds of checks simultaneously: whether the source is explainable, whether the processing actions are reproducible, and whether training consumption is traceable. Missing any one of these checks can turn data into a corpus that is public but not auditable.</p>
+<h3 id="case-b6-reuse-boundaries-of-transparent-corpora">Case B.6: Reuse Boundaries of Transparent Corpora<a class="headerlink" href="#case-b6-reuse-boundaries-of-transparent-corpora" title="Permanent link">&para;</a></h3>
+<p>Dolma is suitable for open language-model pre-training research, source-mix experiments, transparent data-governance teaching, training-data audit method validation, and internal enterprise manifest design. It is especially suitable for research questions such as "how does training data affect model capabilities and limitations," because it opens data, dataset cards, and processing tools together.</p>
+<p>Dolma should not be understood as meaning that all sources are unconditionally usable for commercial purposes. The Hugging Face dataset card states that Dolma is released under ODC-BY, while users are still bound by the licenses and terms of use of the original data sources. In other words, Dolma's release license does not automatically erase the boundaries of Common Crawl, Reddit, code, papers, books, and other original sources.</p>
+<p>Enterprises usually cannot publish training data, but they can transfer Dolma's transparency practices. A minimum viable version includes:</p>
+<ul>
+<li>Build a source card for each source, recording origin, version, license, acquisition time, filtering rules, and limitations.</li>
+<li>Freeze a manifest for each training version, recording source mix, sample proportion, tokenizer, <code>filter_config</code>, <code>dedup_policy</code>, and <code>sample_seed</code>.</li>
+<li>Build validation splits for major sources to support source-specific loss and source ablation.</li>
+<li>Build decontamination indexes for evaluation sets, customer test sets, and online issue repositories.</li>
+<li>Build a removal ledger so that URL, document id, or text hash can map to training shards.</li>
+</ul>
+<p>At the same time, Dolma is not suitable as a direct quality standard for Chinese, multilingual, or vertical-industry corpora. It is primarily an English pre-training corpus. Migration to Chinese, medical, legal, or financial scenarios requires redefining sources, licenses, filters, and evaluation tasks. Dolma should also not be used to prove that open corpora are inherently safe. The meaning of transparency is that defects are visible, locatable, and repairable, not that defects do not exist.</p>
+<h3 id="case-b-summary">Case B: Summary<a class="headerlink" href="#case-b-summary" title="Permanent link">&para;</a></h3>
+<p>Dolma moves pre-training corpora from invisible data recipes toward auditable data assets. This chapter's core conclusions are threefold.</p>
+<p>First, the basic unit of a transparent pre-training corpus is not a single <code>text</code> field, but a document record that connects source, processing configuration, sampling proportion, and training manifest. Second, source mix must be explained through token accounting rather than by reporting only raw scale. Third, the four Dolma Toolkit actions - tag, dedup, mix, and tokenize - provide a clear template for enterprises building reproducible training corpora internally.</p>
+<p>For readers of this book, what is most transferable from Dolma is not a particular source or the three-trillion-token scale, but the way it leaves evidence for training data. Only when sources, processing actions, sampling proportions, training manifests, and governance records form a connected chain does a pre-training corpus have a foundation for continued research, error attribution, and long-term maintenance.</p>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>FineWeb shows how open Web text is transformed from snapshots into training corpora, while Dolma shows how pre-training data becomes an interpretable asset through source ledgers and diagnostic protocols. Together, they define two main lines of text-corpus data engineering: filtering, deduplication, privacy processing, and training effect on one side; source structure, token ledgers, version transparency, and attributable evaluation on the other.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Penedo G, Kydlíček H, Allal L B, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. NeurIPS 2024 Datasets and Benchmarks Track. https://arxiv.org/abs/2406.17557.</p>
+<p>Hugging Face (2026) HuggingFaceFW/fineweb Dataset Card. https://huggingface.co/datasets/HuggingFaceFW/fineweb.</p>
+<p>Hugging Face (2026) DataTrove FineWeb Processing Script. https://github.com/huggingface/datatrove/blob/main/examples/fineweb.py.</p>
+<p>Penedo G, Kydlíček H, Cappelli A, Sasko M, Wolf T (2024) DataTrove large scale data processing. https://github.com/huggingface/datatrove.</p>
+<p>Luccioni S, Viviano J (2021) What's in the Box? A Preliminary Analysis of Undesirable Content in the Common Crawl Corpus. https://arxiv.org/abs/2105.02732.</p>
+<p>Soldaini L, Kinney R, Bhagia A, Schwenk D, Atkinson D, Authur R, et al. (2024) Dolma: an Open Corpus of Three Trillion Tokens for Language Model Pretraining Research. ACL 2024. https://arxiv.org/abs/2402.00159.</p>
+<p>Allen Institute for AI (2023) Ai2 Dolma: 3 trillion token open corpus for language model pretraining. https://allenai.org/blog/dolma-3-trillion-tokens-open-llm-corpus-9a0ff4b8da64.</p>
+<p>AllenAI (2026) allenai/dolma Dataset Card. https://huggingface.co/datasets/allenai/dolma.</p>
+<p>AllenAI (2026) Dolma Dataset and Toolkit Repository. https://github.com/allenai/dolma.</p>
+<p>AllenAI (2026) Dolma Toolkit Documentation. https://github.com/allenai/dolma/blob/main/docs/README.md.</p>
+<p>Groeneveld D, Beltagy I, Walsh P, Bhagia A, Kinney R, Tafjord O, et al. (2024) OLMo: Accelerating the Science of Language Models. https://arxiv.org/abs/2402.00838.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Part Overview">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Part Overview
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch39_image_text_candidate_pool_data_engineering/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 39: Image-Text Engineering: Filtering and DataComp">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 39: Image-Text Engineering: Filtering and DataComp
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

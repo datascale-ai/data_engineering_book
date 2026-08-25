@@ -1,0 +1,2811 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part14/p02_legal_sft/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>项目二：垂直领域专家监督微调（法律） - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              项目二：垂直领域专家监督微调（法律）
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p02_legal_sft/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part14/p02_legal_sft/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      项目目标与读者收获
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景约束与数据边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      架构决策
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      样本 schema / 数据流
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      核心实现片段
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      实验或验收指标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      成本、风险与合规边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见失败模式
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      可复现资源说明
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-sft" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 项目背景：法律 SFT 数据工厂的必要性
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 项目目标与边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 项目目标与边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 项目目标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 项目边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 项目边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1）知识来源边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      2）任务边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      3）监督方式边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      4）上线能力边界
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3 边界设定的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-p02" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 项目定位：P02 的能力链位置
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-pdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. 整体架构：从法规 PDF 到训练资产的法律数据流水线
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 整体架构：从法规 PDF 到训练资产的法律数据流水线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 第一层：知识处理层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 第二层：监督构造层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 第三层：质检与交付层
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. 工程前置：法律数据工厂的关键面
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 工程前置：法律数据工厂的关键面">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 领域设计与知识边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 数据处理与结构化编排
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 生成控制与任务编排
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.4 QA 与验收闭环
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.5 关键职责面的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. 种子数据：种子层作为监督起点
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 种子数据：种子层作为监督起点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 法规文本作为第一批种子
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2 法规文本的边界
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-pdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. PDF 解析与智能清洗：法律文本的版式清洗
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. PDF 解析与智能清洗：法律文本的版式清洗">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1 纯文本提取的局限
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2 组件选型
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3 裁剪页眉页脚
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.4 去除嵌入式页码
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.5 修复中文断词
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#76" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.6 细粒度清洗控制的必要性
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. 切块与 schema：法律种子的结构化方式
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. 切块与 schema：法律种子的结构化方式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 切块作为必要步骤
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 schema 在这里解决什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3 schema 作为种子层底座
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-sft" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. 任务体系：法律 SFT 的任务分层
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. 任务体系：法律 SFT 的任务分层">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-legal_qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1 法律问答（legal_qa）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-statute_explanation" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2 法条解释（statute_explanation）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-case_analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.3 案情分析（case_analysis）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.4 任务拆分的质量控制作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. 任务分布与样本结构：分布均衡的控制方式
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. 任务分布与样本结构：分布均衡的控制方式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1 任务均衡与来源分布
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2 样本结构的重要性
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-self-instruct" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. Self-Instruct：受控合成的必要性
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Self-Instruct：受控合成的必要性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 合成扩张的作用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2 法律合成的约束
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3 加权轮盘赌与任务采样
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-cot" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. 思维链（CoT）显性化：法律推理的表达约束
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. 思维链（CoT）显性化：法律推理的表达约束">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.1 显式思维链的作用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-cot" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.2 法律 CoT 的使用边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-cot" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.3 CoT 的工程价值
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. 偏好对与评审记录：多层监督信号
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. 偏好对与评审记录：多层监督信号">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.1 偏好对在法律场景中的作用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.2 当前项目的偏好信号建设
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.3 评审记录的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. 风险拒答：边界控制数据
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. 风险拒答：边界控制数据">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141-system-prompt" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.1 风险拒答与 system prompt 的关系
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.2 风险拒答样本的作用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.3 当前项目的风险边界建设
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. QA 协议：法律数据的质量门
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. QA 协议：法律数据的质量门">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.1 审核维度
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.2 接收、返工与拒收规则
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.3 错误标签化
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#154-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.4 QA 协议的必要性
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. 供应商协同与人机分工：规模扩展下的审核机制
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. 供应商协同与人机分工：规模扩展下的审核机制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.1 分层审核
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.2 供应商协同的风险点
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#163" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.3 协同机制的工程位置
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. 训练封装：从监督样本到训练接口
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. 训练封装：从监督样本到训练接口">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#171" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.1 训练封装作为独立阶段
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#172" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.2 本项目的主要训练产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#173-smoke-test" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.3 smoke test 的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. 结果展示：示例项目产出概况
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. 结果展示：示例项目产出概况">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#181" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.1 样本规模
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#182" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.2 任务分布
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#183" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.3 来源分布
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#184" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.4 偏好与风险数据
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#185" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.5 训练与交付层产物
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. 轻量下游验证：最小验证设计
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. 轻量下游验证：最小验证设计">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#191" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.1 验证设计
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#192" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.2 验证指标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#193" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.3 验证结果
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#194" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.4 轻量验证与重基准的区别
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#195" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.5 这组结果在工程上的含义
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#196" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.6 如何解读这类实验
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20" class="md-nav__link">
+    <span class="md-ellipsis">
+      20. 结果解读：当前数据工厂的结构性信号
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="20. 结果解读：当前数据工厂的结构性信号">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#201-2577-7737" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.1 从 2577 到 7737，说明工厂具备扩张能力
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#202" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.2 三类任务均衡，说明任务框架是稳定的
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#203" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.3 法域分布不均衡，说明下一阶段的重点不是继续扩量，而是补覆盖
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#204-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.4 偏好、QA 与轻量下游验证一起，说明项目正在从“会答”走向“答得更稳”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#205" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.5 人审成本已经可见，说明后续必须考虑自动化与协同优化
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#206" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.6 这次补充带来了什么变化
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21-sft" class="md-nav__link">
+    <span class="md-ellipsis">
+      21. 质量基线：法律 SFT 数据的可用标准
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21. 质量基线：法律 SFT 数据的可用标准">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#211" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1 正确性基线
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#212" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.2 表达基线
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#213" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.3 格式基线
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#214" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.4 风险基线
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#215" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.5 基线与单次分数
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-sft" class="md-nav__link">
+    <span class="md-ellipsis">
+      22. 版本演进：行业 SFT 数据集的版本管理
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="22. 版本演进：行业 SFT 数据集的版本管理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.1 V1：先把法规清洗与切块验证
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.2 V2：引入三类主体任务
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223-v3" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.3 V3：加入偏好对与评审记录
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#224-v4" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.4 V4：加入风险拒答与上线边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#225" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.5 版本演进的记录价值
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      23. 成本优化：法律数据的主要成本项
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23. 成本优化：法律数据的主要成本项">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.1 当前项目的成本启示
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.2 哪些环节最值得优先自动化
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233" class="md-nav__link">
+    <span class="md-ellipsis">
+      23.3 成本分析的必要性
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#24" class="md-nav__link">
+    <span class="md-ellipsis">
+      24. 验证闭环：法律数据流水线的一致性检查
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="24. 验证闭环：法律数据流水线的一致性检查">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#241" class="md-nav__link">
+    <span class="md-ellipsis">
+      24.1 检查脚本的作用
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#242" class="md-nav__link">
+    <span class="md-ellipsis">
+      24.2 当前项目的验证状态
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#243" class="md-nav__link">
+    <span class="md-ellipsis">
+      24.3 验证闭环的工程作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#25" class="md-nav__link">
+    <span class="md-ellipsis">
+      25. 局限与风险：当前工厂的约束
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25. 局限与风险：当前工厂的约束">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#251" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.1 法域覆盖不均衡
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#252" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.2 合成比例较高
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#253" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3 风险拒答样本仍然偏少
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#254-qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.4 QA 成本高
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#26" class="md-nav__link">
+    <span class="md-ellipsis">
+      26. 跨行业迁移：法律工厂的样板价值
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="26. 跨行业迁移：法律工厂的样板价值">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#261" class="md-nav__link">
+    <span class="md-ellipsis">
+      26.1 可直接迁移的设计
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#262" class="md-nav__link">
+    <span class="md-ellipsis">
+      26.2 不可直接照搬的部分
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#263" class="md-nav__link">
+    <span class="md-ellipsis">
+      26.3 可迁移的方法链
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#27" class="md-nav__link">
+    <span class="md-ellipsis">
+      27. 主要交付物清单
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="27. 主要交付物清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#271" class="md-nav__link">
+    <span class="md-ellipsis">
+      27.1 种子与处理中间产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#272" class="md-nav__link">
+    <span class="md-ellipsis">
+      27.2 主体监督与辅助监督产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#273" class="md-nav__link">
+    <span class="md-ellipsis">
+      27.3 训练接口产物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#274" class="md-nav__link">
+    <span class="md-ellipsis">
+      27.4 报告与验证产物
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#28" class="md-nav__link">
+    <span class="md-ellipsis">
+      28. 方法复盘：把生成组织成工厂
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sft" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：法律 SFT 数据的发布门禁
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：法律 SFT 数据的发布门禁">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、发布前需要同时看内容风险和工程风险
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、门禁的价值在于让“谨慎”成为系统属性
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="_1">项目二：垂直领域专家监督微调（法律）<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">徐鑫；张然；於俊</div>
+
+<h2 id="_2">摘要<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>P02 聚焦把法规文本、制度说明和法律任务需求组织成一条可训练、可质检、可扩展的垂直领域 SFT 数据生产线。章节重点不在单次问答生成，而在从种子知识到监督资产的稳定转化过程。</p>
+<p>本章可以按四条主线理解：</p>
+<ul>
+<li>种子知识处理：从法规 PDF 与制度文本中抽取可用的结构化知识片段。</li>
+<li>任务体系与样本合成：拆分法条解释、法律问答、案情分析、风险拒答等不同任务层。</li>
+<li>质量控制与偏好增强：通过质量保障（QA）、偏好对和风险边界样本稳定监督信号。</li>
+<li>训练封装与上线验收：把处理后的数据资产整理成可训练、可验证、可交付的成品。</li>
+</ul>
+<p>如果按工程顺序阅读，本章对应的是一条完整链路：</p>
+<p><strong>原始法规 PDF -&gt; 清洗切块 -&gt; 任务设计 -&gt; 指令合成 -&gt; 偏好增强 -&gt; 质量保障（QA）质检 -&gt; 训练封装 -&gt; 上线验收</strong></p>
+<p>这一结构对应的核心目标，是把法律知识加工为具备任务分层、质量约束和验收机制的监督数据资产。</p>
+<hr />
+<h2 id="_3">关键词<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>法律 SFT；垂直领域数据；指令体系；合规边界；标注质量</p>
+<h2 id="_4">项目目标与读者收获<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>本项目以“法律领域专家 SFT 数据工厂”为核心案例，目标是把法规、判例和法律问答材料转化为可追踪的领域 SFT 训练资产。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。</p>
+<h2 id="_5">场景约束与数据边界<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>以公开或授权法律文本为输入，不覆盖真实法律咨询责任和生产级案件管理系统。这些边界使案例能够被复现和审计；当数据规模、数据来源、权限范围或部署环境变化时，需要重新评估采样策略、质量阈值、运行成本和合规要求。</p>
+<h2 id="_6">架构决策<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>本项目采用“法律文档解析、任务模板、样本生成、质量复核、训练切分和风险标注”的架构路径。该决策优先保证输入输出契约、版本可追踪、异常可定位和结果可复核，而不是把全部逻辑压缩为一次性脚本运行。</p>
+<h2 id="schema">样本 schema / 数据流<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<p>核心数据流可概括为：</p>
+<p>代码清单P02-1 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>法律文本/PDF -&gt; 文档清洗 -&gt; 领域任务 schema -&gt; 指令样本 -&gt; 合规与质量检查 -&gt; SFT 数据集
+</code></pre></div></p>
+<p><em>代码清单P02-1：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>样本 schema 至少应保留 <code>id</code>、<code>source</code>、<code>content_or_payload</code>、<code>metadata</code>、<code>quality_signals</code>、<code>split_or_stage</code> 与 <code>audit_trace</code> 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。</p>
+<h2 id="_7">核心实现片段<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>正文只保留能够说明设计取舍的关键实现片段。完整脚本、长配置、运行日志和大文件应放入配套仓库或附录说明；代码展示重点放在输入输出契约、质量阈值、异常处理和验收接口上。</p>
+<h2 id="_8">实验或验收指标<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>验收指标包括任务覆盖度、条文引用准确性、样本格式合格率、人工抽检通过率、领域风险标签完整性和训练切分一致性。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。</p>
+<h2 id="_9">成本、风险与合规边界<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>成本主要来自文档解析、样本生成和专家复核；风险集中在法规时效、引用错配、未经授权文本和法律建议误用。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。</p>
+<h2 id="_10">常见失败模式<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>常见失败包括输入分布偏离、schema 字段缺失、质量阈值过松或过紧、评测样本覆盖不足、模型调用不稳定、结果无法回溯等。排查时应优先定位数据边界和中间产物，再检查模型、工具链与部署环境。</p>
+<h2 id="_11">可复现资源说明<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<p>复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。法律 SFT 的训练封装仍可沿用通用文本到文本数据组织思想 (Raffel et al. 2020)，数据加载、批处理、实验记录和质量门可分别参考 Hugging Face Datasets (Hugging Face 2026)、Ray Data (Ray Project 2026)、MLflow (MLflow Authors 2026) 与 Great Expectations (Great Expectations Contributors 2026)。</p>
+<h2 id="1-sft">1. 项目背景：法律 SFT 数据工厂的必要性<a class="headerlink" href="#1-sft" title="Permanent link">&para;</a></h2>
+<p>通用大模型在开放域问答中已经具备相当不错的语言表达能力，但一旦进入法律场景，问题就会迅速暴露出来。</p>
+<p>最常见的失真有三类。</p>
+<p>第一类是<strong>知识失真</strong>。模型会把相近条文混在一起，把旧法和新法混用，或者把本来只适用于特定主体、特定前提的规则说成一般结论。这类错误在普通百科问答里可能只是“答得不够准”，但在法律场景里，它会直接影响用户判断。</p>
+<p>第二类是<strong>任务失真</strong>。很多法律回答不只是“给结论”，还要求模型识别案情中的争点、区分事实与规范、给出适用条件，并在不确定时明确保留边界。一个只会背法条的模型，并不等于一个能提供合规帮助的模型。</p>
+<p>第三类是<strong>风格失真</strong>。法律场景对表达风格有很强要求：既不能胡乱下结论，也不能把所有问题都回成“建议咨询专业律师”；既要尽量清楚易懂，又要保留必要的审慎表达。这背后其实是 SFT 与偏好共同决定的行为风格问题。</p>
+<p>因此，P02 的目标不是简单“生成一些法律问答”，而是搭建一个<strong>法律领域 SFT 数据工厂</strong>，把法规文本、任务体系、质量控制、偏好信号和风险边界组织成一条可复用的生产线。</p>
+<p>这条生产线服务的不是一次性实验，而是一种方法论：</p>
+<blockquote>
+<p>当团队未来需要从法律迁移到税务、金融、医疗、客服等领域时，可以复用的不是某个 prompt，而是这套“从种子知识到监督数据”的工程方法。</p>
+</blockquote>
+<hr />
+<h2 id="2">2. 项目目标与边界<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h3 id="21">2.1 项目目标<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<p>本项目聚焦以下四个目标。</p>
+<p><strong>目标一：建立法律领域种子语料到监督数据的转化链路。</strong>
+即把非结构化 PDF 中的法规条文、制度说明与相关知识片段，转成适合训练的结构化样本。</p>
+<p><strong>目标二：建立面向法律场景的任务体系。</strong>
+本项目不把所有样本都统一做成“问答对”，而是明确拆分为法律问答、法条解释、案情分析等不同任务类型，让模型学到不同形式的领域能力。</p>
+<p><strong>目标三：建立可审核、可拒收、可版本化的质量保障（QA）机制。</strong>
+法律数据如果只有生成没有审查，容易把错误样本批量放大。因此项目不仅有 SFT 样本，还建设偏好对、评审记录与风险拒答样本。</p>
+<p><strong>目标四：形成训练侧可直接消费的数据资产。</strong>
+最终输出不仅包括原始中间产物，还包括 <code>train.jsonl</code>、<code>val.jsonl</code>、<code>smoke_test.jsonl</code>、<code>training_manifest.json</code> 等训练接口层资产。</p>
+<h3 id="22">2.2 项目边界<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<p>为了让项目保持可复现性和边界清晰，本项目显式设置了若干边界。</p>
+<h4 id="1">1）知识来源边界<a class="headerlink" href="#1" title="Permanent link">&para;</a></h4>
+<p>当前范围以中文法律文本为主，主要来自法规和制度型文本，而不是海量真实用户咨询记录、判决文书全量库或律师工作底稿。这意味着本项目更适合作为<strong>方法演示与工厂雏形</strong>，而不是直接宣称覆盖真实世界全部法律问题。</p>
+<h4 id="2_1">2）任务边界<a class="headerlink" href="#2_1" title="Permanent link">&para;</a></h4>
+<p>本项目当前聚焦三类任务：</p>
+<ul>
+<li>法律问答（legal_qa）</li>
+<li>法条解释（statute_explanation）</li>
+<li>案情分析（case_analysis）</li>
+</ul>
+<p>这三类任务已经足以覆盖“知识表达—规范解释—事实归类”的主干路径，但尚未完整扩展到合同审阅、诉讼策略、检索式引用、多轮办案辅助等更复杂任务。</p>
+<h4 id="3">3）监督方式边界<a class="headerlink" href="#3" title="Permanent link">&para;</a></h4>
+<p>本项目虽然引入了偏好对和评审记录，但总体仍以<strong>模板化教师 + 启发式裁判 + 人工 QA</strong> 的混合方式为主，而不是完全依赖开放式人类专家逐条撰写。</p>
+<h4 id="4">4）上线能力边界<a class="headerlink" href="#4" title="Permanent link">&para;</a></h4>
+<p>风险拒答样本与风险登记已经纳入，但样本规模仍然较小，适合用来展示如何在工厂中引入安全边界，而不宜夸大为“已经足够支撑生产上线”。</p>
+<h3 id="23">2.3 边界设定的作用<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
+<p>边界写清楚需要重点关注。因为一个工程项目通常只有两种展开方式：</p>
+<ul>
+<li>一种是把项目写得“什么都能做”；</li>
+<li>另一种是把项目写成“在什么前提下能稳定做好什么”。</li>
+</ul>
+<p>后者明显更可信，也更适合被团队复用。</p>
+<hr />
+<h2 id="3-p02">3. 项目定位：P02 的能力链位置<a class="headerlink" href="#3-p02" title="Permanent link">&para;</a></h2>
+<p>如果把全书视作一条大模型数据工程能力链，那么 P02 位于“指令微调与偏好数据”这一段的核心位置。</p>
+<p>前面的章节已经讨论过通用 SFT 数据设计、偏好数据与奖励信号、标注平台和 QA 体系等方法论。本章的价值在于把这些方法拉回一个<strong>真实的行业场景</strong>：法律。</p>
+<p>也就是说，本章不是重新讲一遍 SFT 的通用知识，而是展示：</p>
+<ul>
+<li>在一个高专业性、高风险、强合规的场景里，SFT 数据设计会遇到哪些新问题；</li>
+<li>为什么法律任务拆分不能照搬通用问答模板；</li>
+<li>为什么 QA 在这里必须前置到生产流程里；</li>
+<li>为什么光有 SFT 还不够，还要建设偏好对和风险拒答样本；</li>
+<li>如何在项目初期就把版本演进、成本与人机协同考虑进去。</li>
+</ul>
+<p>从这个意义上说，本章最重要的不是“技术组件清单”，而是回答一个更大的问题：</p>
+<blockquote>
+<p>行业 SFT 数据工厂，究竟应该如何被设计成一套持续生产能力，而不是一次性的数据合成脚本？</p>
+</blockquote>
+<hr />
+<h2 id="4-pdf">4. 整体架构：从法规 PDF 到训练资产的法律数据流水线<a class="headerlink" href="#4-pdf" title="Permanent link">&para;</a></h2>
+<p>图P02-1展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-1：法律领域 SFT 数据工厂总览" src="../../../images/part14/p02/Xu-Project02-Fig01.svg" /></a>
+<em>图 P02-1：法律领域 SFT 数据工厂总览</em></p>
+<p>从工程视角看，本项目可以拆成三层。</p>
+<h3 id="41">4.1 第一层：知识处理层<a class="headerlink" href="#41" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“有没有干净、可控的法律知识片段”。主要包括：</p>
+<ul>
+<li>PDF 解析</li>
+<li>页眉页脚裁剪</li>
+<li>中文断词修复</li>
+<li>嵌入式页码清理</li>
+<li>条文切块与结构化</li>
+</ul>
+<p>这一步的目标不是生成训练样本，而是把原始法律文本转化成适合作为监督种子的知识单元。</p>
+<h3 id="42">4.2 第二层：监督构造层<a class="headerlink" href="#42" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“如何把知识片段转成不同类型的训练样本”。主要包括：</p>
+<ul>
+<li>任务类型划分</li>
+<li>Prompt 模板与指令体系设计</li>
+<li>Self-Instruct 合成</li>
+<li>思维链（CoT）显性化</li>
+<li>偏好对构造</li>
+<li>风险拒答样本构造</li>
+</ul>
+<p>这一步是整个项目最核心的部分，因为它决定模型学到的是“背条文”，还是“在法律任务里稳定工作”。</p>
+<h3 id="43">4.3 第三层：质检与交付层<a class="headerlink" href="#43" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“这些样本是否真的能用于训练与上线”。主要包括：</p>
+<ul>
+<li>QA 审核记录</li>
+<li>接收/拒收规则</li>
+<li>训练切分</li>
+<li>manifest 生成</li>
+<li>评估报告</li>
+<li>项目检查脚本</li>
+</ul>
+<p>到这一步，项目才从“数据生成实验”变成“工程闭环”。</p>
+<hr />
+<h2 id="5">5. 工程前置：法律数据工厂的关键面<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
+<p>很多团队在刚接触垂直领域 SFT 时，会默认由一个算法工程师同时承担知识整理、模板编写、质量审核和训练集打包。但在法律场景里，这样的角色混合通常会很快失效。</p>
+<p>一个更合理的拆法通常至少包括以下几类角色。</p>
+<h3 id="51">5.1 领域设计与知识边界<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
+<p>负责定义任务边界、确定样本类型、梳理法域覆盖、识别高风险问题。这个角色未必一定是执业律师，但至少要能区分哪些问题属于“可回答的知识问答”，哪些问题已经逼近“个案法律意见”。</p>
+<h3 id="52">5.2 数据处理与结构化编排<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
+<p>负责 PDF 解析、清洗规则、切块逻辑、数据 schema、中间产物落盘、切分与检查。这个角色关心的是数据的稳定生产能力，而不是单条回答写得多漂亮。</p>
+<h3 id="53">5.3 生成控制与任务编排<a class="headerlink" href="#53" title="Permanent link">&para;</a></h3>
+<p>负责 Self-Instruct 模板、任务采样、提示词编排、结果后处理、批量调用与失败重试。它连接“知识输入”和“监督样本输出”。</p>
+<h3 id="54-qa">5.4 QA 与验收闭环<a class="headerlink" href="#54-qa" title="Permanent link">&para;</a></h3>
+<p>负责制定审核协议、抽检规则、返工机制、错误标签和升级路径。在法律场景里，这个角色关键，因为项目最终是否可用，并不取决于模型生成过多少样本，而取决于错误样本有没有被识别并挡在外面。</p>
+<h3 id="55">5.5 关键职责面的作用<a class="headerlink" href="#55" title="Permanent link">&para;</a></h3>
+<p>因为很多团队第一次做行业 SFT 时，卡住的不是“不会写代码”，而是没有把生产过程拆成角色和环节，导致：</p>
+<ul>
+<li>任务边界没人定义</li>
+<li>样本是否正确没人负责</li>
+<li>返工规则没有落地</li>
+<li>版本更新全靠口头同步</li>
+</ul>
+<p>把职责分工写清楚，本质上是在说明：<strong>行业 SFT 更像一条内容生产线，而不是单点脚本。</strong></p>
+<p>图P02-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-2：法律 SFT 数据工厂角色分工图" src="../../../images/part14/p02/Xu-Project02-Fig02.svg" /></a>
+<em>图 P02-2：法律 SFT 数据工厂角色分工图</em></p>
+<hr />
+<h2 id="6">6. 种子数据：种子层作为监督起点<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<p>通用问答里，很多团队会直接从知识库、网页或论坛抓取问答对作为训练数据。但法律场景不适合这么做。</p>
+<p>原因很简单：法律问答中，用户表述往往是不完整的，来源也不一定权威。如果直接把开放问答当训练真值，模型会学到大量模糊表达、未经验证的结论和不稳定的风格。</p>
+<p>因此，本项目先从<strong>法规与制度型文本</strong>入手，构建一层相对稳定的种子语料。这一层的价值不是“覆盖所有用户问题”，而是提供可追溯、可解释、可切块的知识底座。</p>
+<h3 id="61">6.1 法规文本作为第一批种子<a class="headerlink" href="#61" title="Permanent link">&para;</a></h3>
+<ul>
+<li>结构相对清晰，适合切块；</li>
+<li>权威性相对较高，适合作为基础监督；</li>
+<li>便于做法条解释、知识问答与规则归纳；</li>
+<li>更容易在小规模项目中完成质量控制。</li>
+</ul>
+<h3 id="62">6.2 法规文本的边界<a class="headerlink" href="#62" title="Permanent link">&para;</a></h3>
+<p>如果数据工厂只依赖法规文本，也会遇到两个明显问题。</p>
+<p>第一，法规文本天然偏“规范表达”，不等于用户真实提问方式。
+第二，法规文本更适合支撑“解释”与“引用”，但对复杂案情分析、模糊事实归类和商业场景口语化表达覆盖不足。</p>
+<p>所以，法规文本适合作为第一层种子，但不应该被误认为是完整监督数据本身。</p>
+<hr />
+<h2 id="7-pdf">7. PDF 解析与智能清洗：法律文本的版式清洗<a class="headerlink" href="#7-pdf" title="Permanent link">&para;</a></h2>
+<p>法律法规 PDF 最大的特点之一，是<strong>内容很严谨，但版式对机器极不友好</strong>。</p>
+<p>人类阅读时，页眉、页脚、页码、水印、段落换行、双栏布局和断词并不会造成太大困扰；但对机器而言，这些都是会污染训练样本的噪声来源。</p>
+<h3 id="71">7.1 纯文本提取的局限<a class="headerlink" href="#71" title="Permanent link">&para;</a></h3>
+<p>很多初学者在处理 PDF 时，会直接使用能输出字符串的工具，然后把文本送去做切分。这种做法在普通场景里可能还能勉强使用，但在法律场景里问题很大。</p>
+<p>因为法律文本一旦被解析错位，最容易造成两种灾难：</p>
+<ul>
+<li>原本分开的条文被拼成一句；</li>
+<li>原本连续的法条逻辑被页码、页眉、断词切碎。</li>
+</ul>
+<p>这不仅会影响样本可读性，更会让后续 Self-Instruct 基于错误片段生成“看起来合理、其实源头已经错了”的监督数据。</p>
+<h3 id="72">7.2 组件选型<a class="headerlink" href="#72" title="Permanent link">&para;</a></h3>
+<p>表P02-1汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P02-1：组件与选择原因对照表</em></p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>选型</th>
+<th>作用</th>
+<th>选择原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PDF 解析</td>
+<td><code>pdfplumber</code></td>
+<td>读取页面文本与坐标</td>
+<td>能基于 Bounding Box 做页眉页脚裁剪，适合处理制度类 PDF</td>
+</tr>
+<tr>
+<td>清洗逻辑</td>
+<td><code>Regex</code></td>
+<td>修复断词、去页码、去脏字符</td>
+<td>法律 PDF 的很多错误是规则型的，正则在早期最直接可控</td>
+</tr>
+<tr>
+<td>生成模型</td>
+<td><code>DeepSeek-V3</code></td>
+<td>指令合成与推理扩展</td>
+<td>兼顾推理质量与成本，适合大规模合成</td>
+</tr>
+<tr>
+<td>编排逻辑</td>
+<td><code>Python</code></td>
+<td>批处理、采样、后处理</td>
+<td>便于快速构建最小可复现流程</td>
+</tr>
+</tbody>
+</table>
+<h3 id="73">7.3 裁剪页眉页脚<a class="headerlink" href="#73" title="Permanent link">&para;</a></h3>
+<p>法律 PDF 中，最典型的重复噪声来自页眉和页脚。比如每一页顶部重复出现法规名称，页脚重复页码或出版信息。如果不在解析阶段去掉，它们会被误当成正文反复进入训练数据。</p>
+<p>因此，本项目在读取每一页时，直接裁剪掉上下各约 5% 的区域，只保留中间正文区域。这样做的优势在于：</p>
+<ul>
+<li>比提取完再后清洗更稳，因为源头上减少了噪声进入；</li>
+<li>对大多数法规 PDF 有良好的适配性；</li>
+<li>实现简单，适合作为最小可复现方案。</li>
+</ul>
+<p>对应实现如下：</p>
+<p>代码清单P02-2 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">with</span> <span class="n">pdfplumber</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">pdf</span><span class="p">:</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="k">for</span> <span class="n">page</span> <span class="ow">in</span> <span class="n">pdf</span><span class="o">.</span><span class="n">pages</span><span class="p">:</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>        <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">page</span><span class="o">.</span><span class="n">height</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="n">bbox</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">height</span> <span class="o">*</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">*</span> <span class="mf">0.95</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="n">page_crop</span> <span class="o">=</span> <span class="n">page</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">bbox</span><span class="o">=</span><span class="n">bbox</span><span class="p">)</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="n">text</span> <span class="o">=</span> <span class="n">page_crop</span><span class="o">.</span><span class="n">extract_text</span><span class="p">()</span>
+</code></pre></div></p>
+<p><em>代码清单P02-2：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<h3 id="74">7.4 去除嵌入式页码<a class="headerlink" href="#74" title="Permanent link">&para;</a></h3>
+<p>相比页眉页脚，更隐蔽的问题是嵌入在正文中的页码，例如：</p>
+<p>代码清单P02-3 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>……应当依法承担相应责任。 - 195 - 当事人……
+</code></pre></div></p>
+<p><em>代码清单P02-3：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>如果简单写一个“删掉破折号数字破折号”的规则，容易误删正文中合法存在的编号或列表结构。因此，本项目通过更谨慎的正则约束页码的前后边界，只删除更像独立页码块的片段，而不轻易触碰正文编号。</p>
+<p>这类清洗看起来像“胶水代码”，但在工程里往往关键。因为它决定的是：</p>
+<blockquote>
+<p>我们是在对法律文本做精细修复，还是在用粗暴规则破坏条文本身？</p>
+</blockquote>
+<h3 id="75">7.5 修复中文断词<a class="headerlink" href="#75" title="Permanent link">&para;</a></h3>
+<p>中文 PDF 常见的另一个问题是“假性空格”，例如：</p>
+<p>代码清单P02-4 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>法 律 规 定
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>合 同 关 系
+</code></pre></div></p>
+<p><em>代码清单P02-4：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>对人来说这不影响阅读，但对模型来说，这会破坏分词统计、影响生成流畅度，还会降低下游样本的可用性。因此，本项目对相邻中文字符之间的异常空格做了规则修复，并通过多次替换处理连续断词的情况。</p>
+<h3 id="76">7.6 细粒度清洗控制的必要性<a class="headerlink" href="#76" title="Permanent link">&para;</a></h3>
+<p>因为行业 SFT 的第一步从来不是“想办法多生成数据”，而是<strong>先保证种子层别脏</strong>。只要种子文本里存在大量格式损伤，后面的模板、思维链（CoT）、偏好和质量保障（QA）都会在脏基础上工作，成本只会越来越高。</p>
+<p>图P02-3展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-3：法律 PDF 智能清洗示意图" src="../../../images/part14/p02/Xu-Project02-Fig03.svg" /></a>
+<em>图 P02-3：法律 PDF 智能清洗示意图</em></p>
+<p>图P02-4展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig04.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-4：嵌入式页码与中文断词修复案例" src="../../../images/part14/p02/Xu-Project02-Fig04.svg" /></a>
+<em>图 P02-4：嵌入式页码与中文断词修复案例</em></p>
+<hr />
+<h2 id="8-schema">8. 切块与 schema：法律种子的结构化方式<a class="headerlink" href="#8-schema" title="Permanent link">&para;</a></h2>
+<p>完成基础清洗之后，项目并不会直接把长文本送入生成模型，而是先做<strong>切块与结构化</strong>。</p>
+<h3 id="81">8.1 切块作为必要步骤<a class="headerlink" href="#81" title="Permanent link">&para;</a></h3>
+<p>一份法规或制度文本往往很长，直接输入模型会有三个问题：</p>
+<ul>
+<li>上下文太长，成本高且噪声多；</li>
+<li>不同条文之间主题混杂，不适合作为单一监督单位；</li>
+<li>后续难以追踪样本来源，不利于 QA 与回溯。</li>
+</ul>
+<p>因此，更合理的做法是以法条、条文段落或相对独立的知识片段为单位切块，把每个块都变成可追踪的 seed 样本。</p>
+<h3 id="82-schema">8.2 schema 在这里解决什么问题<a class="headerlink" href="#82-schema" title="Permanent link">&para;</a></h3>
+<p>所谓 schema，不是为了好看，而是为了让后续所有环节都能基于统一字段协同。一个典型的法律种子样本，至少应该包含：</p>
+<ul>
+<li><code>id</code>：唯一标识</li>
+<li><code>source_name</code>：来源法规或制度名称</li>
+<li><code>article_no</code>：条号或章节位置</li>
+<li><code>text</code>：清洗后的正文片段</li>
+<li><code>task_type</code>：后续要扩展成哪类任务</li>
+<li><code>risk_level</code>：是否属于高风险主题</li>
+<li><code>metadata</code>：版本、清洗日志、解析来源等附加信息</li>
+</ul>
+<p>有了这层 schema，项目后续就可以：</p>
+<ul>
+<li>追踪某条监督样本来自哪个法条；</li>
+<li>比较不同来源的样本分布；</li>
+<li>对高风险样本单独分流；</li>
+<li>在训练集发现问题后反查上游 seed。</li>
+</ul>
+<h3 id="83-schema">8.3 schema 作为种子层底座<a class="headerlink" href="#83-schema" title="Permanent link">&para;</a></h3>
+<p>因为很多数据项目失败，不是因为模型差，而是因为一开始没有建立统一字段，导致后面：</p>
+<ul>
+<li>QA 无法复核来源；</li>
+<li>偏好对无法关联主体样本；</li>
+<li>train/val 切分无法按来源隔离；</li>
+<li>版本回滚无从下手。</li>
+</ul>
+<p>schema 是行业 SFT 工厂的底座，而不是附属物。</p>
+<p>图P02-5展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig05.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-5：法律种子样本 schema 示意图" src="../../../images/part14/p02/Xu-Project02-Fig05.svg" /></a>
+<em>图 P02-5：法律种子样本 schema 示意图</em></p>
+<hr />
+<h2 id="9-sft">9. 任务体系：法律 SFT 的任务分层<a class="headerlink" href="#9-sft" title="Permanent link">&para;</a></h2>
+<p>如果让一个团队凭直觉去做法律 SFT，最容易得到的数据集往往是这样的（XXX 表示模板槽位，由具体条文编号填入）：</p>
+<blockquote>
+<p>Instruction：请解释《民法典》第 XXX 条。
+Output：该条规定了……</p>
+</blockquote>
+<p>这种样本当然有价值，但如果整个数据集都长这样，模型最终只会成为一个“法条复述器”。</p>
+<p>而法律场景需要的，不只是复述规范文本，而是能在不同任务形式下稳定工作。因此，本项目把监督任务至少拆成三大类。</p>
+<h3 id="91-legal_qa">9.1 法律问答（legal_qa）<a class="headerlink" href="#91-legal_qa" title="Permanent link">&para;</a></h3>
+<p>这类任务面向更接近真实用户提问的场景，强调的是：</p>
+<ul>
+<li>把规范表达转译成用户能理解的问题；</li>
+<li>用相对清楚的自然语言给出回答；</li>
+<li>在必要时进行条件说明和边界提示。</li>
+</ul>
+<p>这类任务训练的是模型的“用户接口能力”。</p>
+<h3 id="92-statute_explanation">9.2 法条解释（statute_explanation）<a class="headerlink" href="#92-statute_explanation" title="Permanent link">&para;</a></h3>
+<p>这类任务面向条文理解和规范释义，强调的是：</p>
+<ul>
+<li>还原条文含义；</li>
+<li>解释适用条件；</li>
+<li>区分关键概念；</li>
+<li>在必要时指出该条并不直接覆盖哪些情况。</li>
+</ul>
+<p>这类任务训练的是模型的“规范表达能力”。</p>
+<h3 id="93-case_analysis">9.3 案情分析（case_analysis）<a class="headerlink" href="#93-case_analysis" title="Permanent link">&para;</a></h3>
+<p>这是最接近法律推理的任务类型，强调的是：</p>
+<ul>
+<li>从事实中提炼争点；</li>
+<li>判断相关法条可能如何适用；</li>
+<li>说明结论成立的条件与不确定性；</li>
+<li>避免在事实不足时给出武断结论。</li>
+</ul>
+<p>这类任务训练的是模型的“事实—规则映射能力”。</p>
+<h3 id="94">9.4 任务拆分的质量控制作用<a class="headerlink" href="#94" title="Permanent link">&para;</a></h3>
+<p>任务拆分不是为了让表格更漂亮，而是为了避免一个常见的问题：</p>
+<blockquote>
+<p>看起来样本很多，但其实所有样本都在重复训练同一种能力。</p>
+</blockquote>
+<p>在法律领域，这种“表面多样、实际单一”的问题尤其严重。只有明确区分问答、解释、分析等能力，模型才有机会学到更完整的行为分布。</p>
+<p>图P02-6展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig06.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-6：法律任务体系分层图" src="../../../images/part14/p02/Xu-Project02-Fig06.svg" /></a>
+<em>图 P02-6：法律任务体系分层图</em></p>
+<hr />
+<h2 id="10">10. 任务分布与样本结构：分布均衡的控制方式<a class="headerlink" href="#10" title="Permanent link">&para;</a></h2>
+<p>有了任务体系之后，下一个问题不是“能不能生成”，而是“生成后的分布是否健康”。</p>
+<p>在本章示例产物统计中，三类主体任务各有 2577 条，用于说明任务结构相对均衡的验收口径。最终训练集规模为 7737 条，表示流水线可以从法规种子扩展出更完整的监督数据资产。与此同时，法律来源分布并不均衡：民法典相关样本 3882 条、刑法 1710 条、公司法 855 条，不同法域的覆盖仍存在明显集中。若这些数字用于正式交付，应随数据 manifest、生成脚本版本和抽样日志一并归档。</p>
+<p>这组数字至少说明三件事：</p>
+<p>第一，项目已经不是“随机做了一些样本”，而是形成了比较明确的任务结构。
+第二，工厂已经具备从种子到多任务监督样本的扩张能力。
+第三，法域覆盖仍然是下一步最需要优化的地方之一。</p>
+<h3 id="101">10.1 任务均衡与来源分布<a class="headerlink" href="#101" title="Permanent link">&para;</a></h3>
+<p>如果只看任务类型，三类样本确实是平衡的。但如果继续往下看来源，会发现样本主要集中在少数法域。这意味着模型虽然在“任务形式”上学得较均衡，但在“知识分布”上仍可能偏向某些领域。</p>
+<h3 id="102">10.2 样本结构的重要性<a class="headerlink" href="#102" title="Permanent link">&para;</a></h3>
+<p>因为总样本数只能回答“规模有多大”，却回答不了“模型会偏向哪里”。而在行业数据工程里，分布结构往往比绝对规模更重要。</p>
+<p>图P02-7展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig07.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-7：任务分布与法域覆盖对照图" src="../../../images/part14/p02/Xu-Project02-Fig07.svg" /></a>
+<em>图 P02-7：任务分布与法域覆盖对照图</em></p>
+<hr />
+<h2 id="11-self-instruct">11. Self-Instruct：受控合成的必要性<a class="headerlink" href="#11-self-instruct" title="Permanent link">&para;</a></h2>
+<p>从法规种子到 SFT 样本，中间最关键的一步是合成扩张。项目没有让人工逐条撰写所有法律问答，而是采用 Self-Instruct 方式，让教师模型基于法条和任务模板自动生成候选样本。</p>
+<h3 id="111">11.1 合成扩张的作用<a class="headerlink" href="#111" title="Permanent link">&para;</a></h3>
+<p>如果完全依赖人工写作，项目会很快出现成本失控。在本章示例估算中，人工审核工时可按 193.28 小时、审核成本约 23193.6 元来展示成本核算方式；正式交付时应以审核记录、单价假设和抽样日志替换这些示例值。如果主体样本还全部靠人工撰写，整体投入会更高。相反，先利用教师模型自动扩张，再把人力集中到审核与难例上，是更现实的做法。</p>
+<h3 id="112">11.2 法律合成的约束<a class="headerlink" href="#112" title="Permanent link">&para;</a></h3>
+<p>通用问答里，生成模型可以相对开放地写出各种自然语言回答；但法律场景里，自由发挥越大，风险就越高。因为模型容易：</p>
+<ul>
+<li>把无关条文拼接成看似正确的回答；</li>
+<li>凭常识补齐其实没有依据的结论；</li>
+<li>过度自信地输出“应该如何处理”的建议；</li>
+<li>在边界问题上不留不确定性提示。</li>
+</ul>
+<p>因此，本项目采用的是<strong>模板约束下的合成</strong>，而不是完全开放式生成。教师模型的自由度被控制在任务模板和格式要求里。</p>
+<h3 id="113">11.3 加权轮盘赌与任务采样<a class="headerlink" href="#113" title="Permanent link">&para;</a></h3>
+<p>为了让数据分布符合预期，项目并不是对三类任务做简单平均随机，而是通过加权轮盘赌机制进行采样。其核心思想是：</p>
+<ul>
+<li>复杂案情分析更能训练模型的高价值推理能力，因此权重更高；</li>
+<li>法律文书或概念辨析这类任务也重要，但在当前阶段不需要让其过度挤占样本配额；</li>
+<li>任务配比应该是一个可显式调整的工程参数，而不是隐含在随机数里的黑盒。</li>
+</ul>
+<p>这种做法的价值在于，它把“数据分布”变成了一个可调控对象，而不是事后统计的结果。</p>
+<p>图P02-8展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig08.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-8：加权轮盘赌任务采样示意图" src="../../../images/part14/p02/Xu-Project02-Fig08.svg" /></a>
+<em>图 P02-8：加权轮盘赌任务采样示意图</em></p>
+<hr />
+<h2 id="12-cot">12. 思维链（CoT）显性化：法律推理的表达约束<a class="headerlink" href="#12-cot" title="Permanent link">&para;</a></h2>
+<p>很多团队在做法律 SFT 时，容易把“专家感”理解成“回答写得很长、很正式”。但让模型更像法律助手的，往往不是篇幅，而是<strong>推理过程是否可见、结论是否有层次、边界是否被表达出来</strong>。</p>
+<h3 id="121">12.1 显式思维链的作用<a class="headerlink" href="#121" title="Permanent link">&para;</a></h3>
+<p>案情分析类任务尤其依赖中间推理。如果训练数据只保留最终结论，模型往往只学会输出结果，而不会学会：</p>
+<ul>
+<li>先识别争点；</li>
+<li>再判断适用规范；</li>
+<li>再给出条件化结论；</li>
+<li>最后提示不确定因素。</li>
+</ul>
+<p>因此，项目在生成后处理中，会尽量把模型输出中的“思考过程”字段显性化，再拼接成统一的 Markdown 或分段格式。这样做的目的不是追求“模型看起来像在思考”，而是给训练过程提供更完整的行为模板。</p>
+<h3 id="122-cot">12.2 法律 CoT 的使用边界<a class="headerlink" href="#122-cot" title="Permanent link">&para;</a></h3>
+<p>法律场景里的 CoT 也不能无限展开。过长、过细、过于像内部推演日志的推理，不一定适合直接作为最终用户回答。更实际的做法是把 CoT 控制在“结构化推理”层面，例如：</p>
+<ol>
+<li>提炼争点</li>
+<li>对照规则</li>
+<li>分析适用条件</li>
+<li>给出结论与边界</li>
+</ol>
+<p>这种形式既能保留推理路径，又不会把样本变成冗长的自说自话。</p>
+<h3 id="123-cot">12.3 CoT 的工程价值<a class="headerlink" href="#123-cot" title="Permanent link">&para;</a></h3>
+<p>在这个项目里，CoT 的价值主要体现在两个方面：</p>
+<ul>
+<li>帮助模型学到更接近法律分析的表达顺序；</li>
+<li>为 QA 审核提供更清晰的中间依据，便于识别“结论对了但推理错了”的样本。</li>
+</ul>
+<p>图P02-9展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig09.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-9：案情分析类 CoT 结构示意图" src="../../../images/part14/p02/Xu-Project02-Fig09.svg" /></a>
+<em>图 P02-9：案情分析类 CoT 结构示意图</em></p>
+<hr />
+<h2 id="13">13. 偏好对与评审记录：多层监督信号<a class="headerlink" href="#13" title="Permanent link">&para;</a></h2>
+<p>只有 SFT 样本，往往只能告诉模型“什么是一个可接受答案”；但在法律场景里，这还不够。因为很多回答并不是简单的“对”或“错”，而是存在风格、风险、边界控制和表达审慎度上的差异。</p>
+<p>这正是偏好对的重要性所在。</p>
+<h3 id="131">13.1 偏好对在法律场景中的作用<a class="headerlink" href="#131" title="Permanent link">&para;</a></h3>
+<p>它解决的是下面这种情况：</p>
+<ul>
+<li>两个回答都基本正确，但其中一个更克制、更清楚、更少武断结论；</li>
+<li>两个回答都引用了规则，但其中一个更能说明适用条件；</li>
+<li>两个回答都给了建议，但其中一个更能区分信息性说明和法律意见。</li>
+</ul>
+<p>这些差异很难只靠单标签表达，而偏好对正适合表达“哪个更好”。</p>
+<h3 id="132">13.2 当前项目的偏好信号建设<a class="headerlink" href="#132" title="Permanent link">&para;</a></h3>
+<p>项目现有产物显示，偏好对数量为 7731，与主体接受的 SFT 数量基本并行。这说明工厂不是先把 SFT 做完再临时补一点偏好，而是在一开始就把偏好信号视为与主体监督并行建设的资产。</p>
+<h3 id="133">13.3 评审记录的作用<a class="headerlink" href="#133" title="Permanent link">&para;</a></h3>
+<p>很多团队做完 QA 后，只保留“通过”样本，不保留评审记录。这会导致两个问题：</p>
+<ul>
+<li>后续没人知道这条样本为什么被接受或拒绝；</li>
+<li>无法回收失败样本并反向修订模板。</li>
+</ul>
+<p>因此，本项目把评审记录纳入产物的一部分。这样做的好处是：</p>
+<ul>
+<li>可追踪样本质量历史；</li>
+<li>可支持二次仲裁；</li>
+<li>可从拒收原因中沉淀错误模式；</li>
+<li>可为下一轮模板优化提供依据。</li>
+</ul>
+<p>图P02-10展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig10.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-10：偏好对与评审记录关系图" src="../../../images/part14/p02/Xu-Project02-Fig10.svg" /></a>
+<em>图 P02-10：偏好对与评审记录关系图</em></p>
+<hr />
+<h2 id="14">14. 风险拒答：边界控制数据<a class="headerlink" href="#14" title="Permanent link">&para;</a></h2>
+<p>法律场景是典型的高风险场景。模型并不是“答得越多越好”，而是必须知道<strong>在哪些时候应该拒绝、转人工或保留边界</strong>。</p>
+<h3 id="141-system-prompt">14.1 风险拒答与 system prompt 的关系<a class="headerlink" href="#141-system-prompt" title="Permanent link">&para;</a></h3>
+<p>很多团队在上线前会想：反正系统提示词里已经写了“不要提供具体法律意见”，那就够了。实际上远远不够。</p>
+<p>因为模型学到的行为模式首先来自训练数据。如果训练集中大量存在：</p>
+<ul>
+<li>对个案直接下结论；</li>
+<li>对证据不足的问题给出确定性建议；</li>
+<li>对高敏感问题输出过于操作性的回答；</li>
+</ul>
+<p>那么仅靠推理时的 system prompt 往往很难稳定地把这些行为压住。</p>
+<h3 id="142">14.2 风险拒答样本的作用<a class="headerlink" href="#142" title="Permanent link">&para;</a></h3>
+<p>风险拒答样本的本质，是给模型提供“怎样安全地不答”的行为范式。例如：</p>
+<ul>
+<li>明确说明信息不足；</li>
+<li>提醒需要结合具体事实和证据；</li>
+<li>区分一般性法律信息与个案意见；</li>
+<li>建议寻求专业人士进一步判断。</li>
+</ul>
+<h3 id="143">14.3 当前项目的风险边界建设<a class="headerlink" href="#143" title="Permanent link">&para;</a></h3>
+<p>现有产物中，风险拒答样本和风险登记项均为 6 条。这个数量不大，但它传递了一个重要信号：项目已经把风险边界从“口头注意事项”变成了<strong>显式数据资产</strong>。</p>
+<p>图P02-11展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig11.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-11：法律场景风险拒答分流图" src="../../../images/part14/p02/Xu-Project02-Fig11.svg" /></a>
+<em>图 P02-11：法律场景风险拒答分流图</em></p>
+<hr />
+<h2 id="15-qa">15. QA 协议：法律数据的质量门<a class="headerlink" href="#15-qa" title="Permanent link">&para;</a></h2>
+<p>行业 SFT 最容易被低估的环节，就是 QA。很多时候，团队把大部分精力放在“怎么生成更多样本”，却忽略了决定上线质量的是“怎么挡住坏样本”。</p>
+<p>法律场景中，一个合格的 QA 协议至少应该回答三件事：</p>
+<ol>
+<li>什么样的样本应该被接受？</li>
+<li>什么样的样本必须被拒收？</li>
+<li>发现问题后如何返工，而不是只做一次性清洗？</li>
+</ol>
+<h3 id="151">15.1 审核维度<a class="headerlink" href="#151" title="Permanent link">&para;</a></h3>
+<p>可以将审核维度拆成五项：</p>
+<ul>
+<li><strong>正确性</strong>：结论是否与种子法规及任务意图一致；</li>
+<li><strong>完整性</strong>：是否遗漏关键条件、例外或适用前提；</li>
+<li><strong>表达清晰度</strong>：是否能被非专业用户理解；</li>
+<li><strong>格式一致性</strong>：是否符合既定输出模板；</li>
+<li><strong>风险边界</strong>：是否越界给出个案化、武断化或高敏感建议。</li>
+</ul>
+<h3 id="152">15.2 接收、返工与拒收规则<a class="headerlink" href="#152" title="Permanent link">&para;</a></h3>
+<p>一个可执行的 QA 协议，不应该只有“通过/不通过”两种状态。更实用的设计至少包括：</p>
+<ul>
+<li><strong>Accept</strong>：可直接进入训练集；</li>
+<li><strong>Revise</strong>：主体正确，但表达、格式或边界不足，需要返工；</li>
+<li><strong>Reject</strong>：事实或规范错误、风险过高、任务不匹配，不进入训练资产。</li>
+</ul>
+<h3 id="153">15.3 错误标签化<a class="headerlink" href="#153" title="Permanent link">&para;</a></h3>
+<p>建议在 QA 记录中为拒收样本打上错误标签，例如：</p>
+<ul>
+<li>引用错误</li>
+<li>结论越界</li>
+<li>条件缺失</li>
+<li>风格不当</li>
+<li>任务错配</li>
+<li>事实不足仍强行回答</li>
+</ul>
+<h3 id="154-qa">15.4 QA 协议的必要性<a class="headerlink" href="#154-qa" title="Permanent link">&para;</a></h3>
+<p>如果只写生成逻辑，不写 QA 协议，行业 SFT 就会退化成“数据生成步骤说明”，而不是“数据工厂方法”。</p>
+<p>图P02-12展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig12.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-12：QA 审核闭环图" src="../../../images/part14/p02/Xu-Project02-Fig12.svg" /></a>
+<em>图 P02-12：QA 审核闭环图</em></p>
+<p>图P02-13展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig13.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-13：QA 接收/返工/拒收判定表" src="../../../images/part14/p02/Xu-Project02-Fig13.svg" /></a>
+<em>图 P02-13：QA 接收/返工/拒收判定表</em></p>
+<hr />
+<h2 id="16">16. 供应商协同与人机分工：规模扩展下的审核机制<a class="headerlink" href="#16" title="Permanent link">&para;</a></h2>
+<p>在小规模实验里，团队成员往往还能自己完成大部分审核工作。但一旦项目进入持续迭代，人工审核成本会很快成为主要瓶颈。</p>
+<p>按本章示例口径，人工审核工时估算约为 193.28 小时，审核成本约为 23193.6 元。这个数字用于说明人审成本核算方法；若作为真实项目结果发布，必须补充审核记录、样本 ID、费率假设和复核人签核。如果继续扩量，而没有更合理的分层审核与供应商协同机制，成本会迅速失控。</p>
+<h3 id="161">16.1 分层审核<a class="headerlink" href="#161" title="Permanent link">&para;</a></h3>
+<p>并不是所有样本都需要同等级别的人力介入。更合理的做法通常是：</p>
+<ul>
+<li>低风险、规则清晰的样本先走机器预审；</li>
+<li>中风险样本由标注员或领域运营审核；</li>
+<li>高风险或分歧样本再升级到资深人员或专家仲裁。</li>
+</ul>
+<h3 id="162">16.2 供应商协同的风险点<a class="headerlink" href="#162" title="Permanent link">&para;</a></h3>
+<p>一旦引入外部标注或审核资源，团队最容易掉进两个坑里：</p>
+<ul>
+<li>只给“做什么”，不给“为什么这么做”；</li>
+<li>只给规范，不给反例和边界示例。</li>
+</ul>
+<p>法律场景尤其如此。单纯一份“请判断回答是否正确”的指南远远不够。审核者需要看到：</p>
+<ul>
+<li>哪些回答虽然基本正确，但因为太武断仍需退回；</li>
+<li>哪些回答虽然保守，但保守过度也不合格；</li>
+<li>哪些问题触发风险拒答而不是继续补充回答。</li>
+</ul>
+<h3 id="163">16.3 协同机制的工程位置<a class="headerlink" href="#163" title="Permanent link">&para;</a></h3>
+<p>因为数据工厂的“工厂”二字，最终一定要落在协作机制上。只写模型、模板和脚本，而不写人与流程，很难支撑团队落地。</p>
+<p>图P02-14展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig14.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-14：人机协同与供应商分层审核图" src="../../../images/part14/p02/Xu-Project02-Fig14.svg" /></a>
+<em>图 P02-14：人机协同与供应商分层审核图</em></p>
+<hr />
+<h2 id="17">17. 训练封装：从监督样本到训练接口<a class="headerlink" href="#17" title="Permanent link">&para;</a></h2>
+<p>生成、审核和偏好构造完成后，数据工厂还需要把这些产物封装成训练侧可直接消费的接口。</p>
+<h3 id="171">17.1 训练封装作为独立阶段<a class="headerlink" href="#171" title="Permanent link">&para;</a></h3>
+<p>很多项目做完样本就结束了，但进入训练时才发现：</p>
+<ul>
+<li>字段不统一，训练脚本读不进去；</li>
+<li>train/val 切分不稳定；</li>
+<li>smoke test 不能代表真实样本格式；</li>
+<li>报告、metrics 和数据文件互相对不上。</li>
+</ul>
+<p>因此，训练封装并不是简单导出一个 JSONL，而是要确保：</p>
+<ul>
+<li>主体字段齐全；</li>
+<li>训练与验证切分可复现；</li>
+<li>manifest 能描述数据范围与版本；</li>
+<li>smoke test 能快速暴露接口问题。</li>
+</ul>
+<h3 id="172">17.2 本项目的主要训练产物<a class="headerlink" href="#172" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>final_sft_dataset.jsonl</code></li>
+<li><code>train.jsonl</code></li>
+<li><code>val.jsonl</code></li>
+<li><code>smoke_test.jsonl</code></li>
+<li><code>training_manifest.json</code></li>
+</ul>
+<h3 id="173-smoke-test">17.3 smoke test 的作用<a class="headerlink" href="#173-smoke-test" title="Permanent link">&para;</a></h3>
+<p>smoke test 的价值不在于评估模型性能，而在于尽早发现训练链路中的明显问题，例如字段缺失、编码错误、样本格式不一致或读取逻辑和 manifest 不匹配。</p>
+<p>图P02-15展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig15.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-15：训练封装与交付接口图" src="../../../images/part14/p02/Xu-Project02-Fig15.svg" /></a>
+<em>图 P02-15：训练封装与交付接口图</em></p>
+<hr />
+<h2 id="18">18. 结果展示：示例项目产出概况<a class="headerlink" href="#18" title="Permanent link">&para;</a></h2>
+<p>从示例产物看，P02 可以形成比较完整的法律领域监督资产，并通过下游轻量验证说明监督信号的检查方式。若这些数字被用作真实项目结果，需与 <code>training_manifest.json</code>、生成脚本版本、随机种子、样本 ID 和评分记录逐项对应。</p>
+<h3 id="181">18.1 样本规模<a class="headerlink" href="#181" title="Permanent link">&para;</a></h3>
+<ul>
+<li>种子法条数：<code>2577</code></li>
+<li>通过模板教师生成的高价值 SFT：<code>7731</code></li>
+<li>通过启发式裁判过滤或构造的低质量对照：<code>7731</code></li>
+<li>偏好对数量：<code>7731</code></li>
+<li>最终训练集规模：<code>7737</code></li>
+</ul>
+<p>这说明示例流水线可以从原始法规种子扩展出结构较完整的监督资产，而不是停留在少量手工样本或一次性脚本演示上。</p>
+<h3 id="182">18.2 任务分布<a class="headerlink" href="#182" title="Permanent link">&para;</a></h3>
+<p>当前三类主体任务保持完全对齐：</p>
+<ul>
+<li><code>legal_qa = 2577</code></li>
+<li><code>statute_explanation = 2577</code></li>
+<li><code>case_analysis = 2577</code></li>
+</ul>
+<p>这种分布意味着项目在任务层面具备较好的配比控制能力，没有出现某一任务类型显著挤占样本空间的情况。</p>
+<h3 id="183">18.3 来源分布<a class="headerlink" href="#183" title="Permanent link">&para;</a></h3>
+<p>当前法律来源分布为：</p>
+<ul>
+<li><code>中华人民共和国民法典 = 3882</code></li>
+<li><code>中华人民共和国刑法 = 1710</code></li>
+<li><code>中华人民共和国民事诉讼法 = 951</code></li>
+<li><code>中华人民共和国公司法 = 855</code></li>
+<li><code>中华人民共和国劳动法 = 333</code></li>
+</ul>
+<p>这说明项目已经具备跨法域扩张能力，但不同法域的覆盖仍不均衡，民法典相关样本占比明显更高。</p>
+<h3 id="184">18.4 偏好与风险数据<a class="headerlink" href="#184" title="Permanent link">&para;</a></h3>
+<ul>
+<li>QA 评审记录：<code>7731</code></li>
+<li>高风险拒答样本：<code>6</code></li>
+<li>平均 QA 评分：<code>5.0</code></li>
+</ul>
+<p>这说明项目并不是只在建设主体 SFT 数据，而是在同时建设 QA、偏好和风险边界相关的辅助监督层。对行业 SFT 而言，这一点往往比单纯提升样本总量更重要。</p>
+<h3 id="185">18.5 训练与交付层产物<a class="headerlink" href="#185" title="Permanent link">&para;</a></h3>
+<ul>
+<li>训练集拆分：<code>train = 6947</code>、<code>val = 790</code>、<code>smoke = 24</code></li>
+<li><code>training_manifest.json</code> 已完成封装</li>
+<li>项目检查链路通过，训练与报告侧产物能够互相对齐</li>
+</ul>
+<p>这说明项目的输出已经不是“若干 JSONL 文件”，而是一组可被训练侧直接消费并可被检查脚本一致性验证的资产。</p>
+<p>图P02-16展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig16.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-16：P02 核心指标总览图" src="../../../images/part14/p02/Xu-Project02-Fig16.svg" /></a>
+<em>图 P02-16：P02 核心指标总览图</em></p>
+<hr />
+<h2 id="19">19. 轻量下游验证：最小验证设计<a class="headerlink" href="#19" title="Permanent link">&para;</a></h2>
+<p>在前面的版本中，P02 已经能说明“数据工厂验证了”。但仅仅证明流程存在还不够，更重要的是回答下面这个问题：</p>
+<blockquote>
+<p>这些经过 QA、偏好构造和风险治理的数据，真的比未经处理或低质量候选更好吗？</p>
+</blockquote>
+<p>新增的轻量下游验证，正是为了解决这个问题。</p>
+<h3 id="191">19.1 验证设计<a class="headerlink" href="#191" title="Permanent link">&para;</a></h3>
+<p>示例验证在固定随机种子 <code>seed = 20260409</code> 下，随机抽样 50 条配对样本，对 <code>chosen</code> 与 <code>rejected</code> 两类数据做轻量质量验证。这里的目标并不是追求完整的模型基准测试，而是以一种成本可控、可复现的方式，快速回答偏好和 QA 是否真的拉开了质量差距。正式出版或交付时，应保留抽样脚本、样本 ID 列表和评分结果。</p>
+<p>这种验证方式适合当前阶段的项目目标。这里关注的是数据工程方法，而不是完整的下游模型论文。一个好的下游验证，不必一开始就很重，但它至少应该满足三个要求：</p>
+<ul>
+<li>能复现；</li>
+<li>能解释；</li>
+<li>能直接对应前面的数据设计假设。</li>
+</ul>
+<h3 id="192">19.2 验证指标<a class="headerlink" href="#192" title="Permanent link">&para;</a></h3>
+<p>在这次示例 50 条抽样中，项目使用了几类非常有代表性的指标：</p>
+<ul>
+<li><code>chosen</code> 平均质量分</li>
+<li><code>rejected</code> 平均质量分</li>
+<li>配对胜率</li>
+<li>法条引用覆盖率</li>
+<li>不安全捷径表述率</li>
+</ul>
+<p>这些指标的好处在于，它们不是纯抽象分数，而是与法律 SFT 的真实目标直接相关：</p>
+<ul>
+<li>质量分反映总体可接受程度；</li>
+<li>配对胜率反映偏好构造是否区分了好坏答案；</li>
+<li>法条引用覆盖率反映回答是否保留了法律依据；</li>
+<li>不安全捷径表述率反映高风险、武断化表达是否被有效压制。</li>
+</ul>
+<h3 id="193">19.3 验证结果<a class="headerlink" href="#193" title="Permanent link">&para;</a></h3>
+<p>从当前结果看：</p>
+<ul>
+<li><code>chosen</code> 平均质量分：<code>5.0 / 5</code></li>
+<li><code>rejected</code> 平均质量分：<code>1.0 / 5</code></li>
+<li>配对胜率：<code>100.00%</code></li>
+<li>法条引用覆盖率：<code>chosen = 100.00%</code>，<code>rejected = 0.00%</code></li>
+<li>不安全捷径表述率：<code>chosen = 0.00%</code>，<code>rejected = 100.00%</code></li>
+</ul>
+<p>这组数字来自示例轻量抽样，正式发布时应附抽样脚本和评分明细；在教学口径下，它说明：</p>
+<p>第一，当前的偏好构造与 QA 机制，不是形式上的“做了评审”，而是确实把高质量样本和低质量样本区分开了。
+第二，在法律场景中关键的两个目标——<strong>保留法条依据</strong>与<strong>避免武断捷径表达</strong>——在 <code>chosen/rejected</code> 之间表现出显著差异。
+第三，P02 的监督设计开始具备一种很重要的工程特性：不仅能生产样本，还能初步证明这些样本为什么值得进入训练集。</p>
+<h3 id="194">19.4 轻量验证与重基准的区别<a class="headerlink" href="#194" title="Permanent link">&para;</a></h3>
+<p>需要强调的是，这里的下游验证仍然是<strong>轻量验证</strong>，不是完整的训练 benchmark，也不是面向论文风格的消融研究。它的价值不在于替代大规模评测，而在于为本章补上一块过去最薄弱的拼图：</p>
+<blockquote>
+<p>从“数据结构合理”进一步走向“数据效果有初步证据支持”。</p>
+</blockquote>
+<p>这一步已经需要重点关注。因为很多数据工程项目最大的问题就是只讲构造流程，不讲任何后验验证，最后很难判断产出的数据是否真的有效。</p>
+<h3 id="195">19.5 这组结果在工程上的含义<a class="headerlink" href="#195" title="Permanent link">&para;</a></h3>
+<p>这次轻量验证至少带来了三个工程层面的信号。</p>
+<p>第一，说明偏好对和 QA 记录值得保留，而不是可有可无的附属物。它们不仅帮助筛样本，也为后续训练提供了更清晰的行为边界。</p>
+<p>第二，说明“法律依据显式化”这条设计是有效的。<code>chosen</code> 样本在法条引用覆盖率上达到 100%，而 <code>rejected</code> 为 0%，说明当前模板与质检机制已经能显著推动模型输出更像法律说明，而不是泛泛而谈。</p>
+<p>第三，说明“安全边界显式化”开始生效。<code>chosen</code> 的不安全捷径表述率为 0%，<code>rejected</code> 为 100%，这意味着项目已经能够在数据层面主动压制高风险表达，而不是把这件事完全留给推理时的 system prompt。</p>
+<h3 id="196">19.6 如何解读这类实验<a class="headerlink" href="#196" title="Permanent link">&para;</a></h3>
+<p>这类实验的重点不在于宣称达到某个极限结果，而在于说明三件事：</p>
+<ul>
+<li>已经补上了一个最小可复现的下游验证；</li>
+<li>它直接验证了前面提出的关键设计假设；</li>
+<li>它为后续更重的训练实验提供了方向，而不是试图一次性解决全部评测问题。</li>
+</ul>
+<p>图P02-17展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig17.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-17：50 条抽样验证流程图" src="../../../images/part14/p02/Xu-Project02-Fig17.svg" /></a>
+<em>图 P02-17：50 条抽样验证流程图</em></p>
+<hr />
+<h2 id="20">20. 结果解读：当前数据工厂的结构性信号<a class="headerlink" href="#20" title="Permanent link">&para;</a></h2>
+<p>仅仅罗列结果，意义有限。更重要的是理解这些数字所反映的工程状态。</p>
+<h3 id="201-2577-7737">20.1 从 2577 到 7737，说明工厂具备扩张能力<a class="headerlink" href="#201-2577-7737" title="Permanent link">&para;</a></h3>
+<p>这说明项目已经实现了从知识种子到多任务监督数据的扩张，而不是停留在“整理法规文本”这一步。</p>
+<h3 id="202">20.2 三类任务均衡，说明任务框架是稳定的<a class="headerlink" href="#202" title="Permanent link">&para;</a></h3>
+<p>如果某一类任务远多于其他任务，通常意味着模板体系或采样逻辑存在失衡。而当前三类任务数量完全对齐，说明任务分发层已经具备较高的可控性。</p>
+<h3 id="203">20.3 法域分布不均衡，说明下一阶段的重点不是继续扩量，而是补覆盖<a class="headerlink" href="#203" title="Permanent link">&para;</a></h3>
+<p>当前主要矛盾已经不是“有没有样本”，而是“样本覆盖得是否均衡”。这比简单地继续堆数量更重要。</p>
+<h3 id="204-qa">20.4 偏好、QA 与轻量下游验证一起，说明项目正在从“会答”走向“答得更稳”<a class="headerlink" href="#204-qa" title="Permanent link">&para;</a></h3>
+<p>如果只有主体 SFT，很难证明模型学到的是不是更好的法律行为模式；如果只有偏好对而没有验证，也很难证明偏好构造是否真的发挥了作用。现在新增的 50 条轻量下游验证，为偏好和 QA 提供了一个直接的后验证据：<code>chosen</code> 与 <code>rejected</code> 在质量、引用和安全性上已经被明显拉开。</p>
+<p>也就是说，当前项目开始具备一种更成熟的数据工程特征：</p>
+<blockquote>
+<p>它不仅能生成训练样本，还能通过最小验证证明“什么样的样本更值得训练”。</p>
+</blockquote>
+<h3 id="205">20.5 人审成本已经可见，说明后续必须考虑自动化与协同优化<a class="headerlink" href="#205" title="Permanent link">&para;</a></h3>
+<p>193.28 小时的人审成本在小规模演示项目里已经不算低。否则容易误以为“多生成一点法律数据只是多花一点 API 钱”。实际上，贵的往往是后面的审核与返工。</p>
+<h3 id="206">20.6 这次补充带来了什么变化<a class="headerlink" href="#206" title="Permanent link">&para;</a></h3>
+<p>新增的轻量下游验证，补上了“怎么判断数据设计是否有效”这一环。</p>
+<p>因此，这一章不再只是“法律 SFT 数据工厂流程说明”，而形成了更完整的工程闭环：</p>
+<ul>
+<li>有目标与边界；</li>
+<li>有数据链路与任务设计；</li>
+<li>有 QA、偏好与风险控制；</li>
+<li>有训练接口与检查闭环；</li>
+<li>也有最小可复现的下游验证来支撑前面的设计判断。</li>
+</ul>
+<hr />
+<h2 id="21-sft">21. 质量基线：法律 SFT 数据的可用标准<a class="headerlink" href="#21-sft" title="Permanent link">&para;</a></h2>
+<p>这里的质量基线，不是追求一个抽象的满分标准，而是明确说明：什么样的数据已经足以进入训练，什么样的数据还必须继续返工。</p>
+<p>这类项目至少需要建立以下四条基线。</p>
+<h3 id="211">21.1 正确性基线<a class="headerlink" href="#211" title="Permanent link">&para;</a></h3>
+<p>回答不能明显违背种子法规含义，不能凭空添加关键结论，不能把适用条件遗漏到影响结论的程度。</p>
+<h3 id="212">21.2 表达基线<a class="headerlink" href="#212" title="Permanent link">&para;</a></h3>
+<p>回答应该清楚、完整、少歧义。即使是法律术语，也要尽量做到对非专业用户可读，而不是机械复制法条。</p>
+<h3 id="213">21.3 格式基线<a class="headerlink" href="#213" title="Permanent link">&para;</a></h3>
+<p>同类任务应遵循一致的输出骨架。例如案情分析类应尽量包含争点、规则、分析与结论，而不是有时是一段话、有时是一组碎片。</p>
+<h3 id="214">21.4 风险基线<a class="headerlink" href="#214" title="Permanent link">&para;</a></h3>
+<p>高风险问题必须体现边界感。遇到证据不足、事实不全或明显逼近个案意见的问题，回答应该保留谨慎表达或触发拒答模板，而不是强行给出明确判断。</p>
+<h3 id="215">21.5 基线与单次分数<a class="headerlink" href="#215" title="Permanent link">&para;</a></h3>
+<p>相比抽象地说“整体质量不错”，质量基线更像门槛：过线了才能进入下一步，没过线就必须返工。这比单一平均分更有工程价值。</p>
+<hr />
+<h2 id="22-sft">22. 版本演进：行业 SFT 数据集的版本管理<a class="headerlink" href="#22-sft" title="Permanent link">&para;</a></h2>
+<p>一个成熟的数据工厂，不会把第一版数据集视为最终答案。相反，它应该天然支持版本演进。</p>
+<h3 id="221-v1">22.1 V1：先把法规清洗与切块验证<a class="headerlink" href="#221-v1" title="Permanent link">&para;</a></h3>
+<p>第一版的价值，是建立从 PDF 到结构化 seed 的稳定链路。它回答的是：种子层能不能可靠地产生。</p>
+<h3 id="222-v2">22.2 V2：引入三类主体任务<a class="headerlink" href="#222-v2" title="Permanent link">&para;</a></h3>
+<p>第二版的价值，是让数据从“知识片段”进入“监督样本”。这一版解决的是任务体系和分布控制问题。</p>
+<h3 id="223-v3">22.3 V3：加入偏好对与评审记录<a class="headerlink" href="#223-v3" title="Permanent link">&para;</a></h3>
+<p>第三版的价值，是让样本不仅能训练“正确回答”，还能训练“更好的回答”，并让质量历史变得可回溯。</p>
+<h3 id="224-v4">22.4 V4：加入风险拒答与上线边界<a class="headerlink" href="#224-v4" title="Permanent link">&para;</a></h3>
+<p>第四版的价值，是把高风险行为单独建模，让工厂具备最基本的合规与安全感知能力。</p>
+<h3 id="225">22.5 版本演进的记录价值<a class="headerlink" href="#225" title="Permanent link">&para;</a></h3>
+<p>它能较直观地说明：数据工厂不是一下子长成的；每一版都有自己的核心目标；不是所有问题都应该在第一版解决；版本升级的触发条件，应该来自真实问题，而不是抽象完美主义。</p>
+<p>图P02-18展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig18.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-18：P02 版本演进路线图" src="../../../images/part14/p02/Xu-Project02-Fig18.svg" /></a>
+<em>图 P02-18：P02 版本演进路线图</em></p>
+<hr />
+<h2 id="23_1">23. 成本优化：法律数据的主要成本项<a class="headerlink" href="#23_1" title="Permanent link">&para;</a></h2>
+<p>很多团队在做大模型数据项目时，最先想到的是模型 API 成本。但在法律 SFT 里，昂贵的部分通常不是生成，而是：</p>
+<ul>
+<li>人工审核</li>
+<li>错误返工</li>
+<li>高风险样本升级处理</li>
+<li>版本回归检查</li>
+</ul>
+<h3 id="231">23.1 当前项目的成本启示<a class="headerlink" href="#231" title="Permanent link">&para;</a></h3>
+<p>当前项目的人审工时已经达到 193.28 小时，这个数字本身就是一个较好的提醒：行业数据工厂从来不是“模型多跑一点”的问题，而是“人机协同如何不失控”的问题。</p>
+<h3 id="232">23.2 哪些环节最值得优先自动化<a class="headerlink" href="#232" title="Permanent link">&para;</a></h3>
+<p>在法律场景里，优先自动化的通常不是最终仲裁，而是前面的机械性筛选，例如：</p>
+<ul>
+<li>格式不合格样本剔除；</li>
+<li>低风险模板样本的预审；</li>
+<li>明显越界表述的规则拦截；</li>
+<li>评审记录的错误类型聚类。</li>
+</ul>
+<h3 id="233">23.3 成本分析的必要性<a class="headerlink" href="#233" title="Permanent link">&para;</a></h3>
+<p>因为项目部分不只是展示“方法可行”，还应该说明投入产出关系。如果一个方案理论上很好，但现实里无法承受其人力成本，那么它就不是可落地的方法。</p>
+<hr />
+<h2 id="24">24. 验证闭环：法律数据流水线的一致性检查<a class="headerlink" href="#24" title="Permanent link">&para;</a></h2>
+<p>一个项目是否成熟，不能只看有没有输出文件，更要看有没有一致性验证。</p>
+<h3 id="241">24.1 检查脚本的作用<a class="headerlink" href="#241" title="Permanent link">&para;</a></h3>
+<p>因为行业数据项目容易出现“局部都对、整体不通”的问题。比如：</p>
+<ul>
+<li>代码能运行，但产物缺文件；</li>
+<li>样本数看起来正常，但 train/val 有泄漏；</li>
+<li>metrics 写着通过，report 却引用了旧数字；</li>
+<li>偏好对数量和主体样本数量对不上；</li>
+<li>smoke test 不代表真实训练格式。</li>
+</ul>
+<h3 id="242">24.2 当前项目的验证状态<a class="headerlink" href="#242" title="Permanent link">&para;</a></h3>
+<p>项目检查结果为：</p>
+<ul>
+<li>总检查项：13</li>
+<li>通过检查项：13</li>
+<li>总体状态：PASS</li>
+</ul>
+<p>命令级检查覆盖 <code>py_compile</code>、<code>evaluate_factory</code> 等；数据/产物级检查覆盖 <code>required_files_exist</code>、<code>seed_count_positive</code>、<code>accepted_count_matches_seed_x_tasks</code>、<code>preference_pairs_cover_accepted</code>、<code>qa_reviews_cover_accepted</code>、<code>train_val_no_overlap</code> 等关键项目。</p>
+<h3 id="243">24.3 验证闭环的工程作用<a class="headerlink" href="#243" title="Permanent link">&para;</a></h3>
+<p>因为它体现了一种需要重点关注的工程习惯：数据项目的完成标准，不是“生成了大量文件”，而是“代码、产物、统计与报告彼此一致”。</p>
+<p>图P02-19展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig19.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-19：代码—产物—报告一致性验证图" src="../../../images/part14/p02/Xu-Project02-Fig19.svg" /></a>
+<em>图 P02-19：代码—产物—报告一致性验证图</em></p>
+<hr />
+<h2 id="25">25. 局限与风险：当前工厂的约束<a class="headerlink" href="#25" title="Permanent link">&para;</a></h2>
+<p>一个只讲成功的案例，通常不够可信。法律 SFT 尤其如此，因为它天然受制于数据来源、审核成本和风险边界。</p>
+<h3 id="251">25.1 法域覆盖不均衡<a class="headerlink" href="#251" title="Permanent link">&para;</a></h3>
+<p>当前样本明显偏向少数法域，这会导致模型在知识广度上的表现不均匀。下一阶段最重要的工作之一，就是补齐长尾法域与真实业务高频问题。</p>
+<h3 id="252">25.2 合成比例较高<a class="headerlink" href="#252" title="Permanent link">&para;</a></h3>
+<p>虽然合成是成本可控的必要手段，但合成比例过高会带来模板腔和教师偏置问题。模型可能学会“像模板那样回答”，却不一定掌握多样的用户表达。</p>
+<h3 id="253">25.3 风险拒答样本仍然偏少<a class="headerlink" href="#253" title="Permanent link">&para;</a></h3>
+<p>当前已经建立了风险拒答机制，但样本规模仍小。对于上线场景，这还远远不够，特别是在个案化建议、敏感争议、证据不足判断等场景下，需要更丰富的拒答与保留边界样本。</p>
+<h3 id="254-qa">25.4 QA 成本高<a class="headerlink" href="#254-qa" title="Permanent link">&para;</a></h3>
+<p>随着样本规模扩大，人审成本会继续抬升。如果不在流程上引入更细粒度的预审、仲裁和复标机制，后续扩量会面临明显阻力。</p>
+<hr />
+<h2 id="26">26. 跨行业迁移：法律工厂的样板价值<a class="headerlink" href="#26" title="Permanent link">&para;</a></h2>
+<p>法律并不是唯一需要垂直领域 SFT 的行业，但它是一个较好的样板。原因在于，法律场景同时具备以下特征：</p>
+<ul>
+<li>知识强结构化</li>
+<li>任务强约束化</li>
+<li>风险边界清晰</li>
+<li>QA 需求刚性</li>
+<li>人机协同成本高</li>
+</ul>
+<p>而这些特征，其实同样存在于税务、金融、医疗、客服合规等行业。</p>
+<h3 id="261">26.1 可直接迁移的设计<a class="headerlink" href="#261" title="Permanent link">&para;</a></h3>
+<ul>
+<li>从非结构化文档到结构化 seed 的清洗链路；</li>
+<li>任务体系先拆分、后扩量的做法；</li>
+<li>SFT、偏好对、风险拒答并行建设的思路；</li>
+<li>QA 协议、错误标签与返工机制；</li>
+<li>训练封装与验证闭环。</li>
+</ul>
+<h3 id="262">26.2 不可直接照搬的部分<a class="headerlink" href="#262" title="Permanent link">&para;</a></h3>
+<ul>
+<li>法律场景中的风险边界不等于医疗或金融边界；</li>
+<li>法条解释类任务在其他行业未必是主任务；</li>
+<li>法律文书风格不等于客服或销售风格；</li>
+<li>高风险拒答的触发条件需要按行业重写。</li>
+</ul>
+<h3 id="263">26.3 可迁移的方法链<a class="headerlink" href="#263" title="Permanent link">&para;</a></h3>
+<p>能迁移的不是某个具体 prompt，而是这条方法链：</p>
+<blockquote>
+<p>找到权威种子 -&gt; 做结构化切块 -&gt; 设计任务体系 -&gt; 受控合成扩张 -&gt; 建立 QA 与偏好 -&gt; 单独建模风险边界 -&gt; 训练封装与一致性验证。</p>
+</blockquote>
+<p>图P02-20展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p02/Xu-Project02-Fig20.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P02-20：行业迁移方法链图" src="../../../images/part14/p02/Xu-Project02-Fig20.svg" /></a>
+<em>图 P02-20：行业迁移方法链图</em></p>
+<hr />
+<h2 id="27">27. 主要交付物清单<a class="headerlink" href="#27" title="Permanent link">&para;</a></h2>
+<p>这里给出主要交付物清单。</p>
+<h3 id="271">27.1 种子与处理中间产物<a class="headerlink" href="#271" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/processed/raw_chunks.jsonl</code></li>
+<li><code>data/processed/legal_seed_dataset.jsonl</code></li>
+<li><code>data/processed/instruction_taxonomy.json</code></li>
+</ul>
+<h3 id="272">27.2 主体监督与辅助监督产物<a class="headerlink" href="#272" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/processed/domain_expert_sft.jsonl</code></li>
+<li><code>data/processed/synthetic_candidates_rejected.jsonl</code></li>
+<li><code>data/processed/legal_preference_pairs.jsonl</code></li>
+<li><code>data/processed/legal_qa_review.jsonl</code></li>
+<li><code>data/processed/legal_risk_refusal_sft.jsonl</code></li>
+<li><code>data/processed/legal_risk_register.jsonl</code></li>
+</ul>
+<h3 id="273">27.3 训练接口产物<a class="headerlink" href="#273" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/training/final_sft_dataset.jsonl</code></li>
+<li><code>data/training/train.jsonl</code></li>
+<li><code>data/training/val.jsonl</code></li>
+<li><code>data/training/smoke_test.jsonl</code></li>
+<li><code>data/training/training_manifest.json</code></li>
+</ul>
+<h3 id="274">27.4 报告与验证产物<a class="headerlink" href="#274" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>data/reports/p2_report.md</code></li>
+<li><code>data/reports/p2_metrics.json</code></li>
+<li><code>data/reports/p2_test_results.json</code></li>
+</ul>
+<p>把这些交付物列出来，不只是为了呈现清单，而是为了说明：一个行业 SFT 工厂的结果并不只是一个训练集文件，而是一组彼此关联的数据资产。</p>
+<hr />
+<h2 id="28">28. 方法复盘：把生成组织成工厂<a class="headerlink" href="#28" title="Permanent link">&para;</a></h2>
+<p>回看整个项目，会发现它解决的问题，并不是“怎样让模型多生成几条法律问答”，而是：</p>
+<ul>
+<li>怎样从权威但脏乱的 PDF 中提取可用知识；</li>
+<li>怎样把知识拆成不同类型的监督任务；</li>
+<li>怎样让生成过程可控，而不是胡乱扩张；</li>
+<li>怎样通过偏好对和风险拒答把模型行为边界也做成数据；</li>
+<li>怎样把 QA、成本、版本和验证闭环一起纳入工厂设计。</li>
+</ul>
+<p>这也是本章最想传达的一件事：</p>
+<blockquote>
+<p>在高专业度行业里，SFT 数据工程的目标从来不是“多做一点样本”，而是建立一条能持续稳定生产高质量监督资产的流水线。</p>
+</blockquote>
+<p>法律只是这套方法的一个代表场景。只要掌握了这条从种子到监督、从生成到质检、从样本到上线接口的链路，团队就具备了构建其他行业数据工厂的基本方法底座。</p>
+<hr />
+<h2 id="sft">专题：法律 SFT 数据的发布门禁<a class="headerlink" href="#sft" title="Permanent link">&para;</a></h2>
+<p>法律领域数据工厂和通用问答数据工厂最大的不同之一，在于它天然承受更高的错误成本。对一般问答来说，回答不够好可能只是体验差；对法律问答来说，错误监督信号很可能直接放大到风险建议、拒答边界和专业可信度上。因此，P02 这类项目在进入版本发布时，更需要明确的门禁条件。</p>
+<h3 id="_12">一、发布前需要同时看内容风险和工程风险<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<p>法律 SFT 数据不能只看“数据量够不够”或“格式齐不齐”，还需要同时判断：</p>
+<ul>
+<li>法条引用、案例归纳和风险提示是否存在明显错误或过时表达；</li>
+<li>拒答样本和高风险咨询样本是否覆盖关键边界；</li>
+<li>偏好对和 QA 记录是否真的支撑当前版本结论；</li>
+<li>训练接口、manifest 和测试结果是否与版本产物一致。</li>
+</ul>
+<p>也就是说，法律数据版本的发布门槛天然比普通数据更高，因为它既要通过内容可信度检查，也要通过工程一致性检查。</p>
+<h3 id="_13">二、门禁的价值在于让“谨慎”成为系统属性<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<p>很多团队在做行业数据时，会把谨慎留给后期人工审核，但更稳妥的做法，是把谨慎前移成发布门禁。只要门禁被结构化写下来，团队就会逐渐形成一种稳定习惯：不是先发布再补解释，而是先确认风险边界、监督资产和验证证据，再决定这一版是否进入训练与展示。这种机制化的谨慎，恰恰是行业 SFT 数据最值得保留的长期能力。</p>
+<h2 id="_14">本章小结<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
+<p>本章以“法律领域专家 SFT 数据工厂”为案例，展示了把法规、判例和法律问答材料转化为可追踪的领域 SFT 训练资产的工程组织方式。案例的主要价值在于把任务定义、数据边界、架构决策、样本 schema、指标验收和复现资源放在同一条链路中，使项目不再只是操作步骤，而成为可复核的案例研究。</p>
+<p>该案例的边界同样需要被清楚保留。以公开或授权法律文本为输入，不覆盖真实法律咨询责任和生产级案件管理系统。在更大规模、更高风险或更强合规约束的场景中，应重新评估数据来源、权限状态、人工复核比例、运行成本和失败回滚方案。</p>
+<p>作为第十四篇的一部分，本章对应前文方法在项目层面的落地验证。读者可将本案例与第十三篇的数据配方、前文的平台治理章节以及附录中的检查清单合并使用，形成从方法理解到工程交付的闭环。</p>
+<h2 id="_15">参考文献<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h2>
+<p>Raffel C, Shazeer N, Roberts A, Lee K, Narang S, Matena M, Zhou Y, Li W, Liu P J (2020) Exploring the Limits of Transfer Learning with a Unified Text-to-Text Transformer. JMLR, 21(140), 1-67.</p>
+<p>Hugging Face (2026) Datasets Documentation. https://huggingface.co/docs/datasets/.</p>
+<p>Ray Project (2026) Ray Data Documentation. https://docs.ray.io/en/latest/data/data.html.</p>
+<p>MLflow Authors (2026) MLflow Documentation. https://mlflow.org/docs/latest/.</p>
+<p>Great Expectations Contributors (2026) Great Expectations Documentation. https://docs.greatexpectations.io/.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

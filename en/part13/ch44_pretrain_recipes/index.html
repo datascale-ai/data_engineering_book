@@ -1,0 +1,4164 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part13/ch44_pretrain_recipes/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../ch45_posttrain_recipes/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-44-llm-pre-training-recipes-deepseek-and-qwen" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part13/ch44_pretrain_recipes/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part13/ch44_pretrain_recipes/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#case-study-the-failure-of-proportional-scaling-in-1b-token-reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case Study: The Failure of Proportional Scaling in 1B-Token Reproduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#441-the-public-data-transparency-spectrum" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.1 The Public Data Transparency Spectrum
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#442-cross-model-data-composition-comparison-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.2 Cross-Model Data Composition Comparison Table
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#443-chinese-to-english-ratio-and-multilingual-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.3 Chinese-to-English Ratio and Multilingual Strategy
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.3 Chinese-to-English Ratio and Multilingual Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qwen25s-pan-multilingual-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Qwen2.5's "Pan-Multilingual" Strategy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepseek-v3s-chineseenglish-absolute-dual-core-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      DeepSeek-V3's "Chinese–English Absolute Dual-Core" Strategy
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#444-the-transfer-dividend-of-code-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.4 The Transfer Dividend of Code Data
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.4 The Transfer Dividend of Code Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deepseek-coder-to-v3-the-progression-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      DeepSeek-Coder to V3: The Progression Path
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qwen25-coder-co-evolutionary-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      Qwen2.5-Coder: Co-Evolutionary Development
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#llama-3-code-data-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Llama-3 Code Data Strategy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#olmo-2-code-data-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      OLMo-2 Code Data Strategy
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#445-the-synthetic-evolution-of-mathematical-and-reasoning-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.5 The Synthetic Evolution of Mathematical and Reasoning Data
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.5 The Synthetic Evolution of Mathematical and Reasoning Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deepseekmaths-verifier-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      DeepSeekMath's Verifier Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qwen2-maths-synthesis-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Qwen2-Math's Synthesis Strategy
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#446-analysis-of-long-text-data-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.6 Analysis of Long-Text Data Sources
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.6 Analysis of Long-Text Data Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#natural-long-form-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Natural Long-Form Text
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synthetically-generated-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Synthetically Generated Text
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#short-document-packing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Short-Document Packing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comprehensive-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comprehensive Analysis
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#447-curriculum-based-multi-stage-training-schedule" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.7 Curriculum-Based Multi-Stage Training Schedule
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.7 Curriculum-Based Multi-Stage Training Schedule">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#llama-3-long-context-extension-and-final-stage-annealing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Llama-3: Long-Context Extension and Final-Stage Annealing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#olmo-2-a-reproducible-two-phase-curriculum" class="md-nav__link">
+    <span class="md-ellipsis">
+      OLMo-2: A Reproducible Two-Phase Curriculum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qwen25-a-continuous-schedule-across-pretraining-long-context-and-post-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      Qwen2.5: A Continuous Schedule Across Pretraining, Long-Context, and Post-Training
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implications-for-reproduction-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implications for Reproduction Engineering
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#448-case-studies-common-issues-and-boundary-discussions" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.8 Case Studies, Common Issues, and Boundary Discussions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#case-study-the-failure-of-proportional-scaling-in-1b-token-reproduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case Study: The Failure of Proportional Scaling in 1B-Token Reproduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#441-the-public-data-transparency-spectrum" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.1 The Public Data Transparency Spectrum
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#442-cross-model-data-composition-comparison-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.2 Cross-Model Data Composition Comparison Table
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#443-chinese-to-english-ratio-and-multilingual-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.3 Chinese-to-English Ratio and Multilingual Strategy
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.3 Chinese-to-English Ratio and Multilingual Strategy">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qwen25s-pan-multilingual-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Qwen2.5's "Pan-Multilingual" Strategy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepseek-v3s-chineseenglish-absolute-dual-core-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      DeepSeek-V3's "Chinese–English Absolute Dual-Core" Strategy
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#444-the-transfer-dividend-of-code-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.4 The Transfer Dividend of Code Data
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.4 The Transfer Dividend of Code Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deepseek-coder-to-v3-the-progression-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      DeepSeek-Coder to V3: The Progression Path
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qwen25-coder-co-evolutionary-development" class="md-nav__link">
+    <span class="md-ellipsis">
+      Qwen2.5-Coder: Co-Evolutionary Development
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#llama-3-code-data-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Llama-3 Code Data Strategy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#olmo-2-code-data-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      OLMo-2 Code Data Strategy
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#445-the-synthetic-evolution-of-mathematical-and-reasoning-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.5 The Synthetic Evolution of Mathematical and Reasoning Data
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.5 The Synthetic Evolution of Mathematical and Reasoning Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deepseekmaths-verifier-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      DeepSeekMath's Verifier Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qwen2-maths-synthesis-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Qwen2-Math's Synthesis Strategy
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#446-analysis-of-long-text-data-sources" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.6 Analysis of Long-Text Data Sources
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.6 Analysis of Long-Text Data Sources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#natural-long-form-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Natural Long-Form Text
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synthetically-generated-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Synthetically Generated Text
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#short-document-packing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Short-Document Packing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comprehensive-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Comprehensive Analysis
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#447-curriculum-based-multi-stage-training-schedule" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.7 Curriculum-Based Multi-Stage Training Schedule
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.7 Curriculum-Based Multi-Stage Training Schedule">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#llama-3-long-context-extension-and-final-stage-annealing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Llama-3: Long-Context Extension and Final-Stage Annealing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#olmo-2-a-reproducible-two-phase-curriculum" class="md-nav__link">
+    <span class="md-ellipsis">
+      OLMo-2: A Reproducible Two-Phase Curriculum
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qwen25-a-continuous-schedule-across-pretraining-long-context-and-post-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      Qwen2.5: A Continuous Schedule Across Pretraining, Long-Context, and Post-Training
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implications-for-reproduction-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      Implications for Reproduction Engineering
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#448-case-studies-common-issues-and-boundary-discussions" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.8 Case Studies, Common Issues, and Boundary Discussions
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-44-llm-pre-training-recipes-deepseek-and-qwen">Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen<a class="headerlink" href="#chapter-44-llm-pre-training-recipes-deepseek-and-qwen" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Ke Wang; Jiaen Liang; Jun Yu</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>The pretraining data recipes of large language models (LLMs) are typically disclosed in the form of static mixture tables, yet what truly determines whether a reproduction succeeds or fails is the phased data pipeline design underlying those recipes. This chapter adopts the "recipe" as an analytical lens to systematically dissect the pretraining data engineering practices of leading models—DeepSeek-V3, Qwen2.5, Llama-3.1, and the fully open-source OLMo-2. The discussion begins by establishing a "transparency spectrum" defined along four dimensions—sources, mixture ratios, cleaning rules, and downloadability—to distinguish white-box, grey-box, and black-box disclosures. It then cross-examines each model's data composition across general web text, code, mathematics, books, and academic literature, and analyzes the Chinese-to-English ratio and multilingual sampling strategies, cross-file dependency parsing for code data, synthesis and verifier pipelines for mathematical reasoning data, and long-text sources versus short-document packing strategies. Finally, the chapter focuses on curriculum-based multi-stage training schedules, explaining when data enters training, at what quality, and at what difficulty level. The chapter argues that reproducing large models under a limited token budget cannot rely on naive proportional scaling; instead, the budget must be partitioned into phases—coverage, capability consolidation, long-context extension, and annealing—so that the recipe is translated into an auditable, verifiable engineering process.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>LLM; data recipe; open-source large language models; training data; phased scheduling</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Apply the transparency spectrum to distinguish the white-box, grey-box, and black-box disclosure levels of models such as DeepSeek-V3, Qwen2.5, Llama-3.1, and OLMo-2.</li>
+<li>Compare the data composition of leading models across general web text, code, mathematics, books, and academic literature, and analyze the Chinese-to-English ratio and multilingual sampling strategies.</li>
+<li>Design cross-file dependency parsing pipelines for code data, synthesis and verifier pipelines for mathematical reasoning data, and strategies for long-text versus short-document packing.</li>
+<li>Design curriculum-based multi-stage training schedules covering coverage, capability consolidation, long-context extension, and annealing phases.</li>
+<li>Explain why proportional scaling is insufficient under a limited token budget, and reproduce an auditable, verifiable pretraining data pipeline.</li>
+</ul>
+<h2 id="case-study-the-failure-of-proportional-scaling-in-1b-token-reproduction">Case Study: The Failure of Proportional Scaling in 1B-Token Reproduction<a class="headerlink" href="#case-study-the-failure-of-proportional-scaling-in-1b-token-reproduction" title="Permanent link">&para;</a></h2>
+<p>In attempts to reproduce large language model (LLM) training at a smaller scale, researchers often rely on the "Proportional Scaling" assumption: if a large model successfully trains on tens of trillions of tokens, then reducing the token budget to 1B tokens while proportionally shrinking model parameters, batch size, learning rate, and data mixture ratios should yield a smooth and predictable descent in loss. However, practical engineering outcomes frequently deviate from this assumption.</p>
+<p>In typical 1B-token reproduction experiments, the following pattern commonly emerges: during the early training phase (the first 20% of tokens), the model quickly fits common lexical patterns, and the loss descends normally. However, entering the middle and late phases, validation loss begins to oscillate, and perplexity reduction on code and math samples slows to a crawl. Final evaluations often reveal that while the model has memorized high-frequency patterns, it exhibits no improvement in long-context comprehension or logical reasoning. Control experiments demonstrate that models blindly adopting a globally static data mixture significantly underperform those employing a phased, curriculum-based scheduling strategy.</p>
+<p>The root cause of such failures lies not in hyperparameter tuning, but in a coarse-grained understanding of the "data recipe." The domain data proportions (e.g., percentages of web, code, and math data) disclosed in technical reports for large-scale models are essentially "statistical cross-sections" of the entire training lifecycle, rather than "static blueprints" for every training step. Under a highly restricted token budget like 1B tokens, this misconception is severely amplified. Large-scale training possesses a sufficient token budget to allow the model to first absorb general language distributions before gradually tackling high-difficulty structured data. If a short-budget training run maintains a uniform mixture ratio from the beginning, the model is prematurely exposed to stylistically diverse and highly difficult data (such as complex code and proofs) before it has established a stable language foundation. As a result, the precious early learning window is partially wasted on lower-quality web text, while high-value samples are sampled too sparsely in later stages to provide a sustained, effective gradient signal, leading to a profound misalignment in training cadence.</p>
+<p>Therefore, an effective pretraining "recipe" must be understood as a highly dynamic, phased data pipeline. A canonical practice model typically comprises three core phases: the first phase is dominated by clean General Text to construct foundational language capabilities; the second phase progressively increases the weight of domain-specific knowledge (e.g., encyclopedias, books, basic code) to introduce structured expressions; and the third phase focuses on injecting mathematical derivations, complex reasoning, and high-quality alignment data (such as synthetic instruction samples) to drive targeted leaps in higher-order capabilities using smaller volumes of refined data. This case study underscores that reducing the token budget does not equate to mechanically scaling down hyperparameters and data ratios. Small-scale reproduction imposes even stricter demands on training cadence design, requiring that each sampling step in pretraining be dynamically adjusted according to the model's current capability development phase.</p>
+<p>In contrast to naive scaled-down trial-and-error, DeepSeek-V3 (Liu et al. 2024) and Qwen2.5 (Hui et al. 2024) demonstrated a strong awareness of data phasing from the outset of development. Rather than training end-to-end on a single fixed-ratio mega-mixture, they front-loaded broad-domain foundational knowledge and code in the early pretraining stages and introduced high-quality synthesized long-form and mathematical data in the middle-to-late stages. This engineering strategy of "dynamically adjusting data ratios according to the model's developing capabilities" not only reduced the risk of gradient explosions caused by distributional shocks, but also became a key reason these models maintained steadily improving reasoning abilities as they scaled under the scaling laws.</p>
+<hr />
+<h2 id="441-the-public-data-transparency-spectrum">44.1 The Public Data Transparency Spectrum<a class="headerlink" href="#441-the-public-data-transparency-spectrum" title="Permanent link">&para;</a></h2>
+<p>Before examining specific pretraining data recipes, it is necessary to establish a credibility scale for the available information. Intensifying commercial competition has produced wide variation in how today's "open-source models" disclose their data. Without filtering out promotional language in technical reports, engineers can easily misread marketing claims as genuine data engineering documentation. This chapter therefore classifies the degree of data disclosure by leading open-source LLMs along a "transparency spectrum" defined by four dimensions: <strong>Sources</strong>, <strong>Mixture/Ratio</strong>, <strong>Cleaning Pipeline</strong>, and <strong>Downloadability</strong>.</p>
+<p><a class="glightbox" href="../../../images/part13/Wang-Chap44-Fig01-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 44-1: Data Recipe Funnel" src="../../../images/part13/Wang-Chap44-Fig01-EN.svg" /></a>
+<em>Figure 44-1: Data Recipe Funnel</em></p>
+<p>As shown in Figure 44-1, the data recipe funnel narrows progressively from top to bottom. The macro-level figures disclosed in technical reports (e.g., 14.8T tokens) represent only the surface layer; being able to infer the precise mixture ratios for each domain goes one level deeper; and what can actually be translated into engineering actions—such as heuristic filter thresholds and cleaning scripts—lies at the finest level of detail.</p>
+<ol>
+<li><strong>White-box (fully transparent)</strong>:
+   These models not only publish their papers but also open-source the entire data factory, from crawler to final packaging. Their data sources are specified down to individual CommonCrawl dumps, mixture ratios are given to the decimal point, cleaning scripts (including deduplication, filtering, and classifier weights) are fully released, and direct HuggingFace download links are provided. The OLMo series (Groeneveld et al. 2024) and some earlier Amber models are canonical examples, offering high data asset value to the open-source community.</li>
+<li><strong>Grey-box (partially transparent)</strong>:
+   This is the quadrant occupied by most of today's leading open-source models (e.g., DeepSeek-V3, Qwen2.5, Llama-3). These models provide detailed enumeration of high-level data categories (e.g., Web, Code, Math) in their technical reports, and often disclose relative proportions and total volumes. However, they <strong>do not open-source the specific cleaning pipeline code</strong>, nor do they provide the final cleaned, high-quality corpus packages. Readers must construct approximate reproduction workflows from the disclosed recipes.</li>
+<li><strong>Black-box (closed source)</strong>:
+   Only vague references appear in the technical report—"we collected a large and high-quality multilingual corpus"—with no source breakdown, no specific ratios, no code, and no data downloads. The figures disclosed in such cases typically serve only public-relations purposes and carry minimal engineering value.</li>
+</ol>
+<p>Figure 44-2 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part13/Wang-Chap44-Fig02-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 44-2: Data Transparency Spectrum for Large Language Models" src="../../../images/part13/Wang-Chap44-Fig02-EN.svg" /></a>
+<em>Figure 44-2: Data Transparency Spectrum for Large Language Models</em></p>
+<blockquote>
+<p><strong>Note</strong>: The foundational methodologies for general data collection, cleaning (e.g., MinHash LSH deduplication), and tokenization have already been covered in detail in Ch04 (Data Sources), Ch05 (Cleaning), and Ch06 (Tokenization). The hierarchical map of pretraining data sources presented in Chapter 4, for instance, forms the foundation for the discussions in this chapter. This chapter and this section of the book will not revisit those lower-level infrastructures, focusing instead on the specific engineering trade-offs each model makes at the recipe stage.</p>
+</blockquote>
+<p>Figure 44-3 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part13/Wang-Chap44-Fig03.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 44-3: Hierarchical Map of Pretraining Data Sources" src="../../../images/part13/Wang-Chap44-Fig03.png" /></a>
+<em>Figure 44-3: Hierarchical Map of Pretraining Data Sources (redrawn from the foundational figure in Chapter 4)</em></p>
+<p>Table 44-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 44-1: Data Transparency Spectrum of Leading Open-Source LLMs (6 rows × 5 columns)</em></p>
+<table>
+<thead>
+<tr>
+<th>Model Family</th>
+<th>Source Category Disclosure</th>
+<th>Mixture Ratio Disclosure</th>
+<th>Cleaning Rules / Code Disclosure</th>
+<th>Pretraining Data Downloadable</th>
+<th>Overall Transparency Rating</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DeepSeek-V3</td>
+<td>Detailed high-level categories</td>
+<td>Macro ratios disclosed</td>
+<td>High-level strategy descriptions only</td>
+<td>No</td>
+<td>Grey-box (partially transparent)</td>
+</tr>
+<tr>
+<td>Qwen2.5 series</td>
+<td>Detailed high-level categories</td>
+<td>Evolution and ratios disclosed</td>
+<td>Classifier / deduplication strategies described</td>
+<td>No</td>
+<td>Grey-box (partially transparent)</td>
+</tr>
+<tr>
+<td>Qwen3 (expected)</td>
+<td>Detailed high-level categories</td>
+<td>Evolution and ratios disclosed</td>
+<td>New cleaning pipeline described</td>
+<td>No</td>
+<td>Grey-box (partially transparent)</td>
+</tr>
+<tr>
+<td>Llama-3.1/3.3</td>
+<td>High-level categories public</td>
+<td>Per-phase token ratios disclosed</td>
+<td>Phased cleaning and schedule described</td>
+<td>No</td>
+<td>Grey-box (partially transparent)</td>
+</tr>
+<tr>
+<td>OLMo-2</td>
+<td>High-level categories public</td>
+<td>Per-phase ratios disclosed</td>
+<td>Code and strategy fully open-sourced</td>
+<td>Partially public</td>
+<td>Open (high transparency)</td>
+</tr>
+<tr>
+<td>---</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="442-cross-model-data-composition-comparison-table">44.2 Cross-Model Data Composition Comparison Table<a class="headerlink" href="#442-cross-model-data-composition-comparison-table" title="Permanent link">&para;</a></h2>
+<p>After filtering out promotional language in technical reports, the critical question concerns the actual composition of each model's training data pool. Table 44-2 summarizes pretraining data composition based on public technical reports, backward estimates from model characteristics, and open-source community reproduction efforts. This table extends the "Table 4-1: Data Source Types, Licenses, and Risk Matrix" introduced in Ch04 with practical, production-oriented detail.</p>
+<p><em>(Note: Figures in the table follow the annotation convention: [D] = explicitly disclosed in the report; [I] = reasonable inference based on model behavior and known information; [E] = community or author estimate.)</em></p>
+<p><em>Table 44-2: Pretraining Data Composition Comparison for Leading Open-Source LLMs (6 rows × 8 columns)</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Data Category</th>
+<th style="text-align: left;">Subcategory / Characteristics</th>
+<th style="text-align: left;">Quality Requirements</th>
+<th style="text-align: left;">DeepSeek-V3 (14.8T)</th>
+<th style="text-align: left;">Qwen2.5 (18T)</th>
+<th style="text-align: left;">Qwen3 (inferred)</th>
+<th style="text-align: left;">Llama-3.1/3.3 (inferred)</th>
+<th style="text-align: left;">OLMo-2 (inferred)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>General Web Text</strong></td>
+<td style="text-align: left;">High-quality web pages</td>
+<td style="text-align: left;">Very high; deduplicated, marketing content removed</td>
+<td style="text-align: left;">~50% [I]</td>
+<td style="text-align: left;">~55% [I]</td>
+<td style="text-align: left;">~50% [E]</td>
+<td style="text-align: left;">~50% [I], used in phased manner; high-frequency front-loaded</td>
+<td style="text-align: left;">High proportion; strict deduplication, multi-tier filtering</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Chinese Web (specialized)</strong></td>
+<td style="text-align: left;">News / forums / encyclopedias</td>
+<td style="text-align: left;">Semantically complete; spam removed</td>
+<td style="text-align: left;">High proportion, specialized cleaning [D]</td>
+<td style="text-align: left;">Very high proportion, multi-tier deduplication [D]</td>
+<td style="text-align: left;">Stricter filtering [E]</td>
+<td style="text-align: left;">High proportion, multi-phase cleaning with enhanced deduplication [D]</td>
+<td style="text-align: left;">High proportion, multi-tier deduplication, dedicated spam filtering [D]</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Books</strong></td>
+<td style="text-align: left;">E-books / publications</td>
+<td style="text-align: left;">Copyright-compliant, extended logical coherence</td>
+<td style="text-align: left;">~5–10% [E]</td>
+<td style="text-align: left;">~5% [E]</td>
+<td style="text-align: left;">~5% [E]</td>
+<td style="text-align: left;">~5–10% [E], high-quality data in later phases</td>
+<td style="text-align: left;">~5–8% [E], used in Dolmino Mix high-quality phase</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Code</strong></td>
+<td style="text-align: left;">Source code / Issues / PRs</td>
+<td style="text-align: left;">Multi-language, project structure preserved</td>
+<td style="text-align: left;">~15–20% [E]</td>
+<td style="text-align: left;">~18% [I]</td>
+<td style="text-align: left;">~20% [E]</td>
+<td style="text-align: left;">~15% [E], phased enhancement for structured learning</td>
+<td style="text-align: left;">~15–20% [E], project structure and multi-language coverage preserved</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Mathematics / Logic</strong></td>
+<td style="text-align: left;">Forum posts / synthetic derivations</td>
+<td style="text-align: left;">Format clean, logically rigorous</td>
+<td style="text-align: left;">~10–15% [E]</td>
+<td style="text-align: left;">~12% [I]</td>
+<td style="text-align: left;">~15% [E]</td>
+<td style="text-align: left;">~10% [E], high-quality math data concentrated in later phases</td>
+<td style="text-align: left;">~10–15% [E], used in Dolmino Mix high-quality phase</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Academic Literature</strong></td>
+<td style="text-align: left;">ArXiv / medical / legal</td>
+<td style="text-align: left;">Professional terminology, formula parsing</td>
+<td style="text-align: left;">~5% [I]</td>
+<td style="text-align: left;">~5–8% [I]</td>
+<td style="text-align: left;">~8% [I]</td>
+<td style="text-align: left;">~5% [I], primarily high-quality journals and open-access papers</td>
+<td style="text-align: left;">~5–8% [I], concentrated in Dolmino Mix academic phase</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../../../images/part13/Wang-Chap44-Fig04-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 44-4: Estimated Data Mixture Ratios — Pie Chart Comparison Across Three Models" src="../../../images/part13/Wang-Chap44-Fig04-EN.svg" /></a>
+<em>Figure 44-4: Estimated Data Mixture Ratios — Pie Chart Comparison Across Three Models</em></p>
+<p>Examining this comparison table horizontally (as illustrated in Figure 44-4) yields <strong>three important observations</strong>:</p>
+<ol>
+<li><strong>Rising proportions of code and math data as a key driver of reasoning capability</strong>:
+   In early LLMs such as GPT-3 or LLaMA-1, code and math data comprised only about 5% of the total corpus and were primarily regarded as supplements for specific vertical-domain capabilities. In DeepSeek-V3 and Qwen2.5, however, the combined share of code and math data approaches or exceeds 20–30% [E]. High-density logical and structured code data is an important source for improving models' general logical reasoning ability—not merely coding ability per se. The strict syntactic-tree properties of code data help language models learn causal relationships.</li>
+<li><strong>The effective proportion of general web text declining across generations</strong>:
+   Despite continuously growing total token counts (reaching 14.8T+), the actual relative proportion of casual web content and unstructured documents is declining. Model teams tend to expend compute on deduplication and strict heuristic-based filtering to discard large quantities of web data, reserving training budget for high-quality academic and synthetic data. This indicates that scaling laws (Kaplan et al. 2020) are shifting from pure "scale" toward "effective information density at scale."</li>
+<li><strong>Synthetic data quietly taking over the middle and late stages of pretraining</strong>:
+   Naturally occurring high-quality human-generated data—especially detailed mathematical derivation steps and reasoning chains—is approaching exhaustion. Both DeepSeek and Qwen teams have introduced large amounts of synthetic question-answer pairs and mathematical derivations generated by prior, stronger models during the middle-to-late stages of pretraining. These data fill the gaps left by excessively large logical leaps in naturally occurring text.</li>
+</ol>
+<hr />
+<h2 id="443-chinese-to-english-ratio-and-multilingual-strategy">44.3 Chinese-to-English Ratio and Multilingual Strategy<a class="headerlink" href="#443-chinese-to-english-ratio-and-multilingual-strategy" title="Permanent link">&para;</a></h2>
+<p>In terms of language distribution strategy, current open-source models can be broadly divided into two camps: "dual-dominant Chinese–English" and "English-dominant." Qwen2.5 and DeepSeek-V3 are canonical representatives of the former.</p>
+<h3 id="qwen25s-pan-multilingual-strategy">Qwen2.5's "Pan-Multilingual" Strategy<a class="headerlink" href="#qwen25s-pan-multilingual-strategy" title="Permanent link">&para;</a></h3>
+<p>Qwen2.5's goal from the outset was not simply to build a bilingual model but to cover the world's major languages (supporting more than 29 languages). This introduces a significant data engineering challenge: <strong>high-quality data for long-tail low-resource languages is extremely scarce, and can easily cause negative transfer across languages</strong>—the so-called "alignment tax."
+To address this, the Qwen team employed a sophisticated language-specific sampling weight adjustment strategy.</p>
+<ul>
+<li>For ultra-high-resource languages such as English, they applied aggressive MinHash LSH (Broder 1997) deduplication followed by downsampling to prevent homogenized overfitting of world knowledge.</li>
+<li>For low-resource but high-quality language data (e.g., high-quality Arabic encyclopedias), document-level upsampling was used to increase model exposure.</li>
+</ul>
+<p>More critically, Qwen extensively leveraged multilingual alignment corpora (parallel machine-translation data and multilingual Wikipedia) to improve the compression efficiency of multilingual tokens in the vocabulary, thereby reducing inference costs for low-resource languages and improving cross-lingual knowledge transfer.</p>
+<h3 id="deepseek-v3s-chineseenglish-absolute-dual-core-strategy">DeepSeek-V3's "Chinese–English Absolute Dual-Core" Strategy<a class="headerlink" href="#deepseek-v3s-chineseenglish-absolute-dual-core-strategy" title="Permanent link">&para;</a></h3>
+<p>Rather than pursuing broad multilingual coverage, DeepSeek-V3's strategy emphasizes a Chinese–English dual core: <strong>maintaining strong Chinese alignment and comprehension capability while relying primarily on larger-volume, higher-quality English community data—especially code and academic documents—for reasoning and logic.</strong>
+In terms of the recipe, DeepSeek did not blindly pursue a "numerical absolute advantage" for Chinese in pretraining. High-quality STEM discussions, open-source code, and academic papers on the internet remain predominantly in English. Consequently, DeepSeek's Chinese data cleaning is typically more stringent, using high-threshold quality classifiers to remove large quantities of low-quality Chinese marketing content and content-farm material.
+Although the resulting Chinese corpus is relatively smaller in volume, it is of higher purity—sufficient to anchor the model's Chinese expression habits—while reasoning capabilities are driven more by the logic, code, and academic structures provided by high-quality English tokens. This "English side reinforces reasoning, Chinese side reinforces expression" recipe has become a typical approach for balancing resource efficiency with bilingual capability.</p>
+<hr />
+<h2 id="444-the-transfer-dividend-of-code-data">44.4 The Transfer Dividend of Code Data<a class="headerlink" href="#444-the-transfer-dividend-of-code-data" title="Permanent link">&para;</a></h2>
+<p><em>(Note: The underlying collection sources, deduplication logic, and general sources such as The Stack for open-source model code data have been systematically introduced in Ch04 and will not be repeated here; this section focuses on the higher-level engineering trade-offs of advanced models.)</em></p>
+<p>In high-performance model training, code models and base models are not two isolated paths. <strong>Training dedicated Coder models and feeding their learned logical capabilities back into the base model can be termed the "transfer dividend of code data."</strong></p>
+<h3 id="deepseek-coder-to-v3-the-progression-path">DeepSeek-Coder to V3: The Progression Path<a class="headerlink" href="#deepseek-coder-to-v3-the-progression-path" title="Permanent link">&para;</a></h3>
+<p>DeepSeek validated the approach of using DeepSeek-Coder to explore code capability as early as V2. When building V3, the code data was no longer a simple "full GitHub repository crawl." The engineering team constructed a fine-grained dependency graph for code (repository-level parsing).
+Experience has shown that if code is simply fed to the model as isolated text blocks at the file level, the model primarily learns fragmented syntactic rules. Only by concatenating files in their repository dependency order (defining structures before calling interfaces) through cross-file concatenation does the model more readily learn project-level architectural logic. This file-level topological sorting is an important component of DeepSeek-V3's recipe for maintaining strong code capabilities at relatively modest computational cost.</p>
+<h3 id="qwen25-coder-co-evolutionary-development">Qwen2.5-Coder: Co-Evolutionary Development<a class="headerlink" href="#qwen25-coder-co-evolutionary-development" title="Permanent link">&para;</a></h3>
+<p>The Qwen team likewise places significant emphasis on the transfer value of code data. The base corpus of Qwen2.5 incorporates filtered code data at the scale of several trillion tokens—not only GitHub source code but also a large volume of technical blog posts containing code snippets, StackOverflow Q&amp;A, and Jupyter Notebook interaction records. This "text-code interleaved" data helps bridge the semantic gap between ambiguous human intent and precise machine instructions.</p>
+<h3 id="llama-3-code-data-strategy">Llama-3 Code Data Strategy<a class="headerlink" href="#llama-3-code-data-strategy" title="Permanent link">&para;</a></h3>
+<p>The Llama-3 series (including 3.1 and 3.3) incorporated large-scale code data in long-context capability training, sourced primarily from public repositories and high-quality code collections such as GitHub projects, public issue trackers, and pull-request logs. The core objective is to provide structured, parseable logical patterns enabling the model to learn function definitions, variable scoping, logical nesting, and common algorithm implementations.</p>
+<p>In the training pipeline, code data is used in a phased manner: the early phase uses general web text and long-form data to establish a language foundation; the middle phase gradually introduces code and math data to improve the model's logical reasoning and structured understanding capabilities; the late annealing phase resamples and upsamples high-quality code data to strengthen the model's generation capabilities in complex logic and multi-step computation scenarios. Phased processing ensures that code data does not disrupt the model's learning of natural language patterns by being introduced too early, while also ensuring that the model maintains stable performance on both short-context and long-context tasks.</p>
+<p>For short-document packing, Llama-3 applies isolated processing to code data: maintaining continuity within individual projects or files while avoiding arbitrary cross-project or cross-syntax-environment concatenation, thereby reducing potential semantic conflicts and context jumps. In addition, RoPE (Rotary Position Embedding) is appropriately extended in the code data phase, allowing the model to capture function call relationships, loop nesting, and class inheritance structures within a longer context window, providing support for long code generation and cross-function reasoning.</p>
+<h3 id="olmo-2-code-data-strategy">OLMo-2 Code Data Strategy<a class="headerlink" href="#olmo-2-code-data-strategy" title="Permanent link">&para;</a></h3>
+<p>As a fully open-source project, OLMo-2's code data sources are more transparent, including multi-language source code, issue tracking records, code review logs, open-source library documentation, and programming Q&amp;A from StackExchange. Training likewise adopts a two-phase curriculum: the first phase uses large-scale web text to establish a language foundation, and the second phase—Dolmino Mix high-quality data—concentrates code data for capability consolidation. Code data enters the model in structured, deduplicated form during this phase, preserving the integrity of functions and logical blocks to avoid fragmented segments impeding learning.</p>
+<p>OLMo-2 emphasizes multi-language coverage and project structure preservation in its code data processing: each sample attempts to retain the original project's directory and file hierarchy so the model can learn modular design, dependency relationships, and naming conventions. Deduplication is strictly enforced to prevent the model from memorizing templated code patterns, while in mathematical derivation and algorithm implementation code, complete logic and comments are preserved to assist the model in learning higher-order logical reasoning.</p>
+<p>Table 44-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 44-3: Code Data Sources and Scale for Leading Models (4 rows × 6 columns)</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Model Family</th>
+<th style="text-align: left;">Estimated Total Code Scale</th>
+<th style="text-align: left;">GitHub Source Code Share</th>
+<th style="text-align: left;">Interactive Notebooks / Q&amp;A Share</th>
+<th style="text-align: left;">Cross-File Parsing (Repo-level)</th>
+<th style="text-align: left;">Format Preservation Strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>DeepSeek-V3</strong></td>
+<td style="text-align: left;">~2.5T tokens [E]</td>
+<td style="text-align: left;">~70% [E]</td>
+<td style="text-align: left;">~30% [E]</td>
+<td style="text-align: left;">Strong support, topological sorting [D]</td>
+<td style="text-align: left;">Indentation and directory tree preserved</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Qwen2.5</strong></td>
+<td style="text-align: left;">~3T tokens [E]</td>
+<td style="text-align: left;">~65% [E]</td>
+<td style="text-align: left;">~35% [E]</td>
+<td style="text-align: left;">Strong support, combined with FIM [I]</td>
+<td style="text-align: left;">Markdown / Notebook preserved</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Llama-3.1/3.3</strong></td>
+<td style="text-align: left;">~2.8T tokens [I]</td>
+<td style="text-align: left;">~70% [I]</td>
+<td style="text-align: left;">~30% [I]</td>
+<td style="text-align: left;">Strong support, project/file integrity maintained [I]</td>
+<td style="text-align: left;">Indentation, function blocks, and directory tree preserved [I]</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>OLMo-2</strong></td>
+<td style="text-align: left;">~2T tokens [E]</td>
+<td style="text-align: left;">~60% [E]</td>
+<td style="text-align: left;">~40% [E]</td>
+<td style="text-align: left;">Strong support, project-level parsing [D]</td>
+<td style="text-align: left;">Indentation, directory structure, and Notebook content preserved [D]</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="445-the-synthetic-evolution-of-mathematical-and-reasoning-data">44.5 The Synthetic Evolution of Mathematical and Reasoning Data<a class="headerlink" href="#445-the-synthetic-evolution-of-mathematical-and-reasoning-data" title="Permanent link">&para;</a></h2>
+<p>Injecting strong mathematical foundations during the pretraining phase is a central challenge in addressing LLM hallucination and logical incoherence. Since naturally occurring, properly formatted mathematical solution processes are extremely scarce, synthesis and cleaning have become the primary means.</p>
+<h3 id="deepseekmaths-verifier-pipeline">DeepSeekMath's Verifier Pipeline<a class="headerlink" href="#deepseekmaths-verifier-pipeline" title="Permanent link">&para;</a></h3>
+<p>DeepSeek's rapid advances in mathematical capability owe much to the DeepSeekMath corpus (Shao et al. 2024) built during earlier development. Conventional crawlers frequently corrupt LaTeX formulas into garbled characters when scraping math-heavy web pages. The DeepSeek team not only rewrote a specialized DOM parser targeting MathJax and LaTeX tags in HTML but, more critically, introduced rule-based verification grounded in reinforcement learning and formal provers.
+They recalled candidate mathematical text from massive internet corpora and used smaller scoring models to filter out "golden samples" containing complete derivation logic. They then had earlier-generation models repeatedly solve problems from open-source problem banks, feeding back into the pretraining corpus those solution processes that passed absolute verification in a SymPy sandbox or Lean prover—substantially increasing the model's sensitivity to long-chain mathematical proofs.</p>
+<h3 id="qwen2-maths-synthesis-strategy">Qwen2-Math's Synthesis Strategy<a class="headerlink" href="#qwen2-maths-synthesis-strategy" title="Permanent link">&para;</a></h3>
+<p>The Qwen team went further in their engineering treatment of mathematical data, relying extensively on <strong>synthetic data feedback loops</strong>. As revealed in the Qwen2.5-Math public disclosure, they used Qwen-Max (or an earlier powerful version) as a teacher model to generate multi-step chain-of-thought (CoT) solutions for foundational math problems on a large scale.
+To prevent synthetic data from causing distributional collapse, the engineering team introduced self-consistency verification (Wang et al. 2023): only if multiple independently generated derivation paths for a given problem all converge to the same correct unique answer in a sandbox is the synthetic derivation path allowed to enter the pretraining or post-training data stream. This means the scaling of mathematical data has entirely decoupled from the pace of human internet production and is now directly driven by compute.</p>
+<hr />
+<h2 id="446-analysis-of-long-text-data-sources">44.6 Analysis of Long-Text Data Sources<a class="headerlink" href="#446-analysis-of-long-text-data-sources" title="Permanent link">&para;</a></h2>
+<p>In large language model training, long-text data is a core resource for supporting contextual comprehension, long-range dependency capture, and complex reasoning capability formation. This section analyzes the sources of long-text data, covering three main strategies: naturally occurring long-form text, synthetically generated text, and short-document packing, each with distinct advantages and limitations.</p>
+<p>Note: the token scales, ratios, and window lengths in the tables in this section combine disclosures from public technical reports, model repository notes, community retrospectives, and behavior-based reasonable inferences; [D] indicates explicit disclosure, [I] indicates inference, and [E] indicates estimation. Different models may count tokens across pretraining, continued pretraining, post-training, or long-context continued training, so these numbers should not be treated as fully comparable precise facts.</p>
+<h3 id="natural-long-form-text">Natural Long-Form Text<a class="headerlink" href="#natural-long-form-text" title="Permanent link">&para;</a></h3>
+<p>Natural long-form text typically originates from e-books, academic papers, technical manuals, public reports, and high-quality web articles. The primary advantage of such text is its complete structural integrity, semantic coherence, and clear logical relationships, making it well suited for training models to understand complex concepts and capture long-context relationships. For example, novel chapters, technical documents, and academic papers often contain thousands to tens of thousands of tokens of continuous content. When models encounter such text during pretraining, they can learn intra-chapter topic development, paragraph logic, and reasoning chains, which improves their downstream performance on long-form summarization, cross-paragraph question answering, and complex instruction following.</p>
+<p>However, natural long-form text is limited in quantity, particularly in high-quality, clearly licensed corpora. Furthermore, texts from different sources exhibit pronounced stylistic differences—academic papers and news reporting differ significantly in sentence structure, terminology, and paragraph organization—which can cause the model to develop biases when handling specific text styles. As a result, model training typically requires phased sampling strategies to ensure balanced coverage of different types of long-form text, combined with appropriate text normalization and deduplication to maintain training diversity and semantic consistency.</p>
+<h3 id="synthetically-generated-text">Synthetically Generated Text<a class="headerlink" href="#synthetically-generated-text" title="Permanent link">&para;</a></h3>
+<p>Synthetically generated text has emerged in recent years as an effective means of increasing the volume of long-context training data, primarily through generation by existing models or rule-based generation of extended continuous text. The core objective is to supplement the shortfall of natural long-form text—for instance, when domain-specific knowledge is insufficient or real data is restricted by copyright—by having models generate plausible long sequences or by combining existing short text segments into "pseudo-long text." This strategy can significantly expand the training corpus, giving models more opportunities for long-range dependency training beyond what natural long-form text can provide.</p>
+<p>The advantages of synthetic text lie in its controllability and scalability. Researchers can specify the topic, length, and structure of generated text to meet the demand for different token counts or context spans at various training phases. Furthermore, through quality scoring, content filtering, and diversified generation strategies, the coherence and diversity of synthetic text can be maintained to a reasonable degree. However, synthetic text is inherently an approximation generated by models, and may exhibit logically imprecise, semantically repetitive, or unnaturally connected content; it requires manual sampling and automated quality assessment for filtering.</p>
+<h3 id="short-document-packing">Short-Document Packing<a class="headerlink" href="#short-document-packing" title="Permanent link">&para;</a></h3>
+<p>Short-document packing combines multiple short text segments into long sequences to simulate the continuity of natural long-form text. These short texts may originate from news paragraphs, forum posts, question-answer pairs, code comments, or social media posts—individually short and semantically relatively self-contained. Packing typically considers document boundaries, topic consistency, and length control to ensure the resulting long sequences both satisfy the model's context-length requirements and maintain as much logical and topical coherence as possible.</p>
+<p>The advantages of short-document packing lie in its flexibility and broad data coverage. Through packing, the quantity of trainable long-text sequences can be rapidly expanded while introducing multi-source, multi-style data that improves the model's adaptability to diverse content. Additionally, during pretraining, packing strategies can be combined with packing techniques and phased data scheduling to achieve cross-document isolation or cross-topic mixing, optimizing learning efficiency under long-context conditions.</p>
+<p>However, the coherence and logical consistency of short-document packing generally cannot fully match natural long-form text; excessive packing may lead to context jumps, logical discontinuities, or topic mismatches. Packing strategies are therefore commonly combined with quality control and length stratification—for example, topic clustering, transition sentence generation, or repetitive content filtering—to reduce potential noise introduced by packing.</p>
+<h3 id="comprehensive-analysis">Comprehensive Analysis<a class="headerlink" href="#comprehensive-analysis" title="Permanent link">&para;</a></h3>
+<p>In practice, all three strategies—natural long-form text, synthetically generated text, and short-document packing—are typically used in combination. Natural long-form text provides foundational semantic coherence and logical structure; synthetic text addresses the scarcity of high-quality long-form content; and short-document packing enhances data volume and stylistic diversity. Through well-designed phased data scheduling, quality filtering, and context-length control, the training data can cover a diverse range of long-text scenarios, supporting model performance on cross-paragraph reasoning, long-form summarization, instruction following, and complex question answering.</p>
+<p>This multi-strategy approach to long-text construction embodies the principle of "balancing quantity and quality, structure and coverage" in large model training. It provides a practical pathway for achieving stable and efficient long-context learning, and offers a replicable reference framework for downstream model transfer and data engineering design.</p>
+<p>Table 44-4 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 44-4: Long-Context Data Strategies for Leading Models (4 rows × 6 columns)</em></p>
+<table>
+<thead>
+<tr>
+<th>Model Family</th>
+<th style="text-align: right;">Maximum Context Window</th>
+<th>Long-Text Data Sources</th>
+<th>Short-Document Packing Strategy</th>
+<th>RoPE Scaling and Fine-Tuning Phase</th>
+<th>Performance Penalty Control</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DeepSeek-V3</td>
+<td style="text-align: right;">128K [D]</td>
+<td>Long-form books / repo-level code</td>
+<td>Cross-document packing with isolation</td>
+<td>RoPE base frequency extended in final annealing phase [D]</td>
+<td>YaRN (Peng et al. 2023); minimal precision loss</td>
+</tr>
+<tr>
+<td>Qwen2.5</td>
+<td style="text-align: right;">128K [D]</td>
+<td>Long reports / synthetic long-form text</td>
+<td>EOD token strict isolation</td>
+<td>Progressive window expansion [I]</td>
+<td>YaRN / dynamic base frequency adjustment</td>
+</tr>
+<tr>
+<td>Llama-3.1 / Llama-3 Herd</td>
+<td style="text-align: right;">128K [D]</td>
+<td>Multilingual web / code / math / long-context continued pretraining data</td>
+<td>Base phase trains with 8K sequences; long-context phase progressively extends sequence length; short-document packing preserves document boundaries [I]</td>
+<td>RoPE base frequency raised to 500K; expanded from 8K to 128K across 6 phases; ~800B tokens of long-context continued pretraining [D]</td>
+<td>Short-context capability recovery and Needle-in-a-Haystack pass rate monitored at each window phase; final 40M-token annealing with high-quality data upsampling and checkpoint averaging [D]</td>
+</tr>
+<tr>
+<td>OLMo-2</td>
+<td style="text-align: right;">4K [D]</td>
+<td>DCLM web / StarCoder code / academic papers / arXiv STEM / Wikipedia &amp; Wikibooks / StackExchange / synthetic math data</td>
+<td>Fixed-length 4096-token sequence training; short-document packing details not detailed in the report; implementable with document-boundary + EOS isolation [I]</td>
+<td>RoPE with θ raised to 500K; no publicly documented 128K long-window expansion phase; focus on Dolmino Mix 1124 mid-training and annealing [D]</td>
+<td>RMSNorm, QK-Norm, Z-loss for training stability; repeated n-gram filtering; Dolmino high-quality mid-training and checkpoint soup to control capability degradation [D]</td>
+</tr>
+</tbody>
+</table>
+<p>Ultra-long contexts are not introduced at full scale from the start of pretraining. During the final stages of DeepSeek-V3 training, to support a context window of up to 128K tokens, the team employed a dynamic long-text extension strategy. They specifically selected structurally complete long-form books, long technical manuals, and merged ultra-long code repositories (repo-level code concatenation) from the corpus, and modified the base frequency of RoPE (Rotary Position Embedding) (Su et al. 2024). By progressively extending the sequence length from 4K and fine-tuning only in the final training stages, the model generalized local short-dependency logic to ultra-long contexts while consuming minimal total compute.</p>
+<hr />
+<h2 id="447-curriculum-based-multi-stage-training-schedule">44.7 Curriculum-Based Multi-Stage Training Schedule<a class="headerlink" href="#447-curriculum-based-multi-stage-training-schedule" title="Permanent link">&para;</a></h2>
+<p>The curriculum schedule is not an add-on technique in large model training but the actual mechanism through which a data recipe takes effect. A static data mixture describes only what corpora are present in the training set and roughly how much of each there is; the schedule further determines at what stage each corpus appears, at what weight, in conjunction with what context length and learning rate strategy. The most common mistake for practitioners attempting reproduction is treating the data ratios published in technical reports as a "uniform sampling table for the entire training run." In practice, large-model training typically decomposes capability formation into multiple phases: first using large-scale general corpora to establish a language foundation, then using high-quality data, long-context data, code, and math data to targeted-fill capability gaps, and finally using annealing and post-training to stabilize the model state.</p>
+<h3 id="llama-3-long-context-extension-and-final-stage-annealing">Llama-3: Long-Context Extension and Final-Stage Annealing<a class="headerlink" href="#llama-3-long-context-extension-and-final-stage-annealing" title="Permanent link">&para;</a></h3>
+<p>Within the Llama-3 series, Llama-3.1's training cadence is particularly instructive. The base pretraining phase still focuses primarily on general next-token prediction; the model first learns large-scale language, knowledge, code, and math distributions under an 8K context window. The goal at this stage is not to immediately pursue very long contexts but to ensure the model acquires stable short-context capabilities. Attention computation costs for long-window training grow quadratically with sequence length; introducing 64K or 128K sequences too early would substantially raise compute costs and might inject noisy long-text content before the model has solidified its language structures.</p>
+<p>Accordingly, Llama-3.1 only enters long-context continued training in the later stages of pretraining. The public report states that the model begins with an 8K context and progressively expands to 128K across six stages. Each expansion is not simply a matter of increasing the maximum length parameter; instead, training continues until the model adapts to that length before advancing to the next stage. The adaptation criteria are primarily assessed through two types of signals: whether short-context evaluation performance has recovered, and whether long-context retrieval tasks such as needle-in-a-haystack can be reliably passed at the corresponding length. This design reflects a core principle of curriculum training: the context window length is itself a component of curriculum difficulty and must be increased incrementally.</p>
+<p>Another important element in Llama-3.1 (Grattafiori et al. 2024) is annealing. The public report mentions that in the final 40M tokens of training, the learning rate is linearly annealed to zero while maintaining the 128K context window, with high-quality data sources upsampled; the checkpoints generated during the annealing phase are then averaged. This stage no longer pursues large-scale coverage but instead allows the model to converge on a cleaner data distribution. It can be understood as a "setting phase" at the end of pretraining: the large-scale general corpus provides breadth, long-context continued training establishes window capability, and the annealing phase stabilizes those capabilities into the final checkpoint.</p>
+<h3 id="olmo-2-a-reproducible-two-phase-curriculum">OLMo-2: A Reproducible Two-Phase Curriculum<a class="headerlink" href="#olmo-2-a-reproducible-two-phase-curriculum" title="Permanent link">&para;</a></h3>
+<p>The value of OLMo-2 (Groeneveld et al. 2024) lies in the granularity of its public training documentation, making it especially useful as a reference for engineering reproduction. Its pretraining uses a two-phase design. Phase 1 employs a large-scale, web-dominated data mixture: approximately 4T tokens for 1B and 7B model scales, and approximately 5T tokens for the 13B scale. This phase handles language foundation, commonsense knowledge, and broad-coverage corpus modeling—in essence, letting the model develop general capabilities across a sufficiently large text space.</p>
+<p>Phase 2 transitions to a smaller but higher-quality dataset—Dolmino Mix 1124. The OLMo-2 repository documentation provides more specific figures: the 1B model is trained multiple passes on approximately 50B high-quality tokens; the 7B model is similarly trained on approximately 50B high-quality tokens across various data orderings, followed by model souping; the 13B model includes multiple 100B high-quality token training branches as well as one 300B high-quality token branch, with final weight averaging. The emphasis here is not simply on "training more passes" but on using different data orderings and high-quality late-stage data to reduce randomness, then employing checkpoint or weight averaging to improve the final model's robustness.</p>
+<p>OLMo-2's schedule resembles a transparent engineering template: Phase 1 uses large-scale data for coverage; Phase 2 uses high-quality targeted data for capability consolidation. Rather than distributing all high-quality data evenly throughout training, it concentrates that data at the end. The advantage is that after the model has acquired basic language capabilities, it encounters higher-density, higher-quality data—producing more concentrated gradient signals. For small-to-medium-scale reproductions, this strategy is especially important, because with a limited token budget, high-quality data mixed in too early and too sparsely may fail to produce measurable gains.</p>
+<h3 id="qwen25-a-continuous-schedule-across-pretraining-long-context-and-post-training">Qwen2.5: A Continuous Schedule Across Pretraining, Long-Context, and Post-Training<a class="headerlink" href="#qwen25-a-continuous-schedule-across-pretraining-long-context-and-post-training" title="Permanent link">&para;</a></h3>
+<p>Qwen2.5's schedule can be understood across three levels. The first level is the scaling of base pretraining. The technical report notes that Qwen2.5 expanded high-quality pretraining data from the previous generation's 7T tokens to 18T tokens to enhance commonsense knowledge, domain expertise, and reasoning capabilities. "High-quality" here does not only mean clean data; it also means data that has been domain-organized, quality-filtered, and ratio-controlled. For a model series like Qwen2.5, which must simultaneously support general question answering, code, math, multilingual, and structured data comprehension, the base pretraining recipe cannot be organized solely around web text.</p>
+<p>The second level is long-context training. Publicly released Qwen2.5 series models support relatively long contexts, and the Qwen2.5-1M technical report further demonstrates how long-context capability is extended through a dedicated schedule: long-data synthesis, progressive pretraining, and multi-stage supervised fine-tuning are all employed together. The progressive pretraining here resembles Llama-3.1's approach in avoiding an immediate push to maximum context length. The model first adapts to shorter lengths and then progressively encounters longer sequences; synthetic long-form data supplements the shortage of real long-form text. Although real long-form text is important, it is limited in quantity, quality, and task coverage, so synthetic data plays a gap-filling role in long-form question answering, summarization, cross-paragraph retrieval, and code-repository reasoning.</p>
+<p>The third level is post-training. The Qwen2.5 technical report mentions that its post-training includes more than one million samples of complex supervised fine-tuning (SFT), as well as multi-stage reinforcement learning. This phase not only optimizes chat preferences but also improves long-text generation, structured data analysis, and instruction-following capabilities. From a training schedule perspective, post-training should not be viewed as a simple alignment step following pretraining. It effectively continues the curriculum: SFT provides controllable task formats, and preference learning or reinforcement learning adjusts response style, reliability, and complex-task performance. If long-context capability has been established during pretraining, the post-training phase must also incorporate long-context tasks into the data mixture; otherwise, the model may regress toward short-instruction scenarios after alignment.</p>
+<h3 id="implications-for-reproduction-engineering">Implications for Reproduction Engineering<a class="headerlink" href="#implications-for-reproduction-engineering" title="Permanent link">&para;</a></h3>
+<p>Examining Llama-3, OLMo-2, and Qwen2.5 together yields a clear conclusion: an effective data recipe is not a static mixture table but a phased data pipeline. Phase 1 addresses coverage; Phase 2 addresses quality and domain capability; the long-context phase addresses input length and global dependency; annealing or high-quality late-stage training addresses model convergence; and SFT and RL phases address usability and instruction-following behavior.</p>
+<p>Therefore, when reproducing a large model under a 1B-token or smaller budget, one cannot simply scale down all settings proportionally. A more principled approach is to partition the token budget into phases: the early phase uses clean general text; the middle phase progressively increases the proportion of code, math, encyclopedias, and books; the late phase concentrates high-quality data for annealing or capability consolidation. If long-context capability is required, a dedicated window-extension phase should be scheduled separately, with short-context and long-text retrieval evaluations jointly monitoring degradation. The essence of a training schedule is ensuring that the model encounters data of appropriate difficulty at the appropriate time. Only in this way can limited tokens be converted into stable capabilities rather than being diluted by uniform sampling.</p>
+<p>Figure 44-5 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part13/Wang-Chap44-Fig05-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 44-5: Llama-3 Annealing Phase Data Composition Timeline (Curriculum Learning Schedule)" src="../../../images/part13/Wang-Chap44-Fig05-EN.svg" /></a>
+<em>Figure 44-5: Llama-3 Annealing Phase Data Composition Timeline (Curriculum Learning Schedule)</em></p>
+<p>Qwen2.5's data sampling strategy also embodies the classic principles of Curriculum Learning (Bengio et al. 2009). In Phase 1 (Foundation Building), the model is exposed primarily to massive general web data and base corpora, focusing on learning the statistical distribution of language and commonsense knowledge. In Phase 2 (High-Quality Refinement), the quality filtering threshold is substantially raised: the proportion of general text decreases while the density of code, math, and rigorous academic documents increases—this is the critical period for capability improvement. In Phase 3 (Annealing and Ultra-Long Context), the learning rate declines (annealing), and a higher proportion of synthetic data, domain-specific high-precision human instruction data, and ultra-long sequence data are introduced, enabling a smooth transition from pretraining to alignment.</p>
+<hr />
+<h3 id="448-case-studies-common-issues-and-boundary-discussions">44.8 Case Studies, Common Issues, and Boundary Discussions<a class="headerlink" href="#448-case-studies-common-issues-and-boundary-discussions" title="Permanent link">&para;</a></h3>
+<p>In large model data engineering practice, a gap frequently exists between theory and implementation. This section presents three concrete case studies, summarizes common training pitfalls, and identifies applicable boundary conditions and directions for further exploration.</p>
+<p>Case A involves reverse-engineering DeepSeek. When attempting to reproduce an internal model, the team first reverse-engineered the data recipe and training strategy from the public paper and training logs. Initially, they directly mixed long-form books, repo-level code, and Q&amp;A data at the paper's stated ratios and fed the mixture into training. Under a small-scale token budget, however, model performance fell far short of expectations. Analysis revealed that the problem was the absence of phased data pipeline processing. Early-stage training should be dominated by general corpora to ensure stable language foundations; the middle phase should gradually introduce structured code and math samples; and the late phase should increase the proportion of high-quality instruction data. The lack of phased organization caused gradient signals to be diluted, preventing the model from effectively learning higher-order logic and long-context dependencies. This case emphasizes that even when data ratios appear reasonable, the absence of a phased design can cause reproduction to fail.</p>
+<p>Case B discusses issues encountered when the Qwen series expanded its vocabulary to 152K tokens. The team initially attempted to improve multilingual and domain-specific understanding by increasing vocabulary coverage, but performance on short-sequence tasks declined noticeably. In-depth analysis revealed that the problem stemmed from a mismatch between the short-document packing strategy and the RoPE scaling phase. For shorter token sequences, the enlarged RoPE parameters caused the model to be over-sensitive to positional encoding, and portions of semantic information were smoothed out in short sequences. Simultaneously, improper cross-document packing isolation made the model prone to hallucination in cross-document contexts. This case reminds practitioners that expanding vocabulary and context window must be tightly coordinated with the training schedule and short-document processing strategy; otherwise, performance penalties will result.</p>
+<p>Case C involves an open-source comparison with OLMo-2. Its pretraining uses a two-phase curriculum: Phase 1 uses large-scale web and multilingual corpora to establish a language foundation; Phase 2 uses Dolmino Mix high-quality data training to further consolidate capabilities. Comparative analysis shows that the primary differences between open-source and closed-source internal data lie in quality control and phased design. Open-source data is clearly stratified, with independent token distribution monitoring at each phase; closed-source environments require additional dynamic sampling and weight adjustment when handling multiple tasks and long contexts. This case provides a reference for open-source data engineering strategies and demonstrates the importance of phased organization and quality control for training robustness.</p>
+<p>Several common issues warrant attention in practical training. Absence of data phasing leads to gradient dilution and prevents the model from learning higher-order knowledge. Improper short-document packing can disrupt context continuity and increase hallucination risk. Premature RoPE or positional encoding extension negatively affects short-sequence task performance. Uneven distribution of high-quality data may prevent effective gradient signals from forming in early phases. Conflicts between token sequence length configuration and batch configuration can easily cause out-of-memory errors or gradient instability. Excessive data cleaning reduces model generalization capability. Lack of phased checkpoint averaging or model souping increases training instability and final result variance.</p>
+<p>The applicable boundaries for these issues are as follows. For small-scale reproductions (≤1B tokens), phased data flow must be strictly controlled, prioritizing language foundation and short-context stability. Long-context tasks should perform RoPE extension and long-form training in stages to avoid short-sequence task degradation. Multi-source data mixing must be coordinated with packing and weight adjustment; otherwise, hallucination or gradient dilution will result. High-quality samples should be concentrated in later stages; premature sampling reduces training stability.</p>
+<p>For further reading, the Llama-3 Herd (Grattafiori et al. 2024) technical report provides details on phased training, long-context extension, and annealing checkpoint averaging. The OLMo-2 open-source logs demonstrate Dolmino Mix data phase partitioning, the two-phase curriculum, and weight averaging strategy. The Qwen2.5 series papers and model cards describe high-quality multi-source corpus sampling, vocabulary expansion, and long-context training schedules. Through these case studies, training pitfalls, and boundary analyses, the complexity of "recipe" in large model training becomes clearer. Examining data ratios alone is far from sufficient to guide training; it is essential to combine phased scheduling, short-document packing strategy, context window extension, and high-quality sample upsampling in order to achieve stable, reproducible capabilities within a limited token budget.</p>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>Starting from the opening scenario of a 1B-token reproduction failure, this chapter argued that the essence of a pretraining data recipe is not a static mixture table but a phased data pipeline. After using the transparency spectrum to distinguish white-box, grey-box, and black-box disclosures, the chapter cross-examined the data compositions of DeepSeek-V3, Qwen2.5, Llama-3.1, and OLMo-2, identifying three main threads: rising proportions of code and math data to support general reasoning capabilities, declining effective proportions of general web text across model generations, and synthetic data filling the shortage of high-quality natural samples during middle-to-late pretraining.</p>
+<p>Around the four data categories of code, math, long-form text, and multilingual content, the chapter further analyzed repository-level cross-file dependency parsing, verifier and self-consistency verification, the trade-offs between natural long-form text and short-document packing, and the two sampling strategies of Chinese–English dual-core versus pan-multilingual coverage. Curriculum-based multi-stage scheduling ties these data components together: coverage, capability consolidation, long-context extension, and annealing each serve a distinct role.</p>
+<p>The core implication for reproduction engineering is as follows: when reproducing large models under a limited token budget, the budget should be partitioned according to the training cadence into multiple phases, so the model encounters data of appropriate difficulty and quality at the appropriate time—rather than diluting everything via proportional uniform sampling. This chapter provides the recipe-level methodological foundation for the reproducible project case studies in Part XIV.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Bavarian M, Jun H, Tezak N, Schulman J, McLeavey C, Tworek J, Chen M (2022) Efficient Training of Language Models to Fill in the Middle (FIM). arXiv preprint arXiv:2207.14255.</p>
+<p>Bengio Y, Louradour J, Collobert R, Weston J (2009) Curriculum Learning. In: Proceedings of the 26th Annual International Conference on Machine Learning, pp 41–48.</p>
+<p>Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21–29. https://doi.org/10.1109/sequen.1997.666900.</p>
+<p>Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.</p>
+<p>Groeneveld D, Magnusson I, Bhagia A, Schwenk D, Soldaini L, Tafjord O, Sherborne M, Kinney R, Authur C, Atkinson D, others (2024) OLMo: Accelerating the Science of Language Models. In: Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics, pp 15789–15809. Available at: https://arxiv.org/abs/2402.00838.</p>
+<p>Hoffmann J, Borgeaud S, Mensch A, Buchatskaya E, Cai T, Rutherford E, de Las Casas D, Hendricks L A, Welbl J, Clark A, others (2022) Training Compute-Optimal Large Language Models (Chinchilla). arXiv preprint arXiv:2203.15556.</p>
+<p>Hui B, Yang J, Cui Z, Yang J, Liu D, Zhang L, Liu B, Yu B, Lu K, Chi K, others (2024) Qwen2.5 Technical Report. arXiv preprint arXiv:2412.15115.</p>
+<p>Kaplan J, McCandlish S, Henighan T, Brown T B, Chess B, Child R, Gray S, Radford A, Wu J, Amodei D (2020) Scaling Laws for Neural Language Models. arXiv preprint arXiv:2001.08361.</p>
+<p>Liu A, Feng B, Xue B, Wang B, Wu B, Lu C, Zhao C, Deng C, Zhang C, Ruan C, others (2024) DeepSeek-V3 Technical Report. arXiv preprint arXiv:2412.19437.</p>
+<p>Peng B, Quesnelle J, Fan H, Shippole E (2023) YaRN: Efficient Context Window Extension of Large Language Models. arXiv preprint arXiv:2309.00071.</p>
+<p>Sennrich R, Haddow B, Birch A (2016) Neural Machine Translation of Rare Words with Subword Units (BPE). In: Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics, pp 1715–1725.</p>
+<p>Shao Z, Wang P, Zhu Q, Xu R, Song J, Zhang M, Li Y, Wu Y, Guo D (2024) DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv preprint arXiv:2402.03300.</p>
+<p>Su J, Lu Y, Pan S, Murtadha A, Wen B, Liu Y (2024) RoFormer: Enhanced Transformer with Rotary Position Embedding (RoPE). Neurocomputing 568:127063. https://doi.org/10.1016/j.neucom.2023.127063.</p>
+<p>Wang X, Wei J, Schuurmans D, Le Q, Chi E, Narang S, Chowdhery A, Zhou D (2023) Self-Consistency Improves Chain of Thought Reasoning in Language Models. In: International Conference on Learning Representations. arXiv:2203.11171.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Part Overview">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Part Overview
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch45_posttrain_recipes/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 45: LLM Post-Training Recipes: SFT and Preferences">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

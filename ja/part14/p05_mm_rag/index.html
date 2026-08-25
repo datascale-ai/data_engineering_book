@@ -1,0 +1,2730 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part14/p05_mm_rag/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>项目五：多模态 RAG 企业财报助手 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#rag" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              项目五：多模态 RAG 企业财报助手
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p05_mm_rag/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part14/p05_mm_rag/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      项目目标与读者收获
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景约束与数据边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      架构决策
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      样本 schema / 数据流
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      核心实现片段
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      实验或验收指标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      成本、风险与合规边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见失败模式
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      可复现资源说明
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 项目背景：多模态 RAG 财报助手的必要性
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. 项目目标与边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 项目目标与边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 项目目标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 项目边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2.2 项目边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1）文档范围边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      2）检索粒度边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      3）生成能力边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      4）评测边界
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.3 边界说明的作用
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-p05" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. 项目定位：P05 的能力链位置
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-pdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. 整体架构：从财报 PDF 到多模态回答的流水线
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 整体架构：从财报 PDF 到多模态回答的流水线">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 第一层：页面资产层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 第二层：视觉检索层
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 第三层：多图推理层
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-vision-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. 数据流与核心思路：Vision-first 检索链
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. 数据流与核心思路：Vision-first 检索链">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-ocr-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 OCR-first 的局限
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-vision-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 Vision-first 的价值
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-vir-vlm" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 为什么本项目采用 ViR + VLM
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-colpalibyaldi-qwen25-vl" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. 技术选型：ColPali、Byaldi 与 Qwen2.5-VL
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 技术选型：ColPali、Byaldi 与 Qwen2.5-VL">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-colpali" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 ColPali 在文档检索中的位置
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-byaldi" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2 Byaldi 作为索引框架
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3 生成阶段的视觉模型
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4 选型的工程含义
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. 页面资产构建：稳定页面证据库
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. 页面资产构建：稳定页面证据库">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1 页面资产层要解决什么问题
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2 为什么“可回看”很重要
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3 和项目现有产物的对应关系
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. 索引构建：多模态索引的组织方式
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. 索引构建：多模态索引的组织方式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 本地模型加载与离线模式
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 原图必须和索引绑在一起
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3 索引阶段的真正难点
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.4 为什么索引构建会直接影响能力上限
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-top-k" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. 检索设计：Top-K 多页召回
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. 检索设计：Top-K 多页召回">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.1 目录页为什么会成为高频误召回
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-top-k" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.2 Top-K 的价值
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.3 为什么“多页召回”本身就是鲁棒性设计
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94" class="md-nav__link">
+    <span class="md-ellipsis">
+      9.4 进一步可做的过滤逻辑
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. 提示词设计：生成阶段的抗干扰约束
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. 提示词设计：生成阶段的抗干扰约束">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1 生成阶段的关键提示词思路
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2 为什么多模态场景更容易被噪声干扰
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3 一个更稳的提示词骨架
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104-prompt" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4 为什么 Prompt 也属于“检索后处理”
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. 多图上下文组织：多图证据编排
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. 多图上下文组织：多图证据编排">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 多图注入的基本原则
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2 为什么顺序很重要
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3 为什么要限制输出风格
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-step-by-step" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Step-by-Step 实战：从索引到问答的最小可复现链路
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Step-by-Step 实战：从索引到问答的最小可复现链路">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.1 阶段一：视觉索引构建
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.2 阶段二：多页检索
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.3 阶段三：多图推理
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#124" class="md-nav__link">
+    <span class="md-ellipsis">
+      12.4 阶段四：结果回传与证据组织
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. 示例运行记录：运行证据与日志
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. 示例运行记录：运行证据与日志">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.1 为什么运行记录很重要
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-prompt" class="md-nav__link">
+    <span class="md-ellipsis">
+      13.2 这类日志还能反向帮助 Prompt 调整
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. 评测与验证：多模态 RAG 的验证方式
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. 评测与验证：多模态 RAG 的验证方式">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.1 项目现有指标说明了什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.2 这些指标为什么看起来很漂亮
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.3 多模态场景下应重点关注哪些指标
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#144" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.4 为什么要把“图表趋势理解”单独拿出来
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. 指标解读：现有结果的边界
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. 指标解读：现有结果的边界">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.1 为什么小评测集容易“过于顺滑”
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152" class="md-nav__link">
+    <span class="md-ellipsis">
+      15.2 为什么这反而是个好信号
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. 失败模式：多模态财报问答的主要风险
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. 失败模式：多模态财报问答的主要风险">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.1 目录页误召回
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.2 图表读对了对象，读错了趋势
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#163" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.3 表格列对齐错误
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#164" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.4 多页综合时主题漂移
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#165" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.5 页面清晰度不足
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#166-failure-replay" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.6 为什么 failure replay 很重要
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. 成本分析：多模态 RAG 的成本结构
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. 成本分析：多模态 RAG 的成本结构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#171" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.1 索引成本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#172" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.2 推理成本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#173" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.3 隐性成本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#174" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.4 为什么成本必须被单独衡量
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. 优化方向：当前原型的深化路径
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="18. 优化方向：当前原型的深化路径">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#181-cropping-tiling" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.1 页面切片（Cropping / Tiling）
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#182-patch-level-retrieval" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.2 Patch-level Retrieval
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#183" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.3 检索结果重排
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#184" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.4 多轮问答与证据记忆
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#185" class="md-nav__link">
+    <span class="md-ellipsis">
+      18.5 答案模板化输出
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. 工程落地：高价值低频场景的适配性
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. 工程落地：高价值低频场景的适配性">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#191" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.1 适合的场景
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#192" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.2 不太适合的场景
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#193" class="md-nav__link">
+    <span class="md-ellipsis">
+      19.3 为什么先做高价值场景更现实
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      20. 与传统文本 RAG 的关系：升级与分层
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="20. 与传统文本 RAG 的关系：升级与分层">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#201-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.1 文本 RAG 仍然有价值
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#202-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.2 多模态 RAG 更适合什么部分
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#203" class="md-nav__link">
+    <span class="md-ellipsis">
+      20.3 更合理的长期形态
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      21. 质量基线：多模态财报助手的可用标准
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="21. 质量基线：多模态财报助手的可用标准">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#211" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.1 检索基线
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#212" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.2 数值基线
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#213" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.3 趋势基线
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#214" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.4 证据基线
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#215" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.5 成本基线
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#216" class="md-nav__link">
+    <span class="md-ellipsis">
+      21.6 为什么基线比单次演示更可靠
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      22. 交付物与复现路径
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="22. 交付物与复现路径">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.1 现有主要交付物
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.2 为什么这些产物重要
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223" class="md-nav__link">
+    <span class="md-ellipsis">
+      22.3 复现步骤
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23-rag" class="md-nav__link">
+    <span class="md-ellipsis">
+      23. 总结：多模态 RAG 的关键，不是“模型会看图”，而是“系统会用图”
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：评测集设计与标注规范
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：评测集设计与标注规范">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、评测问题应该覆盖哪些类型
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、标注不应只写最终答案
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、评测集需要常规集和压力集两层结构
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failure-replay" class="md-nav__link">
+    <span class="md-ellipsis">
+      四、failure replay 需要持续补充
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：企业上线前的门禁条件
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：企业上线前的门禁条件">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、文档接入门禁：不是所有 PDF 都应该直接入库
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、检索门禁：证据页必须先过线
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、回答门禁：答案不仅要像，还要能复核
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      四、运营门禁：系统要能被长期维护
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：多模态财报助手的协作流程
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：多模态财报助手的协作流程">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、角色分工：不同问题由不同角色负责
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、日常迭代：从失败案例进入下一轮优化
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、业务对接：先服务高价值决策，再扩场景
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：证据呈现与答案展示规范
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：证据呈现与答案展示规范">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、答案应优先展示结论、证据和限制
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、页码与证据类型最好显式呈现
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      三、对不确定回答要保留克制表达
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      专题：从问答助手走向分析工作台
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="专题：从问答助手走向分析工作台">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      一、分析工作台比问答更强调连续任务
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      二、当前项目已经为工作台形态预留了关键基础
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_30" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_31" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="rag">项目五：多模态 RAG 企业财报助手<a class="headerlink" href="#rag" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">曹旭宏；王柯；於俊</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>P05 聚焦把企业财报、招股书等复杂 PDF 文档组织成一条可检索、可解释、可评测的多模态 RAG 流水线。章节重点不在单次问答，而在把页面视觉结构、图表信息和正文语义共同纳入检索与回答过程。</p>
+<p>本项目的出版重点不是证明系统“能够回答问题”，而是证明回答能够回到可核查的证据对象：财报页码、页面截图、表格区域、脚注说明、图表或正文段落。对财务、审计和投研场景而言，答案如果不能定位到证据，即使语言流畅，也不能视为稳定交付。</p>
+<p>本章可以按四条主线理解：</p>
+<ul>
+<li>页面渲染与视觉索引：把复杂 PDF 页面纳入页面级向量检索。</li>
+<li>多页召回与证据组织：处理图表页、正文页、目录页和跨页关系。</li>
+<li>多模态回答与成本控制：在证据约束下完成多图推理与回答生成。</li>
+<li>评测验证与复现边界：通过结果评测、检查脚本和成本分析判断系统状态。</li>
+</ul>
+<p>如果按工程顺序阅读，本章对应的是一条完整链路：</p>
+<p><strong>财报 PDF -&gt; 页面渲染 -&gt; 视觉索引 -&gt; 多页召回 -&gt; 证据组织 -&gt; 多图推理 -&gt; 效果评测 -&gt; 成本优化</strong></p>
+<p>这一结构对应的核心目标，是把复杂文档问答从 OCR 驱动的文本检索扩展为页面视觉与文本语义共同参与的工程系统。</p>
+<hr />
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>多模态 RAG；财报问答；视觉检索；证据引用；成本评估</p>
+<h2 id="_3">项目目标与读者收获<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>本项目以“多模态 RAG 企业财报助手”为核心案例，目标是把复杂财报 PDF 组织成可检索、可引用、可评测的多模态问答系统。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。</p>
+<h2 id="_4">场景约束与数据边界<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>以页面级视觉检索和单文档/少量文档财报场景为主，不覆盖生产级全库财务分析。这些边界使案例能够被复现和审计；当数据规模、数据来源、权限范围或部署环境变化时，需要重新评估采样策略、质量阈值、运行成本和合规要求。</p>
+<h2 id="_5">架构决策<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>本项目采用“页面渲染、视觉索引、多页召回、证据组织、多模态回答和引用评测”的架构路径。视觉索引可参考 CLIP 的图文表示学习思想 (Radford et al. 2021)，复杂文档问答和图表问答的评测口径可分别参考 DocVQA (Mathew et al. 2021) 与 ChartQA (Masry et al. 2022)。该决策优先保证输入输出契约、版本可追踪、异常可定位和结果可复核，而不是把全部逻辑压缩为一次性脚本运行。</p>
+<h2 id="schema">样本 schema / 数据流<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<p>核心数据流可概括为：</p>
+<p>代码清单P05-1 给出了流程或路径示例，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>财报 PDF -&gt; 页面图像 -&gt; 多模态索引 -&gt; Top-K 页面证据 -&gt; 多图推理 -&gt; 带来源回答与评估记录
+</code></pre></div></p>
+<p><em>代码清单P05-1：流程或路径示例</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<p>样本 schema 至少应保留 <code>id</code>、<code>source</code>、<code>content_or_payload</code>、<code>metadata</code>、<code>quality_signals</code>、<code>split_or_stage</code> 与 <code>audit_trace</code> 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。</p>
+<h2 id="_6">核心实现片段<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>正文只保留能够说明设计取舍的关键实现片段。完整脚本、长配置、运行日志和大文件应放入配套仓库或附录说明；代码展示重点放在输入输出契约、质量阈值、异常处理和验收接口上。</p>
+<h2 id="_7">实验或验收指标<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>验收指标包括检索命中率、引用准确率、答案关键词准确率、延迟、页面处理成本、干扰页抑制效果和证据回链完整性。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。</p>
+<p>表P05-1汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P05-1：多模态 RAG 出版验收表</em></p>
+<table>
+<thead>
+<tr>
+<th>验收维度</th>
+<th>指标/证据</th>
+<th>出版复核口径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>证据检索</td>
+<td>Top-K 命中率、目录页误召回率、跨页召回覆盖和证据页稳定性</td>
+<td>每个答案应能回到页面图像、页码、检索分数和命中原因</td>
+</tr>
+<tr>
+<td>证据定位</td>
+<td>表格区域、脚注说明、图表页、正文页和截图证据的回链记录</td>
+<td>数值、趋势和解释性结论必须能指向至少一个可复核证据对象</td>
+</tr>
+<tr>
+<td>回答质量</td>
+<td>引用准确率、数值一致性、趋势判断准确率和拒答覆盖</td>
+<td>财务数值、图表趋势、脚注限制和结论必须能被人工复核</td>
+</tr>
+<tr>
+<td>成本边界</td>
+<td>页面渲染成本、视觉模型调用次数和平均延迟</td>
+<td>交付时说明小样本演示与生产全库规模的差异</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_8">成本、风险与合规边界<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>成本主要来自页面渲染、多模态索引和视觉模型调用；风险集中在财务数字误读、图表幻觉、目录页误召回和版权边界。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。</p>
+<h2 id="_9">常见失败模式<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>常见失败包括输入分布偏离、schema 字段缺失、质量阈值过松或过紧、评测样本覆盖不足、模型调用不稳定、结果无法回溯等。排查时应优先定位数据边界和中间产物，再检查模型、工具链与部署环境。</p>
+<h2 id="_10">可复现资源说明<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。若将本项目扩展为更通用的视觉指令或图文问答数据，可参考 LLaVA 的视觉指令调优范式 (Liu et al. 2023) 以及 COCO 的通用图像标注组织方式 (Lin et al. 2014)。</p>
+<h2 id="1-rag">1. 项目背景：多模态 RAG 财报助手的必要性<a class="headerlink" href="#1-rag" title="Permanent link">&para;</a></h2>
+<p>通用大模型已经可以回答很多财经常识问题，但一旦问题涉及企业财报中的<strong>具体数值、图表趋势、跨页表格或页面定位</strong>，模型就会立刻暴露出局限。</p>
+<p>最常见的问题至少有四类。</p>
+<p>第一类是<strong>结构失真</strong>。例如一张资产负债表里，“期末余额”“期初余额”“本集团”“本公司”这几列如果在 OCR 后顺序错位，模型即使识别到了所有数字，也可能把列关系全部搞错。这样得到的不是“轻微误差”，而是彻底错误的财务解释。</p>
+<p>第二类是<strong>图表失明</strong>。很多财报问题并不要求逐字读取，而要求判断趋势，例如“研发投入占比近三年是上升还是下降”“现金流变化拐点出现在什么阶段”。如果系统只会处理文本，它就根本看不到图形信息。</p>
+<p>第三类是<strong>证据割裂</strong>。企业年报的正文、附注、图表说明、管理层讨论与分析，往往散布在不同页面。用户问“经营结果如何”时，答案可能需要同时综合收入趋势图、研发投入页、无形资产附注和董事长致辞。如果检索系统一次只拿一页，或只能召回单一文本块，回答就会严重片面。</p>
+<p>第四类是<strong>噪声误召回</strong>。财报目录页特别“危险”，因为它往往汇总了全书大部分关键词。传统 embedding 检索非常容易把目录页排到前面，导致模型读了一堆章节标题，却没读到实际数据页。</p>
+<p>因此，P05 的目标不是做一个“能对 PDF 提问”的表面演示，而是搭建一个<strong>面向复杂文档场景的多模态 RAG 原型</strong>。它服务的不是单次查询，而是一种方法论：</p>
+<blockquote>
+<p>当文档的答案存在于版面、图表、表格和跨页结构本身时，检索系统就不能只检索文本，而必须把“视觉”纳入检索环节。</p>
+</blockquote>
+<hr />
+<h2 id="2">2. 项目目标与边界<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<h3 id="21">2.1 项目目标<a class="headerlink" href="#21" title="Permanent link">&para;</a></h3>
+<p>本项目聚焦以下四个目标。</p>
+<p><strong>目标一：建立面向复杂 PDF 的视觉检索链路。</strong><br />
+即不再把财报页面强行压缩成纯文本，而是把页面图像直接纳入向量检索，使系统能够理解版面布局、图表存在与否以及视觉结构。</p>
+<p><strong>目标二：建立多页证据组合的问答机制。</strong><br />
+不是让模型只看单页截图，而是能对 Top-K 页面做联合推理，从而回答跨页、多证据、图表与正文混合的问题。</p>
+<p><strong>目标三：让回答具备可解释性与可定位性。</strong><br />
+系统输出不能只是一个“看起来合理”的总结，而应能够指向具体页面、页码、页面截图、表格区域、脚注说明或证据组合，便于复核与调试。</p>
+<p><strong>目标四：形成一条可复现、可评测、可优化的工程路径。</strong><br />
+项目不仅展示实现方式，也包含指标、风险、失败模式和成本讨论，形成了一条更完整的工程案例链路。</p>
+<h3 id="22">2.2 项目边界<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<p>为了让案例具备可复现性，本项目显式设置若干边界。</p>
+<h4 id="1">1）文档范围边界<a class="headerlink" href="#1" title="Permanent link">&para;</a></h4>
+<p>当前主要围绕<strong>单个中文企业财报 PDF</strong>构建索引和问答，不是通用文档平台，也不是对所有办公文档都同样有效的统一方案。</p>
+<h4 id="2_1">2）检索粒度边界<a class="headerlink" href="#2_1" title="Permanent link">&para;</a></h4>
+<p>当前核心粒度是<strong>页面级视觉检索</strong>。这适合处理图表和整页表格，但对于极长跨页表格、特别细碎的小区域问答，仍然可能需要进一步的 patch-level 或 region-level 检索增强。</p>
+<h4 id="3">3）生成能力边界<a class="headerlink" href="#3" title="Permanent link">&para;</a></h4>
+<p>当前生成阶段依赖多模态大模型对页面截图进行解读，因此回答质量会受到图片清晰度、页面密度、图表复杂度和模型视觉能力上限的影响。</p>
+<h4 id="4">4）评测边界<a class="headerlink" href="#4" title="Permanent link">&para;</a></h4>
+<p>当前评测更适合作为<strong>方法验证</strong>而非生产级验收。现有问题规模仍较小，足以证明链路有效，但不足以代表大规模真实业务环境。</p>
+<h3 id="23">2.3 边界说明的作用<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
+<p>工程案例里最容易让人误判的，不是方法本身，而是方法的适用范围。一个写得过满的案例，看起来“什么都能做”，但团队真正复用时反而不知道该从哪里开始。相反，把边界写清楚，反而能让读者明确：</p>
+<ul>
+<li>这套方案适合什么类型的文档；</li>
+<li>当前做到哪一层；</li>
+<li>哪些部分已经稳定；</li>
+<li>哪些部分仍需后续扩展。</li>
+</ul>
+<p>这种写法比单纯追求“看上去更强”更适合工程复用。</p>
+<hr />
+<h2 id="3-p05">3. 项目定位：P05 的能力链位置<a class="headerlink" href="#3-p05" title="Permanent link">&para;</a></h2>
+<p>如果把整体大模型应用工程看作一条能力链，那么 P05 位于<strong>复杂文档理解与多模态检索增强</strong>这一段的核心位置。</p>
+<p>前面的章节可能已经讨论过纯文本 RAG、结构化问答、SFT 数据工厂、评测体系与上线验收等主题。但这些方法在财报类 PDF 面前都会碰到一个现实问题：</p>
+<blockquote>
+<p>当答案不只是文本，而是视觉排版与图表结构的一部分时，传统文本 RAG 的假设就不再成立。</p>
+</blockquote>
+<p>因此，本章的价值不是重复介绍“什么是 RAG”，而是展示：</p>
+<ul>
+<li>为什么 PDF 页面本身应该进入检索；</li>
+<li>为什么视觉检索和多模态生成要配套设计；</li>
+<li>为什么复杂文档的失败点更多出现在检索与证据组织，而不是最终生成一句话；</li>
+<li>如何把一个多模态原型沉淀成工程案例，而不是只停留在“模型看图挺强”。</li>
+</ul>
+<p>从这个意义上说，本章回答的是一个更大的问题：</p>
+<blockquote>
+<p>当文档知识嵌在表格、图表和页面结构里时，RAG 系统应该如何升级？</p>
+</blockquote>
+<hr />
+<h2 id="4-pdf">4. 整体架构：从财报 PDF 到多模态回答的流水线<a class="headerlink" href="#4-pdf" title="Permanent link">&para;</a></h2>
+<p>图P05-1展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p05/Cao-Project05-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P05-1：多模态 RAG 财报助手总体架构图" src="../../../images/part14/p05/Cao-Project05-Fig01.svg" /></a>
+<em>图 P05-1：多模态 RAG 财报助手总体架构图</em></p>
+<p>从工程视角看，本项目可以拆成三层。</p>
+<h3 id="41">4.1 第一层：页面资产层<a class="headerlink" href="#41" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“如何把 PDF 变成适合视觉检索的证据对象”。主要包括：</p>
+<ul>
+<li>PDF 页面渲染</li>
+<li>页面截图持久化</li>
+<li>页面元信息记录</li>
+<li>页面与原始页码映射</li>
+</ul>
+<p>这一步的目标不是回答问题，而是先把 PDF 转成<strong>可索引、可追踪、可回看</strong>的页面级资产。</p>
+<h3 id="42">4.2 第二层：视觉检索层<a class="headerlink" href="#42" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“面对一个问题，怎样找到最相关的页面”。主要包括：</p>
+<ul>
+<li>查询编码</li>
+<li>页面视觉向量召回</li>
+<li>Top-K 多页返回</li>
+<li>目录页与低价值页过滤</li>
+</ul>
+<p>这一步决定系统最终能否把真正有数据的页面送到生成阶段，是多模态 RAG 的关键门槛。</p>
+<h3 id="43">4.3 第三层：多图推理层<a class="headerlink" href="#43" title="Permanent link">&para;</a></h3>
+<p>这一层解决的是“拿到多页截图后，怎样让模型做综合分析而不是逐图胡猜”。主要包括：</p>
+<ul>
+<li>System Prompt 角色设定</li>
+<li>目录页抑制指令</li>
+<li>多张图片统一注入</li>
+<li>输出格式约束</li>
+<li>答案与证据绑定</li>
+</ul>
+<p>到这一步，项目才从“会检索图片”变成“能基于视觉证据稳定回答”。</p>
+<hr />
+<h2 id="5-vision-first">5. 数据流与核心思路：Vision-first 检索链<a class="headerlink" href="#5-vision-first" title="Permanent link">&para;</a></h2>
+<p>很多人会问：是不是先 OCR，再做文本检索，也能差不多解决问题？</p>
+<p>在少量、简单、版式规整的 PDF 上，也许可以。但在财报场景里，这条路很容易遇到瓶颈。原因在于财报并不只是“内容长”，而是<strong>内容的结构表达高度依赖视觉形式</strong>。</p>
+<h3 id="51-ocr-first">5.1 OCR-first 的局限<a class="headerlink" href="#51-ocr-first" title="Permanent link">&para;</a></h3>
+<p>OCR-first 最大的问题，不是“识别率不够高”这么简单，而是它会把原本立体的页面压缩成线性字符串。压缩之后，系统通常会失去：</p>
+<ul>
+<li>行列关系</li>
+<li>图例位置</li>
+<li>多栏排版结构</li>
+<li>页内局部区域与正文的对应关系</li>
+<li>同一页中“标题—正文—图表—注释”的视觉层级</li>
+</ul>
+<p>一旦这些关系丢失，后面的 embedding 再强，也是在被压扁的信息上工作。</p>
+<h3 id="52-vision-first">5.2 Vision-first 的价值<a class="headerlink" href="#52-vision-first" title="Permanent link">&para;</a></h3>
+<p>Vision-first 的核心思想是：<strong>先保留页面作为图像整体的表达能力，再让检索模型去学习“哪一页看起来接近答案语义所在页”</strong>。</p>
+<p>这样做至少带来三个好处。</p>
+<p>第一，它保留了布局。模型不只看到文字，还能看到表格、图形、标题层级和页面结构。</p>
+<p>第二，它天然适配图表。即便图里文字不多，只要页面视觉特征足够相关，仍然有机会被召回。</p>
+<p>第三，它更符合复杂文档的阅读方式。真实用户问财报问题时，本质上是在问“哪几页最值得看”，而不是“哪段 OCR 字符串最相似”。</p>
+<h3 id="53-vir-vlm">5.3 为什么本项目采用 ViR + VLM<a class="headerlink" href="#53-vir-vlm" title="Permanent link">&para;</a></h3>
+<p>本项目采用的核心组合是 <strong>ViR（Vision in Retrieval）+ VLM（Vision Language Model）</strong>：用 ColPali 做页面视觉编码，用 Byaldi 存储与召回，再把命中的页面原图送给 Qwen2.5-VL 做理解与回答。</p>
+<p>这套设计的关键不在于“模型名本身”，而在于职责分离：</p>
+<ul>
+<li>检索模型负责找页；</li>
+<li>多模态生成模型负责读图；</li>
+<li>Prompt 负责约束回答行为；</li>
+<li>评测与日志负责验证系统是否真的找对、看对、答对。</li>
+</ul>
+<p>图P05-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p05/Cao-Project05-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P05-2：Vision-first 与 OCR-first 路线对比图" src="../../../images/part14/p05/Cao-Project05-Fig02.svg" /></a>
+<em>图 P05-2：Vision-first 与 OCR-first 路线对比图</em></p>
+<hr />
+<h2 id="6-colpalibyaldi-qwen25-vl">6. 技术选型：ColPali、Byaldi 与 Qwen2.5-VL<a class="headerlink" href="#6-colpalibyaldi-qwen25-vl" title="Permanent link">&para;</a></h2>
+<p>一个工程案例如果只列工具名，而不解释为什么选它们，读者通常很难真正复用。因此，这里把技术选型展开讲清楚。</p>
+<h3 id="61-colpali">6.1 ColPali 在文档检索中的位置<a class="headerlink" href="#61-colpali" title="Permanent link">&para;</a></h3>
+<p>ColPali 的价值在于，它不是把页面当普通自然图片来处理，而是更偏向<strong>文档场景的视觉理解</strong>。对财报、表格、图表、版面结构这类内容来说，这一点关键。</p>
+<p>相比通用图像 embedding，文档检索模型更可能捕捉：</p>
+<ul>
+<li>表格边界和列结构</li>
+<li>标题区域与正文区域分布</li>
+<li>数字密集页与叙述页的差异</li>
+<li>图表所在页的视觉模式</li>
+</ul>
+<p>也就是说，ColPali 的优势不是“它一定知道所有财务概念”，而是它更擅长先判断“这页看起来像不像用户想找的那种文档证据页”。</p>
+<h3 id="62-byaldi">6.2 Byaldi 作为索引框架<a class="headerlink" href="#62-byaldi" title="Permanent link">&para;</a></h3>
+<p>Byaldi 的意义在于，它把多模态检索中最麻烦的一部分工程封装起来了：</p>
+<ul>
+<li>模型加载</li>
+<li>PDF 转图</li>
+<li>向量索引构建</li>
+<li>查询搜索</li>
+<li>原图关联存储</li>
+</ul>
+<p>这能让项目把精力集中在<strong>检索策略、证据组织和回答质量</strong>上，而不是把大量时间花在底层张量存取上。</p>
+<h3 id="63">6.3 生成阶段的视觉模型<a class="headerlink" href="#63" title="Permanent link">&para;</a></h3>
+<p>多模态 RAG 的生成阶段不是简单“把图片送进去让它描述一下”，而是要求模型：</p>
+<ul>
+<li>识别图表中的趋势；</li>
+<li>读取高密度财务表格中的关键数值；</li>
+<li>结合多页内容做归纳；</li>
+<li>在噪声页面存在时尽量忽略干扰。</li>
+</ul>
+<p>这要求模型不仅能看图，还得能看<strong>文档图</strong>。这里选择 Qwen2.5-VL-72B 作为主要视觉生成模型，看中的正是它在文档解析和图表理解任务上的适配性。</p>
+<h3 id="64">6.4 选型的工程含义<a class="headerlink" href="#64" title="Permanent link">&para;</a></h3>
+<p>这组技术栈背后的真实思路是：</p>
+<ul>
+<li>ColPali 解决“找哪页”；</li>
+<li>Byaldi 解决“怎样把找页这件事快速落地”；</li>
+<li>Qwen2.5-VL 解决“找到页之后怎样真正读懂”。</li>
+</ul>
+<p>这比“一个万能模型直接干完所有事”更有工程可控性。</p>
+<hr />
+<h2 id="7">7. 页面资产构建：稳定页面证据库<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
+<p>复杂文档项目里，一个经常被忽视的问题是：<strong>页面资产是否稳定、可追踪</strong>。</p>
+<p>如果每次查询时才临时渲染 PDF，一方面会拖慢响应，另一方面会让调试变得较为麻烦。因为一旦某页渲染参数、缩放比例、裁剪逻辑变化，系统行为就可能前后不一致。</p>
+<h3 id="71">7.1 页面资产层要解决什么问题<a class="headerlink" href="#71" title="Permanent link">&para;</a></h3>
+<p>页面资产层至少要完成以下工作：</p>
+<ul>
+<li>统一页面渲染分辨率；</li>
+<li>为每页生成稳定文件名或 ID；</li>
+<li>保存页码映射；</li>
+<li>记录页面尺寸、来源文件、索引版本；</li>
+<li>确保后续检索结果能回指到同一张原图。</li>
+</ul>
+<h3 id="72">7.2 为什么“可回看”很重要<a class="headerlink" href="#72" title="Permanent link">&para;</a></h3>
+<p>在多模态 RAG 中，如果系统答错了，排查路径通常不是“模型为什么突然胡说”，而是：</p>
+<ol>
+<li>检索是不是召回了错误页面；</li>
+<li>图片是不是模糊或裁剪错误；</li>
+<li>多图上下文里是不是被噪声页干扰；</li>
+<li>Prompt 有没有诱导模型过度总结。</li>
+</ol>
+<p>如果页面资产没有被妥善保存，就很难定位问题到底出在第几环。</p>
+<h3 id="73">7.3 和项目现有产物的对应关系<a class="headerlink" href="#73" title="Permanent link">&para;</a></h3>
+<p>当前项目会生成页面级资产和索引相关产物，例如 <code>page_units.jsonl</code>、<code>block_units.jsonl</code>、<code>rag_index.json</code> 与 <code>data/page_images</code> 等。这说明它并不只是一个临时演示，而已经具备一定的资产沉淀意识。</p>
+<p>图P05-3展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p05/Cao-Project05-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P05-3：页面资产与页码映射示意图" src="../../../images/part14/p05/Cao-Project05-Fig03.svg" /></a>
+<em>图 P05-3：页面资产与页码映射示意图</em></p>
+<hr />
+<h2 id="8">8. 索引构建：多模态索引的组织方式<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
+<p>索引阶段的实现由三个关键环节组成：本地加载 ColPali，通过 Byaldi 读取 PDF、完成视觉编码，并把原图引用随索引一起存储。</p>
+<p>这组实现对应了几个关键工程判断。</p>
+<h3 id="81">8.1 本地模型加载与离线模式<a class="headerlink" href="#81" title="Permanent link">&para;</a></h3>
+<p>实现里设置了离线模式与镜像源，这说明项目明显考虑了<strong>网络环境与模型复用成本</strong>。这也是很值得保留的工程细节，因为很多案例只写“加载模型”，却不写下载失败、重复下载或路径错配会怎么办。</p>
+<h3 id="82">8.2 原图必须和索引绑在一起<a class="headerlink" href="#82" title="Permanent link">&para;</a></h3>
+<p><code>store_collection_with_index=True</code> 这一点很关键。因为多模态 RAG 的生成阶段并不是从文本库中取字符串，而是要把命中的<strong>原图或页面截图</strong>重新输入 VLM。没有这个关联，检索与生成就断开了。</p>
+<h3 id="83">8.3 索引阶段的真正难点<a class="headerlink" href="#83" title="Permanent link">&para;</a></h3>
+<p>索引真正的难点通常不在“API 会不会调”，而在以下这些现实问题：</p>
+<ul>
+<li>页面渲染分辨率多高合适；</li>
+<li>是否需要对超大表格页做切片；</li>
+<li>是否保留缩略图与高清图双版本；</li>
+<li>文档更新后如何重建索引；</li>
+<li>显存不够时如何降载。</li>
+</ul>
+<h3 id="84">8.4 为什么索引构建会直接影响能力上限<a class="headerlink" href="#84" title="Permanent link">&para;</a></h3>
+<p>因为在复杂文档项目里，索引不是准备动作，而是能力上限的一部分。索引阶段做得粗糙，后面再强的生成模型也只能在模糊证据上“猜”。</p>
+<p>图P05-4展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p05/Cao-Project05-Fig04.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P05-4：PDF 页面渲染与视觉索引构建图" src="../../../images/part14/p05/Cao-Project05-Fig04.svg" /></a>
+<em>图 P05-4：PDF 页面渲染与视觉索引构建图</em></p>
+<hr />
+<h2 id="9-top-k">9. 检索设计：Top-K 多页召回<a class="headerlink" href="#9-top-k" title="Permanent link">&para;</a></h2>
+<p>财报问答里，一个典型的问题是：<strong>用户问的问题是跨页的，但系统只想返回一页</strong>。</p>
+<p>例如“经营结果如何”“研发投入表现怎样”“无形资产变化说明了什么”，这些问题在真实财报里往往需要综合多页内容。只返回 Top-1，通常会过度依赖单页信息，甚至直接命中目录页。</p>
+<h3 id="91">9.1 目录页为什么会成为高频误召回<a class="headerlink" href="#91" title="Permanent link">&para;</a></h3>
+<p>目录页包含大量章节标题，天然覆盖许多高频关键词，例如：</p>
+<ul>
+<li>经营结果</li>
+<li>财务概览</li>
+<li>研发投入</li>
+<li>风险提示</li>
+<li>资产负债表</li>
+</ul>
+<p>对纯文本 embedding 来说，这类页面非常“接近答案语义”。但对用户来说，目录页往往是信息密度最低的一页，因为它只提示“答案可能在哪个章节”，却不提供实际数据。</p>
+<h3 id="92-top-k">9.2 Top-K 的价值<a class="headerlink" href="#92-top-k" title="Permanent link">&para;</a></h3>
+<p>检索阶段不能只取 Top-1，而应取 Top-K（建议 4 到 5 页），并对目录页进行过滤。</p>
+<p>Top-K 的价值在于：</p>
+<ul>
+<li>增加命中真实证据页的概率；</li>
+<li>允许一个问题由多页共同回答；</li>
+<li>降低单页误召回导致的完全失败风险；</li>
+<li>为后续多图推理提供更完整上下文。</li>
+</ul>
+<h3 id="93">9.3 为什么“多页召回”本身就是鲁棒性设计<a class="headerlink" href="#93" title="Permanent link">&para;</a></h3>
+<p>很多原型演示会把“检索到正确页面”当作默认前提。但真实系统要考虑的是：</p>
+<blockquote>
+<p>当第一名不可靠时，系统能不能通过多页证据兜底？</p>
+</blockquote>
+<p>从这个角度看，多页召回并不是锦上添花，而是一种必要的鲁棒性机制。</p>
+<h3 id="94">9.4 进一步可做的过滤逻辑<a class="headerlink" href="#94" title="Permanent link">&para;</a></h3>
+<p>除了目录页过滤，还可以考虑：</p>
+<ul>
+<li>低信息密度页过滤</li>
+<li>纯版权声明或封面页过滤</li>
+<li>重复页去重</li>
+<li>与查询类型不匹配的页面类型过滤</li>
+</ul>
+<p>例如数值类问题可优先保留表格密集页，趋势类问题可优先保留图表页。</p>
+<p>图P05-5展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p05/Cao-Project05-Fig05.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P05-5：Top-K 多页召回与目录页过滤示意图" src="../../../images/part14/p05/Cao-Project05-Fig05.svg" /></a>
+<em>图 P05-5：Top-K 多页召回与目录页过滤示意图</em></p>
+<hr />
+<h2 id="10">10. 提示词设计：生成阶段的抗干扰约束<a class="headerlink" href="#10" title="Permanent link">&para;</a></h2>
+<p>在文本 RAG 中，Prompt 很重要；在多模态 RAG 中，Prompt 更重要。因为系统给模型的不是几段清晰文本，而是多张可能混有噪声的页面截图。</p>
+<h3 id="101">10.1 生成阶段的关键提示词思路<a class="headerlink" href="#101" title="Permanent link">&para;</a></h3>
+<p>生成阶段的一个关键做法，是在 System Prompt 中显式告诉模型“可能包含目录页，请忽略目录，直接根据包含具体数据的页面回答问题”。</p>
+<p>这一句虽然看起来简单，但它本质上是在做<strong>抗噪声约束</strong>。</p>
+<h3 id="102">10.2 为什么多模态场景更容易被噪声干扰<a class="headerlink" href="#102" title="Permanent link">&para;</a></h3>
+<p>因为模型看到的是图像，而不是预先整理好的“正确证据段落”。图像中可能同时存在：</p>
+<ul>
+<li>目录标题</li>
+<li>页眉页脚</li>
+<li>装饰性图片</li>
+<li>不相关附录</li>
+<li>正文里的一小块关键数字</li>
+</ul>
+<p>如果没有明确提示，模型很容易对“看起来像总结”的内容过度依赖，而忽略真正关键的数据区。</p>
+<h3 id="103">10.3 一个更稳的提示词骨架<a class="headerlink" href="#103" title="Permanent link">&para;</a></h3>
+<p>多模态财报问答的 Prompt 往往应至少包含：</p>
+<ul>
+<li>角色：专业财务/投研/审计助手；</li>
+<li>任务：根据提供页面回答具体问题；</li>
+<li>抗干扰：忽略目录、封面、无数据页；</li>
+<li>证据偏好：优先依据表格、图表和明确数值；</li>
+<li>不确定性：若证据不足，说明不足；</li>
+<li>输出格式：按结论、证据、页码、趋势解读来组织。</li>
+</ul>
+<h3 id="104-prompt">10.4 为什么 Prompt 也属于“检索后处理”<a class="headerlink" href="#104-prompt" title="Permanent link">&para;</a></h3>
+<p>因为 Prompt 的作用之一，就是帮助模型在召回页集合里进行二次筛选。也就是说，Prompt 不只是生成控制，也是证据清洗的一部分。</p>
+<hr />
+<h2 id="11">11. 多图上下文组织：多图证据编排<a class="headerlink" href="#11" title="Permanent link">&para;</a></h2>
+<p>把多页图片都送进模型，不等于模型就一定能把它们组织好。实际上，多图推理最常见的问题之一就是：<strong>图片是多了，但上下文结构变乱了</strong>。</p>
+<h3 id="111">11.1 多图注入的基本原则<a class="headerlink" href="#111" title="Permanent link">&para;</a></h3>
+<ul>
+<li>问题文本应先给出，明确本次任务目标；</li>
+<li>图片顺序应尽量稳定；</li>
+<li>若有页码，最好让模型知道每张图对应哪一页；</li>
+<li>若某页可能是噪声页，应在文字里提醒模型谨慎处理；</li>
+<li>输出中最好要求引用页码或来源页。</li>
+</ul>
+<h3 id="112">11.2 为什么顺序很重要<a class="headerlink" href="#112" title="Permanent link">&para;</a></h3>
+<p>如果图片顺序随机，模型可能把后一页的表头和前一页的数据混在一起，尤其在跨页表格场景里更容易出问题。</p>
+<h3 id="113">11.3 为什么要限制输出风格<a class="headerlink" href="#113" title="Permanent link">&para;</a></h3>
+<p>财报类问题很容易诱发“宏大总结式”回答。模型会说很多正确但泛泛的财经套话，例如“公司持续创新、经营稳健、长期向好”。这些话不是完全错误，但如果用户问的是“研发费用占比多少？趋势如何？”，这种回答就没有价值。</p>
+<p>因此，多图场景下尤其需要让模型：</p>
+<ul>
+<li>先答数字；</li>
+<li>再答趋势；</li>
+<li>再答解释；</li>
+<li>最后补充背景；</li>
+<li>避免只有大而化之的总结。</li>
+</ul>
+<p>图P05-6展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p05/Cao-Project05-Fig06.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P05-6：多图上下文注入与回答约束图" src="../../../images/part14/p05/Cao-Project05-Fig06.svg" /></a>
+<em>图 P05-6：多图上下文注入与回答约束图</em></p>
+<hr />
+<h2 id="12-step-by-step">12. Step-by-Step 实战：从索引到问答的最小可复现链路<a class="headerlink" href="#12-step-by-step" title="Permanent link">&para;</a></h2>
+<p>这一部分沿着项目现有实现思路展开，重点说明如何把链路整理成可复现的工程过程。</p>
+<h3 id="121">12.1 阶段一：视觉索引构建<a class="headerlink" href="#121" title="Permanent link">&para;</a></h3>
+<p>当前实现中，项目通过 Byaldi 封装 ColPali，对 PDF 页面做视觉编码，并将原图随索引一起存储。这一步的关键不是“写几行代码”，而是确保后续系统能稳定取回同一张页面图。</p>
+<p>代码清单P05-2 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">byaldi</span><span class="w"> </span><span class="kn">import</span> <span class="n">RAGMultiModalModel</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HF_HUB_OFFLINE&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;HF_ENDPOINT&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;https://hf-mirror.com&quot;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">MODEL_PATH</span> <span class="o">=</span> <span class="s2">&quot;/path/to/models/colpali-v1_2-merged&quot;</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">INDEX_NAME</span> <span class="o">=</span> <span class="s2">&quot;finance_report_2024&quot;</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="k">def</span><span class="w"> </span><span class="nf">build_index</span><span class="p">():</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">):</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;找不到模型文件夹: </span><span class="si">{</span><span class="n">MODEL_PATH</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">rag</span> <span class="o">=</span> <span class="n">RAGMultiModalModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="n">rag</span><span class="o">.</span><span class="n">index</span><span class="p">(</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>        <span class="n">input_path</span><span class="o">=</span><span class="s2">&quot;annual_report_2024_cn.pdf&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>        <span class="n">index_name</span><span class="o">=</span><span class="n">INDEX_NAME</span><span class="p">,</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>        <span class="n">store_collection_with_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="p">)</span>
+</code></pre></div></p>
+<p><em>代码清单P05-2：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<h3 id="122">12.2 阶段二：多页检索<a class="headerlink" href="#122" title="Permanent link">&para;</a></h3>
+<p>现有实现把 <code>RETRIEVAL_K</code> 设为 4，这是一个比较务实的默认值。它既能提供一定的证据覆盖，又不至于让多模态输入膨胀得太夸张。</p>
+<p>代码清单P05-3 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">RAG</span> <span class="o">=</span> <span class="n">RAGMultiModalModel</span><span class="o">.</span><span class="n">from_index</span><span class="p">(</span><span class="n">INDEX_NAME</span><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">RETRIEVAL_K</span> <span class="o">=</span> <span class="mi">4</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">results</span> <span class="o">=</span> <span class="n">RAG</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">user_query</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">RETRIEVAL_K</span><span class="p">)</span>
+</code></pre></div></p>
+<p><em>代码清单P05-3：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<h3 id="123">12.3 阶段三：多图推理<a class="headerlink" href="#123" title="Permanent link">&para;</a></h3>
+<p>现有实现把问题文本与多张页面图一起组成 payload，再交给 Qwen2.5-VL 处理。关键点有两个：一是明确要求模型忽略目录；二是把图片 detail 设为 <code>high</code>，以便读取财报中的小字与密集数字。</p>
+<p>代码清单P05-4 给出了 Python 实现片段，用于说明本节中的输入输出关系、结构约束或执行方式。
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">content_payload</span> <span class="o">=</span> <span class="p">[{</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="p">(</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>        <span class="sa">f</span><span class="s2">&quot;你是专业的 CFO 助手。现提供 </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span><span class="si">}</span><span class="s2"> 张财报截图。&quot;</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>        <span class="sa">f</span><span class="s2">&quot;其中可能包含目录页，请忽略目录，直接根据包含具体数据的页面回答问题：</span><span class="si">{</span><span class="n">user_query</span><span class="si">}</span><span class="s2">。&quot;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        <span class="s2">&quot;如果包含图表，请详细解读数据趋势。&quot;</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="p">),</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="p">}]</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">content_payload</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image_url&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>        <span class="s2">&quot;image_url&quot;</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>            <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;data:image/jpeg;base64,</span><span class="si">{</span><span class="n">res</span><span class="o">.</span><span class="n">base64</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>            <span class="s2">&quot;detail&quot;</span><span class="p">:</span> <span class="s2">&quot;high&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>        <span class="p">}</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    <span class="p">})</span>
+</code></pre></div></p>
+<p><em>代码清单P05-4：Python 实现片段</em></p>
+<p>该片段的作用是把上述流程转化为可检查的结构化表示。</p>
+<h3 id="124">12.4 阶段四：结果回传与证据组织<a class="headerlink" href="#124" title="Permanent link">&para;</a></h3>
+<p>严格来说，这一步在很多原型演示中都被省略了。但在工程里，它需要重点关注。建议至少返回：</p>
+<ul>
+<li>问题</li>
+<li>命中页码</li>
+<li>关键结论</li>
+<li>证据摘要</li>
+<li>模型原始输出</li>
+<li>延迟与 token 统计</li>
+</ul>
+<p>只有把这些日志保留下来，后面才有可能做失败重放和质量分析。</p>
+<hr />
+<h2 id="13">13. 示例运行记录：运行证据与日志<a class="headerlink" href="#13" title="Permanent link">&para;</a></h2>
+<p>一次示例运行记录可以写为：系统针对“经营结果如何？”这一问题，召回第 49、91、130、8 页，并综合这些页面生成关于研发投入、无形资产和社会责任等方面的分析。正式交付时，应同时保存检索日志、页码证据、模型原始输出和版本信息。</p>
+<p>这段示例至少说明了三件事。</p>
+<p>第一，系统并没有只依赖单页回答，而是确实进行了多页综合。</p>
+<p>第二，目录页并没有完全阻塞结果，说明多页召回和抗干扰 Prompt 起到了作用。</p>
+<p>第三，模型已经能从图文混合页面中提取较具体的信息，而不只是笼统地说“经营情况良好”。</p>
+<p>当然，这段示例也提醒我们一个现实问题：回答里仍然可能混入偏泛的公司叙事内容，例如社会责任、董事长致辞等。这说明多页召回虽然提高了覆盖率，但也会带来更高的主题扩散风险。</p>
+<h3 id="131">13.1 为什么运行记录很重要<a class="headerlink" href="#131" title="Permanent link">&para;</a></h3>
+<p>在工程实践里，仅有“理论上可行”的章节不足以支撑复现。一旦放入真实日志，读者就能看到：</p>
+<ul>
+<li>系统到底召回了哪些页；</li>
+<li>模型输出有没有过度扩写；</li>
+<li>多模态链路是否在真实问题上经过验证。</li>
+</ul>
+<h3 id="132-prompt">13.2 这类日志还能反向帮助 Prompt 调整<a class="headerlink" href="#132-prompt" title="Permanent link">&para;</a></h3>
+<p>例如如果模型总是把“董事长致辞”这类宏观表述混进答案，那就可以进一步在 Prompt 中加入：</p>
+<ul>
+<li>优先回答量化指标；</li>
+<li>非数值性背景信息仅作辅助；</li>
+<li>若页面缺少直接数据，不要扩写成宏观判断。</li>
+</ul>
+<hr />
+<h2 id="14-rag">14. 评测与验证：多模态 RAG 的验证方式<a class="headerlink" href="#14-rag" title="Permanent link">&para;</a></h2>
+<p>复杂文档问答中常见的风险是：回答听起来很专业，但证据未必正确。</p>
+<p>因此，多模态 RAG 的评测至少要覆盖两层：</p>
+<ul>
+<li><strong>检索是否找对页面</strong>；</li>
+<li><strong>回答是否基于正确页面得出正确结论</strong>。</li>
+</ul>
+<h3 id="141">14.1 项目现有指标说明了什么<a class="headerlink" href="#141" title="Permanent link">&para;</a></h3>
+<p>当前项目在单个 PDF 上共处理 <code>146</code> 页，解析出 <code>1341</code> 个区块，其中 <code>table_like=104</code>、<code>chart_like=4</code>。这说明系统已经把非纯文本证据纳入整体处理视野。评测集共 <code>8</code> 条问题，检索命中率@4、引用准确率与答案关键词准确率均为 100%，平均延迟约 <code>40 ms</code>。</p>
+<h3 id="142">14.2 这些指标为什么看起来很漂亮<a class="headerlink" href="#142" title="Permanent link">&para;</a></h3>
+<p>这些结果说明当前链路在受控条件下已经相当稳定。但真正需要警惕的不是成绩不够高，而是评测问题规模太小，可能让指标“过于干净”。</p>
+<h3 id="143">14.3 多模态场景下应重点关注哪些指标<a class="headerlink" href="#143" title="Permanent link">&para;</a></h3>
+<p>建议至少建立以下几类指标：</p>
+<ul>
+<li>检索命中率@K：正确页面是否出现在召回集合中；</li>
+<li>证据引用准确率：回答引用的页码是否真支撑该结论；</li>
+<li>证据回链完整率：回答中的关键结论是否能回到页码、截图、表格、脚注或图表证据；</li>
+<li>数值正确率：关键数字是否抄对、比对对；</li>
+<li>趋势理解正确率：图表趋势是否被正确解读；</li>
+<li>干扰鲁棒性：加入目录页后性能下降多少；</li>
+<li>平均时延与成本：系统是否具备工程可接受性。</li>
+</ul>
+<h3 id="144">14.4 为什么要把“图表趋势理解”单独拿出来<a class="headerlink" href="#144" title="Permanent link">&para;</a></h3>
+<p>因为图表理解并不等同于文字抽取。一个模型也许能读出“2024”“收入”“研发费用”等字样，却仍然可能把趋势判断反着说，或者把同比与环比混为一谈。</p>
+<p>图P05-7展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p05/Cao-Project05-Fig07.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P05-7：检索与回答双层评测框架图" src="../../../images/part14/p05/Cao-Project05-Fig07.svg" /></a>
+<em>图 P05-7：检索与回答双层评测框架图</em></p>
+<hr />
+<h2 id="15">15. 指标解读：现有结果的边界<a class="headerlink" href="#15" title="Permanent link">&para;</a></h2>
+<p>P05 当前指标较为整齐，这本身说明链路设计思路是对的。尤其是在复杂文档场景下，如果检索、引用和答案关键词都能保持一致，至少说明项目已经具备较好的闭环能力。</p>
+<p>但从工程角度讲，这组结果更像是：</p>
+<ul>
+<li><strong>链路已经端到端成立</strong>；</li>
+<li><strong>在当前样本上表现稳定</strong>；</li>
+<li><strong>具备继续扩展的基础</strong>。</li>
+</ul>
+<p>它还不意味着：</p>
+<ul>
+<li>系统已经适配所有财报；</li>
+<li>所有跨页表格都能稳定理解；</li>
+<li>所有图表问题都能无误回答；</li>
+<li>已经达到生产级通用能力。</li>
+</ul>
+<h3 id="151">15.1 为什么小评测集容易“过于顺滑”<a class="headerlink" href="#151" title="Permanent link">&para;</a></h3>
+<p>因为问题少，通常覆盖面也窄。系统可能只是在最典型、最清晰的样本上表现良好，而尚未充分暴露对复杂附注、模糊问题和异常排版页面的脆弱性。</p>
+<h3 id="152">15.2 为什么这反而是个好信号<a class="headerlink" href="#152" title="Permanent link">&para;</a></h3>
+<p>因为一个好的工程案例不需要一开始就“无所不能”。更重要的是它能明确展示：</p>
+<ul>
+<li>当前已经验证了什么；</li>
+<li>还没验证什么；</li>
+<li>下一步最值得扩哪一块。</li>
+</ul>
+<p>从这个角度看，P05 的指标并不只是“成绩单”，也是后续扩展路线图的起点。</p>
+<hr />
+<h2 id="16">16. 失败模式：多模态财报问答的主要风险<a class="headerlink" href="#16" title="Permanent link">&para;</a></h2>
+<p>如果只看成功案例，很容易误以为多模态 RAG 的主要难点已经解决。但真实工程里，失败模式才是最值得认真展开的部分。</p>
+<h3 id="161">16.1 目录页误召回<a class="headerlink" href="#161" title="Permanent link">&para;</a></h3>
+<p>这是最典型的问题。症状是召回页里关键词很全，但没有任何实质数据。</p>
+<h3 id="162">16.2 图表读对了对象，读错了趋势<a class="headerlink" href="#162" title="Permanent link">&para;</a></h3>
+<p>例如模型看到了收入图表，但把“逐步回升”解读成“持续下降”，或者混淆不同颜色图例对应的业务线。</p>
+<h3 id="163">16.3 表格列对齐错误<a class="headerlink" href="#163" title="Permanent link">&para;</a></h3>
+<p>尤其在跨页表格、超宽表格或密集财务附注中，模型可能抓到数字，却没有抓对列关系。</p>
+<h3 id="164">16.4 多页综合时主题漂移<a class="headerlink" href="#164" title="Permanent link">&para;</a></h3>
+<p>召回页太多时，模型会把次要页面里的宏观叙事混入主答案，导致答案“看上去更完整”，但其实偏离用户问题。</p>
+<h3 id="165">16.5 页面清晰度不足<a class="headerlink" href="#165" title="Permanent link">&para;</a></h3>
+<p>如果原图分辨率不够，或者截图被压缩，小字、脚注和列头就会变成生成阶段的盲点。</p>
+<h3 id="166-failure-replay">16.6 为什么 failure replay 很重要<a class="headerlink" href="#166-failure-replay" title="Permanent link">&para;</a></h3>
+<p>当前 <code>failure replay</code> 样本数为 0，这说明失败样本库还比较薄。对一个准备持续优化的项目来说，这其实是后续应该优先补的资产之一。因为没有失败样本积累，系统就很难建立真正有价值的回归测试集。</p>
+<hr />
+<h2 id="17-rag">17. 成本分析：多模态 RAG 的成本结构<a class="headerlink" href="#17-rag" title="Permanent link">&para;</a></h2>
+<p>成本部分可以先抓住几个很直观的数据：</p>
+<ul>
+<li>ColPali 索引约 <code>0.5s/页</code>；</li>
+<li>200 页财报索引构建约 2 到 3 分钟；</li>
+<li>一张 1024×1024 图片在 VLM 中约 1000 到 1500 tokens；</li>
+<li>Top-4 检索意味着输入 token 很容易达到 5000+；</li>
+<li>调用 Qwen2.5-VL 的单次复杂问答成本约 0.05 到 0.1 元人民币。</li>
+</ul>
+<p>这些数字揭示了一个现实：</p>
+<blockquote>
+<p>多模态 RAG 的主要成本不只是“模型更贵”，而是页面图像让每次问答的上下文开销显著放大。</p>
+</blockquote>
+<h3 id="171">17.1 索引成本<a class="headerlink" href="#171" title="Permanent link">&para;</a></h3>
+<p>页面越多、渲染越高清、模型越大，索引成本就越高。这意味着索引通常适合做成离线批处理，而不是每次提问前临时构建。</p>
+<h3 id="172">17.2 推理成本<a class="headerlink" href="#172" title="Permanent link">&para;</a></h3>
+<p>一旦系统采用 Top-K 多页输入，推理成本会近似随页数线性增长。若再叠加高清模式与长输出，费用和延迟都会迅速上升。</p>
+<h3 id="173">17.3 隐性成本<a class="headerlink" href="#173" title="Permanent link">&para;</a></h3>
+<p>真正容易被低估的，还包括：</p>
+<ul>
+<li>失败重试成本；</li>
+<li>日志与页面资产存储成本；</li>
+<li>人工评测与校验成本；</li>
+<li>新文档重建索引的运维成本。</li>
+</ul>
+<h3 id="174">17.4 为什么成本必须被单独衡量<a class="headerlink" href="#174" title="Permanent link">&para;</a></h3>
+<p>复杂文档项目的核心风险，是“效果演示能跑，但缺少长期使用所需的成本边界”。成本分析写清楚，读者才能判断这套方案适合：</p>
+<ul>
+<li>离线批量分析；</li>
+<li>高价值低频问答；</li>
+<li>深度投研辅助；</li>
+<li>还是必须进一步压缩后才能上线。</li>
+</ul>
+<hr />
+<h2 id="18">18. 优化方向：当前原型的深化路径<a class="headerlink" href="#18" title="Permanent link">&para;</a></h2>
+<p>当前可以先归纳出三条很有代表性的优化思路：页面切片、局部区域检索和缓存机制。这里把它们展开。</p>
+<h3 id="181-cropping-tiling">18.1 页面切片（Cropping / Tiling）<a class="headerlink" href="#181-cropping-tiling" title="Permanent link">&para;</a></h3>
+<p>对于超大财务表格，一整页截图往往既不利于检索，也不利于生成。把一页切成多个局部区域分别索引，可以让系统更容易命中“真正有答案的区域”。</p>
+<h3 id="182-patch-level-retrieval">18.2 Patch-level Retrieval<a class="headerlink" href="#182-patch-level-retrieval" title="Permanent link">&para;</a></h3>
+<p>如果未来能做到 patch-level 检索，那么系统就不一定要把整页都送进 VLM，而是只输入与问题最相关的局部区域。这可以同时提升清晰度与降低 token 成本。</p>
+<h3 id="183">18.3 检索结果重排<a class="headerlink" href="#183" title="Permanent link">&para;</a></h3>
+<p>目前如果主要依赖单一路径召回，后续可以增加：</p>
+<ul>
+<li>页面类型识别重排；</li>
+<li>基于 query intent 的排序校正；</li>
+<li>结合轻量文本特征进行二次筛选；</li>
+<li>去重与互补性排序。</li>
+</ul>
+<h3 id="184">18.4 多轮问答与证据记忆<a class="headerlink" href="#184" title="Permanent link">&para;</a></h3>
+<p>对于连续提问场景，系统可以缓存前一轮已经确认有效的页面，避免每次都从头召回。</p>
+<h3 id="185">18.5 答案模板化输出<a class="headerlink" href="#185" title="Permanent link">&para;</a></h3>
+<p>对企业级使用者来说，回答最好不只是自然语言，还可以结构化输出：</p>
+<ul>
+<li>核心结论</li>
+<li>关键数值</li>
+<li>趋势判断</li>
+<li>证据页码</li>
+<li>风险提示</li>
+</ul>
+<p>这样更便于接入下游系统。</p>
+<p>图P05-8展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p05/Cao-Project05-Fig08.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P05-8：多模态 RAG 优化路径图" src="../../../images/part14/p05/Cao-Project05-Fig08.svg" /></a>
+<em>图 P05-8：多模态 RAG 优化路径图</em></p>
+<hr />
+<h2 id="19">19. 工程落地：高价值低频场景的适配性<a class="headerlink" href="#19" title="Permanent link">&para;</a></h2>
+<p>不是所有问答系统都适合一上来就追求高并发。对多模态财报助手来说，更合理的落地路径通常是从<strong>高价值低频问题</strong>开始。</p>
+<h3 id="191">19.1 适合的场景<a class="headerlink" href="#191" title="Permanent link">&para;</a></h3>
+<ul>
+<li>投研团队做深度财报阅读辅助；</li>
+<li>审计和财务分析人员做附注核查；</li>
+<li>企业内部知识助手处理年报、招股书等复杂 PDF；</li>
+<li>管理层快速定位某类财务指标所在页面。</li>
+</ul>
+<h3 id="192">19.2 不太适合的场景<a class="headerlink" href="#192" title="Permanent link">&para;</a></h3>
+<ul>
+<li>大规模高并发低单价问答；</li>
+<li>需要毫秒级响应的通用客服；</li>
+<li>要求系统无需适配即可处理任意文档；</li>
+<li>不能接受图像输入成本的超低预算环境。</li>
+</ul>
+<h3 id="193">19.3 为什么先做高价值场景更现实<a class="headerlink" href="#193" title="Permanent link">&para;</a></h3>
+<p>因为这些场景通常：</p>
+<ul>
+<li>单次问题价值高；</li>
+<li>用户对准确性要求高；</li>
+<li>可接受较高的单次成本；</li>
+<li>更愿意为“看图表、读附注、跨页综合”的能力买单。</li>
+</ul>
+<p>也就是说，多模态财报助手最先证明价值的地方，往往不是“替代所有搜索”，而是“在最难的复杂文档问答里给出明显更好的答案”。</p>
+<hr />
+<h2 id="20-rag">20. 与传统文本 RAG 的关系：升级与分层<a class="headerlink" href="#20-rag" title="Permanent link">&para;</a></h2>
+<p>一个常见误区是：既然多模态 RAG 更强，是不是就应该完全替换文本 RAG？</p>
+<p>现实里未必如此。</p>
+<h3 id="201-rag">20.1 文本 RAG 仍然有价值<a class="headerlink" href="#201-rag" title="Permanent link">&para;</a></h3>
+<p>对于目录、章节说明、政策条文、管理层文字叙述这类内容，文本 RAG 通常仍然更便宜、更快，也更容易做精确引用。</p>
+<h3 id="202-rag">20.2 多模态 RAG 更适合什么部分<a class="headerlink" href="#202-rag" title="Permanent link">&para;</a></h3>
+<ul>
+<li>图表密集页</li>
+<li>表格密集页</li>
+<li>版式复杂页</li>
+<li>OCR 容易失真页</li>
+<li>需要依赖视觉上下文的问题</li>
+</ul>
+<h3 id="203">20.3 更合理的长期形态<a class="headerlink" href="#203" title="Permanent link">&para;</a></h3>
+<p>长期来看，更合理的架构往往不是“只用一种 RAG”，而是：</p>
+<ul>
+<li>文本页走文本检索；</li>
+<li>图表页走视觉检索；</li>
+<li>最终在重排或生成阶段做融合。</li>
+</ul>
+<p>这样既保留文本 RAG 的效率优势，又能用多模态 RAG 兜住复杂场景。</p>
+<p>图P05-9展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part14/p05/Cao-Project05-Fig09.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P05-9：文本 RAG 与多模态 RAG 协同架构图" src="../../../images/part14/p05/Cao-Project05-Fig09.svg" /></a>
+<em>图 P05-9：文本 RAG 与多模态 RAG 协同架构图</em></p>
+<hr />
+<h2 id="21_1">21. 质量基线：多模态财报助手的可用标准<a class="headerlink" href="#21_1" title="Permanent link">&para;</a></h2>
+<p>质量基线的作用，是把系统的可用下限明确下来，而不是追求抽象的满分。</p>
+<p>这类系统至少需要建立以下五条基线。</p>
+<h3 id="211">21.1 检索基线<a class="headerlink" href="#211" title="Permanent link">&para;</a></h3>
+<p>对核心问题集，正确证据页应能稳定进入 Top-K，且目录页不能长期占据前排。</p>
+<h3 id="212">21.2 数值基线<a class="headerlink" href="#212" title="Permanent link">&para;</a></h3>
+<p>模型回答中的关键数字不能频繁抄错、对错列或张冠李戴。</p>
+<h3 id="213">21.3 趋势基线<a class="headerlink" href="#213" title="Permanent link">&para;</a></h3>
+<p>对典型图表问题，系统应能稳定区分上升、下降、波动、拐点等基本趋势判断。</p>
+<h3 id="214">21.4 证据基线<a class="headerlink" href="#214" title="Permanent link">&para;</a></h3>
+<p>回答最好能指出所依据的页面或证据来源，而不是给出无法复核的“结论体”。</p>
+<h3 id="215">21.5 成本基线<a class="headerlink" href="#215" title="Permanent link">&para;</a></h3>
+<p>系统必须在可接受的延迟和费用内运行，否则就算效果好，也难以进入真实工作流。</p>
+<h3 id="216">21.6 为什么基线比单次演示更可靠<a class="headerlink" href="#216" title="Permanent link">&para;</a></h3>
+<p>单次演示的结果并不代表系统稳定；只有建立基线，才能判断系统何时该扩展、何时该返工。</p>
+<hr />
+<h2 id="22_1">22. 交付物与复现路径<a class="headerlink" href="#22_1" title="Permanent link">&para;</a></h2>
+<p>要让整条链路可复现，除了原理和代码，还需要保留一组关键产物。</p>
+<h3 id="221">22.1 现有主要交付物<a class="headerlink" href="#221" title="Permanent link">&para;</a></h3>
+<p>当前项目已经形成以下关键产物：</p>
+<ul>
+<li><code>data/processed/page_units.jsonl</code></li>
+<li><code>data/processed/block_units.jsonl</code></li>
+<li><code>data/processed/rag_index.json</code></li>
+<li><code>data/page_images</code></li>
+<li><code>data/eval/reference_questions.jsonl</code></li>
+<li><code>data/eval/evaluation_results.jsonl</code></li>
+<li><code>data/eval/failure_replay.jsonl</code></li>
+<li><code>data/reports/p5_report.md</code></li>
+<li><code>data/reports/p5_metrics.json</code></li>
+<li><code>data/reports/p5_test_results.json</code></li>
+<li><code>data/reports/p5_test_report.md</code> </li>
+</ul>
+<h3 id="222">22.2 为什么这些产物重要<a class="headerlink" href="#222" title="Permanent link">&para;</a></h3>
+<ul>
+<li>页面资产让证据可回看；</li>
+<li>索引文件让检索可复现；</li>
+<li>评测问题集让质量可对比；</li>
+<li>测试报告让系统状态可追踪；</li>
+<li>failure replay 则是未来持续优化的基础。</li>
+</ul>
+<h3 id="223">22.3 复现步骤<a class="headerlink" href="#223" title="Permanent link">&para;</a></h3>
+<ol>
+<li>准备一份图表和表格较多的中文财报 PDF；</li>
+<li>渲染页面并构建视觉索引；</li>
+<li>设计一组覆盖数值、趋势、跨页和干扰页的问题；</li>
+<li>运行多页检索与多图问答；</li>
+<li>对照页码与原图验证回答；</li>
+<li>把失败案例沉淀进 replay 集。</li>
+</ol>
+<h2 id="23-rag">23. 总结：多模态 RAG 的关键，不是“模型会看图”，而是“系统会用图”<a class="headerlink" href="#23-rag" title="Permanent link">&para;</a></h2>
+<p>P05 的关键意义，不在于证明“视觉大模型可以读财报”，而在于把这件事组织成一条可检索、可验证、可复盘的工程链路：</p>
+<blockquote>
+<p>当答案存在于页面、图表、表格和版式结构中时，RAG 系统必须把视觉纳入检索本身，而不是只在最后一步临时加一张图片。</p>
+</blockquote>
+<p>从现有项目材料来看，P05 已经具备几个很关键的工程特征：</p>
+<ul>
+<li>有明确的问题定义与方法边界；</li>
+<li>有从页面资产到视觉索引的链路；</li>
+<li>有多页召回与抗目录干扰设计；</li>
+<li>有示例运行记录和可补充为正式日志的证据字段；</li>
+<li>有基础评测与验证结果；</li>
+<li>也有成本与后续优化方向。 </li>
+</ul>
+<p>由此可以看出，它已经不再只是一次性多模态原型演示，而更接近一个可供团队参考的复杂文档 RAG 工程案例。</p>
+<p>本章可以归结为一句话：</p>
+<blockquote>
+<p>多模态 RAG 的难点，从来不只是让模型看见图片，而是让检索、证据组织、提示词、评测与成本控制一起围绕“视觉证据”重新设计。</p>
+</blockquote>
+<hr />
+<h2 id="_11">专题：评测集设计与标注规范<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<p>多模态 RAG 项目最常见的误区之一，是只用少量“看起来很难的问题”做演示，却没有认真建设评测集。这样做短期确实方便，但它很难支撑后续优化。因为当系统效果波动时，团队往往说不清问题到底来自检索、证据组织、视觉理解，还是答案生成。</p>
+<h3 id="_12">一、评测问题应该覆盖哪些类型<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<p>对财报类多模态问答来说，评测集至少不应只有“找某个数字”这一种题。更合理的设计通常要覆盖以下几类：</p>
+<ul>
+<li>数值抽取题，测试系统是否能准确定位并读取财务数据；</li>
+<li>趋势判断题，测试系统能否理解折线图、柱状图或占比变化；</li>
+<li>跨页整合题，测试系统是否能把不同页面的信息拼成完整答案；</li>
+<li>图文对照题，测试系统是否能把正文表述和图表证据互相校验；</li>
+<li>干扰抑制题，测试系统是否会被目录页、封面页、章节页或关键词堆积页误导；</li>
+<li>无答案题，测试系统能否在证据不足时明确说明而不是硬编。</li>
+</ul>
+<p>只有这些问题类型都进入评测集，团队才能更准确地识别系统到底擅长什么、薄弱什么。否则，模型可能在数值题上表现很好，却在趋势理解上持续失败；如果评测集没有后者，团队就会误以为系统“已经差不多能上线了”。</p>
+<h3 id="_13">二、标注不应只写最终答案<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<p>多模态 RAG 的标注比纯文本 QA 更复杂，原因就在于“正确答案”往往不是唯一需要标的内容。一个足够有用的评测样本，通常至少要包含：</p>
+<ul>
+<li>问题文本；</li>
+<li>参考答案或可接受答案范围；</li>
+<li>关键证据页码；</li>
+<li>证据类型，说明该题更依赖表格、图表、正文还是多页组合；</li>
+<li>容错规则，例如数值是否允许四舍五入、趋势词是否允许同义表达；</li>
+<li>常见错误模式，例如最容易误召回目录页、最容易错读同比环比等。</li>
+</ul>
+<p>把这些信息都标出来的价值，在于后续可以更细地诊断问题。例如，某次改动后总体得分不变，但“关键证据页进入 Top-K 的比例”下降了，同时“模型靠语言常识答对”的比例上升了。对于复杂文档系统来说，这不是进步，而是隐性退化。没有细标注，这种退化通常很难被及时发现。</p>
+<h3 id="_14">三、评测集需要常规集和压力集两层结构<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
+<p>为了兼顾稳定跟踪与问题发现，评测集最好分成两层：</p>
+<ul>
+<li>常规集，用于每次改动后的稳定回归测试；</li>
+<li>压力集，用于专门暴露系统最脆弱的边界。</li>
+</ul>
+<p>常规集通常覆盖系统最常见的核心问题类型，样本量不必特别大，但必须稳定。压力集则更强调挑战性，适合纳入：</p>
+<ul>
+<li>小字密集表格；</li>
+<li>跨页表格与图表结合问题；</li>
+<li>目录页和正文页高度相似的问题；</li>
+<li>同一概念在多个页面重复出现但语义不同的问题；</li>
+<li>对“无答案”判断要求很高的问题。</li>
+</ul>
+<p>这种双层结构的意义在于，常规集帮助团队看整体趋势，压力集帮助团队找真正瓶颈。只有两者同时存在，评测才既能指导日常迭代，也能支撑中长期优化。</p>
+<h3 id="failure-replay">四、failure replay 需要持续补充<a class="headerlink" href="#failure-replay" title="Permanent link">&para;</a></h3>
+<p>评测集不是一次性写完的文档，它应该随着失败案例不断增长。对 P05 这类项目来说，最有价值的新增评测样本，往往就来自真实失败 replay。</p>
+<p>比较理想的做法是，每当系统出现以下问题时，都考虑是否把它转化为 replay 样本：</p>
+<ul>
+<li>目录页误召回导致答非所问；</li>
+<li>表格列错位导致数字被读串；</li>
+<li>图表趋势读反；</li>
+<li>多页综合时把不同年份或不同主体混在一起；</li>
+<li>没有证据却给出高置信答案。</li>
+</ul>
+<p>这些 replay 样本会不断提醒团队：系统最值得优化的地方，不一定是“看起来最复杂的功能”，而是那些最容易伤害用户信任的错误。</p>
+<hr />
+<h2 id="_15">专题：企业上线前的门禁条件<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h2>
+<p>多模态财报助手要从演示进入真实使用场景，关键不在于把回答做得更华丽，而在于建立清晰的上线门禁。因为财报问答天然涉及高价值决策，一旦系统在关键数字、趋势判断或证据定位上持续失真，用户会很快失去信任。</p>
+<h3 id="pdf">一、文档接入门禁：不是所有 PDF 都应该直接入库<a class="headerlink" href="#pdf" title="Permanent link">&para;</a></h3>
+<p>系统的第一道门禁，应当放在文档接入阶段。因为不同财报 PDF 在扫描质量、排版复杂度、图表密度和语言风格上差异很大，不加筛选地接入，往往会把后续检索和生成的难度成倍放大。</p>
+<p>文档接入时至少值得检查：</p>
+<ul>
+<li>页面渲染是否清晰，是否存在大面积模糊或断字；</li>
+<li>页码映射是否稳定；</li>
+<li>图表、表格和正文是否能被正常保留；</li>
+<li>是否存在大幅旋转页、超长折页或扫描歪斜页；</li>
+<li>文档是否属于当前系统已验证过的文档类型。</li>
+</ul>
+<p>这一步做得好的意义在于，系统不会把明显超出能力边界的文档直接放进索引，然后再把后续问题都算在模型头上。</p>
+<h3 id="_16">二、检索门禁：证据页必须先过线<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h3>
+<p>多模态 RAG 的第二道门禁，应该放在检索层。原因很简单，如果核心证据页长期进不了 Top-K，后面再强的模型也很难救回来。</p>
+<p>检索门禁可以重点关注：</p>
+<ul>
+<li>核心问题集上的证据页 Top-K 命中率；</li>
+<li>目录页、版权页、封面页等低价值页面的高位误召回率；</li>
+<li>同一问题在不同版本索引上的稳定性；</li>
+<li>多页问题中互补页面是否能同时进入候选集。</li>
+</ul>
+<p>只有当这些指标达到可接受水平，生成阶段的评估才有意义。否则，团队会不断优化 Prompt，却始终在错误证据上做文章。</p>
+<h3 id="_17">三、回答门禁：答案不仅要像，还要能复核<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h3>
+<p>对企业场景而言，回答门禁不能只看“语言是否流畅”，而要看答案是否具备复核性。一个更靠谱的回答门禁，通常至少包括：</p>
+<ul>
+<li>关键数字不能频繁抄错、漏读或张冠李戴；</li>
+<li>趋势结论不能长期与图表方向相反；</li>
+<li>对跨页问题，回答中不能把不同主体、不同年度或不同口径混淆；</li>
+<li>对证据不足问题，系统应能够保守表达或拒答；</li>
+<li>回答应附带页码、截图证据、表格或脚注说明，便于人工复核。</li>
+</ul>
+<p>这种门禁的本质，是把“答得像专家”转成“答得经得起核查”。在财报场景里，后者比前者重要得多。</p>
+<h3 id="_18">四、运营门禁：系统要能被长期维护<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h3>
+<p>上线前还有一类经常被忽视的门禁，就是运营门禁。也就是说，即使系统指标表现可接受，如果没有稳定的索引重建、日志管理、评测回归和异常处理机制，也很难长期维护。</p>
+<p>运营门禁至少可以包括：</p>
+<ul>
+<li>新文档入库后的索引更新时间是否可控；</li>
+<li>关键日志是否保留，便于定位失败问题；</li>
+<li>评测集和 replay 集是否能在版本变更后自动回归；</li>
+<li>出现异常高成本或异常长延迟时，是否有降级路径；</li>
+<li>人工复核角色是否明确，尤其是在高风险问答场景下。</li>
+</ul>
+<p>只有把运营门禁也纳入上线条件，多模态 RAG 才能从“一次效果展示”变成“一个有人敢持续使用的系统”。</p>
+<hr />
+<h2 id="_19">专题：多模态财报助手的协作流程<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h2>
+<p>P05 这种项目在落地时，往往不是单一模型工程师能独立完成的。它天然要求文档处理、检索、视觉理解、评测和业务理解多方协作。因此，协作流程本身也应该成为章节的一部分，而不是隐含在项目经验里。</p>
+<h3 id="_20">一、角色分工：不同问题由不同角色负责<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h3>
+<p>一个比较清晰的协作结构通常包括：</p>
+<ul>
+<li>文档处理工程角色，负责 PDF 渲染、页面资产、索引构建与存储；</li>
+<li>检索工程角色，负责召回策略、重排、误召回治理和缓存优化；</li>
+<li>多模态生成角色，负责 Prompt、图片组织和答案结构约束；</li>
+<li>评测角色，负责问题集、标注规范、回归评测和 failure replay；</li>
+<li>领域专家或业务角色，负责判断问题是否真的符合财报阅读需求，答案是否具备业务可用性。</li>
+</ul>
+<p>如果这些角色边界不清楚，项目很容易出现一个典型问题：所有失败都被归结为“模型没看懂图”。但真实情况往往更复杂，有时是索引没建好，有时是问题设计不合理，有时是业务预期本身不适合当前系统能力。</p>
+<h3 id="_21">二、日常迭代：从失败案例进入下一轮优化<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h3>
+<p>对这类系统来说，最有效的协作节奏通常不是围绕“今天又新增了什么功能”，而是围绕“本周最值得修复的失败案例是什么”。一个实用的迭代节奏可以是：</p>
+<ul>
+<li>先收集本周的代表性失败问答；</li>
+<li>再判断问题属于检索、生成、评测还是文档接入；</li>
+<li>然后决定是补 replay、调 Prompt、调排序，还是限制文档接入边界；</li>
+<li>最后在下一轮回归测试中验证问题是否真正缓解。</li>
+</ul>
+<p>这种节奏的好处，在于它把跨角色协作聚焦到同一批可讨论的样本上，而不是让每个角色都从自己的局部视角出发各改各的。</p>
+<h3 id="_22">三、业务对接：先服务高价值决策，再扩场景<a class="headerlink" href="#_22" title="Permanent link">&para;</a></h3>
+<p>多模态财报助手如果要在企业中被接受，最稳妥的方式通常是先服务高价值、低频、可复核的场景，例如投研辅助、财务分析、审计核查或管理层快速定位。这类场景的一个共同特点是：用户愿意花时间看证据，也愿意接受“答案附页码、建议人工复核”这种输出形式。</p>
+<p>这样做的协作收益很明显：</p>
+<ul>
+<li>业务角色能更准确地提供高价值问题；</li>
+<li>工程角色能围绕少量关键场景打磨检索与提示词；</li>
+<li>评测角色能更快沉淀高质量 replay；</li>
+<li>团队可以在较小范围内先形成使用共识，再逐步外扩。</li>
+</ul>
+<p>从长期看，这种“先把最值得做的场景做深”的协作方式，比一开始就追求覆盖所有文档、所有问法、所有用户，更有机会把系统真正做成产品级能力。</p>
+<hr />
+<h2 id="_23">专题：证据呈现与答案展示规范<a class="headerlink" href="#_23" title="Permanent link">&para;</a></h2>
+<p>多模态财报助手在真实使用里，还有一个很关键、但常常被低估的问题，就是答案到底应该怎样展示。系统如果只是输出一段流畅文字，短期看起来很像“智能问答”，但长期很难建立信任。对于财报这种高价值文档场景，更合理的做法是把答案展示也当成系统设计的一部分。</p>
+<h3 id="_24">一、答案应优先展示结论、证据和限制<a class="headerlink" href="#_24" title="Permanent link">&para;</a></h3>
+<p>一个更适合企业场景的答案结构，通常至少包括三部分：</p>
+<ul>
+<li>核心结论，直接回答用户当前问题；</li>
+<li>证据说明，指出主要依据的页码、页面类型、截图证据、关键表格/图表或脚注；</li>
+<li>限制提示，说明当前回答是否依赖多页综合、是否存在证据不足或是否建议人工复核。</li>
+</ul>
+<p>这种结构的好处在于，它能把“模型说了什么”和“模型为什么这么说”同时展示出来。对财务、审计和投研用户来说，后者往往和前者一样重要。</p>
+<h3 id="_25">二、页码与证据类型最好显式呈现<a class="headerlink" href="#_25" title="Permanent link">&para;</a></h3>
+<p>如果系统已经完成了页面级索引和多页召回，那么在前端或报告层最好把这些信息显式透出，而不是只留在日志里。最有价值的通常不是复杂的可视化，而是几个稳定字段：</p>
+<ul>
+<li>命中的页码；</li>
+<li>证据属于正文、表格、脚注还是图表；</li>
+<li>证据截图或页面图像的稳定路径；</li>
+<li>是否涉及多页综合；</li>
+<li>哪一页是主证据页，哪几页是辅助页。</li>
+</ul>
+<p>这样做的意义在于，用户可以很快判断回答是否值得继续相信，也方便团队在出现争议时快速回到原始证据。对于复杂文档系统来说，这种“可回看”能力比一次性生成更重要。</p>
+<h3 id="_26">三、对不确定回答要保留克制表达<a class="headerlink" href="#_26" title="Permanent link">&para;</a></h3>
+<p>多模态文档问答非常容易在“差一点看懂”的状态下给出高置信回答。为了避免这一点，答案展示规范里最好明确保留几类克制表达，例如：</p>
+<ul>
+<li>当前证据页未完全覆盖问题；</li>
+<li>当前页能支持趋势判断，但不足以支持精确数值结论；</li>
+<li>该问题涉及多个主体或多个年份，建议进一步核对；</li>
+<li>目录页或概览页被召回，当前结论可能需要更多正文页支撑。</li>
+</ul>
+<p>这种克制并不会削弱系统，反而能显著提升用户信任。因为在财报场景里，用户通常更能接受“系统知道自己哪里还不确定”，而不是“系统总是很自信地说错”。</p>
+<hr />
+<h2 id="_27">专题：从问答助手走向分析工作台<a class="headerlink" href="#_27" title="Permanent link">&para;</a></h2>
+<p>P05 当前展示的是一个多模态财报问答助手，但从工程演化角度看，它完全可以进一步走向分析工作台形态。之所以值得补这一层，是因为企业用户在真实场景里往往不只需要“问一个问题、得到一个答案”，还需要对证据做连续浏览、比较和追踪。</p>
+<h3 id="_28">一、分析工作台比问答更强调连续任务<a class="headerlink" href="#_28" title="Permanent link">&para;</a></h3>
+<p>问答助手更适合回答单次问题，而分析工作台更适合支撑连续任务，例如：</p>
+<ul>
+<li>围绕同一家公司追踪多个财务主题；</li>
+<li>对同一指标做跨年度比较；</li>
+<li>对同一问题连续展开追问并保留证据上下文；</li>
+<li>把多次问答结果整理成简报或复核清单。</li>
+</ul>
+<p>一旦进入这种连续任务形态，系统设计重点就会从“单次回答够不够好”扩展到“证据能不能连续复用、答案能不能持续组织、问题链能不能被管理”。</p>
+<h3 id="_29">二、当前项目已经为工作台形态预留了关键基础<a class="headerlink" href="#_29" title="Permanent link">&para;</a></h3>
+<p>P05 之所以适合往工作台方向扩展，是因为它已经具备几个重要基础：</p>
+<ul>
+<li>页面资产可回看；</li>
+<li>证据页可以被稳定引用；</li>
+<li>多页召回天然适合连续问题复用；</li>
+<li>failure replay 和评测集可以支撑后续迭代。</li>
+</ul>
+<p>这意味着未来如果团队要做更强的企业文档分析界面，并不需要推翻现有项目，而是可以在现有“索引—证据—回答”主链上继续向上搭建。</p>
+<h2 id="_30">本章小结<a class="headerlink" href="#_30" title="Permanent link">&para;</a></h2>
+<p>本章以“多模态 RAG 企业财报助手”为案例，展示了把复杂财报 PDF 组织成可检索、可引用、可评测的多模态问答系统的工程组织方式。案例的主要价值在于把任务定义、数据边界、架构决策、样本 schema、指标验收和复现资源放在同一条链路中，使项目不再只是操作步骤，而成为可复核的案例研究。</p>
+<p>该案例的边界同样需要被清楚保留。以页面级视觉检索和单文档/少量文档财报场景为主，不覆盖生产级全库财务分析。在更大规模、更高风险或更强合规约束的场景中，应重新评估数据来源、权限状态、人工复核比例、运行成本和失败回滚方案。</p>
+<p>作为第十四篇的一部分，本章对应前文方法在项目层面的落地验证。读者可将本案例与第十三篇的数据配方、前文的平台治理章节以及附录中的检查清单合并使用，形成从方法理解到工程交付的闭环。</p>
+<h2 id="_31">参考文献<a class="headerlink" href="#_31" title="Permanent link">&para;</a></h2>
+<p>Liu H, Li C, Wu Q, Lee Y J (2023) Visual Instruction Tuning. NeurIPS 2023. https://doi.org/10.52202/075280-1516.</p>
+<p>Lin T-Y, Maire M, Belongie S, Hays J, Perona P, Ramanan D, Dollár P, Zitnick C L (2014) Microsoft COCO: Common Objects in Context. ECCV 2014. https://doi.org/10.1007/978-3-319-10602-1_48.</p>
+<p>Radford A, Kim J W, Hallacy C, Ramesh A, Goh G, et al. (2021) Learning Transferable Visual Models From Natural Language Supervision. ICML 2021.</p>
+<p>Mathew M, Karatzas D, Jawahar C V (2021) DocVQA: A Dataset for VQA on Document Images. WACV 2021. https://doi.org/10.1109/wacv48630.2021.00225.</p>
+<p>Masry A, Long D X, Tan J Q, Joty S, Hoque E (2022) ChartQA: A Benchmark for Question Answering about Charts with Visual and Logical Reasoning. ACL 2022. https://doi.org/10.18653/v1/2022.findings-acl.177.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

@@ -1,0 +1,919 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part3/3_3_video_audio/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>3 3 video audio - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#8" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              3 3 video audio
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/data_engineering_book/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/data_engineering_book/en/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      第 8 章: ビデオおよびオーディオ データの処理
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="第 8 章: ビデオおよびオーディオ データの処理">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      章の概要
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#81" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1 ビデオ処理パイプライン: シーン検出
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.1 ビデオ処理パイプライン: シーン検出">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#811-gop-i" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1.1 ビデオ構造のミクロビュー: GOP と I フレーム
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#812" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1.2 アルゴリズムの選択と戦略
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#813" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.1.3 コア コード: シーン検出とロスレス セグメンテーション
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2 ビデオのトークン化: ピクセル オーシャンから離散島まで
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.2 ビデオのトークン化: ピクセル オーシャンから離散島まで">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#821-vq-vae" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2.1 従来のアプローチの問題: VQ-VAE と「デッドコード」
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#822-sota-magvit-v2-lfq" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2.2 SOTA アプローチ: MagViT-v2 および LFQ
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#823" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.2.3 アーキテクチャ比較表
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-whisperx" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3 オーディオ調整: WhisperX と強制調整
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8.3 オーディオ調整: WhisperX と強制調整">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#831" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3.1 なぜ強制的に位置合わせを行うのか?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#832-whisperx" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3.2 エンジニアリング実装: WhisperX フル パイプライン
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#833" class="md-nav__link">
+    <span class="md-ellipsis">
+      8.3.3 本番環境の落とし穴
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>3 3 video audio</h1>
+
+<h2 id="8">第 8 章: ビデオおよびオーディオ データの処理<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
+<h3 id="_1">章の概要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
+<p>ビデオ データは、マルチモーダル エンジニアリングの「深層水」と呼ばれる、マルチモーダル ラージ モデル (LMM) トレーニングにおいて、最大の量、最も処理の難易度が高く、最も複雑な情報密度を持つモダリティです。静止画像とは異なり、ビデオでは <strong>時間次元</strong> が導入されます。これは、データが単なるピクセルの積み重ねではなく、因果関係の論理、物理法則、および運動パターンを運ぶことを意味します。</p>
+<p>この章では、連続した非構造化ビデオ ストリームをモデルが理解できる離散トークンに変換する方法を系統的に説明します。基礎となる <strong>ショット境界検出</strong> から始めて、コンテンツベースのセグメンテーション アルゴリズムを詳しく分析します。次に、ビデオ生成の「核心」である <strong>Video Tokenizer</strong> を分析し、VQ-VAE と Google DeepMind の最新の MagViT-v2 の基礎となる原理を比較します。最後に、<strong>WhisperX</strong> を使用して、音声とビデオの単語レベル、さらには音素レベルの正確な位置合わせを実現し、モデルの時空間的に同期された監視信号を構築する方法を示します。</p>
+<p><strong>学習目標</strong>:
+* <strong>エンジニアリング機能</strong>: PySceneDetect と ffmpeg キーフレーム メタデータを組み合わせたマスターを使用して、効率的な 2 段階のシーン セグメンテーション (粗いから細かい) 戦略を実現します。
+* <strong>理論的な深さ</strong>: ビデオ トークン化における「コードブックの崩壊」問題と、MagViT-v2 がルックアップフリー量子化 (LFQ) を通じてこのボトルネックをどのように完全に解決するかを深く理解します。
+* <strong>データ パイプライン</strong>: WhisperX ベースの強制位置合わせフローを実装して、マルチスピーカーやバックグラウンド ノイズの音響環境での正確な字幕位置合わせを解決します。
+* <strong>ストレージの最適化</strong>: ストレージのシャーディングと大量のビデオ データの効率的な読み込みについて理解します。</p>
+<p><strong>シナリオの紹介</strong>:</p>
+<blockquote>
+<p>「ソラのような世界モデルをトレーニングしていると想像してください。トレーニング データとして 2 時間の映画「タイタニック」をダウンロードしました。</p>
+<p>単純に 10 秒ごとに分割すると、重大な「意味的不連続性」が発生します。セグメントの最初の 5 秒はデッキ上の穏やかな海風かもしれませんが、次の 5 秒は突然騒々しいレストランにジャンプします。このクロスシーンの「ハードカット」はモデルを混乱させます。「人はどのようにして屋外から屋内に 0.1 秒でテレポートしたのでしょうか?」これは計算を無駄にするだけでなく、モデルに間違った物理学を教えます。</p>
+<p>さらに、オーディオの時間精度が命です。ローズの口が画面上で動いているとき、字幕が画像より 2 秒遅れている場合、対応するトークンはジャックのセリフです。モデルは、「ジャックの声の特徴」を「ローズの顔の特徴」と誤って関連付けます。兆トークンのトレーニングでは、このような微妙なずれが増幅して重度の幻覚を引き起こす可能性があります。」</p>
+</blockquote>
+<hr />
+<h3 id="81">8.1 ビデオ処理パイプライン: シーン検出<a class="headerlink" href="#81" title="Permanent link">&para;</a></h3>
+<p>ビデオは基本的に連続したストリームではなく、一連の独立した「ショット」が連結されたものです。各ショットは、1 つのカメラのオンとオフ (または連続的なカメラの動き) を表します。ビデオ生成モデル (ビデオ生成モデル) をトレーニングするには、<strong>時空間連続性</strong> を確保するために、各トレーニング サンプル (トレーニング クリップ) が同じショット内にある必要があります。</p>
+<h4 id="811-gop-i">8.1.1 ビデオ構造のミクロビュー: GOP と I フレーム<a class="headerlink" href="#811-gop-i" title="Permanent link">&para;</a></h4>
+<p>セグメンテーション アルゴリズムに入る前に、ビデオ エンコーディングの基本を理解する必要があります。</p>
+<ul>
+<li><strong>I フレーム (イントラコーディングされたピクチャ)</strong>: キーフレーム。他のフレームに依存せずにデコードできる完全な画像です。通常、シーン遷移の開始点でもあります。</li>
+<li><strong>P フレーム (予測ピクチャ)</strong>: 前方予測フレーム。前のフレームとの差分のみを保存します。</li>
+<li><strong>B フレーム (双方向予測ピクチャ)</strong>: 双方向予測フレーム。過去と将来のフレームの両方を参照して圧縮し、最も高い圧縮率を実現します。</li>
+</ul>
+<p><strong>GOP (Group of Pictures)</strong>: 2 つの I フレーム間のシーケンス。ビデオ プレーヤーがシークすると、デコードはそこから開始する必要があるため、通常、最も近い I フレームに「スナップ」します。私たちのセグメンテーション戦略はこれを活用して加速する必要があります。</p>
+<h4 id="812">8.1.2 アルゴリズムの選択と戦略<a class="headerlink" href="#812" title="Permanent link">&para;</a></h4>
+<p><a class="glightbox" href="../../../images/part3/Yu-Chap08-Fig01-ZH.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="図 8-1: 2 つのビデオ シーン セグメンテーション戦略と HSV ヒストグラムの違い" src="../../../images/part3/Yu-Chap08-Fig01-ZH.png" /></a>
+<em>図 8-1: 2 つのビデオ シーン セグメンテーション戦略と HSV ヒストグラムの違い</em></p>
+<p><strong>PySceneDetect</strong> は、業界標準のオープンソース ツールです。フレーム間差分分析に基づいたコア ロジックを備えた複数の検出器を提供します。</p>
+<ul>
+<li>
+<p><strong>戦略 1: 閾値検出器 (ハードカット)</strong></p>
+<ul>
+<li><strong>原理</strong>: HSV 色空間または RGB 輝度で隣接するフレーム間の平均差 (デルタ) を計算します。デルタ &gt; <code>threshold</code> (例: 30_0) の場合、カットポイントとしてマークされます。</li>
+<li><strong>該当</strong>: ほとんどの映画とユーザー生成コンテンツ (UGC)。</li>
+<li><strong>制限事項</strong>: 段階的な遷移を検出できません。</li>
+</ul>
+</li>
+<li>
+<p><strong>戦略 2: 適応検出器 (段階的な遷移 / 高速カット)</strong></p>
+<ul>
+<li><strong>原則</strong>: 固定しきい値は使用しなくなりました。スライディングウィンドウを維持します。 「現在のフレーム」と「ウィンドウ内の平均フレーム差」の比率を比較します。</li>
+<li><strong>適用可能</strong>: フェードイン/アウト、ディゾルブ、またはカメラの動きが激しいアクション シーン。</li>
+</ul>
+</li>
+</ul>
+<p><strong>高度な戦略: 2 段階のカスケード分割</strong>
+フルデコードされた TB スケールのビデオで PySceneDetect を実行すると、非常に時間がかかります。工業用の「粗くしてから細かい」アプローチをお勧めします。</p>
+<ol>
+<li><strong>レベル 1 (メタデータ スキャン)</strong>: <code>ffprobe</code> を使用して、ビデオ ストリームのメタデータを迅速にスキャンし、すべての <strong>I フレーム</strong> タイムスタンプを抽出します。 I フレームは多くの場合、シーンの遷移時に表示されます (エンコーダーは、突然の変化時に I フレームを挿入する傾向があります)。このステップではフレームのデコードは必要ありません。再生速度は 100 倍以上です。</li>
+<li><strong>レベル 2 (コンテンツ分析)</strong>: レベル 1 で識別された潜在的なカット ポイントから ±2 秒以内の正確なフレームレベルの位置特定には、PySceneDetect の <code>ContentDetector</code> のみを実行します。</li>
+</ol>
+<h4 id="813">8.1.3 コア コード: シーン検出とロスレス セグメンテーション<a class="headerlink" href="#813" title="Permanent link">&para;</a></h4>
+<p>以下のコードは、運用環境における標準的なセグメンテーション フローを示しています。 「ストリーム コピー」テクニックに注目してください。これは、大規模なビデオを処理する際のストレージの爆発を回避するための鍵です。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">scenedetect</span><span class="w"> </span><span class="kn">import</span> <span class="n">detect</span><span class="p">,</span> <span class="n">ContentDetector</span><span class="p">,</span> <span class="n">split_video_ffmpeg</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># Configure logging</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="k">def</span><span class="w"> </span><span class="nf">process_video_scenes</span><span class="p">(</span><span class="n">video_path</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mi">27_0</span><span class="p">):</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="sd">    Detect scenes and cut video with ffmpeg losslessly</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="sd">    Args:</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="sd">        video_path: Input video path</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="sd">        output_dir: Output directory</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="sd">        threshold: Segmentation threshold (empirical: 27_0 works for most 1080p video)</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">output_dir</span><span class="p">):</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Starting scene detection for: </span><span class="si">{</span><span class="n">video_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="c1"># 1. Scene detection</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="c1"># threshold=27_0: HSV space histogram difference threshold</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    <span class="c1"># min_scene_len=15: Ignore segments shorter than 0.5s (30fps).</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    <span class="c1"># Very short segments are usually flash, glitch, or segmentation noise—unsuitable for training data.</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>    <span class="n">scene_list</span> <span class="o">=</span> <span class="n">detect</span><span class="p">(</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>        <span class="n">video_path</span><span class="p">,</span> 
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>        <span class="n">ContentDetector</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span> <span class="n">min_scene_len</span><span class="o">=</span><span class="mi">15</span><span class="p">)</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>    <span class="p">)</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>    <span class="c1"># 2. Statistics and filtering</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>    <span class="c1"># Add logic here: e.g., merge overly short adjacent scenes, or discard scenes under 3 seconds</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>    <span class="n">valid_scenes</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>    <span class="k">for</span> <span class="n">scene</span> <span class="ow">in</span> <span class="n">scene_list</span><span class="p">:</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>        <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">scene</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>        <span class="n">duration</span> <span class="o">=</span> <span class="p">(</span><span class="n">end</span><span class="o">.</span><span class="n">get_frames</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="o">.</span><span class="n">get_frames</span><span class="p">())</span> <span class="o">/</span> <span class="n">start</span><span class="o">.</span><span class="n">get_framerate</span><span class="p">()</span>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>        <span class="k">if</span> <span class="n">duration</span> <span class="o">&gt;=</span> <span class="mi">3_0</span><span class="p">:</span> <span class="c1"># Keep only segments &gt;3s for training</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>            <span class="n">valid_scenes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scene</span><span class="p">)</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">scene_list</span><span class="p">)</span><span class="si">}</span><span class="s2"> scenes, kept </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">valid_scenes</span><span class="p">)</span><span class="si">}</span><span class="s2"> valid scenes.&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>    <span class="c1"># 3. Split video (Stream Copy)</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>    <span class="c1"># Key: arg_override=&#39;-c:v copy -c:a copy&#39;</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    <span class="c1"># This instructs ffmpeg to directly copy the binary stream without [decode -&gt; pixels -&gt; encode].</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    <span class="c1"># Benefit 1: Extremely fast (limited by disk I/O, not CPU).</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    <span class="c1"># Benefit 2: 100% lossless quality, no re-encoding artifacts.</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>    <span class="n">split_video_ffmpeg</span><span class="p">(</span>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>        <span class="n">video_path</span><span class="p">,</span> 
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>        <span class="n">valid_scenes</span><span class="p">,</span> 
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>        <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span> 
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>        <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>        <span class="n">arg_override</span><span class="o">=</span><span class="s1">&#39;-c:v copy -c:a copy&#39;</span> 
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>    <span class="p">)</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a><span class="c1"># Pitfall: Data storage explosion disaster</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a><span class="c1"># NEVER decode segmented video into image sequences (png/jpg) or numpy arrays for long-term storage!</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a><span class="c1"># Do the math:</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a><span class="c1"># 1 hour 1080p H.264 video ≈ 2GB</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a><span class="c1"># Decoded: 3600s * 30fps * 1920 * 1080 * 3 bytes ≈ 670 GB</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a><span class="c1"># Expansion factor &gt; 300x.</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a><span class="c1"># Always store in compressed format (mp4/mkv), only use GPU (NVDEC) for real-time decoding in training DataLoader __getitem__.</span>
+</code></pre></div>
+<hr />
+<h3 id="82">8.2 ビデオのトークン化: ピクセル オーシャンから離散島まで<a class="headerlink" href="#82" title="Permanent link">&para;</a></h3>
+<p>Sora、Gen-2、およびその他の Transformer ベースの拡散モデル (DiT) の場合、ピクセル空間で直接モデリングすることは不可能です。 4 秒の 1080p ビデオには、約 <span class="arithmatex">\(3 \times 10^8\)</span> ピクセルが含まれます。注意行列を計算すると、即時 OOM が発生します。</p>
+<p>したがって、ビデオはまず潜在空間内の個別のトークンに「圧縮」される必要があります。このプロセスは <strong>Video Tokenizer</strong> によって実行されます。</p>
+<h4 id="821-vq-vae">8.2.1 従来のアプローチの問題: VQ-VAE と「デッドコード」<a class="headerlink" href="#821-vq-vae" title="Permanent link">&para;</a></h4>
+<p><strong>VQ-VAE (ベクトル量子化変分オートエンコーダー)</strong> は、初期のビデオ生成モデル (VideoGPT など) の基礎です。</p>
+<ul>
+<li>
+<p><strong>フロー</strong>:</p>
+<ol>
+<li><strong>エンコーダー</strong>: ビデオを 3D パッチ (例: <span class="arithmatex">\(16 \times 16 \times 16\)</span> の時空間ブロック) に分割し、低次元ベクトル <span class="arithmatex">\(z_e(x)\)</span> に圧縮します。</li>
+<li><strong>量子化</strong>: <span class="arithmatex">\(K\)</span> プロトタイプ ベクトル (Embedding) を使用してコードブックを維持します。各 <span class="arithmatex">\(z_e(x)\)</span> について、ユークリッド距離でコードブック内の最も近いベクトル <span class="arithmatex">\(e_k\)</span> を見つけて置き換えます。</li>
+<li><strong>デコーダー</strong>: <span class="arithmatex">\(e_k\)</span> を使用してビデオを再構築します。</li>
+</ol>
+</li>
+<li>
+<p><strong>致命的な欠陥: コードブックの崩壊</strong>
+    トレーニングの初期段階では、少数のコード (コード #5 や #100 など) だけが誤って選択されます。選択されたコードのみが勾配更新を受け取るため、コードは「より良く」なり、再度選択されやすくなります。これは「金持ちはさらに金持ちになる」マシュー効果を形成します。</p>
+<ul>
+<li><strong>結果</strong>: コードブック ベクトルの 90% は、決して使用されず「デッド コード」になります。これにより、有効な語彙が非常に少なくなり、不鮮明で詳細が欠如したビデオが生成されます。</li>
+<li><strong>修復</strong>: 従来の方法では複雑なリセット戦略 (K 平均法リセットなど) が必要であり、トレーニングは非常に不安定です。</li>
+</ul>
+</li>
+</ul>
+<h4 id="822-sota-magvit-v2-lfq">8.2.2 SOTA アプローチ: MagViT-v2 および LFQ<a class="headerlink" href="#822-sota-magvit-v2-lfq" title="Permanent link">&para;</a></h4>
+<p>Google DeepMind は、MagViT-v2 に <strong>LFQ (ルックアップフリー量子化)</strong> を導入し、ゲームを根本的に変えました。</p>
+<ul>
+<li>
+<p><strong>中心的なアイデア: ルックアップなし、直接計算。</strong>
+    LFQ は「最近傍検索」アプローチを放棄し、潜在変数の <strong>符号</strong>からトークンを直接生成します。</p>
+</li>
+<li>
+<p><strong>数学的原理</strong>:
+    エンコーダーの出力潜在ベクトル <span class="arithmatex">\(z \in \mathbb{R}^D\)</span> (例: <span class="arithmatex">\(D=18\)</span>) を仮定します。
+    LFQ は各次元を 2 値化します。
+    <span class="arithmatex">\(<span class="arithmatex">\(q_i = \begin{cases} 1 &amp; \text{if } z_i &gt; 0 \\ 0 &amp; \text{if } z_i \le 0 \end{cases}\)</span>\)</span></p>
+</li>
+</ul>
+<p>次に、<span class="arithmatex">\(D\)</span> バイナリ ビットを整数インデックスに結合します。
+    <span class="arithmatex">\(<span class="arithmatex">\(\text{トークン ID} = \sum_{i=0}^{D-1} q_i \cdot 2^i\)</span>\)</span></p>
+<ul>
+<li><strong>LFQ はなぜ革新的ですか?</strong><ol>
+<li><strong>無限の有効コードブック</strong>: <span class="arithmatex">\(D=18\)</span> の場合、自然なコードブックのサイズは <span class="arithmatex">\(2^{18} = 262,144\)</span> です。すべてのコードは <span class="arithmatex">\(D\)</span> の独立した次元の組み合わせです。各次元は常にグラデーションの更新に参加します。 <strong>コードブックの使用率は 100% で一定です。</strong></li>
+<li><strong>計算コストゼロ</strong>: 高価な「完全なコードブック距離計算」は不要で、単純なビット演算のみです。</li>
+<li><strong>時空間圧縮</strong>: MagViT-v2 は <strong>3D 因果関係 CNN</strong> を組み合わせ、空間を圧縮しながら時間的因果関係を維持します (現在のトークンが将来の情報を漏らすことはありません)。これは生成モデルにとって重要です。</li>
+</ol>
+</li>
+</ul>
+<h4 id="823">8.2.3 アーキテクチャ比較表<a class="headerlink" href="#823" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">特集</th>
+<th style="text-align: left;">VQ-VAE (TATS/VideoGPT)</th>
+<th style="text-align: left;">MagViT-v2 (LFQ)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>量子化メカニズム</strong></td>
+<td style="text-align: left;">最近傍検索 (ルックアップ)</td>
+<td style="text-align: left;">符号関数（符号投影）</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>語彙サイズ (語彙)</strong></td>
+<td style="text-align: left;">通常は 1024 ～ 8192 (VRAM と折りたたみによって制限されます)</td>
+<td style="text-align: left;"><span class="arithmatex">\(2^{18}\)</span> (262k) 以上、簡単に拡張可能</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>コードブックの使用率</strong></td>
+<td style="text-align: left;">低い（崩壊しやすい、EMAが必要など）</td>
+<td style="text-align: left;"><strong>100% (デザインの崩壊を回避)</strong></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>グラデーション バックプロップ</strong></td>
+<td style="text-align: left;">Straight-Through Estimator (STE) が必要</td>
+<td style="text-align: left;">改善されたエントロピー ペナルティ + STE</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>世代の品質</strong></td>
+<td style="text-align: left;">ぼやけやすく、ディテールの質感が失われます</td>
+<td style="text-align: left;">非常にクリアで、オリジナルよりさらに優れています（ノイズ除去効果）</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>推論速度</strong></td>
+<td style="text-align: left;">遅い (特にコードブックが大きい場合)</td>
+<td style="text-align: left;">非常に速い</td>
+</tr>
+<tr>
+<td style="text-align: left;">---</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<p>VQ-VAE から MagViT-v2 への進化は、単純なパラメーターの最適化ではなく、「検索ベースの近似」から「計算ベースの構築」へのビデオ離散化テクノロジーのパラダイム シフトです。</p>
+<p>まず、計算の複雑さとスケーラビリティの点で、従来の VQ-VAE には根本的なボトルネックがあります。その量子化は最近傍検索に依存しており、特徴ベクトルとコードブック内のすべての <span class="arithmatex">\(K\)</span> プロトタイプ間のユークリッド距離 (時間計算量 <span class="arithmatex">\(O(K)\)</span>) を計算する必要があります。これは、表現を改善するために語彙を拡張すると、推論レイテンシが直線的に増加することを意味します。対照的に、MagViT-v2 の LFQ (ルックアップフリー量子化) はルックアップを放棄し、符号関数を使用して潜在変数をバイナリ文字列に射影します。このプロセスにより、計算の複雑さが定数 <span class="arithmatex">\(O(1)\)</span> に軽減され、推論速度を犠牲にすることなくモデルが <span class="arithmatex">\(2^{18}\)</span> 以上の語彙をサポートできるようになり、大きな語彙と低遅延の間の矛盾が解決されます。</p>
+<p>第二に、コードブックの利用とトレーニングの安定性において、この 2 つは著しく異なります。 VQ-VAE は長い間、「コードブック崩壊」に悩まされてきました。初期化や不均一な勾配割り当てにより一部のエンコード ベクトルがアクティブにならず、有効なボキャブラリが設計値を大幅に下回ります (多くの場合、わずか 1024 ～ 8192)。このため、研究者は EMA (指数移動平均) や K-means リセット、その他の複雑なエンジニアリング手法を導入する必要があります。 MagViT-v2 の LFQ は、独立した次元の 2 値化の組み合わせに基づいており、コードブック空間が「個別に検索される」のではなく「組み合わせ的に生成される」ことを数学的に保証します。潜在空間次元がアクティブである限り、結合されたコードは自然にコードブック空間全体をカバーし、理論上は 100% の使用率が達成されます。</p>
+<p>要約すると、MagViT-v2 の LFQ は、高圧縮、高忠実度、低計算コストの統合を実現し、細部のテクスチャ損失と時空間一貫性の低下という従来の VQ-VAE の欠点を完全に解決します。 Sora スケールの大規模ビデオ生成モデルを構築するには、MagViT-v2 と派生 Tokenizer アーキテクチャが業界で好まれる選択肢となっています。</p>
+<h3 id="83-whisperx">8.3 オーディオ調整: WhisperX と強制調整<a class="headerlink" href="#83-whisperx" title="Permanent link">&para;</a></h3>
+<p>ビデオは単なる視覚データではありません。音声 (オーディオ) は、自然で時間的に密度の高いテキストの説明を提供します。音声を使用すると、「爆発音は爆発光に対応する」「泣き声は涙に対応する」など、複数のモーダルな関連付けをモデルに学習させることができます。</p>
+<p>ただし、通常の ASR (生の Whisper など) は「文レベル」のタイムスタンプのみを提供し、通常は 1 ～ 2 秒のエラーが発生します。これでは、細かいビデオ トレーニング (リップシンクなど) にはまったく不十分です。 <strong>WhisperX</strong> が必要です。</p>
+<p><a class="glightbox" href="../../../images/part3/Yu-Chap08-Fig02-ZH.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="図 8-2: 通常の ASR (セグメント レベル) と WhisperX (単語/音素レベル) の精度の比較" src="../../../images/part3/Yu-Chap08-Fig02-ZH.png" /></a>
+<em>図 8-2: 通常の ASR (セグメント レベル) と WhisperX (単語/音素レベル) の精度の比較</em></p>
+<h4 id="831">8.3.1 なぜ強制的に位置合わせを行うのか?<a class="headerlink" href="#831" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>ASR (OpenAI Whisper)</strong>:<ul>
+<li>出力: <code>"Hello world"</code> -&gt; <code>Timestamp: [0_0s -&gt; 2_0s]</code></li>
+<li>問題: モデルは、文がこの 2 秒以内に含まれることのみを認識しており、「world」がいつ始まるかは正確には認識していません。</li>
+</ul>
+</li>
+<li><strong>強制アライメント (WhisperX)</strong>:<ul>
+<li>原則: まずテキストに書き起こしてから、事前にトレーニングされた音響モデル (Wav2Vec2 など) を使用して、テキスト内の <strong>音素</strong> を音声波形と強制的に一致させます。</li>
+<li>出力:<ul>
+<li><code>"Hello"</code>: <code>[0_12s -&gt; 0_58s]</code></li>
+<li><code>"world"</code>: <code>[0_85s -&gt; 1_45s]</code></li>
+</ul>
+</li>
+<li><strong>値</strong>: 次のようなトレーニング ペアを構築できます: ビデオ フレームが 0_85 秒の場合、モデルに「世界」のテキストEmbeddingに焦点を当てるように強制します。これは、優れたマルチモーダル アライメントの基礎です。</li>
+</ul>
+</li>
+</ul>
+<h4 id="832-whisperx">8.3.2 エンジニアリング実装: WhisperX フル パイプライン<a class="headerlink" href="#832-whisperx" title="Permanent link">&para;</a></h4>
+<p>WhisperX は、VAD (音声アクティビティ検出)、Whisper (文字起こし)、Wav2Vec2 (位置合わせ)、および Pyannote (話者ダイアリゼーション) を組み合わせた複雑なパイプラインです。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">whisperx</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">gc</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">align_audio_transcript</span><span class="p">(</span><span class="n">audio_file</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">):</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="sd">    Use WhisperX for transcription and word-level forced alignment</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="c1"># Step 1: Transcription</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="c1"># Use Large-v2 model for transcript accuracy</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="c1"># compute_type=&quot;float16&quot; significantly speeds up, but requires Ampere+ GPU (A100/A10/3090/4090)</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;1. Loading Whisper model...&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">model</span> <span class="o">=</span> <span class="n">whisperx</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="s2">&quot;large-v2&quot;</span><span class="p">,</span> 
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="n">device</span><span class="p">,</span> 
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>        <span class="n">compute_type</span><span class="o">=</span><span class="s2">&quot;float16&quot;</span> 
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="p">)</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;2. Transcribing...&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="n">audio</span> <span class="o">=</span> <span class="n">whisperx</span><span class="o">.</span><span class="n">load_audio</span><span class="p">(</span><span class="n">audio_file</span><span class="p">)</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">transcribe</span><span class="p">(</span><span class="n">audio</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">)</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>    <span class="c1"># Critical: VRAM management</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>    <span class="c1"># Whisper model is huge, and the next Alignment model is also VRAM-heavy.</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>    <span class="c1"># Must explicitly delete model and trigger garbage collection, otherwise easily OOM (Out of Memory).</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="k">del</span> <span class="n">model</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>    <span class="c1"># Step 2: Forced Alignment</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>    <span class="c1"># Auto-loads corresponding language Wav2Vec2 model (e.g., wav2vec2-large-960h for English)</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;3. Aligning...&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>    <span class="n">model_a</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="n">whisperx</span><span class="o">.</span><span class="n">load_align_model</span><span class="p">(</span>
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>        <span class="n">language_code</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;language&quot;</span><span class="p">],</span> 
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>        <span class="n">device</span><span class="o">=</span><span class="n">device</span>
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>    <span class="p">)</span>
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>
+<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>    <span class="c1"># align() executes a Dynamic Programming-like algorithm</span>
+<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>    <span class="c1"># finding best matching path between text phoneme sequence and audio waveform features</span>
+<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>    <span class="n">aligned_result</span> <span class="o">=</span> <span class="n">whisperx</span><span class="o">.</span><span class="n">align</span><span class="p">(</span>
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>        <span class="n">result</span><span class="p">[</span><span class="s2">&quot;segments&quot;</span><span class="p">],</span> 
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>        <span class="n">model_a</span><span class="p">,</span> 
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>        <span class="n">metadata</span><span class="p">,</span> 
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>        <span class="n">audio</span><span class="p">,</span> 
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>        <span class="n">device</span><span class="p">,</span> 
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>        <span class="n">return_char_alignments</span><span class="o">=</span><span class="kc">False</span> <span class="c1"># Set True for character-level alignment (e.g., for karaoke subtitles)</span>
+<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a>    <span class="p">)</span>
+<a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a>
+<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>    <span class="c1"># Result contains word_segments with precise start/end for each word</span>
+<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>    <span class="c1"># e.g.: [{&#39;word&#39;: &#39;Hello&#39;, &#39;start&#39;: 0_1, &#39;end&#39;: 0_5, &#39;score&#39;: 0_98}, ...]</span>
+<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a>    <span class="k">return</span> <span class="n">aligned_result</span>
+<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a>
+<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a><span class="c1"># Advanced tip:</span>
+<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a><span class="c1"># For speaker diarization (who said what), further call:</span>
+<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a><span class="c1"># diarize_model = whisperx.DiarizationPipeline(use_auth_token=&quot;YOUR_HF_TOKEN&quot;, device=device)</span>
+<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a><span class="c1"># diarize_segments = diarize_model(audio)</span>
+<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a><span class="c1"># whisperx.assign_word_speakers(diarize_segments, aligned_result)</span>
+</code></pre></div>
+<h4 id="833">8.3.3 本番環境の落とし穴<a class="headerlink" href="#833" title="Permanent link">&para;</a></h4>
+<ol>
+<li>
+<p><strong>VAD の誤った判断と BGM の妨害</strong>:</p>
+<ul>
+<li><strong>問題</strong>: WhisperX は、サイレント セグメントのセグメント化に VAD に大きく依存しています。ビデオの BGM が大きい場合、VAD はセグメント全体を音声として処理するか、その逆の場合があり、音声がかき消されます。</li>
+<li><strong>解決策</strong>: ソース分離のために <strong>Demucs</strong> または <strong>Spleeter</strong> を導入します。</li>
+<li><strong>フロー</strong>: <code>Raw Audio</code> -&gt; <code>Demucs (Extract Vocal Track)</code> -&gt; <code>WhisperX</code>。抽出された純粋なボーカル トラックのみを認識にフィードして、精度を大幅に高めます。</li>
+</ul>
+</li>
+<li>
+<p><strong>マルチスピーカーオーバーラップ (オーバーラップスピーチ)</strong>:</p>
+<ul>
+<li><strong>問題</strong>: Whisper は複数の人が同時に話している場合 (カクテル パーティーの問題) に弱く、通常は最も声の大きい人だけを文字に起こすか、混乱したテキストを生成します。</li>
+<li><strong>解決策</strong>: <code>diarization=True</code> を有効にします。これにより推論時間が 30% ～ 50% 増加しますが、テレビ ドラマやインタビュー クラスのビデオ データの場合、これが「誰が何を言ったか」を区別する唯一の方法であり、キャラクターのアイデンティティに関するモデルの混乱を避けることができます。</li>
+</ul>
+</li>
+<li>
+<p><strong>幻覚タイムスタンプ</strong>:</p>
+<ul>
+<li><strong>問題</strong>: ささやき声は、長い沈黙または純粋な音楽セグメント中に「幻覚」を引き起こす可能性があり、間違ったタイムスタンプで前の歌詞を繰り返します。</li>
+<li><strong>チェック</strong>: 後処理で、<code>word['score']</code> (信頼性) をチェックします。連続した単語の文字列の信頼度が 0_4 未満の場合は、そのセグメントのアラインメントを破棄することをお勧めします。</li>
+</ul>
+</li>
+</ol>
+<hr />
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

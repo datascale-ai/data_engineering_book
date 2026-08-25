@@ -1,0 +1,1127 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part4/4_2_synthetic_data/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第10章: 合成データ —— 「データマイニング」から「データファーミング」へ - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#10" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第10章: 合成データ —— 「データマイニング」から「データファーミング」へ
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/data_engineering_book/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/data_engineering_book/en/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      章の概要
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="章の概要">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      学習目標
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      シナリオの紹介: データがボトルネックになるとき
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#101" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1 中心となる概念と原則 (概念と原則)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.1 中心となる概念と原則 (概念と原則)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1011" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1.1 合成データの量よりも品質がはるかに重要なのはなぜですか?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1012" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1.2 教科書レベルのデータ (必要なのは教科書だけです)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1013-pot" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1.3 コードと数学の合成: PoT (思考プログラム)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1014" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1.4 マルチモーダル命令合成: ブリッジング認識
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2 エンジニアリングの実装 (エンジニアリングの実装)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.2 エンジニアリングの実装 (エンジニアリングの実装)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1021" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2.1 教科書レベルのデータ: 分類器と合成パイプライン
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1022" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2.2 逆翻訳: 回答から質問を導き出す
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1023-pot" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2.3 コードと数学の合成: PoT (思考プログラム)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1024-llava" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2.4 マルチモーダル命令合成: LLaVA パイプライン
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.2.4 マルチモーダル命令合成: LLaVA パイプライン">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. エンジニアリング パイプライン: ピクセルからシンボルまで
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. プロンプトエンジニアリング: 設計と考慮事項
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#1025" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2.5 マルチモーダル命令データ合成の高度な戦略
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.2.5 マルチモーダル命令データ合成の高度な戦略">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. 視覚的な強力なモデルの抽出
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. ドメインの専門化: 専門家の混合パイプライン
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-evolution-visual-evol-instruct" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Evolution 命令の生成 (Visual Evol-Instruct)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#103" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3。実績と評価 (実績と評価)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.3。実績と評価 (実績と評価)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      評価指標
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      ベンチマーク
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#104" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4。落とし穴とトラブルシューティング
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#105" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.5。各章の概要と詳細情報
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10.5。各章の概要と詳細情報">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="10">第10章: 合成データ —— 「データマイニング」から「データファーミング」へ<a class="headerlink" href="#10" title="Permanent link">&para;</a></h1>
+<h2 id="_1">章の概要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>大規模モデルの競争が激化するにつれ、公共のインターネット上の高品質な自然データが枯渇に直面しています。私たちはインターネット全体をほぼ「読んで」いますが、モデルの知的限界には遠く及ばないのです。現時点では、合成データはもはやオプションではありません。合成データは、モデルの機能を飛躍的に向上させるための新しいエンジンです。この章では、Microsoft の Phi シリーズの「教科書レベル」のデータ合成手法を深く分析し、受動的な「データ コレクター」から能動的な「データ作成者」に変革する方法を探ります。</p>
+<p>テキストの生成にとどまらず、コード実行を使用した思考プログラム (PoT) を通じて厳密な論理検証ループを構築し、GPT-4o やその他のマルチモーダル モデルを使用して複雑な画像とテキストの命令データを合成する方法を説明します。単純な「人間を模倣する」から「人間を超える」に移行する方法を示し、アルゴリズム的手段を通じて現実世界よりも純粋で教育的なトレーニング セットを構築します。</p>
+<h3 id="_2">学習目標<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<ul>
+<li>大量の Web データから価値の高いサンプルをフィルタリングする「教科書品質」分類器を構築します。</li>
+<li>Python インタプリタを使用して数学/コード データの正確性を検証する、PoT (プログラム オブ ソート) データ生成パイプラインを実装します。</li>
+<li>LLaVA/GPT-4o ベースのマルチモーダル命令合成をマスターして、イメージ推論 Q&amp;A ペアを構築します。</li>
+</ul>
+<h3 id="_3">シナリオの紹介: データがボトルネックになるとき<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>「あなたは、Python プログラミングに特化した小さなモデル (1.3B) をトレーニングしています。それをできるだけ強力にするために、GitHub からすべてのオープンソース コードをスクレイピングするクローラーを作成しました。しかし、トレーニング後にテストすると、モデルがバグのあるコードを書くことを学習し、関数内で「TODO: これは後で修正します」または「このコードはゴミです。使用しないでください」と書くことさえ学習していることに絶望的に気づきました。
+単にデータを追加するだけでは効果がなくなり、モデルに与えるゴミの量が増えるほど、その出力はより無秩序になります。そんなとき、Microsoft の Phi-1 論文が目覚ましのようにあなたを襲います。「必要なのは教科書だけだ」。必要なのは、明確なロジック、完璧なコメント、進歩的な教えを備えた教科書のようなコードであり、神と原作者だけが理解できる「スパゲッティ コード」ではありません。しかし、何千億もの完璧な教科書はどこで見つかるのでしょうか?それらを見つけることができないため、私たちはこのデータを何もないところから「作成」する方法を学ばなければなりません。これらの完璧な教科書をバッチ生産するための、たゆまぬ「バーチャル教授」を構築するにはどうすればよいでしょうか?これが、この章で取り上げるエンジニアリング上の主要な課題です。」</p>
+</blockquote>
+<hr />
+<h2 id="101">10.1 中心となる概念と原則 (概念と原則)<a class="headerlink" href="#101" title="Permanent link">&para;</a></h2>
+<p>合成データの中心的な課題は、<strong>品質管理</strong>と<strong>検証ループ</strong>にあります。モデルが生成したテキストには、確認せずに幻覚やエラーが含まれることがよくあるためです。誤ったデータに基づいてモデルをトレーニングすると、「モデルのオートファジー」または「モデルの崩壊」が発生します。つまり、モデルの出力の差異が徐々になくなり、内容が非常に均質になり、現実から切り離されてしまいます。この章で紹介する 3 つの方法は、それぞれテキスト、コード/数学、マルチモーダル データの品質の問題に対処します。</p>
+<h3 id="1011">10.1.1 合成データの量よりも品質がはるかに重要なのはなぜですか?<a class="headerlink" href="#1011" title="Permanent link">&para;</a></h3>
+<p>初期のディープラーニングでは、「データ量は正義」、つまり十分なデータがあればモデルはすべてを学習できると信じられていました。しかし、合成データの時代では、この定説は覆されました。</p>
+<p><strong>信号対雑音比の理論:</strong>
+モデルのトレーニングは本質的には情報圧縮プロセスです。高品質のデータ (教科書など) は、非常に高い情報密度と厳密な論理チェーンを持っています。モデルは、基礎となるパターンを捕捉するために少数のサンプルを必要とします。低品質のデータ (フォーラムのスパム、おしゃべりなど) には、ノイズと論理的なギャップがたくさんあります。トレーニング セットに大量の低品質の合成データが混在している場合、モデルは損失を削減するためにこのノイズを強制的に適合させ、「論理回路」が短絡する原因となります。</p>
+<p>物理学を学ぶ: <em>ファインマン講義</em> のような古典を読むこと (高品質の合成データ) は、10,000 本の断片的な物理普及ビデオ (低品質データ) を見ることよりも優れています。 Phi-1 の成功は、教科書レベルのデータの 60 億トークンが、トレーニング効果において Web クロールされたデータの 1000 億トークンを上回る可能性があることを証明しました。合成データでは、<strong>検証コスト</strong> が新しい通貨になりました。</p>
+<h3 id="1012">10.1.2 教科書レベルのデータ (必要なのは教科書だけです)<a class="headerlink" href="#1012" title="Permanent link">&para;</a></h3>
+<p>Microsoft Phi-1 の中心的なアイデア: 1TB のゴミデータでトレーニングするのではなく、6B トークンの高品質データを使用します。その核心は「フィルター」と「アンプ」の構築にあります。</p>
+<p>まず、Web データを完全に放棄するわけではありません。「教育的価値」のあるコンテンツを識別するための分類子 (品質分類子) をトレーニングします。これは単に文法をチェックするだけではなく、コンテンツが論理的に一貫性があり、定義と推論が含まれているかどうかをチェックします。第 2 に、強力な生成モデル (GPT-4 など) を「増幅器」として使用し、これらの高品質のスニペットに基づいて、スタイルは似ているがまったく新しいコンテンツを備えた自己完結型の知識の断片を合成します。</p>
+<p><a class="glightbox" href="../../../images/part4/Wang-Chap10-Fig01-ZH.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="図 10-1: Phi-1 プロセス図" src="../../../images/part4/Wang-Chap10-Fig01-ZH.png" /></a>
+<em>図 10-1: Phi-1 プロセス図</em></p>
+<h3 id="1013-pot">10.1.3 コードと数学の合成: PoT (思考プログラム)<a class="headerlink" href="#1013-pot" title="Permanent link">&para;</a></h3>
+<p>LLM は本質的に確率モデルであり、真の論理推論チップを備えていません。したがって、LLM が算術 (234 * 567 など) または複雑な論理導出を実行すると、幻覚が現れやすくなります。 PoT (思考プログラム) は次のように考えます。LLM は計算は得意ではありませんが、翻訳は得意であるため、数学の問題をコードに「翻訳」させ、Python インタプリタに結果を計算させます。</p>
+<p>これは、<strong>100% の精度検証</strong>を達成した合成データの唯一のドメインです。生成されたコードを Python サンドボックスに入れて実行します。エラーの場合は破棄します。正常に実行された場合、実行結果は Ground Truth になります。この「実行イコール検証」メカニズムは、合成データの検証可能性の問題を完全に解決し、無限の数学および論理推論データを低コストで生成できるようにします。</p>
+<p><strong>表 10-1: 合成データ検証戦略の比較</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">データ型</th>
+<th style="text-align: left;">ジェネレーター</th>
+<th style="text-align: left;">コアチャレンジ</th>
+<th style="text-align: left;">検証者</th>
+<th style="text-align: left;">検証メカニズム</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>一般的なテキスト</strong></td>
+<td style="text-align: left;">GPT-4 / ジェミニ</td>
+<td style="text-align: left;">幻覚</td>
+<td style="text-align: left;">LLM (審査員) / 報酬モデル</td>
+<td style="text-align: left;">強力なモデルのスコアリングに依存します。一貫性が低い。 「ジャッジバイアス」になりやすい</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>数学/論理</strong></td>
+<td style="text-align: left;">GPT-4 + PoT プロンプト</td>
+<td style="text-align: left;">計算エラー</td>
+<td style="text-align: left;">Python インタプリタ</td>
+<td style="text-align: left;"><strong>実行の一貫性</strong>: コードの実行結果は予想される答えと一致します。論理は絶対に正しい</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>コード</strong></td>
+<td style="text-align: left;">DeepSeek コーダー / GPT-4</td>
+<td style="text-align: left;">構文エラー、ロジックのバグ</td>
+<td style="text-align: left;">単体テスト/コンパイラ</td>
+<td style="text-align: left;"><strong>単体テスト</strong>: アサートまたはコンパイルの成功により、機能を確認します。</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>マルチモーダル</strong></td>
+<td style="text-align: left;">GPT-4o / LLaVA</td>
+<td style="text-align: left;">幻視（捏造）</td>
+<td style="text-align: left;">CLIP スコア / グラウンディング DINO</td>
+<td style="text-align: left;">生成された説明が画像のEmbeddingと一致するかどうかを確認します。存在しないオブジェクトの捏造を防ぐ</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1014">10.1.4 マルチモーダル命令合成: ブリッジング認識<a class="headerlink" href="#1014" title="Permanent link">&para;</a></h3>
+<p>画像データの場合、従来のアノテーションのコストは非常に高く、説明は簡潔です。 LLaVAは見事な「盲人と象」戦略を提案した。既存の検出モデルを使用して画像を記号的なテキスト説明 (キャプション + 境界ボックス) に変換し、この純粋なテキストを強力なテキスト専用モデル (GPT-4 など) に供給します。 GPT-4 は画像を見ることはできませんが、このメタデータを通じて画像コンテンツを「想像」し、それに基づいて複雑な推論ダイアログを生成できます。これにより、マルチモーダルなデータ不足が解決されるだけでなく、命令の複雑さとロジックが大幅に向上します。</p>
+<hr />
+<h2 id="102">10.2 エンジニアリングの実装 (エンジニアリングの実装)<a class="headerlink" href="#102" title="Permanent link">&para;</a></h2>
+<p>このセクションでは、コードレベルの実装について詳しく説明し、完全なデータ合成パイプラインを構築します。データの多様性を確保し、生成される「教科書」が単調にならないよう注力しています。</p>
+<h3 id="1021">10.2.1 教科書レベルのデータ: 分類器と合成パイプライン<a class="headerlink" href="#1021" title="Permanent link">&para;</a></h3>
+<p><strong>ステップ 1: 品質分類子をトレーニングする</strong>
+大量のデータから「教科書」を選択するには、軽量モデル (Random Forest や BERT-Tiny など) をトレーニングする必要があります。ここで重要なのは、アノテーション データ ソースです。通常、シードとして数千のサンプルに対する専門家または GPT-4 の慎重なアノテーションが必要です。</p>
+<p><strong>コードの実装: 機能エンジニアリングとトレーニング</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.ensemble</span><span class="w"> </span><span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.feature_extraction.text</span><span class="w"> </span><span class="kn">import</span> <span class="n">TfidfVectorizer</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pipeline</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># 1. Prepare annotation data</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># First annotate a small number of samples (e.g., 1000) with GPT-4 as &quot;gold standard&quot;</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># Prompt: &quot;Determine if this text is of educational value for a student...&quot;</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="c1"># Label 1: High Quality (Textbook-like), Label 0: Low Quality (Noise)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># This step is critical; annotation quality directly determines classifier ceiling</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Python lists are mutable sequences...&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hey guys check out my cat photo...&quot;</span><span class="p">,</span> <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="c1"># ... more data</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="p">]</span> 
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="c1"># 2. Build classifier pipeline</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="c1"># Phi-1 paper uses pretrained model Embedding; here simplified to TF-IDF for demonstration</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="c1"># In production, recommend DeBERTa-v3-small or similar lightweight Transformer for Embedding</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="p">(</span><span class="s1">&#39;tfidf&#39;</span><span class="p">,</span> <span class="n">TfidfVectorizer</span><span class="p">(</span><span class="n">max_features</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">stop_words</span><span class="o">=</span><span class="s1">&#39;english&#39;</span><span class="p">)),</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    <span class="p">(</span><span class="s1">&#39;clf&#39;</span><span class="p">,</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="p">])</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="c1"># 3. Train</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;text&#39;</span><span class="p">]</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;label&#39;</span><span class="p">]</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="n">pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="c1"># 4. Predict (Filtering Phase)</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="c1"># Score massive web data; retain only high-scoring data</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="n">web_snippet</span> <span class="o">=</span> <span class="s2">&quot;Standard library documentation for Python...&quot;</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="n">score</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">([</span><span class="n">web_snippet</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a><span class="k">if</span> <span class="n">score</span> <span class="o">&gt;</span> <span class="mf">0.8</span><span class="p">:</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Keep this data for training: High Educational Value&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a><span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Discard: Low Signal-to-Noise Ratio&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+<p><strong>ステップ 2: 合成教科書フラグメントの生成</strong>
+分類器でフィルタリングされたシード データの場合は、それを「拡張」する必要があります。ここでの迅速な設計には高度なスキルが必要です。</p>
+<p>プロンプト反復: 合成 Python チュートリアル
+* <strong>V1 プロンプト:</strong> 「Python リストに関するチュートリアルを作成します。」
+    * <strong>結果:</strong> 平凡なブログ投稿のような、平坦な物語で深みがありません。
+* <strong>V3 プロンプト (ファイ スタイル):</strong> 定義、比較、複雑さの分析、落とし穴の警告を必要とする特定の教育法が導入されました。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># V3 Prompt - Textbook-style synthesis</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">synthetic_textbook_prompt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="s2">### ROLE</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="s2">You are a professor of Computer Science writing a definitive textbook on Python.</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="s2">### OBJECTIVE</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="s2">Write a comprehensive, self-contained chapter section on the topic: &quot;List Comprehensions vs. Map/Filter&quot;.</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="s2">### REQUIREMENTS</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="s2">1. **Tone**: Educational, clear, precise, and rigorous. Avoid conversational filler.</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="s2">2. **Structure**:</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="s2">   - Start with a conceptual definition explaining *why* this feature exists.</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="s2">   - Provide a &quot;Before and After&quot; code example (Loop vs. Comprehension).</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="s2">   - Explain the *computational complexity* (Big O) implications.</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="s2">   - Include a &quot;Common Pitfall&quot; section (e.g., readability vs. brevity).</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="s2">3. **Diversity**: Use realistic variable names (e.g., `inventory_items`, `sensor_readings`), NOT generic ones like `x`, `y`, `foo`. </span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="s2">   (This is crucial to prevent the model from overfitting to toy examples).</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="s2">### OUTPUT</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="s2">[Markdown Content]</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div>
+<h3 id="1022">10.2.2 逆翻訳: 回答から質問を導き出す<a class="headerlink" href="#1022" title="Permanent link">&para;</a></h3>
+<p>スクラッチから生成する以外に、もう 1 つの効率的な方法は「逆変換」です。コードでは、高品質のコード スニペット (GitHub のハイスター ライブラリ関数など) は簡単に見つかりますが、対応する自然言語命令が不足していることがよくあります。</p>
+<p>LLM 要約を使用できます。複雑なコードを入力し、モデルに「このコードが問題を正確に解決できるように、さまざまなユーザー要件の指示をできるだけ詳細に書いてください。」と尋ねます。これにより、高品質が保証されたヒューマン コードを含む大規模な (命令、出力) ペアが迅速に生成されます。この方法は、複雑なコード ロジックのモデルの理解を強化するのに特に適しています。</p>
+<h3 id="1023-pot">10.2.3 コードと数学の合成: PoT (思考プログラム)<a class="headerlink" href="#1023-pot" title="Permanent link">&para;</a></h3>
+<p>これは、合成データの正確性を保証する最も強力な手段です。モデルにコードを生成させることで、あいまいな自然言語推論を正確なプログラム ロジックに変換します。</p>
+<p><strong>コアコードの内訳: 生成と検証ループ</strong>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># 1. PoT Generation Prompt</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># Require model to write solution steps as Python function solver()</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">pot_prompt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="s2">Question: Janet has 3 times as many eggs as Bob. Bob has 5 eggs. How many eggs do they have in total?</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="s2">Instruction:</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="s2">Write a Python function named `solver()` that returns the answer.</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="s2">Do not output the number directly. Write the code to calculate it.</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="s2">Include comments explaining the logic.</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="c1"># Assume LLM returns the following code string</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="n">generated_code</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="s2">def solver():</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="s2">    # Bob has 5 eggs</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="s2">    bob_eggs = 5</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="s2">    # Janet has 3 times as many as Bob</span>
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="s2">    janet_eggs = 3 * bob_eggs</span>
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="s2">    # Total eggs</span>
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="s2">    total = janet_eggs + bob_eggs</span>
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="s2">    return total</span>
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="c1"># 2. Code Execution Sandbox</span>
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="c1"># WARNING: Directly executing generated code is extremely dangerous; must run in sandbox</span>
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span class="k">def</span><span class="w"> </span><span class="nf">execute_generated_code</span><span class="p">(</span><span class="n">code_str</span><span class="p">):</span>
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>        <span class="c1"># In production use Docker, gVisor, or nsjail for isolation</span>
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>        <span class="n">local_scope</span> <span class="o">=</span> <span class="p">{}</span>
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>        <span class="c1"># Limit execution time to prevent infinite loops</span>
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>        <span class="c1"># Here uses simplified exec for demo; production needs resource module for CPU/memory limits</span>
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a>        <span class="n">exec</span><span class="p">(</span><span class="n">code_str</span><span class="p">,</span> <span class="p">{},</span> <span class="n">local_scope</span><span class="p">)</span>
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a>
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>        <span class="k">if</span> <span class="s1">&#39;solver&#39;</span> <span class="ow">in</span> <span class="n">local_scope</span><span class="p">:</span>
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a>            <span class="n">result</span> <span class="o">=</span> <span class="n">local_scope</span><span class="p">[</span><span class="s1">&#39;solver&#39;</span><span class="p">]()</span>
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>            <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="s2">&quot;Success&quot;</span>
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>        <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;No solver function found&quot;</span>
+<a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a>        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Execution Error: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+<a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a>
+<a id="__codelineno-2-47" name="__codelineno-2-47" href="#__codelineno-2-47"></a><span class="c1"># 3. Verification and Data Saving</span>
+<a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a><span class="n">result</span><span class="p">,</span> <span class="n">status</span> <span class="o">=</span> <span class="n">execute_generated_code</span><span class="p">(</span><span class="n">generated_code</span><span class="p">)</span>
+<a id="__codelineno-2-49" name="__codelineno-2-49" href="#__codelineno-2-49"></a>
+<a id="__codelineno-2-50" name="__codelineno-2-50" href="#__codelineno-2-50"></a><span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s2">&quot;Success&quot;</span><span class="p">:</span>
+<a id="__codelineno-2-51" name="__codelineno-2-51" href="#__codelineno-2-51"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Verified Answer: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-52" name="__codelineno-2-52" href="#__codelineno-2-52"></a>    <span class="c1"># Data saving strategy:</span>
+<a id="__codelineno-2-53" name="__codelineno-2-53" href="#__codelineno-2-53"></a>    <span class="c1"># Strategy A (PoT): Save Instruction -&gt; Code. Train model to write code for solving.</span>
+<a id="__codelineno-2-54" name="__codelineno-2-54" href="#__codelineno-2-54"></a>    <span class="c1"># Strategy B (CoT): Save Instruction -&gt; &quot;Let&#39;s calculate... [Reasoning]... The answer is {result}&quot;.</span>
+<a id="__codelineno-2-55" name="__codelineno-2-55" href="#__codelineno-2-55"></a>    <span class="c1"># Strategy B uses code as intermediate step to generate pure text reasoning data.</span>
+<a id="__codelineno-2-56" name="__codelineno-2-56" href="#__codelineno-2-56"></a>    <span class="n">save_to_dataset</span><span class="p">(</span><span class="n">pot_prompt</span><span class="p">,</span> <span class="n">generated_code</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-2-57" name="__codelineno-2-57" href="#__codelineno-2-57"></a><span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-2-58" name="__codelineno-2-58" href="#__codelineno-2-58"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Discard bad data: Code failed to execute&quot;</span><span class="p">)</span>
+</code></pre></div>
+<strong>プロのヒント:</strong> 生成されたデータは、PoT だけでなく通常の CoT モデルもトレーニングできます。方法: 実行に成功したコードを「中間ステップ」、実行結果を「最終回答」として使用し、<code>&lt;thinking&gt;...code...&lt;/thinking&gt;&lt;answer&gt;...result...&lt;/answer&gt;</code> 形式を逆に構築します。この「鶏を借りて卵を産む」方法により、純粋なテキスト モデルの演算精度が大幅に向上します。</p>
+<h3 id="1024-llava">10.2.4 マルチモーダル命令合成: LLaVA パイプライン<a class="headerlink" href="#1024-llava" title="Permanent link">&para;</a></h3>
+<p>テキストのみのモデルを使用してマルチモーダル データを合成することは、LLaVA の革新です。このメソッドの核心は、視覚情報を<strong>記号化</strong>することにあります。テキストのみのモデル (GPT-4 など) は画像を認識できないため、画像を読み取り可能な「コード」に変換します。</p>
+<p><a class="glightbox" href="../../../images/part4/Wang-Chap10-Fig02-ZH.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="図 10-2: LLaVA データ合成プロセス図" src="../../../images/part4/Wang-Chap10-Fig02-ZH.png" /></a>
+<em>図 10-2: LLaVA データ合成プロセス図</em></p>
+<h4 id="1">1. エンジニアリング パイプライン: ピクセルからシンボルまで<a class="headerlink" href="#1" title="Permanent link">&para;</a></h4>
+<p>プロンプト設計の前に、画像をテキスト モデルで読み取り可能な構造化データ (メタデータ) に「分解」するためのツールチェーンが必要です。</p>
+<ol>
+<li>
+<p><strong>グローバル セマンティクス (キャプション)</strong></p>
+<ul>
+<li><strong>ツール</strong>: 一文の説明用の CLIP または BLIP。</li>
+<li><strong>役割</strong>: 全体的なコンテキストを提供します。</li>
+<li><strong>出力例</strong>: <code>"A young girl riding a horse on a beach at sunset."</code></li>
+</ul>
+</li>
+<li>
+<p><strong>局所的な詳細 (物体検出)</strong></p>
+<ul>
+<li><strong>ツール</strong>: DINO を接地してオブジェクトと座標を抽出します (バウンディング ボックス)。</li>
+<li><strong>役割</strong>: 空間アンカー エンティティを提供します。</li>
+<li><strong>出力例</strong>: <code>{'girl': [100, 200, 300, 400], ...}</code></li>
+</ul>
+</li>
+<li>
+<p><strong>データ合成</strong></p>
+<ul>
+<li><strong>アクション</strong>: 上記の情報をプロンプトに入力し、GPT-4 を呼び出してダイアログを生成します。</li>
+</ul>
+</li>
+</ol>
+<h4 id="2">2. プロンプトエンジニアリング: 設計と考慮事項<a class="headerlink" href="#2" title="Permanent link">&para;</a></h4>
+<p>構造化データでは、迅速な設計がデータ品質の鍵となります。以下は、LLaVA スタイルのプロンプト テンプレートとアーキテクチャ上の考慮事項です。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># System Prompt for Multimodal Data Generation</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">multimodal_gen_prompt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="s2">### CONTEXT</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="s2">You are an AI visual assistant. You cannot see the image directly, but I will provide its metadata.</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="s2">Your task is to generate a conversation between a Human and Yourself about this image.</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="s2">### IMAGE METADATA</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="s2"># [Data injection point]: Fill pipeline-extracted data here</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="s2">- **Caption**: &quot;</span><span class="si">{caption}</span><span class="s2">&quot;</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="s2">- **Objects**: </span><span class="si">{object_list_with_boxes}</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="s2">### INSTRUCTIONS</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="s2">1. **Conversation Style**: Generate a multi-turn Q&amp;A (User asking, Assistant answering).</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="s2">2. **Reasoning**: The Human should ask complex questions (e.g., &quot;What suggests this is a safe environment?&quot;). You answer based on the visual evidence.</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="s2">3. **Spatial Awareness**: Use the bounding box info to describe relative positions if asked (e.g., &quot;The ocean is in the background...&quot;).</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="s2">4. **Visual Consistency**: Do NOT hallucinate objects not listed in the metadata.</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="s2">&quot;&quot;&quot;</span>
+</code></pre></div>
+<p><strong>プロンプト設計の背後にあるアーキテクチャ上の考慮事項:</strong></p>
+<ul>
+<li>
+<p><strong>キャプションとオブジェクトの両方を提供するのはなぜですか? (補完性)</strong>
+    オブジェクト (女の子、馬、海) だけでは個別であり、動きや雰囲気が欠けています。キャプション（馬に乗った女の子）だけでは特定の場所がありません。 GPT-4 を組み合わせると、完全な精神的な「シーン グラフ」を構築できます。</p>
+</li>
+<li>
+<p><strong>なぜ「空間認識」を重視するのでしょうか? (空間調整)</strong>
+    テキスト モデルには本質的に空間感覚が欠けています。 <code>[x1, y1, x2, y2]</code> 座標データの処理を強制することで、テキスト モデルに「視覚的な配置」、つまり「左」、「右下」などに対応するピクセル領域を理解することを強制的に学習させます。</p>
+</li>
+<li>
+<p><strong>「視覚的な一貫性」制約を追加するのはなぜですか? (幻覚抑制)</strong>
+    テキスト モデルの最大の欠点は、簡単に「脳を埋める」ことです。たとえば、「ビーチ」を見て「カモメが飛んでいる」と捏造するかもしれません。高い信号対雑音比を確保するには、メタデータにないオブジェクトの生成を明示的に禁止する必要があります。</p>
+</li>
+<li>
+<p><strong>なぜ「複雑な推論」が生成されるのでしょうか? (データ次元のアップグレード)</strong>
+    単なる「これは何だ？馬」では育成価値がありません。 GPT-4 のインテリジェンスを活用して、合成を通じて「思考が必要な」サンプル (因果推論、感情分析など) を人工的に作成する必要があります。これにより、小さなモデル (学生) が学習を通じて大規模なモデル推論を抽出できるようになります。</p>
+</li>
+</ul>
+<hr />
+<h3 id="1025">10.2.5 マルチモーダル命令データ合成の高度な戦略<a class="headerlink" href="#1025" title="Permanent link">&para;</a></h3>
+<p>テキストのみのモデル (初期の LLaVA v1 など) に基づく「記号推論」はマルチモーダル命令合成の先駆けとなりましたが、その主な欠点は「視覚情報の非可逆圧縮」です。テキスト モデルはピクセル レベルの視覚特徴を直接認識できません。メタデータだけに頼って推論すると、幻覚が起こりやすくなります。</p>
+<p>このボトルネックを打開するために、産業界と学界は、<strong>ビジュアルストロングモデル蒸留</strong>、<strong>専門家の混合パイプライン</strong>、および<strong>進化命令生成</strong>という3つのより主流で効率的な合成戦略を進化させてきました。</p>
+<h4 id="1_1">1. 視覚的な強力なモデルの抽出<a class="headerlink" href="#1_1" title="Permanent link">&para;</a></h4>
+<p>これは現在 (2024 年から 2025 年の時点で) 高性能のオープンソース マルチモーダル モデル (LLaVA-NeXT、ShareGPT4V など) を構築するための最も主流の方法であり、SOTA (最先端) とみなされることがよくあります。</p>
+<p><strong>核となるアイデア</strong>
+この方法では、「テキスト モデルを使用して視覚的なコンテンツを推測する」ことを放棄し、「教師と生徒」の蒸留パラダイムを採用します。クローズドソースのトップマルチモーダルモデル (GPT-4o、Gemini 1.5 Pro など) を「教師モデル」として使用し、生の画像信号を直接処理して、高品質で高密度の詳細な説明 (Dense Caption) と、学習用のオープンソース モデル (学生モデル) の複雑な推論 Q&amp;A ペアを生成します。</p>
+<p><strong>利点の分析</strong>
+* <strong>モダリティのギャップを排除</strong>: 教師モデルは画像ピクセルを直接「見て」、テキストのメタデータでは伝えられない照明、テクスチャ、微細な表現をキャプチャします。
+* <strong>幻覚の抑制</strong>: 実際の視覚入力に基づいた説明により、事実誤認の可能性が大幅に減少します。</p>
+<p><strong>導入の流れ</strong>
+中心となるのは、教師モデルに徹底的な情報を出力させるプロンプトを構築することにあります。以下は標準的な蒸留フローの擬似コードです。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_dense_instruction</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">api_client</span><span class="p">):</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="sd">    Use SOTA MLLM to generate high-density multimodal instruction data</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="c1"># System Prompt key: Require extremely detailed capture and logical association</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">distillation_prompt</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="s2">    You are an expert visual analyst. Analyze the provided image with extreme detail.</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="s2">    Tasks:</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="s2">    1. Dense Captioning: Provide a comprehensive description of every corner of the image, covering colors, textures, lighting, and background details.</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="s2">    2. Object Relationships: Analyze the interactions between objects (e.g., causality, spatial relations).</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="s2">    3. OCR Extraction: Transcribe any visible text verbatim.</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="s2">    4. Q&amp;A Generation: Based on the visual details above, create a logical reasoning question that cannot be answered without looking at the image.</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="s2">    &quot;&quot;&quot;</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span class="c1"># Key difference: Input contains real Image Tensor, not merely Bounding Box</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>    <span class="n">response</span> <span class="o">=</span> <span class="n">api_client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>        <span class="n">model</span><span class="o">=</span><span class="s2">&quot;gpt-4o&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>        <span class="n">messages</span><span class="o">=</span><span class="p">[</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>            <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">distillation_prompt</span><span class="p">},</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>            <span class="p">{</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image_url&quot;</span><span class="p">,</span> <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">image_path</span><span class="p">}]}</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>        <span class="p">]</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>    <span class="p">)</span>
+<a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>
+<a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>    <span class="k">return</span> <span class="n">parse_response</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h4 id="2_1">2. ドメインの専門化: 専門家の混合パイプライン<a class="headerlink" href="#2_1" title="Permanent link">&para;</a></h4>
+<p>ドキュメント AI、複雑なチャート分析、自動運転データなど、一般的なモデルが困難な垂直領域では、一般的な視覚的抽出では精度が欠けていることがよくあります。 「専門家の混合」戦略を採用することがベスト プラクティスです。</p>
+<p><strong>コアロジック</strong>
+この方法は、単一モデルのエンドツーエンド機能に依存せず、認識フロントエンドとして複数の特殊な小型モデル (エキスパート) を組み立て、非構造化画像を LLM 統合用の微細構造化データに変換します。</p>
+<p>ロジックフロー:
+<span class="arithmatex">\(<span class="arithmatex">\(\text{画像} \xrightarrow{\text{エキスパート}} [\text{OCR} + \text{レイアウト} + \text{検出}] \xrightarrow{\text{集約}} \text{構造化コンテキスト} \xrightarrow{\text{LLM}} \text{命令}\)</span>\)</span></p>
+<p><strong>アプリケーション シナリオ</strong>
+一般的なアプリケーションには、財務請求書処理、医療画像レポート (DICOM) などが含まれます。</p>
+<ol>
+<li><strong>OCR エキスパート (例: PaddleOCR)</strong>: 画像からすべてのテキストと正確な座標 <span class="arithmatex">\((x_1, y_1, x_2, y_2)\)</span> を抽出します。</li>
+<li><strong>レイアウト エキスパート (例: LayoutLM)</strong>: ドキュメント トポロジを解析し、テーブルの行/列、段落階層、およびタイトルの関係を識別します。</li>
+<li><strong>合成 (LLM)</strong>: 構造化データをプロンプト テンプレートに入力します。<ul>
+<li><em>プロンプトの例:</em> 「これは請求書の構造化データ、請求書番号 (100, 200)、合計金額 500.00 です。これに基づいて、「財務監査の検証」に関する複数ターンの Q&amp;A を生成してください。」</li>
+</ul>
+</li>
+</ol>
+<p><a class="glightbox" href="../../../images/part4/Wang-Chap10-Fig03-ZH.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="図 10-3: 専門家の混合パイプライン図" src="../../../images/part4/Wang-Chap10-Fig03-ZH.png" /></a>
+<em>図 10-3: 専門家の混合パイプライン図</em></p>
+<hr />
+<h4 id="3-evolution-visual-evol-instruct">3. Evolution 命令の生成 (Visual Evol-Instruct)<a class="headerlink" href="#3-evolution-visual-evol-instruct" title="Permanent link">&para;</a></h4>
+<p>テキスト ドメインの WizardLM からインスピレーションを得た Visual Evol-Instruct は、トレーニング データの「均質化」と「過度の単純化」を解決することを目的としています。基本データセットに単純な認識タスク (例: 「画像の中に何があるか?」) のみが含まれている場合、モデルは高次の推論を学習できません。この方法では、プロンプト エンジニアリングを通じて既存データの「次元アップグレード」を強制します。</p>
+<p><strong>コアロジック</strong>
+<span class="arithmatex">\(<span class="arithmatex">\(\text{単純な VQA} \xrightarrow{\text{複雑性の制約}} \text{複雑な推論 VQA}\)</span>\)</span></p>
+<p>LLM に特定の進化命令を適用することにより、次の点でデータの複雑性が高まる可能性があります。</p>
+<ul>
+<li><strong>推論の深化</strong>:<ul>
+<li><em>原文</em>: 「この人は何を持っていますか?」</li>
+<li><em>進化</em>: 「物の用途とその人の服装に基づいて、この人の職業と次にどのような活動を行うかを推測します。」</li>
+</ul>
+</li>
+<li><strong>反事実的推論</strong>:<ul>
+<li><em>原文</em>: 「画像の車は赤いです。」</li>
+<li><em>進化</em>: 「画像内の赤いスポーツカーが古い自転車に置き換えられたら、シーンの雰囲気はどう変わりますか? これは背景の現代建築スタイルに適合しますか?」</li>
+</ul>
+</li>
+<li><strong>比較分析</strong>:<ul>
+<li>2 つの類似した画像を入力し、微妙な違い (照明の変化、オブジェクトの変位) を分析するモデルを必要とし、モデルの詳細な観察をトレーニングします。</li>
+</ul>
+</li>
+</ul>
+<p>これら 3 つの戦略を組み合わせて使用​​することで、視覚的な詳細と深い論理的推論に富んだ高品質のマルチモーダル命令データセットを構築し、LLaVA、MiniGPT-4、および同様のモデルをトレーニングするための強固な基盤を築くことができます。</p>
+<h2 id="103">10.3。実績と評価 (実績と評価)<a class="headerlink" href="#103" title="Permanent link">&para;</a></h2>
+<p>合成データでのトレーニング後の評価は特に重要です。モデルが合成データのパターンを本当に「学習した」のか、それとも単に「記憶した」だけなのかを確認する必要があります。</p>
+<h3 id="_4">評価指標<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Pass@1 (コード):</strong> PoT 合成データの場合、HumanEval で Pass@1 をテストします。 Phi-1 は、わずか 6B データで 50%+ Pass@1 を達成し、100 倍以上のデータでトレーニングされた多くのモデルを上回りました。これはデータ品質の圧倒的な優位性を証明しています。</li>
+<li><strong>幻覚率:</strong> 合成マルチモーダル応答と元の画像の CLIP 類似性を比較して、存在しないオブジェクトが生成されたかどうかを検出します。特にモデルが存在しないオブジェクトに応答するように誘導し、モデルが拒否したかどうかを確認する負のサンプル セットを構築できます。</li>
+<li><strong>除染:</strong> 汚いですが必要なステップです。合成データにテスト セット (HumanEval など) の質問が誤って含まれていないかどうかを確認します。 N グラムのオーバーラップ検出を通じて、モデルがチートではなく一般化されていることを確認します。</li>
+</ul>
+<h3 id="_5">ベンチマーク<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>PoT と CoT:</strong> 数学 (GSM8K など) では、通常、PoT は純粋なテキスト CoT よりも 5 ～ 10% 優れています。理由: PoT は計算を CPU (計算能力に優れたもの) にアウトソーシングし、GPU はロジック変換、つまり最適な計算割り当てに重点を置きます。</li>
+</ul>
+<hr />
+<h2 id="104">10.4。落とし穴とトラブルシューティング<a class="headerlink" href="#104" title="Permanent link">&para;</a></h2>
+<p>合成データは美しいですが、罠もたくさんあります。ほんの少し滑ると、モデルは「自己満足」のループに陥ります。</p>
+<ul>
+<li>
+<p><strong>落とし穴 1: 自己確認バイアス</strong></p>
+<ul>
+<li><strong>症状:</strong> モデルで生成されたコードは実行されますが、ロジックが間違っています (例: 2+2=5、モデルで生成されたテスト ケースも間違っており、偶然間違った関数を渡しています)。</li>
+<li><strong>修正:</strong> 外部の決定論的ソルバーまたは人間がレビューした単体テスト ライブラリを導入する必要があります。モデル生成されたコードを検証するために、モデル生成されたテスト ケースに完全に依存しないでください。これは、犯罪者自身に判断を委ねるようなものです。</li>
+</ul>
+</li>
+<li>
+<p><strong>落とし穴 2: 視覚的な根拠の欠如</strong></p>
+<ul>
+<li><strong>症状:</strong> マルチモーダル合成データでは、モデルがメタデータにない詳細について議論します (捏造)。たとえば、メタデータには「犬」しかありませんが、画像内の犬に首輪がない場合、モデルには「犬の首輪の色」が記述されます。</li>
+<li><strong>修正:</strong> プロンプトに厳密な指示を追加:「提供されたメタデータのみに厳密に依存します。詳細を発明しないでください。」また、CLIP スコアを使用して、元の画像との類似性が低すぎる生成されたテキストを除外します。</li>
+</ul>
+</li>
+<li>
+<p><strong>落とし穴 3: 均質化の罠</strong></p>
+<ul>
+<li><strong>症状:</strong> すべてのデータが GPT-4 で生成される場合、モデルは「ローエンド GPT-4」になり、多様性が失われます。すべての答えの口調と文章の構造は驚くほど一貫しています。</li>
+<li><strong>修正:</strong> <strong>エントロピー注入</strong>。プロンプトに異なるペルソナ (例: 「気難しいプログラマー」、「忍耐強い幼稚園の先生」) をランダムに挿入するか、異なるプログラミング スタイル (再帰的対反復的) を要求して、データ分布の拡張を強制します。</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2 id="105">10.5。各章の概要と詳細情報<a class="headerlink" href="#105" title="Permanent link">&para;</a></h2>
+<p>「必要なのは教科書だけ」というパラダイムは、データの質 (教育的価値) が量よりも優先されるという中心原則を確立しました。合成データ技術により、データの信号対雑音比を正確に制御できるようになります。このフレームワークの下で、Program of Thought (PoT) は、推論を実行可能コードに変換し、検証にコンパイラの決定論を使用することにより、データの厳密性を保証します。一方、シンボリックから合成への方法では、メタデータ (バウンディング ボックスなど) を使用してテキスト モデルがマルチモーダル コンテンツを生成するようにガイドし、ユニモーダル データからマルチモーダル データへの効果的な変換を実現します。この進化は、データ エンジニアリングの受動的な「マイニング」から能動的な「生産」への移行を示しています。シード プロンプト構築、命令の複雑さ (進化)、高品質のフィルタリング、最終合成を通じて、標準的な工業プロセスを通じて高品質のデータセットを体系的に構築します。</p>
+<h3 id="_6">参考文献<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<ul>
+<li><em>Gunasekar、S.、他。 （2023年）。必要なのは教科書だけです (Phi-1)。</em></li>
+<li><em>Chen、W.、他。 （2022年）。思考プログラムのプロンプト: 数値推論タスクの推論から計算を解きほぐします。</em></li>
+<li><em>Liu、H.、他。 （2023年）。ビジュアルインストラクションチューニング (LLaVA)</em></li>
+<li><em>Shumailov、I.、他。 （2023年）。 The Curse of Recursion: Training on Generated Data Makes Models Forget.</em> (モデルの崩壊に関する重要な研究)</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

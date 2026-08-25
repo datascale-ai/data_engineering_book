@@ -1,0 +1,1769 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part14/p13_multimodal_instruction_factory/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>项目十三：Qwen-VL 多模态指令工厂 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#qwen-vl" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              项目十三：Qwen-VL 多模态指令工厂
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p13_multimodal_instruction_factory/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part14/p13_multimodal_instruction_factory/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      项目目标与读者收获
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      场景约束与数据边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      架构决策
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      样本 schema / 数据流
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      核心实现片段
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      实验或验收指标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      成本、风险与合规边界
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见失败模式
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      可复现资源说明
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      背景与目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      架构设计
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      分步实现
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="分步实现">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 1: 种子选择器
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 2: 指令模板设计
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-vllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 3: 使用 vLLM 高速生成指令
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-llm-as-judge" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 4: LLM-as-Judge 质量过滤
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5" class="md-nav__link">
+    <span class="md-ellipsis">
+      Step 5: 统一下游格式打包
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      工程运行与最小复现路径
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#schema_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      数据 schema 与样本契约
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rubric" class="md-nav__link">
+    <span class="md-ellipsis">
+      质量过滤：从长度阈值到可校准 rubric
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      多语言扩展与跨语言验收
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      测试覆盖与代码注意事项
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_17" class="md-nav__link">
+    <span class="md-ellipsis">
+      常见故障与排查路径
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_18" class="md-nav__link">
+    <span class="md-ellipsis">
+      人工抽检与发布门禁
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_19" class="md-nav__link">
+    <span class="md-ellipsis">
+      多图与视频扩展路径
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_20" class="md-nav__link">
+    <span class="md-ellipsis">
+      交付物目录与版本管理
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_21" class="md-nav__link">
+    <span class="md-ellipsis">
+      数据看板与持续迭代
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_22" class="md-nav__link">
+    <span class="md-ellipsis">
+      样本撤回与版权响应
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_23" class="md-nav__link">
+    <span class="md-ellipsis">
+      领域迁移：从通用图像到行业资产
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#p03-p14" class="md-nav__link">
+    <span class="md-ellipsis">
+      与 P03 和 P14 的衔接
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_24" class="md-nav__link">
+    <span class="md-ellipsis">
+      结果展示与验收
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_25" class="md-nav__link">
+    <span class="md-ellipsis">
+      成本与优化
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_26" class="md-nav__link">
+    <span class="md-ellipsis">
+      扩展思考
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="扩展思考">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_27" class="md-nav__link">
+    <span class="md-ellipsis">
+      数据合规与开源许可说明
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_28" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_29" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="qwen-vl">项目十三：Qwen-VL 多模态指令工厂<a class="headerlink" href="#qwen-vl" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">於俊；王柯；杜文卓</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>本项目围绕“多模态指令工厂”构建可复现的数据工程案例，重点说明业务目标、数据边界、架构决策、核心实现、验收指标与风险控制。章节将安装命令和脚本细节收敛到工程复盘视角，突出样本 schema、数据流、失败模式和可交付物之间的关系，帮助读者把前文方法转化为可审计、可扩展的项目资产。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>多模态指令工厂；项目实战；可复现数据工程；数据流水线；验收指标</p>
+<h2 id="_3">项目目标与读者收获<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>本项目以“多模态指令工厂”为核心案例，目标是构建覆盖图像、文本、OCR、图表和对话任务的多模态指令生产链。读者完成本章后，应能够辨认该场景的关键数据对象、拆分工程链路、设置验收指标，并将案例方法迁移到相近的数据工程任务中。</p>
+<h2 id="_4">场景约束与数据边界<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p>面向受控资产和样本工厂，不覆盖无授权媒体采集或全自动安全审核。这些边界使案例能够被复现和审计；当数据规模、数据来源、权限范围或部署环境变化时，需要重新评估采样策略、质量阈值、运行成本和合规要求。</p>
+<p>本项目与 P03 的边界需要明确区分。P03 侧重 LLaVA 经典流程，强调图像资产、OCR、bbox、conversation 模板、可视化抽检和训练封装的基线链路；P13 则侧重现代多模态指令工厂能力，重点讨论 Qwen-VL 风格生成、self-consistency 质量校准、LLM-as-Judge 过滤、多语言扩展以及面向多图/视频引用的统一打包。因此，P13 不重复证明 LLaVA 基线流程，而是在 P03 已建立的数据工厂骨架上展示新版工厂能力如何扩展。</p>
+<h2 id="_5">架构决策<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p>本项目采用“资产筛选、任务模板、caption/OCR 信号、对话生成、质量评分和数据封装”的架构路径。该决策优先保证输入输出契约、版本可追踪、异常可定位和结果可复核，而不是把全部逻辑压缩为一次性脚本运行。</p>
+<h2 id="schema">样本 schema / 数据流<a class="headerlink" href="#schema" title="Permanent link">&para;</a></h2>
+<p>核心数据流可概括为：</p>
+<p>代码清单P13-1给出了流程示例。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>视觉资产 -&gt; 元数据/OCR/caption -&gt; 指令任务 -&gt; 多轮样本 -&gt; 质量过滤 -&gt; 多模态训练集
+</code></pre></div>
+<p><em>代码清单P13-1：流程示例</em></p>
+<p>样本 schema 至少应保留 <code>id</code>、<code>source</code>、<code>content_or_payload</code>、<code>metadata</code>、<code>quality_signals</code>、<code>split_or_stage</code> 与 <code>audit_trace</code> 等字段；具体字段由本项目的数据类型、下游任务和验收方式进一步细化。</p>
+<h2 id="_6">核心实现片段<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p>正文只保留能够说明设计取舍的关键实现片段。完整脚本、长配置、运行日志和大文件应放入配套仓库或附录说明；代码展示重点放在输入输出契约、质量阈值、异常处理和验收接口上。</p>
+<h2 id="_7">实验或验收指标<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>验收指标包括任务覆盖、图文一致性、OCR 可用性、格式合格率、安全过滤率和人工抽检质量。若项目进入生产、课程或公开复现实验环境，还应记录版本号、依赖环境、随机种子、样本抽检结果和失败样本复盘记录。表 P13-1 概括了对应的对比维度与工程复核口径。</p>
+<p><em>表 P13-1：多模态指令工厂出版验收表</em></p>
+<table>
+<thead>
+<tr>
+<th>验收维度</th>
+<th>指标/证据</th>
+<th>出版复核口径</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务覆盖</td>
+<td>描述、OCR、图表、定位和多轮问答任务比例</td>
+<td>任务类型需与数据来源、模型能力和下游训练目标对应</td>
+</tr>
+<tr>
+<td>质量过滤</td>
+<td>图文一致性、格式合格率、安全过滤率、self-consistency 结果和人工抽检质量</td>
+<td>LLM-as-Judge 结论需保留评分规则、抽检校准样例和多路采样一致性记录</td>
+</tr>
+<tr>
+<td>多语言扩展</td>
+<td>中文、英文及互译样本比例，跨语言术语一致性和格式保持率</td>
+<td>多语言样本不得只统计数量，应抽检语义一致性、视觉指代和专名翻译</td>
+</tr>
+<tr>
+<td>版权安全</td>
+<td>图像授权、敏感内容拦截和再分发边界</td>
+<td>公开样例优先使用可授权或自有资产，外部图像需单独登记</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_8">成本、风险与合规边界<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<p>成本主要来自视觉理解模型、OCR 和抽检；风险集中在图像授权、敏感内容、幻觉描述和任务单一化。涉及外部数据、个人信息、版权内容或第三方服务时，应保留来源说明、权限状态、脱敏策略、调用记录和人工复核记录。</p>
+<h2 id="_9">常见失败模式<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>常见失败包括输入分布偏离、schema 字段缺失、质量阈值过松或过紧、评测样本覆盖不足、模型调用不稳定、结果无法回溯等。排查时应优先定位数据边界和中间产物，再检查模型、工具链与部署环境。</p>
+<h2 id="_10">可复现资源说明<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>复现材料应包括数据来源说明、最小样本、配置文件、运行命令、指标脚本、检查报告和产物目录。正文保留必要片段；完整 notebook、长脚本和大文件作为配套资源独立维护。</p>
+<h2 id="_11">背景与目标<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<p>在多模态大型语言模型（VLM）的数据工程中，模型的能力瓶颈往往不仅在于图文对数量，更在于高质量、多类型指令数据集的构建。项目三已经给出基于单图生成简单描述与问答指令的入门流程；在以 Qwen2.5-VL (Bai et al. 2025)、InternVL3 (Zhu et al. 2025) 为代表的现代多模态架构下，数据集还需要覆盖复杂推理、OCR 阅读、细粒度定位、多图交错和视频理解等任务类型。</p>
+<p>因此，本章不是 P03 的重复版本。P03 回答的是“如何把 LLaVA 风格数据工厂的基础链路组织清楚”，本章回答的是“当基础模型、采样策略和质量过滤能力升级后，如何把多模态指令生产扩展成更接近工业工厂的流水线”。前者强调经典流程可复现，后者强调 Qwen-VL 生成、self-consistency、LLM-as-Judge、多语言扩展和统一打包等新版能力。</p>
+<p>现代工业化多模态指令合成需要解决以下挑战：</p>
+<ol>
+<li><strong>指令多样性</strong>：除了基础描述，还需要复杂的推理、细粒度定位（Grounding）、图表与 OCR 阅读。</li>
+<li><strong>多源多形态</strong>：不仅支持单图，还要支持多图（Interleaved Images）与视频。</li>
+<li><strong>质量卡控</strong>：纯靠生成会产生严重幻觉（Hallucination），必须引入多路采样与 LLM-as-Judge (Zheng et al. 2023) 进行严格打分过滤。</li>
+</ol>
+<p>本项目旨在构建一个完整的<strong>多模态指令数据工厂</strong>，从 Image-only 图像池（如 LAION 子集）开始，利用基础模型（Qwen2.5-VL-7B 与 Qwen2.5-72B）生产复杂指令样本。项目交付物是一套可复现流水线，而不是一次性生成结果；它应当能够迁移到医疗、法律、电商等私有图像库，并产出可进入垂直领域 SFT 的候选数据集。</p>
+<h2 id="_12">架构设计<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
+<p>为了实现流水线作业，工厂被划分为五个核心组件。整体架构如图 P13-1 所示。</p>
+<p><a class="glightbox" href="../../../images/part14/Yu-Project13-Fig01-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图 P13-1：多模态指令工厂" src="../../../images/part14/Yu-Project13-Fig01-EN.svg" /></a>
+<em>图 P13-1：多模态指令工厂</em></p>
+<ol>
+<li><strong>种子选择器 (Seed Selector)</strong>：从百亿级海量图像库中，针对性地捞取 OCR 丰富、图表、真实复杂场景三类种子图像。</li>
+<li><strong>指令生成器 (Instruction Generator)</strong>：定义了 6 类复杂的指令模板，并通过 vLLM (Kwon et al. 2023) 调用 Qwen2.5-VL 进行高速生成。</li>
+<li><strong>质量打分器 (Quality Scorer / Self-consistency)</strong>：采用自我一致性（Self-consistency）机制 (Wang et al. 2023)，对于推理类问题进行多次采样验证。</li>
+<li><strong>LLM-as-Judge 过滤器</strong>：使用一个纯文本侧极其强大的模型（如 Qwen2.5-72B-Instruct）作为裁判，对图文指令对的逻辑、详尽度打分（剔除 &lt; 4.0 分的数据）。</li>
+<li><strong>多语言扩展与打包器 (Multilingual Expander &amp; Packer)</strong>：进行中英互译扩展，并最终格式化为支持多图与视频引用的统一样式。</li>
+</ol>
+<p>表 P13-2 将架构组件、代码入口和关键产物对应起来。与 P03 不同，P13 的重点不是再走一遍 LLaVA 的图文对数据准备，而是说明一个现代多模态指令工厂如何把“种子选择、模板、生成、过滤、扩展、打包和验收”组织成可复查链路。</p>
+<p><em>表 P13-2：多模态指令工厂阶段产物与代码入口</em></p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>代码入口</th>
+<th>主要输入</th>
+<th>主要输出</th>
+<th>关键复核点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>种子选择</td>
+<td><code>seed_selector.py</code></td>
+<td>LAION metadata 或私有图像资产清单</td>
+<td>seed list</td>
+<td>分辨率、宽高比、原始 caption 长度、授权状态</td>
+</tr>
+<tr>
+<td>模板管理</td>
+<td><code>instruction_templates.py</code></td>
+<td>任务类型</td>
+<td>prompt template</td>
+<td>任务覆盖、模板重复率、提示词边界</td>
+</tr>
+<tr>
+<td>VLM 生成</td>
+<td><code>generate_with_qwen_vl.py</code></td>
+<td>seed list、模板、Qwen2.5-VL</td>
+<td>raw instruction records</td>
+<td>模型版本、采样参数、失败样本</td>
+</tr>
+<tr>
+<td>LLM-as-Judge</td>
+<td><code>llm_judge.py</code></td>
+<td>instruction、response</td>
+<td>scored records</td>
+<td>评分规则、阈值、人工校准样例</td>
+</tr>
+<tr>
+<td>Self-consistency</td>
+<td><code>self_consistency.py</code></td>
+<td>多路生成结果</td>
+<td>consistency score</td>
+<td>多路采样一致性、推理题稳定性</td>
+</tr>
+<tr>
+<td>多语言扩展</td>
+<td><code>multilingual_expand.py</code></td>
+<td>高质量英文样本</td>
+<td>bilingual records</td>
+<td>术语一致性、视觉指代保持</td>
+</tr>
+<tr>
+<td>统一打包</td>
+<td><code>pack_multi_image_video.py</code></td>
+<td>scored records</td>
+<td><code>mm_sft_final.jsonl</code></td>
+<td>Qwen 格式、图片/视频路径、conversation 字段</td>
+</tr>
+<tr>
+<td>单元测试</td>
+<td><code>tests/test_factory.py</code></td>
+<td>模板、judge、扩展、打包函数</td>
+<td>测试报告</td>
+<td>基本契约和示例输出完整性</td>
+</tr>
+</tbody>
+</table>
+<p>表 P13-2 的关键作用是把“生成”从单个模型调用中拆开。真实项目里，VLM 生成只是流水线中间环节；前面需要受控种子和任务模板，后面需要一致性检查、评分过滤、多语言复核和格式打包。若只保留生成脚本，章节会像演示 demo；若保留阶段产物和复核字段，章节才具备项目章的工程厚度。</p>
+<h2 id="_13">分步实现<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h2>
+<h3 id="step-1">Step 1: 种子选择器<a class="headerlink" href="#step-1" title="Permanent link">&para;</a></h3>
+<p>从开源 LAION 数据集子集 (Schuhmann et al. 2022) 中，利用已有的元数据（如图片宽高、原始 caption 长度、剪贴板标签等）筛选出有潜力生成高质量指令的种子。</p>
+<p>代码清单P13-2给出了Python 实现片段。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_dataset</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">select_seeds</span><span class="p">(</span><span class="n">dataset_name</span><span class="o">=</span><span class="s2">&quot;laion/laion2B-en&quot;</span><span class="p">,</span> <span class="n">num_samples</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">stream</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">dataset_name</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="n">streaming</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span class="n">seeds</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;WIDTH&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;HEIGHT&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>        <span class="n">caption</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TEXT&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="k">if</span> <span class="n">width</span> <span class="o">&gt;</span> <span class="mi">512</span> <span class="ow">and</span> <span class="n">height</span> <span class="o">&gt;</span> <span class="mi">512</span> <span class="ow">and</span> <span class="mf">0.5</span> <span class="o">&lt;</span> <span class="n">width</span> <span class="o">/</span> <span class="n">height</span> <span class="o">&lt;</span> <span class="mf">2.0</span><span class="p">:</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">caption</span><span class="o">.</span><span class="n">split</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>                <span class="n">seeds</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;URL&quot;</span><span class="p">],</span> <span class="s2">&quot;original_caption&quot;</span><span class="p">:</span> <span class="n">caption</span><span class="p">})</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">seeds</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">num_samples</span><span class="p">:</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>            <span class="k">break</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="k">return</span> <span class="n">seeds</span>
+</code></pre></div>
+<p><em>代码清单P13-2：Python 实现片段</em></p>
+<h3 id="step-2">Step 2: 指令模板设计<a class="headerlink" href="#step-2" title="Permanent link">&para;</a></h3>
+<p>不同于固定问题的 LLaVA 数据，本项目需要为大模型定义多样化任务模板，并控制生成目标、输出格式和风险边界。</p>
+<p>代码清单P13-3给出了Python 实现片段。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># code/zh/project_13_mm_instruction_factory/instruction_templates.py</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">TEMPLATES</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="s2">&quot;detailed_description&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="s2">&quot;Please provide a highly detailed, comprehensive description of this image, capturing every visible element, spatial relationship, and background context.&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="s2">&quot;Describe this image as if you are explaining it to someone who cannot see it, ensuring no detail is left out.&quot;</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="p">],</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="s2">&quot;complex_reasoning&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="s2">&quot;Based on the visual evidence in the image, infer the sequence of events that likely led to this scene. Explain your reasoning step-by-step.&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="s2">&quot;What are the implicit relationships between the objects shown? Provide a logical deduction.&quot;</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="p">],</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="s2">&quot;ocr_reading&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>        <span class="s2">&quot;Extract all visible text in this image and format it into a structured markdown table or list.&quot;</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>    <span class="p">]</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="p">}</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="k">def</span><span class="w"> </span><span class="nf">get_random_prompt</span><span class="p">(</span><span class="n">task_type</span><span class="p">):</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">TEMPLATES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">task_type</span><span class="p">,</span> <span class="n">TEMPLATES</span><span class="p">[</span><span class="s2">&quot;detailed_description&quot;</span><span class="p">]))</span>
+</code></pre></div>
+<p><em>代码清单P13-3：Python 实现片段</em></p>
+<h3 id="step-3-vllm">Step 3: 使用 vLLM 高速生成指令<a class="headerlink" href="#step-3-vllm" title="Permanent link">&para;</a></h3>
+<p>借助 <code>vllm</code> 的并发吞吐能力，可以将筛选出的图片与指令模板送入基础多模态模型进行批量生成。</p>
+<p>代码清单P13-4给出了Python 实现片段。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vllm</span><span class="w"> </span><span class="kn">import</span> <span class="n">LLM</span><span class="p">,</span> <span class="n">SamplingParams</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_instructions</span><span class="p">(</span><span class="n">seeds</span><span class="p">,</span> <span class="n">model_path</span><span class="o">=</span><span class="s2">&quot;Qwen/Qwen2.5-VL-7B-Instruct&quot;</span><span class="p">):</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">llm</span> <span class="o">=</span> <span class="n">LLM</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model_path</span><span class="p">,</span> <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_num_seqs</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">params</span> <span class="o">=</span> <span class="n">SamplingParams</span><span class="p">(</span><span class="n">temperature</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">top_p</span><span class="o">=</span><span class="mf">0.95</span><span class="p">,</span> <span class="n">max_tokens</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">requests</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="n">seeds</span><span class="p">:</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        <span class="n">prompt</span> <span class="o">=</span> <span class="n">get_random_prompt</span><span class="p">(</span><span class="s2">&quot;detailed_description&quot;</span><span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">requests</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>            <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">render_qwen_vl_prompt</span><span class="p">(</span><span class="n">prompt</span><span class="p">),</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>            <span class="s2">&quot;multi_modal_data&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">seed</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">]},</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>            <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">seed</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">],</span> <span class="s2">&quot;instruction&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">},</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>        <span class="p">})</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="n">outputs</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">requests</span><span class="p">,</span> <span class="n">sampling_params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="k">return</span> <span class="p">[</span><span class="n">to_instruction_record</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span> <span class="k">for</span> <span class="n">req</span><span class="p">,</span> <span class="n">out</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">requests</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)]</span>
+</code></pre></div>
+<p><em>代码清单P13-4：Python 实现片段</em></p>
+<h3 id="step-4-llm-as-judge">Step 4: LLM-as-Judge 质量过滤<a class="headerlink" href="#step-4-llm-as-judge" title="Permanent link">&para;</a></h3>
+<p>生成响应往往伴随幻觉，因此需要引入判别器，例如 Qwen2.5-72B-Instruct。由于纯文本 72B 模型无法直接接收图片，本项目采用 <strong>Text-only Evaluation</strong>：让 72B 评判多模态模型生成的“长描述”内部逻辑是否自洽、结构是否严密。</p>
+<p>代码清单P13-5给出了Python 实现片段。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># code/zh/project_13_mm_instruction_factory/llm_judge.py</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="k">def</span><span class="w"> </span><span class="nf">score_with_llm_judge</span><span class="p">(</span><span class="n">generated_data</span><span class="p">):</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="sd">    原型验证逻辑：在真实流水线中，此处调用 vLLM 部署的 72B 模型 API。</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="sd">    输入为 `Instruction` 和 `Response`，输出为 1-5 分。</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">scored_data</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">generated_data</span><span class="p">:</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="c1"># 模拟调用评委打分</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>        <span class="c1"># prompt = f&quot;Rate the quality of this response to the instruction. Score 1 to 5. Response: {item[&#39;response&#39;]}&quot;</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>        <span class="c1"># score = call_72b_api(prompt)</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>        <span class="c1"># 模拟打分规则：长度大于 100 词且不包含过度重复视作高质量</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>        <span class="n">word_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;response&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">())</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>        <span class="n">score</span> <span class="o">=</span> <span class="mf">4.5</span> <span class="k">if</span> <span class="n">word_count</span> <span class="o">&gt;</span> <span class="mi">50</span> <span class="k">else</span> <span class="mf">3.0</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>        <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;=</span> <span class="mf">4.0</span><span class="p">:</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>            <span class="n">item</span><span class="p">[</span><span class="s2">&quot;judge_score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">score</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>            <span class="n">scored_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Filtered </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">generated_data</span><span class="p">)</span><span class="si">}</span><span class="s2"> down to </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">scored_data</span><span class="p">)</span><span class="si">}</span><span class="s2"> high-quality samples.&quot;</span><span class="p">)</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>    <span class="k">return</span> <span class="n">scored_data</span>
+</code></pre></div>
+<p><em>代码清单P13-5：Python 实现片段</em></p>
+<h3 id="step-5">Step 5: 统一下游格式打包<a class="headerlink" href="#step-5" title="Permanent link">&para;</a></h3>
+<p>无论是单图、多图还是视频片段，最终统一按照开源社区（如 ShareGPT）或者特定模型（如 Qwen2.5-VL）的微调格式输出 JSONL。</p>
+<p>代码清单P13-6给出了Python 实现片段。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">pack_to_qwen_format</span><span class="p">(</span><span class="n">scored_data</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;./data/mm_sft_final.jsonl&quot;</span><span class="p">):</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">scored_data</span><span class="p">:</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>            <span class="n">record</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>                <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;url&quot;</span><span class="p">],</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>                <span class="s2">&quot;conversations&quot;</span><span class="p">:</span> <span class="p">[</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>                    <span class="p">{</span><span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;&lt;image&gt;</span><span class="se">\n</span><span class="si">{</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;instruction&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">},</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>                    <span class="p">{</span><span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;response&quot;</span><span class="p">]},</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>                <span class="p">],</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>                <span class="s2">&quot;quality&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;judge_score&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;judge_score&quot;</span><span class="p">]},</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>            <span class="p">}</span>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单P13-6：Python 实现片段</em></p>
+<h2 id="_14">工程运行与最小复现路径<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h2>
+<p>P13 的代码目录是 <code>code/zh/project_13_mm_instruction_factory</code>。与 P11、P14 相比，这个项目更偏“生成式数据工厂”，因此最小复现路径不是跑一个固定 shell 脚本，而是按阶段串联函数：先选择 seeds，再按模板生成指令，随后进行 judge、self-consistency、多语言扩展和格式打包。教学环境中可以先用少量 seed 和 mock judge 走通产物契约，再替换为真实 Qwen2.5-VL 和 Qwen2.5-72B-Instruct。</p>
+<p>代码清单P13-7 给出最小运行顺序。实际工程可以把它写成 shell、Makefile 或 Airflow/Ray 任务，但项目章中更重要的是展示阶段边界和产物流转。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">seed_selector</span><span class="w"> </span><span class="kn">import</span> <span class="n">select_seeds</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">generate_with_qwen_vl</span><span class="w"> </span><span class="kn">import</span> <span class="n">generate_instructions</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">llm_judge</span><span class="w"> </span><span class="kn">import</span> <span class="n">score_with_llm_judge</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">self_consistency</span><span class="w"> </span><span class="kn">import</span> <span class="n">self_consistency_filter</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">multilingual_expand</span><span class="w"> </span><span class="kn">import</span> <span class="n">expand_multilingual</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pack_multi_image_video</span><span class="w"> </span><span class="kn">import</span> <span class="n">pack_to_qwen_format</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="n">seeds</span> <span class="o">=</span> <span class="n">select_seeds</span><span class="p">(</span><span class="n">num_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="n">raw</span> <span class="o">=</span> <span class="n">generate_instructions</span><span class="p">(</span><span class="n">seeds</span><span class="p">)</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="n">consistent</span> <span class="o">=</span> <span class="n">self_consistency_filter</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="n">scored</span> <span class="o">=</span> <span class="n">score_with_llm_judge</span><span class="p">(</span><span class="n">consistent</span><span class="p">)</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="n">expanded</span> <span class="o">=</span> <span class="n">expand_multilingual</span><span class="p">(</span><span class="n">scored</span><span class="p">)</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="n">pack_to_qwen_format</span><span class="p">(</span><span class="n">expanded</span><span class="p">,</span> <span class="s2">&quot;./data/mm_sft_final.jsonl&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><em>代码清单P13-7：Python 实现片段</em></p>
+<p>这段代码说明了工厂的最小闭环，但还不是生产脚本。生产运行应补充四类控制：第一，模型调用需要记录模型路径、temperature、top-p、max tokens 和并发参数；第二，seed 需要记录来源、授权和下载状态；第三，judge 需要保留评分 prompt、阈值和人工校准集；第四，打包前要检查图片链接、conversation 格式和样本去重。</p>
+<p>表 P13-3 给出本项目应保留的运行记录。</p>
+<p><em>表 P13-3：多模态指令工厂运行记录项</em></p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>记录项</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>资产版本</td>
+<td>图像来源、URL、授权、下载时间</td>
+<td>证明样本可追溯</td>
+</tr>
+<tr>
+<td>生成模型</td>
+<td>Qwen2.5-VL 路径、推理框架、采样参数</td>
+<td>解释输出差异</td>
+</tr>
+<tr>
+<td>模板版本</td>
+<td>任务类型、模板文本、模板 hash</td>
+<td>控制任务分布</td>
+</tr>
+<tr>
+<td>Judge 版本</td>
+<td>评分模型、评分 rubric、阈值</td>
+<td>复核过滤结果</td>
+</tr>
+<tr>
+<td>多语言版本</td>
+<td>翻译模型、术语表、语言比例</td>
+<td>复核跨语言一致性</td>
+</tr>
+<tr>
+<td>打包版本</td>
+<td>输出格式、字段 schema、目标训练框架</td>
+<td>保证可被训练脚本读取</td>
+</tr>
+<tr>
+<td>抽检记录</td>
+<td>人工样本、失败样本、修订意见</td>
+<td>支撑发布门禁</td>
+</tr>
+</tbody>
+</table>
+<h2 id="schema_1">数据 schema 与样本契约<a class="headerlink" href="#schema_1" title="Permanent link">&para;</a></h2>
+<p>多模态指令样本的最小记录不能只有 <code>image</code>、<code>instruction</code> 和 <code>response</code> 三个字段。项目章应强调：训练格式可以很简洁，但工程中间态必须更完整。否则，一旦出现幻觉、格式错误或版权问题，数据团队无法追溯样本来自哪张图、哪个模板、哪个模型调用和哪次过滤。</p>
+<p>表 P13-4 给出建议的中间态 schema。</p>
+<p><em>表 P13-4：多模态指令工厂中间态样本 schema</em></p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>示例</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sample_id</code></td>
+<td><code>p13_laion_000001</code></td>
+<td>稳定主键，进入全流程日志</td>
+</tr>
+<tr>
+<td><code>asset.url</code></td>
+<td><code>https://...jpg</code></td>
+<td>原始图像或视频地址</td>
+</tr>
+<tr>
+<td><code>asset.license</code></td>
+<td><code>cc-by</code>、<code>internal</code></td>
+<td>发布与再分发判断依据</td>
+</tr>
+<tr>
+<td><code>seed.original_caption</code></td>
+<td>原始 alt text</td>
+<td>用于判断 seed 质量</td>
+</tr>
+<tr>
+<td><code>task.type</code></td>
+<td><code>detailed_description</code>、<code>ocr_reading</code></td>
+<td>控制任务分布</td>
+</tr>
+<tr>
+<td><code>prompt.template_id</code></td>
+<td><code>ocr_v1_002</code></td>
+<td>追踪模板版本</td>
+</tr>
+<tr>
+<td><code>generation.model</code></td>
+<td><code>Qwen2.5-VL-7B-Instruct</code></td>
+<td>追踪生成模型</td>
+</tr>
+<tr>
+<td><code>generation.response</code></td>
+<td>长回复文本</td>
+<td>进入候选样本</td>
+</tr>
+<tr>
+<td><code>quality.judge_score</code></td>
+<td><code>4.5</code></td>
+<td>LLM-as-Judge 过滤依据</td>
+</tr>
+<tr>
+<td><code>quality.consistency_score</code></td>
+<td><code>1.0</code></td>
+<td>多路采样一致性</td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td><code>en</code>、<code>zh</code></td>
+<td>多语言样本区分</td>
+</tr>
+<tr>
+<td><code>audit_trace</code></td>
+<td>运行批次、时间、脚本版本</td>
+<td>复盘与下线依据</td>
+</tr>
+</tbody>
+</table>
+<p>最终写入 <code>mm_sft_final.jsonl</code> 的 Qwen 格式可以比中间态更窄，但不建议丢弃中间态。训练文件服务于训练框架，审计文件服务于质量和发布；二者可以通过 <code>sample_id</code> 关联。</p>
+<h2 id="rubric">质量过滤：从长度阈值到可校准 rubric<a class="headerlink" href="#rubric" title="Permanent link">&para;</a></h2>
+<p>示例代码中的 <code>llm_judge.py</code> 使用长度阈值模拟评分：回复超过一定词数即给 4.5 分，否则给 3.0 分。这适合教学演示，但不能作为真实发布门禁。真实 LLM-as-Judge 至少应包含四类评分维度：图文一致性、回答完整度、任务遵循度和安全合规性。</p>
+<p>表 P13-5 给出一个可用于生产化改造的 judge rubric。</p>
+<p><em>表 P13-5：多模态指令样本 LLM-as-Judge 评分 rubric</em></p>
+<table>
+<thead>
+<tr>
+<th>评分维度</th>
+<th>5 分表现</th>
+<th>低分风险</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>图文一致性</td>
+<td>只描述图像中有证据支持的内容</td>
+<td>幻觉主体、动作或文字</td>
+</tr>
+<tr>
+<td>任务遵循度</td>
+<td>严格回答模板要求，如 OCR 输出表格</td>
+<td>答非所问或格式不合格</td>
+</tr>
+<tr>
+<td>细节完整度</td>
+<td>覆盖主体、空间关系、文字和背景</td>
+<td>过短、泛化、缺少可训练信息</td>
+</tr>
+<tr>
+<td>推理可靠性</td>
+<td>推理步骤可由视觉证据支持</td>
+<td>过度推断因果或意图</td>
+</tr>
+<tr>
+<td>安全合规</td>
+<td>不输出敏感身份推断或不当内容</td>
+<td>涉及隐私、偏见或危险指导</td>
+</tr>
+<tr>
+<td>语言质量</td>
+<td>表达清晰，无严重重复</td>
+<td>机械重复、乱码或混合语言异常</td>
+</tr>
+</tbody>
+</table>
+<p>Self-consistency 的作用是补充 judge 的盲区。对于复杂推理题，可以让模型生成多路答案，再比较结论是否一致、关键证据是否一致。如果多路答案在主体、文字或空间关系上冲突，即使其中某一路写得很长，也不应直接进入训练集。<code>self_consistency.py</code> 当前是简化实现，出版稿应明确它是“接口占位 + 教学逻辑”，真实项目需要接入多路采样和一致性度量。</p>
+<h2 id="_15">多语言扩展与跨语言验收<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h2>
+<p>多语言扩展不是简单复制英文 instruction，再加一个 <code>instruction_zh</code> 字段。多模态任务中，跨语言错误常常发生在视觉指代和专名翻译上。例如，“the sign on the left” 被翻成“右侧标志”，或品牌、地名、单位被错误本地化。P13 的多语言扩展应把中文和英文视为两套需要抽检的训练样本，而不是数量翻倍的技巧。</p>
+<p>表 P13-6 给出多语言验收项目。</p>
+<p><em>表 P13-6：多语言扩展验收项目</em></p>
+<table>
+<thead>
+<tr>
+<th>验收项</th>
+<th>检查方式</th>
+<th>常见问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>指代一致性</td>
+<td>对照图像检查 left/right、top/bottom、foreground/background</td>
+<td>方位词翻译错误</td>
+</tr>
+<tr>
+<td>术语一致性</td>
+<td>使用术语表检查 OCR、chart、bbox、caption 等词</td>
+<td>术语前后不统一</td>
+</tr>
+<tr>
+<td>专名保留</td>
+<td>检查品牌、地名、人名和单位</td>
+<td>过度翻译或误译</td>
+</tr>
+<tr>
+<td>格式保持</td>
+<td>检查表格、列表、JSON、Markdown</td>
+<td>翻译破坏结构</td>
+</tr>
+<tr>
+<td>安全边界</td>
+<td>检查敏感内容在多语言中是否被绕过</td>
+<td>英文过滤有效但中文失效</td>
+</tr>
+</tbody>
+</table>
+<p>如果项目面向中文模型训练，建议不要只把英文样本翻译成中文，而应保留一部分中文原生模板和中文原生 judge。翻译样本有利于扩量，但中文原生样本更能覆盖中文用户的真实提问习惯。</p>
+<h2 id="_16">测试覆盖与代码注意事项<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h2>
+<p><code>tests/test_factory.py</code> 已覆盖模板存在、随机 prompt 类型、judge 过滤、中文扩展和 JSONL 打包。这些测试能够防止最基本的接口破坏，但仍不足以证明工厂可发布。尤其要注意：当前 <code>generate_with_qwen_vl.py</code> 是教学化示例，真实接入 vLLM 或 Qwen-VL 前，需要补齐输入变量、异常处理、模型调用结果解析和失败样本记录。项目章中展示它的目的是说明生成阶段的接口，而不是承诺它已经具备生产完整性。</p>
+<p>表 P13-7 总结测试覆盖和缺口。</p>
+<p><em>表 P13-7：多模态指令工厂测试覆盖与验收缺口</em></p>
+<table>
+<thead>
+<tr>
+<th>测试项</th>
+<th>已覆盖内容</th>
+<th>仍需补充</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模板测试</td>
+<td>三类模板存在，prompt 可返回字符串</td>
+<td>模板重复率、任务比例</td>
+</tr>
+<tr>
+<td>judge 测试</td>
+<td>短回复过滤、长回复保留</td>
+<td>真实 judge rubric 和人工一致性</td>
+</tr>
+<tr>
+<td>多语言测试</td>
+<td>生成中文扩展字段</td>
+<td>语义一致性和格式保持</td>
+</tr>
+<tr>
+<td>打包测试</td>
+<td>JSONL 文件可写出</td>
+<td>conversation 字段完整抽检</td>
+</tr>
+<tr>
+<td>端到端 mock</td>
+<td>测试入口存在</td>
+<td>小样本真实模型运行</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_17">常见故障与排查路径<a class="headerlink" href="#_17" title="Permanent link">&para;</a></h2>
+<p>种子阶段最常见的问题是图像链接失效、图片尺寸字段缺失或原始 caption 质量过低。排查时应先统计被过滤原因，而不是只看最终 seed 数量。如果大量图片因为宽高比被过滤，需要确认字段单位和数据源 schema 是否正确。</p>
+<p>生成阶段常见问题包括模型输入格式错误、图片无法下载、VLM 返回空文本、并发过高导致 OOM 或超时。若使用 vLLM，需要记录并发数、显存占用和失败请求。若使用 API，需要记录重试次数、错误码和计费单位。</p>
+<p>过滤阶段常见问题是 judge 过于偏好长回答。长回答不一定高质量，尤其在多模态场景中，长回答可能包含更多幻觉。建议将高分样本、低分样本和边界分样本分别抽检，并定期用人工标注校准 judge。</p>
+<p>打包阶段常见问题是图片 URL、<code>&lt;image&gt;</code> 标记和 conversation 格式不匹配目标训练框架。排查时应随机读取 JSONL，确认每行都是合法 JSON，<code>conversations[0].value</code> 包含图像占位符，assistant 回复非空，且质量字段能回链到中间态记录。</p>
+<h2 id="_18">人工抽检与发布门禁<a class="headerlink" href="#_18" title="Permanent link">&para;</a></h2>
+<p>多模态指令工厂很容易在自动指标上表现良好，但在人工阅读时暴露问题。例如，judge 分数较高的样本可能只是语言流畅，却没有忠实描述图像；多语言扩展样本可能语法正确，但左右方向、数量或 OCR 内容被翻错。因此，发布前必须设置人工抽检门禁。</p>
+<p>表 P13-8 给出推荐抽检分层。抽检不是只看随机样本，而是要覆盖模型最容易失败的区域。</p>
+<p><em>表 P13-8：多模态指令工厂人工抽检分层</em></p>
+<table>
+<thead>
+<tr>
+<th>抽检层</th>
+<th>样本来源</th>
+<th>检查重点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>高分样本</td>
+<td>judge score 最高的一批</td>
+<td>判断 judge 是否过度奖励长文本</td>
+</tr>
+<tr>
+<td>边界样本</td>
+<td>分数接近阈值的样本</td>
+<td>判断阈值是否过严或过松</td>
+</tr>
+<tr>
+<td>低分样本</td>
+<td>被过滤样本</td>
+<td>判断是否误删高价值样本</td>
+</tr>
+<tr>
+<td>OCR 样本</td>
+<td><code>ocr_reading</code> 任务</td>
+<td>检查文字是否逐字准确、格式是否保持</td>
+</tr>
+<tr>
+<td>推理样本</td>
+<td><code>complex_reasoning</code> 任务</td>
+<td>检查推理是否有视觉证据</td>
+</tr>
+<tr>
+<td>中文样本</td>
+<td>多语言扩展结果</td>
+<td>检查术语、方位和专名</td>
+</tr>
+<tr>
+<td>多图/视频样本</td>
+<td>packer 扩展结果</td>
+<td>检查引用顺序和占位符</td>
+</tr>
+</tbody>
+</table>
+<p>人工抽检建议采用“双人复核 + 冲突仲裁”。第一位复核者判断图文一致性和任务遵循度，第二位复核者判断语言质量和安全边界。如果两人结论冲突，则进入仲裁样本池。仲裁样本反过来用于修订 judge prompt、模板和过滤阈值。这样，人工抽检不是一次性质量检查，而是工厂迭代的一部分。</p>
+<p>发布门禁至少包括四项。第一，样本来源必须可追踪，外部图片不得只保留裸 URL。第二，训练文件必须能被目标框架读取，不能只通过 JSON 语法检查。第三，judge 与人工抽检之间要有一致性报告。第四，若发布多语言样本，必须分别报告中英文质量，而不是只报告总样本数。</p>
+<p>表 P13-9 给出发布门禁清单。</p>
+<p><em>表 P13-9：多模态指令工厂发布门禁清单</em></p>
+<table>
+<thead>
+<tr>
+<th>门禁</th>
+<th>必备证据</th>
+<th>不通过时处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>来源门禁</td>
+<td>URL、license、下载状态、删除请求处理方式</td>
+<td>下线无授权或不可追踪样本</td>
+</tr>
+<tr>
+<td>格式门禁</td>
+<td>JSONL 校验、训练 loader 小样本读取</td>
+<td>修复 packer 或字段 schema</td>
+</tr>
+<tr>
+<td>质量门禁</td>
+<td>judge 分布、人工抽检通过率、失败样本类型</td>
+<td>调整模板、阈值或生成参数</td>
+</tr>
+<tr>
+<td>多语言门禁</td>
+<td>中文/英文分别抽检报告</td>
+<td>回滚低质量翻译批次</td>
+</tr>
+<tr>
+<td>安全门禁</td>
+<td>敏感内容、隐私、身份推断检查</td>
+<td>删除样本并更新过滤规则</td>
+</tr>
+<tr>
+<td>版本门禁</td>
+<td>模型版本、模板版本、运行批次</td>
+<td>冻结版本后再发布</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_19">多图与视频扩展路径<a class="headerlink" href="#_19" title="Permanent link">&para;</a></h2>
+<p>P13 的代码中包含 <code>pack_multi_image_video.py</code>，说明本项目的目标不止于单图 SFT。现代 VLM 训练越来越依赖 interleaved images、多图对比和短视频片段。扩展时，核心问题不是把多个 <code>&lt;image&gt;</code> 标签拼在一起，而是让 instruction 清楚指向每个视觉输入，并让 answer 明确说明比较、排序、时序或跨图关系。</p>
+<p>表 P13-10 总结单图、多图和视频样本的差异。</p>
+<p><em>表 P13-10：多模态指令类型扩展对照</em></p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>输入组织</th>
+<th>指令重点</th>
+<th>常见错误</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单图</td>
+<td>一个 <code>&lt;image&gt;</code></td>
+<td>描述、OCR、局部推理</td>
+<td>幻觉物体或文字</td>
+</tr>
+<tr>
+<td>多图对比</td>
+<td><code>&lt;image_1&gt;</code>、<code>&lt;image_2&gt;</code> 等</td>
+<td>差异、共同点、排序、变化</td>
+<td>混淆图片顺序</td>
+</tr>
+<tr>
+<td>图文交错</td>
+<td>文本段落夹多个图片</td>
+<td>根据上下文引用图片</td>
+<td>引用错图或遗漏上下文</td>
+</tr>
+<tr>
+<td>短视频</td>
+<td>多帧或 <code>&lt;video&gt;</code></td>
+<td>动作、时序、镜头运动</td>
+<td>把视频描述成静态图</td>
+</tr>
+<tr>
+<td>图表截图</td>
+<td>图片 + OCR/表格结构</td>
+<td>数值读取、趋势解释</td>
+<td>编造数值或坐标轴</td>
+</tr>
+</tbody>
+</table>
+<p>扩展到视频时，可以复用 P14 的 shot-level 数据结构：<code>frame_paths</code>、<code>caption_en</code>、<code>shot_language</code> 和 <code>camera_motion</code> 都可以作为 P13 的视频指令素材。例如，一个视频问答样本可以要求模型解释镜头中主体如何移动，或者要求模型根据相机运动判断画面表现方式。这样 P13 与 P14 就不是两个孤立项目，而是“指令工厂”和“视频数据流水线”的上下游关系。</p>
+<h2 id="_20">交付物目录与版本管理<a class="headerlink" href="#_20" title="Permanent link">&para;</a></h2>
+<p>P13 的交付物建议拆成 raw、scored、expanded、packed 和 reports 五类。这样做可以避免训练文件和审计文件混在一起，也方便在某个阶段回滚。</p>
+<p>表P13-11汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 P13-11：多模态指令工厂交付物目录</em></p>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>内容</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data/seeds.jsonl</code></td>
+<td>种子资产清单</td>
+<td>保留 URL、授权、原始 caption 和筛选原因</td>
+</tr>
+<tr>
+<td><code>data/generated_raw.jsonl</code></td>
+<td>VLM 原始生成结果</td>
+<td>不直接训练，用于复查</td>
+</tr>
+<tr>
+<td><code>data/scored.jsonl</code></td>
+<td>judge 后结果</td>
+<td>保留分数、rubric 和模型版本</td>
+</tr>
+<tr>
+<td><code>data/consistent.jsonl</code></td>
+<td>self-consistency 后结果</td>
+<td>保留多路采样一致性证据</td>
+</tr>
+<tr>
+<td><code>data/multilingual.jsonl</code></td>
+<td>多语言扩展样本</td>
+<td>保留语言、术语表版本和翻译模型</td>
+</tr>
+<tr>
+<td><code>data/mm_sft_final.jsonl</code></td>
+<td>训练输入文件</td>
+<td>面向 Qwen-VL 或目标训练框架</td>
+</tr>
+<tr>
+<td><code>reports/task_distribution.json</code></td>
+<td>任务分布报告</td>
+<td>检查是否单一任务过多</td>
+</tr>
+<tr>
+<td><code>reports/human_review.md</code></td>
+<td>人工抽检报告</td>
+<td>发布门禁核心证据</td>
+</tr>
+<tr>
+<td><code>reports/license_audit.md</code></td>
+<td>版权与来源审计</td>
+<td>公开发布必备</td>
+</tr>
+</tbody>
+</table>
+<p>版本管理上，建议对模板和 judge prompt 做 hash。模型版本不变但模板文本改变，也会导致样本分布变化；judge prompt 轻微变化，也可能让通过率显著波动。发布报告中应同时给出模型版本、模板版本、judge prompt 版本和数据批次，而不是只写“使用 Qwen2.5-VL 生成”。</p>
+<h2 id="_21">数据看板与持续迭代<a class="headerlink" href="#_21" title="Permanent link">&para;</a></h2>
+<p>多模态指令工厂上线后，需要持续观察样本分布，而不是一次性生成后直接进入训练。看板可以先从 JSONL 统计脚本开始，不必一开始就建设复杂平台。关键是每次生成批次都能回答：任务类型是否均衡、judge 通过率是否异常、多语言比例是否稳定、失败样本集中在哪些资产类型。</p>
+<p>表 P13-12 给出推荐看板指标。</p>
+<p><em>表 P13-12：多模态指令工厂数据看板指标</em></p>
+<table>
+<thead>
+<tr>
+<th>看板指标</th>
+<th>统计对象</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>seed 通过率</td>
+<td><code>seeds.jsonl</code></td>
+<td>判断资产筛选阈值是否过严</td>
+</tr>
+<tr>
+<td>任务类型分布</td>
+<td><code>task.type</code></td>
+<td>防止详细描述类样本过多</td>
+</tr>
+<tr>
+<td>平均 response 长度</td>
+<td>raw/scored 样本</td>
+<td>发现模板化短答或冗长幻觉</td>
+</tr>
+<tr>
+<td>judge 分数分布</td>
+<td><code>quality.judge_score</code></td>
+<td>观察模型和 rubric 是否漂移</td>
+</tr>
+<tr>
+<td>consistency 分布</td>
+<td><code>quality.consistency_score</code></td>
+<td>发现推理任务不稳定</td>
+</tr>
+<tr>
+<td>中英文比例</td>
+<td><code>language</code></td>
+<td>控制多语言扩展规模</td>
+</tr>
+<tr>
+<td>格式错误率</td>
+<td>JSONL 校验结果</td>
+<td>发现 packer 或模板问题</td>
+</tr>
+<tr>
+<td>人工抽检通过率</td>
+<td>review report</td>
+<td>判断是否达到发布门禁</td>
+</tr>
+<tr>
+<td>安全拦截率</td>
+<td>safety filter</td>
+<td>监控敏感内容和隐私风险</td>
+</tr>
+</tbody>
+</table>
+<p>看板应当按批次保存。若某次生成的 judge 通过率突然升高，不一定说明质量变好，可能是 judge prompt 变松、模板变长或模型倾向输出更啰嗦的回答。若 OCR 任务通过率显著低于描述任务，应单独检查 OCR 图片质量和评分 rubric，而不是简单提高总阈值。</p>
+<h2 id="_22">样本撤回与版权响应<a class="headerlink" href="#_22" title="Permanent link">&para;</a></h2>
+<p>多模态数据比纯文本更容易触发版权、肖像权和隐私问题。即使使用公开 URL，也不等于可以无限制再分发图像和生成结果。P13 必须保留撤回路径：当某张图像、某个作者或某个来源集合需要删除时，系统应能定位相关 instruction、翻译样本和最终训练文件。</p>
+<p>表 P13-13 给出撤回处理路径。</p>
+<p><em>表 P13-13：多模态指令样本撤回处理路径</em></p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>操作</th>
+<th>影响产物</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>登记请求</td>
+<td>记录 URL、作者、来源、请求时间和证据</td>
+<td>ticket</td>
+</tr>
+<tr>
+<td>定位资产</td>
+<td>按 URL、hash、source 或 sample_id 查找 seed</td>
+<td><code>seeds.jsonl</code></td>
+</tr>
+<tr>
+<td>定位派生样本</td>
+<td>查找 raw、scored、multilingual 和 packed 记录</td>
+<td>全部中间态</td>
+</tr>
+<tr>
+<td>删除训练样本</td>
+<td>从 <code>mm_sft_final.jsonl</code> 中移除对应行</td>
+<td>训练文件</td>
+</tr>
+<tr>
+<td>重算统计</td>
+<td>更新任务分布、语言比例和质量报告</td>
+<td>reports</td>
+</tr>
+<tr>
+<td>发布说明</td>
+<td>记录删除原因和新版本号</td>
+<td>release note</td>
+</tr>
+</tbody>
+</table>
+<p>撤回机制要求中间态保留稳定 <code>sample_id</code>。如果只保存最终 Qwen conversation 格式，后续很难从训练样本反查原始图像和生成批次。因此，P13 的工程产物必须区分“训练窄表”和“审计宽表”。</p>
+<h2 id="_23">领域迁移：从通用图像到行业资产<a class="headerlink" href="#_23" title="Permanent link">&para;</a></h2>
+<p>P13 的方法可以迁移到医疗影像、工业质检、电商商品图、法律证据截图、教育图表等领域，但迁移时必须重新设计模板和验收门禁。不同领域的视觉证据和风险边界差异很大，不能直接沿用通用 LAION 样本的模板。</p>
+<p>表 P13-14 给出领域迁移时的调整方向。</p>
+<p><em>表 P13-14：多模态指令工厂领域迁移要点</em></p>
+<table>
+<thead>
+<tr>
+<th>领域</th>
+<th>资产类型</th>
+<th>模板调整</th>
+<th>风险控制</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>医疗</td>
+<td>影像、检查报告截图</td>
+<td>描述异常区域、不得给诊断结论</td>
+<td>专家复核、隐私脱敏</td>
+</tr>
+<tr>
+<td>工业</td>
+<td>缺陷图、设备照片</td>
+<td>描述缺陷位置、形态和严重程度</td>
+<td>内部机密、误判成本</td>
+</tr>
+<tr>
+<td>电商</td>
+<td>商品图、详情页截图</td>
+<td>属性抽取、对比、OCR 读取</td>
+<td>品牌授权、夸大描述</td>
+</tr>
+<tr>
+<td>金融</td>
+<td>财报截图、图表</td>
+<td>表格读取、趋势解释、证据引用</td>
+<td>数值准确性、投资建议边界</td>
+</tr>
+<tr>
+<td>教育</td>
+<td>题图、板书、教材插图</td>
+<td>解题提示、图表理解</td>
+<td>版权、答案泄漏</td>
+</tr>
+</tbody>
+</table>
+<p>领域迁移时，应优先建立少量高质量模板和专家抽检集，再扩大量。对高风险领域，不建议完全依赖 LLM-as-Judge；可以让 judge 做初筛，但最终发布门禁应由领域专家或规则系统共同决定。</p>
+<h2 id="p03-p14">与 P03 和 P14 的衔接<a class="headerlink" href="#p03-p14" title="Permanent link">&para;</a></h2>
+<p>P13 位于 P03 与 P14 之间。P03 建立 LLaVA 经典图文对和 conversation 基线，P13 在此基础上引入 Qwen-VL 风格生成、judge、self-consistency 和多语言扩展，P14 则把视觉输入从静态图片扩展到视频 shot。三者构成从单图基线到现代多模态工厂再到视频生成数据的递进关系。</p>
+<p>表 P13-15 总结三者边界。</p>
+<p><em>表 P13-15：P03、P13 与 P14 的项目边界</em></p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>核心对象</th>
+<th>关键能力</th>
+<th>不应混淆的边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P03</td>
+<td>LLaVA 图文对与 conversation</td>
+<td>经典流程、OCR、bbox、可视化抽检</td>
+<td>不强调新版 Qwen-VL 工厂能力</td>
+</tr>
+<tr>
+<td>P13</td>
+<td>多模态指令样本</td>
+<td>模板、VLM 生成、judge、多语言、打包</td>
+<td>不负责视频切分和 T2V 质量过滤</td>
+</tr>
+<tr>
+<td>P14</td>
+<td>视频 shot 数据</td>
+<td>镜头切分、运动、美学、caption、镜头语言</td>
+<td>不负责大规模指令多样化生成</td>
+</tr>
+</tbody>
+</table>
+<p>这样组织后，读者可以把 P03 当作基础数据结构，把 P13 当作指令生成工厂，把 P14 当作视频素材和时序监督来源。若后续要构建 Video-QA 或 Video-Instruct 数据集，可以先用 P14 生成视频片段和镜头字段，再用 P13 的模板、judge 和打包机制生成指令样本。</p>
+<h2 id="_24">结果展示与验收<a class="headerlink" href="#_24" title="Permanent link">&para;</a></h2>
+<p>示例验收设定为：在单节点 4 卡 4090 环境下部署 Qwen2.5-VL-7B（vLLM 推理），并通过 API 调用 72B 模型作为判别器，产出一批多模态指令候选样本。正式复现时，应以实际任务配置、生成日志和样本 manifest 替换示例规模。</p>
+<ul>
+<li><strong>任务分布</strong>：涵盖了详细描述（40%）、复杂推理（30%）、OCR与表格（20%）以及细粒度定位（10%）。没有出现类型偏斜过高（单一分类 &gt; 40%）。</li>
+<li><strong>质量分布</strong>：通过 LLM-as-Judge 过滤的样本应记录均值、分位数和拒绝原因。示例验收中可以使用 <strong>4.3 / 5.0</strong> 这样的平均分展示报告格式，但正式结果必须保留评分明细和判别器版本。</li>
+</ul>
+<p>正式验收时，应同时检查四类指标：第一，样本是否能被下游训练脚本稳定读取；第二，任务类型分布是否符合预设配比；第三，图像、指令和回答之间是否存在明显错配；第四，来源许可、模型许可和生成产物再分发规则是否已登记。只有通过这些检查，生成数据才能从候选池进入训练集。</p>
+<h2 id="_25">成本与优化<a class="headerlink" href="#_25" title="Permanent link">&para;</a></h2>
+<p>数据合成工厂的运转效率与成本应按实际推理日志和账单核算：</p>
+<ul>
+<li><strong>合成成本</strong>：示例估算可写为私有算力上 7B 模型生成一条带图像处理的长回复约需 1-2 秒；如果使用商业 API，每千条高质量数据的成本示例量级约为 <span class="arithmatex">\(5-\)</span>10。正式结果必须保留模型版本、并发配置、失败重试率和 API 账单。</li>
+<li><strong>扩展性</strong>：vLLM 的张量并行能够承载一定规模的多模态生成压力。当算力不足时，可以通过调低 <code>max_num_seqs</code>、降低采样温度（temperature）和分批调度任务平稳降级。</li>
+</ul>
+<h2 id="_26">扩展思考<a class="headerlink" href="#_26" title="Permanent link">&para;</a></h2>
+<p>相比单纯依赖人工标注或高成本闭源模型蒸馏的 LLaVA 数据体系，通过 Qwen-VL + LLM-as-Judge (Zheng et al. 2023) 的自我蒸馏（Self-Distillation）可以降低微调数据构建成本，但仍需要人工抽检和许可审查兜底。
+后续可以在这套流水线中插入视频片段：在打包器（Packer）中将连续采样帧用多个 <code>&lt;image&gt;</code> 标签或 <code>&lt;video&gt;</code> 统一封装，即可扩展到面向 T2V 或 Video-QA 模型的数据合成。</p>
+<h3 id="_27">数据合规与开源许可说明<a class="headerlink" href="#_27" title="Permanent link">&para;</a></h3>
+<p>在构建和发布指令数据集时，需遵守以下协议：</p>
+<ul>
+<li><strong>LAION 种子图</strong>：原始图链接受 CC-BY 或特定公共协议保护，仅供研究使用。</li>
+<li><strong>Qwen2.5-VL</strong>：模型的使用及生成内容的再分发受其对应的开源/商业许可协议约束。</li>
+<li><strong>生成产物</strong>：本流水线最终合成的指令数据集（如 <code>dataforge-mm-instruction-50k</code>）建议采用 CC-BY-SA 协议向社区开源发布。</li>
+</ul>
+<h2 id="_28">本章小结<a class="headerlink" href="#_28" title="Permanent link">&para;</a></h2>
+<p>本章以“多模态指令工厂”为案例，展示了构建覆盖图像、文本、OCR、图表和对话任务的多模态指令生产链的工程组织方式。案例的主要价值在于把任务定义、数据边界、架构决策、样本 schema、指标验收和复现资源放在同一条链路中，使项目不再只是操作步骤，而成为可复核的案例研究。</p>
+<p>该案例的边界同样需要被清楚保留。面向受控资产和样本工厂，不覆盖无授权媒体采集或全自动安全审核。在更大规模、更高风险或更强合规约束的场景中，应重新评估数据来源、权限状态、人工复核比例、运行成本和失败回滚方案。</p>
+<p>作为第十四篇的一部分，本章对应前文方法在项目层面的落地验证。读者可将本案例与第十三篇的数据配方、前文的平台治理章节以及附录中的检查清单合并使用，形成从方法理解到工程交付的闭环。</p>
+<h2 id="_29">参考文献<a class="headerlink" href="#_29" title="Permanent link">&para;</a></h2>
+<p>Bai S, Chen K, Liu X, Wang J, Ge W, Song S, Dang K, Wang P, Wang S, Tang J, et al. (2025) Qwen2.5-VL Technical Report. arXiv preprint arXiv:2502.13923.</p>
+<p>Zhu J, Wang W, Chen Z, Liu Z, Ye S, Gu L, Duan Y, Tian H, Su W, Shao J, et al. (2025) InternVL3: Exploring Advanced Training and Test-Time Recipes for Open-Source Multimodal Models. arXiv preprint arXiv:2504.10479.</p>
+<p>Kwon W, Li Z, Zhuang S, Sheng Y, Zheng L, Yu C H, Gonzalez J E, Zhang H, Stoica I (2023) Efficient Memory Management for Large Language Model Serving with PagedAttention. In: Proceedings of the 29th ACM Symposium on Operating Systems Principles, pp 611-626. https://doi.org/10.1145/3600006.3613165.</p>
+<p>Schuhmann C, Beaumont R, Vencu R, Gordon C, Wightman R, Cherti M, Coombes T, Katta A, Mullis C, Wortsman M, et al. (2022) LAION-5B: An Open Large-Scale Dataset for Training Next Generation Image-Text Models. In: Advances in Neural Information Processing Systems 35, pp 25278-25294. Available at: https://arxiv.org/abs/2210.08402.</p>
+<p>Wang X, Wei J, Schuurmans D, Le Q, Chi E, Narang S, Chowdhery A, Zhou D (2023) Self-Consistency Improves Chain of Thought Reasoning in Language Models. In: International Conference on Learning Representations. arXiv:2203.11171.</p>
+<p>Zheng L, Chiang W L, Sheng Y, Zhuang S, Wu Z, Zhuang Y, Lin Z, Li Z, Li D, Xing E P, Zhang H, Gonzalez J E, Stoica I (2023) Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. In: Advances in Neural Information Processing Systems 36. arXiv:2306.05685.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

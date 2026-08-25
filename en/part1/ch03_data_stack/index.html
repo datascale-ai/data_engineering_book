@@ -1,0 +1,4009 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part1/ch03_data_stack/">
+      
+      
+        <link rel="prev" href="../ch02_quality_framework/">
+      
+      
+        <link rel="next" href="../../part2/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 3: AI-Native Data Stack and Cost Governance - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-3-ai-native-data-stack-and-cost-governance" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 3: AI-Native Data Stack and Cost Governance
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part1/ch03_data_stack/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part1/ch03_data_stack/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opening-scenario-risks-when-a-data-platform-lacks-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Opening Scenario: Risks When a Data Platform Lacks Governance
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#31-why-an-ai-native-data-stack-differs-from-a-traditional-data-warehouse" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1 Why an AI-Native Data Stack Differs from a Traditional Data Warehouse
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.1 Why an AI-Native Data Stack Differs from a Traditional Data Warehouse">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#311-different-goals-from-analytical-queries-to-training-supply" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1.1 Different Goals: From Analytical Queries to Training Supply
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#312-essential-workload-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1.2 Essential Workload Differences
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#313-multidimensional-cost-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1.3 Multidimensional Cost Constraints
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#32-five-layers-of-the-data-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2 Five Layers of the Data Stack
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 Five Layers of the Data Stack">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321-ingestion-and-access-layer-turning-data-everywhere-into-traceable-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.1 Ingestion and Access Layer: Turning "Data Everywhere" into "Traceable Data"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322-processing-orchestration-layer-the-scheduler-of-the-data-factory" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.2 Processing Orchestration Layer: The Scheduler of the Data Factory
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#323-storage-and-indexing-layer-different-strategies-for-three-data-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.3 Storage and Indexing Layer: Different Strategies for Three Data Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#324-evaluation-operations-layer-making-data-quality-visible" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.4 Evaluation Operations Layer: Making Data Quality Visible
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#325-governance-and-security-layer-data-needs-compliance-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.5 Governance and Security Layer: Data Needs Compliance Records
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#33-cost-model-and-budget-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3 Cost Model and Budget Governance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.3 Cost Model and Budget Governance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#331-five-cost-dimensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3.1 Five Cost Dimensions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#332-cost-accounting-before-during-and-after-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3.2 Cost Accounting Before, During, and After Training
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#333-roi-decision-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3.3 ROI Decision Framework
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#34-three-team-architecture-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4 Three Team Architecture Patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.4 Three Team Architecture Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#341-startup-lightweight-stack-validate-quickly-and-avoid-over-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4.1 Startup Lightweight Stack: Validate Quickly and Avoid Over-Design
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#342-platform-construction-for-mid-sized-teams" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4.2 Platform Construction for Mid-Sized Teams
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#343-multi-tenant-collaboration-for-large-organizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4.3 Multi-Tenant Collaboration for Large Organizations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#35-platform-interfaces-and-connections-to-later-chapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.5 Platform Interfaces and Connections to Later Chapters
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opening-scenario-risks-when-a-data-platform-lacks-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      Opening Scenario: Risks When a Data Platform Lacks Governance
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#31-why-an-ai-native-data-stack-differs-from-a-traditional-data-warehouse" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1 Why an AI-Native Data Stack Differs from a Traditional Data Warehouse
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.1 Why an AI-Native Data Stack Differs from a Traditional Data Warehouse">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#311-different-goals-from-analytical-queries-to-training-supply" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1.1 Different Goals: From Analytical Queries to Training Supply
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#312-essential-workload-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1.2 Essential Workload Differences
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#313-multidimensional-cost-constraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.1.3 Multidimensional Cost Constraints
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#32-five-layers-of-the-data-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2 Five Layers of the Data Stack
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.2 Five Layers of the Data Stack">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#321-ingestion-and-access-layer-turning-data-everywhere-into-traceable-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.1 Ingestion and Access Layer: Turning "Data Everywhere" into "Traceable Data"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#322-processing-orchestration-layer-the-scheduler-of-the-data-factory" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.2 Processing Orchestration Layer: The Scheduler of the Data Factory
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#323-storage-and-indexing-layer-different-strategies-for-three-data-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.3 Storage and Indexing Layer: Different Strategies for Three Data Types
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#324-evaluation-operations-layer-making-data-quality-visible" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.4 Evaluation Operations Layer: Making Data Quality Visible
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#325-governance-and-security-layer-data-needs-compliance-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.2.5 Governance and Security Layer: Data Needs Compliance Records
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#33-cost-model-and-budget-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3 Cost Model and Budget Governance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.3 Cost Model and Budget Governance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#331-five-cost-dimensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3.1 Five Cost Dimensions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#332-cost-accounting-before-during-and-after-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3.2 Cost Accounting Before, During, and After Training
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#333-roi-decision-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.3.3 ROI Decision Framework
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#34-three-team-architecture-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4 Three Team Architecture Patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3.4 Three Team Architecture Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#341-startup-lightweight-stack-validate-quickly-and-avoid-over-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4.1 Startup Lightweight Stack: Validate Quickly and Avoid Over-Design
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#342-platform-construction-for-mid-sized-teams" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4.2 Platform Construction for Mid-Sized Teams
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#343-multi-tenant-collaboration-for-large-organizations" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.4.3 Multi-Tenant Collaboration for Large Organizations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#35-platform-interfaces-and-connections-to-later-chapters" class="md-nav__link">
+    <span class="md-ellipsis">
+      3.5 Platform Interfaces and Connections to Later Chapters
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-3-ai-native-data-stack-and-cost-governance">Chapter 3: AI-Native Data Stack and Cost Governance<a class="headerlink" href="#chapter-3-ai-native-data-stack-and-cost-governance" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Jun Yu; Ke Wang; Changwen Chen</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>This chapter discusses the AI-native data stack and cost-governance methods that support large-model data engineering. Unlike traditional data warehouses, which mainly serve analytical queries, an LLM data stack is designed to provide traceable, evaluable, versioned data assets to training and application pipelines at stable and low cost. The chapter first compares traditional data warehouses and large-model data stacks in their goals, workloads, and cost constraints. It then decomposes the data stack into five layers: ingestion and access, processing orchestration, storage and indexing, evaluation operations, and governance and security. It also discusses the appropriate boundaries of tools such as Spark, Ray Data, Iceberg, object storage, vector databases, DVC, and MLflow. Finally, the chapter provides a cost model, return-on-investment (ROI) decision framework, and three team-architecture patterns to help readers choose infrastructure that matches startup, mid-sized, and large-organization stages.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>AI-native data stack; data infrastructure; Ray Data; Apache Iceberg; object storage; cost governance; DataOps</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Distinguish traditional data warehouses from LLM data stacks in goals and workloads.</li>
+<li>Understand the five-layer architecture of an AI-native data stack and its key interfaces.</li>
+<li>Understand the cost components of data processing, storage, annotation, inference services, and training I/O.</li>
+<li>Choose a lightweight stack, platform stack, or multi-tenant data platform according to team scale.</li>
+</ul>
+<h2 id="opening-scenario-risks-when-a-data-platform-lacks-governance">Opening Scenario: Risks When a Data Platform Lacks Governance<a class="headerlink" href="#opening-scenario-risks-when-a-data-platform-lacks-governance" title="Permanent link">&para;</a></h2>
+<p>You have just joined a Series B large-model startup as the head of data. During your first week, you audit the company's data infrastructure and discover that corpus data is scattered across more than 50 engineers' local disks. File formats include <code>.txt</code>, <code>.json</code>, <code>.csv</code>, and <code>.parquet</code>, with no unified standard. Every time new data is processed, engineers manually write Python scripts and run them on a single machine; a 500 GB file taking three days is normal. Three months earlier, an incorrect file path overwrote a critical SFT dataset, and that dataset had no backup or version record. The CEO asks: the company plans to begin its first base-model pretraining run at the scale of tens of billions of parameters in one month. Can the data platform support it?</p>
+<p>This scenario is not an exaggerated edge case. In many fast-moving large-model teams, this is common during the early stage. Algorithms and model architectures usually receive the most attention, while data infrastructure is treated as work that can be postponed, until critical data is lost, the training cluster is bottlenecked by data I/O, or a compliance audit finds unclear training-data provenance. Only then does the team rush to build infrastructure.</p>
+<p>Reactive construction is expensive because the team must fill platform gaps while facing business pressure, training-window constraints, and compliance risk at the same time.</p>
+<h2 id="31-why-an-ai-native-data-stack-differs-from-a-traditional-data-warehouse">3.1 Why an AI-Native Data Stack Differs from a Traditional Data Warehouse<a class="headerlink" href="#31-why-an-ai-native-data-stack-differs-from-a-traditional-data-warehouse" title="Permanent link">&para;</a></h2>
+<p>For many engineers, "data infrastructure" means the classic big-data stack of Hadoop, Hive, and Spark, plus relational databases, data warehouses, and BI reporting systems. Over the past decade, that stack has supported countless analytics and machine-learning workloads. It is mature and production-proven.</p>
+<p>However, if this stack is moved unchanged into LLM data engineering, it fails to match almost every key dimension.</p>
+<h3 id="311-different-goals-from-analytical-queries-to-training-supply">3.1.1 Different Goals: From Analytical Queries to Training Supply<a class="headerlink" href="#311-different-goals-from-analytical-queries-to-training-supply" title="Permanent link">&para;</a></h3>
+<p>The core goal of a traditional data warehouse is <strong>analysis and insight</strong>: gather business data and use SQL queries and BI tools to help decision makers answer "what happened" and "what is the current business state?" Under this goal, the core value of data lies in <strong>query performance</strong> and <strong>consistency</strong>: data must be accurate, well structured, and quickly joinable and aggregatable.</p>
+<p>An LLM data stack serves a different core goal: <strong>training a neural network model</strong>. The final consumer is not a human but attention computation running on GPUs. Under this goal, the core value of data lies in <strong>training throughput</strong> and <strong>signal-to-noise ratio</strong>. GPU utilization must remain high, and tokens must be filtered to reduce the risk that the model learns incorrect knowledge or low-quality language patterns.</p>
+<p>This difference in goals leads directly to a full divergence in technical choices.</p>
+<h3 id="312-essential-workload-differences">3.1.2 Essential Workload Differences<a class="headerlink" href="#312-essential-workload-differences" title="Permanent link">&para;</a></h3>
+<p>The typical workload of a traditional data warehouse is <strong>read-heavy, write-light OLAP queries</strong>: many users concurrently execute <code>SELECT</code> queries, with occasional batch ETL writes. Data scale usually ranges from GB to TB, and peak performance aims for sub-second query latency.</p>
+<p>The workload of an LLM data stack has a very different structure.</p>
+<p><strong>Pretraining data processing</strong> is the heaviest workload in the system. Tens of TB to PB of raw corpus data must pass through serial steps such as deduplication, filtering, format conversion, and tokenization. Each step is CPU-intensive and must run across thousands of cores to complete in a reasonable time window. These workloads require the compute layer to schedule and track hundreds of millions of file- or document-level tasks efficiently.</p>
+<p><strong>I/O alignment with GPU training</strong> is another key constraint. During model training, the DataLoader must feed data to GPUs at high frequency, often every step. Any I/O wait causes GPU idle time and increases compute cost. The storage layer must therefore provide read bandwidth that matches GPU training demand. This imposes strict requirements on object-storage access patterns, such as large sequential files versus random small files, and on network bandwidth such as InfiniBand or 100GbE Ethernet.</p>
+<p><strong>Coexistence of online inference and real-time feedback</strong> adds further complexity. When the model serves inference traffic, user interaction data, including conversations, satisfaction feedback, and valuable correction cases, must flow back into SFT or RLHF pipelines after cleaning and annotation. The stack must therefore support both offline batch processing, such as pretraining-corpus cleaning, and low-latency online writes, such as user-feedback ingestion. These workloads have different storage and compute requirements and need explicit isolation and coordination in system design.</p>
+<h3 id="313-multidimensional-cost-constraints">3.1.3 Multidimensional Cost Constraints<a class="headerlink" href="#313-multidimensional-cost-constraints" title="Permanent link">&para;</a></h3>
+<p>In a traditional BI system, cost mainly means <strong>storage cost</strong> and <strong>query compute cost</strong>. In an LLM data system, four major cost categories create a multidimensional constraint.</p>
+<p>First is <strong>compute cost</strong> for GPU/TPU training clusters. GPU cloud prices, rental prices, and self-built depreciation change rapidly with region, contract, supply and demand, model type, and utilization, so a manuscript should not hard-code unit prices. Engineering budgets should be calculated as "GPU hours x unit GPU-hour cost x effective-utilization loss." A pretraining or retraining run typically consumes a large number of GPU hours, which means that any training interruption or restart caused by data issues is expensive. This is the fundamental reason an LLM data stack must emphasize stability and rollback.</p>
+<p>Second is <strong>data-processing cost</strong>. Large-scale corpus cleaning tasks run on CPU or GPU clusters, and their cost is determined jointly by data scale, parsing complexity, deduplication algorithms, quality-model inference, failed retries, and intermediate-data write amplification. Reducing per-run cost through refined scheduling, such as Spot instances, and algorithmic optimization, such as approximate MinHash deduplication (Broder 1997) instead of full pairwise comparison, is a core engineering concern.</p>
+<p>Third is <strong>annotation and human cost</strong>. High-quality SFT, preference, and safety samples require annotators with professional backgrounds to write or review them manually. Unit cost depends on domain difficulty, sample length, QA ratio, rework rate, and regional labor prices. In high-risk domains such as medicine, law, and finance, expert review can easily become the largest single item in the data-engineering budget.</p>
+<p>Fourth is <strong>storage cost</strong>. The prices of object storage, block storage, and archive storage vary with cloud provider, region, discount, access pattern, and retrieval fee. Budgets should distinguish hot data, intermediate artifacts, reproducible experiment snapshots, and long-term archive data, and should separately calculate capacity charges, request charges, cross-region traffic charges, and retrieval charges. Planning hot, warm, and cold tiers across the full data lifecycle, and avoiding active-tier charges for historical data that is no longer used, is an important cost-governance topic discussed further in Section 3.3.</p>
+<hr />
+<h2 id="32-five-layers-of-the-data-stack">3.2 Five Layers of the Data Stack<a class="headerlink" href="#32-five-layers-of-the-data-stack" title="Permanent link">&para;</a></h2>
+<p>After clarifying the fundamental difference between an AI-native data stack and a traditional data warehouse, we can build the architecture systematically. A complete LLM data stack can be decomposed into five functional layers from bottom to top. Each layer has core responsibilities and key technical choices.</p>
+<p>Figure 3-1 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap03-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 3-1: Five-layer architecture of an AI-native data stack" src="../../../images/part1/Yu-Chap03-Fig01.svg" /></a></p>
+<p><em>Figure 3-1: Five-layer architecture of an AI-native data stack</em></p>
+<h3 id="321-ingestion-and-access-layer-turning-data-everywhere-into-traceable-data">3.2.1 Ingestion and Access Layer: Turning "Data Everywhere" into "Traceable Data"<a class="headerlink" href="#321-ingestion-and-access-layer-turning-data-everywhere-into-traceable-data" title="Permanent link">&para;</a></h3>
+<p>The ingestion and access layer is the entry point of the stack. It brings data scattered across sources into platform management in a unified and controlled way. It may sound ordinary, but it is one of the easiest layers to neglect and one of the most expensive to fix later.</p>
+<p>LLM data engineering has highly diverse sources: public web pages from Common Crawl snapshots or custom crawlers, GitHub code repositories through API datasets or incremental mirrors, academic papers from arXiv, PubMed, and Semantic Scholar, high-quality books from sources such as Books3 or licensed channels, private enterprise documents, and online user feedback. Each source has distinct crawling methods, file formats, and update frequency.</p>
+<p>The core challenge of the ingestion layer is not "how to get data," which is mainly crawler and API development. It is <strong>how to create a complete metadata record the moment data enters the platform</strong>. When a batch lands, the platform must record key information: source, such as source URL or API endpoint; ingestion timestamp for freshness management; file format and version; data owner or license type for compliance audit; original file size and count; and the ingestion task ID for resume and traceability. Without this metadata, data becomes a black box after entering the platform. You know data exists, but you do not know where it came from, when it arrived, or which cleaning-pipeline version processed it. When a problem appears, root-cause analysis is impossible.</p>
+<p>Listing 3-1 shows an example data-ingestion metadata registration implementation.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Example metadata registration: automatically write a record during ingestion</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">asdict</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nd">@dataclass</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="k">class</span><span class="w"> </span><span class="nc">DataIngestionRecord</span><span class="p">:</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="n">ingestion_id</span><span class="p">:</span> <span class="nb">str</span>          <span class="c1"># Unique task ID</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="n">source_name</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># Source name, such as &quot;common_crawl_2024_04&quot;</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span class="n">source_url</span><span class="p">:</span> <span class="nb">str</span>            <span class="c1"># Original crawl URL or API endpoint</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="n">ingestion_timestamp</span><span class="p">:</span> <span class="nb">str</span>   <span class="c1"># Ingestion timestamp, ISO 8601</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="n">license_type</span><span class="p">:</span> <span class="nb">str</span>          <span class="c1"># License, such as &quot;CC-BY-4.0&quot;, &quot;Unknown&quot;, &quot;Proprietary&quot;</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="n">file_format</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># File format, such as &quot;jsonl&quot;, &quot;parquet&quot;, &quot;warc&quot;</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="n">raw_file_count</span><span class="p">:</span> <span class="nb">int</span>        <span class="c1"># Number of raw files</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="n">raw_size_bytes</span><span class="p">:</span> <span class="nb">int</span>        <span class="c1"># Raw data size in bytes</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="n">s3_prefix</span><span class="p">:</span> <span class="nb">str</span>             <span class="c1"># Object-storage prefix</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span class="n">crawl_agent</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># Crawler script version</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="k">def</span><span class="w"> </span><span class="nf">register_ingestion</span><span class="p">(</span><span class="n">record</span><span class="p">:</span> <span class="n">DataIngestionRecord</span><span class="p">,</span> <span class="n">metadata_db_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Write an ingestion record to a metadata DB.&quot;&quot;&quot;</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>    <span class="n">record_dict</span> <span class="o">=</span> <span class="n">asdict</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>    <span class="n">record_dict</span><span class="p">[</span><span class="s2">&quot;ingestion_timestamp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>    <span class="c1"># In production, write to PostgreSQL, DynamoDB, or another transactional store.</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">metadata_db_path</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">record_dict</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><em>Listing 3-1: Example data-ingestion metadata registration</em></p>
+<p>In production, this should write to a transactional metadata database and include permission, audit, and idempotency controls.</p>
+<h3 id="322-processing-orchestration-layer-the-scheduler-of-the-data-factory">3.2.2 Processing Orchestration Layer: The Scheduler of the Data Factory<a class="headerlink" href="#322-processing-orchestration-layer-the-scheduler-of-the-data-factory" title="Permanent link">&para;</a></h3>
+<p>After data enters the platform, it must go through serial processing steps to become training-ready. These steps usually include HTML tag stripping and text extraction, language identification and filtering, rule-based noise filtering, such as removing URL-dense or advertisement-heavy spans, approximate deduplication with MinHash LSH, exact deduplication, quality scoring with PPL or classifiers, and final tokenization and serialization.</p>
+<p>The processing orchestration layer solves the core engineering problem: how to run these steps efficiently across thousands of parallel compute nodes while preserving observability, recoverability, and reproducibility.</p>
+<p>Two mainstream industrial choices are <strong>Apache Spark</strong> (Zaharia et al. 2016) and <strong>Ray Data</strong> (Moritz et al. 2018). They differ fundamentally in design philosophy and use cases.</p>
+<p>Table 3-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p>The comparison is based on open-source framework documentation and LLM data-processing practice.</p>
+<p><em>Table 3-1: Core feature comparison of Apache Spark and Ray Data</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Dimension</th>
+<th style="text-align: left;">Apache Spark</th>
+<th style="text-align: left;">Ray Data</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Core language runtime</strong></td>
+<td style="text-align: left;">Scala/Java core; Python through PySpark, with JVM-Python serialization overhead</td>
+<td style="text-align: left;">Python-native, no JVM overhead, seamless with PyTorch and Hugging Face</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Data abstraction</strong></td>
+<td style="text-align: left;">DataFrame, batch-processing mindset, emphasizes full-batch materialization</td>
+<td style="text-align: left;">Dataset, pipeline mindset, streams data between operators</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>GPU support</strong></td>
+<td style="text-align: left;">Requires NVIDIA RAPIDS plugins such as cuDF/cuML; integration is more complex</td>
+<td style="text-align: left;">Native GPU scheduling; operators can directly call CUDA kernels or deploy ML models</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Memory pattern</strong></td>
+<td style="text-align: left;">Intermediate results between operators must materialize to disk or memory, increasing pressure</td>
+<td style="text-align: left;">Pipeline execution allows upstream and downstream overlap, improving memory efficiency</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>SQL and BI ecosystem</strong></td>
+<td style="text-align: left;">Very mature Spark SQL with Hive metadata compatibility</td>
+<td style="text-align: left;">Weaker SQL support and no mature SQL query interface</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Fault tolerance and stability</strong></td>
+<td style="text-align: left;">More than a decade of PB-scale production validation</td>
+<td style="text-align: left;">Younger system; fewer large-scale best practices than Spark</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Typical code style</strong></td>
+<td style="text-align: left;">Functional chained calls such as <code>map</code>, <code>filter</code>, and <code>groupBy</code></td>
+<td style="text-align: left;">Declarative pipeline topology such as chained <code>ds.map_batches()</code></td>
+</tr>
+</tbody>
+</table>
+<p>The right choice depends on team background and workload. If the team has traditional big-data experience and the pipeline contains much SQL logic or depends heavily on Hive/Iceberg, Spark is the more robust choice. If the team comes from AI/ML and frequently calls ML models during data processing, such as PPL classifiers or NER models for PII detection, Ray Data's Python-native runtime and GPU scheduling advantages are clear. Many large teams eventually use a hybrid: Spark handles massive coarse filtering, such as language identification and rule deduplication, while Ray Data handles fine-grained steps that require ML inference, such as quality scoring and benchmark-contamination detection.</p>
+<p>The following is a typical Ray Data cleaning pipeline.</p>
+<p>Listing 3-2 shows a Ray Data cleaning pipeline example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">ray</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">ray.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_parquet</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">remove_html_noise</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove HTML tags and compute a simple noise score.&quot;&quot;&quot;</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">texts</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span class="n">cleaned</span> <span class="o">=</span> <span class="p">[</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;&lt;[^&gt;]+&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">texts</span><span class="p">]</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">noise_scores</span> <span class="o">=</span> <span class="p">[</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;&lt;[^&gt;]+&gt;&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">texts</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="p">]</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cleaned</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="n">batch</span><span class="p">[</span><span class="s2">&quot;noise_score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">noise_scores</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>    <span class="k">return</span> <span class="n">batch</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="k">def</span><span class="w"> </span><span class="nf">filter_quality</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Filter low-quality samples.&quot;&quot;&quot;</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;noise_score&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">batch</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">len</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>    <span class="k">return</span> <span class="n">batch</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="c1"># Build a cleaning pipeline.</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="n">ds</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="n">read_parquet</span><span class="p">(</span><span class="s2">&quot;s3://my-bucket/raw/common_crawl/&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>    <span class="o">.</span><span class="n">map_batches</span><span class="p">(</span><span class="n">remove_html_noise</span><span class="p">,</span> <span class="n">batch_format</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>    <span class="o">.</span><span class="n">map_batches</span><span class="p">(</span><span class="n">filter_quality</span><span class="p">,</span> <span class="n">batch_format</span><span class="o">=</span><span class="s2">&quot;pandas&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="p">)</span>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a><span class="c1"># Write output to object storage.</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a><span class="n">ds</span><span class="o">.</span><span class="n">write_parquet</span><span class="p">(</span><span class="s2">&quot;s3://my-bucket/processed/cc_cleaned/&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p><em>Listing 3-2: Ray Data cleaning pipeline example. Production systems should add retry logic, metric reporting, data versions, and output validation</em></p>
+<h3 id="323-storage-and-indexing-layer-different-strategies-for-three-data-types">3.2.3 Storage and Indexing Layer: Different Strategies for Three Data Types<a class="headerlink" href="#323-storage-and-indexing-layer-different-strategies-for-three-data-types" title="Permanent link">&para;</a></h3>
+<p>An LLM data stack must manage three very different kinds of data. Each has distinct storage requirements, so the storage and indexing layer needs differentiated technical choices.</p>
+<p><strong>Text corpora and structured annotation data</strong> are the largest category. They include cleaned pretraining corpora in Parquet format, SFT samples in JSONL format, and preference-comparison datasets. Their read/write pattern is typical batch processing: large sequential writes after processing and large sequential reads when training DataLoaders scan the data. Object storage such as AWS S3 or MinIO is usually the recommended choice. On top of it, a lakehouse table format is needed to provide version management and ACID transactions.</p>
+<p>The three mainstream lakehouse formats each have their own appropriate scenarios.</p>
+<p>Table 3-2 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 3-2: Lakehouse table format selection comparison</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Feature</th>
+<th style="text-align: left;">Apache Iceberg</th>
+<th style="text-align: left;">Delta Lake</th>
+<th style="text-align: left;">Apache Hudi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Core maintainer</strong></td>
+<td style="text-align: left;">Netflix to Apache Foundation</td>
+<td style="text-align: left;">Databricks, core commercial open source</td>
+<td style="text-align: left;">Uber to Apache Foundation</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Engine compatibility</strong></td>
+<td style="text-align: left;">Spark / Flink / Trino / DuckDB / StarRocks; broadest</td>
+<td style="text-align: left;">Mainly Spark; others need adaptation layers</td>
+<td style="text-align: left;">Spark / Flink / Presto</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>ACID transactions</strong></td>
+<td style="text-align: left;">Full support</td>
+<td style="text-align: left;">Full support</td>
+<td style="text-align: left;">Supported, strongest for upsert/delete</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Time-travel queries</strong></td>
+<td style="text-align: left;">Full support by version or timestamp</td>
+<td style="text-align: left;">Full support</td>
+<td style="text-align: left;">Supported, lighter-weight</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Schema evolution</strong></td>
+<td style="text-align: left;">Supports add, rename, and delete columns</td>
+<td style="text-align: left;">Supported</td>
+<td style="text-align: left;">Supported</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Recommended scenarios</strong></td>
+<td style="text-align: left;">Multi-engine use and vendor-neutral teams</td>
+<td style="text-align: left;">Teams deeply using the Databricks ecosystem</td>
+<td style="text-align: left;">High-frequency upsert needs, such as real-time knowledge-base updates</td>
+</tr>
+</tbody>
+</table>
+<p>For LLM data-engineering scenarios that require multi-engine collaboration and object-storage scalability, <strong>Apache Iceberg</strong> (Apache Software Foundation 2024) <strong>+ S3</strong> is a common priority candidate because it is engine-neutral. It allows engineering teams to use Spark for massive cleaning, DuckDB for lightweight exploration, and other engines without migrating data or being locked into one vendor.</p>
+<p><strong>Vector data, or embeddings</strong>, are the second storage need, mainly serving RAG. A vector database converts massive text chunks into high-dimensional dense vectors, builds indexes, and supports efficient approximate nearest-neighbor retrieval (Malkov and Yashunin 2020). Mainstream vector databases include Milvus, which is open source and suited for large distributed deployments; Qdrant, implemented in Rust and friendly for lightweight high-performance deployment; and Weaviate, which has built-in multimodal vector support and friendly schema management. The key selection factors are vector scale, such as below one million versus hundreds of millions; whether hybrid search is needed, combining dense vectors and BM25 sparse retrieval (Robertson and Zaragoza 2009); and whether the operations team can manage distributed systems.</p>
+<p><strong>Model checkpoints and experiment artifacts</strong> are the third category. They include model weight files saved during training, often hundreds of GB, TensorBoard or W&amp;B logs, tokenizer configuration, and related artifacts. These data are large and have uneven access frequency: frequent writes during training, mostly read-only afterward. Object storage is suitable as primary storage, with DVC (Data Version Control) (DVC 2024) or MLflow Artifacts for version tracking.</p>
+<p>Listing 3-3 gives example DVC commands for dataset version tracking.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Use DVC to track a dataset version.</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>dvc<span class="w"> </span>init
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>dvc<span class="w"> </span>add<span class="w"> </span>datasets/sft/v2.3/<span class="w">  </span><span class="c1"># Track the dataset directory with DVC.</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>git<span class="w"> </span>add<span class="w"> </span>datasets/sft/v2.3.dvc<span class="w"> </span>.gitignore
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;feat: add SFT dataset v2.3 (84k samples, legal domain)&quot;</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>dvc<span class="w"> </span>push<span class="w">  </span><span class="c1"># Push actual data to S3 remote storage.</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># Other engineers can use dvc pull to fetch the exact same data.</span>
+</code></pre></div>
+<p><em>Listing 3-3: Example DVC commands for dataset version tracking</em></p>
+<p>Production environments should combine this with object-storage permissions, data-hash validation, and release approval.</p>
+<h3 id="324-evaluation-operations-layer-making-data-quality-visible">3.2.4 Evaluation Operations Layer: Making Data Quality Visible<a class="headerlink" href="#324-evaluation-operations-layer-making-data-quality-visible" title="Permanent link">&para;</a></h3>
+<p>The evaluation operations layer provides observability for the entire data platform. It lets teams see pipeline status, data-quality trends, and experiment records in real time. It is the dashboard that keeps the data flywheel turning.</p>
+<p>A mature evaluation operations layer should cover at least four dimensions. A <strong>data quality dashboard</strong> displays the core quality metrics of each batch, such as deduplication rate, PPL distribution, noise ratio, and benchmark contamination rate, and compares them with historical baselines. If any metric deviates beyond a threshold, an alert is triggered immediately. <strong>Pipeline runtime monitoring</strong> tracks task completion rate, processing speed in documents per second, retry count, and resource consumption across CPU, memory, and network, ensuring that there are no silent failures, such as a task quietly skipping a large amount of data without raising an alert. <strong>Data sampling tools</strong> provide random sampling and human review interfaces, allowing data engineers to periodically inspect outputs from each node and find systematic quality problems that automated tests miss. <strong>Experiment tracking</strong> binds dataset versions to model-training experiments, ensuring every training run can accurately trace which dataset version and cleaning configuration it used. This is the basis for reproducibility.</p>
+<h3 id="325-governance-and-security-layer-data-needs-compliance-records">3.2.5 Governance and Security Layer: Data Needs Compliance Records<a class="headerlink" href="#325-governance-and-security-layer-data-needs-compliance-records" title="Permanent link">&para;</a></h3>
+<p>As privacy regulations such as GDPR and China's Personal Information Protection Law become stricter, and as LLM training-data copyright disputes lead to lawsuits, including media organizations suing OpenAI and Getty Images suing Stability AI, governance and security have moved from optional future planning to a current requirement.</p>
+<p>Core functions include <strong>copyright and license management</strong>, which records the license type of each data batch, such as CC-BY, CC-BY-SA, CC-BY-NC, commercial license, or unknown source, and filters high-risk sources at ingestion through technical methods such as <code>robots.txt</code> compliance checks and license classifiers; <strong>PII detection and de-identification</strong>, which uses NER models or regular expressions to identify names, phone numbers, email addresses, ID numbers, and other sensitive information, then de-identifies them before storage; <strong>permission and access control</strong>, which applies strict RBAC policies to different data sensitivity levels, such as user-conversation feedback data, so only authorized engineers can access or process them; and <strong>data lineage tracking</strong>, which records the full transformation chain from original source to final training dataset and provides complete provenance evidence during compliance audits.</p>
+<hr />
+<h2 id="33-cost-model-and-budget-governance">3.3 Cost Model and Budget Governance<a class="headerlink" href="#33-cost-model-and-budget-governance" title="Permanent link">&para;</a></h2>
+<p>The cost structure of large-model data engineering is much more complex than that of traditional data engineering. Many teams include only GPU rental in the project budget and put data processing, annotation, and storage into miscellaneous expenses. Midway through a project, data-side cost often exceeds the original budget.</p>
+<h3 id="331-five-cost-dimensions">3.3.1 Five Cost Dimensions<a class="headerlink" href="#331-five-cost-dimensions" title="Permanent link">&para;</a></h3>
+<p>LLM data-engineering cost can be decomposed into five main dimensions. Understanding the cost drivers of each dimension is the foundation of a reasonable budget.</p>
+<p><strong>Data acquisition cost</strong> is the first. It includes crawler server rental and bandwidth, purchased commercial corpora such as professional databases in a domain, and API call fees for structured web content from services such as Diffbot or Apify. Cloud Spot instances are usually cheaper than on-demand instances, but the discount varies with region, instance type, and supply-demand conditions; budgets should explicitly record the price source and effective date.</p>
+<p><strong>Data processing cost</strong> is the second and is the easiest to underestimate. The cost of a complete corpus-cleaning pipeline, including parsing, filtering, deduplication, and quality scoring, depends on processing complexity, data scale, regional pricing, retry count, and intermediate-result write amplification. If ML inference is used during processing, such as running a quality classifier on GPUs, GPU instance cost is added.</p>
+<p><strong>Annotation cost</strong> is the third and often the largest single item in the data budget. High-quality SFT samples in professional domains such as medicine, law, and finance require experts with relevant backgrounds. Actual cost must be recalculated based on annotation guidelines, sample length, QA ratio, rework rate, regional labor prices, and confidentiality requirements.</p>
+<p><strong>Storage cost</strong> is the fourth. Actual pricing should be based on the cloud provider, region, discount, and access pattern. Without hot/cold tier management, intermediate artifacts that are no longer used continue occupying active storage and accumulate long-term cost.</p>
+<p><strong>Inference-service cost</strong> is the fifth. It is incurred when strong models are called during data processing for quality evaluation, synthetic data generation, or automated annotation. Budgets should jointly estimate input tokens, output tokens, image/audio/video unit prices, retry rate, cache hit rate, and concurrency limits. When massive numbers of samples are scored for quality, API fees alone may become a major cost, so sampling, cascaded evaluation, and caching strategies must be planned.</p>
+<h3 id="332-cost-accounting-before-during-and-after-training">3.3.2 Cost Accounting Before, During, and After Training<a class="headerlink" href="#332-cost-accounting-before-during-and-after-training" title="Permanent link">&para;</a></h3>
+<p>A more practical cost framework decomposes the training lifecycle into three stages.</p>
+<p>In the <strong>pre-training stage before model training</strong>, data acquisition and processing dominate cost. The key budget decisions are target data scale, usually measured in tokens, and whether to build a processing cluster or use cloud Spot instances. For projects below roughly 10 billion tokens, cloud Spot instances, such as Ray on AWS Spot, are often the most cost-effective. For projects above hundreds of billions of tokens, dedicated CPU clusters, whether owned or leased, can reduce processing cost per token.</p>
+<p>During the <strong>training stage</strong>, compute cost dominates, but data I/O quality directly affects GPU utilization and therefore actual compute cost. If the training process waits for the DataLoader or remote storage for long periods, the same effective compute requires more wall-clock time. Data I/O optimization therefore often has high ROI.</p>
+<p>In the <strong>post-training stage</strong>, model evaluation, data-version archiving, and knowledge-base maintenance, such as RAG updates, become continuous costs. The focus is a clear data lifecycle strategy: datasets that enter official releases can move to infrequent-access storage; temporary intermediate datasets can have 30-day auto-deletion policies; only final datasets with clear labels and descriptions should be retained. Prices and retrieval fees for infrequent-access storage change quickly and should be checked against cloud-provider announcements after 2026-06.</p>
+<h3 id="333-roi-decision-framework">3.3.3 ROI Decision Framework<a class="headerlink" href="#333-roi-decision-framework" title="Permanent link">&para;</a></h3>
+<p>When choosing among several data-quality improvement plans, engineers need a quantified ROI framework to avoid intuition-driven spending such as "this feels useful":</p>
+<div class="arithmatex">\[\text{Data Engineering ROI} = \frac{\Delta\text{Model Performance} \times \text{Model Business Value}}{\text{Data Processing Cost} + \text{Annotation Cost} + \text{Storage Cost}}\]</div>
+<p>For example, if an investment in legal-domain SFT data brings a statistically significant improvement in user satisfaction and that improvement can be mapped to retention, conversion, or reduced manual review cost, the team can compare the incremental return against data acquisition, annotation, training, and launch costs to estimate the payback period. This type of quantitative thinking is essential for avoiding a situation where data engineering "does a lot" without contributing to model capability.</p>
+<p>Connecting planning, monitoring, evaluation, optimization, and postmortem into a continuous loop forms the <strong>cost-governance loop</strong> of a large-model team, as shown below.</p>
+<p>Figure 3-2 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part1/Yu-Chap03-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 3-2: Training-data cost-governance loop" src="../../../images/part1/Yu-Chap03-Fig02.svg" /></a></p>
+<p><em>Figure 3-2: Training-data cost-governance loop</em></p>
+<hr />
+<h2 id="34-three-team-architecture-patterns">3.4 Three Team Architecture Patterns<a class="headerlink" href="#34-three-team-architecture-patterns" title="Permanent link">&para;</a></h2>
+<p>No data-stack architecture fits every team size and stage. By team scale and business maturity, LLM data-engineering teams can be roughly divided into three categories, each with a recommended architecture pattern.</p>
+<h3 id="341-startup-lightweight-stack-validate-quickly-and-avoid-over-design">3.4.1 Startup Lightweight Stack: Validate Quickly and Avoid Over-Design<a class="headerlink" href="#341-startup-lightweight-stack-validate-quickly-and-avoid-over-design" title="Permanent link">&para;</a></h3>
+<p><strong>Applicable scenario</strong>: a 1-5 person data team in proof-of-concept or angel-to-Pre-A stage. The main task is to validate data-recipe hypotheses quickly and prove that the model has core capabilities.</p>
+<p>At this stage, the biggest engineering trap is <strong>over-design</strong>. Spending three months building an "industrial-grade" distributed data platform may leave the team two months behind in the right direction by the time the platform is ready. The correct startup strategy is to validate core hypotheses at minimum cost and introduce distributed capabilities only when real data volume reaches single-machine limits.</p>
+<p>The recommended lightweight stack is: <strong>S3 / MinIO + Parquet</strong> for storage, without Iceberg at first and with manual version directories; <strong>DuckDB</strong> for compute, suitable for single-machine or small-scale data exploration with friendly SQL syntax, plus Python pandas or polars; <strong>DVC</strong> for version control; and <strong>Prefect</strong> or <strong>Dagster</strong> for pipeline orchestration. The engineering setup time for this stack depends on team experience, permission workflows, and data-source complexity.</p>
+<p>DuckDB deserves special emphasis because it is often underestimated in startups. It can directly read and write Parquet files on S3 without downloading them locally, and it supports standard SQL syntax so engineers unfamiliar with PySpark can start quickly. Actual time and cost depend on region, instance discount, data format, compression method, and query complexity; production use should be preceded by pressure testing on representative target-data samples.</p>
+<h3 id="342-platform-construction-for-mid-sized-teams">3.4.2 Platform Construction for Mid-Sized Teams<a class="headerlink" href="#342-platform-construction-for-mid-sized-teams" title="Permanent link">&para;</a></h3>
+<p><strong>Applicable scenario</strong>: a 6-20 person data/algorithm team, usually Series A to B, that has validated the core direction, started pretraining at tens-of-billions-of-tokens scale, and maintains several vertical-domain SFT pipelines.</p>
+<p>The core challenge at this stage is <strong>standardization and reuse</strong> of data pipelines. Cleaning scripts written by different engineers lack unified interfaces and cannot be reused; data-version management is chaotic; and it is hard to trace which data version a given experiment used. As data volume grows, single-machine processing no longer meets timeliness requirements.</p>
+<p>The recommended mid-sized-team stack is: upgrade compute to <strong>Ray Data</strong>, which supports multi-machine distributed execution and is Python-native, or <strong>Spark on EMR</strong> if the team has Spark experience; introduce <strong>Apache Iceberg + S3</strong> for data version management; use <strong>Weights &amp; Biases</strong> or <strong>MLflow</strong> for experiment tracking; and build a basic Grafana dashboard for data-quality monitoring based on the scorecard system described in Section 3.2.4. Data-processing code should be modularized into reusable operators, forming an operator library.</p>
+<h3 id="343-multi-tenant-collaboration-for-large-organizations">3.4.3 Multi-Tenant Collaboration for Large Organizations<a class="headerlink" href="#343-multi-tenant-collaboration-for-large-organizations" title="Permanent link">&para;</a></h3>
+<p><strong>Applicable scenario</strong>: a data-engineering team of more than 20 people, usually after Series B or inside a technology company with large AI businesses, supporting multiple large-model projects at the same time, such as a general foundation model, vertical industry customization, and multimodal initiatives. The data infrastructure must share resources across projects while preserving data isolation and permission control.</p>
+<p>The core challenge is <strong>multi-tenancy</strong>. How can different LLM projects share the underlying processing cluster while ensuring that dirty data from Project A does not pollute Project B's pipeline? How should resources and priorities be scheduled across dozens of parallel processing jobs?</p>
+<p>The recommended large-team pattern centers on a <strong>unified data platform</strong>. At the bottom, Kubernetes manages compute resources, including CPU and GPU nodes. Ray on Kubernetes or Spark on Kubernetes provides scheduling. Data isolation is implemented through S3 IAM policies at bucket level, with independent buckets for projects or shared buckets with strict prefix isolation. Metadata management uses data-catalog tools such as Apache Atlas or AWS Glue Data Catalog to manage company-wide data lineage. The platform team maintains a standardized data operator library, and business lines build their cleaning pipelines by calling its interfaces, ensuring unified quality-check logic.</p>
+<p>An important lesson is that large-team data platforms should be built in <strong>three stages</strong>, not all at once. Stage 1, taking one to three months, should connect the core path: storage ingestion, basic cleaning operators, and version management, so data can flow in a controlled way. Stage 2, taking three to six months, should build observability: quality dashboards, experiment tracking, and alerting systems, turning the platform into a transparent system. Stage 3, after six months, should add more complex multi-tenant isolation, cross-project lineage insight, and resource quota management. Entering Stage 3 too early can make platform complexity exceed real needs and reduce core data-flow efficiency.</p>
+<p>Table 3-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 3-3: Data stack selection matrix for three team types</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Team size</th>
+<th style="text-align: left;">Recommended storage</th>
+<th style="text-align: left;">Recommended compute</th>
+<th style="text-align: left;">Recommended orchestration</th>
+<th style="text-align: left;">Recommended version management</th>
+<th style="text-align: left;">Estimated build cycle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">1-5 people, startup</td>
+<td style="text-align: left;">S3/MinIO + Parquet</td>
+<td style="text-align: left;">DuckDB / Polars</td>
+<td style="text-align: left;">Prefect / Dagster</td>
+<td style="text-align: left;">DVC</td>
+<td style="text-align: left;">1-2 weeks</td>
+</tr>
+<tr>
+<td style="text-align: left;">6-20 people, mid-sized</td>
+<td style="text-align: left;">S3 + Apache Iceberg</td>
+<td style="text-align: left;">Ray Data or Spark</td>
+<td style="text-align: left;">Airflow / Dagster</td>
+<td style="text-align: left;">DVC + MLflow</td>
+<td style="text-align: left;">1-2 months</td>
+</tr>
+<tr>
+<td style="text-align: left;">20+ people, large</td>
+<td style="text-align: left;">S3 + Iceberg with multi-bucket isolation</td>
+<td style="text-align: left;">Ray on K8s / Spark on K8s</td>
+<td style="text-align: left;">Airflow + Argo</td>
+<td style="text-align: left;">DVC + Glue Catalog + Atlas</td>
+<td style="text-align: left;">3-6 months</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="35-platform-interfaces-and-connections-to-later-chapters">3.5 Platform Interfaces and Connections to Later Chapters<a class="headerlink" href="#35-platform-interfaces-and-connections-to-later-chapters" title="Permanent link">&para;</a></h2>
+<p>The AI-native data stack built in this chapter is not an isolated menu of technical options. It is the <strong>shared infrastructure foundation</strong> for the engineering content in the rest of the book. Understanding this helps readers map later technical details to the corresponding layer in the architecture blueprint.</p>
+<p>In <strong>Part II: Text Pretraining Data Engineering</strong>, large-scale MinHash deduplication in Chapter 5, KenLM perplexity filtering in Chapter 6, and DataLoader I/O optimization in Chapter 7 all run on the <strong>processing orchestration layer</strong> described in Section 3.2.2, using Ray Data or Spark clusters, and depend on the <strong>metadata ingestion layer</strong> in Section 3.2.1 for lineage tracking.</p>
+<p>In <strong>Part III: Multimodal Data Engineering</strong>, image-text cleaning and video slicing require GPU scheduling, which is supported by the GPU-native scheduling capability of Ray Data discussed in Section 3.2.2.</p>
+<p>In <strong>Part VII: RAG Application Data Engineering</strong>, real-time knowledge-base update pipelines rely on the vector-database choices in Section 3.2.3, such as Milvus or Qdrant, to host vector indexes, and on the compliance-audit capability in Section 3.2.5 to ensure documents entering the knowledge base do not carry copyright risk.</p>
+<p><strong>Part VIII: DataOps Platform Development</strong> is an expanded version of this chapter: it will build on the five-layer architecture to discuss end-to-end observability for data pipelines, automated governance of data assets, and deep integration of quality scorecards with CI/CD pipelines, upgrading the platform from a manual workshop to an intelligent data factory.</p>
+<p>The core principle for capability boundaries is: <strong>capabilities needed by multiple projects or multiple data stages should be platformized</strong>, such as deduplication operator libraries, quality-scorecard frameworks, and data-version management; <strong>capabilities highly customized to one business scenario should remain project-specific</strong>, such as entity-recognition rules for one vertical domain or parsing logic for one source. Bigger platform boundaries are not automatically better. Over-abstraction reduces iteration speed and forces project teams to adapt to platform interfaces instead of letting the platform serve real needs.</p>
+<hr />
+<p><strong>Chapter Summary</strong></p>
+<p>This chapter established a full architecture blueprint for an AI-native data stack. It first analyzed why traditional warehouse technology stacks designed for BI cannot be directly moved into LLM data engineering, using three dimensions: goal differences, workload characteristics, and cost constraints. On that basis, it decomposed the stack into five functional layers: ingestion and access, processing orchestration, storage and indexing, evaluation operations, and governance and security. Each layer included mainstream industrial choices and concrete comparison criteria. The cost-model section revealed five cost dimensions, stage-based accounting, and a quantified ROI decision framework. Finally, the chapter provided differentiated architecture patterns for startup, mid-sized, and large teams, helping readers avoid introducing platform complexity beyond team capability and business need during early stages.</p>
+<p>With this infrastructure blueprint in place, the next chapter begins Part II: Text Pretraining Data Engineering, where we will discuss how to build trainable, traceable, and evaluable pretraining datasets from large-scale public corpora on top of this stack.</p>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter organized the core issues, process flows, and acceptance criteria for AI-native data stacks and cost governance in large-model data engineering. It places concepts, data objects, quality signals, and engineering delivery in the same narrative so that readers can judge which links must be explicitly recorded and which results require sampling, evaluation, or audit.</p>
+<p>The methods in this chapter should be applied according to data source, business objective, model capability, cost budget, and compliance requirements. In scenarios involving sensitive information, cross-system calls, automated decisions, or public release, teams should retain human review, version freezing, access control, and rollback mechanisms rather than extrapolating illustrative workflows into production promises.</p>
+<p>Within the structure of the book, this chapter belongs to the foundational-framework layer and connects previous concepts to text and multimodal data processing. Readers can combine the framework with the figures, references, and appendix checklists to turn the methods into reproducible, inspectable, and deliverable engineering workflows.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Zaharia M, Xin R S, Wendell P, Das T, Armbrust M, Dave A, Meng X, Rosen J, Venkataraman S, Franklin M J, Ghodsi A, Gonzalez J, Shenker S, Stoica I (2016) Apache Spark: A Unified Engine for Big Data Processing. Communications of the ACM 59(11):56-65.</p>
+<p>Moritz P, Nishihara R, Wang S, Tumanov A, Liaw R, Liang E, Elibol M, Yang Z, Paul W, Jordan M I, Stoica I (2018) Ray: A Distributed Framework for Emerging AI Applications. In: Proceedings of the 13th USENIX Symposium on Operating Systems Design and Implementation, pp 561-577.</p>
+<p>Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29. https://doi.org/10.1109/sequen.1997.666900.</p>
+<p>Heafield K (2011) KenLM: Faster and Smaller Language Model Queries. In: Proceedings of the Sixth Workshop on Statistical Machine Translation, pp 187-197.</p>
+<p>Robertson S, Zaragoza H (2009) The Probabilistic Relevance Framework: BM25 and Beyond. Foundations and Trends in Information Retrieval 3(4):333-389.</p>
+<p>Malkov Y A, Yashunin D A (2020) Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs (HNSW). IEEE Transactions on Pattern Analysis and Machine Intelligence 42(4):824-836. https://doi.org/10.1109/tpami.2018.2889473.</p>
+<p>Apache Software Foundation (2024) Apache Iceberg: Table Specification and Documentation. <a href="https://iceberg.apache.org/spec/">https://iceberg.apache.org/spec/</a> (accessed 2024-11).</p>
+<p>DVC Team and Contributors (2024) DVC: Data Version Control - Git for Data &amp; Models. Documentation: <a href="https://dvc.org/doc">https://dvc.org/doc</a>. Source repository: <a href="https://github.com/iterative/dvc">https://github.com/iterative/dvc</a>.</p>
+<p>Penedo G, Kydlíček H, Ben Allal L, Lozhkov A, Mitchell M, Raffel C, von Werra L, Wolf T (2024) The FineWeb Datasets: Decanting the Web for the Finest Text Data at Scale. arXiv preprint arXiv:2406.17557.</p>
+<p>Together Computer (2023) RedPajama: An Open Dataset for Training Large Language Models. GitHub repository. <a href="https://github.com/togethercomputer/RedPajama-Data">https://github.com/togethercomputer/RedPajama-Data</a>.</p>
+<p>Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. Advances in Neural Information Processing Systems 28:2503-2511.</p>
+<p>Longpre S, Mahari R, Chen A, Obeng-Marnu N, Sileo D, Brannon W, Muennighoff N, Khazam N, Kabbara J, Perisetla K, Wu X, Shippole E, Bollacker K, Wu T, Villa L, Pentland S, Hooker S (2024) The Data Provenance Initiative: A Large Scale Audit of Dataset Licensing &amp; Attribution in AI. Nature Machine Intelligence 6(8):975-987.</p>
+<p>Chen D, Huang Y, Pan X, Jiang N, Wang H, Zhang Y, Ge C, Chen Y, Zhang W, Ma Z, Huang J, Lin W, Li Y, Ding B, Zhou J (2025) Data-Juicer 2.0: Cloud-Scale Adaptive Data Processing for and with Foundation Models. arXiv preprint arXiv:2501.14755.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ch02_quality_framework/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Chapter 2: LLM Data Lifecycle and Quality Assessment Framework">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../part2/" class="md-footer__link md-footer__link--next" aria-label="Next: Part Overview">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Part Overview
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

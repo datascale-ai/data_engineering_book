@@ -1,0 +1,5230 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part9/ch29_data_valuation_and_reuse/">
+      
+      
+        <link rel="prev" href="../ch28_data_productization_and_data_contracts/">
+      
+      
+        <link rel="next" href="../ch30_internal_data_market_and_sharing_governance/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 29: Data Valuation and Reuse Mechanisms - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-29-data-valuation-and-reuse-mechanisms" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 29: Data Valuation and Reuse Mechanisms
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part9/ch29_data_valuation_and_reuse/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part9/ch29_data_valuation_and_reuse/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Guide
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#291-how-data-value-is-misjudged" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.1 How Data Value Is Misjudged
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.1 How Data Value Is Misjudged">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2911-four-common-value-illusions" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.1.1 Four Common Value Illusions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2912-the-scale-illusion-more-data-is-not-automatically-more-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.1.2 The Scale Illusion: More Data Is Not Automatically More Value
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2913-the-cost-illusion-input-is-not-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.1.3 The Cost Illusion: Input Is Not Output
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2914-the-gap-between-model-gain-and-business-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.1.4 The Gap Between Model Gain and Business Value
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2915-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.1.5 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#292-a-metric-system-for-data-asset-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2 A Metric System for Data Asset Value
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.2 A Metric System for Data Asset Value">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2921-why-a-metric-system-is-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2.1 Why a Metric System Is Needed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2922-usage-side-reuse-rate-and-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2.2 Usage Side: Reuse Rate and Coverage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2923-benefit-side-i-training-gain-and-retrieval-hits" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2.3 Benefit Side I: Training Gain and Retrieval Hits
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2924-benefit-side-ii-labeling-savings-and-risk-reduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2.4 Benefit Side II: Labeling Savings and Risk Reduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2925-risk-and-cost-side-maintenance-cost-and-net-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2.5 Risk and Cost Side: Maintenance Cost and Net Value
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2926-data-asset-value-metric-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2.6 Data Asset Value Metric Table
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2927-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2.7 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#293-asset-reuse-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3 Asset Reuse Paths
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.3 Asset Reuse Paths">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2931-reuse-as-the-value-multiplier" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.1 Reuse as the Value Multiplier
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2932-pre-training-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.2 Pre-training Reuse
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2933-post-training-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.3 Post-training Reuse
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2934-rag-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.4 RAG Reuse
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2935-evaluation-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.5 Evaluation Reuse
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2936-compliance-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.6 Compliance Reuse
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2937-benefit-records-and-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.7 Benefit Records and Attribution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2938-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.8 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#294-valuation-case-enterprise-domain-knowledge-corpus" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.4 Valuation Case: Enterprise Domain Knowledge Corpus
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.4 Valuation Case: Enterprise Domain Knowledge Corpus">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2941-case-background" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.4.1 Case Background
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2942-input-cost-accounting" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.4.2 Input Cost Accounting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2943-risk-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.4.3 Risk Assessment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2944-cross-path-benefit-calculation" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.4.4 Cross-Path Benefit Calculation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2945-net-value-and-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.4.5 Net Value and Decision
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2946-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.4.6 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#295-cost-benefit-matrix-and-portfolio-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.5 Cost-Benefit Matrix and Portfolio Decisions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.5 Cost-Benefit Matrix and Portfolio Decisions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2951-from-individual-valuation-to-portfolio-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.5.1 From Individual Valuation to Portfolio Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2952-four-quadrant-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.5.2 Four Quadrant Strategies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2953-using-the-matrix-for-portfolio-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.5.3 Using the Matrix for Portfolio Decisions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2954-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.5.4 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#296-asset-review-cards-and-continuous-value-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.6 Asset Review Cards and Continuous Value Governance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.6 Asset Review Cards and Continuous Value Governance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2961-value-decays-so-valuation-must-be-periodic" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.6.1 Value Decays, So Valuation Must Be Periodic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2962-core-elements-of-a-review-card" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.6.2 Core Elements of a Review Card
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2963-value-decay-and-review-cadence" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.6.3 Value Decay and Review Cadence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2964-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.6.4 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#297-engineering-the-valuation-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7 Engineering the Valuation Process
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.7 Engineering the Valuation Process">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2971-from-one-time-calculation-to-evaluation-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.1 From One-Time Calculation to Evaluation Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2972-asset-registration-the-minimal-fact-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.2 Asset Registration: The Minimal Fact Table
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2973-usage-collection-making-reuse-observable" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.3 Usage Collection: Making Reuse Observable
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2974-benefit-estimation-coarse-first-precise-later" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.4 Benefit Estimation: Coarse First, Precise Later
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2975-cost-aggregation-do-not-let-bills-hide-engineering-facts" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.5 Cost Aggregation: Do Not Let Bills Hide Engineering Facts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2976-scoring-and-grading-making-valuation-executable" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.6 Scoring and Grading: Making Valuation Executable
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2977-decision-feedback-writing-valuation-back-into-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.7 Decision Feedback: Writing Valuation Back Into Governance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2978-engineering-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.8 Engineering Checklist
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2979-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.9 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#298-organizational-collaboration-governance-and-anti-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8 Organizational Collaboration, Governance, and Anti-Patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.8 Organizational Collaboration, Governance, and Anti-Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2981-data-value-cannot-be-defined-by-one-team-alone" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.1 Data Value Cannot Be Defined by One Team Alone
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2982-raci-clarifying-responsibility-for-value-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.2 RACI: Clarifying Responsibility for Value Decisions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2983-incentives-making-reuse-more-attractive-than-rebuilding" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.3 Incentives: Making Reuse More Attractive Than Rebuilding
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2984-anti-pattern-1-valuation-without-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.4 Anti-Pattern 1: Valuation Without Governance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2985-anti-pattern-2-overcomplicated-scoring-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.5 Anti-Pattern 2: Overcomplicated Scoring Models
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2986-anti-pattern-3-ignoring-version-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.6 Anti-Pattern 3: Ignoring Version Differences
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2987-anti-pattern-4-treating-compliance-as-pure-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.7 Anti-Pattern 4: Treating Compliance as Pure Cost
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2988-anti-pattern-5-undervaluing-retirement" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.8 Anti-Pattern 5: Undervaluing Retirement
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2989-rollout-paths-for-different-maturity-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.9 Rollout Paths for Different Maturity Levels
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#29810-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.10 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Guide
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#291-how-data-value-is-misjudged" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.1 How Data Value Is Misjudged
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.1 How Data Value Is Misjudged">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2911-four-common-value-illusions" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.1.1 Four Common Value Illusions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2912-the-scale-illusion-more-data-is-not-automatically-more-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.1.2 The Scale Illusion: More Data Is Not Automatically More Value
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2913-the-cost-illusion-input-is-not-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.1.3 The Cost Illusion: Input Is Not Output
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2914-the-gap-between-model-gain-and-business-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.1.4 The Gap Between Model Gain and Business Value
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2915-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.1.5 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#292-a-metric-system-for-data-asset-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2 A Metric System for Data Asset Value
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.2 A Metric System for Data Asset Value">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2921-why-a-metric-system-is-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2.1 Why a Metric System Is Needed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2922-usage-side-reuse-rate-and-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2.2 Usage Side: Reuse Rate and Coverage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2923-benefit-side-i-training-gain-and-retrieval-hits" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2.3 Benefit Side I: Training Gain and Retrieval Hits
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2924-benefit-side-ii-labeling-savings-and-risk-reduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2.4 Benefit Side II: Labeling Savings and Risk Reduction
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2925-risk-and-cost-side-maintenance-cost-and-net-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2.5 Risk and Cost Side: Maintenance Cost and Net Value
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2926-data-asset-value-metric-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2.6 Data Asset Value Metric Table
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2927-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.2.7 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#293-asset-reuse-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3 Asset Reuse Paths
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.3 Asset Reuse Paths">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2931-reuse-as-the-value-multiplier" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.1 Reuse as the Value Multiplier
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2932-pre-training-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.2 Pre-training Reuse
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2933-post-training-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.3 Post-training Reuse
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2934-rag-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.4 RAG Reuse
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2935-evaluation-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.5 Evaluation Reuse
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2936-compliance-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.6 Compliance Reuse
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2937-benefit-records-and-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.7 Benefit Records and Attribution
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2938-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.3.8 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#294-valuation-case-enterprise-domain-knowledge-corpus" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.4 Valuation Case: Enterprise Domain Knowledge Corpus
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.4 Valuation Case: Enterprise Domain Knowledge Corpus">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2941-case-background" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.4.1 Case Background
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2942-input-cost-accounting" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.4.2 Input Cost Accounting
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2943-risk-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.4.3 Risk Assessment
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2944-cross-path-benefit-calculation" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.4.4 Cross-Path Benefit Calculation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2945-net-value-and-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.4.5 Net Value and Decision
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2946-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.4.6 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#295-cost-benefit-matrix-and-portfolio-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.5 Cost-Benefit Matrix and Portfolio Decisions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.5 Cost-Benefit Matrix and Portfolio Decisions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2951-from-individual-valuation-to-portfolio-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.5.1 From Individual Valuation to Portfolio Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2952-four-quadrant-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.5.2 Four Quadrant Strategies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2953-using-the-matrix-for-portfolio-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.5.3 Using the Matrix for Portfolio Decisions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2954-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.5.4 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#296-asset-review-cards-and-continuous-value-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.6 Asset Review Cards and Continuous Value Governance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.6 Asset Review Cards and Continuous Value Governance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2961-value-decays-so-valuation-must-be-periodic" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.6.1 Value Decays, So Valuation Must Be Periodic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2962-core-elements-of-a-review-card" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.6.2 Core Elements of a Review Card
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2963-value-decay-and-review-cadence" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.6.3 Value Decay and Review Cadence
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2964-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.6.4 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#297-engineering-the-valuation-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7 Engineering the Valuation Process
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.7 Engineering the Valuation Process">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2971-from-one-time-calculation-to-evaluation-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.1 From One-Time Calculation to Evaluation Pipeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2972-asset-registration-the-minimal-fact-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.2 Asset Registration: The Minimal Fact Table
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2973-usage-collection-making-reuse-observable" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.3 Usage Collection: Making Reuse Observable
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2974-benefit-estimation-coarse-first-precise-later" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.4 Benefit Estimation: Coarse First, Precise Later
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2975-cost-aggregation-do-not-let-bills-hide-engineering-facts" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.5 Cost Aggregation: Do Not Let Bills Hide Engineering Facts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2976-scoring-and-grading-making-valuation-executable" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.6 Scoring and Grading: Making Valuation Executable
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2977-decision-feedback-writing-valuation-back-into-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.7 Decision Feedback: Writing Valuation Back Into Governance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2978-engineering-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.8 Engineering Checklist
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2979-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.7.9 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#298-organizational-collaboration-governance-and-anti-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8 Organizational Collaboration, Governance, and Anti-Patterns
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="29.8 Organizational Collaboration, Governance, and Anti-Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2981-data-value-cannot-be-defined-by-one-team-alone" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.1 Data Value Cannot Be Defined by One Team Alone
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2982-raci-clarifying-responsibility-for-value-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.2 RACI: Clarifying Responsibility for Value Decisions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2983-incentives-making-reuse-more-attractive-than-rebuilding" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.3 Incentives: Making Reuse More Attractive Than Rebuilding
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2984-anti-pattern-1-valuation-without-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.4 Anti-Pattern 1: Valuation Without Governance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2985-anti-pattern-2-overcomplicated-scoring-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.5 Anti-Pattern 2: Overcomplicated Scoring Models
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2986-anti-pattern-3-ignoring-version-differences" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.6 Anti-Pattern 3: Ignoring Version Differences
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2987-anti-pattern-4-treating-compliance-as-pure-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.7 Anti-Pattern 4: Treating Compliance as Pure Cost
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2988-anti-pattern-5-undervaluing-retirement" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.8 Anti-Pattern 5: Undervaluing Retirement
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2989-rollout-paths-for-different-maturity-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.9 Rollout Paths for Different Maturity Levels
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#29810-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      29.8.10 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-29-data-valuation-and-reuse-mechanisms">Chapter 29: Data Valuation and Reuse Mechanisms<a class="headerlink" href="#chapter-29-data-valuation-and-reuse-mechanisms" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Zhongyi Liu; Wenzhuo Du; Jun Yu</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>Once data can be found and trusted, a sharper question appears: how much is this data actually worth? This chapter discusses valuation and reuse mechanisms for data assets. It first analyzes four illusions that often distort data value: scale, cost, model gain, and business value. It explains why data volume, acquisition cost, model metrics, and business outcomes are not equivalent, and uses scaling-law, data-pruning, and deduplication research to show that value depends on information density and quality rather than size. It then builds a metric system for data-asset value covering reuse rate, coverage, training gain, retrieval hits, labeling savings, risk reduction, and maintenance cost, unified through net value. It also draws on ideas such as Data Shapley to characterize the marginal contribution of an individual data asset. The chapter then explains how one data asset can be reused across pre-training, post-training, retrieval-augmented generation (RAG), evaluation, and compliance paths, and records cross-path benefits through a full enterprise-domain corpus cost-benefit case. Finally, it provides practical governance tools such as a cost-benefit matrix, asset review card, and valuation pipeline.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>Data asset valuation and reuse mechanisms; data assets; metadata governance; data products; data contracts</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Identify four common illusions in data valuation: scale, cost, model gain, and business value, and explain through scaling laws, data pruning, and deduplication why value depends on information density rather than size.</li>
+<li>Build a value metric system covering reuse rate, coverage, training gain, retrieval hits, labeling savings, risk reduction, and maintenance cost, and unify them through net value.</li>
+<li>Use ideas such as Data Shapley to characterize the marginal contribution of an individual data asset to model performance.</li>
+<li>Design reuse paths for data assets across pre-training, post-training, RAG, evaluation, and compliance, and record cross-path benefits.</li>
+<li>Use a cost-benefit matrix, asset review card, and valuation pipeline to support continuous governance of a data-asset portfolio.</li>
+</ul>
+<h2 id="chapter-guide">Chapter Guide<a class="headerlink" href="#chapter-guide" title="Permanent link">&para;</a></h2>
+<p>Chapters 27 and 28 explained how to make data discoverable, understandable, and dependable through catalogs, metadata governance, data products, and data contracts. Once data can be found and trusted, a sharper question appears: how much is this data actually worth? What benefits does it create, what costs does it consume, and which assets deserve continued investment rather than merely looking large?</p>
+<p>This question cannot be answered by intuition. Many organizations still judge data value through convenient but fragile proxies: more data must be more valuable, expensive purchased data must be important, or a dataset that raises one model metric must be worth keeping. These assumptions often misallocate resources. Teams repeatedly clean and store low-value data while neglecting the corpus that supports many downstream scenarios. They buy data for a one-time metric improvement, then leave it unused and unmaintained, turning it into technical debt (Sculley et al. 2015).</p>
+<p>In large-model data engineering, acquisition, labeling, compliance, and maintenance costs rise quickly, while the marginal contribution of data is highly nonlinear. Data valuation therefore becomes a core engineering problem, not a finance exercise. This chapter builds a measurable and comparable valuation method, then shows how deliberate reuse can amplify one asset across pre-training, post-training, RAG, evaluation, and compliance.</p>
+<p>The chapter proceeds in four movements. First, it analyzes why data value is often misjudged. Second, it defines a multidimensional metric system covering reuse rate, coverage, training gain, retrieval hits, labeling savings, risk reduction, and maintenance cost. Third, it explains the five major reuse paths for a large-model data asset. Finally, it works through an enterprise-domain corpus case, then turns the method into portfolio tools: a cost-benefit matrix, an asset review card, an engineering pipeline, and governance mechanisms.</p>
+<h2 id="291-how-data-value-is-misjudged">29.1 How Data Value Is Misjudged<a class="headerlink" href="#291-how-data-value-is-misjudged" title="Permanent link">&para;</a></h2>
+<h3 id="2911-four-common-value-illusions">29.1.1 Four Common Value Illusions<a class="headerlink" href="#2911-four-common-value-illusions" title="Permanent link">&para;</a></h3>
+<p>Before defining good valuation, it is useful to name the bad shortcuts. The idea that information should be measured and managed as an asset is not new (Moody and Walsh 1999; Laney 2017), but in practice valuation often collapses into easy proxies. These proxies are dangerous because they look correlated with value in ordinary situations, which makes them feel like substitutes for valuation.</p>
+<p>The most common misjudgments can be summarized as four value illusions, corresponding to four different viewpoints across the data lifecycle. The first is the <strong>scale illusion</strong>: assuming that larger data volume means higher value and treating bytes, samples, or document counts as natural measures of value. The second is the <strong>cost illusion</strong>: assuming that data purchased or collected at higher cost must be more valuable, confusing input with output. The third is the <strong>model-gain illusion</strong>: assuming that any metric improvement caused by a dataset represents the asset's full value, equating local and short-term gains with durable asset value. The fourth is the <strong>business-value illusion</strong>: assuming that model-metric improvement automatically translates into equivalent business value. Table 29-1 summarizes these illusions and the reasons they fail.</p>
+<p><em>Table 29-1: Four common illusions about data value</em></p>
+<table>
+<thead>
+<tr>
+<th>Illusion</th>
+<th>Naive assumption</th>
+<th>Why it fails</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scale illusion</td>
+<td>More data is more valuable</td>
+<td>Marginal returns decline; redundancy and low quality can reduce performance</td>
+</tr>
+<tr>
+<td>Cost illusion</td>
+<td>Expensive data is valuable data</td>
+<td>Past spending is sunk cost, not downstream benefit</td>
+</tr>
+<tr>
+<td>Model-gain illusion</td>
+<td>Any metric lift means value</td>
+<td>Local, short-term, replaceable gains are not asset value</td>
+</tr>
+<tr>
+<td>Business-value illusion</td>
+<td>Model metrics translate directly into business results</td>
+<td>There is often a wide gap between offline metrics and business outcomes</td>
+</tr>
+</tbody>
+</table>
+<p>These illusions frequently reinforce one another. Their common root is replacing difficult-to-observe real value with easy-to-observe proxy quantities.</p>
+<h3 id="2912-the-scale-illusion-more-data-is-not-automatically-more-value">29.1.2 The Scale Illusion: More Data Is Not Automatically More Value<a class="headerlink" href="#2912-the-scale-illusion-more-data-is-not-automatically-more-value" title="Permanent link">&para;</a></h3>
+<p>The scale illusion has a plausible source. During pre-training, model performance often improves smoothly as data, parameters, and compute grow, a relationship captured by neural scaling laws (Kaplan et al. 2020). This strengthened the belief that more data is always better.</p>
+<p>Scaling laws, however, describe statistical relationships under broadly comparable data quality and distribution. They do not guarantee that arbitrary additional data creates value. Compute-optimal training results show that model size and data volume must grow together under a fixed compute budget; blindly increasing one dimension has rapidly diminishing returns (Hoffmann et al. 2022). Deduplication research shows that reducing duplicated data can improve model quality while reducing data volume (Lee et al. 2022). Data pruning research further shows that selecting high-information samples can beat naive power-law scaling with less but better data (Sorscher et al. 2022). In an even sharper direction, carefully selected small high-quality corpora can match much larger ordinary corpora for some training goals (Gunasekar et al. 2023).</p>
+<p>The conclusion is direct: value is not proportional to size. It depends on information density, quality, coverage, and relevance. A small, deduplicated, balanced, accurately labeled corpus can be more valuable than a huge corpus filled with repetition, noise, and distribution skew. Data-centric AI emphasizes systematic quality improvement for exactly this reason (Zha et al. 2023).</p>
+<h3 id="2913-the-cost-illusion-input-is-not-output">29.1.3 The Cost Illusion: Input Is Not Output<a class="headerlink" href="#2913-the-cost-illusion-input-is-not-output" title="Permanent link">&para;</a></h3>
+<p>The cost illusion treats acquisition cost as value. It appears most often in external data purchases and large labeling projects: a costly dataset feels "important" and receives protection that may exceed its actual contribution.</p>
+<p>Cost and value are different quantities. Acquisition cost answers how much the organization paid to obtain the data. Value answers how much downstream benefit the data creates. A costly industry-report corpus may be nearly worthless if it does not match business scenarios and is never reused. Conversely, an internal interaction log may cost little to collect but become a critical asset because it matches the real production distribution.</p>
+<p>The danger is the sunk-cost fallacy. Because the organization already spent money, it keeps paying for cleaning, storage, compliance review, and maintenance even when the asset has little forward-looking value. Acquisition cost should be used to review past procurement decisions. Continued investment should depend on future benefit relative to future maintenance cost (Laney 2017).</p>
+<h3 id="2914-the-gap-between-model-gain-and-business-value">29.1.4 The Gap Between Model Gain and Business Value<a class="headerlink" href="#2914-the-gap-between-model-gain-and-business-value" title="Permanent link">&para;</a></h3>
+<p>The final two illusions occur near the end of the value chain: from data to model metrics, and from model metrics to business outcomes.</p>
+<p>A dataset that improves an offline metric provides a value signal, but not the whole story. First, the gain may be local and replaceable. Another cheaper dataset may deliver the same improvement, which means the marginal value of the original asset is limited. More principled data valuation methods, such as Data Shapley, estimate a dataset's average marginal contribution across many data combinations (Ghorbani and Zou 2019; Jia et al. 2019). Their purpose is to expose substitutability, which a single before-and-after metric cannot show. Second, the evaluation itself may be unreliable. Label errors and train-test contamination can make benchmark improvements misleading; widespread label errors in common test sets have been shown to destabilize model rankings (Northcutt, Athalye and Mueller 2021).</p>
+<p>The bridge from model metric to business result is even wider. A one-point accuracy improvement may affect a noncritical slice of traffic, be offset by latency or user trust, or be consumed by deployment and monitoring cost. Production ML value often depends less on the model metric alone and more on the engineering discipline around the data and model system (Sculley et al. 2015). Empirical work supports the link between data-driven decision making and firm performance, but the effect is mediated by organizational capability rather than produced automatically by data itself (Brynjolfsson, Hitt and Kim 2011).</p>
+<h3 id="2915-section-summary">29.1.5 Section Summary<a class="headerlink" href="#2915-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section identified four common ways data value is misjudged: the scale illusion treats bytes as value, the cost illusion treats input as output, the model-gain illusion treats local metric improvement as total value, and the business-value illusion treats model metrics as business results. Their common root is substituting easy-to-observe proxies for difficult-to-observe real value. Scaling laws, compute-optimal training, deduplication, and pruning all show that value depends on information density, quality, and relevance rather than scale; Shapley-style valuation and evaluation-reliability research remind us that model contribution must be measured in a comparable and trustworthy way. Escaping these illusions requires an explicit, multidimensional data-value metric system, which is the topic of the next section.</p>
+<h2 id="292-a-metric-system-for-data-asset-value">29.2 A Metric System for Data Asset Value<a class="headerlink" href="#292-a-metric-system-for-data-asset-value" title="Permanent link">&para;</a></h2>
+<h3 id="2921-why-a-metric-system-is-needed">29.2.1 Why a Metric System Is Needed<a class="headerlink" href="#2921-why-a-metric-system-is-needed" title="Permanent link">&para;</a></h3>
+<p>The previous section showed why single proxies are unreliable. Replacing them requires a multidimensional value metric system that measures different sides of data value separately and then combines them according to the decision context. Data value is inherently multifaceted: the same asset may save labeling cost for one team, support a high-frequency retrieval scenario for another, and reduce compliance risk for a governance team. No single scalar can capture all of these sides at once. A useful metric system must satisfy three requirements:</p>
+<ul>
+<li><strong>Measurable.</strong> Each metric needs a clear calculation boundary and data source.</li>
+<li><strong>Comparable.</strong> Metrics should support ranking and portfolio management across assets.</li>
+<li><strong>Decision-oriented.</strong> Metrics must help answer whether to continue investment, prioritize governance, expand reuse, or retire the asset.</li>
+</ul>
+<p>This chapter groups metrics into three complementary views: <strong>usage-side value</strong>, which measures the breadth and depth of consumption; <strong>benefit-side value</strong>, which measures performance gains and cost savings; and <strong>risk/cost-side value</strong>, which measures risk reduction and the cost of maintaining the asset. Together, these three views form the basis of net value. The following sections introduce the core metrics in these groups and summarize them in Section 29.2.6.</p>
+<h3 id="2922-usage-side-reuse-rate-and-coverage">29.2.2 Usage Side: Reuse Rate and Coverage<a class="headerlink" href="#2922-usage-side-reuse-rate-and-coverage" title="Permanent link">&para;</a></h3>
+<p>Usage-side value asks how widely and deeply the data is used. An unused asset has little realized value no matter how good it looks internally. A reused asset can create large cumulative value even if each use case receives only a modest benefit.</p>
+<p><strong>Reuse rate</strong> measures how many scenarios, teams, and tasks depend on an asset. It can be approximated by the number of downstream consumers or weighted as reuse events multiplied by scenario importance. High reuse creates leverage: one governance improvement benefits all consumers. Repeated "calls" from downstream teams are a direct market signal for value (Pei 2022).</p>
+<p><strong>Coverage</strong> measures how well the asset spans the target problem space. In pre-training data, coverage may mean topic, domain, and language distribution. In evaluation data, it may mean ability dimensions, difficulty levels, and question types. In a RAG knowledge base, it means coverage of real user query distribution. Low coverage can create systematic long-tail failures that are invisible in demos and amplified in production (Sambasivan et al. 2021).</p>
+<p>Reuse rate is horizontal: how many scenarios use the asset. Coverage is vertical: how fully the asset covers each scenario. Assets that score well on both are often organizational data infrastructure.</p>
+<h3 id="2923-benefit-side-i-training-gain-and-retrieval-hits">29.2.3 Benefit Side I: Training Gain and Retrieval Hits<a class="headerlink" href="#2923-benefit-side-i-training-gain-and-retrieval-hits" title="Permanent link">&para;</a></h3>
+<p>Benefit-side value asks what concrete improvement the asset creates.</p>
+<ol>
+<li>
+<p><strong>Training gain</strong> measures the improvement when the data is included in training. The standard method is ablation: hold everything else constant, train with and without the asset, and compare metrics on a fixed evaluation set. Training gain must always be stated relative to a baseline and evaluation set. It is also marginal and substitutable; when necessary, Shapley-style methods can allocate contribution more rigorously (Ghorbani and Zou 2019). Gain is nonlinear: deduplication and pruning may let less data produce more value (Lee et al. 2022; Sorscher et al. 2022).</p>
+</li>
+<li>
+<p><strong>Retrieval hits</strong> measure whether the data is correctly retrieved and supports correct answers in RAG and similar systems. This is online, on-demand value. It can be measured with hit rate, evidence support rate, citation correctness, and real-query performance. Real user query distributions matter because offline constructed queries often miss production complexity (Thakur et al. 2021; Lewis et al. 2020).</p>
+</li>
+</ol>
+<p>Training gain realizes value by solidifying data into parameters. Retrieval hits realize value by calling external knowledge at request time. The same asset may contribute through both paths.</p>
+<h3 id="2924-benefit-side-ii-labeling-savings-and-risk-reduction">29.2.4 Benefit Side II: Labeling Savings and Risk Reduction<a class="headerlink" href="#2924-benefit-side-ii-labeling-savings-and-risk-reduction" title="Permanent link">&para;</a></h3>
+<p>Data also creates value by saving cost and reducing risk.</p>
+<p><strong>Labeling savings</strong> measure how much annotation or acquisition cost the asset avoids. A high-quality seed set can reduce labeling volume through active learning because the model requests labels for the most informative samples (Settles 2009). A reusable annotation guideline and labeled corpus can let new tasks add incremental labels instead of starting over. A real-data seed can also guide synthetic data generation. A practical calculation is: cost to reach the same result without the asset minus actual cost after reuse.</p>
+<p><strong>Risk reduction</strong> measures how much the asset lowers compliance, factuality, or decision risk. A well-sanitized corpus with clear provenance and use boundaries can reduce privacy and licensing risk. An authoritative, traceable knowledge base can reduce incorrect or outdated RAG answers, which is especially valuable in finance, healthcare, and government. Risk value can be approximated as the reduction in expected loss: event probability multiplied by loss per event. Dataset documentation practices, such as Datasheets for Datasets, support this risk reduction by making composition, intended use, and limits explicit (Gebru et al. 2021).</p>
+<p>Labeling savings and risk reduction remind us that data value is not only "how much a metric rises." It also includes "how much less the organization spends" and "how much less risk the organization takes." A valuation that only looks at effect improvement while ignoring cost and risk is incomplete.</p>
+<h3 id="2925-risk-and-cost-side-maintenance-cost-and-net-value">29.2.5 Risk and Cost Side: Maintenance Cost and Net Value<a class="headerlink" href="#2925-risk-and-cost-side-maintenance-cost-and-net-value" title="Permanent link">&para;</a></h3>
+<p>Data assets require continuous maintenance. Ignoring that cost is another common valuation blind spot.</p>
+<p><strong>Maintenance cost</strong> is the total cost of keeping an asset usable. It includes storage and compute, incremental collection, parsing, indexing, quality checks, contract maintenance, permission management, compliance review, lineage tracking, and the complexity cost of unmanaged dependencies. High-maintenance, low-benefit assets are often data-layer technical debt (Sculley et al. 2015).</p>
+<p>Conceptually, net value can be expressed as:</p>
+<div class="arithmatex">\[
+V_{net} = \big(V_{train} + V_{retrieval} + V_{label} + V_{risk}\big)\times U - C_{maintain}
+\]</div>
+<p>Here <span class="arithmatex">\(V_{train}\)</span>, <span class="arithmatex">\(V_{retrieval}\)</span>, <span class="arithmatex">\(V_{label}\)</span>, and <span class="arithmatex">\(V_{risk}\)</span> represent training gain, retrieval value, labeling savings, and risk reduction. <span class="arithmatex">\(U\)</span> captures usage intensity through reuse and coverage. <span class="arithmatex">\(C_{maintain}\)</span> is maintenance cost. The expression is not meant to produce exact money in every case; it forces teams to reason about multidimensional benefit multiplied by use, minus ongoing cost.</p>
+<h3 id="2926-data-asset-value-metric-table">29.2.6 Data Asset Value Metric Table<a class="headerlink" href="#2926-data-asset-value-metric-table" title="Permanent link">&para;</a></h3>
+<p>Combining the preceding dimensions yields a data asset value metric table that can be used directly for evaluation and registration. Table 29-2 decomposes the abstract idea of "value" into concrete metrics that are measurable, comparable, and decision-oriented, and it marks each metric's view, calculation boundary, and main use.</p>
+<p><em>Table 29-2: Data asset value metric table</em></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>View</th>
+<th>Calculation boundary</th>
+<th>Main use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reuse rate</td>
+<td>Usage</td>
+<td>Number of reuse scenarios or teams, optionally weighted</td>
+<td>Identify core assets and leverage</td>
+</tr>
+<tr>
+<td>Coverage</td>
+<td>Usage</td>
+<td>Distribution coverage of the target problem space</td>
+<td>Assess long-tail capability and blind spots</td>
+</tr>
+<tr>
+<td>Training gain</td>
+<td>Benefit</td>
+<td>Metric delta with and without the data</td>
+<td>Quantify model contribution</td>
+</tr>
+<tr>
+<td>Retrieval hits</td>
+<td>Benefit</td>
+<td>Hit rate, evidence support rate, citation correctness</td>
+<td>Quantify online retrieval value</td>
+</tr>
+<tr>
+<td>Labeling savings</td>
+<td>Benefit</td>
+<td>Annotation or acquisition cost avoided</td>
+<td>Quantify cost substitution</td>
+</tr>
+<tr>
+<td>Risk reduction</td>
+<td>Risk</td>
+<td>Expected-loss reduction</td>
+<td>Quantify compliance and factuality value</td>
+</tr>
+<tr>
+<td>Maintenance cost</td>
+<td>Cost</td>
+<td>Continuing storage, update, and governance cost</td>
+<td>Compute net value and identify negative assets</td>
+</tr>
+<tr>
+<td>Net value</td>
+<td>Integrated</td>
+<td>Multidimensional benefit times usage minus maintenance cost</td>
+<td>Investment and retirement decisions</td>
+</tr>
+</tbody>
+</table>
+<p>The weights of these metrics differ by scenario. Pre-training teams may emphasize training gain and coverage. RAG teams may emphasize retrieval hits and maintenance cost. Regulated industries may give risk reduction dominant weight. The right use of the metric system is therefore not to add every metric mechanically, but to assign reasonable weights for the decision at hand and then rank or decide. Its purpose is to force evaluators to examine every side of value and avoid falling back into a single-proxy trap.</p>
+<h3 id="2927-section-summary">29.2.7 Section Summary<a class="headerlink" href="#2927-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section built a data asset value metric system from three complementary views: usage, benefit, and risk/cost. It defined core metrics such as reuse rate, coverage, training gain, retrieval hits, labeling savings, risk reduction, and maintenance cost, and integrated them through a net-value expression. The system turns the vague question "is this data valuable?" into a set of measurable, comparable, decision-oriented indicators. However, it mainly describes value in a given moment or scenario. The most important amplification mechanism of data value, cross-scenario reuse, requires a separate discussion. The next section follows the five paths of pre-training, post-training, RAG, evaluation, and compliance to explain how one asset can be reused repeatedly and how benefits on each path should be recorded.</p>
+<h2 id="293-asset-reuse-paths">29.3 Asset Reuse Paths<a class="headerlink" href="#293-asset-reuse-paths" title="Permanent link">&para;</a></h2>
+<h3 id="2931-reuse-as-the-value-multiplier">29.3.1 Reuse as the Value Multiplier<a class="headerlink" href="#2931-reuse-as-the-value-multiplier" title="Permanent link">&para;</a></h3>
+<p>Data is non-rival. One team using it for training does not prevent another from using it for evaluation or retrieval. This makes reuse the strongest amplifier of data value. Every additional reuse path can add benefit at near-zero marginal copying cost.</p>
+<p>Many organizations fail to capture this value. Data is collected for one task, used once, then forgotten. Teams repeatedly collect overlapping data without knowing that similar assets already exist. To unlock reuse, two foundations are required: discoverability and trust from the previous chapters, and explicit recording of reuse paths and benefits.</p>
+<p>This section follows five typical large-model reuse paths: pre-training, post-training, RAG, evaluation, and compliance. Ideally, the same high-quality domain data asset can be reused along all five paths and multiply its value. Figure 29-1 shows the overall structure of this multi-path reuse pattern.</p>
+<p><a class="glightbox" href="../../../images/part9/Liu-Chap29-Fig01-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Multi-scenario data asset reuse paths" src="../../../images/part9/Liu-Chap29-Fig01-EN.svg" /></a></p>
+<p><em>Figure 29-1: Data asset reuse paths</em></p>
+<h3 id="2932-pre-training-reuse">29.3.2 Pre-training Reuse<a class="headerlink" href="#2932-pre-training-reuse" title="Permanent link">&para;</a></h3>
+<p>Pre-training is the largest reuse path. Data shapes base language ability and domain knowledge, and value is realized through training gain embedded in model parameters.</p>
+<p>For a domain asset, pre-training value depends heavily on quality and deduplication rather than scale alone (Lee et al. 2022; Sorscher et al. 2022). Benefit records should include the asset's share in the training corpus, filtering steps, and observed capability improvements relative to baselines. Because full pre-training is costly, teams often estimate gain through smaller proxy-model experiments and extrapolate carefully.</p>
+<p>Pre-training value is long-lived but hard to reverse. Once data affects the base model, it influences many downstream tasks and is difficult to remove. This raises the quality and compliance bar: data with unclear copyright or privacy risk can be amplified through the base model. Pre-training benefit must therefore be evaluated together with compliance reuse.</p>
+<h3 id="2933-post-training-reuse">29.3.3 Post-training Reuse<a class="headerlink" href="#2933-post-training-reuse" title="Permanent link">&para;</a></h3>
+<p>Post-training includes supervised fine-tuning, preference alignment, and related stages. It aligns the base model to tasks, domains, and preferences.</p>
+<p>Post-training data is smaller but must be high quality and highly targeted. A small domain instruction or preference set can create significant alignment gain (Gunasekar et al. 2023). Labeling savings are especially important: reusable annotation guidelines and labeled examples can reduce the cost of future post-training tasks, particularly when combined with active learning (Settles 2009).</p>
+<p>Benefit records should state which post-training process used the data, what behaviors improved, and how much labeling was avoided. Compared with pre-training, post-training is cheaper and more repeatable, so ablation and Shapley-style contribution analysis are more practical (Ghorbani and Zou 2019; Jia et al. 2019). Value is also more scenario-specific: preference data valuable in one domain may transfer poorly to another.</p>
+<h3 id="2934-rag-reuse">29.3.4 RAG Reuse<a class="headerlink" href="#2934-rag-reuse" title="Permanent link">&para;</a></h3>
+<p>RAG keeps data outside model parameters and calls it online as external knowledge. Its value is realized through retrieval hits. The distinctive advantages are freshness and updateability: the knowledge base can evolve without retraining the model (Lewis et al. 2020).</p>
+<p>To enter the RAG path, a domain asset must be parsed, cleaned, chunked, indexed, and monitored, as discussed in Chapter 21. Maintenance cost matters because stale knowledge, outdated indexes, and poor chunking erode retrieval value. Benefit records should include supported query scenarios, hit rate under real query distributions, evidence support rate, and citation traceability (Thakur et al. 2021).</p>
+<p>RAG and training reuse are complementary. Stable, general knowledge may be moved into post-training. Frequently changing knowledge should usually remain in RAG. Putting volatile information into model parameters creates retraining cost and staleness risk; putting stable core knowledge entirely behind retrieval adds avoidable runtime burden.</p>
+<h3 id="2935-evaluation-reuse">29.3.5 Evaluation Reuse<a class="headerlink" href="#2935-evaluation-reuse" title="Permanent link">&para;</a></h3>
+<p>Evaluation data is often treated as a byproduct of training data, but a high-quality evaluation set is one of the rarest and most durable assets in a large-model organization.</p>
+<p>Its value is not direct model improvement; it is the measuring instrument for all improvements. Without reliable evaluation, training gain and retrieval-hit measurements lose their baseline. Label errors in test sets can distort rankings and make harmful changes appear useful (Northcutt, Athalye and Mueller 2021). Benefit records should capture how many model or knowledge-base decisions the evaluation asset supports, what capabilities and difficulty levels it covers, and whether it blocked regressions from release.</p>
+<p>Evaluation reuse has one special constraint: it must not leak into training. Once evaluation data contaminates training data, its value as a measuring instrument can collapse. Evaluation assets therefore require strict lineage isolation and contract governance.</p>
+<h3 id="2936-compliance-reuse">29.3.6 Compliance Reuse<a class="headerlink" href="#2936-compliance-reuse" title="Permanent link">&para;</a></h3>
+<p>Compliance is often not described as reuse, but it creates repeatable value. A corpus with clear provenance, licensing boundaries, anonymization, and use records can pass its compliance work downstream to every reuse path.</p>
+<p>If a dataset has been strictly reviewed and documented, pre-training, post-training, RAG, and evaluation consumers can reuse its provenance, authorization, anonymization, and review evidence instead of repeating review independently (Gebru et al. 2021). This does <strong>not</strong> mean every downstream use can unconditionally inherit the same compliance conclusion. Compliance judgment usually depends on purpose, output audience, geography, authorization scope, and processing method. New uses, external sharing, cross-border transfer, training-time memorization, or changed authorization scope still require renewed review. This is the real value of compliance reuse: a one-time compliance investment is not a free pass, but a reusable evidence base and risk-reduction mechanism. Conversely, unclear compliance forces every path to carry its own risk or repeat costly review. In regulated industries, compliance value can determine whether an asset can be used at all; a powerful but legally uncertain dataset may have negative net value.</p>
+<p>Benefit records should include review cost avoided, concrete legal and privacy risks reduced, and whether use is fully recorded for audit. Compliance value is not an appendix to the other four paths; it is a value thread running through all of them.</p>
+<h3 id="2937-benefit-records-and-attribution">29.3.7 Benefit Records and Attribution<a class="headerlink" href="#2937-benefit-records-and-attribution" title="Permanent link">&para;</a></h3>
+<p>The five paths form a value-amplification network. To manage it, organizations need a cross-path benefit ledger for each data asset. The ledger should record pre-training capability improvements, post-training labeling savings and alignment gains, RAG query support and hit rates, evaluation decisions protected, and compliance review cost or risk avoided.</p>
+<p>This attribution depends on the infrastructure from Chapters 27 and 28: the data catalog gives each asset a stable identity, lineage records how the asset flows into downstream paths, and contracts define use boundaries. Without those foundations, attribution becomes manual, inaccurate, and unsustainable.</p>
+<p>Once cross-path attribution can be maintained automatically, the organization can see, often for the first time, which assets are repeatedly reused and amplified into core assets, and which assets merely sit in storage without creating a second round of value. That insight is the decision basis for the portfolio management in Section 29.5 and the review mechanism in Section 29.6.</p>
+<h3 id="2938-section-summary">29.3.8 Section Summary<a class="headerlink" href="#2938-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section followed five paths: pre-training, post-training, RAG, evaluation, and compliance, explaining how one data asset can be reused repeatedly and how value on each path should be expressed and recorded. Pre-training reuse is long-lived but hard to reverse and has the strictest quality and compliance requirements. Post-training reuse is small, targeted, and rich in labeling savings. RAG reuse emphasizes freshness and updateability. Evaluation reuse provides an indispensable measuring instrument but must prevent leakage. Compliance reuse amortizes one review effort across paths. Reuse is the value multiplier; cross-path benefit records and attribution, supported by catalogs, lineage, and contracts, make that multiplier measurable and governable. The next section combines the metric system and reuse paths in a complete enterprise-domain corpus case.</p>
+<h2 id="294-valuation-case-enterprise-domain-knowledge-corpus">29.4 Valuation Case: Enterprise Domain Knowledge Corpus<a class="headerlink" href="#294-valuation-case-enterprise-domain-knowledge-corpus" title="Permanent link">&para;</a></h2>
+<h3 id="2941-case-background">29.4.1 Case Background<a class="headerlink" href="#2941-case-background" title="Permanent link">&para;</a></h3>
+<p>To make the metric system and reuse paths concrete, this section estimates value through a representative case. The case combines typical characteristics from multiple real projects, and the numbers are simplified for illustration.</p>
+<p>Consider a financial services company that has built an enterprise domain knowledge corpus named <code>fin_domain_corpus</code>. It contains internal compliance Q&amp;A and customer-service dialogue, licensed industry research reports, and public financial regulations. After unified cleaning, deduplication, anonymization, and structuring, it is registered as a data product with a data contract.</p>
+<p>The corpus can potentially serve all five reuse paths from Section 29.3: improving financial-domain capability in a base model, fine-tuning a financial Q&amp;A assistant, supporting a customer-service RAG system, building financial evaluation sets, and lowering downstream compliance risk as an asset with clear compliance attributes. The valuation question is whether the corpus deserves continued investment. Answering it requires separately accounting for input, risk, and cross-path benefits, then integrating them as net value.</p>
+<h3 id="2942-input-cost-accounting">29.4.2 Input Cost Accounting<a class="headerlink" href="#2942-input-cost-accounting" title="Permanent link">&para;</a></h3>
+<p>Input cost includes one-time acquisition cost and continuing maintenance cost.</p>
+<p>Table 29-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 29-3: fin_domain_corpus input costs, annualized where applicable, in RMB 10k units</em></p>
+<table>
+<thead>
+<tr>
+<th>Cost item</th>
+<th>Type</th>
+<th>Amount</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Report licensing</td>
+<td>One-time</td>
+<td>80</td>
+<td>Licensed industry research reports</td>
+</tr>
+<tr>
+<td>Cleaning and anonymization</td>
+<td>One-time</td>
+<td>40</td>
+<td>Deduplication, structuring, PII anonymization</td>
+</tr>
+<tr>
+<td>Labeling</td>
+<td>One-time</td>
+<td>60</td>
+<td>Q&amp;A and preference labeling</td>
+</tr>
+<tr>
+<td>Compliance review</td>
+<td>One-time</td>
+<td>20</td>
+<td>Provenance and licensing review</td>
+</tr>
+<tr>
+<td>Storage and compute</td>
+<td>Maintenance</td>
+<td>15/year</td>
+<td>Storage, indexing, retrieval compute</td>
+</tr>
+<tr>
+<td>Updates and rebuilds</td>
+<td>Maintenance</td>
+<td>35/year</td>
+<td>Incremental collection, reparsing, index rebuilds</td>
+</tr>
+<tr>
+<td>Governance</td>
+<td>Maintenance</td>
+<td>10/year</td>
+<td>Contract maintenance, permissions, lineage</td>
+</tr>
+</tbody>
+</table>
+<p>The one-time cost is about RMB 2 million. Annual maintenance is about RMB 600,000. Continued investment should be judged mainly by future benefits relative to annual maintenance, not by historical acquisition cost.</p>
+<h3 id="2943-risk-assessment">29.4.3 Risk Assessment<a class="headerlink" href="#2943-risk-assessment" title="Permanent link">&para;</a></h3>
+<p>The corpus has three internal risks. First, licensed reports have use-boundary risk; using them beyond the license, especially in external model pre-training, may violate terms. Second, anonymized customer-service logs still require continuous checks to prevent residual PII leakage. Third, financial regulations change frequently; stale content retrieved by a RAG system may produce costly compliance advice errors.</p>
+<p>The corpus also reduces downstream risk because its provenance, review, anonymization, and documentation are centralized. If expected annual loss from compliance and factuality issues would be RMB 500,000 without the corpus and RMB 150,000 with it, annual risk-reduction value is about RMB 350,000. The key insight is that compliance and freshness maintenance are not only cost items; for this asset, they are major value sources.</p>
+<h3 id="2944-cross-path-benefit-calculation">29.4.4 Cross-Path Benefit Calculation<a class="headerlink" href="#2944-cross-path-benefit-calculation" title="Permanent link">&para;</a></h3>
+<p>Table 29-4 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 29-4: Annual cross-path benefits for fin_domain_corpus, in RMB 10k units</em></p>
+<table>
+<thead>
+<tr>
+<th>Reuse path</th>
+<th>Main value dimension</th>
+<th>Annual benefit</th>
+<th>Measurement basis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pre-training</td>
+<td>Training gain</td>
+<td>30</td>
+<td>Proxy-model financial capability uplift</td>
+</tr>
+<tr>
+<td>Post-training</td>
+<td>Training gain plus labeling savings</td>
+<td>70</td>
+<td>Q&amp;A assistant alignment gain and avoided relabeling</td>
+</tr>
+<tr>
+<td>RAG</td>
+<td>Retrieval hits</td>
+<td>90</td>
+<td>High-frequency customer-service RAG hits reduce agent time</td>
+</tr>
+<tr>
+<td>Evaluation</td>
+<td>Risk reduction</td>
+<td>25</td>
+<td>Version decisions protected and regressions blocked</td>
+</tr>
+<tr>
+<td>Compliance</td>
+<td>Risk reduction</td>
+<td>35</td>
+<td>Downstream reuses compliance evidence and rechecks new purposes, lowering expected loss</td>
+</tr>
+</tbody>
+</table>
+<p>The RAG path produces the highest annual benefit because queries are frequent and each hit saves operational work. Post-training follows because the corpus supplies both alignment gain and reusable labels. Pre-training benefit is smaller because the corpus is not large enough to move the base model substantially and licensing boundaries limit use. Evaluation and compliance mainly create risk-reduction value, which is essential in finance even when it does not raise a benchmark metric.</p>
+<h3 id="2945-net-value-and-decision">29.4.5 Net Value and Decision<a class="headerlink" href="#2945-net-value-and-decision" title="Permanent link">&para;</a></h3>
+<p>Annual cross-path benefit is:</p>
+<div class="arithmatex">\[
+30 + 70 + 90 + 25 + 35 = 250
+\]</div>
+<p>Annual maintenance cost is 60. Therefore:</p>
+<div class="arithmatex">\[
+V_{net}^{annual} = 250 - 60 = 190 \text{ RMB 10k}
+\]</div>
+<p>If the one-time acquisition cost of 200 is included, the asset nearly breaks even in year one and contributes about 190 RMB 10k of net value each year afterward. The asset is clearly worth continued investment.</p>
+<p>The more important conclusion is qualitative. First, the asset's high net value comes from cross-path reuse, not any single path. If the team looked only at the RMB 300,000 benefit of pre-training, it would reach the opposite conclusion. This strongly confirms the central claim of Section 29.3: reuse is the value multiplier. Second, the update and compliance components of maintenance cost should not be cut. They are precisely what protect the timeliness value of RAG hits and the risk-reduction value of compliance; cutting them would directly destroy the two largest benefit paths. Third, valuation must be repeated periodically. Financial regulations, customer-service question distributions, and base-model capabilities all change, so today's high-value asset may decay as the environment changes.</p>
+<p>The case also tests the usefulness of the metric system itself. Because reuse rate, training gain, retrieval hits, labeling savings, risk reduction, and maintenance cost were measured separately, the team avoided misjudging the asset through the cost illusion ("we spent RMB 2 million, so it must be valuable") or the scale illusion ("the corpus is not large enough, so it is not valuable").</p>
+<h3 id="2946-section-summary">29.4.6 Section Summary<a class="headerlink" href="#2946-section-summary" title="Permanent link">&para;</a></h3>
+<p>The <code>fin_domain_corpus</code> case shows how the metric system and reuse paths from the previous sections can be used to account for input, risk, cross-path benefits, and net value. The corpus costs about RMB 2 million to acquire and RMB 600,000 per year to maintain, but creates about RMB 2.5 million in annual benefit through five reuse paths and about RMB 1.9 million in annual net value. This high value depends heavily on cross-path reuse and continuous update and compliance investment. The core lesson is that looking at one path without reuse can severely underestimate value, looking at benefits without maintenance can overestimate value, and failing to reassess periodically lets outdated value judgments mislead decisions. Normalizing this kind of valuation and using it for portfolio management and ongoing review are the topics of the next two sections.</p>
+<h2 id="295-cost-benefit-matrix-and-portfolio-decisions">29.5 Cost-Benefit Matrix and Portfolio Decisions<a class="headerlink" href="#295-cost-benefit-matrix-and-portfolio-decisions" title="Permanent link">&para;</a></h2>
+<h3 id="2951-from-individual-valuation-to-portfolio-management">29.5.1 From Individual Valuation to Portfolio Management<a class="headerlink" href="#2951-from-individual-valuation-to-portfolio-management" title="Permanent link">&para;</a></h3>
+<p>Real organizations manage hundreds or thousands of data assets. Precise valuation for every asset is unnecessary and usually impossible. A more practical approach borrows from portfolio management: classify assets along two axes, value and cost/risk.</p>
+<p>The value axis combines benefit-side and usage-side metrics: how much benefit the asset creates and how widely it is reused. The cost/risk axis combines maintenance cost and inherent risk: how much it costs to keep the asset and how much risk it carries. Placing each asset on these two dimensions yields a cost-benefit matrix.</p>
+<p>Figure 29-2 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part9/Liu-Chap29-Fig02-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Data asset cost-benefit matrix" src="../../../images/part9/Liu-Chap29-Fig02-EN.svg" /></a></p>
+<p><em>Figure 29-2: Cost-benefit matrix</em></p>
+<p>The advantage of this two-dimensional positioning is that it does not require the fine-grained monetary calculation used in Section 29.4 for every asset. A relative judgment of value level and cost/risk level is enough to quickly classify many assets into quadrants and apply differentiated management strategies.</p>
+<h3 id="2952-four-quadrant-strategies">29.5.2 Four Quadrant Strategies<a class="headerlink" href="#2952-four-quadrant-strategies" title="Permanent link">&para;</a></h3>
+<ol>
+<li>
+<p><strong>High value, low cost: core assets.</strong> These are the best assets: widely reused, high benefit, low maintenance cost, and manageable risk. They are the foundation of data infrastructure and deserve protection, continued investment, and active recommendation for reuse. After good governance, the <code>fin_domain_corpus</code> in Section 29.4 belongs to this quadrant. The governance focus is to keep these assets discoverable and dependable and encourage more downstream reuse.</p>
+</li>
+<li>
+<p><strong>High value, high cost: heavy-investment assets.</strong> These assets create strong benefits but require expensive updates, review, or governance, such as a very effective corpus that must be updated frequently and undergo heavy compliance review. The answer is not crude cost cutting, because that may destroy value. Teams should automate maintenance, use incremental processing, reuse compliance work, and expand reuse to dilute cost. Only when cost reduction is impossible and benefit no longer covers cost should the asset be shrunk.</p>
+</li>
+<li>
+<p><strong>Low value, low cost: long-tail assets.</strong> These assets do not create much current benefit but are cheap to keep and impose little burden. They can be retained with minimal maintenance for occasional future needs, but they should not consume governance resources needed by core assets. The main risk in this quadrant is misclassification: a currently low-value asset may jump in value when a future scenario appears. It should remain discoverable but does not need active maintenance.</p>
+</li>
+<li>
+<p><strong>Low value, high cost: negative assets.</strong> These are the assets that require the most vigilance: low benefit with high cost or risk. They are typical products of the cost illusion from Section 29.1.3 and the technical debt described in Section 29.2.5. They often survive because "we already spent so much," continuing to consume resources with little output (Sculley et al. 2015; Laney 2017). Correct handling is decisive disposal: archive, decommission, or retire, stop adding new investment, and complete impact analysis before shutdown. Identifying and cleaning negative assets is often one of the highest-ROI actions in data governance.</p>
+</li>
+</ol>
+<h3 id="2953-using-the-matrix-for-portfolio-decisions">29.5.3 Using the Matrix for Portfolio Decisions<a class="headerlink" href="#2953-using-the-matrix-for-portfolio-decisions" title="Permanent link">&para;</a></h3>
+<p>The matrix turns separate asset evaluations into resource-allocation decisions. It helps answer which assets deserve governance resources, which assets quietly consume cost without output, and which valuable assets require cost-reduction programs to remain sustainable.</p>
+<p>A healthy portfolio protects and reuses core assets, continuously optimizes heavy-investment assets, keeps long-tail assets cheaply discoverable, and retires negative assets in time. This balance is not achieved once and for all; assets move as their use, cost, and risk change. That is why a normal review mechanism is required.</p>
+<h3 id="2954-section-summary">29.5.4 Section Summary<a class="headerlink" href="#2954-section-summary" title="Permanent link">&para;</a></h3>
+<p>The cost-benefit matrix lifts valuation from individual assessment to portfolio management. With value and cost/risk as the two axes, it classifies assets as core, heavy-investment, long-tail, or negative assets and ties each class to a differentiated management strategy. Its value is that it can guide governance-resource allocation without precise monetary valuation for every asset: protect core assets, optimize heavy-investment assets, retain long-tail assets cheaply, and clean negative assets decisively. This portfolio view upgrades data governance from passive per-asset handling to global allocation. But an asset's quadrant position is not fixed; keeping portfolio management effective requires a mechanism that makes valuation periodic.</p>
+<h2 id="296-asset-review-cards-and-continuous-value-governance">29.6 Asset Review Cards and Continuous Value Governance<a class="headerlink" href="#296-asset-review-cards-and-continuous-value-governance" title="Permanent link">&para;</a></h2>
+<h3 id="2961-value-decays-so-valuation-must-be-periodic">29.6.1 Value Decays, So Valuation Must Be Periodic<a class="headerlink" href="#2961-value-decays-so-valuation-must-be-periodic" title="Permanent link">&para;</a></h3>
+<p>Data value is not a static quantity that can be measured once and trusted forever. It decays over time and may also rise when a new scenario appears. Financial regulations become outdated, customer-service knowledge drifts away from real questions, and once-valuable labels may be replaced by better data. A one-time valuation at procurement or launch will drift out of date and eventually reproduce the illusions described earlier.</p>
+<p>The final link in value governance is to turn valuation from a one-time action into a normal mechanism. The lightweight mechanism proposed here is an <strong>asset review card</strong>: a one-page periodic record of value, cost, risk, reuse, and recommended action. It condenses the tools introduced above, including value metrics, reuse paths, and the cost-benefit matrix, into an operational checklist.</p>
+<p>Figure 29-3 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part9/Liu-Chap29-Fig03-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Data asset review card" src="../../../images/part9/Liu-Chap29-Fig03-EN.svg" /></a></p>
+<p><em>Figure 29-3: Asset review card</em></p>
+<h3 id="2962-core-elements-of-a-review-card">29.6.2 Core Elements of a Review Card<a class="headerlink" href="#2962-core-elements-of-a-review-card" title="Permanent link">&para;</a></h3>
+<p>A practical card should include five groups of information:</p>
+<ol>
+<li><strong>Basic information and ownership.</strong> Asset name, owner, related data product, and contract version.</li>
+<li><strong>Value metric snapshot.</strong> Reuse rate, coverage, training gain, retrieval hits, labeling savings, risk reduction, maintenance cost, and net value, compared with the previous review.</li>
+<li><strong>Reuse path ledger.</strong> Which of the five reuse paths currently use the asset, what benefit each path creates, and what reuse was added or lost since the previous cycle.</li>
+<li><strong>Matrix position and action recommendation.</strong> Current cost-benefit quadrant and corresponding action: maintain, optimize, keep cheaply, or retire.</li>
+<li><strong>Risks and next actions.</strong> Freshness, compliance, quality, or ownership risks, plus concrete tasks before the next review.</li>
+</ol>
+<h3 id="2963-value-decay-and-review-cadence">29.6.3 Value Decay and Review Cadence<a class="headerlink" href="#2963-value-decay-and-review-cadence" title="Permanent link">&para;</a></h3>
+<p>The review cadence should match the speed of value decay. Highly time-sensitive assets, such as financial regulations, news corpora, and customer-service knowledge bases, require frequent reviews focused on RAG hit rate and staleness. Stable assets, such as foundational language corpora or durable domain knowledge, can be reviewed less frequently. Evaluation assets should be reviewed after major model or knowledge-base releases, with special attention to validity and leakage risk.</p>
+<p>To decide whether value is decaying, compare the value metric snapshot with the previous review cycle and watch sensitive signals: falling reuse rate means downstream users are leaving; falling retrieval hit rate means content may be getting stale; rising maintenance cost with flat benefit means cost-effectiveness is worsening. These signals should trigger deeper evaluation and possible movement between matrix quadrants, such as downgrading a core asset, launching a heavy update, or beginning retirement assessment.</p>
+<h3 id="2964-section-summary">29.6.4 Section Summary<a class="headerlink" href="#2964-section-summary" title="Permanent link">&para;</a></h3>
+<p>The asset review card upgrades valuation from a one-time action into continuous governance. Within one page, it gathers basic information, value metric snapshots, reuse path ledgers, cost-benefit position, and risks/actions, compressing all of this chapter's tools into a periodic checklist. Review cadence should match value-decay speed: time-sensitive assets need frequent review, stable assets can be reviewed less often, and evaluation assets should be reviewed with major version updates. By continuously tracking value trends, organizations can detect decay signals in time, adjust matrix positions and action strategies dynamically, and turn data value governance into a closed loop.</p>
+<h2 id="297-engineering-the-valuation-process">29.7 Engineering the Valuation Process<a class="headerlink" href="#297-engineering-the-valuation-process" title="Permanent link">&para;</a></h2>
+<h3 id="2971-from-one-time-calculation-to-evaluation-pipeline">29.7.1 From One-Time Calculation to Evaluation Pipeline<a class="headerlink" href="#2971-from-one-time-calculation-to-evaluation-pipeline" title="Permanent link">&para;</a></h3>
+<p>The hard part is not understanding valuation concepts; it is embedding them into daily data engineering. If valuation exists only in budget reviews, procurement retrospectives, or project acceptance reports, it will not change behavior. A more useful approach is a lightweight but stable evaluation pipeline that leaves value signals whenever data is created, changed, called, reused, or retired.</p>
+<p>The pipeline has six stages:</p>
+<ol>
+<li><strong>Asset registration.</strong> Record identity, owner, source boundary, compliance status, quality level, version, and intended consumption scenarios.</li>
+<li><strong>Usage collection.</strong> Capture logs from training references, retrieval hits, dashboard subscriptions, feature use, evaluation-set use, and downstream jobs.</li>
+<li><strong>Benefit estimation.</strong> Start with proxies such as labeling samples saved, manual work avoided, task success improved, or expected incidents reduced.</li>
+<li><strong>Cost aggregation.</strong> Separate one-time acquisition and cleaning cost from future storage, update, review, and maintenance cost.</li>
+<li><strong>Value scoring.</strong> Combine usage, benefit, cost, and risk into comparable grades or net-value estimates.</li>
+<li><strong>Decision feedback.</strong> Write results back into recommendation, investment, maintenance-frequency, archive, retirement, and governance workflows.</li>
+</ol>
+<p>Without decision feedback, the pipeline is only another monitoring system.</p>
+<h3 id="2972-asset-registration-the-minimal-fact-table">29.7.2 Asset Registration: The Minimal Fact Table<a class="headerlink" href="#2972-asset-registration-the-minimal-fact-table" title="Permanent link">&para;</a></h3>
+<p>The first step in valuation is not calculation; it is forming a unified asset fact. Many organizations cannot value data not because they lack complex algorithms, but because they cannot answer basic questions: what is this asset, who owns it, who uses it, and can it be reused? Registration is the minimal fact table for valuation. It should connect the data catalog, lineage system, permission system, quality monitoring, and cost bills. If the organization has established data products and data contracts, the registration table should also reference the corresponding product ID and contract version.</p>
+<p>Table 29-5 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 29-5: Example fields for data asset registration</em></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Meaning</th>
+<th>Valuation role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>asset_id</td>
+<td>Unique data asset identifier</td>
+<td>Primary key for attribution and cross-system joins</td>
+</tr>
+<tr>
+<td>asset_name</td>
+<td>Asset name</td>
+<td>Search and human recognition</td>
+</tr>
+<tr>
+<td>owner</td>
+<td>Responsible owner</td>
+<td>Review, maintenance, and decision accountability</td>
+</tr>
+<tr>
+<td>domain</td>
+<td>Business or knowledge domain</td>
+<td>Coverage and cross-domain reuse analysis</td>
+</tr>
+<tr>
+<td>source_type</td>
+<td>Internal, purchased, public, and so on</td>
+<td>Licensing, cost, and compliance risk judgment</td>
+</tr>
+<tr>
+<td>contract_version</td>
+<td>Data contract version</td>
+<td>Reliability and breaking-change tracking</td>
+</tr>
+<tr>
+<td>quality_level</td>
+<td>Quality grade</td>
+<td>Reuse recommendation and risk assessment</td>
+</tr>
+<tr>
+<td>compliance_status</td>
+<td>Compliance state</td>
+<td>Eligibility for training, RAG, evaluation, and other paths</td>
+</tr>
+<tr>
+<td>refresh_frequency</td>
+<td>Update cadence</td>
+<td>Maintenance cost and freshness-risk estimation</td>
+</tr>
+<tr>
+<td>expected_scenarios</td>
+<td>Intended consumption scenarios</td>
+<td>Baseline for later actual reuse</td>
+</tr>
+</tbody>
+</table>
+<p>These fields do not need to be perfect on the first day. A realistic approach is to separate mandatory and optional fields. Mandatory fields ensure that an asset can be located, owned, and audited; optional fields can be filled as the asset enters more reuse scenarios. For valuation, the most important mandatory fields are <code>asset_id</code>, <code>owner</code>, <code>source_type</code>, <code>compliance_status</code>, and <code>refresh_frequency</code>. Without <code>asset_id</code>, benefits cannot be attributed. Without <code>owner</code>, reviews have no accountable party. Without <code>source_type</code> and <code>compliance_status</code>, reuse boundaries cannot be judged. Without <code>refresh_frequency</code>, maintenance cost and freshness risk cannot be estimated.</p>
+<p>Registration should also avoid equating physical tables with assets. A data asset may include tables, files, vector indexes, label sets, documentation, and compliance records. Conversely, one physical table may be an intermediate shared by multiple assets. Asset boundaries should follow consumption semantics, not storage objects: the stable capability that downstream users actually depend on.</p>
+<h3 id="2973-usage-collection-making-reuse-observable">29.7.3 Usage Collection: Making Reuse Observable<a class="headerlink" href="#2973-usage-collection-making-reuse-observable" title="Permanent link">&para;</a></h3>
+<p>Reuse rate cannot rely on manual forms forever. The pipeline should collect reuse events from systems:</p>
+<ul>
+<li>Training corpora: training configs, data loading manifests, version lock files, and experiment tracking.</li>
+<li>RAG knowledge assets: retrieval logs, vector-index calls, chunk hits, and answer citations.</li>
+<li>Evaluation assets: evaluation configs, release records, and regression reports.</li>
+<li>Reporting assets: query logs, dashboard visits, subscriptions, and exports.</li>
+<li>Feature assets: online feature calls, offline training references, and model registry records.</li>
+</ul>
+<p>Each reuse event should record who used the asset, when, how, which version, and what result was observed.</p>
+<p>Table 29-6 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 29-6: Example reuse event log fields</em></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Example</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>event_id</td>
+<td>reuse_2026_0001</td>
+<td>Unique reuse event identifier</td>
+</tr>
+<tr>
+<td>asset_id</td>
+<td>fin_domain_corpus</td>
+<td>Reused asset</td>
+</tr>
+<tr>
+<td>asset_version</td>
+<td>v2026.05</td>
+<td>Asset version</td>
+</tr>
+<tr>
+<td>consumer</td>
+<td>risk_qa_assistant</td>
+<td>Downstream consumer</td>
+</tr>
+<tr>
+<td>reuse_path</td>
+<td>RAG</td>
+<td>Reuse path</td>
+</tr>
+<tr>
+<td>event_time</td>
+<td>2026-05-18 10:00:00</td>
+<td>Time of use</td>
+</tr>
+<tr>
+<td>usage_count</td>
+<td>12836</td>
+<td>Calls or references</td>
+</tr>
+<tr>
+<td>outcome_metric</td>
+<td>hit_rate=0.71</td>
+<td>Outcome proxy</td>
+</tr>
+<tr>
+<td>attribution_weight</td>
+<td>0.6</td>
+<td>Benefit attribution weight</td>
+</tr>
+</tbody>
+</table>
+<p><code>attribution_weight</code> matters because real outcomes are usually produced by several datasets, models, and engineering components. Early-stage rules can allocate benefit by hit count, sample share, ablation results, or expert judgment. Mature teams can introduce Shapley approximations, experiments, or causal attribution.</p>
+<h3 id="2974-benefit-estimation-coarse-first-precise-later">29.7.4 Benefit Estimation: Coarse First, Precise Later<a class="headerlink" href="#2974-benefit-estimation-coarse-first-precise-later" title="Permanent link">&para;</a></h3>
+<p>Benefit estimation often fails by pursuing false precision or refusing to estimate at all. A better path is coarse first, precise later. Coarse does not mean arbitrary; it means stable, explainable, reviewable proxies.</p>
+<p>For RAG assets, proxies include retrieval hits, lower human handoff rate, and shorter handling time. For post-training data, proxies include annotation cost avoided, alignment metric improvement, and review pass-rate improvement. For evaluation sets, proxies include blocked regression releases and reduced expected incident loss. For compliant corpora, proxies include review hours saved and lower violation probability.</p>
+<p>Benefits can first be graded as high, medium, or low, then monetized for high-benefit or high-cost assets when budget decisions require precision. High benefit means the asset directly supports a core production path and is used frequently downstream. Medium benefit means the asset supports an important but non-core path, or is used less often but has high replacement cost. Low benefit means the asset is used occasionally or mainly for exploration, backup, and long-tail scenarios. This layered approach prevents governance resources from being spent on large numbers of low-risk, low-cost, low-dispute assets.</p>
+<p>Each estimate should include <code>confidence_level</code>. High confidence comes from A/B tests, real bills, automatic logs, and reproducible experiments. Medium confidence comes from stable historical statistics, sampling review, and cross-team confirmation. Low confidence comes from one-off interviews, subjective estimates, or inference without a control group. Valuation does not require every estimate to start as high confidence, but it does require teams to know which conclusions are reliable and which are temporary assumptions.</p>
+<h3 id="2975-cost-aggregation-do-not-let-bills-hide-engineering-facts">29.7.5 Cost Aggregation: Do Not Let Bills Hide Engineering Facts<a class="headerlink" href="#2975-cost-aggregation-do-not-let-bills-hide-engineering-facts" title="Permanent link">&para;</a></h3>
+<p>Cost aggregation is an engineering problem as much as a finance problem. Storage cost may come from object stores, warehouses, lakehouse tables, and vector databases. Compute cost may come from schedulers, training jobs, index builds, and batch tasks. Labeling cost may come from labeling-platform records and vendor invoices. Quality cost may come from quality-check jobs and incident tickets. Compliance cost may come from review workflows, legal assessment, licensing, and anonymization pipelines.</p>
+<p>Shared infrastructure requires allocation rules. They do not need to be perfect, but they must be stable, transparent, and explainable. Common rules allocate by storage volume, call count, compute time, sample count, or human hours. Critical assets can use separate ledgers.</p>
+<p>Cost records should distinguish reducible and irreducible cost. Historical purchases, historical cleaning, and past labeling are sunk and usually cannot be reduced. Future storage, updates, index rebuilds, monitoring, human review, and compliance maintenance are reducible. Retirement decisions should mainly depend on future reducible cost and future benefit. An asset that was expensive historically but has low future maintenance cost and still has long-tail reuse value may not need to be deleted. Conversely, an asset that was cheap historically but has rising future maintenance cost and no downstream benefit may be the more urgent negative asset.</p>
+<h3 id="2976-scoring-and-grading-making-valuation-executable">29.7.6 Scoring and Grading: Making Valuation Executable<a class="headerlink" href="#2976-scoring-and-grading-making-valuation-executable" title="Permanent link">&para;</a></h3>
+<p>Valuation must become an actionable grade. One practical system is S/A/B/C/D:</p>
+<p>Table 29-7 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 29-7: Example data asset value grades</em></p>
+<table>
+<thead>
+<tr>
+<th>Grade</th>
+<th>Criteria</th>
+<th>Management action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S</td>
+<td>High benefit, high reuse, low or controlled risk</td>
+<td>Protect, prioritize investment, strong SLA</td>
+</tr>
+<tr>
+<td>A</td>
+<td>Clearly supports important scenarios with stable benefit</td>
+<td>Maintain and promote reuse</td>
+</tr>
+<tr>
+<td>B</td>
+<td>Has stable but limited downstream use</td>
+<td>Basic maintenance and periodic review</td>
+</tr>
+<tr>
+<td>C</td>
+<td>Weak evidence of value or only long-tail use</td>
+<td>Low-cost preservation and observation</td>
+</tr>
+<tr>
+<td>D</td>
+<td>Low benefit with high cost or high risk</td>
+<td>Archive, retire, stop new investment</td>
+</tr>
+</tbody>
+</table>
+<p>Grades should not be assigned by the platform team alone. Asset owners, major consumers, business owners, compliance owners, and platform owners should participate for important assets. In particular, D-grade assets should usually enter a retirement observation period before final shutdown, because they may support rare but critical audit or incident-review needs.</p>
+<h3 id="2977-decision-feedback-writing-valuation-back-into-governance">29.7.7 Decision Feedback: Writing Valuation Back Into Governance<a class="headerlink" href="#2977-decision-feedback-writing-valuation-back-into-governance" title="Permanent link">&para;</a></h3>
+<p>Valuation creates impact only when written back into governance systems. In the catalog, high-value assets should receive better search ranking, clearer examples, and recommendation badges. In permissions, high-value and compliant assets can receive smoother application paths, while high-risk assets receive stronger approval, usage limits, and audit. In quality management, S and A assets should have stricter monitoring and change review than B and C assets. In cost management, D assets should trigger optimization or retirement, while high-value high-cost assets enter targeted cost-reduction plans. In planning, repeated unmet searches should suggest new common assets, while persistent low-value high-cost assets should challenge past data-construction priorities.</p>
+<p>Ordinary monitoring asks what happened. Valuation also asks where resources should go next.</p>
+<h3 id="2978-engineering-checklist">29.7.8 Engineering Checklist<a class="headerlink" href="#2978-engineering-checklist" title="Permanent link">&para;</a></h3>
+<p>Table 29-8 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 29-8: Data valuation engineering checklist</em></p>
+<table>
+<thead>
+<tr>
+<th>Check item</th>
+<th>Passing standard</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Asset registration</td>
+<td>Key assets have unique ID, owner, source, compliance status, and version</td>
+</tr>
+<tr>
+<td>Usage collection</td>
+<td>At least one reuse event type can be collected automatically from training, RAG, evaluation, or reporting</td>
+</tr>
+<tr>
+<td>Benefit estimation</td>
+<td>Key assets have benefit proxies and confidence notes</td>
+</tr>
+<tr>
+<td>Cost aggregation</td>
+<td>One-time, maintenance, and reducible costs are separated</td>
+</tr>
+<tr>
+<td>Risk records</td>
+<td>Licensing, privacy, freshness, and quality risks are recorded</td>
+</tr>
+<tr>
+<td>Value grading</td>
+<td>Key assets are graded S/A/B/C/D or similar</td>
+</tr>
+<tr>
+<td>Decision feedback</td>
+<td>Results affect catalog recommendation, maintenance priority, or retirement plans</td>
+</tr>
+<tr>
+<td>Periodic review</td>
+<td>High-value and high-risk assets have a defined review cadence</td>
+</tr>
+</tbody>
+</table>
+<p>Early pilots should focus on 10 to 20 high-reuse, high-cost, high-risk, or disputed assets rather than trying to cover everything. These assets best test whether valuation actually improves decisions. After the pilot loop is validated, it can be expanded gradually to more domains.</p>
+<h3 id="2979-section-summary">29.7.9 Section Summary<a class="headerlink" href="#2979-section-summary" title="Permanent link">&para;</a></h3>
+<p>This section turned the valuation method into an engineering process. A practical data valuation pipeline should start with asset registration, pass through usage collection, benefit estimation, cost aggregation, and value scoring, and finally feed results back into catalog, permission, quality, cost, and planning decisions. The key is not exact monetary value on day one, but continuous accumulation of reviewable value facts. With asset registration tables, reuse event logs, confidence levels, cost allocation rules, and grading mechanisms, data value becomes a governable object. Once the pipeline runs stably, data reuse is no longer only spontaneous behavior among teams; it becomes an organizational capability that the platform can observe, incentivize, and optimize.</p>
+<h2 id="298-organizational-collaboration-governance-and-anti-patterns">29.8 Organizational Collaboration, Governance, and Anti-Patterns<a class="headerlink" href="#298-organizational-collaboration-governance-and-anti-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="2981-data-value-cannot-be-defined-by-one-team-alone">29.8.1 Data Value Cannot Be Defined by One Team Alone<a class="headerlink" href="#2981-data-value-cannot-be-defined-by-one-team-alone" title="Permanent link">&para;</a></h3>
+<p>Data valuation may look like the data team's job, but in reality it must be completed by multiple roles together.</p>
+<p>Data teams understand production, but not always business benefit. Business teams understand outcomes, but not always lineage, quality, and compliance. Algorithm teams understand model effects, but not always acquisition and maintenance cost. Compliance teams understand risk, but not always downstream reuse.</p>
+<p>If any one role defines value alone, the judgment becomes partial. Data teams may overvalue well-governed data nobody uses. Business teams may overvalue data that improves a short-term metric but is not sustainable. Algorithm teams may overvalue data that improves offline metrics but cannot be deployed compliantly. Compliance teams may undervalue data that can be safely reused after sufficient governance.</p>
+<p>Mature value governance therefore needs cross-role collaboration. It does not have to be complicated; it can start with a monthly data asset review focused only on assets with meaningful changes: fast-growing reuse, rising maintenance cost, changed compliance status, long-term nonuse with high cost, or new entry into a core production path. The input is valuation-pipeline facts. The output must be concrete governance action, so the meeting does not become general discussion.</p>
+<h3 id="2982-raci-clarifying-responsibility-for-value-decisions">29.8.2 RACI: Clarifying Responsibility for Value Decisions<a class="headerlink" href="#2982-raci-clarifying-responsibility-for-value-decisions" title="Permanent link">&para;</a></h3>
+<p>RACI stands for Responsible, Accountable, Consulted, and Informed. It reduces ambiguity in value governance.</p>
+<p>Table 29-9 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 29-9: Example RACI for data value governance</em></p>
+<table>
+<thead>
+<tr>
+<th>Work item</th>
+<th>R</th>
+<th>A</th>
+<th>C</th>
+<th>I</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Asset registration</td>
+<td>Data owner</td>
+<td>Data domain lead</td>
+<td>Platform team, compliance team</td>
+<td>Downstream consumers</td>
+</tr>
+<tr>
+<td>Usage collection</td>
+<td>Platform team</td>
+<td>Data platform lead</td>
+<td>Algorithm team, application team</td>
+<td>Data owner</td>
+</tr>
+<tr>
+<td>Benefit estimation</td>
+<td>Downstream consumers</td>
+<td>Business owner</td>
+<td>Data owner, algorithm team</td>
+<td>Platform team</td>
+</tr>
+<tr>
+<td>Cost aggregation</td>
+<td>Platform team</td>
+<td>Data platform lead</td>
+<td>Finance team, data owner</td>
+<td>Business owner</td>
+</tr>
+<tr>
+<td>Risk assessment</td>
+<td>Compliance team</td>
+<td>Compliance lead</td>
+<td>Data owner, business team</td>
+<td>Platform team</td>
+</tr>
+<tr>
+<td>Value grading</td>
+<td>Data governance committee</td>
+<td>Data lead</td>
+<td>Business, algorithm, compliance, platform</td>
+<td>Related teams</td>
+</tr>
+<tr>
+<td>Retirement decision</td>
+<td>Data owner</td>
+<td>Data domain lead</td>
+<td>Downstream consumers, compliance team</td>
+<td>Platform team</td>
+</tr>
+</tbody>
+</table>
+<p>The table is not universal; each organization can adjust it to its structure. The important point is that every action has an accountable owner. Without an accountable owner, valuation remains at the level of "recommendation." With one, the results can enter budgeting, scheduling, permission, maintenance, and retirement processes.</p>
+<h3 id="2983-incentives-making-reuse-more-attractive-than-rebuilding">29.8.3 Incentives: Making Reuse More Attractive Than Rebuilding<a class="headerlink" href="#2983-incentives-making-reuse-more-attractive-than-rebuilding" title="Permanent link">&para;</a></h3>
+<p>Reuse often loses to rebuilding because incentives point the wrong way. Reusing an asset may require communication, permission requests, contract reading, and field adaptation. Building a private copy can look faster in the short term. Teams are often rewarded for new delivery, not for avoiding duplicate construction. Asset owners carry maintenance responsibility but may not see credit for downstream reuse.</p>
+<p>A useful incentive mechanism makes reuse benefits visible to both producers and consumers. Producers should see how many downstream teams reuse their assets, how much duplicate construction cost was avoided, and which key scenarios were supported. This can become evidence for data-team performance and resource requests. Consumers should see the development, labeling, review, and maintenance cost they avoided by reusing existing assets. This turns reuse from a "cumbersome process" into a provable efficiency gain.</p>
+<p>The platform can lower friction by showing "which projects already use this asset," quality grade, compliance status, example queries, and recommended use in the data catalog. For high-value assets, it can also provide standard SDKs, example notebooks, RAG integration templates, evaluation scripts, and data-contract change notifications. Data value is amplified continuously only when reuse is easier, more visible, and more recognized than rebuilding.</p>
+<h3 id="2984-anti-pattern-1-valuation-without-governance">29.8.4 Anti-Pattern 1: Valuation Without Governance<a class="headerlink" href="#2984-anti-pattern-1-valuation-without-governance" title="Permanent link">&para;</a></h3>
+<p>The first anti-pattern is building metrics, dashboards, and scoring models without connecting them to action. High-value assets receive no better maintenance, low-value assets are not downgraded, high-risk assets are not restricted, and negative assets are not retired. The system becomes another dashboard no one uses.</p>
+<p>Avoid this by binding every grade to actions, every action to an owner, and every owner to a deadline. For example, S-grade assets require quality monitoring and change notification; D-grade assets require retirement assessment within one review cycle; high-risk assets require compliance review before entering a new reuse path.</p>
+<h3 id="2985-anti-pattern-2-overcomplicated-scoring-models">29.8.5 Anti-Pattern 2: Overcomplicated Scoring Models<a class="headerlink" href="#2985-anti-pattern-2-overcomplicated-scoring-models" title="Permanent link">&para;</a></h3>
+<p>Some organizations begin with dozens of indicators, complex weights, and predictive models. The model looks sophisticated, but inputs are unreliable and weights lack consensus. The result is hard to explain and hard to trust.</p>
+<p>Early scoring should be simple and explainable. A five-factor score using number of reuse paths, number of key scenarios, annual maintenance cost, compliance risk, and quality grade is often enough. More complex models can come later. Human review remains necessary: a low-scoring asset may support rare critical audits, and a high-scoring asset may be unusable if compliance boundaries are unclear.</p>
+<p>Value scoring is decision support, not a replacement for decision-making.</p>
+<h3 id="2986-anti-pattern-3-ignoring-version-differences">29.8.6 Anti-Pattern 3: Ignoring Version Differences<a class="headerlink" href="#2986-anti-pattern-3-ignoring-version-differences" title="Permanent link">&para;</a></h3>
+<p>Data assets change. A field change, anonymization-policy update, source replacement, or label-guideline revision can change value. If valuation binds only to the asset name, it mixes benefits and risks from different versions. A RAG knowledge base may have high hit rate in v1 and worse hit rate after a v2 chunking change, and the issue may be invisible if only aggregate asset hit rate is tracked. A corpus may be internal-research-only in v1 and commercially usable in v2 after licensing expansion, so compliance reuse value would be underestimated without version distinction. Reuse logs, benefit records, risk records, and cost records should all bind to versions. Version governance is not a documentation detail; it is a prerequisite for valuation.</p>
+<h3 id="2987-anti-pattern-4-treating-compliance-as-pure-cost">29.8.7 Anti-Pattern 4: Treating Compliance as Pure Cost<a class="headerlink" href="#2987-anti-pattern-4-treating-compliance-as-pure-cost" title="Permanent link">&para;</a></h3>
+<p>Compliance review is often seen only as a delay. That misses the reuse value of clear provenance, authorization, anonymization, and use boundaries. A compliant asset can enter more downstream scenarios with less repeated review and lower expected loss. In large-model settings, where data can be solidified into model behavior, licensing boundaries, privacy protection, and traceability are even more important than in traditional analytics.</p>
+<p>Compliance status should therefore be part of the value metric system. Clear compliance is not just a cost; it is a value multiplier.</p>
+<p>Especially in large-model settings, once data enters training or post-training, it may be solidified into model capabilities. This makes authorization boundaries, privacy protection, and traceability more important than in traditional analytics. Assets with clear compliance should be explicitly marked in the catalog and recommended first for suitable downstream scenarios.</p>
+<h3 id="2988-anti-pattern-5-undervaluing-retirement">29.8.8 Anti-Pattern 5: Undervaluing Retirement<a class="headerlink" href="#2988-anti-pattern-5-undervaluing-retirement" title="Permanent link">&para;</a></h3>
+<p>Organizations like discussing new data construction and avoid discussing retirement. But retiring low-value high-cost assets is value creation. It saves storage and compute, reduces monitoring and review burden, lowers misuse risk, and makes catalogs easier to navigate.</p>
+<p>Retirement must be orderly. It should include impact analysis, downstream notification, an observation period, archive strategy, and recovery plan. Retirement is not merely deletion; it is controlled removal from production-grade dependency.</p>
+<h3 id="2989-rollout-paths-for-different-maturity-levels">29.8.9 Rollout Paths for Different Maturity Levels<a class="headerlink" href="#2989-rollout-paths-for-different-maturity-levels" title="Permanent link">&para;</a></h3>
+<p>Organizations at different maturity levels should proceed differently:</p>
+<ul>
+<li><strong>Early stage: make assets visible.</strong> Build registration, owner assignment, and basic reuse records. Do not chase fine-grained monetization first.</li>
+<li><strong>Middle stage: make assets comparable.</strong> Add unified grades, cost aggregation, and review mechanisms so teams can prioritize governance.</li>
+<li><strong>Advanced stage: optimize the portfolio.</strong> Introduce benefit attribution, online experiments, automatic cost allocation, portfolio optimization, and cross-domain reuse recommendation.</li>
+</ul>
+<p>The stages can be summarized as visible, comparable, and optimizable. Rollout should not be packaged as one large platform transformation. Start with one domain, a few high-frequency assets, and real downstream consumers. Run the registration, collection, evaluation, review, and action loop. Then turn successful fields, metrics, and workflows into platform capability.</p>
+<p>This incremental approach lets the organization see concrete benefits early, such as reducing duplicate construction, discovering unmaintained critical dependencies, identifying high-cost low-benefit assets, or promoting a dataset that once served only one scenario into a shared asset. Value governance wins continued investment only by repeatedly producing these visible small wins.</p>
+<p>Data valuation maturity is therefore not created by a one-time policy release. It forms through repeated reviews, calibration, and organizational learning. Every reuse record, retirement decision, and cost attribution step moves the organization closer to managing data assets with facts.</p>
+<h3 id="29810-section-summary">29.8.10 Section Summary<a class="headerlink" href="#29810-section-summary" title="Permanent link">&para;</a></h3>
+<p>Data value governance is organizational, not merely analytical. It requires shared judgment across data, business, algorithm, platform, finance, and compliance roles. RACI clarifies responsibility, incentives make reuse more attractive than rebuilding, and retirement keeps the portfolio healthy. This section also discussed five anti-patterns: valuation without governance, overcomplicated scoring models, ignoring version differences, treating compliance as pure cost, and undervaluing retirement. Their common root is treating valuation as a set of metrics rather than as a governance mechanism that changes organizational behavior. Valuation closes the loop only when it affects catalog ranking, access approval, quality monitoring, budget allocation, and asset retirement.</p>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter explained how to value data scientifically and amplify value through deliberate reuse.</p>
+<p>Data value is often misjudged because teams substitute easy proxies for real value: bytes for value, spending for output, local model gain for asset value, and model metrics for business results. Research on scaling laws, compute-optimal training, deduplication, pruning, Data Shapley, and evaluation reliability shows that value depends on information density, quality, relevance, and comparable contribution, not simply on size or cost (Kaplan et al. 2020; Hoffmann et al. 2022; Lee et al. 2022; Ghorbani and Zou 2019).</p>
+<p>The chapter built a multidimensional metric system covering reuse rate, coverage, training gain, retrieval hits, labeling savings, risk reduction, maintenance cost, and net value. It then showed how one data asset can be reused across pre-training, post-training, RAG, evaluation, and compliance, with benefits recorded and attributed back through catalogs, lineage, and contracts.</p>
+<p>The financial-domain corpus case demonstrated that valuation is practical. A corpus with about RMB 2 million in acquisition cost and RMB 600,000 in annual maintenance can create about RMB 2.5 million in annual cross-path benefit, mostly because it is reused and maintained. The cost-benefit matrix extends individual valuation into portfolio management. Asset review cards make valuation periodic.</p>
+<p>Finally, the chapter argued that valuation must be engineered and governed. Asset registration, usage collection, benefit estimation, cost aggregation, grading, and decision feedback create a sustainable valuation pipeline. RACI, reuse incentives, version governance, compliance reuse, and retirement mechanisms ensure that valuation results truly affect team behavior and resource allocation. In other words, data valuation is not a scoring sheet; it is a governance system that connects facts, metrics, responsibility, and decisions.</p>
+<p>Ultimately, data valuation and reuse aim to help an organization know its own data assets clearly: which assets deserve investment, which should be reused, and which should be retired. This continues the logic of the previous two chapters. If data catalogs solve whether data can be found and understood, and data products and contracts solve whether data can be relied on over time, then data valuation and reuse solve whether data is worth relying on and how that reliance can create the most value. From discoverable, to dependable, to measurable and value-generating, data completes its transformation from passive resource to active asset.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Brynjolfsson E, Hitt L M, Kim H H (2011) Strength in Numbers: How Does Data-Driven Decisionmaking Affect Firm Performance? Available at SSRN 1819486.</p>
+<p>Fleckenstein M, Obaidi A, Tryfona N (2023) A Review of Data Valuation Approaches and Building and Scoring a Data Valuation Model. Harvard Data Science Review 5(1). https://doi.org/10.1162/99608f92.c18db966.</p>
+<p>Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daume III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92. https://doi.org/10.1145/3458723.</p>
+<p>Ghorbani A, Zou J (2019) Data Shapley: Equitable Valuation of Data for Machine Learning. In: Proceedings of the 36th International Conference on Machine Learning (ICML), pp 2242-2251.</p>
+<p>Gunasekar S, Zhang Y, Aneja J, Mendes C C T, Del Giorno A, Gopi S, Javaheripi M, Kauffmann P, de Rosa G, Saarikivi O, Salim A, Shah S, Behl H S, Wang X, Bubeck S, Eldan R, Kalai A T, Lee Y T, Li Y (2023) Textbooks Are All You Need. arXiv preprint arXiv:2306.11644.</p>
+<p>Hoffmann J, Borgeaud S, Mensch A, Buchatskaya E, Cai T, Rutherford E, de Las Casas D, Hendricks L A, Welbl J, Clark A, Hennigan T, Noland E, Millican K, van den Driessche G, Damoc B, Guy A, Osindero S, Simonyan K, Elsen E, Rae J W, Vinyals O, Sifre L (2022) Training Compute-Optimal Large Language Models. In: Advances in Neural Information Processing Systems 35. arXiv:2203.15556.</p>
+<p>Jia R, Dao D, Wang B, Hubis F A, Hynes N, Gurel N M, Li B, Zhang C, Song D, Spanos C J (2019) Towards Efficient Data Valuation Based on the Shapley Value. In: Proceedings of the 22nd International Conference on Artificial Intelligence and Statistics (AISTATS), pp 1167-1176.</p>
+<p>Kaplan J, McCandlish S, Henighan T, Brown T B, Chess B, Child R, Gray S, Radford A, Wu J, Amodei D (2020) Scaling Laws for Neural Language Models. arXiv preprint arXiv:2001.08361.</p>
+<p>Laney D B (2017) Infonomics: How to Monetize, Manage, and Measure Information as an Asset for Competitive Advantage. Routledge, New York.</p>
+<p>Lee K, Ippolito D, Nystrom A, Zhang C, Eck D, Callison-Burch C, Carlini N (2022) Deduplicating Training Data Makes Language Models Better. In: Proceedings of the 60th Annual Meeting of the Association for Computational Linguistics (ACL), pp 8424-8445.</p>
+<p>Lewis P, Perez E, Piktus A, Petroni F, Karpukhin V, Goyal N, Kuttler H, Lewis M, Yih W-t, Rocktaschel T, Riedel S, Kiela D (2020) Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. In: Advances in Neural Information Processing Systems 33, pp 9459-9474. arXiv:2005.11401.</p>
+<p>Moody D, Walsh P (1999) Measuring the Value of Information: An Asset Valuation Approach. In: Proceedings of the 7th European Conference on Information Systems (ECIS), pp 496-512.</p>
+<p>Northcutt C G, Athalye A, Mueller J (2021) Pervasive Label Errors in Test Sets Destabilize Machine Learning Benchmarks. In: Proceedings of the Neural Information Processing Systems Track on Datasets and Benchmarks.</p>
+<p>Pei J (2022) A Survey on Data Pricing: From Economics to Data Science. IEEE Transactions on Knowledge and Data Engineering 34(10):4586-4608. https://doi.org/10.1109/tkde.2020.3045927.</p>
+<p>Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1-15. https://doi.org/10.1145/3411764.3445518.</p>
+<p>Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503-2511.</p>
+<p>Settles B (2009) Active Learning Literature Survey. Computer Sciences Technical Report 1648, University of Wisconsin-Madison.</p>
+<p>Sorscher B, Geirhos R, Shekhar S, Ganguli S, Morcos A S (2022) Beyond Neural Scaling Laws: Beating Power Law Scaling via Data Pruning. In: Advances in Neural Information Processing Systems 35, pp 19523-19536. https://doi.org/10.52202/068431-1419.</p>
+<p>Thakur N, Reimers N, Ruckle A, Srivastava A, Gurevych I (2021) BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of Information Retrieval Models. In: Proceedings of the Neural Information Processing Systems Track on Datasets and Benchmarks.</p>
+<p>Zha D, Bhat Z P, Lai K-H, Yang F, Jiang Z, Zhong S, Hu X (2023) Data-centric Artificial Intelligence: A Survey. arXiv preprint arXiv:2303.10158.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ch28_data_productization_and_data_contracts/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Chapter 28: Data Productization and Data Contracts">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Chapter 28: Data Productization and Data Contracts
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch30_internal_data_market_and_sharing_governance/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 30: Internal Data Markets and Sharing Governance">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 30: Internal Data Markets and Sharing Governance
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

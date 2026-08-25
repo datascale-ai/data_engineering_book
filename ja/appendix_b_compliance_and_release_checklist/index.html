@@ -1,0 +1,1274 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/appendix_b_compliance_and_release_checklist/">
+      
+      
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>附录B：合规与上线检查清单 - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#b" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              附录B：合规与上线检查清单
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../appendix_b_compliance_and_release_checklist/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../en/appendix_b_compliance_and_release_checklist/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#b1" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.1 附录定位
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#b2" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.2 合规检查为什么必须前置
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#b3" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.3 数据接入前检查清单
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B.3 数据接入前检查清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#b31" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.3.1 来源与授权是第一道门
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b32" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.3.2 个人信息与敏感信息要先分级再处理
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#b4" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.4 标注、委托与第三方协作检查
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B.4 标注、委托与第三方协作检查">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#b41" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.4.1 标注平台不是天然合规边界
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b42" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.4.2 与高校合作时要特别注意成果边界
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#b5" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.5 训练与评测前检查清单
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B.5 训练与评测前检查清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#b51" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.5.1 训练集合法并不等于评测集安全
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b52-llm-judge" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.5.2 LLM judge 与自动脱敏都要进入审计表
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#b6" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.6 对外发布与公开基准检查清单
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B.6 对外发布与公开基准检查清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#b61" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.6.1 发布前至少要同时准备四类文档
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b62" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.6.2 榜单治理比“是否公开”更重要
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b63" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.6.3 对外发布前的最小签发单
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#b7" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.7 系统上线前检查清单
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B.7 系统上线前检查清单">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#b71" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.7.1 从“能跑”到“能上线”之间至少差了五层控制
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b72" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.7.2 教学上线与产品上线是两套门槛
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b73" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.7.3 教学场景专项检查清单
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b74-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.7.4 跨境、外部 API 与第三方模型调用的附加检查
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#b8" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.8 事故响应与撤回机制
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B.8 事故响应与撤回机制">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#b81" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.8.1 没有撤回机制的公开发布是高风险发布
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b82" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.8.2 最小事故台账模板
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b83" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.8.3 高风险红旗信号
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#b9" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.9 角色分工建议
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="B.9 角色分工建议">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#b91" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.9.1 一个季度一次的合规复盘，至少应该回答什么
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b92" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.9.2 样本撤回演练不应等到真实事故发生时才第一次做
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#b10" class="md-nav__link">
+    <span class="md-ellipsis">
+      B.10 本附录小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="b">附录B：合规与上线检查清单<a class="headerlink" href="#b" title="Permanent link">&para;</a></h1>
+<h2 id="b1">B.1 附录定位<a class="headerlink" href="#b1" title="Permanent link">&para;</a></h2>
+<p>本附录面向“数据集是否可以继续向下流转”的关键关口。它关心的并不是抽象意义上的合规口号，而是更具体的工程问题：<strong>某批数据能不能进入标注，能不能进入训练，能不能对外发布，能不能支撑课程实验，能不能接入线上系统。</strong></p>
+<p>在大模型数据工程中，最危险的情况通常不是某条法律条文完全没人知道，而是团队在日常推进中逐渐形成一种错觉，认为合规检查只是项目末尾补一个审批表。实际上，合规与上线检查应贯穿数据生命周期，因为来源不清、授权不明、脱敏不稳、评测污染、资源声明缺失、教学环境越权访问等问题，一旦进入后期才被发现，代价会远高于前置识别。</p>
+<p>因此，本附录提供的不是法律意见、医学建议、金融或投资建议，也不构成任何监管审批、伦理审查或上线许可。它是一套更适合工程团队执行和留痕的检查框架，目标是让技术负责人、项目经理、课程负责人和合规接口人使用同一套表述，降低跨角色沟通成本。</p>
+<p>在涉及法律、医疗、金融、未成年人、跨境数据、个人敏感信息或行业监管的场景中，读者应以所在机构的正式制度、所在司法辖区的现行法规、数据提供方合同、伦理审查要求和专业合规意见为准。在中国大陆语境下，网络安全、数据安全和个人信息保护分别需要结合《中华人民共和国网络安全法》《中华人民共和国数据安全法》和《中华人民共和国个人信息保护法》理解（National People's Congress of the People's Republic of China 2016, 2021a, 2021b）。本附录中的清单只能帮助团队提前发现需要升级评审的问题，不能替代律师、医师、金融合规人员、安全负责人或伦理委员会的专业判断。</p>
+<h2 id="b2">B.2 合规检查为什么必须前置<a class="headerlink" href="#b2" title="Permanent link">&para;</a></h2>
+<p>如果合规只在发布前做，团队最容易遇到三种高成本返工。第一种是<strong>来源返工</strong>，数据抓回来了、清洗完了，才发现原始授权并不允许模型训练或二次分发。第二种是<strong>标注返工</strong>，标注完成后才意识到敏感字段未脱敏，导致全部样本需要重做。第三种是<strong>发布返工</strong>，公开 benchmark 时才发现训练集与测试集边界不稳，或外部许可证与榜单提交规则冲突。</p>
+<p>更稳妥的做法，是把合规拆成四个关口。这个拆分也可以和风险管理框架对齐：NIST AI RMF 强调按治理、映射、度量和管理组织 AI 风险，欧盟《人工智能法案》则进一步体现了按风险等级设置义务和边界的监管思路（National Institute of Standards and Technology 2023; European Parliament and Council of the European Union 2024）。</p>
+<ol>
+<li>数据接入前的来源与授权检查。</li>
+<li>标注与加工前的敏感性与委托边界检查。</li>
+<li>训练与评测前的数据使用边界检查。</li>
+<li>对外发布与系统上线前的公开暴露检查。</li>
+</ol>
+<p>只要把这四个关口建立起来，很多本来会在项目末尾爆炸的问题，都能在更早阶段被限制在可控制范围内。</p>
+<h2 id="b3">B.3 数据接入前检查清单<a class="headerlink" href="#b3" title="Permanent link">&para;</a></h2>
+<h3 id="b31">B.3.1 来源与授权是第一道门<a class="headerlink" href="#b31" title="Permanent link">&para;</a></h3>
+<p>数据接入最先要确认的，不是“值不值得抓”，而是“能不能合法、合约上可解释地抓”。推荐至少检查表 B-1 中的字段。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">检查项</th>
+<th style="text-align: left;">需要回答的问题</th>
+<th style="text-align: left;">常见风险</th>
+<th style="text-align: left;">建议动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">来源主体</td>
+<td style="text-align: left;">数据由谁提供</td>
+<td style="text-align: left;">来源链断裂、二手转手不明</td>
+<td style="text-align: left;">保留来源说明与联系人</td>
+</tr>
+<tr>
+<td style="text-align: left;">使用许可</td>
+<td style="text-align: left;">是否允许训练、评测、再分发</td>
+<td style="text-align: left;">论文可用但商用或公开受限</td>
+<td style="text-align: left;">建立许可白名单/灰名单</td>
+</tr>
+<tr>
+<td style="text-align: left;">robots / ToS</td>
+<td style="text-align: left;">抓取是否与站点规则冲突</td>
+<td style="text-align: left;">违规抓取、后续下架风险</td>
+<td style="text-align: left;">留存规则截图与时间点</td>
+</tr>
+<tr>
+<td style="text-align: left;">地域边界</td>
+<td style="text-align: left;">是否涉及跨境或特殊行业数据</td>
+<td style="text-align: left;">传输边界不清</td>
+<td style="text-align: left;">与法务/安全接口人确认</td>
+</tr>
+<tr>
+<td style="text-align: left;">更新周期</td>
+<td style="text-align: left;">来源是否稳定变化</td>
+<td style="text-align: left;">复现时拿不到同一版本</td>
+<td style="text-align: left;">冻结抓取窗口与快照</td>
+</tr>
+</tbody>
+</table>
+<p>来源检查之所以关键，不是因为团队想“走流程”，而是因为后续所有工程动作都会放大来源问题。越靠近模型训练和公开发布，修改来源策略的成本越高。</p>
+<h3 id="b32">B.3.2 个人信息与敏感信息要先分级再处理<a class="headerlink" href="#b32" title="Permanent link">&para;</a></h3>
+<p>如果样本中可能包含姓名、联系方式、证件号码、病历、位置轨迹、未成年人信息、企业内部文档或商业秘密，团队不应急着讨论用什么模型脱敏，而应先完成信息分级。一个实用的工程分级如下：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">等级</th>
+<th style="text-align: left;">典型内容</th>
+<th style="text-align: left;">默认策略</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">L0</td>
+<td style="text-align: left;">公开、低风险、已明确授权数据</td>
+<td style="text-align: left;">可进入常规治理流程</td>
+</tr>
+<tr>
+<td style="text-align: left;">L1</td>
+<td style="text-align: left;">普通个人信息或业务字段</td>
+<td style="text-align: left;">最小化收集、脱敏后再流转</td>
+</tr>
+<tr>
+<td style="text-align: left;">L2</td>
+<td style="text-align: left;">敏感个人信息、医疗、金融、教育等</td>
+<td style="text-align: left;">需专项审批与隔离处理</td>
+</tr>
+<tr>
+<td style="text-align: left;">L3</td>
+<td style="text-align: left;">高敏、涉密、合同限制强的数据</td>
+<td style="text-align: left;">原则上不进入通用训练流程</td>
+</tr>
+</tbody>
+</table>
+<p>这一步最容易犯的错误，是把“脱敏”误解成万能通行证。很多时候，问题不在于某个字段有没有被掩码，而在于<strong>任务本身是否依赖这些敏感字段</strong>。如果任务定义离不开敏感属性，团队应优先重写任务边界，而不是幻想靠一次正则替换就能解决。</p>
+<h2 id="b4">B.4 标注、委托与第三方协作检查<a class="headerlink" href="#b4" title="Permanent link">&para;</a></h2>
+<h3 id="b41">B.4.1 标注平台不是天然合规边界<a class="headerlink" href="#b41" title="Permanent link">&para;</a></h3>
+<p>很多团队会把样本上传到外部标注平台，然后默认“平台有权限系统，所以应该没问题”。这是风险较高的认知。标注环节至少要确认四件事：</p>
+<ol>
+<li>第三方是否被明确授权接触该类数据。</li>
+<li>标注说明中是否存在越权披露的风险。</li>
+<li>标注结果是否会被再回流到其他项目。</li>
+<li>标注日志、截图和缓存是否会形成新的泄露面。</li>
+</ol>
+<p>表 B-2 给出一个可直接使用的检查框架。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">检查项</th>
+<th style="text-align: left;">需要回答的问题</th>
+<th style="text-align: left;">建议动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">委托边界</td>
+<td style="text-align: left;">谁可以看到原始样本</td>
+<td style="text-align: left;">建立角色分层与最小权限</td>
+</tr>
+<tr>
+<td style="text-align: left;">数据脱敏</td>
+<td style="text-align: left;">标注前是否完成必要处理</td>
+<td style="text-align: left;">保留脱敏版本与原始版本隔离</td>
+</tr>
+<tr>
+<td style="text-align: left;">标注说明</td>
+<td style="text-align: left;">指南里是否泄露内部信息</td>
+<td style="text-align: left;">发布前复核说明文本</td>
+</tr>
+<tr>
+<td style="text-align: left;">日志与缓存</td>
+<td style="text-align: left;">平台是否保留预览、下载缓存</td>
+<td style="text-align: left;">明确清理策略与保留周期</td>
+</tr>
+<tr>
+<td style="text-align: left;">争议样本</td>
+<td style="text-align: left;">是否会流向公开讨论区</td>
+<td style="text-align: left;">单独隔离，不外发原文</td>
+</tr>
+</tbody>
+</table>
+<h3 id="b42">B.4.2 与高校合作时要特别注意成果边界<a class="headerlink" href="#b42" title="Permanent link">&para;</a></h3>
+<p>高校合作场景中，一个常见风险是“项目化”和“论文化”边界不清。项目里允许内部使用的样本，未必允许论文附录公开；课堂演示中允许展示的页面，未必允许打包成对外数据集。最稳妥的做法，是在合作开始时就把成果边界写清：</p>
+<ul>
+<li>哪些结果只限项目内部使用。</li>
+<li>哪些统计可以论文公开但原样本不能外发。</li>
+<li>哪些数据可进入课程镜像但不得下载带走。</li>
+<li>哪些内容可以形成 benchmark，哪些只能形成内部测试集。</li>
+</ul>
+<p>如果不把这些边界写清，后续很容易出现“工程上已经做完，合约上却走不通”的尴尬局面。</p>
+<h2 id="b5">B.5 训练与评测前检查清单<a class="headerlink" href="#b5" title="Permanent link">&para;</a></h2>
+<h3 id="b51">B.5.1 训练集合法并不等于评测集安全<a class="headerlink" href="#b51" title="Permanent link">&para;</a></h3>
+<p>不少团队会把训练与评测当成同一类数据治理问题，但它们的风险不同。训练集最关心的是来源、授权、敏感性和任务适配；评测集还必须额外关注<strong>污染、隔离和比较公平性</strong>。</p>
+<p>训练与评测前建议单独确认以下问题：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">检查项</th>
+<th style="text-align: left;">训练前重点</th>
+<th style="text-align: left;">评测前重点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">来源与许可</td>
+<td style="text-align: left;">是否允许训练</td>
+<td style="text-align: left;">是否允许公开测试与榜单使用</td>
+</tr>
+<tr>
+<td style="text-align: left;">数据最小化</td>
+<td style="text-align: left;">是否保留了不必要字段</td>
+<td style="text-align: left;">是否泄露标准答案或提示</td>
+</tr>
+<tr>
+<td style="text-align: left;">版本冻结</td>
+<td style="text-align: left;">是否锁定训练版本</td>
+<td style="text-align: left;">是否锁定测试版本与脚本</td>
+</tr>
+<tr>
+<td style="text-align: left;">污染检查</td>
+<td style="text-align: left;">是否接触公开测试集</td>
+<td style="text-align: left;">是否被训练语料反向污染</td>
+</tr>
+<tr>
+<td style="text-align: left;">资源声明</td>
+<td style="text-align: left;">训练资源是否可记录</td>
+<td style="text-align: left;">提交资源条件是否可比</td>
+</tr>
+</tbody>
+</table>
+<p>尤其在开放 benchmark 场景下，评测集不是“只要质量高就行”，而是必须让外部团队相信比较条件是稳定和公正的。否则，即使榜单分数可观，也无法形成长期信任。</p>
+<h3 id="b52-llm-judge">B.5.2 LLM judge 与自动脱敏都要进入审计表<a class="headerlink" href="#b52-llm-judge" title="Permanent link">&para;</a></h3>
+<p>随着越来越多流程使用大模型做 judge、摘要、分级和脱敏，团队必须把“<strong>辅助模型本身</strong>”纳入合规视野。检查重点包括：</p>
+<ul>
+<li>使用的辅助模型是否会把输入样本发送到外部服务。</li>
+<li>服务协议是否允许保留、训练或人工审阅输入。</li>
+<li>judge 结论是否会决定正式标签或上线结论。</li>
+<li>脱敏失败样本是否会进入人工复核通道。</li>
+</ul>
+<p>这一步之所以重要，是因为技术团队很容易默认“只是内部调用一个 API”，但从治理角度看，这已经是一次新的数据暴露。</p>
+<h2 id="b6">B.6 对外发布与公开基准检查清单<a class="headerlink" href="#b6" title="Permanent link">&para;</a></h2>
+<h3 id="b61">B.6.1 发布前至少要同时准备四类文档<a class="headerlink" href="#b61" title="Permanent link">&para;</a></h3>
+<p>一个准备成熟的数据集或 benchmark，在对外发布前至少应准备以下四类文档。模型卡片的提出，正是为了把用途、限制、性能和风险以稳定格式交代清楚；数据或基准发布也应采用类似的结构化披露思路（Mitchell et al. 2019）。</p>
+<ol>
+<li>数据/基准卡片：说明任务、样本结构、split、限制。</li>
+<li>许可与使用说明：说明能做什么、不能做什么。</li>
+<li>baseline bundle：说明最低可复现基线。</li>
+<li>更新与争议处理机制：说明版本、反馈与撤回路径。</li>
+</ol>
+<p>如果只发布样本和论文链接，而没有这四类文档，外部团队很难真正安全使用，也很难在出现争议时迅速处理。</p>
+<h3 id="b62">B.6.2 榜单治理比“是否公开”更重要<a class="headerlink" href="#b62" title="Permanent link">&para;</a></h3>
+<p>很多 benchmark 失败不是因为不够公开，而是因为<strong>公开后没有治理机制</strong>。对于排行榜，建议至少明确以下规则：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">检查项</th>
+<th style="text-align: left;">需要回答的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">提交方式</td>
+<td style="text-align: left;">允许上传什么，禁止上传什么</td>
+</tr>
+<tr>
+<td style="text-align: left;">资源声明</td>
+<td style="text-align: left;">是否要求报告模型规模、推理预算、检索资源</td>
+</tr>
+<tr>
+<td style="text-align: left;">人工复核</td>
+<td style="text-align: left;">哪些情况会触发人工审查</td>
+</tr>
+<tr>
+<td style="text-align: left;">撤榜规则</td>
+<td style="text-align: left;">发现污染、作弊、越权访问后如何处理</td>
+</tr>
+<tr>
+<td style="text-align: left;">教学隔离</td>
+<td style="text-align: left;">课程版本是否与公开榜单版本区分</td>
+</tr>
+</tbody>
+</table>
+<p>只有把这些规则写清，公开榜单才不会在短时间内从“展示平台”退化成“口径混乱的比分墙”。</p>
+<h3 id="b63">B.6.3 对外发布前的最小签发单<a class="headerlink" href="#b63" title="Permanent link">&para;</a></h3>
+<p>为了避免临发布时口头确认太多、留痕太少，建议每一次正式公开发布都至少形成一张签发单。它不必复杂，但应能回答最关键的问题。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">字段</th>
+<th style="text-align: left;">需要填写的内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">asset_name</td>
+<td style="text-align: left;">数据集、benchmark 或课程镜像名称</td>
+</tr>
+<tr>
+<td style="text-align: left;">release_version</td>
+<td style="text-align: left;">本次对外版本号</td>
+</tr>
+<tr>
+<td style="text-align: left;">owner</td>
+<td style="text-align: left;">数据 owner 与评测 owner</td>
+</tr>
+<tr>
+<td style="text-align: left;">source_check</td>
+<td style="text-align: left;">来源与许可是否复核完成</td>
+</tr>
+<tr>
+<td style="text-align: left;">privacy_check</td>
+<td style="text-align: left;">脱敏与敏感信息检查是否完成</td>
+</tr>
+<tr>
+<td style="text-align: left;">contamination_check</td>
+<td style="text-align: left;">训练/测试污染检查是否完成</td>
+</tr>
+<tr>
+<td style="text-align: left;">baseline_ready</td>
+<td style="text-align: left;">baseline bundle 是否齐全</td>
+</tr>
+<tr>
+<td style="text-align: left;">rollback_path</td>
+<td style="text-align: left;">出现问题后的撤回路径</td>
+</tr>
+<tr>
+<td style="text-align: left;">public_notice</td>
+<td style="text-align: left;">发布公告或说明文档位置</td>
+</tr>
+</tbody>
+</table>
+<p>签发单的价值，在于它把“谁拍板”和“基于什么拍板”留了下来。后续一旦出现争议，这张单据会比散落在聊天记录里的确认更有组织价值。</p>
+<h2 id="b7">B.7 系统上线前检查清单<a class="headerlink" href="#b7" title="Permanent link">&para;</a></h2>
+<h3 id="b71">B.7.1 从“能跑”到“能上线”之间至少差了五层控制<a class="headerlink" href="#b71" title="Permanent link">&para;</a></h3>
+<p>模型或数据流程在实验环境可验证，并不代表可以上线。上线前至少要补齐五层控制：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">控制层</th>
+<th style="text-align: left;">关键问题</th>
+<th style="text-align: left;">典型检查点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">权限层</td>
+<td style="text-align: left;">谁能访问样本与结果</td>
+<td style="text-align: left;">RBAC、最小权限、审计日志</td>
+</tr>
+<tr>
+<td style="text-align: left;">隔离层</td>
+<td style="text-align: left;">测试与生产是否隔离</td>
+<td style="text-align: left;">环境分区、密钥管理</td>
+</tr>
+<tr>
+<td style="text-align: left;">内容层</td>
+<td style="text-align: left;">是否存在违规输出或敏感回显</td>
+<td style="text-align: left;">红线样本、拒答策略</td>
+</tr>
+<tr>
+<td style="text-align: left;">回滚层</td>
+<td style="text-align: left;">事故发生后能否快速停用</td>
+<td style="text-align: left;">版本锁定、灰度开关</td>
+</tr>
+<tr>
+<td style="text-align: left;">记录层</td>
+<td style="text-align: left;">事后能否复盘</td>
+<td style="text-align: left;">请求日志、评测快照、事件台账</td>
+</tr>
+</tbody>
+</table>
+<p>对大模型应用来说，很多事故并不是“模型突然变坏”，而是数据、提示、检索源或评测口径发生了变化，却没有被上线控制接住。</p>
+<h3 id="b72">B.7.2 教学上线与产品上线是两套门槛<a class="headerlink" href="#b72" title="Permanent link">&para;</a></h3>
+<p>课程实验通常允许更多可解释过程、更多日志和更慢的响应，但产品环境通常不能。因此，不应把课程镜像直接当成线上系统，也不应把线上审计环境直接暴露给课程实践。建议分别维护：</p>
+<ul>
+<li>教学镜像版本</li>
+<li>研究复现实验版本</li>
+<li>线上服务版本</li>
+</ul>
+<p>这三者可以共用数据资产，但不应共用同一套暴露面与权限边界。</p>
+<h3 id="b73">B.7.3 教学场景专项检查清单<a class="headerlink" href="#b73" title="Permanent link">&para;</a></h3>
+<p>高校合作和课程实验场景往往被误判为“风险较低”，因为系统使用人数有限、周期也较短。但事实上，教学场景有自己独特的高风险点，例如账号共享、实验报告粘贴原始样本、课堂录屏扩散、学期中环境热更新导致答案漂移等。</p>
+<p>因此，课程上线前建议额外补一张教学专项清单：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">检查项</th>
+<th style="text-align: left;">需要回答的问题</th>
+<th style="text-align: left;">建议动作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">版本冻结</td>
+<td style="text-align: left;">学期内版本是否保持稳定</td>
+<td style="text-align: left;">开课前锁定镜像</td>
+</tr>
+<tr>
+<td style="text-align: left;">权限范围</td>
+<td style="text-align: left;">学生能否下载原始数据</td>
+<td style="text-align: left;">默认关闭原始层下载</td>
+</tr>
+<tr>
+<td style="text-align: left;">样本展示</td>
+<td style="text-align: left;">课堂截图是否可能泄露敏感内容</td>
+<td style="text-align: left;">使用教学脱敏样本</td>
+</tr>
+<tr>
+<td style="text-align: left;">作业回收</td>
+<td style="text-align: left;">学生提交物是否会包含原始数据</td>
+<td style="text-align: left;">增加提交规范与自动扫描</td>
+</tr>
+<tr>
+<td style="text-align: left;">助教运维</td>
+<td style="text-align: left;">谁负责答疑和异常处理</td>
+<td style="text-align: left;">建立值班与升级路径</td>
+</tr>
+</tbody>
+</table>
+<p>这张清单和产品上线清单并不是谁替代谁的关系，而是分别回答“能不能安全教学”和“能不能安全服务”这两类不同问题。</p>
+<h3 id="b74-api">B.7.4 跨境、外部 API 与第三方模型调用的附加检查<a class="headerlink" href="#b74-api" title="Permanent link">&para;</a></h3>
+<p>随着越来越多流程依赖外部基础模型、云 OCR、云存储或 SaaS 标注平台，团队还需要额外识别“<strong>样本是否离开了原有控制域</strong>”。这类检查至少应覆盖：</p>
+<ol>
+<li>调用链里是否存在将原文、图像、音频发送给外部服务的动作。</li>
+<li>这些服务是否保留日志、缓存或训练使用权。</li>
+<li>是否存在地域跨境、第三方转处理或多级分包。</li>
+<li>如果外部服务中断或条款变更，内部是否有降级方案。</li>
+</ol>
+<p>很多系统上线后才暴露的问题，并不是模型效果，而是基础调用链中藏着团队自己都没有完全意识到的数据暴露点。把这类调用前置列入检查，是第十二篇“开放维护”和本附录“上线审计”之间最值得打通的一条链路。</p>
+<h2 id="b8">B.8 事故响应与撤回机制<a class="headerlink" href="#b8" title="Permanent link">&para;</a></h2>
+<h3 id="b81">B.8.1 没有撤回机制的公开发布是高风险发布<a class="headerlink" href="#b81" title="Permanent link">&para;</a></h3>
+<p>只要数据集、榜单或课程资源已经公开，就必须假设未来可能出现以下情况：</p>
+<ul>
+<li>外部报告样本侵权或敏感信息泄露。</li>
+<li>发现训练/测试污染。</li>
+<li>baseline 代码存在严重错误。</li>
+<li>榜单出现异常提交或可疑作弊。</li>
+<li>教学镜像中存在越权访问路径。</li>
+</ul>
+<p>因此，公开资产必须配套撤回与修复流程。建议至少明确以下动作链：</p>
+<ol>
+<li>受理入口：谁接收问题报告。</li>
+<li>分级机制：是否需要立即下线。</li>
+<li>临时措施：隐藏下载、冻结榜单、停用镜像。</li>
+<li>调查复盘：确认范围、原因、补救动作。</li>
+<li>正式公告：发布修订说明与版本变更。</li>
+</ol>
+<h3 id="b82">B.8.2 最小事故台账模板<a class="headerlink" href="#b82" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">字段</th>
+<th style="text-align: left;">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">incident_id</td>
+<td style="text-align: left;">事故编号</td>
+</tr>
+<tr>
+<td style="text-align: left;">reported_time</td>
+<td style="text-align: left;">首次报告时间</td>
+</tr>
+<tr>
+<td style="text-align: left;">affected_asset</td>
+<td style="text-align: left;">涉及的数据集、榜单或系统</td>
+</tr>
+<tr>
+<td style="text-align: left;">risk_level</td>
+<td style="text-align: left;">风险等级</td>
+</tr>
+<tr>
+<td style="text-align: left;">temporary_action</td>
+<td style="text-align: left;">临时处置动作</td>
+</tr>
+<tr>
+<td style="text-align: left;">root_cause</td>
+<td style="text-align: left;">根因</td>
+</tr>
+<tr>
+<td style="text-align: left;">public_notice</td>
+<td style="text-align: left;">对外公告链接或说明</td>
+</tr>
+<tr>
+<td style="text-align: left;">preventive_action</td>
+<td style="text-align: left;">后续预防措施</td>
+</tr>
+</tbody>
+</table>
+<p>事故台账制度化的意义不在于增加流程形式，而在于防止同一类问题跨学期、跨项目、跨责任人重复发生。</p>
+<h3 id="b83">B.8.3 高风险红旗信号<a class="headerlink" href="#b83" title="Permanent link">&para;</a></h3>
+<p>为了帮助团队在日常推进中快速识别问题，下面给出一组适合贴在项目面板上的“红旗信号”：</p>
+<ul>
+<li>数据来源只能追溯到个人网盘、聊天文件或二次转存链接。</li>
+<li>标注平台默认所有标注员都可见全部原始样本。</li>
+<li>教学实验直接复用生产环境或生产密钥。</li>
+<li>训练集与测试集在不同版本中被重新切分，但没有公告。</li>
+<li>公开榜单允许上传结果，却没有资源声明和撤榜规则。</li>
+<li>外部 API 会接触样本正文，但没人能说清其日志保留政策。</li>
+<li>项目负责人离开后，没有任何人能指出撤回和修复入口。</li>
+</ul>
+<p>只要出现其中两三项，就不应该继续按“常规推进”处理，而应尽快进入专项复核。</p>
+<h2 id="b9">B.9 角色分工建议<a class="headerlink" href="#b9" title="Permanent link">&para;</a></h2>
+<p>合规与上线检查最容易失效的情形，是“所有角色都知道需要执行，但没有明确责任人”。建议至少区分四类角色：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">角色</th>
+<th style="text-align: left;">主要职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">数据 owner</td>
+<td style="text-align: left;">来源、授权、版本、下线决策</td>
+</tr>
+<tr>
+<td style="text-align: left;">评测 owner</td>
+<td style="text-align: left;">测试隔离、榜单口径、baseline 复核</td>
+</tr>
+<tr>
+<td style="text-align: left;">安全/合规接口人</td>
+<td style="text-align: left;">审批边界、敏感信息处置、外部报告协调</td>
+</tr>
+<tr>
+<td style="text-align: left;">教学 owner</td>
+<td style="text-align: left;">课程镜像、学期版本、课堂使用边界</td>
+</tr>
+</tbody>
+</table>
+<p>这四类角色未必要对应四个独立岗位，但职责本身不能缺位。只有角色清晰，清单才不会变成形式主义。</p>
+<h3 id="b91">B.9.1 一个季度一次的合规复盘，至少应该回答什么<a class="headerlink" href="#b91" title="Permanent link">&para;</a></h3>
+<p>如果项目处于长期运营状态，建议每季度做一次轻量合规复盘。它不需要像事故复盘那样沉重，但至少要回答下面五个问题：</p>
+<ol>
+<li>本季度新增的数据来源中，是否有任何许可边界发生变化。</li>
+<li>本季度是否新增了外部服务调用链，且已经完成留痕。</li>
+<li>本季度是否出现过样本撤回、脱敏补丁或榜单争议。</li>
+<li>本季度教学版本、研究版本和公开版本是否仍然保持清晰隔离。</li>
+<li>下一季度最值得优先补的，是来源治理、权限治理，还是撤回流程。</li>
+</ol>
+<p>这样做的好处是，合规检查就不再是“最后一刻拦项目”，而会真正变成帮助项目稳定演进的一部分。</p>
+<h3 id="b92">B.9.2 样本撤回演练不应等到真实事故发生时才第一次做<a class="headerlink" href="#b92" title="Permanent link">&para;</a></h3>
+<p>很多团队会认真写撤回机制，却从未真正演练过“如果明天有人要求下线一批样本，我们能不能在半天内定位、冻结、公告并重建受影响版本”。这和只写灾备方案却从不演练，本质上是同一类问题。只要没有实际演练，团队就很难知道撤回链路中到底卡在数据定位、版本依赖、教学镜像、榜单冻结，还是外部通知流程。</p>
+<p>因此，建议每个学期或每个季度至少做一次小规模撤回演练，哪怕只是选取一组模拟样本，也要完整走一遍流程：</p>
+<ol>
+<li>确认样本定位是否能从发布版本反查到原始来源与中间版本。</li>
+<li>确认训练集、评测集、教学镜像和公开下载包是否都能识别受影响范围。</li>
+<li>确认榜单、baseline 与课程实验是否需要同步冻结或补公告。</li>
+<li>确认外部问题受理人与内部责任人之间是否存在沟通断点。</li>
+<li>确认修订后版本能否快速重新生成并保留历史说明。</li>
+</ol>
+<p>这类演练的意义并不只是为了应对极端情况。它还能反向暴露一个系统是否真的具备“可治理”的资产结构。如果某个数据集一旦要求撤回样本，团队连受影响版本都找不全，那么问题就不只是应急能力不足，而是整个版本治理链条还没有真正建立起来。</p>
+<h2 id="b10">B.10 本附录小结<a class="headerlink" href="#b10" title="Permanent link">&para;</a></h2>
+<p>本附录把合规与上线问题翻译成了一套工程团队更容易执行的清单。核心结论有三条。</p>
+<p>第一，合规不是项目末尾的附加步骤，而是数据生命周期中的连续关口。<br />
+第二，训练、评测、公开发布、课程复现和产品上线的边界并不相同，必须分别检查。<br />
+第三，真正能降低长期风险的，不只是“一次审批通过”，而是来源留痕、版本冻结、事故撤回和角色分工的制度化。</p>
+<h2 id="_1">参考文献<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>National People's Congress of the People's Republic of China (2016) Cybersecurity Law of the People's Republic of China. http://www.npc.gov.cn/zgrdw/npc/xinwen/2016-11/07/content_2001605.htm.</p>
+<p>National People's Congress of the People's Republic of China (2021a) Data Security Law of the People's Republic of China. https://www.cac.gov.cn/2021-06/11/c_1624994566919140.htm.</p>
+<p>National People's Congress of the People's Republic of China (2021b) Personal Information Protection Law of the People's Republic of China. http://www.npc.gov.cn/npc/c2/c30834/202108/t20210820_313088.html.</p>
+<p>National Institute of Standards and Technology (2023) AI Risk Management Framework (AI RMF 1.0). https://www.nist.gov/itl/ai-risk-management-framework.</p>
+<p>European Parliament and Council of the European Union (2024) Regulation (EU) 2024/1689 laying down harmonised rules on artificial intelligence (Artificial Intelligence Act). https://eur-lex.europa.eu/eli/reg/2024/1689/oj.</p>
+<p>Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229. https://doi.org/10.1145/3287560.3287596.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

@@ -1,0 +1,4154 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part2/ch06_tokenization_loading/">
+      
+      
+        <link rel="prev" href="../ch05_cleaning_dedup/">
+      
+      
+        <link rel="next" href="../ch07_data_operations/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 6: Tokenization, Serialization, and Efficient Data Loading - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-6-tokenization-serialization-and-efficient-data-loading" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part2/ch06_tokenization_loading/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part2/ch06_tokenization_loading/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opening-a-training-incident-where-the-data-pipeline-was-slower-than-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Opening: A Training Incident Where "The Data Pipeline Was Slower Than the Model"
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#61-why-the-input-pipeline-determines-the-training-ceiling" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 Why the Input Pipeline Determines the Training Ceiling
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.1 Why the Input Pipeline Determines the Training Ceiling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#611-the-hidden-cost-of-gpu-idle-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1.1 The Hidden Cost of GPU Idle Time
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#612-end-to-end-latency-breakdown-from-data-format-to-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1.2 End-to-End Latency Breakdown from Data Format to GPU
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#62-tokenization-serialization-and-data-format-trade-offs" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2 Tokenization, Serialization, and Data Format Trade-offs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.2 Tokenization, Serialization, and Data Format Trade-offs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#621-tokenization-algorithms-engineering-selection-among-three-major-paradigms" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2.1 Tokenization Algorithms: Engineering Selection Among Three Major Paradigms
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#622-vocabulary-design-and-domain-adaptation-more-than-good-enough" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2.2 Vocabulary Design and Domain Adaptation: More Than "Good Enough"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#623-data-formats-and-serialization-a-performance-defining-choice" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2.3 Data Formats and Serialization: A Performance-Defining Choice
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#624-sharding-strategy-and-global-shuffle" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2.4 Sharding Strategy and Global Shuffle
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#63-packing-mixing-and-curriculum-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3 Packing, Mixing, and Curriculum Strategies
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.3 Packing, Mixing, and Curriculum Strategies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#631-sequence-packing-eliminating-the-compute-tax-of-padding" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3.1 Sequence Packing: Eliminating the "Compute Tax" of Padding
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#632-multi-source-mixing-temperature-weighting-and-domain-ratio-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3.2 Multi-Source Mixing: Temperature Weighting and Domain Ratio Control
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#633-curriculum-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3.3 Curriculum Learning
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#64-efficient-loading-caching-and-throughput-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4 Efficient Loading, Caching, and Throughput Diagnostics
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.4 Efficient Loading, Caching, and Throughput Diagnostics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#641-key-dataloader-configuration-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4.1 Key DataLoader Configuration Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#642-throughput-bottleneck-diagnostics-a-three-step-systematic-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4.2 Throughput Bottleneck Diagnostics: A Three-Step Systematic Approach
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#643-pre-training-smoke-test-30-minute-automated-verification-before-launch" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4.3 Pre-Training Smoke Test: 30-Minute Automated Verification Before Launch
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#644-multi-node-distributed-data-reading-avoiding-data-silos" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4.4 Multi-Node Distributed Data Reading: Avoiding "Data Silos"
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#65-engineering-case-studies-and-performance-optimization-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.5 Engineering Case Studies and Performance Optimization Checklist
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.5 Engineering Case Studies and Performance Optimization Checklist">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#figures-and-case-studies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Figures and Case Studies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-study-migration-benefits-from-jsonl-online-tokenization-to-mds-offline-tokenization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case Study: Migration Benefits from JSONL + Online Tokenization to MDS + Offline Tokenization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#651-input-pipeline-optimization-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.5.1 Input Pipeline Optimization Checklist
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opening-a-training-incident-where-the-data-pipeline-was-slower-than-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Opening: A Training Incident Where "The Data Pipeline Was Slower Than the Model"
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#61-why-the-input-pipeline-determines-the-training-ceiling" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1 Why the Input Pipeline Determines the Training Ceiling
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.1 Why the Input Pipeline Determines the Training Ceiling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#611-the-hidden-cost-of-gpu-idle-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1.1 The Hidden Cost of GPU Idle Time
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#612-end-to-end-latency-breakdown-from-data-format-to-gpu" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.1.2 End-to-End Latency Breakdown from Data Format to GPU
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#62-tokenization-serialization-and-data-format-trade-offs" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2 Tokenization, Serialization, and Data Format Trade-offs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.2 Tokenization, Serialization, and Data Format Trade-offs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#621-tokenization-algorithms-engineering-selection-among-three-major-paradigms" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2.1 Tokenization Algorithms: Engineering Selection Among Three Major Paradigms
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#622-vocabulary-design-and-domain-adaptation-more-than-good-enough" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2.2 Vocabulary Design and Domain Adaptation: More Than "Good Enough"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#623-data-formats-and-serialization-a-performance-defining-choice" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2.3 Data Formats and Serialization: A Performance-Defining Choice
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#624-sharding-strategy-and-global-shuffle" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.2.4 Sharding Strategy and Global Shuffle
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#63-packing-mixing-and-curriculum-strategies" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3 Packing, Mixing, and Curriculum Strategies
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.3 Packing, Mixing, and Curriculum Strategies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#631-sequence-packing-eliminating-the-compute-tax-of-padding" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3.1 Sequence Packing: Eliminating the "Compute Tax" of Padding
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#632-multi-source-mixing-temperature-weighting-and-domain-ratio-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3.2 Multi-Source Mixing: Temperature Weighting and Domain Ratio Control
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#633-curriculum-learning" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.3.3 Curriculum Learning
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#64-efficient-loading-caching-and-throughput-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4 Efficient Loading, Caching, and Throughput Diagnostics
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.4 Efficient Loading, Caching, and Throughput Diagnostics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#641-key-dataloader-configuration-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4.1 Key DataLoader Configuration Parameters
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#642-throughput-bottleneck-diagnostics-a-three-step-systematic-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4.2 Throughput Bottleneck Diagnostics: A Three-Step Systematic Approach
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#643-pre-training-smoke-test-30-minute-automated-verification-before-launch" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4.3 Pre-Training Smoke Test: 30-Minute Automated Verification Before Launch
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#644-multi-node-distributed-data-reading-avoiding-data-silos" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.4.4 Multi-Node Distributed Data Reading: Avoiding "Data Silos"
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#65-engineering-case-studies-and-performance-optimization-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.5 Engineering Case Studies and Performance Optimization Checklist
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6.5 Engineering Case Studies and Performance Optimization Checklist">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#figures-and-case-studies" class="md-nav__link">
+    <span class="md-ellipsis">
+      Figures and Case Studies
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#case-study-migration-benefits-from-jsonl-online-tokenization-to-mds-offline-tokenization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case Study: Migration Benefits from JSONL + Online Tokenization to MDS + Offline Tokenization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#651-input-pipeline-optimization-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      6.5.1 Input Pipeline Optimization Checklist
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-6-tokenization-serialization-and-efficient-data-loading">Chapter 6: Tokenization, Serialization, and Efficient Data Loading<a class="headerlink" href="#chapter-6-tokenization-serialization-and-efficient-data-loading" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Ke Wang; Fan Yu; Jun Yu</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>This chapter discusses how cleaned text is transformed into an input pipeline suitable for efficient large-model training, covering tokenizer design, data format selection, sequence packing, multi-source mixing, DataLoader configuration, caching strategies, and distributed data reading. The chapter opens with an anonymized composite case study illustrating how input/output (I/O) bottlenecks cause graphics processing unit (GPU) idle time and wasted training cost. It then compares the engineering characteristics of Byte Pair Encoding (BPE), WordPiece, and SentencePiece, and analyzes the effects of vocabulary size, domain vocabulary extension, and multilingual balancing on training efficiency and capability distribution. The serialization section compares formats such as JavaScript Object Notation Lines (JSONL), Parquet, Arrow, Mosaic Data Shard (MDS), WebDataset, and memory-mapped files (memmap), emphasizing the role of offline tokenization and binary sharding on throughput. The latter half of the chapter further discusses packing, temperature sampling, curriculum learning, and smoke testing, and provides rank-aware configuration for multi-node data reading. Readers should be able to design stable, diagnosable, and cost-controlled input pipelines for pretraining tasks at different scales.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>Tokenization; Tokenizer; Serialization; DataLoader; MDS; Packing; Data Mixing; Throughput Diagnostics</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Be able to compare the engineering trade-offs of BPE, WordPiece, and SentencePiece in large-model input pipelines.</li>
+<li>Be able to explain the effects of vocabulary size, domain vocabulary extension, and multilingual sampling on model training.</li>
+<li>Be able to select data formats, sharding strategies, and offline tokenization schemes appropriate for pretraining scale.</li>
+<li>Be able to locate input bottlenecks through smoke tests, GPU utilization monitoring, I/O monitoring, and profilers.</li>
+<li>Be able to design multi-node distributed data reading solutions that avoid duplicate reads, NFS bottlenecks, and global shuffle failures.</li>
+</ul>
+<h2 id="opening-a-training-incident-where-the-data-pipeline-was-slower-than-the-model">Opening: A Training Incident Where "The Data Pipeline Was Slower Than the Model"<a class="headerlink" href="#opening-a-training-incident-where-the-data-pipeline-was-slower-than-the-model" title="Permanent link">&para;</a></h2>
+<p>The following is an anonymized composite case study used to illustrate the diagnostic path for input-pipeline bottlenecks; throughput and utilization should be pressure-tested on the target cluster and should not be reused across projects. When a team launched pretraining for a medium-scale base model, anomalies appeared early in training: <code>nvidia-smi</code> showed GPU utilization staying below the project baseline for a long period. Initial diagnosis suspected a model configuration issue, until an engineer opened <code>iostat</code>, DataLoader wait time, and profiler monitoring and discovered that disk I/O and online tokenization had become bottlenecks: the DataLoader could not keep up with the GPU's consumption rate.</p>
+<p>The root cause was quickly identified: the team had stored the cleaned corpus on ordinary disk arrays, with each shard being a compressed <code>.jsonl.gz</code> file, requiring the DataLoader to decompress and tokenize in real time at runtime, causing both the CPU and disk to become bottlenecks simultaneously. The team ultimately paused training, re-tokenized all data offline and serialized it into MDS format (Mosaic Data Shard), and migrated to higher-throughput storage media before GPU utilization recovered to the project baseline range.</p>
+<p>The cost of such an incident should be recalculated based on real cluster unit prices, pause policies, queue time, and reprocessing cost. More importantly, it could have been discovered entirely during the smoke-test phase before training launch.</p>
+<p>This case illustrates the central thesis of this chapter: <strong>the efficiency of the data input pipeline is one of the most underestimated engineering components in pretraining — and one with the highest cost when things go wrong.</strong> It occupies a gray zone between "data cleaning is complete" and "training has not yet started" — belonging neither to the focus of data engineering nor to the tuning scope of the training system, and as a result it is often overlooked by both sides until real compute waste forces it to be addressed.</p>
+<hr />
+<h2 id="61-why-the-input-pipeline-determines-the-training-ceiling">6.1 Why the Input Pipeline Determines the Training Ceiling<a class="headerlink" href="#61-why-the-input-pipeline-determines-the-training-ceiling" title="Permanent link">&para;</a></h2>
+<h3 id="611-the-hidden-cost-of-gpu-idle-time">6.1.1 The Hidden Cost of GPU Idle Time<a class="headerlink" href="#611-the-hidden-cost-of-gpu-idle-time" title="Permanent link">&para;</a></h3>
+<p>In large-scale pretraining scenarios, GPU cluster rental costs are typically charged by the hour, and prices fluctuate significantly with region, provider, instance specification, and procurement agreement. Under this cost structure, "GPU utilization" is no longer merely a performance metric; it is an economic metric that directly translates into financial loss. Any low utilization caused by waiting for data will extend the time required to reach the same number of effective training tokens.</p>
+<p>The more precise metric is <strong>Model FLOPS Utilization (MFU)</strong>. MFU is jointly affected by model architecture, parallel strategy, communication topology, batch size, mixed precision, and kernel implementation, and cannot be judged with a single universal threshold. If MFU or GPU utilization stays below the project's historical baseline for a long period, DataLoader wait time, storage throughput, network reads, and online preprocessing should all be investigated.</p>
+<h3 id="612-end-to-end-latency-breakdown-from-data-format-to-gpu">6.1.2 End-to-End Latency Breakdown from Data Format to GPU<a class="headerlink" href="#612-end-to-end-latency-breakdown-from-data-format-to-gpu" title="Permanent link">&para;</a></h3>
+<p>Moving data from disk to GPU memory involves the following stages, each of which can become a bottleneck:</p>
+<p><strong>Disk read</strong>: Reading raw bytes from shard files stored on HDD/SSD/network storage (NFS/S3). Throughput varies greatly across media and cloud-provider object storage, and actual speed is also affected by concurrency, file size, network topology, and cache hit rate. Therefore, before training, pressure tests should be run on the target cluster using the same file format as production shards rather than applying generic bandwidth numbers.</p>
+<p><strong>Decompression and deserialization</strong>: If data is stored in compressed formats such as <code>.gz</code> or <code>.zst</code>, CPU decompression is required; if stored in text formats like <code>.jsonl</code>, JSON parsing is also required. Both steps are compute-intensive CPU operations that consume significant time in DataLoader worker processes.</p>
+<p><strong>Online tokenization (if offline tokenization was not performed)</strong>: Tokenizing text in real time within the DataLoader is one of the most CPU-intensive operations. A <code>tiktoken</code> or SentencePiece tokenizer processing a single 1,000-character document takes approximately 0.5–2 ms; when processing concurrently across 8 DataLoader workers, this is sufficient to become a significant bottleneck.</p>
+<p><strong>CPU-to-GPU transfer (PCIe/NVLink)</strong>: Transferring an assembled tensor batch from CPU memory to GPU memory. PCIe 4.0 peak bandwidth is approximately 32 GB/s, but non-contiguous tensor memory layouts can cause actual transfer efficiency to drop substantially.</p>
+<p>Understanding this pipeline is a prerequisite for making correct optimization decisions.</p>
+<hr />
+<h2 id="62-tokenization-serialization-and-data-format-trade-offs">6.2 Tokenization, Serialization, and Data Format Trade-offs<a class="headerlink" href="#62-tokenization-serialization-and-data-format-trade-offs" title="Permanent link">&para;</a></h2>
+<h3 id="621-tokenization-algorithms-engineering-selection-among-three-major-paradigms">6.2.1 Tokenization Algorithms: Engineering Selection Among Three Major Paradigms<a class="headerlink" href="#621-tokenization-algorithms-engineering-selection-among-three-major-paradigms" title="Permanent link">&para;</a></h3>
+<p>Tokenization is the starting point of the training input pipeline and the only component in the entire input processing chain with an "irreversible" property — once the vocabulary and tokenization model are determined, it is difficult to replace them without re-tokenizing all data. Therefore, vocabulary selection decisions must be made carefully before large-scale tokenization begins in earnest.</p>
+<p>The tokenization algorithms used by mainstream large models today fall into three main categories:</p>
+<p><strong>BPE (Byte Pair Encoding)</strong> (Sennrich et al. 2016) is the most widely used algorithm; the GPT series (including GPT-3 (Brown et al. 2020), ChatGPT, and GPT-4) are all based on it. Its core idea is to start from the character (or byte) level and repeatedly merge the most frequently occurring adjacent token pairs.</p>
+<p>Listing 6-1 presents simplified pseudocode for the BPE merge process.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># BPE merge process pseudocode</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">def</span><span class="w"> </span><span class="nf">bpe_train</span><span class="p">(</span><span class="n">corpus</span><span class="p">,</span> <span class="n">num_merges</span><span class="p">):</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    <span class="n">vocab</span> <span class="o">=</span> <span class="n">get_initial_characters</span><span class="p">(</span><span class="n">corpus</span><span class="p">)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_merges</span><span class="p">):</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>        <span class="n">pairs</span> <span class="o">=</span> <span class="n">get_stats</span><span class="p">(</span><span class="n">vocab</span><span class="p">)</span>  <span class="c1"># Count the frequency of all adjacent token pairs</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="n">best</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">pairs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">pairs</span><span class="o">.</span><span class="n">get</span><span class="p">)</span> <span class="c1"># Select the most frequent pair</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span class="n">vocab</span> <span class="o">=</span> <span class="n">merge_vocab</span><span class="p">(</span><span class="n">best</span><span class="p">,</span> <span class="n">vocab</span><span class="p">)</span> <span class="c1"># Merge it into a new token</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="k">return</span> <span class="n">vocab</span>
+</code></pre></div>
+<p><em>Listing 6-1: Simplified pseudocode for the BPE merge process</em></p>
+<p>This snippet explains the merge idea and is not a production-grade tokenizer training implementation. Note: traditional BPE is not aware of morpheme boundaries; in 2025, MorphBPE (Asgari et al. 2025) explored improving tokenization efficiency and training performance in morphologically rich languages by constraining merge rules not to cross morpheme boundaries.</p>
+<p>The byte-level variant of BPE (Byte-level BPE, such as GPT-2's tiktoken) completely resolves the OOV problem by using raw bytes rather than Unicode characters as the base unit, and has been widely adopted by models such as LLaMA 2/3 and Mistral.</p>
+<p><strong>WordPiece</strong> is BERT's tokenization scheme. It is similar to BPE but the merge criterion is not absolute frequency; instead it uses <strong>maximum likelihood estimation based on a language model</strong>. When WordPiece merges <span class="arithmatex">\(A\)</span> and <span class="arithmatex">\(B\)</span>, it evaluates the score <span class="arithmatex">\(\frac{P(AB)}{P(A)P(B)}\)</span> (similar to mutual information). This means that if <span class="arithmatex">\(A\)</span> and <span class="arithmatex">\(B\)</span> each have relatively low standalone probabilities, but their co-occurrence probability is high, WordPiece will tend to merge them.</p>
+<p><strong>The OOV (Out-of-Vocabulary) Problem</strong>:
+In the traditional era of word-level tokenizers, when encountering rare characters or words not recorded in the vocabulary, the model would typically emit a <code>&lt;UNK&gt;</code> (out-of-vocabulary) placeholder representing the unknown token. This is catastrophic in specialized fields such as medicine and law: a passage containing complex chemical formulas would become a screen full of <code>&lt;UNK&gt;</code> tokens. Subword-based approaches like BPE and WordPiece, when encountering previously unseen words, decompose them further into more basic subwords or even individual characters/bytes. Although this increases sequence length, true OOV truncation never occurs, ensuring lossless information delivery.</p>
+<p><strong>SentencePiece (Unigram)</strong> (Kudo and Richardson 2018) is Google's promoted approach, and rather than following a "merge from small to large" route, it takes a "prune from large to small" approach. Unigram starts from a very large base vocabulary and iteratively computes and removes the tokens whose removal causes the smallest drop in overall corpus likelihood. It is more amenable to languages without explicit word boundaries such as Chinese and Japanese.</p>
+<p>For Chinese large models, <strong>Byte-level BPE</strong> (implemented via tiktoken) is recommended as the base approach, with a vocabulary size between <strong>64K and 100K</strong> — this range achieves a reasonable balance between Chinese character coverage (Chinese has approximately 50,000 characters, with about 3,500 common-use characters) and embedding matrix parameter count. A vocabulary that is too small (32K) will cause many Chinese characters to be split into multiple byte-level tokens, significantly increasing sequence length; a vocabulary that is too large (200K+) will make the embedding matrix parameter count excessively large, reducing training efficiency.</p>
+<p>Listing 6-2 presents a sample implementation for offline batch tokenization using <code>tiktoken</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Offline batch tokenization using tiktoken (recommended for preprocessing)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">tiktoken</span><span class="o">,</span><span class="w"> </span><span class="nn">json</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">enc</span> <span class="o">=</span> <span class="n">tiktoken</span><span class="o">.</span><span class="n">get_encoding</span><span class="p">(</span><span class="s2">&quot;cl100k_base&quot;</span><span class="p">)</span>   <span class="c1"># GPT-4&#39;s base BPE vocabulary</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="k">def</span><span class="w"> </span><span class="nf">tokenize_document</span><span class="p">(</span><span class="n">doc</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">max_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="sd">    Tokenize a single document and attach metadata.</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="sd">    Returns None if the document is too short after tokenization to be included in training.</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">token_ids</span> <span class="o">=</span> <span class="n">enc</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">doc</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">],</span> <span class="n">disallowed_special</span><span class="o">=</span><span class="p">())</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">token_ids</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">64</span><span class="p">:</span>        <span class="c1"># Filter out documents that are too short</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="k">return</span> <span class="kc">None</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span class="k">return</span> <span class="p">{</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>        <span class="s2">&quot;token_ids&quot;</span><span class="p">:</span> <span class="n">token_ids</span><span class="p">,</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>        <span class="s2">&quot;num_tokens&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">token_ids</span><span class="p">),</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>        <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;source&quot;</span><span class="p">,</span> <span class="s2">&quot;unknown&quot;</span><span class="p">),</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span class="s2">&quot;quality_tier&quot;</span><span class="p">:</span> <span class="n">doc</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;quality_tier&quot;</span><span class="p">,</span> <span class="s2">&quot;medium&quot;</span><span class="p">),</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>    <span class="p">}</span>
+</code></pre></div>
+<p><em>Listing 6-2: Example code for offline batch tokenization</em></p>
+<p>Production environments should add shard validation, failed retries, vocabulary-version records, and output-consistency checks.</p>
+<h3 id="622-vocabulary-design-and-domain-adaptation-more-than-good-enough">6.2.2 Vocabulary Design and Domain Adaptation: More Than "Good Enough"<a class="headerlink" href="#622-vocabulary-design-and-domain-adaptation-more-than-good-enough" title="Permanent link">&para;</a></h3>
+<p>The vocabulary is the core output of the tokenizer and also the only component of the overall large-model architecture that is nearly impossible to change after training begins. Once the vocabulary is determined, all subsequent data processing, model embedding matrices, and output logit layers are tightly bound to it — changing the vocabulary means re-tokenizing all training data and re-initializing the embedding matrix (discarding the pretrained embedding weights), at enormous cost. Therefore, vocabulary design decisions must be completed before the entire engineering effort begins, rather than being corrected mid-training when a problem is discovered.</p>
+<p><strong>Vocabulary size trade-offs</strong> are the primary decision. A larger vocabulary, such as at the 100K scale, can preserve more high-frequency words and domain-specific terminology as single tokens, reducing sequence length and lowering Transformer computation (because attention complexity is quadratic in sequence length); but a larger embedding matrix increases parameter count, and rare tokens encounter fewer training samples, resulting in lower embedding quality. LLaMA-3 (Grattafiori et al. 2024) dramatically expanded the vocabulary from LLaMA-2's 32K to 128K and identifies the larger vocabulary as an important design for improving multilingual and code capabilities. Additional embedding parameters can be estimated as "number of added tokens x hidden size," while memory overhead also depends on parameter precision, tied embeddings, and optimizer state; it should not be given as a fixed GB value without the model configuration.</p>
+<p><strong>Domain Vocabulary Extension</strong> is a common requirement for vertical-domain large models. When the base vocabulary has insufficient coverage of domain-specific terminology (e.g., molecular formulas in medical terminology, proper nouns in legal terminology, keyword combinations in programming languages), these terms are split into multiple sub-tokens, leading to: first, increased sequence length, reducing the amount of domain information the model's context window can accommodate; and second, the model needing to reconstruct semantics from fragmented tokens at higher learning cost.</p>
+<p>The standard approach for domain vocabulary extension is: collect large amounts of professional text from the target domain, count the terms with the highest "segmentation ratio" (i.e., most commonly represented as multiple tokens) under the base vocabulary, select the top-K terms to add to the vocabulary, and correspondingly expand the embedding matrix (the embedding vectors for newly added tokens are typically initialized as the mean of their sub-token embeddings, to reduce distributional shift at the start of training). Chinese vertical-domain versions of LLaMA (such as Chinese-LLaMA) have broadly adopted the strategy of adding 20K–30K Chinese characters and vocabulary items on top of the original vocabulary (32K), effectively improving Chinese generation quality and inference efficiency.</p>
+<p><strong>Cross-lingual vocabulary balancing</strong> is another critical challenge for multilingual foundation models (such as BLOOM, mT5, and Qwen). If the vocabulary is trained jointly on multilingual corpora directly, high-resource languages (English) will occupy more vocabulary space due to their higher frequency, severely compressing the vocabulary of low-resource languages (such as Thai or Arabic), resulting in what is known as the "vocabulary curse" — the text of these languages appears to the model as nearly meaningless byte fragments, causing the understanding and generation capabilities of low-resource languages to fall far below those of high-resource languages.</p>
+<p>The solution is to <strong>upsample and balance</strong> the corpora of different languages when training the tokenizer: sample the training text for each target language to approximately the same token count (or use a temperature parameter T=3–5), ensuring each language receives sufficient vocabulary "seats"; at the same time, use SentencePiece's <code>character_coverage=0.9999</code> parameter to ensure that the basic character set of each language (even if low in frequency) is included in the vocabulary. This is a common engineering practice in the vocabulary design of multilingual models such as mT5 and BLOOM.</p>
+<p>Listing 6-3 presents a sample configuration for SentencePiece multilingual vocabulary training.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># SentencePiece multilingual vocabulary training (illustrative)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">sentencepiece</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">spm</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">spm</span><span class="o">.</span><span class="n">SentencePieceTrainer</span><span class="o">.</span><span class="n">train</span><span class="p">(</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="nb">input</span><span class="o">=</span><span class="s2">&quot;multilingual_corpus_balanced.txt&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">model_prefix</span><span class="o">=</span><span class="s2">&quot;tokenizer_multilingual_100k&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">vocab_size</span><span class="o">=</span><span class="mi">100_000</span><span class="p">,</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">model_type</span><span class="o">=</span><span class="s2">&quot;bpe&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">character_coverage</span><span class="o">=</span><span class="mf">0.9999</span><span class="p">,</span>   <span class="c1"># Ensure full coverage of each language&#39;s basic character set</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">byte_fallback</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>           <span class="c1"># Fall back to byte representation for Unicode characters not in vocabulary</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="n">pad_id</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">unk_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bos_id</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">eos_id</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="c1"># Upsample low-resource languages (sampling weights specified per line in a weights file)</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="n">input_sentence_size</span><span class="o">=</span><span class="mi">20_000_000</span><span class="p">,</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="n">shuffle_input_sentence</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="p">)</span>
+</code></pre></div>
+<p><em>Listing 6-3: SentencePiece multilingual vocabulary training configuration snippet</em></p>
+<p>Parameters are configuration examples only; production environments should tune them jointly through language coverage, OOV/UNK rate, and downstream evaluation.</p>
+<h3 id="623-data-formats-and-serialization-a-performance-defining-choice">6.2.3 Data Formats and Serialization: A Performance-Defining Choice<a class="headerlink" href="#623-data-formats-and-serialization-a-performance-defining-choice" title="Permanent link">&para;</a></h3>
+<p>The choice of data format has a direct, order-of-magnitude impact on DataLoader throughput. The following summarizes the performance and engineering trade-offs of mainstream formats:</p>
+<p>Table 6-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 6-1: Data formats, compression, and access patterns</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Format</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;">Sequential Read Speed</th>
+<th style="text-align: left;">Random Access</th>
+<th style="text-align: left;">Compression Support</th>
+<th style="text-align: left;">Cross-Framework Support</th>
+<th style="text-align: left;">Applicable Scenarios</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>JSONL (.jsonl)</strong></td>
+<td style="text-align: left;">Text lines</td>
+<td style="text-align: left;">Slow (requires JSON parsing)</td>
+<td style="text-align: left;">Not supported</td>
+<td style="text-align: left;">No (requires .gz combination)</td>
+<td style="text-align: left;">Excellent</td>
+<td style="text-align: left;">Data exchange, debugging</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Parquet</strong></td>
+<td style="text-align: left;">Columnar binary</td>
+<td style="text-align: left;">Fast (column pruning)</td>
+<td style="text-align: left;">Supported (row-group level)</td>
+<td style="text-align: left;">Yes: Snappy/Zstd</td>
+<td style="text-align: left;">Very good (Spark/pandas)</td>
+<td style="text-align: left;">Batch analytics, Chapter 5 output</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Apache Arrow / Feather</strong></td>
+<td style="text-align: left;">Row-oriented binary</td>
+<td style="text-align: left;">Very fast (zero-copy)</td>
+<td style="text-align: left;">Supported</td>
+<td style="text-align: left;">Yes: LZ4/Zstd</td>
+<td style="text-align: left;">Good (PyArrow)</td>
+<td style="text-align: left;">CPU→GPU intermediate layer</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MDS (Mosaic)</strong></td>
+<td style="text-align: left;">Shard binary</td>
+<td style="text-align: left;">Very fast</td>
+<td style="text-align: left;">Shard level</td>
+<td style="text-align: left;">Yes: Zstd</td>
+<td style="text-align: left;">Good (Streaming Datasets)</td>
+<td style="text-align: left;">Preferred for LLM pretraining</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>WebDataset (.tar)</strong></td>
+<td style="text-align: left;">Tar archive</td>
+<td style="text-align: left;">Fast (streaming)</td>
+<td style="text-align: left;">Shard level</td>
+<td style="text-align: left;">Yes: internal file compression</td>
+<td style="text-align: left;">Good (Torchvision)</td>
+<td style="text-align: left;">Multimodal training</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Raw .bin (Token IDs)</strong></td>
+<td style="text-align: left;">Binary integer</td>
+<td style="text-align: left;">Very fast (memory-mapped)</td>
+<td style="text-align: left;">Supported (byte offset)</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: left;">Requires custom implementation</td>
+<td style="text-align: left;">Very large-scale pretraining</td>
+</tr>
+</tbody>
+</table>
+<p>For LLM pretraining scenarios, <strong>MDS format</strong> (Mosaic AI Research 2022) is currently the most recommended choice — it is designed specifically for streaming multi-node reads, supports concurrent conflict-free reading of the same dataset by multiple GPU nodes, has a built-in shuffle buffer, and supports direct streaming reads from object storage such as S3/GCS without requiring a full download. The second choice is <strong>Raw .bin memory-mapped format</strong> (the approach used by Megatron-LM), which writes the token ID array directly as a binary file and uses <code>np.memmap</code> for memory mapping at read time, achieving near-memory read speeds on local NVMe SSDs.</p>
+<h3 id="624-sharding-strategy-and-global-shuffle">6.2.4 Sharding Strategy and Global Shuffle<a class="headerlink" href="#624-sharding-strategy-and-global-shuffle" title="Permanent link">&para;</a></h3>
+<p>The dataset should be split into a large number of equal-sized shard files rather than stored as a single large file. The recommended shard size is between <strong>256 MB and 1 GB</strong>; this range is chosen because shards that are too small lead to excessive file metadata overhead (file open, seek operations), while shards that are too large cause load imbalance in cross-node distribution, and corruption of a single shard results in a larger amount of data becoming unavailable.</p>
+<p>Shuffle is another critical step in pretraining data preparation. Unshuffled data is arranged in source order, with data from the same source appearing in concentrated bursts, causing the model to encounter continuous "local distributional shifts" during training that affect the smoothness of loss convergence. Global Shuffle requires random permutation across all shards — this is easy to implement on a single machine, but requires dedicated design in distributed training (MDS format has built-in support for streaming shuffle buffers across shards and is the recommended approach).</p>
+<hr />
+<h2 id="63-packing-mixing-and-curriculum-strategies">6.3 Packing, Mixing, and Curriculum Strategies<a class="headerlink" href="#63-packing-mixing-and-curriculum-strategies" title="Permanent link">&para;</a></h2>
+<h3 id="631-sequence-packing-eliminating-the-compute-tax-of-padding">6.3.1 Sequence Packing: Eliminating the "Compute Tax" of Padding<a class="headerlink" href="#631-sequence-packing-eliminating-the-compute-tax-of-padding" title="Permanent link">&para;</a></h3>
+<p>In standard DataLoader implementations, all samples in a batch are padded to the same length. When the training set contains a large number of short documents (such as many QA pairs or brief code snippets), the proportion of padding tokens can reach 30–50% — meaning 30–50% of GPU compute resources are wasted on ineffective attention computations over <code>&lt;pad&gt;</code> tokens.</p>
+<p><strong>Sequence Packing</strong> is the standard engineering technique for addressing this: multiple short documents are concatenated within the same sequence, with a special <code>[EOS]</code> token serving as a document boundary, so that the proportion of effective tokens in each sequence approaches 100%. The attention mask correspondingly breaks cross-document attention at the <code>[EOS]</code> position (preventing the end of document A from influencing the attention of the beginning of document B), preserving the semantic independence of each document.</p>
+<p>Listing 6-4 presents a sample implementation of greedy sequence packing.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">greedy_pack_sequences</span><span class="p">(</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">token_id_lists</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">max_seq_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">eos_token_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">dict</span><span class="p">]:</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="sd">    Greedy bin-packing: pack multiple document token lists into fixed-length sequences.</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="sd">    Returns each packed sequence along with its attention mask.</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">packed</span><span class="p">,</span> <span class="n">current_seq</span><span class="p">,</span> <span class="n">current_mask</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">doc_count</span> <span class="o">=</span> <span class="mi">0</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="k">for</span> <span class="n">token_ids</span> <span class="ow">in</span> <span class="n">token_id_lists</span><span class="p">:</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>        <span class="n">token_ids</span> <span class="o">=</span> <span class="n">token_ids</span> <span class="o">+</span> <span class="p">[</span><span class="n">eos_token_id</span><span class="p">]</span>   <span class="c1"># End-of-document marker</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">current_seq</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">token_ids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_seq_len</span><span class="p">:</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>            <span class="k">if</span> <span class="n">current_seq</span><span class="p">:</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>                <span class="c1"># Pad to max_seq_len with 0 (pad)</span>
+<a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>                <span class="n">pad_len</span> <span class="o">=</span> <span class="n">max_seq_len</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">current_seq</span><span class="p">)</span>
+<a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>                <span class="n">packed</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+<a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>                    <span class="s2">&quot;input_ids&quot;</span><span class="p">:</span>      <span class="n">current_seq</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">pad_len</span><span class="p">,</span>
+<a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>                    <span class="s2">&quot;attention_mask&quot;</span><span class="p">:</span> <span class="n">current_mask</span> <span class="o">+</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">pad_len</span><span class="p">,</span>
+<a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>                    <span class="s2">&quot;num_docs&quot;</span><span class="p">:</span>       <span class="n">doc_count</span>
+<a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>                <span class="p">})</span>
+<a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>            <span class="n">current_seq</span><span class="p">,</span> <span class="n">current_mask</span><span class="p">,</span> <span class="n">doc_count</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="mi">0</span>
+<a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>
+<a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>        <span class="n">current_seq</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">token_ids</span><span class="p">)</span>
+<a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>        <span class="n">current_mask</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">token_ids</span><span class="p">))</span>
+<a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>        <span class="n">doc_count</span> <span class="o">+=</span> <span class="mi">1</span>
+<a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a>
+<a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a>    <span class="k">return</span> <span class="n">packed</span>
+</code></pre></div>
+<p><em>Listing 6-4: Example code for greedy sequence packing</em></p>
+<p>This snippet shows the basic strategy; production environments should add sample boundaries, label masks, and reproducible experiment records.</p>
+<p>For training sets containing many short documents, enabling packing can usually improve effective token throughput (tokens/s). Actual gains depend on document length distribution, max sequence length, attention-mask implementation, and hardware configuration, and should be verified on the target dataset using both padding ratio and tokens/s.</p>
+<h3 id="632-multi-source-mixing-temperature-weighting-and-domain-ratio-control">6.3.2 Multi-Source Mixing: Temperature Weighting and Domain Ratio Control<a class="headerlink" href="#632-multi-source-mixing-temperature-weighting-and-domain-ratio-control" title="Permanent link">&para;</a></h3>
+<p>When training data comes from multiple heterogeneous sources (web corpora, code, academic papers, books, enterprise data), how to control the sampling proportion of each source during training is a critical decision that directly affects the distribution of model capabilities.</p>
+<p>The most commonly used approach is <strong>temperature sampling</strong>: the data volume <span class="arithmatex">\(n_i\)</span> for each source is transformed by a temperature parameter <span class="arithmatex">\(T\)</span> via exponentiation and then normalized into sampling weights:</p>
+<div class="arithmatex">\[p_i = \frac{n_i^{1/T}}{\sum_j n_j^{1/T}}\]</div>
+<p>When <span class="arithmatex">\(T = 1\)</span>, weights are proportional to data volume and large sources completely dominate; as <span class="arithmatex">\(T \to \infty\)</span>, all source weights approach uniform. In practice, <span class="arithmatex">\(T = 2\)</span> is commonly used (the multilingual sampling setting of mT5 (Xue et al. 2021)), upsampling small sources while avoiding excessive deviation from the original data distribution. Table 6-2 compares the benefits and trade-offs of common sampling and mixing strategies.</p>
+<p><em>Table 6-2: Sampling and mixing strategy benefits</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Mixing Strategy</th>
+<th style="text-align: left;">Principle</th>
+<th style="text-align: left;">Advantages</th>
+<th style="text-align: left;">Disadvantages</th>
+<th style="text-align: left;">Applicable Scenarios</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Proportional sampling</strong> (T=1)</td>
+<td style="text-align: left;">Proportional to original data volume</td>
+<td style="text-align: left;">Closest to true data distribution</td>
+<td style="text-align: left;">Small sources overwhelmed by large ones; code/papers are underrepresented</td>
+<td style="text-align: left;">General corpus pretraining (early stages)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Uniform sampling</strong> (T→∞)</td>
+<td style="text-align: left;">Equal probability per source</td>
+<td style="text-align: left;">Full coverage of all sources</td>
+<td style="text-align: left;">Model skews toward minority source styles; general capability degrades</td>
+<td style="text-align: left;">Specific coverage experiments</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Temperature sampling</strong> (T=2)</td>
+<td style="text-align: left;">Power-smoothing of data volume</td>
+<td style="text-align: left;">Balances large and small sources, enhances diversity</td>
+<td style="text-align: left;">Requires hyperparameter tuning</td>
+<td style="text-align: left;">Multilingual, multi-domain mixing (recommended)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Fixed-ratio mixing</strong></td>
+<td style="text-align: left;">Manually specify mixing ratio per source</td>
+<td style="text-align: left;">Fully controllable, directly aligns with business objectives</td>
+<td style="text-align: left;">Requires manual design; costly if misconfigured</td>
+<td style="text-align: left;">Custom training with clear business objectives (recommended)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Curriculum learning</strong></td>
+<td style="text-align: left;">Use simple/general data first, introduce complex data later</td>
+<td style="text-align: left;">More stable convergence, more efficient targeted capability improvement</td>
+<td style="text-align: left;">Requires designing difficulty metrics; complex to implement</td>
+<td style="text-align: left;">Long-term large-scale training</td>
+</tr>
+</tbody>
+</table>
+<h3 id="633-curriculum-learning">6.3.3 Curriculum Learning<a class="headerlink" href="#633-curriculum-learning" title="Permanent link">&para;</a></h3>
+<p>Curriculum learning is a strategy that <strong>dynamically adjusts the data recipe</strong> during training (Bengio et al. 2009): in the early stages of model training, "simpler" data (shorter sentences, more fluent language, more general domains) is used, with progressively longer and more complex samples introduced as training proceeds. This mimics the cognitive principle that humans learn "easy before hard."</p>
+<p>In engineering implementation, difficulty metrics for curriculum learning can come from multiple dimensions: token sequence length (short → long), perplexity score (low perplexity → high perplexity), and quality tier (High → Medium → Low). The Llama 3 technical report (Grattafiori et al. 2024) explicitly mentions substantially increasing the weight of high-quality curated data (code, mathematical reasoning, books) during the pretraining cooldown phase — this is essentially a <strong>data quality curriculum</strong>: first using massive general data to establish broad world knowledge, then using high-quality curated data in the final phase to strengthen specific capabilities.</p>
+<hr />
+<h2 id="64-efficient-loading-caching-and-throughput-diagnostics">6.4 Efficient Loading, Caching, and Throughput Diagnostics<a class="headerlink" href="#64-efficient-loading-caching-and-throughput-diagnostics" title="Permanent link">&para;</a></h2>
+<h3 id="641-key-dataloader-configuration-parameters">6.4.1 Key DataLoader Configuration Parameters<a class="headerlink" href="#641-key-dataloader-configuration-parameters" title="Permanent link">&para;</a></h3>
+<p>PyTorch's <code>DataLoader</code> provides several parameters that directly affect I/O throughput. The following are the most engineering-significant for large-scale pretraining scenarios:</p>
+<p><strong><code>num_workers</code></strong>: Controls the number of subprocesses for parallel data reading. This is the most common tuning point. The general rule is <code>num_workers = 4–8 × number of GPUs</code>, but the actual optimal value must be determined through experimentation (too many workers can actually reduce throughput due to process management overhead and IPC contention). For MDS format read from high-speed NVMe SSDs, <code>num_workers=8–16</code> is typically sufficient to saturate disk utilization.</p>
+<p><strong><code>pin_memory=True</code></strong>: When enabled, the DataLoader allocates pinned memory on the CPU side for storing batches, allowing subsequent CPU-to-GPU transfers to use DMA (Direct Memory Access), significantly improving PCIe transfer efficiency. The actual gain depends on batch size, tensor layout, hardware, and transfer frequency and should be measured with profiling.</p>
+<p><strong><code>prefetch_factor</code></strong>: The number of batches each worker prefetches in advance (default is 2). Increasing this moderately (e.g., to 4–8) can hide disk read latency, but increases CPU memory usage.</p>
+<p>Listing 6-5 presents a DataLoader configuration example based on MosaicML Streaming Dataset.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataLoader</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">streaming</span><span class="w"> </span><span class="kn">import</span> <span class="n">StreamingDataset</span>  <span class="c1"># MosaicML Streaming Datasets</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">StreamingDataset</span><span class="p">(</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">local</span><span class="o">=</span><span class="s2">&quot;./data/shards/&quot;</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">remote</span><span class="o">=</span><span class="s2">&quot;s3://my-bucket/shards/&quot;</span><span class="p">,</span>   <span class="c1"># Supports streaming reads from S3 during training</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="n">shuffle_seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="p">)</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="n">dataset</span><span class="p">,</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    <span class="n">batch_size</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="n">num_workers</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>        <span class="c1"># Adjust based on CPU core count and number of GPUs</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span class="n">pin_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>       <span class="c1"># Enable pinned memory to accelerate CPU→GPU transfer</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>    <span class="n">prefetch_factor</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>     <span class="c1"># Prefetch 4 batches per worker</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span class="n">persistent_workers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Avoid worker restart overhead between epochs</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="p">)</span>
+</code></pre></div>
+<p><em>Listing 6-5: MosaicML Streaming Dataset DataLoader configuration snippet</em></p>
+<p>Production environments should pressure-test object-storage bandwidth, cache strategy, and node failure-recovery capability together.</p>
+<p>Listing 6-6 presents a sample implementation of a binary token ID dataset based on <code>np.memmap</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Pseudocode for a memmap binary loader optimized for tens-of-millions of small-file I/O</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">class</span><span class="w"> </span><span class="nc">MemmapDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bin_path</span><span class="p">,</span> <span class="n">seq_len</span><span class="o">=</span><span class="mi">4096</span><span class="p">):</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>        <span class="c1"># Use np.memmap to map a large binary .bin file (Raw Token IDs)</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>        <span class="c1"># Completely avoids loading the entire dataset into memory; relies on OS Page Cache for fast random access</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">seq_len</span> <span class="o">=</span> <span class="n">seq_len</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">memmap</span><span class="p">(</span><span class="n">bin_path</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint16</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">total_tokens</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_tokens</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq_len</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span>
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>        <span class="n">start_idx</span> <span class="o">=</span> <span class="n">idx</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq_len</span>
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>        <span class="c1"># Slicing is lightweight, handled by underlying C code and OS memory paging for high throughput</span>
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>        <span class="n">chunk</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">start_idx</span> <span class="p">:</span> <span class="n">start_idx</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">seq_len</span><span class="p">]</span>
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">chunk</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
+</code></pre></div>
+<p><em>Listing 6-6: Example code for an <code>np.memmap</code>-based token ID dataset</em></p>
+<p>Production environments should add dtype, file-integrity, index-boundary, and cross-platform compatibility checks.</p>
+<h3 id="642-throughput-bottleneck-diagnostics-a-three-step-systematic-approach">6.4.2 Throughput Bottleneck Diagnostics: A Three-Step Systematic Approach<a class="headerlink" href="#642-throughput-bottleneck-diagnostics-a-three-step-systematic-approach" title="Permanent link">&para;</a></h3>
+<p>When GPU utilization falls below expectations, follow these systematic steps to diagnose. Figure 6-1 summarizes the corresponding throughput bottleneck diagnosis flow.</p>
+<p><a class="glightbox" href="../../../images/part2/Wang-Chap06-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 6-1: Throughput Bottleneck Diagnosis Flowchart" src="../../../images/part2/Wang-Chap06-Fig01.svg" /></a></p>
+<p><em>Figure 6-1: Throughput bottleneck diagnosis flowchart</em></p>
+<p><strong>Step 1 — Confirm whether the GPU is waiting for data</strong>: Run <code>nvidia-smi dmon -s u</code> to monitor SM utilization; if SM utilization periodically drops to 0 and <code>sm_active</code> is intermittently 0, the GPU is waiting. Also check the MFU (Model FLOPS Utilization) metric and compare it with the project's historical baseline.</p>
+<p><strong>Step 2 — Locate the I/O level</strong>: Run <code>iostat -x 1</code> to monitor disk I/O and compare utilization, queue depth, and wait time with the storage baseline. Simultaneously use <code>top</code> or <code>htop</code> to check CPU utilization of DataLoader worker processes; if all CPU cores are saturated, online tokenization or decompression is the bottleneck.</p>
+<p><strong>Step 3 — Check PCIe transfer</strong>: Use PyTorch's Profiler to record the time proportion of <code>cudaMemcpyH2D</code>; if H2D transfer time takes an abnormal share relative to GPU kernel execution time, PCIe transfer is the bottleneck, requiring <code>pin_memory</code> to be enabled or tensor memory layout to be optimized.</p>
+<h3 id="643-pre-training-smoke-test-30-minute-automated-verification-before-launch">6.4.3 Pre-Training Smoke Test: 30-Minute Automated Verification Before Launch<a class="headerlink" href="#643-pre-training-smoke-test-30-minute-automated-verification-before-launch" title="Permanent link">&para;</a></h3>
+<p>Before formally launching a long-running pretraining job, it is strongly recommended to execute a brief <strong>smoke test</strong> — using the complete data pipeline (real shard files, real DataLoader configuration) but running only a small number of training steps, specifically to verify the following metrics:</p>
+<ul>
+<li><strong>DataLoader throughput</strong>: Whether Tokens/s meets the target value (which can be pre-calculated based on GPU count and MFU target)</li>
+<li><strong>GPU utilization</strong>: Whether it is stable around the project baseline</li>
+<li><strong>Initial loss value</strong>: Whether it is within a reasonable range (for LLMs, the loss at random initialization is approximately ln(vocab_size); for a vocabulary of 100K this is approximately 11.5)</li>
+<li><strong>No abnormal crashes</strong>: No DataLoader worker crashes, no CUDA OOM</li>
+</ul>
+<p>This short smoke test can detect many configuration issues and avoid the high-cost mistake from the opening case study of discovering the pipeline bottleneck only after formal training has already started.</p>
+<h3 id="644-multi-node-distributed-data-reading-avoiding-data-silos">6.4.4 Multi-Node Distributed Data Reading: Avoiding "Data Silos"<a class="headerlink" href="#644-multi-node-distributed-data-reading-avoiding-data-silos" title="Permanent link">&para;</a></h3>
+<p>When training scales to multi-machine multi-GPU configurations (e.g., 8 servers × 8 GPUs = 64 GPUs), data loading faces new challenges not encountered in single-machine scenarios: <strong>how to enable all nodes to read the same dataset efficiently and without conflict, while ensuring the correctness of the global data distribution (no duplicates, no omissions, globally consistent shuffle randomness)?</strong></p>
+<p>The most common mistake is "shared NFS mounting" — all nodes mount the same NFS filesystem, with each node's DataLoader reading shards directly from NFS. This approach is simple to configure, but under large-scale concurrent reads the NFS server quickly becomes a bandwidth bottleneck, and NFS random access latency is usually higher than local SSDs, seriously degrading DataLoader throughput.</p>
+<p><strong>Recommended Option 1: Local SSD + Data Pre-staging</strong>. Before training begins, distribute shard files to the local NVMe SSD of each node in advance (via rsync or S3 batch download); during training, each node reads only from local disk. This option delivers the best I/O performance but requires additional storage space and pre-staging time, which depends on data volume, network bandwidth, and copy concurrency. The shard allocation strategy is recommended to use "static allocation + global ordering": shuffle all shards in global random order, then distribute them evenly across nodes (node 0 gets shards 0, 8, 16..., node 1 gets shards 1, 9, 17...), ensuring each node's data partition is an equal share of the globally shuffled dataset.</p>
+<p><strong>Recommended Option 2: MosaicML Streaming from S3</strong>. This has become an increasingly popular approach among large teams in recent years — the dataset is stored in object storage such as S3/GCS, and each node downloads shards on demand via <code>StreamingDataset</code> during training (download one shard, delete it after training on it is complete, then download the next), with local disk serving only as a cache layer (cache size is configurable). The advantage of this approach is that the dataset does not need to be pre-copied to each node, and new nodes can join training immediately; the limitation is that it requires stable object-storage read bandwidth and a low-jitter network, making it unsuitable for scenarios with very small shards or high latency sensitivity.</p>
+<p>Listing 6-7 presents a sample DataLoader configuration for multi-node distributed training.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># DataLoader configuration for multi-node distributed training</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">torch.distributed</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dist</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">DistributedSampler</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">streaming</span><span class="w"> </span><span class="kn">import</span> <span class="n">StreamingDataset</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="c1"># Initialize distributed</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="n">rank</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="n">world_size</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">()</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="c1"># MosaicML Streaming: S3 streaming reads with automatic inter-node shard coordination</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="n">dataset</span> <span class="o">=</span> <span class="n">StreamingDataset</span><span class="p">(</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="n">local</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;/nvme/cache/rank_</span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">/&quot;</span><span class="p">,</span>     <span class="c1"># Independent local cache directory per node</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>    <span class="n">remote</span><span class="o">=</span><span class="s2">&quot;s3://my-bucket/pretrain_shards/&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a>    <span class="n">shuffle_seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a>    <span class="n">num_canonical_nodes</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span>         <span class="c1"># Shard distribution based on total node count</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="p">)</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="c1"># Each rank automatically receives a non-overlapping subset of shards</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a>    <span class="n">dataset</span><span class="p">,</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a>    <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>          <span class="c1"># Micro-batch size per GPU</span>
+<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a>    <span class="n">num_workers</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+<a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a>    <span class="n">pin_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a>    <span class="n">persistent_workers</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a><span class="p">)</span>
+</code></pre></div>
+<p><em>Listing 6-7: Multi-node distributed DataLoader configuration</em></p>
+<p><strong>Avoiding duplicate reads</strong> is a common pitfall in multi-node distributed DataLoaders: if the DataLoaders across nodes are not properly partitioned in a rank-aware manner, each node will independently read the complete dataset, causing all nodes to see the same data order — gradient updates are effectively performed on repeated data, equivalent to batch size not correctly scaling with the number of nodes. For custom datasets that do not use <code>StreamingDataset</code>, <code>DistributedSampler</code> must be used, and <code>sampler.set_epoch(epoch)</code> must be called at the beginning of each epoch to ensure shuffle randomness differs across epochs.</p>
+<p><strong>Global token count consistency check</strong>: In distributed training, the number of tokens actually processed by each rank should be nearly identical (allowing for ±1 batch of error). If token counts across ranks differ significantly (more than 5%), it indicates a problem with data distribution or DataLoader configuration, which should be verified during the smoke test phase by using <code>dist.all_reduce</code> to aggregate batch counts across ranks.</p>
+<hr />
+<h2 id="65-engineering-case-studies-and-performance-optimization-checklist">6.5 Engineering Case Studies and Performance Optimization Checklist<a class="headerlink" href="#65-engineering-case-studies-and-performance-optimization-checklist" title="Permanent link">&para;</a></h2>
+<h3 id="figures-and-case-studies">Figures and Case Studies<a class="headerlink" href="#figures-and-case-studies" title="Permanent link">&para;</a></h3>
+<p>Figure 6-2 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part2/Wang-Chap06-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 6-2: Training Input Pipeline Layer Diagram" src="../../../images/part2/Wang-Chap06-Fig02.svg" /></a></p>
+<p><em>Figure 6-2: Layered architecture of the LLM training input pipeline</em></p>
+<h3 id="case-study-migration-benefits-from-jsonl-online-tokenization-to-mds-offline-tokenization">Case Study: Migration Benefits from JSONL + Online Tokenization to MDS + Offline Tokenization<a class="headerlink" href="#case-study-migration-benefits-from-jsonl-online-tokenization-to-mds-offline-tokenization" title="Permanent link">&para;</a></h3>
+<p>Continuing the anonymized composite case from the opening, the following gives a pressure-test comparison template after completing the storage-format migration. The table deliberately avoids fixed numbers to prevent results from one cluster from being misread as universal gains; actual results depend on hardware, storage, data format, batch size, and framework implementation.</p>
+<p><strong>Before migration</strong> (JSONL.gz, HDD, online tokenization):</p>
+<ul>
+<li>Record disk read speed, object-storage request latency, and DataLoader wait time.</li>
+<li>Record end-to-end tokens/s, GPU utilization/MFU, and CPU decompression/tokenization usage.</li>
+<li>Record read failures, retries, and bad-sample ratios for each shard.</li>
+</ul>
+<p><strong>After migration</strong> (MDS, NVMe SSD, offline pre-tokenization):</p>
+<ul>
+<li>Record end-to-end tokens/s under the same batch size and model configuration.</li>
+<li>Record whether GPU wait time decreases and whether the DataLoader remains a bottleneck.</li>
+<li>Record additional storage cost, preprocessing time, and data-validation cost introduced by the migration.</li>
+</ul>
+<p><strong>Core-benefit accounting method</strong>: Compare end-to-end tokens/s, DataLoader wait time, GPU wait time, and total preprocessing cost before and after migration, then convert them into the GPU hours required to reach the same number of training tokens. Only under the same model configuration, batch size, and training objective are pre- and post-migration gains comparable.</p>
+<h3 id="651-input-pipeline-optimization-checklist">6.5.1 Input Pipeline Optimization Checklist<a class="headerlink" href="#651-input-pipeline-optimization-checklist" title="Permanent link">&para;</a></h3>
+<p>The following is a directly usable input pipeline optimization checklist, recommended to be reviewed item by item before launching each new training job:</p>
+<p><strong>Storage and Format</strong></p>
+<ul>
+<li>[ ] Data is stored in binary format (MDS / .bin memmap), not JSONL</li>
+<li>[ ] Stored on high-speed devices (NVMe SSD / high-performance network storage), not HDD or NFS</li>
+<li>[ ] Shard size is between 256 MB and 1 GB</li>
+<li>[ ] Data has completed checksum verification to ensure no corrupted shards</li>
+</ul>
+<p><strong>Tokenization and Serialization</strong></p>
+<ul>
+<li>[ ] Tokenization was completed offline during the preprocessing phase; the DataLoader does not perform online tokenization</li>
+<li>[ ] Sequences have been packed; padding token proportion is below the project baseline</li>
+<li>[ ] Global shuffle has been enabled (randomness across shards)</li>
+<li>[ ] Sequence length distribution matches the target max_seq_len</li>
+</ul>
+<p><strong>DataLoader Configuration</strong></p>
+<ul>
+<li>[ ] <code>num_workers</code> has been tuned through the smoke test rather than copied from a fixed multiple</li>
+<li>[ ] <code>pin_memory=True</code></li>
+<li>[ ] <code>persistent_workers=True</code> (avoid restart overhead between epochs)</li>
+<li>[ ] Smoke test has been run, confirming that GPU util, MFU, and DataLoader wait time reach the project baseline</li>
+</ul>
+<p><strong>Monitoring and Observability</strong></p>
+<ul>
+<li>[ ] Tokens/s, GPU util, and DataLoader wait time are continuously recorded during training</li>
+<li>[ ] DataLoader timeout alerts have been configured (e.g., alert triggers if batch wait &gt; 10 s)</li>
+<li>[ ] Complete data source metadata has been retained to support issue tracing</li>
+</ul>
+<hr />
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter used an anonymized composite case study to illustrate how I/O bottlenecks cause GPU idle time and cost waste, systematically establishing a complete technical understanding of the training input pipeline. We examined tokenization algorithm selection in detail (the engineering trade-offs of BPE/SentencePiece), data format choices (the performance trade-offs from JSONL to MDS/Arrow), packing strategies (reducing ineffective computation caused by padding), temperature sampling and curriculum learning-based mixing strategies (Table 6-2), and a systematic three-step I/O bottleneck diagnosis method (Figure 6-1). The "Input Pipeline Optimization Checklist" in this section can be used directly as a pre-launch verification tool for production-grade pretraining jobs.</p>
+<p>This chapter echoes the cost governance perspective of Chapter 3: in pretraining projects where GPU compute costs are extremely high, the engineering quality of the input pipeline directly affects effective training time and total budget. Moving into the next chapter, we shift our perspective from "how to feed data into the model" to "how to evaluate what the model has learned from this data": <strong>Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration</strong>.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Bengio Y, Louradour J, Collobert R, Weston J (2009) Curriculum Learning. In: Proceedings of the 26th Annual International Conference on Machine Learning, pp 41-48.</p>
+<p>Brown T B, Mann B, Ryder N, Subbiah M, Kaplan J, Dhariwal P, Neelakantan A, Shyam P, Sastry G, Askell A, Agarwal S, Herbert-Voss A, Krueger G, Henighan T, Child R, Ramesh A, Ziegler D M, Wu J, Winter C, Hesse C, Chen M, Sigler E, Litwin M, Gray S, Chess B, Clark J, Berner C, McCandlish S, Radford A, Sutskever I, Amodei D (2020) Language Models are Few-Shot Learners. In: Advances in Neural Information Processing Systems 33, pp 1877-1901. arXiv:2005.14165.</p>
+<p>Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.</p>
+<p>Kudo T, Richardson J (2018) SentencePiece: A simple and language independent subword tokenizer and detokenizer for Neural Text Processing. In: Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing: System Demonstrations, pp 66-71.</p>
+<p>Mosaic AI Research (2022) MosaicML Streaming. GitHub repository. https://github.com/mosaicml/streaming.</p>
+<p>Sennrich R, Haddow B, Birch A (2016) Neural Machine Translation of Rare Words with Subword Units (BPE). In: Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics, pp 1715-1725.</p>
+<p>Xue L, Constant N, Roberts A, Kale M, Al-Rfou R, Siddhant A, Barua A, Raffel C (2021) mT5: A Massively Multilingual Pre-trained Text-to-Text Transformer. In: Proceedings of the 2021 Conference of the North American Chapter of the Association for Computational Linguistics, pp 483-498.</p>
+<p>Asgari E, El Kheir Y, Javaheri M A S (2025) MorphBPE: A Morpho-Aware Tokenizer Bridging Linguistic Complexity for Efficient LLM Training Across Morphologies. arXiv preprint arXiv:2502.00894.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ch05_cleaning_dedup/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Chapter 5: Cleaning, Deduplication, and Decontamination">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Chapter 5: Cleaning, Deduplication, and Decontamination
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch07_data_operations/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

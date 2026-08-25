@@ -1,0 +1,5447 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part14/p15_dataagent_semantic_nl2sql_agent/">
+      
+      
+        <link rel="prev" href="../p14_video_generation/">
+      
+      
+        <link rel="next" href="../../appendix_a_tools_and_frameworks_quick_reference/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Project 15: DataAgent Semantic Business Intelligence Assistant - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#project-15-dataagent-semantic-business-intelligence-assistant" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Project 15: DataAgent Semantic Business Intelligence Assistant
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part14/p15_dataagent_semantic_nl2sql_agent/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part14/p15_dataagent_semantic_nl2sql_agent/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_17" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-goals-and-reader-takeaways" class="md-nav__link">
+    <span class="md-ellipsis">
+      Project Goals and Reader Takeaways
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-constraints-and-data-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario Constraints and Data Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architecture Decision
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sample-schema-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sample Schema / Data Flow
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-implementation-snippets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Implementation Snippets
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experiment-or-acceptance-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Experiment or Acceptance Metrics
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-risk-and-compliance-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cost, Risk, and Compliance Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Failure Modes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproducible-resource-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reproducible Resource Notes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-project-background-why-enterprise-bi-needs-agent-data-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Project Background: Why Enterprise BI Needs Agent Data Engineering
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-project-goals-and-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Project Goals and Scope
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Project Goals and Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-project-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 Project Goals
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-project-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 Project Scope
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-project-positioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Project Positioning
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-overall-architecture-from-business-question-to-auditable-data-asset" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Overall Architecture: From Business Question to Auditable Data Asset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Overall Architecture: From Business Question to Auditable Data Asset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-interface-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 Interface Layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-main-agent-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 Main Agent Layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-semantic-and-query-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 Semantic and Query Layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-execution-and-asset-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4 Execution and Asset Layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-governance-and-review-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.5 Governance and Review Layer
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-engineering-prerequisites-database-semantic-layer-and-runtime-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Engineering Prerequisites: Database, Semantic Layer, and Runtime Environment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Engineering Prerequisites: Database, Semantic Layer, and Runtime Environment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-version-and-minimal-environment-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 Version and Minimal Environment Matrix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-install-the-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 Install the Project
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-configure-model-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 Configure Model Environment Variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-prepare-the-business-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.4 Prepare the Business Database
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-prepare-semantic-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.5 Prepare Semantic Service
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#56-prepare-the-workspace" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.6 Prepare the Workspace
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#57-minimal-local-run-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.7 Minimal Local Run Path
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-configure-the-main-agent-yaml-as-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Configure the Main Agent: YAML as Application
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-nl2sql-sub-agent-isolating-schema-awareness-and-sql-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. NL2SQL Sub-agent: Isolating Schema Awareness and SQL Execution
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-semantic-service-turning-business-metadata-into-retrievable-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Semantic Service: Turning Business Metadata into Retrievable Context
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-tool-invocation-how-the-main-agent-delegates-to-the-nl2sql-sub-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Tool Invocation: How the Main Agent Delegates to the NL2SQL Sub-agent
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-runtime-flow-from-business-question-to-deliverable" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. Runtime Flow: From Business Question to Deliverable
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Runtime Flow: From Business Question to Deliverable">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-pre-flight-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1 Pre-flight Checks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-run-with-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2 Run with SDK
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-run-from-the-command-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3 Run from the Command Line
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104-serve-with-a2a" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4 Serve with A2A
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-result-assets-sql-csv-reports-and-traces" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. Result Assets: SQL, CSV, Reports, and Traces
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Result Assets: SQL, CSV, Reports, and Traces">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-sql-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 SQL File
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-csv-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2 CSV Result
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-markdown-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3 Markdown Report
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#114-runtime-trace" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.4 Runtime Trace
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-evaluation-metrics-bi-assistants-need-more-than-fluent-answers" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Evaluation Metrics: BI Assistants Need More Than Fluent Answers
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-testing-and-acceptance-from-e2e-to-business-regression-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. Testing and Acceptance: From E2E to Business Regression Set
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-common-failure-modes-and-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. Common Failure Modes and Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Common Failure Modes and Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141-the-main-agent-does-not-call-the-nl2sql-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.1 The Main Agent Does Not Call the NL2SQL Tool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142-incomplete-schema-recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.2 Incomplete Schema Recall
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143-sql-execution-fails" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.3 SQL Execution Fails
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#144-sql-executes-but-the-business-definition-is-wrong" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.4 SQL Executes but the Business Definition Is Wrong
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#145-files-are-not-persisted" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.5 Files Are Not Persisted
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-safety-and-permissions-deployment-boundaries-for-enterprise-bi" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. Safety and Permissions: Deployment Boundaries for Enterprise BI
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-extensions-from-bi-assistant-to-data-task-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. Extensions: From BI Assistant to Data Task Platform
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. Extensions: From BI Assistant to Data Task Platform">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161-add-chart-and-report-chains" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.1 Add Chart and Report Chains
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162-add-a2a-service-exposure" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.2 Add A2A Service Exposure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#163-add-mcp-tool-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.3 Add MCP Tool Services
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#164-add-ontology-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.4 Add Ontology Service
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#165-add-an-online-feedback-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.5 Add an Online Feedback Loop
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-main-deliverables" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. Main Deliverables
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. Main Deliverables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#171-configuration-deliverables" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.1 Configuration Deliverables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#172-data-and-semantic-deliverables" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.2 Data and Semantic Deliverables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#173-runtime-deliverables" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.3 Runtime Deliverables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#174-acceptance-deliverables" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.4 Acceptance Deliverables
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-closing-dataagents-practical-value-is-not-only-nl2sql-but-turning-bi-into-an-engineering-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. Closing: DataAgent's Practical Value Is Not Only NL2SQL, but Turning BI into an Engineering Loop
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#topic-pre-launch-gate-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      Topic: Pre-launch Gate Checklist
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#topic-why-this-case-is-better-than-plain-nl2sql-for-a-project-chapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      Topic: Why This Case Is Better Than Plain NL2SQL for a Project Chapter
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-goals-and-reader-takeaways" class="md-nav__link">
+    <span class="md-ellipsis">
+      Project Goals and Reader Takeaways
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-constraints-and-data-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario Constraints and Data Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      Architecture Decision
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sample-schema-data-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sample Schema / Data Flow
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-implementation-snippets" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Implementation Snippets
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experiment-or-acceptance-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Experiment or Acceptance Metrics
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cost-risk-and-compliance-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cost, Risk, and Compliance Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-failure-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Failure Modes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproducible-resource-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Reproducible Resource Notes
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-project-background-why-enterprise-bi-needs-agent-data-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Project Background: Why Enterprise BI Needs Agent Data Engineering
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-project-goals-and-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Project Goals and Scope
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Project Goals and Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-project-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.1 Project Goals
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-project-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      2.2 Project Scope
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-project-positioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Project Positioning
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-overall-architecture-from-business-question-to-auditable-data-asset" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. Overall Architecture: From Business Question to Auditable Data Asset
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Overall Architecture: From Business Question to Auditable Data Asset">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-interface-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.1 Interface Layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-main-agent-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.2 Main Agent Layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-semantic-and-query-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.3 Semantic and Query Layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-execution-and-asset-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.4 Execution and Asset Layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-governance-and-review-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      4.5 Governance and Review Layer
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-engineering-prerequisites-database-semantic-layer-and-runtime-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. Engineering Prerequisites: Database, Semantic Layer, and Runtime Environment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Engineering Prerequisites: Database, Semantic Layer, and Runtime Environment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-version-and-minimal-environment-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.1 Version and Minimal Environment Matrix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-install-the-project" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.2 Install the Project
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-configure-model-environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.3 Configure Model Environment Variables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-prepare-the-business-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.4 Prepare the Business Database
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-prepare-semantic-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.5 Prepare Semantic Service
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#56-prepare-the-workspace" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.6 Prepare the Workspace
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#57-minimal-local-run-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      5.7 Minimal Local Run Path
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-configure-the-main-agent-yaml-as-application" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Configure the Main Agent: YAML as Application
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-nl2sql-sub-agent-isolating-schema-awareness-and-sql-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. NL2SQL Sub-agent: Isolating Schema Awareness and SQL Execution
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-semantic-service-turning-business-metadata-into-retrievable-context" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Semantic Service: Turning Business Metadata into Retrievable Context
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-tool-invocation-how-the-main-agent-delegates-to-the-nl2sql-sub-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Tool Invocation: How the Main Agent Delegates to the NL2SQL Sub-agent
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-runtime-flow-from-business-question-to-deliverable" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. Runtime Flow: From Business Question to Deliverable
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Runtime Flow: From Business Question to Deliverable">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-pre-flight-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.1 Pre-flight Checks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-run-with-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.2 Run with SDK
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-run-from-the-command-line" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.3 Run from the Command Line
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104-serve-with-a2a" class="md-nav__link">
+    <span class="md-ellipsis">
+      10.4 Serve with A2A
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-result-assets-sql-csv-reports-and-traces" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. Result Assets: SQL, CSV, Reports, and Traces
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Result Assets: SQL, CSV, Reports, and Traces">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-sql-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.1 SQL File
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-csv-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.2 CSV Result
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-markdown-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.3 Markdown Report
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#114-runtime-trace" class="md-nav__link">
+    <span class="md-ellipsis">
+      11.4 Runtime Trace
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-evaluation-metrics-bi-assistants-need-more-than-fluent-answers" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Evaluation Metrics: BI Assistants Need More Than Fluent Answers
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-testing-and-acceptance-from-e2e-to-business-regression-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. Testing and Acceptance: From E2E to Business Regression Set
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-common-failure-modes-and-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. Common Failure Modes and Troubleshooting
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Common Failure Modes and Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141-the-main-agent-does-not-call-the-nl2sql-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.1 The Main Agent Does Not Call the NL2SQL Tool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142-incomplete-schema-recall" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.2 Incomplete Schema Recall
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143-sql-execution-fails" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.3 SQL Execution Fails
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#144-sql-executes-but-the-business-definition-is-wrong" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.4 SQL Executes but the Business Definition Is Wrong
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#145-files-are-not-persisted" class="md-nav__link">
+    <span class="md-ellipsis">
+      14.5 Files Are Not Persisted
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-safety-and-permissions-deployment-boundaries-for-enterprise-bi" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. Safety and Permissions: Deployment Boundaries for Enterprise BI
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-extensions-from-bi-assistant-to-data-task-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. Extensions: From BI Assistant to Data Task Platform
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. Extensions: From BI Assistant to Data Task Platform">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161-add-chart-and-report-chains" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.1 Add Chart and Report Chains
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162-add-a2a-service-exposure" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.2 Add A2A Service Exposure
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#163-add-mcp-tool-services" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.3 Add MCP Tool Services
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#164-add-ontology-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.4 Add Ontology Service
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#165-add-an-online-feedback-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      16.5 Add an Online Feedback Loop
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-main-deliverables" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. Main Deliverables
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. Main Deliverables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#171-configuration-deliverables" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.1 Configuration Deliverables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#172-data-and-semantic-deliverables" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.2 Data and Semantic Deliverables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#173-runtime-deliverables" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.3 Runtime Deliverables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#174-acceptance-deliverables" class="md-nav__link">
+    <span class="md-ellipsis">
+      17.4 Acceptance Deliverables
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-closing-dataagents-practical-value-is-not-only-nl2sql-but-turning-bi-into-an-engineering-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. Closing: DataAgent's Practical Value Is Not Only NL2SQL, but Turning BI into an Engineering Loop
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#topic-pre-launch-gate-checklist" class="md-nav__link">
+    <span class="md-ellipsis">
+      Topic: Pre-launch Gate Checklist
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#topic-why-this-case-is-better-than-plain-nl2sql-for-a-project-chapter" class="md-nav__link">
+    <span class="md-ellipsis">
+      Topic: Why This Case Is Better Than Plain NL2SQL for a Project Chapter
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="project-15-dataagent-semantic-business-intelligence-assistant">Project 15: DataAgent Semantic Business Intelligence Assistant<a class="headerlink" href="#project-15-dataagent-semantic-business-intelligence-assistant" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Xuhong Cao; Zhongyi Liu; Jun Yu</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>This project uses DataAgent to build a semantic business intelligence (BI) assistant for enterprise structured data. The goal is not to let a model directly "guess SQL." Instead, the project organizes natural-language questions, the business semantic layer, database metadata, a natural-language-to-SQL (NL2SQL) sub-agent, result files, report generation, and runtime audit trails into a reusable data engineering chain.</p>
+<p>Read in engineering order, the project follows a complete chain from business question to trustworthy delivery.</p>
+<p>The chain starts with a business question. A scenario prompt and task-planning step then clarifies the analysis goal, metric definitions, filters, and expected output. Semantic-layer schema retrieval supplies the model with table, field, business-description, and relationship context before the main agent delegates structured querying to the NL2SQL sub-agent. The generated SQL is validated and executed, and the resulting SQL and CSV files are persisted as reviewable workspace assets rather than treated as transient intermediate outputs. The main agent uses those assets to summarize results and generate a report. Finally, execution traces, tool states, and acceptance signals are retained for audit, regression testing, and future iteration. The core objective is to turn enterprise BI Q&amp;A from a one-off conversational capability into a configurable, auditable, and extensible data application.</p>
+<p>The chapter follows four main threads:</p>
+<ul>
+<li>Semantic-layer construction: use a semantic service and vector database to manage tables, fields, metric definitions, and business descriptions.</li>
+<li>Agent orchestration: use a ReAct main agent to decide when to call the NL2SQL sub-agent.</li>
+<li>Result assetization: save SQL, CSV, charts, and Markdown reports into a workspace.</li>
+<li>Engineering acceptance: evaluate schema hit rate, execution accuracy, file artifacts, trace completeness, and safety boundaries.</li>
+</ul>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>DataAgent; semantic layer; natural-language-to-SQL (NL2SQL); enterprise business intelligence (BI); agent orchestration</p>
+<h2 id="project-goals-and-reader-takeaways">Project Goals and Reader Takeaways<a class="headerlink" href="#project-goals-and-reader-takeaways" title="Permanent link">&para;</a></h2>
+<p>This project uses the "DataAgent enterprise semantic BI assistant" as the core case. Its goal is to connect natural-language questions, the semantic layer, the NL2SQL sub-agent, result assets, and audit traces into an enterprise BI application. After completing this chapter, readers should be able to identify the key data objects in this scenario, decompose the engineering chain, set acceptance metrics, and transfer the method to adjacent data engineering tasks.</p>
+<p>Figure P15-1 summarizes the engineering chain from business question to trustworthy delivery.</p>
+<p><a class="glightbox" href="../../../images/part14/Cao-Project15-Fig03-EN.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="DataAgent semantic BI assistant engineering chain" src="../../../images/part14/Cao-Project15-Fig03-EN.png" /></a></p>
+<p><em>Figure P15-1: Engineering chain of the DataAgent semantic BI assistant</em></p>
+<h2 id="scenario-constraints-and-data-boundaries">Scenario Constraints and Data Boundaries<a class="headerlink" href="#scenario-constraints-and-data-boundaries" title="Permanent link">&para;</a></h2>
+<p>The project focuses on structured-database BI and semantic-layer enhancement. It does not cover full data warehouse modeling, production permission systems, or every DataAgent capability. These boundaries make the case reproducible and auditable. When data scale, data sources, permission scope, or deployment environments change, sampling strategies, quality thresholds, runtime cost, and compliance requirements should be reassessed.</p>
+<h2 id="architecture-decision">Architecture Decision<a class="headerlink" href="#architecture-decision" title="Permanent link">&para;</a></h2>
+<p>This project follows an architecture path built from a business entry point, a ReAct main agent, Semantic Service, an NL2SQL sub-agent, workspace assets, and service interfaces. The decision prioritizes input/output contracts, version traceability, diagnosable failures, and reviewable results, rather than compressing all logic into a one-off script run.</p>
+<h2 id="sample-schema-data-flow">Sample Schema / Data Flow<a class="headerlink" href="#sample-schema-data-flow" title="Permanent link">&para;</a></h2>
+<p>The core data flow can be summarized as:</p>
+<p>Listing P15-1 provides a semantic BI workflow example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>business question -&gt; semantic-layer schema retrieval -&gt; NL2SQL generation and validation -&gt; SQL execution -&gt; CSV/SQL/report persistence -&gt; trace audit
+</code></pre></div>
+<p><em>Listing P15-1: Semantic BI workflow example</em></p>
+<p>At minimum, the sample schema should retain fields such as <code>id</code>, <code>source</code>, <code>content_or_payload</code>, <code>metadata</code>, <code>quality_signals</code>, <code>split_or_stage</code>, and <code>audit_trace</code>. The exact fields should be refined according to the project's data type, downstream task, and acceptance method.</p>
+<h2 id="core-implementation-snippets">Core Implementation Snippets<a class="headerlink" href="#core-implementation-snippets" title="Permanent link">&para;</a></h2>
+<p>The main text keeps only the key implementation snippets needed to explain design trade-offs. Complete scripts, long configurations, runtime logs, and large files should be placed in the companion repository or appendix notes. Code examples should focus on input/output contracts, quality thresholds, exception handling, and acceptance interfaces.</p>
+<h2 id="experiment-or-acceptance-metrics">Experiment or Acceptance Metrics<a class="headerlink" href="#experiment-or-acceptance-metrics" title="Permanent link">&para;</a></h2>
+<p>Acceptance metrics include execution accuracy, schema hit rate, SQL validation pass rate, artifact persistence rate, trace completeness, response latency, and safety interception rate. If the project enters production, a course setting, or a public reproduction environment, version numbers, dependency environments, random seeds, sample inspection results, and failure review records should also be recorded.</p>
+<h2 id="cost-risk-and-compliance-boundaries">Cost, Risk, and Compliance Boundaries<a class="headerlink" href="#cost-risk-and-compliance-boundaries" title="Permanent link">&para;</a></h2>
+<p>Costs mainly come from model calls, semantic indexing, and database queries. Risks concentrate around SQL injection, sensitive-field exposure, schema-retrieval failure, and incorrect result interpretation. When external data, personal information, copyrighted content, or third-party services are involved, source notes, permission status, desensitization strategies, call records, and human review records should be retained.</p>
+<h2 id="common-failure-modes">Common Failure Modes<a class="headerlink" href="#common-failure-modes" title="Permanent link">&para;</a></h2>
+<p>Common failures include input-distribution drift, missing schema fields, overly loose or overly strict quality thresholds, insufficient evaluation-sample coverage, unstable model calls, and results that cannot be traced back. Troubleshooting should first locate data boundaries and intermediate artifacts, then inspect the model, toolchain, and deployment environment.</p>
+<h2 id="reproducible-resource-notes">Reproducible Resource Notes<a class="headerlink" href="#reproducible-resource-notes" title="Permanent link">&para;</a></h2>
+<p>Reproduction materials should include data-source notes, minimal samples, configuration files, run commands, metric scripts, inspection reports, and artifact directories. The main text keeps the necessary snippets; complete notebooks, long scripts, and large files should be maintained separately as companion resources. If the project is extended with enterprise metric definitions, a modeled semantic layer, or data-build pipelines, dbt's documentation, testing, and modeling mechanisms can be used as an optional reference (dbt Labs, 2026), but dbt is not a required dependency for this chapter.</p>
+<h2 id="1-project-background-why-enterprise-bi-needs-agent-data-engineering">1. Project Background: Why Enterprise BI Needs Agent Data Engineering<a class="headerlink" href="#1-project-background-why-enterprise-bi-needs-agent-data-engineering" title="Permanent link">&para;</a></h2>
+<p>Enterprise structured data is usually already stored in databases, warehouses, or data marts. What business users really want, however, is to ask business questions in natural language and receive trustworthy results. The traditional process is slow: a business user states a need, the data team confirms definitions, an engineer writes SQL, an analyst prepares results, and the business side asks follow-up questions. This process can work through manual collaboration in small teams, but high-frequency BI, cross-table queries, and multi-turn analysis expose three problems.</p>
+<p>First, field semantics and metric definitions do not enter the model context. The model may understand natural-language phrases such as "order volume," "active customer," and "high-value user," but it does not know which table, field, filter condition, or join relation they map to.</p>
+<p>Second, SQL generation and result explanation lack an engineering boundary. If the model directly generates SQL and answers, it becomes difficult to trace the final SQL, the database that was executed, whether the result was saved, and what the follow-up report is based on.</p>
+<p>Third, a single tool call cannot cover a complete analysis workflow. Enterprise BI is often not just "query one number." It may require understanding the question, querying the database, saving results, generating charts, writing reports, and exposing the capability to other systems.</p>
+<p>DataAgent is valuable because it organizes these pieces into a configurable agentic data engineering system: the main agent plans and answers, the NL2SQL sub-agent handles structured querying, the Semantic Service provides schema awareness, the workspace persists assets, and A2A/SDK/CLI interfaces expose the capability.</p>
+<h2 id="2-project-goals-and-scope">2. Project Goals and Scope<a class="headerlink" href="#2-project-goals-and-scope" title="Permanent link">&para;</a></h2>
+<h3 id="21-project-goals">2.1 Project Goals<a class="headerlink" href="#21-project-goals" title="Permanent link">&para;</a></h3>
+<p>This project builds a runnable enterprise semantic BI assistant with the following capabilities:</p>
+<ol>
+<li>Support business users asking structured data queries and analysis questions in natural language.</li>
+<li>Before SQL generation, obtain candidate tables, fields, descriptions, join relations, and value-match information through Semantic Service.</li>
+<li>Let the main agent call <code>nl2sql_sub_agent_tool</code> when database access is required, instead of guessing tables and fields directly.</li>
+<li>Save generated SQL and query results as <code>.sql</code> and <code>.csv</code> files.</li>
+<li>Support later extensions to chart generation, Markdown reporting, and A2A service exposure.</li>
+<li>Preserve runtime state, tool outputs, and workspace assets for audit, review, and iteration.</li>
+</ol>
+<h3 id="22-project-scope">2.2 Project Scope<a class="headerlink" href="#22-project-scope" title="Permanent link">&para;</a></h3>
+<p>This chapter focuses on structured-data BI, semantic-layer enhancement, and agent orchestration. It does not cover every DataAgent capability.</p>
+<p>Tool scope:</p>
+<ul>
+<li>The main chain uses <code>nl2sql_sub_agent_tool</code> as the database query entry point.</li>
+<li>Chart generation can use <code>natural_language_to_plot</code>, and report generation can use <code>report_generator</code>, but they are not the source of SQL correctness.</li>
+<li>A2A and MCP are described as extension interfaces, not required for the minimal reproducible chain.</li>
+</ul>
+<p>Data scope:</p>
+<ul>
+<li>The project is suitable for SQLite, MySQL, PostgreSQL, Hive, and similar structured databases.</li>
+<li>Business databases, metadata import, and semantic-service configuration should be prepared in advance.</li>
+<li>Raw data acquisition, cleaning, and warehouse modeling are outside this chapter.</li>
+</ul>
+<p>Semantic scope:</p>
+<ul>
+<li>Current open-source capabilities emphasize semantic-layer metadata enhancement for NL2SQL schema awareness.</li>
+<li>Ontology service remains an emerging capability and is not part of the minimal runnable chain.</li>
+</ul>
+<p>Safety scope:</p>
+<ul>
+<li>DataAgent supports workspace isolation, path authorization, and tool-execution boundaries.</li>
+<li>Real enterprise deployment still requires permission systems, sensitive-field masking, SQL allowlists, query quotas, and audit-log integration.</li>
+</ul>
+<h2 id="3-project-positioning">3. Project Positioning<a class="headerlink" href="#3-project-positioning" title="Permanent link">&para;</a></h2>
+<p>Part XIV already includes projects on data pipelines, SFT, multimodal data, RAG, Agent Tool-Use, DataOps, privacy-preserving pipelines, and data flywheels. The DataAgent project is a good additional practice project because it is not a single algorithm demonstration. It connects agents, semantic layers, NL2SQL, tool orchestration, and service interfaces in one application-level data engineering case.</p>
+<p>Compared with the Agent Tool-Use data factory, this project is closer to real deployment. It does not only construct tool-use training samples; it lets a runnable agent complete BI tasks in an enterprise data environment.</p>
+<p>Compared with an enterprise DataOps platform, this project is more focused. It does not attempt to cover the entire organizational data governance platform; it focuses on a high-value entry point: how a natural-language BI assistant can be engineered, assetized, and served.</p>
+<p>Compared with a multimodal RAG financial-report assistant, the core here is not document retrieval but structured data querying. The emphasis is schema awareness, SQL generation, execution validation, and result persistence.</p>
+<p>The best case is therefore:</p>
+<p>Listing P15-2 provides a project case title example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Building an enterprise semantic BI assistant with DataAgent
+</code></pre></div>
+<p><em>Listing P15-2: Project case title example</em></p>
+<p>This case highlights DataAgent's distinctive capabilities: NL2SQL, Semantic Service, YAML-as-agent, plugin tools, main/sub-agent collaboration, workspace audit, and A2A service exposure.</p>
+<h2 id="4-overall-architecture-from-business-question-to-auditable-data-asset">4. Overall Architecture: From Business Question to Auditable Data Asset<a class="headerlink" href="#4-overall-architecture-from-business-question-to-auditable-data-asset" title="Permanent link">&para;</a></h2>
+<p>The semantic BI assistant in this chapter is not an isolated NL2SQL component. It is an application form inside the broader DataGallery ecosystem. It uses DataAgent for task understanding, tool orchestration, and execution control; Semantic Service for metadata, metric definitions, and semantic retrieval; and Data Studio and Data Ops to connect BI capability with applications, evaluation, observation, and continuous improvement. Appendix G provides a fuller discussion of DataGallery's four-pillar technical map: the currently open-source DataAgent execution engine, the unified semantic layer, agent-semantic self-evolution, and the evaluation framework. Figure P15-2 shows the architectural relationships that support this project.</p>
+<p><a class="glightbox" href="../../../images/part14/Cao-Project15-Fig08.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="DataGallery ecosystem architecture around DataAgent, Semantic Service, Data Studio, Data Ops, and foundation infrastructure" src="../../../images/part14/Cao-Project15-Fig08.svg" /></a></p>
+<p><em>Figure P15-2: DataGallery ecosystem architecture around DataAgent</em></p>
+<p>At the core of the architecture, DataGallery Core provides the capabilities used most directly by the semantic BI assistant. The Data Intelligence Framework exposes the DataAgent SDK, while the Data Agent Engine is responsible for intent understanding, schema linking, SQL generation, execution validation, reflection and repair, and confidence selection. The Data Agent Shell defines runtime boundaries through privilege control, tool guardrails, and privacy-aware routing. In enterprise BI, these capabilities determine whether the model can understand a business question, select the right tool, and translate natural language into a controlled data operation.</p>
+<p>The semantic and data-support layers provide the context needed for reliable query generation. Semantic Distributed Runtime turns metadata ingestion, ontology modeling, and metric registry management into callable semantic services, so NL2SQL can use business descriptions, field meanings, metric definitions, and join relations instead of relying only on table and column names. Data System Service supplies data access, sandboxing, memory storage, and Agent UI/Web support, allowing SQL files, CSV outputs, reports, and runtime traces to become reviewable engineering artifacts.</p>
+<p>At the application and operations level, Data Studio corresponds to text-to-SQL, data analysis, data engineering, and business-process scenarios. Data Ops provides lifecycle capabilities such as full-chain visual tuning, benchmark evaluation, and observation. The foundation layer consists of models, data infrastructure, and hardware or chipsets. The key path in this project is therefore: a business question enters DataAgent; DataAgent uses semantic services to understand the data context and invoke NL2SQL capabilities; the resulting assets then flow into workspace, evaluation, and observation mechanisms so the answer can be audited, regressed, and improved over time.</p>
+<h3 id="41-interface-layer">4.1 Interface Layer<a class="headerlink" href="#41-interface-layer" title="Permanent link">&para;</a></h3>
+<p>DataAgent provides three common entry points:</p>
+<ul>
+<li>CLI: suitable for local debugging and quick startup.</li>
+<li>Python SDK: suitable for integration into business applications or tests.</li>
+<li>A2A Server: suitable for exposing DataAgent as a standard Agent-to-Agent service.</li>
+</ul>
+<p>A minimal reproduction can start with the Python SDK:</p>
+<p>Listing P15-3 provides a Python implementation excerpt.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataagent.interface.sdk.agent</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataAgent</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">config_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;dataagent/core/flex/examples/nl2sql_flex_e2e_subagent.yaml&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">agent</span> <span class="o">=</span> <span class="n">DataAgent</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="s2">&quot;Analyze order volume and average order value changes by channel in the most recent quarter, and save the SQL and CSV results.&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="n">workspace</span><span class="o">=</span><span class="s2">&quot;/tmp/dataagent-semantic-bi-demo&quot;</span><span class="p">,</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="p">)</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<p><em>Listing P15-3: Python implementation excerpt</em></p>
+<h3 id="42-main-agent-layer">4.2 Main Agent Layer<a class="headerlink" href="#42-main-agent-layer" title="Permanent link">&para;</a></h3>
+<p>The main agent uses <code>AGENT_CONFIG.type: "react"</code>. Its responsibility is not to generate SQL directly, but to understand the user question, decide whether database access is needed, organize tool parameters, and produce the final answer after the tool returns.</p>
+<p>In DataAgent, this chain is carried by FlexAgent. The main agent declares model, scenario prompt, tools, database, and Semantic Service configuration through YAML.</p>
+<h3 id="43-semantic-and-query-layer">4.3 Semantic and Query Layer<a class="headerlink" href="#43-semantic-and-query-layer" title="Permanent link">&para;</a></h3>
+<p>This layer has two parts:</p>
+<ul>
+<li>Semantic Service: currently centered on semantic-layer metadata enhancement, usually with a vector database for semantic indexing and schema retrieval.</li>
+<li>NL2SQL sub-agent: contains nodes such as Perceptor, Generator, Validator, Reflector, Executor, and Selector to handle the natural-language-to-SQL loop.</li>
+</ul>
+<p>When the main agent calls <code>nl2sql_sub_agent_tool</code>, the tool reads the built-in NL2SQL config, then temporarily overrides the sub-agent configuration with the <code>DATABASE</code> and <code>SEMANTIC_SERVICE</code> settings from the main-agent YAML. This allows the same NL2SQL sub-agent to be reused across business scenarios.</p>
+<h3 id="44-execution-and-asset-layer">4.4 Execution and Asset Layer<a class="headerlink" href="#44-execution-and-asset-layer" title="Permanent link">&para;</a></h3>
+<p>The execution layer performs three tasks:</p>
+<ol>
+<li>Generate and format SQL.</li>
+<li>Execute SQL and obtain query results.</li>
+<li>Save SQL and CSV into the current session workspace.</li>
+</ol>
+<p>This is essential. The deliverable of enterprise BI should not be only natural-language text; it should include reviewable SQL, downloadable result files, and report-ready assets.</p>
+<h3 id="45-governance-and-review-layer">4.5 Governance and Review Layer<a class="headerlink" href="#45-governance-and-review-layer" title="Permanent link">&para;</a></h3>
+<p>After deployment, the system must answer questions such as:</p>
+<ul>
+<li>Which tool did this answer call?</li>
+<li>What was the tool input?</li>
+<li>What was the final SQL?</li>
+<li>Where were SQL results saved?</li>
+<li>Which database and semantic service were used?</li>
+<li>On failure, was the problem schema retrieval, SQL generation, execution, or result explanation?</li>
+</ul>
+<p>DataAgent runtime state, message traces, tool outputs, and workspace files provide the engineering basis for this review.</p>
+<h2 id="5-engineering-prerequisites-database-semantic-layer-and-runtime-environment">5. Engineering Prerequisites: Database, Semantic Layer, and Runtime Environment<a class="headerlink" href="#5-engineering-prerequisites-database-semantic-layer-and-runtime-environment" title="Permanent link">&para;</a></h2>
+<p>This chapter depends on DataAgent, Semantic Service, a value-match service, and optional A2A service exposure. To make the case executable rather than only descriptive, the published version should explicitly freeze versions, installation steps, environment variables, and the minimal local run path. If the actual repository changes, use the companion code repository's <code>requirements</code>, <code>pyproject.toml</code>, example YAML files, and release notes as the source of truth, and record the corresponding tag or commit in this section.</p>
+<h3 id="51-version-and-minimal-environment-matrix">5.1 Version and Minimal Environment Matrix<a class="headerlink" href="#51-version-and-minimal-environment-matrix" title="Permanent link">&para;</a></h3>
+<p>Table P15-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P15-1: Minimal environment matrix for the DataAgent semantic BI assistant</em></p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Minimal Reproduction Requirement</th>
+<th>Version Record</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DataAgent</td>
+<td>Install from the same Git tag, commit, or package version.</td>
+<td>Record <code>DATAAGENT_VERSION</code> or <code>DATAAGENT_COMMIT</code> in the report.</td>
+</tr>
+<tr>
+<td>Python/uv</td>
+<td>Use an isolated virtual environment, preferably installed through <code>uv sync</code>.</td>
+<td>Record Python version, uv version, and lockfile hash.</td>
+</tr>
+<tr>
+<td>Business database</td>
+<td>Use SQLite for minimal reproduction; replace with MySQL, PostgreSQL, or Hive in production.</td>
+<td>Record connection type, read-only permissions, and sample database path.</td>
+</tr>
+<tr>
+<td>Semantic Service</td>
+<td>Provide tables, fields, joins, metric definitions, and vector retrieval.</td>
+<td>Record service URL, index version, and schema snapshot.</td>
+</tr>
+<tr>
+<td>value match</td>
+<td>Provide field-value matching and literal-value validation.</td>
+<td>Record service URL, value-index version, and refresh time.</td>
+</tr>
+<tr>
+<td>A2A service</td>
+<td>Enable only when external agents need to call this assistant.</td>
+<td>Record host, port, token source, and exposure scope.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-install-the-project">5.2 Install the Project<a class="headerlink" href="#52-install-the-project" title="Permanent link">&para;</a></h3>
+<p>DataAgent is one of the primary execution engines in the DataGallery open-source ecosystem. The DataGallery open-source entry is <a href="https://gitcode.com/datagallery">https://gitcode.com/datagallery</a>, and the DataAgent source repository is <a href="https://gitcode.com/datagallery/dataagent">https://gitcode.com/datagallery/dataagent</a>. For DataGallery's broader technical map, reproduction boundaries, and project-governance usage, see <a href="../../appendix_g_datagallery_note/">Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes</a>.</p>
+<p>First pin the version, then install dependencies from the repository root:</p>
+<p>Listing P15-4 provides a command-line run example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://gitcode.com/datagallery/dataagent.git
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">cd</span><span class="w"> </span>DataAgent
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>git<span class="w"> </span>checkout<span class="w"> </span>&lt;release-tag-or-commit&gt;
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>.<span class="se">\.</span>venv<span class="se">\S</span>cripts<span class="se">\A</span>ctivate.ps1
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>pip<span class="w"> </span>uv
+</code></pre></div>
+<p><em>Listing P15-4: Command-line run example</em></p>
+<p>Install with <code>uv</code>:</p>
+<p>Listing P15-5 provides a command-line run example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>uv<span class="w"> </span>sync
+</code></pre></div>
+<p><em>Listing P15-5: Command-line run example</em></p>
+<p>Or install with pip:</p>
+<p>Listing P15-6 provides a command-line run example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</code></pre></div>
+<p><em>Listing P15-6: Command-line run example</em></p>
+<p>After installation, record at least:</p>
+<p>Listing P15-7 provides a command-line run example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>python<span class="w"> </span>--version
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>uv<span class="w"> </span>--version
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import dataagent; print(getattr(dataagent, &#39;__version__&#39;, &#39;unknown&#39;))&quot;</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>git<span class="w"> </span>rev-parse<span class="w"> </span>--short<span class="w"> </span>HEAD
+</code></pre></div>
+<p><em>Listing P15-7: Command-line run example</em></p>
+<h3 id="53-configure-model-environment-variables">5.3 Configure Model Environment Variables<a class="headerlink" href="#53-configure-model-environment-variables" title="Permanent link">&para;</a></h3>
+<p>DataAgent model configuration comes from the <code>MODEL</code> section of YAML. Put keys in <code>.env</code> or environment variables rather than directly in YAML.</p>
+<p>Listing P15-8 provides a command-line run example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LLM_BASE_URL</span><span class="o">=</span><span class="s2">&quot;https://your-compatible-endpoint/v1&quot;</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LLM_API_KEY</span><span class="o">=</span><span class="s2">&quot;your-api-key&quot;</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">LLM_MODEL_NAME</span><span class="o">=</span><span class="s2">&quot;your-chat-model&quot;</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DATAAGENT_WORKSPACE</span><span class="o">=</span><span class="s2">&quot;/tmp/dataagent-semantic-bi-demo&quot;</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">DATAAGENT_CONFIG</span><span class="o">=</span><span class="s2">&quot;dataagent/core/flex/examples/nl2sql_flex_e2e_subagent.yaml&quot;</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="nb">export</span><span class="w"> </span><span class="nv">SEMANTIC_SERVICE_URL</span><span class="o">=</span><span class="s2">&quot;http://127.0.0.1:32000&quot;</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="nb">export</span><span class="w"> </span><span class="nv">VALUE_MATCH_URL</span><span class="o">=</span><span class="s2">&quot;http://127.0.0.1:8000&quot;</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="nb">export</span><span class="w"> </span><span class="nv">A2A_AUTH_TOKEN</span><span class="o">=</span><span class="s2">&quot;replace-with-local-dev-token&quot;</span>
+</code></pre></div>
+<p><em>Listing P15-8: Command-line run example</em></p>
+<p>On Windows PowerShell, use:</p>
+<p>Listing P15-9 provides a powerShell configuration example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nv">$env:LLM_BASE_URL</span><span class="p">=</span><span class="s2">&quot;https://your-compatible-endpoint/v1&quot;</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nv">$env:LLM_API_KEY</span><span class="p">=</span><span class="s2">&quot;your-api-key&quot;</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="nv">$env:LLM_MODEL_NAME</span><span class="p">=</span><span class="s2">&quot;your-chat-model&quot;</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="nv">$env:DATAAGENT_WORKSPACE</span><span class="p">=</span><span class="s2">&quot;D:\tmp\dataagent-semantic-bi-demo&quot;</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="nv">$env:DATAAGENT_CONFIG</span><span class="p">=</span><span class="s2">&quot;dataagent/core/flex/examples/nl2sql_flex_e2e_subagent.yaml&quot;</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="nv">$env:SEMANTIC_SERVICE_URL</span><span class="p">=</span><span class="s2">&quot;http://127.0.0.1:32000&quot;</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="nv">$env:VALUE_MATCH_URL</span><span class="p">=</span><span class="s2">&quot;http://127.0.0.1:8000&quot;</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="nv">$env:A2A_AUTH_TOKEN</span><span class="p">=</span><span class="s2">&quot;replace-with-local-dev-token&quot;</span>
+</code></pre></div>
+<p><em>Listing P15-9: PowerShell configuration example</em></p>
+<h3 id="54-prepare-the-business-database">5.4 Prepare the Business Database<a class="headerlink" href="#54-prepare-the-business-database" title="Permanent link">&para;</a></h3>
+<p>SQLite is enough for minimal reproduction; enterprise environments can use MySQL, PostgreSQL, or Hive.</p>
+<p>Confirm that:</p>
+<ul>
+<li>The database file or connection string is accessible.</li>
+<li>Table schemas are stable.</li>
+<li>Business metrics in user questions can be mapped to fields and filters.</li>
+<li>Join keys are described in metadata.</li>
+</ul>
+<h3 id="55-prepare-semantic-service">5.5 Prepare Semantic Service<a class="headerlink" href="#55-prepare-semantic-service" title="Permanent link">&para;</a></h3>
+<p>Semantic Service's current main-line capability is metadata enhancement through semantic-layer services.</p>
+<p>Semantic Service should carry:</p>
+<ul>
+<li>Table names and descriptions.</li>
+<li>Field names, types, and descriptions.</li>
+<li>Joinable relations among tables.</li>
+<li>Field-value matching information.</li>
+<li>Vector indexes for table descriptions, field descriptions, metric definitions, and business keywords.</li>
+</ul>
+<p>A vector database can act as the primary vector retrieval backend for improving candidate schema recall.</p>
+<p>For the minimal local path, use "SQLite + local Semantic Service + local value match" as the recommended combination. Preparation should complete three tasks: place the SQLite sample database at a stable path; import table descriptions, field descriptions, join relations, and metric definitions into Semantic Service; and build a value-match index for high-frequency filter fields such as enums, customer tiers, regions, and product categories. If a production-grade service is not available, provide a mock or minimal index file in the companion resources and state its coverage in the report.</p>
+<h3 id="56-prepare-the-workspace">5.6 Prepare the Workspace<a class="headerlink" href="#56-prepare-the-workspace" title="Permanent link">&para;</a></h3>
+<p>The workspace is where project assets are persisted. After the main agent calls the NL2SQL sub-agent, the workspace stores:</p>
+<ul>
+<li>Generated SQL files.</li>
+<li>Query result CSV files.</li>
+<li>Optional chart files.</li>
+<li>Optional Markdown reports.</li>
+</ul>
+<p>Use an isolated workspace for each task or user session:</p>
+<p>Listing P15-10 provides a directory or artifact path example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>/tmp/dataagent-semantic-bi-demo/session-001
+</code></pre></div>
+<p><em>Listing P15-10: Directory or artifact path example</em></p>
+<h3 id="57-minimal-local-run-path">5.7 Minimal Local Run Path<a class="headerlink" href="#57-minimal-local-run-path" title="Permanent link">&para;</a></h3>
+<p>The minimal local run does not require A2A service exposure or production database access. The recommended path is:</p>
+<ol>
+<li>Pin a DataAgent tag or commit and complete <code>uv sync</code>.</li>
+<li>Prepare a read-only SQLite sample database, for example <code>/tmp/dataagent-demo/demo.sqlite</code>.</li>
+<li>Start or configure local Semantic Service and confirm that <code>SEMANTIC_SERVICE_URL</code> is reachable.</li>
+<li>Start or configure local value match and confirm that <code>VALUE_MATCH_URL</code> is reachable.</li>
+<li>Update <code>DATABASE</code>, <code>SEMANTIC_SERVICE</code>, and <code>workspace</code> in <code>nl2sql_flex_e2e_subagent.yaml</code>.</li>
+<li>Launch one read-only query through the SDK or CLI and check whether <code>.sql</code> and <code>.csv</code> files are persisted.</li>
+<li>Save runtime logs, SQL, CSV, config snapshots, and service versions as acceptance evidence.</li>
+</ol>
+<p>Listing P15-11 gives a command-line example for the minimal local run path.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>uv<span class="w"> </span>run<span class="w"> </span>-m<span class="w"> </span>dataagent<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span>--config<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DATAAGENT_CONFIG</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DATAAGENT_WORKSPACE</span><span class="s2">&quot;</span>
+</code></pre></div>
+<p><em>Listing P15-11: Command-line run example</em></p>
+<p>This snippet connects installation, configuration, semantic services, and workspace into a reviewable minimal runtime entry point.</p>
+<h2 id="6-configure-the-main-agent-yaml-as-application">6. Configure the Main Agent: YAML as Application<a class="headerlink" href="#6-configure-the-main-agent-yaml-as-application" title="Permanent link">&para;</a></h2>
+<p>One key advantage of DataAgent is YAML-as-agent. A runnable semantic BI assistant can start from:</p>
+<p>Listing P15-12 provides a YAML configuration example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nt">AGENT_CONFIG</span><span class="p">:</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Enterprise</span><span class="nv"> </span><span class="s">Semantic</span><span class="nv"> </span><span class="s">BI</span><span class="nv"> </span><span class="s">Agent&quot;</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.0.0&quot;</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Semantic</span><span class="nv"> </span><span class="s">BI</span><span class="nv"> </span><span class="s">assistant</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">enterprise</span><span class="nv"> </span><span class="s">structured</span><span class="nv"> </span><span class="s">data&quot;</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;react&quot;</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">  </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;langgraph&quot;</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">  </span><span class="nt">debug</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="nt">MODEL</span><span class="p">:</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">  </span><span class="nt">chat_model</span><span class="p">:</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">    </span><span class="nt">model_type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;chat&quot;</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;your-provider&quot;</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">    </span><span class="nt">params</span><span class="p">:</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">      </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;your-chat-model&quot;</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">      </span><span class="nt">temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.0</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="nt">SCENARIO</span><span class="p">:</span>
+<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="w">  </span><span class="nt">chat</span><span class="p">:</span>
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="w">    </span><span class="nt">input</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;business</span><span class="nv"> </span><span class="s">data</span><span class="nv"> </span><span class="s">analysis</span><span class="nv"> </span><span class="s">question&quot;</span>
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="w">    </span><span class="nt">task</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;understand</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">business</span><span class="nv"> </span><span class="s">question,</span><span class="nv"> </span><span class="s">call</span><span class="nv"> </span><span class="s">NL2SQL</span><span class="nv"> </span><span class="s">sub-agent</span><span class="nv"> </span><span class="s">when</span><span class="nv"> </span><span class="s">database</span><span class="nv"> </span><span class="s">query</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">required,</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">summarize</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">result&quot;</span>
+<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span class="w">    </span><span class="nt">instructions</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a><span class="w">      </span><span class="no">You are an enterprise data analysis assistant.</span>
+<a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a><span class="w">      </span><span class="no">When the user question requires querying a database, you must call nl2sql_sub_agent_tool.</span>
+<a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a><span class="w">      </span><span class="no">In the tool query, clearly state the business goal, metric definition, filters, grouping level, sorting rules, and output fields.</span>
+<a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a><span class="w">      </span><span class="no">Each call must provide sql_filename and csv_filename.</span>
+<a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a><span class="w">      </span><span class="no">In the answer, include the SQL file path, CSV result path, core query result, and possible metric-definition limitations.</span>
+<a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a><span class="w">      </span><span class="no">Do not invent numbers that do not appear in query results.</span>
+<a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a><span class="w">    </span><span class="nt">output_format</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;business</span><span class="nv"> </span><span class="s">explanation</span><span class="nv"> </span><span class="s">+</span><span class="nv"> </span><span class="s">SQL</span><span class="nv"> </span><span class="s">file</span><span class="nv"> </span><span class="s">path</span><span class="nv"> </span><span class="s">+</span><span class="nv"> </span><span class="s">CSV</span><span class="nv"> </span><span class="s">file</span><span class="nv"> </span><span class="s">path</span><span class="nv"> </span><span class="s">+</span><span class="nv"> </span><span class="s">risk</span><span class="nv"> </span><span class="s">notes&quot;</span>
+<a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a>
+<a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a><span class="nt">TOOLS</span><span class="p">:</span>
+<a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a><span class="w">  </span><span class="nt">local_functions</span><span class="p">:</span>
+<a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">module</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dataagent.actions.tools.local_tool.tools&quot;</span>
+<a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a><span class="w">      </span><span class="nt">function</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;nl2sql_sub_agent_tool&quot;</span>
+<a id="__codelineno-11-34" name="__codelineno-11-34" href="#__codelineno-11-34"></a><span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Send</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">natural-language</span><span class="nv"> </span><span class="s">query</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">NL2SQL</span><span class="nv"> </span><span class="s">sub-agent</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">save</span><span class="nv"> </span><span class="s">SQL</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">CSV</span><span class="nv"> </span><span class="s">results.&quot;</span>
+<a id="__codelineno-11-35" name="__codelineno-11-35" href="#__codelineno-11-35"></a><span class="w">      </span><span class="nt">config</span><span class="p">:</span>
+<a id="__codelineno-11-36" name="__codelineno-11-36" href="#__codelineno-11-36"></a><span class="w">        </span><span class="nt">llm_model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">chat_model</span>
+<a id="__codelineno-11-37" name="__codelineno-11-37" href="#__codelineno-11-37"></a>
+<a id="__codelineno-11-38" name="__codelineno-11-38" href="#__codelineno-11-38"></a><span class="nt">DATABASE</span><span class="p">:</span>
+<a id="__codelineno-11-39" name="__codelineno-11-39" href="#__codelineno-11-39"></a><span class="w">  </span><span class="nt">db_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;enterprise_demo&quot;</span>
+<a id="__codelineno-11-40" name="__codelineno-11-40" href="#__codelineno-11-40"></a><span class="w">  </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;sqlite&quot;</span>
+<a id="__codelineno-11-41" name="__codelineno-11-41" href="#__codelineno-11-41"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+<a id="__codelineno-11-42" name="__codelineno-11-42" href="#__codelineno-11-42"></a><span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/absolute/path/to/enterprise_demo.sqlite&quot;</span>
+<a id="__codelineno-11-43" name="__codelineno-11-43" href="#__codelineno-11-43"></a>
+<a id="__codelineno-11-44" name="__codelineno-11-44" href="#__codelineno-11-44"></a><span class="nt">SEMANTIC_SERVICE</span><span class="p">:</span>
+<a id="__codelineno-11-45" name="__codelineno-11-45" href="#__codelineno-11-45"></a><span class="w">  </span><span class="nt">semantic_service_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://host:32000&quot;</span>
+<a id="__codelineno-11-46" name="__codelineno-11-46" href="#__codelineno-11-46"></a><span class="w">  </span><span class="nt">value_match_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://host:8000&quot;</span>
+<a id="__codelineno-11-47" name="__codelineno-11-47" href="#__codelineno-11-47"></a>
+<a id="__codelineno-11-48" name="__codelineno-11-48" href="#__codelineno-11-48"></a><span class="nt">PRE_WORKFLOW</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<a id="__codelineno-11-49" name="__codelineno-11-49" href="#__codelineno-11-49"></a><span class="nt">POST_WORKFLOW</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+<a id="__codelineno-11-50" name="__codelineno-11-50" href="#__codelineno-11-50"></a>
+<a id="__codelineno-11-51" name="__codelineno-11-51" href="#__codelineno-11-51"></a><span class="nt">SWARM</span><span class="p">:</span>
+<a id="__codelineno-11-52" name="__codelineno-11-52" href="#__codelineno-11-52"></a><span class="w">  </span><span class="nt">enable</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</code></pre></div>
+<p><em>Listing P15-12: YAML configuration example</em></p>
+<p>Five points matter.</p>
+<p>First, the main agent uses <code>type: "react"</code>. It plans; it is not a dedicated NL2SQL agent.</p>
+<p>Second, only <code>nl2sql_sub_agent_tool</code> is registered, so SQL tasks enter a dedicated sub-agent.</p>
+<p>Third, <code>DATABASE</code> and <code>SEMANTIC_SERVICE</code> are declared in the main-agent YAML and are overlaid into the temporary NL2SQL sub-agent config at runtime.</p>
+<p>Fourth, <code>SCENARIO.chat.instructions</code> must clearly define when to call the tool and which parameters are required. Otherwise the model may answer in natural language only or omit filenames.</p>
+<p>Fifth, set temperature to <code>0.0</code>. Structured querying values stability and reproducibility.</p>
+<h2 id="7-nl2sql-sub-agent-isolating-schema-awareness-and-sql-execution">7. NL2SQL Sub-agent: Isolating Schema Awareness and SQL Execution<a class="headerlink" href="#7-nl2sql-sub-agent-isolating-schema-awareness-and-sql-execution" title="Permanent link">&para;</a></h2>
+<p>The built-in NL2SQL agent config is located at:</p>
+<p>Listing P15-13 provides a directory or artifact path example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>dataagent/agents/nl2sql/nl2sql_agent.yaml
+</code></pre></div>
+<p><em>Listing P15-13: Directory or artifact path example</em></p>
+<p>Its core chain is:</p>
+<p>Listing P15-14 provides a agent role flow example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>Coordinator
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>  -&gt; Perceptor
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>  -&gt; Generator
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>  -&gt; Validator
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>  -&gt; Reflector
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>  -&gt; Executor
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>  -&gt; Selector
+</code></pre></div>
+<p><em>Listing P15-14: Agent role flow example</em></p>
+<p>Each node has a distinct responsibility.</p>
+<p>Table P15-2 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P15-2: Core nodes and responsibilities of the NL2SQL sub-agent</em></p>
+<table>
+<thead>
+<tr>
+<th>Node</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coordinator</td>
+<td>Organizes NL2SQL task entry and state transitions.</td>
+</tr>
+<tr>
+<td>Perceptor</td>
+<td>Retrieves schema, field semantics, join information, and user SQL rules.</td>
+</tr>
+<tr>
+<td>Generator</td>
+<td>Generates candidate SQL with strategies such as prompt, ICL, skeleton, or DC.</td>
+</tr>
+<tr>
+<td>Validator</td>
+<td>Runs SQL explain, keyword checks, metadata checks, and value-match checks.</td>
+</tr>
+<tr>
+<td>Reflector</td>
+<td>Attempts correction when confidence is low or execution fails.</td>
+</tr>
+<tr>
+<td>Executor</td>
+<td>Executes SQL and returns columns, rows, and rows preview.</td>
+</tr>
+<tr>
+<td>Selector</td>
+<td>Chooses final SQL, result, and confidence.</td>
+</tr>
+</tbody>
+</table>
+<p>Minimal config:</p>
+<p>Listing P15-15 provides a agent role flow example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nt">AGENT_CONFIG</span><span class="p">:</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;NL2SQL</span><span class="nv"> </span><span class="s">Agent&quot;</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;langgraph&quot;</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;nl2sql&quot;</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="nt">CORE</span><span class="p">:</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">  </span><span class="nt">coordinator</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">  </span><span class="nt">perceptor</span><span class="p">:</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">    </span><span class="nt">user_schema</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">    </span><span class="nt">user_evidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="w">    </span><span class="nt">user_sql_rules</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;sql_rules_bird&quot;</span>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="w">    </span><span class="nt">user_few_shot_examples</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="w">  </span><span class="nt">generator</span><span class="p">:</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="w">    </span><span class="nt">strategies</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;prompt&quot;</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="w">    </span><span class="nt">num_workers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="w">    </span><span class="nt">num_samples</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a><span class="w">  </span><span class="nt">validator</span><span class="p">:</span>
+<a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="w">    </span><span class="nt">db_explain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a><span class="w">    </span><span class="nt">keyword_match</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a><span class="w">    </span><span class="nt">metadata_match</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a><span class="w">  </span><span class="nt">reflector</span><span class="p">:</span>
+<a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a><span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9</span>
+<a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a><span class="w">  </span><span class="nt">executor</span><span class="p">:</span>
+<a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a><span class="w">    </span><span class="nt">limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-1</span>
+<a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a><span class="w">    </span><span class="nt">preview_limit</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a><span class="w">  </span><span class="nt">selector</span><span class="p">:</span>
+<a id="__codelineno-14-27" name="__codelineno-14-27" href="#__codelineno-14-27"></a><span class="w">    </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9</span>
+</code></pre></div>
+<p><em>Listing P15-15: Agent role flow example</em></p>
+<p>When the main agent calls the sub-agent, business users usually do not need to edit this base config directly. It is better to place the business database and Semantic Service addresses in the main-agent YAML and let <code>nl2sql_sub_agent_tool</code> overlay them at runtime.</p>
+<h2 id="8-semantic-service-turning-business-metadata-into-retrievable-context">8. Semantic Service: Turning Business Metadata into Retrievable Context<a class="headerlink" href="#8-semantic-service-turning-business-metadata-into-retrievable-context" title="Permanent link">&para;</a></h2>
+<p>Schema awareness is decisive for enterprise BI. A user may ask:</p>
+<p>Listing P15-16 provides a business question example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>How did new-customer conversion rate vary by channel in the most recent quarter?
+</code></pre></div>
+<p><em>Listing P15-16: Business question example</em></p>
+<p>SQL generation must know:</p>
+<ul>
+<li>Which time field defines "most recent quarter."</li>
+<li>Which dimension field maps to "channel."</li>
+<li>Whether "new customer" means first purchase, first order after registration, or no historical orders.</li>
+<li>Whether "conversion rate" means visit-to-order, registration-to-order, or lead-to-deal.</li>
+<li>Which tables need to be joined.</li>
+</ul>
+<p>Semantic Service provides this structured context before SQL generation.</p>
+<p>Table P15-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P15-3: Key Semantic Service capabilities and engineering value</em></p>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Engineering Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Table list and table descriptions</td>
+<td>Helps the model locate candidate business tables.</td>
+</tr>
+<tr>
+<td>Field information and descriptions</td>
+<td>Reduces field guessing.</td>
+</tr>
+<tr>
+<td>Joinable tables</td>
+<td>Provides cross-table join evidence.</td>
+</tr>
+<tr>
+<td>Semantic column search</td>
+<td>Retrieves candidate fields from user questions.</td>
+</tr>
+<tr>
+<td>Value match</td>
+<td>Checks whether literals exist in data.</td>
+</tr>
+<tr>
+<td>Vector database index</td>
+<td>Turns business descriptions, metric definitions, and field semantics into retrievable assets.</td>
+</tr>
+</tbody>
+</table>
+<p>Semantic Service should not be treated as "extra documentation." It is the upstream data engineering layer of NL2SQL. Without it, the model guesses from table and field names; with it, the model can generate SQL from business semantics, field descriptions, and join relations.</p>
+<h2 id="9-tool-invocation-how-the-main-agent-delegates-to-the-nl2sql-sub-agent">9. Tool Invocation: How the Main Agent Delegates to the NL2SQL Sub-agent<a class="headerlink" href="#9-tool-invocation-how-the-main-agent-delegates-to-the-nl2sql-sub-agent" title="Permanent link">&para;</a></h2>
+<p><code>nl2sql_sub_agent_tool</code> is the core tool. Its parameters are:</p>
+<p>Table P15-4 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P15-4: Input parameters of nl2sql_sub_agent_tool</em></p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>query</code></td>
+<td>Natural-language query for the NL2SQL sub-agent. It should include business goal, metric definition, filters, grouping, and output fields.</td>
+</tr>
+<tr>
+<td><code>sql_filename</code></td>
+<td>Filename for saved SQL.</td>
+</tr>
+<tr>
+<td><code>csv_filename</code></td>
+<td>Filename for saved query result CSV.</td>
+</tr>
+</tbody>
+</table>
+<p>At runtime the tool:</p>
+<ol>
+<li>Checks whether the current agent session workspace is available.</li>
+<li>Reads <code>dataagent/agents/nl2sql/nl2sql_agent.yaml</code>.</li>
+<li>Overlays <code>DATABASE</code>, <code>SEMANTIC_SERVICE</code>, and model slots from the current main-agent config into a temporary NL2SQL sub-agent config.</li>
+<li>Starts the NL2SQL sub-agent.</li>
+<li>Reads <code>sql</code>, <code>columns</code>, and <code>rows</code> from the final sub-agent state.</li>
+<li>Formats SQL.</li>
+<li>Writes SQL and CSV into the workspace.</li>
+<li>Returns file paths and a SQL summary to the main agent.</li>
+</ol>
+<p>This turns a tool call into data asset production. The final answer can reference real persisted SQL and CSV files rather than only natural language.</p>
+<h2 id="10-runtime-flow-from-business-question-to-deliverable">10. Runtime Flow: From Business Question to Deliverable<a class="headerlink" href="#10-runtime-flow-from-business-question-to-deliverable" title="Permanent link">&para;</a></h2>
+<h3 id="101-pre-flight-checks">10.1 Pre-flight Checks<a class="headerlink" href="#101-pre-flight-checks" title="Permanent link">&para;</a></h3>
+<p>Before running, confirm:</p>
+<p>Listing P15-17 provides a pre-flight checklist example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>1. Model environment variables are configured.
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>2. Database path or connection string is accessible.
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>3. DATABASE.db_id matches the database identifier registered in Semantic Service.
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>4. SEMANTIC_SERVICE.semantic_service_url is reachable.
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>5. SEMANTIC_SERVICE.value_match_url is reachable.
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>6. The workspace is writable.
+</code></pre></div>
+<p><em>Listing P15-17: Pre-flight checklist example</em></p>
+<p>A complete BI task can be described as:</p>
+<p>Figure P15-3 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part14/Cao-Project15-Fig07-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Runtime flow of the DataAgent enterprise semantic BI assistant" src="../../../images/part14/Cao-Project15-Fig07-EN.svg" /></a></p>
+<p><em>Figure P15-3: Runtime flow of the DataAgent enterprise semantic BI assistant</em></p>
+<h3 id="102-run-with-sdk">10.2 Run with SDK<a class="headerlink" href="#102-run-with-sdk" title="Permanent link">&para;</a></h3>
+<p>Listing P15-18 provides a Python implementation excerpt.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">dataagent.interface.sdk.agent</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataAgent</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>    <span class="n">agent</span> <span class="o">=</span> <span class="n">DataAgent</span><span class="o">.</span><span class="n">from_config</span><span class="p">(</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a>        <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;dataagent/core/flex/examples/nl2sql_flex_e2e_subagent.yaml&quot;</span><span class="p">)</span>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>    <span class="p">)</span>
+<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">agent</span><span class="o">.</span><span class="n">chat</span><span class="p">(</span>
+<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>        <span class="s2">&quot;Analyze order amount changes by customer level over the past three months, and save SQL and CSV.&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>        <span class="n">workspace</span><span class="o">=</span><span class="s2">&quot;/tmp/dataagent-semantic-bi-demo&quot;</span><span class="p">,</span>
+<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>    <span class="p">)</span>
+<a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a>
+<a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a>
+<a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a>    <span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</code></pre></div>
+<p><em>Listing P15-18: Python implementation excerpt</em></p>
+<h3 id="103-run-from-the-command-line">10.3 Run from the Command Line<a class="headerlink" href="#103-run-from-the-command-line" title="Permanent link">&para;</a></h3>
+<p>Listing P15-19 provides a command-line run example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>uv<span class="w"> </span>run<span class="w"> </span>-m<span class="w"> </span>dataagent<span class="w"> </span>--config<span class="w"> </span>dataagent/core/flex/examples/nl2sql_flex_e2e_subagent.yaml
+</code></pre></div>
+<p><em>Listing P15-19: Command-line run example</em></p>
+<h3 id="104-serve-with-a2a">10.4 Serve with A2A<a class="headerlink" href="#104-serve-with-a2a" title="Permanent link">&para;</a></h3>
+<p>When the assistant must be called by other agents or business systems, start the A2A service:</p>
+<p>Listing P15-20 provides a command-line run example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>uv<span class="w"> </span>run<span class="w"> </span>-m<span class="w"> </span>dataagent<span class="w"> </span>serve-a2a<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span>--config<span class="w"> </span>dataagent/core/flex/examples/nl2sql_flex_e2e_subagent.yaml<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">  </span>--port<span class="w"> </span><span class="m">9999</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">  </span>--auth-token<span class="w"> </span><span class="s2">&quot;your-token&quot;</span>
+</code></pre></div>
+<p><em>Listing P15-20: Command-line run example</em></p>
+<p>External systems can then discover capability through AgentCard and send messages through JSON-RPC or REST.</p>
+<h2 id="11-result-assets-sql-csv-reports-and-traces">11. Result Assets: SQL, CSV, Reports, and Traces<a class="headerlink" href="#11-result-assets-sql-csv-reports-and-traces" title="Permanent link">&para;</a></h2>
+<p>This project has at least three deliverable categories.</p>
+<h3 id="111-sql-file">11.1 SQL File<a class="headerlink" href="#111-sql-file" title="Permanent link">&para;</a></h3>
+<p>The SQL file is the most important auditable asset. It answers:</p>
+<ul>
+<li>What query did the model execute?</li>
+<li>Did it use the correct fields?</li>
+<li>Did it contain the right filters and joins?</li>
+<li>Can the data team review it?</li>
+</ul>
+<p>Example:</p>
+<p>Listing P15-21 provides a directory or artifact path example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>/tmp/dataagent-semantic-bi-demo/customer_level_order_amount.sql
+</code></pre></div>
+<p><em>Listing P15-21: Directory or artifact path example</em></p>
+<h3 id="112-csv-result">11.2 CSV Result<a class="headerlink" href="#112-csv-result" title="Permanent link">&para;</a></h3>
+<p>The CSV file is the basis for follow-up analysis, reports, and human review.</p>
+<p>Listing P15-22 provides a directory or artifact path example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>/tmp/dataagent-semantic-bi-demo/customer_level_order_amount.csv
+</code></pre></div>
+<p><em>Listing P15-22: Directory or artifact path example</em></p>
+<h3 id="113-markdown-report">11.3 Markdown Report<a class="headerlink" href="#113-markdown-report" title="Permanent link">&para;</a></h3>
+<p>If formal delivery is required, <code>report_generator</code> can be added after SQL and CSV. The report must be based on existing analysis files, CSV results, and charts; it must not invent numbers outside the data.</p>
+<h3 id="114-runtime-trace">11.4 Runtime Trace<a class="headerlink" href="#114-runtime-trace" title="Permanent link">&para;</a></h3>
+<p>The trace supports review:</p>
+<ul>
+<li>Did the main agent correctly decide that database access was needed?</li>
+<li>Were tool parameters complete?</li>
+<li>Did the sub-agent execute successfully?</li>
+<li>Were SQL and CSV saved?</li>
+<li>Did the final answer faithfully use tool results?</li>
+</ul>
+<p>For enterprise applications, traces are not merely debugging artifacts; they are the audit basis after deployment.</p>
+<h2 id="12-evaluation-metrics-bi-assistants-need-more-than-fluent-answers">12. Evaluation Metrics: BI Assistants Need More Than Fluent Answers<a class="headerlink" href="#12-evaluation-metrics-bi-assistants-need-more-than-fluent-answers" title="Permanent link">&para;</a></h2>
+<p>Semantic BI assistant evaluation should cover SQL, data, answer, and engineering execution.</p>
+<p>Table P15-5 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P15-5: Evaluation metrics for the enterprise semantic BI assistant</em></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Schema recall hit rate</td>
+<td>Whether the required tables and fields entered candidate context.</td>
+</tr>
+<tr>
+<td>SQL execution success rate</td>
+<td>Whether generated SQL can execute successfully.</td>
+</tr>
+<tr>
+<td>Execution accuracy</td>
+<td>Whether SQL results match business references or human acceptance.</td>
+</tr>
+<tr>
+<td>Value-match accuracy</td>
+<td>Whether literals, enum values, and business names match real data.</td>
+</tr>
+<tr>
+<td>File artifact completeness</td>
+<td>Whether SQL, CSV, and reports are saved as agreed.</td>
+</tr>
+<tr>
+<td>Answer faithfulness</td>
+<td>Whether the final answer is based only on query results.</td>
+</tr>
+<tr>
+<td>Trace completeness</td>
+<td>Whether tool calls, inputs, outputs, errors, and file paths are traceable.</td>
+</tr>
+<tr>
+<td>Safety violation rate</td>
+<td>Whether unauthorized paths, sensitive fields, or disallowed SQL operations appear.</td>
+</tr>
+</tbody>
+</table>
+<p>SQL execution success is only the baseline. A real BI assistant must also choose the right schema, explain metric definitions, produce reviewable results, and make failures diagnosable.</p>
+<h2 id="13-testing-and-acceptance-from-e2e-to-business-regression-set">13. Testing and Acceptance: From E2E to Business Regression Set<a class="headerlink" href="#13-testing-and-acceptance-from-e2e-to-business-regression-set" title="Permanent link">&para;</a></h2>
+<p>The DataAgent repository includes an end-to-end example for a main agent calling an NL2SQL sub-agent:</p>
+<p>Listing P15-23 provides a command-line run example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>uv<span class="w"> </span>run<span class="w"> </span>tests/e2e/test_nl2sql_flex_subagent.py
+</code></pre></div>
+<p><em>Listing P15-23: Command-line run example</em></p>
+<p>This test verifies:</p>
+<ul>
+<li>The main agent can load from config.</li>
+<li>The main agent can call the NL2SQL sub-agent.</li>
+<li>The sub-agent has no configuration-path error.</li>
+<li>Flex workflow reaches a completed state.</li>
+</ul>
+<p>Enterprise deployment also needs a business regression set:</p>
+<p>Table P15-6 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P15-6: Business regression question types for enterprise BI</em></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Single-table aggregation</td>
+<td>Monthly order count, order count by status.</td>
+</tr>
+<tr>
+<td>Multi-table join</td>
+<td>Customer level and order amount changes.</td>
+</tr>
+<tr>
+<td>Time filtering</td>
+<td>Past three months, previous quarter, calendar month.</td>
+</tr>
+<tr>
+<td>Enum matching</td>
+<td>Channel, region, product line, customer type.</td>
+</tr>
+<tr>
+<td>TopN ranking</td>
+<td>Top 10 customers by sales amount.</td>
+</tr>
+<tr>
+<td>Metric-definition sensitivity</td>
+<td>New customers, repeat purchase rate, conversion rate, average order value.</td>
+</tr>
+<tr>
+<td>Abnormal input</td>
+<td>Nonexistent field, ambiguous metric definition, unauthorized query.</td>
+</tr>
+</tbody>
+</table>
+<p>Each test sample should include:</p>
+<ul>
+<li>User question.</li>
+<li>Expected tables and fields.</li>
+<li>Reference SQL or reference result.</li>
+<li>Whether multiple equivalent SQL statements are allowed.</li>
+<li>Whether SQL/CSV must be saved.</li>
+<li>Expected behavior on failure.</li>
+</ul>
+<h2 id="14-common-failure-modes-and-troubleshooting">14. Common Failure Modes and Troubleshooting<a class="headerlink" href="#14-common-failure-modes-and-troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="141-the-main-agent-does-not-call-the-nl2sql-tool">14.1 The Main Agent Does Not Call the NL2SQL Tool<a class="headerlink" href="#141-the-main-agent-does-not-call-the-nl2sql-tool" title="Permanent link">&para;</a></h3>
+<p>The usual cause is insufficiently explicit <code>SCENARIO.chat.instructions</code>. Add:</p>
+<p>Listing P15-24 provides a tool-use instruction example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>When the question requires database querying, you must call nl2sql_sub_agent_tool.
+</code></pre></div>
+<p><em>Listing P15-24: Tool-use instruction example</em></p>
+<p>Also require <code>query</code>, <code>sql_filename</code>, and <code>csv_filename</code>.</p>
+<h3 id="142-incomplete-schema-recall">14.2 Incomplete Schema Recall<a class="headerlink" href="#142-incomplete-schema-recall" title="Permanent link">&para;</a></h3>
+<p>Check:</p>
+<ul>
+<li>Table descriptions are too short.</li>
+<li>Field descriptions lack business meaning.</li>
+<li>Metric definitions are missing from Semantic Service.</li>
+<li>Vector database embedding configuration is unavailable.</li>
+<li>Business terms in the user question differ too much from metadata wording.</li>
+</ul>
+<h3 id="143-sql-execution-fails">14.3 SQL Execution Fails<a class="headerlink" href="#143-sql-execution-fails" title="Permanent link">&para;</a></h3>
+<p>Common causes:</p>
+<ul>
+<li>Incorrect database path.</li>
+<li><code>DATABASE.engine</code> does not match the actual database.</li>
+<li>Generated SQL uses nonexistent fields.</li>
+<li>Time field type is not described clearly.</li>
+<li>Join key descriptions are missing or wrong.</li>
+</ul>
+<h3 id="144-sql-executes-but-the-business-definition-is-wrong">14.4 SQL Executes but the Business Definition Is Wrong<a class="headerlink" href="#144-sql-executes-but-the-business-definition-is-wrong" title="Permanent link">&para;</a></h3>
+<p>This cannot be solved by the model alone. Add:</p>
+<ul>
+<li>Metric definitions.</li>
+<li>Filter conditions.</li>
+<li>Dimension enum descriptions.</li>
+<li>Definition versions.</li>
+<li>Few-shot SQL examples.</li>
+</ul>
+<h3 id="145-files-are-not-persisted">14.5 Files Are Not Persisted<a class="headerlink" href="#145-files-are-not-persisted" title="Permanent link">&para;</a></h3>
+<p>Check:</p>
+<ul>
+<li>Workspace is passed in.</li>
+<li>Workspace is writable.</li>
+<li>Filenames are present.</li>
+<li>Path authorization or sandbox limits were triggered.</li>
+</ul>
+<h2 id="15-safety-and-permissions-deployment-boundaries-for-enterprise-bi">15. Safety and Permissions: Deployment Boundaries for Enterprise BI<a class="headerlink" href="#15-safety-and-permissions-deployment-boundaries-for-enterprise-bi" title="Permanent link">&para;</a></h2>
+<p>Minimum safety requirements:</p>
+<ol>
+<li>Access only authorized databases.</li>
+<li>Write only to authorized workspaces.</li>
+<li>Generate query SQL by default; do not execute DDL, DML, or high-risk administrative commands.</li>
+<li>Add masking or refusal rules for sensitive fields.</li>
+<li>Set limits, timeouts, and resource quotas for expensive queries.</li>
+<li>Keep audit records for all tool calls.</li>
+<li>Enable authentication tokens for external A2A services.</li>
+</ol>
+<p>In production, DataAgent should also integrate with enterprise IAM, data-permission systems, audit systems, and alerting. The stronger the agent capability, the earlier permissions and observability must enter the design.</p>
+<h2 id="16-extensions-from-bi-assistant-to-data-task-platform">16. Extensions: From BI Assistant to Data Task Platform<a class="headerlink" href="#16-extensions-from-bi-assistant-to-data-task-platform" title="Permanent link">&para;</a></h2>
+<p>This project can expand in five directions.</p>
+<h3 id="161-add-chart-and-report-chains">16.1 Add Chart and Report Chains<a class="headerlink" href="#161-add-chart-and-report-chains" title="Permanent link">&para;</a></h3>
+<p>After SQL/CSV artifacts are stable, add:</p>
+<ul>
+<li><code>natural_language_to_plot</code>: generate charts from query results.</li>
+<li><code>report_generator</code>: generate Markdown reports from analysis and charts.</li>
+</ul>
+<p>The extended chain becomes:</p>
+<p>Listing P15-25 provides a semantic BI delivery pipeline example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>NL2SQL -&gt; CSV -&gt; chart -&gt; Markdown report -&gt; business delivery
+</code></pre></div>
+<p><em>Listing P15-25: Semantic BI delivery pipeline example</em></p>
+<h3 id="162-add-a2a-service-exposure">16.2 Add A2A Service Exposure<a class="headerlink" href="#162-add-a2a-service-exposure" title="Permanent link">&para;</a></h3>
+<p>After DataAgent is exposed as an A2A service, other agents can call it as an enterprise BI capability. This is suitable for multi-agent platforms, internal copilots, and business-system integration.</p>
+<h3 id="163-add-mcp-tool-services">16.3 Add MCP Tool Services<a class="headerlink" href="#163-add-mcp-tool-services" title="Permanent link">&para;</a></h3>
+<p>If the enterprise already has data services, metric services, or permission services, connect them through MCP so the main agent can call deterministic services before querying.</p>
+<h3 id="164-add-ontology-service">16.4 Add Ontology Service<a class="headerlink" href="#164-add-ontology-service" title="Permanent link">&para;</a></h3>
+<p>Once ontology capability is stable, add a business-object confirmation step before NL2SQL:</p>
+<p>Listing P15-26 provides a semantic BI reasoning chain example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>user question -&gt; ontology object recognition -&gt; business relation confirmation -&gt; NL2SQL query -&gt; report
+</code></pre></div>
+<p><em>Listing P15-26: Semantic BI reasoning chain example</em></p>
+<p>This further reduces SQL errors caused by incorrectly guessed business objects.</p>
+<h3 id="165-add-an-online-feedback-loop">16.5 Add an Online Feedback Loop<a class="headerlink" href="#165-add-an-online-feedback-loop" title="Permanent link">&para;</a></h3>
+<p>After launch, collect:</p>
+<ul>
+<li>Whether users accepted the answer.</li>
+<li>Whether users modified SQL.</li>
+<li>Data-team review conclusions.</li>
+<li>Types of failed questions.</li>
+<li>Missing field descriptions and metric definitions.</li>
+</ul>
+<p>These feedback signals can update Semantic Service metadata, few-shot examples, scenario prompts, and test sets.</p>
+<h2 id="17-main-deliverables">17. Main Deliverables<a class="headerlink" href="#17-main-deliverables" title="Permanent link">&para;</a></h2>
+<h3 id="171-configuration-deliverables">17.1 Configuration Deliverables<a class="headerlink" href="#171-configuration-deliverables" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Main-agent YAML.</li>
+<li>NL2SQL base config.</li>
+<li>Model environment variable template.</li>
+<li>Database connection config.</li>
+<li>Semantic Service and value-match service addresses.</li>
+</ul>
+<h3 id="172-data-and-semantic-deliverables">17.2 Data and Semantic Deliverables<a class="headerlink" href="#172-data-and-semantic-deliverables" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Database schemas.</li>
+<li>Table and field descriptions.</li>
+<li>Join relations.</li>
+<li>Metric definitions.</li>
+<li>Value-match index.</li>
+<li>Vector database semantic index.</li>
+</ul>
+<h3 id="173-runtime-deliverables">17.3 Runtime Deliverables<a class="headerlink" href="#173-runtime-deliverables" title="Permanent link">&para;</a></h3>
+<ul>
+<li>SQL files.</li>
+<li>CSV query results.</li>
+<li>Optional chart files.</li>
+<li>Optional Markdown reports.</li>
+<li>Tool-call traces.</li>
+<li>Error logs and runtime state.</li>
+</ul>
+<h3 id="174-acceptance-deliverables">17.4 Acceptance Deliverables<a class="headerlink" href="#174-acceptance-deliverables" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Business-question regression set.</li>
+<li>Reference SQL or reference results.</li>
+<li>Schema recall evaluation.</li>
+<li>SQL execution evaluation.</li>
+<li>Answer faithfulness evaluation.</li>
+<li>Safety and permission checklist.</li>
+</ul>
+<h2 id="18-closing-dataagents-practical-value-is-not-only-nl2sql-but-turning-bi-into-an-engineering-loop">18. Closing: DataAgent's Practical Value Is Not Only NL2SQL, but Turning BI into an Engineering Loop<a class="headerlink" href="#18-closing-dataagents-practical-value-is-not-only-nl2sql-but-turning-bi-into-an-engineering-loop" title="Permanent link">&para;</a></h2>
+<p>This chapter chooses DataAgent's enterprise semantic BI assistant because it covers key issues in both application-level data engineering and agent data engineering: how to make the model understand business semantics, how to avoid direct schema guessing, how to delegate SQL to a dedicated sub-agent, how to save results as reviewable assets, and how to make a natural-language conversation enter an auditable, regressable, and extensible engineering system.</p>
+<p>The project tests more than whether a model can write SQL. It tests whether the whole chain has the stability required by enterprise data applications:</p>
+<ul>
+<li>Is semantic context reliable?</li>
+<li>Are tool boundaries clear?</li>
+<li>Are query results reviewable?</li>
+<li>Are file artifacts traceable?</li>
+<li>Are failures diagnosable?</li>
+<li>Can feedback update metadata and tests?</li>
+</ul>
+<p>This is why DataAgent is a strong practice project: it combines Agent, Tool-Use, RAG/Semantic, DataOps, and service capabilities into one enterprise scenario, turning natural-language BI from a demo into a sustainable data engineering project.</p>
+<h2 id="topic-pre-launch-gate-checklist">Topic: Pre-launch Gate Checklist<a class="headerlink" href="#topic-pre-launch-gate-checklist" title="Permanent link">&para;</a></h2>
+<p>Check at least these gates before launch:</p>
+<p>Table P15-7 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table P15-7: Pre-launch gate checklist for the DataAgent semantic BI assistant</em></p>
+<table>
+<thead>
+<tr>
+<th>Gate</th>
+<th>Check Item</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Configuration gate</td>
+<td>YAML loads; model, database, Semantic Service, and workspace are configured.</td>
+</tr>
+<tr>
+<td>Semantic gate</td>
+<td>Key tables, fields, metric definitions, and join relations are imported into the semantic layer.</td>
+</tr>
+<tr>
+<td>Query gate</td>
+<td>Regression-set SQL execution success and execution accuracy meet business thresholds.</td>
+</tr>
+<tr>
+<td>Asset gate</td>
+<td>Each task can save SQL and CSV.</td>
+</tr>
+<tr>
+<td>Faithfulness gate</td>
+<td>Final answers do not invent numbers outside query results.</td>
+</tr>
+<tr>
+<td>Safety gate</td>
+<td>Paths, databases, sensitive fields, SQL types, and A2A authentication all have boundaries.</td>
+</tr>
+<tr>
+<td>Review gate</td>
+<td>Tool calls, errors, file paths, and final answers are traceable.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="topic-why-this-case-is-better-than-plain-nl2sql-for-a-project-chapter">Topic: Why This Case Is Better Than Plain NL2SQL for a Project Chapter<a class="headerlink" href="#topic-why-this-case-is-better-than-plain-nl2sql-for-a-project-chapter" title="Permanent link">&para;</a></h2>
+<p>Plain NL2SQL can show how a model generates SQL, but a project chapter should show a more complete engineering structure. DataAgent's semantic BI assistant connects three layers.</p>
+<p>The first layer is data semantic engineering. Table and field descriptions, join relations, metric definitions, and value matches enter Semantic Service and the vector database as retrievable data assets.</p>
+<p>The second layer is agent orchestration engineering. The main agent does not guess SQL directly. It delegates database queries to the NL2SQL sub-agent and creates a responsibility boundary.</p>
+<p>The third layer is delivery and governance engineering. SQL, CSV, reports, and traces enter the workspace as reviewable, regressable, and auditable artifacts.</p>
+<p>This case is therefore more than "run one query with DataAgent." It answers a central enterprise data-application question: how natural language enters a structured data system and produces trustworthy results through engineering discipline.</p>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>Using the "DataAgent enterprise semantic BI assistant" as the case, this chapter showed how natural-language questions, the semantic layer, the NL2SQL sub-agent, result assets, and audit traces can be organized into an enterprise BI application. The value of the case is that task definition, data boundaries, architecture decisions, sample schema, metric acceptance, and reproducible resources are kept in one chain, so the project is no longer just a sequence of operations but a reviewable case study.</p>
+<p>The case boundaries should also remain explicit. The chapter focuses on structured-database BI and semantic-layer enhancement; it does not cover full data warehouse modeling, production permission systems, or every DataAgent capability. In larger-scale, higher-risk, or more compliance-sensitive scenarios, teams should reassess data sources, permission status, human-review ratio, runtime cost, and failure rollback plans.</p>
+<p>As part of Part XIV, this chapter validates earlier methods at the project level. Readers can combine this case with the data recipes in Part XIII, the platform-governance chapters, and the appendix checklists to form a closed loop from method understanding to engineering delivery.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Yu T, Zhang R, Yang K, Yasunaga M, Wang D, Li Z, et al. (2018) Spider: A Large-Scale Human-Labeled Dataset for Complex and Cross-Domain Semantic Parsing and Text-to-SQL Task. EMNLP 2018.</p>
+<p>Wang B, Shin R, Liu X, Polozov O, Richardson M (2020) RAT-SQL: Relation-Aware Schema Encoding and Linking for Text-to-SQL Parsers. ACL 2020. https://doi.org/10.18653/v1/2020.acl-main.677.</p>
+<p>Schick T, Dwivedi-Yu J, Dessi R, Raileanu R, Lomeli M, Hambro E, Zettlemoyer L, Cancedda N, Scialom T (2023) Toolformer: Language Models Can Teach Themselves to Use Tools. arXiv:2302.04761.</p>
+<p>Yao S, Zhao J, Yu D, Du N, Shafran I, Narasimhan K, Cao Y (2023) ReAct: Synergizing Reasoning and Acting in Language Models. arXiv:2210.03629.</p>
+<p>dbt Labs (2026) dbt Documentation. https://docs.getdbt.com/.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../p14_video_generation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Project 14: Video Generation Data Pipeline">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Project 14: Video Generation Data Pipeline
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-footer__link md-footer__link--next" aria-label="Next: Appendix A: Tools and Frameworks Quick Reference">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Appendix A: Tools and Frameworks Quick Reference
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

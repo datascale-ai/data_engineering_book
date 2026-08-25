@@ -1,0 +1,4870 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part10/ch31_agent_architecture/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../ch32_auto_collection_parsing_cleaning/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 31: Architecture and Task Boundaries for Data Engineering Agents - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-31-architecture-and-task-boundaries-for-data-engineering-agents" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part10/ch31_agent_architecture/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part10/ch31_agent_architecture/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-when-an-agent-crosses-the-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario: When an Agent Crosses the Boundary
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scenario: When an Agent Crosses the Boundary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-engineering-pain-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Engineering Pain Points
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#311-why-data-engineering-needs-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.1 Why Data Engineering Needs Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="31.1 Why Data Engineering Needs Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3111-the-manual-ceiling-in-traditional-data-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.1.1 The Manual Ceiling in Traditional Data Engineering
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3112-benefit-and-risk-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.1.2 Benefit and Risk Matrix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3113-engineering-evaluation-framework-for-agentization" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.1.3 Engineering Evaluation Framework for Agentization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3114-common-organizational-resistance" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.1.4 Common Organizational Resistance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3115-from-abstract-capability-to-engineering-anchor-why-dataagent" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.1.5 From Abstract Capability to Engineering Anchor: Why DataAgent
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#312-agentic-data-engineering-architecture-six-layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2 Agentic Data Engineering Architecture: Six Layers
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="31.2 Agentic Data Engineering Architecture: Six Layers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3121-architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.1 Architecture Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3122-planner-task-decomposition-and-dependency-orchestration" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.2 Planner: Task Decomposition and Dependency Orchestration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3123-tool-executor-tool-registry-and-safe-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.3 Tool Executor: Tool Registry and Safe Calls
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3124-verifier-multi-layer-and-semantic-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.4 Verifier: Multi-Layer and Semantic Validation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3125-human-gate-design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.5 Human Gate: Design Principles
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3126-memory-state-persistence-and-context-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.6 Memory: State Persistence and Context Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3127-lineage-end-to-end-operation-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.7 Lineage: End-to-End Operation Audit
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3128-cross-layer-communication-protocols" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.8 Cross-Layer Communication Protocols
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3129-failure-isolation-and-degradation" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.9 Failure Isolation and Degradation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#31210-where-dataagent-fits" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.10 Where DataAgent Fits
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#313-task-boundaries-and-automation-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.3 Task Boundaries and Automation Levels
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="31.3 Task Boundaries and Automation Levels">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3131-four-level-automation-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.3.1 Four-Level Automation Model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3132-steps-that-always-require-human-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.3.2 Steps That Always Require Human Review
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3133-human-ai-collaboration-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.3.3 Human-AI Collaboration Flow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#314-minimum-viable-data-engineering-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.4 Minimum Viable Data Engineering Agent
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="31.4 Minimum Viable Data Engineering Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3141-mvp-definition" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.4.1 MVP Definition
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3142-technology-choices" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.4.2 Technology Choices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3143-a-semantic-query-mvp-with-dataagent" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.4.3 A Semantic Query MVP With DataAgent
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3144-mvp-evaluation-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.4.4 MVP Evaluation Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3145-end-to-end-mvp-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.4.5 End-to-End MVP Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3146-mvp-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.4.6 MVP Limitations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#315-case-review-from-mvp-to-production-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.5 Case Review: From MVP to Production Agent
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="31.5 Case Review: From MVP to Production Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-lessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key Lessons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-layered-architecture-beats-a-monolithic-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why Layered Architecture Beats a Monolithic Agent
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-agent-maturity-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Production Agent Maturity Model
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#316-checklist-data-engineering-agent-architecture-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.6 Checklist: Data Engineering Agent Architecture Review
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#317-chapter-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.7 Chapter Links
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#318-further-reading-and-discussion" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.8 Further Reading and Discussion
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="31.8 Further Reading and Discussion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-architecture-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Architecture Mistakes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-path-with-existing-data-platforms" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integration Path With Existing Data Platforms
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-when-an-agent-crosses-the-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario: When an Agent Crosses the Boundary
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scenario: When an Agent Crosses the Boundary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-engineering-pain-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Engineering Pain Points
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#311-why-data-engineering-needs-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.1 Why Data Engineering Needs Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="31.1 Why Data Engineering Needs Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3111-the-manual-ceiling-in-traditional-data-engineering" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.1.1 The Manual Ceiling in Traditional Data Engineering
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3112-benefit-and-risk-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.1.2 Benefit and Risk Matrix
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3113-engineering-evaluation-framework-for-agentization" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.1.3 Engineering Evaluation Framework for Agentization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3114-common-organizational-resistance" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.1.4 Common Organizational Resistance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3115-from-abstract-capability-to-engineering-anchor-why-dataagent" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.1.5 From Abstract Capability to Engineering Anchor: Why DataAgent
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#312-agentic-data-engineering-architecture-six-layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2 Agentic Data Engineering Architecture: Six Layers
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="31.2 Agentic Data Engineering Architecture: Six Layers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3121-architecture-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.1 Architecture Overview
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3122-planner-task-decomposition-and-dependency-orchestration" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.2 Planner: Task Decomposition and Dependency Orchestration
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3123-tool-executor-tool-registry-and-safe-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.3 Tool Executor: Tool Registry and Safe Calls
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3124-verifier-multi-layer-and-semantic-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.4 Verifier: Multi-Layer and Semantic Validation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3125-human-gate-design-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.5 Human Gate: Design Principles
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3126-memory-state-persistence-and-context-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.6 Memory: State Persistence and Context Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3127-lineage-end-to-end-operation-audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.7 Lineage: End-to-End Operation Audit
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3128-cross-layer-communication-protocols" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.8 Cross-Layer Communication Protocols
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3129-failure-isolation-and-degradation" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.9 Failure Isolation and Degradation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#31210-where-dataagent-fits" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.2.10 Where DataAgent Fits
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#313-task-boundaries-and-automation-levels" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.3 Task Boundaries and Automation Levels
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="31.3 Task Boundaries and Automation Levels">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3131-four-level-automation-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.3.1 Four-Level Automation Model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3132-steps-that-always-require-human-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.3.2 Steps That Always Require Human Review
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3133-human-ai-collaboration-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.3.3 Human-AI Collaboration Flow
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#314-minimum-viable-data-engineering-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.4 Minimum Viable Data Engineering Agent
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="31.4 Minimum Viable Data Engineering Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3141-mvp-definition" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.4.1 MVP Definition
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3142-technology-choices" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.4.2 Technology Choices
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3143-a-semantic-query-mvp-with-dataagent" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.4.3 A Semantic Query MVP With DataAgent
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3144-mvp-evaluation-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.4.4 MVP Evaluation Metrics
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3145-end-to-end-mvp-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.4.5 End-to-End MVP Example
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3146-mvp-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.4.6 MVP Limitations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#315-case-review-from-mvp-to-production-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.5 Case Review: From MVP to Production Agent
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="31.5 Case Review: From MVP to Production Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-lessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key Lessons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-layered-architecture-beats-a-monolithic-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      Why Layered Architecture Beats a Monolithic Agent
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-agent-maturity-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Production Agent Maturity Model
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#316-checklist-data-engineering-agent-architecture-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.6 Checklist: Data Engineering Agent Architecture Review
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#317-chapter-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.7 Chapter Links
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#318-further-reading-and-discussion" class="md-nav__link">
+    <span class="md-ellipsis">
+      31.8 Further Reading and Discussion
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="31.8 Further Reading and Discussion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-architecture-mistakes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Common Architecture Mistakes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-path-with-existing-data-platforms" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integration Path With Existing Data Platforms
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-31-architecture-and-task-boundaries-for-data-engineering-agents">Chapter 31: Architecture and Task Boundaries for Data Engineering Agents<a class="headerlink" href="#chapter-31-architecture-and-task-boundaries-for-data-engineering-agents" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Jun Yu; Zhili Wang; Zhongyi Liu</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>Traditional data engineering pipelines depend heavily on engineers writing DAGs, configuring schedulers, monitoring job state, and debugging data quality incidents by hand. As data sources multiply, cleaning rules become more complex, and labeling demand grows, the marginal cost of manual maintenance rises quickly. Data engineering agents attempt to change this pattern by assigning repetitive, rule-heavy, multi-step decisions to agent systems.</p>
+<p>But as agents receive more autonomy, a deeper question appears: <strong>where are the task boundaries?</strong> How autonomous should the agent be? Which decisions must pass a human gate? How can tool calls remain auditable? How should multiple agents divide responsibility without conflict?</p>
+<p>This chapter defines a layered architecture for data engineering agents. It centers on six components: Planner, Tool Executor, Verifier, Human Gate, Memory, and Lineage. For each component, we define responsibility boundaries, communication protocols, and failure isolation strategies. The chapter inherits the reasoning, tool-use, and memory mechanisms from Chapters 18-20, and builds on the platform, versioning, and observability foundations from Chapters 24-26.</p>
+<p>To keep the discussion concrete, the chapter uses DataAgent as a running reference. Its YAML orchestration, FlexAgent, natural-language-to-SQL (NL2SQL) sub-agent, Semantic Service, workspace, and A2A/SDK/CLI entry points map well to the path from "can call tools" to "configurable, auditable, and serviceable." The point is not to make one agent "smarter." It is to make a group of agents collaborate in a more orderly way.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>Data engineering; Data Engineering Agent; automated data engineering; permission governance; human-AI collaboration</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After reading this chapter, you should be able to:</p>
+<ul>
+<li>Explain why agent systems in data engineering need layered architecture.</li>
+<li>Define the boundaries of Planner, Tool Executor, Verifier, Human Gate, Memory, and Lineage.</li>
+<li>Design cross-layer communication protocols and failure isolation strategies.</li>
+<li>Distinguish recommendation, semi-automatic, approval-based, and autonomous automation levels.</li>
+<li>Build a minimum viable Data Engineering Agent and evaluate its return on investment.</li>
+<li>Understand how DataAgent can act as a reference implementation for semantic layers, main/sub-agent collaboration, tool boundaries, and operational audit.</li>
+</ul>
+<h2 id="scenario-when-an-agent-crosses-the-boundary">Scenario: When an Agent Crosses the Boundary<a class="headerlink" href="#scenario-when-an-agent-crosses-the-boundary" title="Permanent link">&para;</a></h2>
+<p>A data team spends three months building a "fully automatic data cleaning agent." During the first week after launch, the results look excellent. The agent identifies 80 percent of abnormal formats and fixes more than 200 field-level quality issues. In the second week, trouble begins. While fixing a timestamp field, the agent rewrites the entire table's <code>updated_at</code> column to the current time. Twelve downstream pipelines receive polluted data. Engineers spend three days finding the root cause: the agent's repair plan executed without human review, and the Verifier checked only format correctness, not semantic reasonableness.</p>
+<p>The incident exposes three systemic problems:</p>
+<p><strong>Problem 1: Planner and Executor are merged.</strong> The planning module and execution module use the same model instance. After the Planner generates a "fix timestamp" plan, the Executor runs it immediately, with no independent checkpoint.</p>
+<p><strong>Problem 2: Human Gate is only decorative.</strong> The system has a review step, but it auto-approves after a 30-second timeout. During peak hours, engineers cannot review every item, so the gate becomes a 30-second delay.</p>
+<p><strong>Problem 3: Lineage records are incomplete.</strong> The lineage system records only that "table X changed." It does not record who initiated the change, which rule was used, original values, or whether validation happened before execution. Root cause analysis becomes guesswork.</p>
+<h3 id="core-engineering-pain-points">Core Engineering Pain Points<a class="headerlink" href="#core-engineering-pain-points" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Autonomy versus reliability.</strong> More autonomy increases automation benefit, but also raises recovery cost when something fails.</li>
+<li><strong>Unclear cross-layer responsibility.</strong> When the Planner is wrong, the Verifier misses an issue, or the Executor performs an unsafe operation, responsibility cannot be assigned to a concrete component.</li>
+<li><strong>Missing auditability.</strong> Without a unified lineage protocol, logs from different layers use different formats and cross-layer queries require manual stitching.</li>
+<li><strong>Poor Human Gate design.</strong> The gate either blocks pipeline efficiency or becomes a formality.</li>
+</ol>
+<h2 id="311-why-data-engineering-needs-agents">31.1 Why Data Engineering Needs Agents<a class="headerlink" href="#311-why-data-engineering-needs-agents" title="Permanent link">&para;</a></h2>
+<h3 id="3111-the-manual-ceiling-in-traditional-data-engineering">31.1.1 The Manual Ceiling in Traditional Data Engineering<a class="headerlink" href="#3111-the-manual-ceiling-in-traditional-data-engineering" title="Permanent link">&para;</a></h3>
+<p>Four high-frequency task categories in LLM data engineering are naturally suited to agentization.</p>
+<p><strong>Parser exception repair.</strong> As sources grow from dozens to hundreds, PDF layout failures, HTML structure drift, API schema changes, and mixed encodings increase nonlinearly. Each new source does not require only one new rule; it requires a set of rules and coordination with existing rules. An agent can detect failure types, select alternate parsers, generate temporary repair rules, and submit a validation report (Mialon et al. 2023; Wang et al. 2023; Xi et al. 2023).</p>
+<p><strong>Cleaning-rule iteration.</strong> Data cleaning is not a one-time job. Business changes, model training feedback, and updated quality thresholds all trigger rule changes. In a traditional workflow, cleaning-rule backlogs grow faster than engineers can process them. An agent can generate rule candidates from sampled defects, validate them in a sandbox, and submit a diff report for human approval.</p>
+<p><strong>Evaluation writeback.</strong> When model evaluation finds a data quality problem, such as low accuracy in a domain slice, the feedback must flow back to data production. Today this often happens through chat messages and manual investigation, taking days. An agent can read evaluation reports, locate relevant data batches and production steps, generate repair suggestions, and route them to the right team (Nakano et al. 2021; Park et al. 2023).</p>
+<p><strong>Alert attribution.</strong> Data platforms generate many alerts every day: delayed jobs, abnormal volume, declining quality metrics. Human root-cause analysis requires logs, lineage, change records, and business context, often taking more than 30 minutes per alert. An agent can aggregate signals, generate candidate root causes, rank them by confidence, and reduce MTTR.</p>
+<h3 id="3112-benefit-and-risk-matrix">31.1.2 Benefit and Risk Matrix<a class="headerlink" href="#3112-benefit-and-risk-matrix" title="Permanent link">&para;</a></h3>
+<p>Table 31-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 31-1: Benefit and risk assessment for agentizing high-frequency data engineering tasks</em></p>
+<table>
+<thead>
+<tr>
+<th>Task type</th>
+<th>Average manual time</th>
+<th>Time after agentization</th>
+<th>Risk level</th>
+<th>Suggested automation level</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Parser exception detection and attribution</td>
+<td>30 min</td>
+<td>2 min</td>
+<td>Low</td>
+<td>Semi-automatic: agent suggests, human confirms</td>
+</tr>
+<tr>
+<td>Cleaning-rule generation</td>
+<td>2 hr</td>
+<td>10 min</td>
+<td>Medium</td>
+<td>Approval-based: sandbox validation plus human approval</td>
+</tr>
+<tr>
+<td>Evaluation writeback localization</td>
+<td>4 hr</td>
+<td>15 min</td>
+<td>Medium</td>
+<td>Semi-automatic</td>
+</tr>
+<tr>
+<td>Alert root-cause analysis</td>
+<td>45 min</td>
+<td>3 min</td>
+<td>Low</td>
+<td>Recommendation: agent outputs candidates, human decides</td>
+</tr>
+<tr>
+<td>Bulk data repair execution</td>
+<td>1 hr</td>
+<td>5 min</td>
+<td>High</td>
+<td>Approval-based plus rollback plan</td>
+</tr>
+<tr>
+<td>Schema migration</td>
+<td>8 hr</td>
+<td>30 min</td>
+<td>High</td>
+<td>Approval-based plus multi-level review</td>
+</tr>
+</tbody>
+</table>
+<p>Agentization does not mean pursuing full automation everywhere. The correct automation level depends on task risk and manual effort. High-risk tasks still require approval gates and rollback even if the execution itself can be automated.</p>
+<h3 id="3113-engineering-evaluation-framework-for-agentization">31.1.3 Engineering Evaluation Framework for Agentization<a class="headerlink" href="#3113-engineering-evaluation-framework-for-agentization" title="Permanent link">&para;</a></h3>
+<p>Teams need a structured decision framework before agentizing a task.</p>
+<p><strong>Dimension 1: Structurability.</strong> Agents are strongest not at "creative work" in the abstract, but at structured reasoning: decomposing a task into explicit steps. If the hard part is finding the right sequence of steps, the task is a good candidate. If the hard part is subjective judgment, such as judging the literary value of a passage, agentization is less suitable. Work such as ReAct, Tree of Thoughts, Graph of Thoughts, PAL, Self-Refine, and Reflexion shows that structured reasoning usually requires making thoughts, actions, programmatic intermediate representations, and self-feedback explicit rather than relying on one-shot generation (Yao, Zhao et al. 2023; Yao, Yu et al. 2023; Besta et al. 2024; Gao et al. 2023; Madaan et al. 2023; Shinn et al. 2023).</p>
+<p><strong>Dimension 2: Exception frequency.</strong> If exceptions dominate the task, agentization can become inefficient: the agent proposes a plan, humans reject it, the agent tries again, and the loop becomes slower than direct manual work. A useful rule of thumb: tasks with exception rates below 30 percent are suitable; above 70 percent, humans should stay in the lead.</p>
+<p><strong>Dimension 3: Reversibility of errors.</strong> Reversible operations, such as format normalization, can be authorized more aggressively. Irreversible operations, such as deletion, require multi-person approval.</p>
+<p><strong>Dimension 4: Marginal benefit of replacing manual work.</strong> Prioritize high-frequency, rule-based, time-consuming tasks such as alert attribution, format repair, and rule generation. Delay low-frequency, high-judgment, low-effort tasks such as architecture design and compliance policy definition.</p>
+<p><strong>Dimension 5: Compatibility with existing systems.</strong> Agentization should not require a full platform rewrite. A good agent architecture can read existing quality reports, call existing cleaning tools, and write into existing lineage systems.</p>
+<h3 id="3114-common-organizational-resistance">31.1.4 Common Organizational Resistance<a class="headerlink" href="#3114-common-organizational-resistance" title="Permanent link">&para;</a></h3>
+<p>Resistance is often organizational rather than technical.</p>
+<p><strong>Trust crisis: "agents are unreliable."</strong> Engineers have seen too much confident nonsense from AI systems. Start in shadow mode, where the agent observes and recommends without acting. Let engineers compare agent decisions with their own over several weeks.</p>
+<p><strong>Career anxiety: "automation will replace me."</strong> Make the positioning explicit: the agent removes repetitive work, not engineering judgment. Engineers move from rule executors to rule designers and exception specialists.</p>
+<p><strong>Efficiency concern: "approval will slow us down."</strong> Human Gate design must optimize for speed: present enough context, make decisions easy, and auto-pass low-risk operations through policy rather than through accidental neglect.</p>
+<h3 id="3115-from-abstract-capability-to-engineering-anchor-why-dataagent">31.1.5 From Abstract Capability to Engineering Anchor: Why DataAgent<a class="headerlink" href="#3115-from-abstract-capability-to-engineering-anchor-why-dataagent" title="Permanent link">&para;</a></h3>
+<p>If Agentic Data Engineering is discussed only conceptually, it is easy to reduce it to "let the model call more tools." That misses the real difficulty. Tool calling is not the hardest part; the hard part is keeping tool calls inside configurable, verifiable, replayable, and deliverable system boundaries. Research on MRKL, Toolformer, Gorilla, and ToolLLM similarly shows that tool capability becomes engineering-usable only after tools are registered, selected, parameterized, and verified (Karpas et al. 2022; Schick et al. 2023; Patil et al. 2023; Qin et al. 2024).</p>
+<p>DataAgent is useful as an engineering anchor because it puts several key questions into one runnable framework:</p>
+<ol>
+<li><strong>YAML as agent.</strong> Models, tools, scenario prompts, workspace, databases, and semantic services enter declarative configuration, reducing migration cost from experiment to application.</li>
+<li><strong>Main/sub-agent collaboration.</strong> The main agent understands business questions and organizes answers. The NL2SQL sub-agent performs structured querying, so the main agent does not guess tables, fields, or SQL directly.</li>
+<li><strong>Semantic layer enhancement.</strong> The Semantic Service turns tables, fields, metric definitions, and business descriptions into retrievable schema clues, aligning natural-language questions to business semantics before SQL generation.</li>
+<li><strong>Result assetization.</strong> SQL, CSV, reports, and trajectories are written to the workspace. An answer becomes a reviewable, regression-testable, auditable data asset rather than a one-off chat response.</li>
+<li><strong>Service boundaries.</strong> CLI, Python SDK, and A2A Server entry points let DataAgent evolve from a local tool into a reusable enterprise data capability.</li>
+</ol>
+<p>This chapter uses DataAgent as a reference for how the six-layer architecture lands in practice. The full enterprise semantic query assistant appears later as Part XIV Project 15.</p>
+<h2 id="312-agentic-data-engineering-architecture-six-layers">31.2 Agentic Data Engineering Architecture: Six Layers<a class="headerlink" href="#312-agentic-data-engineering-architecture-six-layers" title="Permanent link">&para;</a></h2>
+<h3 id="3121-architecture-overview">31.2.1 Architecture Overview<a class="headerlink" href="#3121-architecture-overview" title="Permanent link">&para;</a></h3>
+<p>Task boundaries must be constrained through layering. Each layer owns one type of responsibility, communicates through structured protocols, and does not share internal mutable state with other layers. Multi-agent conversation frameworks and surveys of autonomous agents both emphasize that complex agent systems need role separation, message protocols, and state isolation to reduce runaway risk (Wu et al. 2023; Wang et al. 2023; Xi et al. 2023).</p>
+<p>Figure 31-1 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part10/Yu-Chap31-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Six-layer architecture for data engineering agents" src="../../../images/part10/Yu-Chap31-Fig01.svg" /></a></p>
+<p><em>Figure 31-1: Six-layer architecture for data engineering agents</em></p>
+<p>Table 31-2 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 31-2: Responsibility boundaries and failure modes of six layers</em></p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Core responsibility</th>
+<th>Boundary that must not be crossed</th>
+<th>Typical failure mode</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Planner</td>
+<td>Generate task plans, split substeps, select tools</td>
+<td>Must not execute tools directly</td>
+<td>Bad plan not detected before execution</td>
+</tr>
+<tr>
+<td>Tool Executor</td>
+<td>Call tools and pass parameters according to plan</td>
+<td>Must not change the plan or skip verification</td>
+<td>Wrong parameters, unhandled tool output</td>
+</tr>
+<tr>
+<td>Verifier</td>
+<td>Validate quality and semantics of execution results</td>
+<td>Must not create new plans or modify data</td>
+<td>Missed anomalies, excessive alerts</td>
+</tr>
+<tr>
+<td>Human Gate</td>
+<td>Approve high-risk operations</td>
+<td>Must not auto-approve or rewrite plans</td>
+<td>Timeout auto-approval, reviewer fatigue</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>Store agent state, decisions, preferences</td>
+<td>Must not participate in the real-time execution path</td>
+<td>Memory pollution, stale state</td>
+</tr>
+<tr>
+<td>Lineage</td>
+<td>Record complete lineage and audit trail</td>
+<td>Must not block execution flow</td>
+<td>Missing fields, inconsistent log format</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3122-planner-task-decomposition-and-dependency-orchestration">31.2.2 Planner: Task Decomposition and Dependency Orchestration<a class="headerlink" href="#3122-planner-task-decomposition-and-dependency-orchestration" title="Permanent link">&para;</a></h3>
+<p>The Planner is the "brain" that converts a high-level intent, such as "clean all abnormal values in table A," into atomic executable steps. The core challenge is not whether it can decompose the task, but whether it chooses the right granularity.</p>
+<p>Too coarse: "fix all quality issues" is not executable. Too fine: repairing 100 rows as 100 independent steps is inefficient and makes dependencies hard to manage.</p>
+<p>Planner design principles:</p>
+<ol>
+<li><strong>Step atomicity.</strong> Each step must be completable by one tool call with clear inputs and outputs.</li>
+<li><strong>Explicit dependencies.</strong> Data dependencies between steps must be declared in the plan.</li>
+<li><strong>Rollback path.</strong> Every write step must include a rollback plan.</li>
+<li><strong>Cost estimation.</strong> The Planner should estimate time and resource cost for each step and trigger review when thresholds are exceeded.</li>
+</ol>
+<h3 id="3123-tool-executor-tool-registry-and-safe-calls">31.2.3 Tool Executor: Tool Registry and Safe Calls<a class="headerlink" href="#3123-tool-executor-tool-registry-and-safe-calls" title="Permanent link">&para;</a></h3>
+<p>The Tool Executor maps abstract plan steps to concrete tool calls. It maintains a <strong>Tool Registry</strong> where each tool declares capability boundaries, parameter schema, risk level, required permission, and rollback support.</p>
+<p>Table 31-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 31-3: Example agent tool registry</em></p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Capability</th>
+<th>Risk</th>
+<th>Required permission</th>
+<th>Rollback support</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data_profiler</code></td>
+<td>Generate data quality report</td>
+<td>Low</td>
+<td>read</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><code>field_fixer</code></td>
+<td>Fix abnormal values in one field</td>
+<td>Medium</td>
+<td>write</td>
+<td>Yes, original values saved</td>
+</tr>
+<tr>
+<td><code>table_rewriter</code></td>
+<td>Rewrite table data in bulk</td>
+<td>High</td>
+<td>write</td>
+<td>Yes, snapshot restore</td>
+</tr>
+<tr>
+<td><code>schema_migrator</code></td>
+<td>Execute schema changes</td>
+<td>High</td>
+<td>admin</td>
+<td>Yes, version rollback</td>
+</tr>
+<tr>
+<td><code>rule_generator</code></td>
+<td>Generate cleaning rules from samples</td>
+<td>Medium</td>
+<td>read+write</td>
+<td>Yes, rule versioning</td>
+</tr>
+<tr>
+<td><code>lineage_query</code></td>
+<td>Query lineage graph</td>
+<td>Low</td>
+<td>read</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><code>alert_aggregator</code></td>
+<td>Aggregate alerts</td>
+<td>Low</td>
+<td>read</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><code>pipeline_trigger</code></td>
+<td>Trigger downstream pipelines</td>
+<td>High</td>
+<td>admin</td>
+<td>No, human confirmation required</td>
+</tr>
+</tbody>
+</table>
+<p>Hard constraints for the Executor:</p>
+<ul>
+<li>It must not call tools outside the registry.</li>
+<li>It must check Human Gate approval before high-risk tool calls.</li>
+<li>It must write all input parameters and outputs to lineage logs.</li>
+</ul>
+<h3 id="3124-verifier-multi-layer-and-semantic-validation">31.2.4 Verifier: Multi-Layer and Semantic Validation<a class="headerlink" href="#3124-verifier-multi-layer-and-semantic-validation" title="Permanent link">&para;</a></h3>
+<p>The Verifier checks more than "did the operation run." It validates results at three levels:</p>
+<ul>
+<li><strong>Format layer.</strong> Field type, non-null constraints, and value ranges follow the schema.</li>
+<li><strong>Statistical layer.</strong> Distribution statistics do not drift unexpectedly after repair.</li>
+<li><strong>Semantic layer.</strong> Cross-field consistency constraints still hold, such as <code>start_time</code> earlier than <code>end_time</code>.</li>
+</ul>
+<p>Verification results have three grades: Pass, Warn, and Block. Block-level anomalies must go to the Human Gate and cannot be retried automatically.</p>
+<h3 id="3125-human-gate-design-principles">31.2.5 Human Gate: Design Principles<a class="headerlink" href="#3125-human-gate-design-principles" title="Permanent link">&para;</a></h3>
+<p>Human Gate is the layer most easily hollowed out. Effective design follows four principles:</p>
+<ol>
+<li><strong>Tiered approval.</strong> Not every operation needs human approval. Route by risk level and impact scope.</li>
+<li><strong>Timeout escalation, not auto-approval.</strong> A timeout should notify backup reviewers, pause related pipelines, or move the system to a safe state.</li>
+<li><strong>Complete review context.</strong> Approval must include original data, before/after diff, impact analysis, and rollback plan.</li>
+<li><strong>Traceable decisions.</strong> Reviewer, time, decision basis, and outcome must be written to lineage.</li>
+</ol>
+<h3 id="3126-memory-state-persistence-and-context-management">31.2.6 Memory: State Persistence and Context Management<a class="headerlink" href="#3126-memory-state-persistence-and-context-management" title="Permanent link">&para;</a></h3>
+<p>Memory stores cross-session state:</p>
+<ul>
+<li><strong>Short-term memory.</strong> Current task context, intermediate results, pending approvals.</li>
+<li><strong>Long-term memory.</strong> Historical decision patterns, user preferences, common incident handling.</li>
+<li><strong>Shared memory.</strong> State needed by multiple agents, such as table owner or ongoing schema changes.</li>
+</ul>
+<p>The main governance risk is memory pollution. Stale, wrong, or conflicting memory can degrade agent decisions. Memory must support TTL and version tags so that decisions are not based on obsolete state.</p>
+<h3 id="3127-lineage-end-to-end-operation-audit">31.2.7 Lineage: End-to-End Operation Audit<a class="headerlink" href="#3127-lineage-end-to-end-operation-audit" title="Permanent link">&para;</a></h3>
+<p>Lineage records not only where data came from, but also who changed it, why, what the old value was, and what validation happened afterward. A complete record should include:</p>
+<ul>
+<li><code>operation_id</code>: unique operation identifier.</li>
+<li><code>timestamp</code>: operation time.</li>
+<li><code>agent_id</code>: executing agent instance.</li>
+<li><code>tool_name</code>: called tool.</li>
+<li><code>input_snapshot</code>: hash or reference before operation.</li>
+<li><code>output_snapshot</code>: hash or reference after operation.</li>
+<li><code>plan_step_id</code>: corresponding Planner step.</li>
+<li><code>verification_result</code>: Verifier result.</li>
+<li><code>human_approval</code>: whether human approval happened and who approved.</li>
+</ul>
+<h3 id="3128-cross-layer-communication-protocols">31.2.8 Cross-Layer Communication Protocols<a class="headerlink" href="#3128-cross-layer-communication-protocols" title="Permanent link">&para;</a></h3>
+<p>The six-layer architecture works only if adjacent layers communicate through structured protocols and cannot bypass one another.</p>
+<p><strong>Planner to Executor:</strong></p>
+<p>Listing 31-1 provides a JSON data example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;step_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;step_20240601_042&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;tool_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;field_fixer&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;tool_params&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">&quot;target_table&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user_events&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nt">&quot;target_field&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;event_date&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="nt">&quot;fix_strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;date_normalization&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="nt">&quot;expected_format&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;yyyy-MM-dd&quot;</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="nt">&quot;preconditions&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;step_20240601_041.status == &#39;completed&#39;&quot;</span><span class="p">],</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span><span class="nt">&quot;rollback_plan&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;snapshot_restore&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="nt">&quot;snapshot_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;snap_20240601_041&quot;</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span><span class="nt">&quot;cost_estimate&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">    </span><span class="nt">&quot;estimated_rows&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span><span class="nt">&quot;estimated_duration_sec&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">30</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">  </span><span class="nt">&quot;risk_level&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;medium&quot;</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>Listing 31-1: JSON data example</em></p>
+<p><strong>Executor to Verifier:</strong></p>
+<p>Listing 31-2 provides a JSON schema example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;step_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;step_20240601_042&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;tool_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;field_fixer&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;completed&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">&quot;input_snapshot_hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:abc123...&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">&quot;output_snapshot_hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:def456...&quot;</span><span class="p">,</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="nt">&quot;affected_rows&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">4823</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="nt">&quot;affected_fields&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;user_events.event_date&quot;</span><span class="p">],</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="nt">&quot;execution_duration_ms&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">28500</span><span class="p">,</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span><span class="nt">&quot;warnings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;3 rows had ambiguous date formats, defaulted to yyyy-MM-dd&quot;</span><span class="p">]</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="p">}</span>
+</code></pre></div>
+<p><em>Listing 31-2: JSON schema example</em></p>
+<p><strong>Verifier to Human Gate:</strong> the Verifier submits a <code>VerificationReport</code> containing format, statistical, and semantic checks, confidence scores, and recommended action.</p>
+<p>Hard constraints:</p>
+<ol>
+<li><strong>No skipped middle layer.</strong> Executor cannot send results directly to Human Gate; Planner cannot query Lineage directly without the Memory-mediated interface.</li>
+<li><strong>No shared mutable state.</strong> Layers communicate by messages, not shared memory.</li>
+<li><strong>Timeout and degradation.</strong> Each layer call must have a timeout. On timeout, the system follows predefined degradation rules based on risk, usually escalating to Human Gate or safely terminating.</li>
+</ol>
+<h3 id="3129-failure-isolation-and-degradation">31.2.9 Failure Isolation and Degradation<a class="headerlink" href="#3129-failure-isolation-and-degradation" title="Permanent link">&para;</a></h3>
+<p>Table 31-4 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 31-4: Degradation strategies for six-layer failures</em></p>
+<table>
+<thead>
+<tr>
+<th>Failed layer</th>
+<th>Failure type</th>
+<th>Degradation strategy</th>
+<th>Recovery condition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Planner</td>
+<td>Plan generation timeout or unreasonable plan</td>
+<td>Use templated plan based on known successful plans</td>
+<td>Resume after three successful manual plans</td>
+</tr>
+<tr>
+<td>Executor</td>
+<td>Tool call failure</td>
+<td>Skip step and mark for manual handling</td>
+<td>Tool recovers and validation passes</td>
+</tr>
+<tr>
+<td>Verifier</td>
+<td>Verification service unavailable</td>
+<td>Escalate all operations to Human Gate</td>
+<td>Verification service recovers</td>
+</tr>
+<tr>
+<td>Human Gate</td>
+<td>Reviewer unavailable</td>
+<td>Escalate to backup reviewer or pause nonurgent operations</td>
+<td>Reviewer confirms</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>Memory read failure</td>
+<td>Use default config and mark memory unavailable</td>
+<td>Memory storage recovers</td>
+</tr>
+<tr>
+<td>Lineage</td>
+<td>Log write failure</td>
+<td>Cache logs locally and backfill later</td>
+<td>Lineage storage recovers</td>
+</tr>
+</tbody>
+</table>
+<p>The key principle is that degradation must increase human involvement. When automation is unreliable, the system should become more conservative, not continue in an unsafe automatic mode.</p>
+<h3 id="31210-where-dataagent-fits">31.2.10 Where DataAgent Fits<a class="headerlink" href="#31210-where-dataagent-fits" title="Permanent link">&para;</a></h3>
+<p>DataAgent can be understood as an Agentic Data Engineering framework for enterprise data tasks. It does not put every capability into one large model. Instead, configuration, tools, sub-agents, semantic layer, and workspace turn natural-language tasks into manageable engineering units.</p>
+<p>Table 31-5 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 31-5: Mapping DataAgent to the six-layer architecture</em></p>
+<table>
+<thead>
+<tr>
+<th>Architecture layer</th>
+<th>DataAgent capability</th>
+<th>Meaning for data engineering agents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Planner</td>
+<td>FlexAgent, ReAct main agent, <code>SCENARIO</code>, task prompts</td>
+<td>Convert business questions into executable steps and decide when to call tools or sub-agents</td>
+</tr>
+<tr>
+<td>Tool Executor</td>
+<td><code>TOOLS.local_functions</code>, Model Context Protocol (MCP) tools, agent-to-agent (A2A) tools, <code>nl2sql_sub_agent_tool</code></td>
+<td>Register tool calls explicitly and avoid bypassing tool boundaries</td>
+</tr>
+<tr>
+<td>Verifier</td>
+<td>NL2SQL Validator, SQL explain, metadata match, executor preview</td>
+<td>Add structured checks before SQL execution and answer interpretation</td>
+</tr>
+<tr>
+<td>Human Gate</td>
+<td>Human feedback nodes, approval workflows, external approval systems</td>
+<td>Keep high-risk queries, writes, and cross-system triggers under human confirmation</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>Context, message history, history writer, memory indexer</td>
+<td>Preserve session state, historical decisions, and reusable context</td>
+</tr>
+<tr>
+<td>Lineage</td>
+<td>Context trajectory, workspace files, SQL/CSV/report artifacts, tool return records</td>
+<td>Leave replayable evidence for audit, review, and regression tests</td>
+</tr>
+</tbody>
+</table>
+<p>DataAgent is not claimed to contain every production governance capability. Its value here is showing the carrying points a practical data engineering agent needs. For example, the NL2SQL sub-agent separates Perceptor, Generator, Validator, Reflector, Executor, and Selector. This is closer to production than allowing the main agent to generate SQL and answer directly, because failures can be located: schema recall failure, SQL generation failure, validation failure, execution failure, or result interpretation failure.</p>
+<p>DataAgent has three roles in this part:</p>
+<ol>
+<li><strong>Architecture reference.</strong> Chapter 31 maps it to the six layers.</li>
+<li><strong>Capability base.</strong> Chapters 32-34 can connect collection, cleaning, evaluation, and DataOps capabilities as tools, sub-agents, or A2A services.</li>
+<li><strong>Governance sample.</strong> Chapter 35 extends workspace isolation, path allowlists, tool authorization, audit logs, and service authentication from DataAgent-like runtime boundaries.</li>
+</ol>
+<h2 id="313-task-boundaries-and-automation-levels">31.3 Task Boundaries and Automation Levels<a class="headerlink" href="#313-task-boundaries-and-automation-levels" title="Permanent link">&para;</a></h2>
+<h3 id="3131-four-level-automation-model">31.3.1 Four-Level Automation Model<a class="headerlink" href="#3131-four-level-automation-model" title="Permanent link">&para;</a></h3>
+<p>Not all data engineering tasks are suitable for fully automatic execution. This chapter proposes a four-level automation model, where each level corresponds to different agent permissions and human involvement.</p>
+<p>Table 31-6 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 31-6: Four-level automation matrix</em></p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Name</th>
+<th>Agent role</th>
+<th>Human role</th>
+<th>Typical tasks</th>
+<th>Hard constraint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1</td>
+<td>Recommendation</td>
+<td>Analyze and suggest</td>
+<td>Decide and execute</td>
+<td>Alert attribution, quality report interpretation</td>
+<td>Agent performs no writes</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>Semi-automatic</td>
+<td>Analyze and draft operations</td>
+<td>Review draft and confirm execution</td>
+<td>Parser repair, cleaning-rule suggestions</td>
+<td>Writes require human confirmation</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>Approval-based</td>
+<td>Analyze, propose, sandbox validate</td>
+<td>Approve plan and monitor execution</td>
+<td>Schema migration, bulk repair</td>
+<td>High-risk operations require multi-person approval</td>
+</tr>
+<tr>
+<td>L4</td>
+<td>Autonomous</td>
+<td>Complete bounded flow independently</td>
+<td>Post-hoc audit and sampling</td>
+<td>Format normalization, deduplication</td>
+<td>Scope must be predefined</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3132-steps-that-always-require-human-review">31.3.2 Steps That Always Require Human Review<a class="headerlink" href="#3132-steps-that-always-require-human-review" title="Permanent link">&para;</a></h3>
+<p>The following steps must retain human review at any automation level:</p>
+<ol>
+<li><strong>Schema changes.</strong> Adding, deleting, renaming, or changing field types has broad impact and is difficult to fully roll back.</li>
+<li><strong>Data deletion.</strong> Physical deletion requires confirmation and recorded rationale.</li>
+<li><strong>Rule release.</strong> A new cleaning rule must be approved before moving from sandbox to production.</li>
+<li><strong>Cross-system action.</strong> Triggering downstream pipelines or notifying external teams requires confirmation.</li>
+<li><strong>Cost-sensitive operations.</strong> Full-table scans or large reprocessing jobs above cost thresholds require approval.</li>
+</ol>
+<h3 id="3133-human-ai-collaboration-flow">31.3.3 Human-AI Collaboration Flow<a class="headerlink" href="#3133-human-ai-collaboration-flow" title="Permanent link">&para;</a></h3>
+<p>Figure 31-2 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part10/Yu-Chap31-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Human-AI collaboration flow by risk level" src="../../../images/part10/Yu-Chap31-Fig02.svg" /></a></p>
+<p><em>Figure 31-2: Human-AI collaboration flow by risk level</em></p>
+<h2 id="314-minimum-viable-data-engineering-agent">31.4 Minimum Viable Data Engineering Agent<a class="headerlink" href="#314-minimum-viable-data-engineering-agent" title="Permanent link">&para;</a></h2>
+<h3 id="3141-mvp-definition">31.4.1 MVP Definition<a class="headerlink" href="#3141-mvp-definition" title="Permanent link">&para;</a></h3>
+<p>A minimum viable Data Engineering Agent should complete this loop independently:</p>
+<ol>
+<li><strong>Read a data quality report</strong> from a tool such as <code>data_profiler</code>.</li>
+<li><strong>Generate a repair plan</strong> by ranking defects and producing field-level repair steps.</li>
+<li><strong>Call cleaning tools</strong> such as <code>field_fixer</code>.</li>
+<li><strong>Submit a diff report</strong> comparing before/after snapshots and marking repair items and risks.</li>
+<li><strong>Wait for acceptance</strong> by sending the report to Human Gate before archival.</li>
+</ol>
+<h3 id="3142-technology-choices">31.4.2 Technology Choices<a class="headerlink" href="#3142-technology-choices" title="Permanent link">&para;</a></h3>
+<p>Table 31-7 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 31-7: Technology choices for MVP components</em></p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Minimal implementation</th>
+<th>Recommended implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Planner</td>
+<td>Rule-based step templates</td>
+<td>LLM plus few-shot prompts and tool descriptions</td>
+</tr>
+<tr>
+<td>Executor</td>
+<td>Python function wrappers</td>
+<td>Structured Tool Registry plus parameter validation</td>
+</tr>
+<tr>
+<td>Verifier</td>
+<td>SQL constraint checks</td>
+<td>Great Expectations / Soda plus custom semantic rules</td>
+</tr>
+<tr>
+<td>Human Gate</td>
+<td>Slack/DingTalk approval message</td>
+<td>Dedicated approval dashboard plus timeout escalation</td>
+</tr>
+<tr>
+<td>Memory</td>
+<td>JSON file persistence</td>
+<td>Vector database plus structured state storage</td>
+</tr>
+<tr>
+<td>Lineage</td>
+<td>Operation log table</td>
+<td>OpenLineage / Marquez plus custom extensions</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3143-a-semantic-query-mvp-with-dataagent">31.4.3 A Semantic Query MVP With DataAgent<a class="headerlink" href="#3143-a-semantic-query-mvp-with-dataagent" title="Permanent link">&para;</a></h3>
+<p>The previous MVP focuses on data quality repair. In DataAgent's semantic query scenario, the MVP can be narrower and lower risk: the agent does not modify production data. It converts natural language to structured queries, writes results to disk, and generates a report.</p>
+<p>Listing 31-3 provides a data-agent task flow example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Business question
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>  -&gt; main agent understands intent
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>  -&gt; Semantic Service retrieves candidate tables, fields, and metric definitions
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>  -&gt; NL2SQL sub-agent generates, validates, and executes SQL
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>  -&gt; SQL and CSV are written to workspace
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>  -&gt; main agent explains or reports from results
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>  -&gt; trajectory, tool returns, and artifacts enter audit records
+</code></pre></div>
+<p><em>Listing 31-3: Data-agent task flow example</em></p>
+<p>This usually maps to L1-L2. The agent may read metadata, generate SQL, execute read-only queries, and save results, but it should not rewrite schemas, publish metric definitions, or trigger downstream production pipelines.</p>
+<p>Table 31-8 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 31-8: Configuration gates for a DataAgent semantic query MVP</em></p>
+<table>
+<thead>
+<tr>
+<th>Configuration surface</th>
+<th>Typical content</th>
+<th>MVP gate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MODEL</code></td>
+<td>chat model, temperature, base URL, API key</td>
+<td>Config loads; secrets are not stored in repository or written config</td>
+</tr>
+<tr>
+<td><code>SCENARIO</code></td>
+<td>task description, tool-call constraints, output format</td>
+<td>Database queries must go through <code>nl2sql_sub_agent_tool</code></td>
+</tr>
+<tr>
+<td><code>TOOLS</code></td>
+<td>local functions, MCP tools, A2A tool registration</td>
+<td>Register only necessary tools; do not expose raw SQL executor to main agent</td>
+</tr>
+<tr>
+<td><code>DATABASE</code> / <code>METAVISOR</code></td>
+<td>database connection, Semantic Service address, candidate retrieval config</td>
+<td>Use read-only account first and verify schema recall and SQL scope</td>
+</tr>
+<tr>
+<td><code>WORKSPACE</code></td>
+<td>artifact path and allowed path</td>
+<td>SQL, CSV, and reports can be written only to authorized directories</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3144-mvp-evaluation-metrics">31.4.4 MVP Evaluation Metrics<a class="headerlink" href="#3144-mvp-evaluation-metrics" title="Permanent link">&para;</a></h3>
+<p>Track the following after launch:</p>
+<ul>
+<li><strong>Repair coverage:</strong> defects repaired by agent divided by total defects.</li>
+<li><strong>Repair accuracy:</strong> repairs requiring no human correction divided by total agent repairs.</li>
+<li><strong>Human approval pass rate:</strong> Human Gate approvals divided by submitted approvals. Very high may mean the gate is too loose; very low may mean poor agent quality or bad thresholds.</li>
+<li><strong>Mean time to repair:</strong> end-to-end time from detection to repair.</li>
+<li><strong>Rollback rate:</strong> proportion of agent operations rolled back, ideally near zero.</li>
+</ul>
+<h3 id="3145-end-to-end-mvp-example">31.4.5 End-to-End MVP Example<a class="headerlink" href="#3145-end-to-end-mvp-example" title="Permanent link">&para;</a></h3>
+<p>Input quality report for <code>orders</code>:</p>
+<ul>
+<li><code>order_date</code>: 3 percent of records use <code>MM/dd/yyyy</code> instead of <code>yyyy-MM-dd</code>, about 1,500 rows.</li>
+<li><code>customer_email</code>: 5 percent contain invisible characters, leading/trailing spaces, or full-width characters, about 2,500 rows.</li>
+<li><code>amount</code>: 0.5 percent are negative, possibly refunds, about 250 rows.</li>
+</ul>
+<p><em>Planner output</em></p>
+<p>Table 31-9 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 31-9: Planner output</em></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Tool</th>
+<th>Target</th>
+<th>Estimated rows</th>
+<th>Risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Step 1</td>
+<td><code>field_fixer</code></td>
+<td>Normalize <code>order_date</code></td>
+<td>~1500</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Step 2</td>
+<td><code>field_fixer</code></td>
+<td>Clean <code>customer_email</code></td>
+<td>~2500</td>
+<td>Low</td>
+</tr>
+<tr>
+<td>Step 3</td>
+<td><code>data_profiler</code></td>
+<td>Analyze context for negative <code>amount</code></td>
+<td>~250</td>
+<td>Low, read-only</td>
+</tr>
+<tr>
+<td>Step 4</td>
+<td><code>rule_generator</code></td>
+<td>Generate handling suggestion from negative-value analysis</td>
+<td>~250</td>
+<td>Medium</td>
+</tr>
+</tbody>
+</table>
+<p>The Executor automatically runs Steps 1 and 2. Step 3 finds that 92 percent of negative amounts have corresponding refund IDs and 8 percent remain unexplained.</p>
+<p>Verifier results:</p>
+<ul>
+<li>Step 1: <code>order_date</code> compliance improves from 97 percent to 100 percent with no side effects. Pass.</li>
+<li>Step 2: <code>customer_email</code> anomaly rate drops from 5 percent to 0.1 percent. Pass.</li>
+<li>Step 3: analysis report is logically consistent. Pass.</li>
+</ul>
+<p>Human Gate approves Step 4's suggestion to mark the unexplained 8 percent as pending human review. Lineage records the full chain: who changed what, with which tool, before/after hashes, validation results, and approval.</p>
+<h3 id="3146-mvp-limitations">31.4.6 MVP Limitations<a class="headerlink" href="#3146-mvp-limitations" title="Permanent link">&para;</a></h3>
+<p>MVPs must not be mistaken for production systems:</p>
+<ol>
+<li><strong>Limited plan templates.</strong> The Planner may fail on quality problems not covered by templates.</li>
+<li><strong>Incomplete verification.</strong> Basic format and statistical checks may miss deep semantic errors, such as currency-unit confusion.</li>
+<li><strong>Human Gate bottleneck.</strong> Early agents often submit many items for approval; poor workflow design can make the gate the slowest layer.</li>
+<li><strong>Weak memory.</strong> MVP memory is often simple, so the agent cannot reuse historical experience across sessions.</li>
+</ol>
+<h2 id="315-case-review-from-mvp-to-production-agent">31.5 Case Review: From MVP to Production Agent<a class="headerlink" href="#315-case-review-from-mvp-to-production-agent" title="Permanent link">&para;</a></h2>
+<p>An e-commerce data team evolves through three stages:</p>
+<p><strong>Stage 1: MVP.</strong> The agent reads quality reports, generates repair plans, calls cleaning tools, and submits diff reports. In the first month it handles 60 percent of field-level anomalies with about 78 percent accuracy. The main weakness is compound anomalies: one field has both format and semantic issues, and the agent produces contradictory repair steps.</p>
+<p><strong>Stage 2: semantic verification.</strong> Statistical distribution checks and cross-field consistency are added. Accuracy rises to 91 percent, but the Verifier becomes too sensitive and queues too many warnings for Human Gate.</p>
+<p><strong>Stage 3: Human Gate tiering.</strong> The team applies the four-level automation model. Field-level format fixes become L4 autonomous within a bounded scope. Table-level schema changes remain L3 approval-based. The daily approval queue drops from more than 200 items to about 15.</p>
+<h3 id="key-lessons">Key Lessons<a class="headerlink" href="#key-lessons" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Do not chase full automation immediately.</strong> The MVP goal is to prove that the agent can do the right thing, not everything.</li>
+<li><strong>Verifier thresholds require tuning.</strong> Too loose misses problems; too strict causes alert fatigue.</li>
+<li><strong>Human Gate design determines deployability.</strong> Bad approval experience makes engineers bypass the gate; overly loose approval makes the gate meaningless.</li>
+</ol>
+<h3 id="why-layered-architecture-beats-a-monolithic-agent">Why Layered Architecture Beats a Monolithic Agent<a class="headerlink" href="#why-layered-architecture-beats-a-monolithic-agent" title="Permanent link">&para;</a></h3>
+<p>In the opening incident, Planner and Executor shared one model instance, with no independent Verifier or real Human Gate. A hallucination or wrong judgment could pass straight into the data layer.</p>
+<p>The value of layering is defense in depth:</p>
+<ul>
+<li><strong>Planner failure:</strong> Verifier detects unreasonable plans before execution.</li>
+<li><strong>Executor failure:</strong> Verifier checks format, distribution, and semantics and blocks or rolls back.</li>
+<li><strong>Verifier miss:</strong> Human reviewers may still notice obvious diff anomalies.</li>
+<li><strong>Human Gate mistake:</strong> Lineage preserves who approved what, when, and why.</li>
+</ul>
+<p>The architecture assumes every layer can fail and prevents one failure from becoming catastrophic.</p>
+<h3 id="production-agent-maturity-model">Production Agent Maturity Model<a class="headerlink" href="#production-agent-maturity-model" title="Permanent link">&para;</a></h3>
+<p>Table 31-10 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 31-10: Data engineering agent maturity model</em></p>
+<table>
+<thead>
+<tr>
+<th>Maturity</th>
+<th>Characteristics</th>
+<th>Automation</th>
+<th>Human intervention</th>
+<th>Typical timeline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L0: Manual</td>
+<td>All tasks done by humans</td>
+<td>0%</td>
+<td>100%</td>
+<td>Baseline</td>
+</tr>
+<tr>
+<td>L1: Recommendation</td>
+<td>Agent analyzes and suggests; human executes</td>
+<td>&lt; 30%</td>
+<td>Frequent</td>
+<td>1-2 months</td>
+</tr>
+<tr>
+<td>L2: Semi-automatic</td>
+<td>Agent executes low-risk tasks; high-risk needs approval</td>
+<td>30-60%</td>
+<td>Daily</td>
+<td>3-6 months</td>
+</tr>
+<tr>
+<td>L3: Conditional autonomy</td>
+<td>Agent operates within bounded scope; humans handle exceptions</td>
+<td>60-85%</td>
+<td>Occasional</td>
+<td>6-12 months</td>
+</tr>
+<tr>
+<td>L4: High autonomy</td>
+<td>Agent manages most tasks; humans audit afterward</td>
+<td>&gt; 85%</td>
+<td>Exceptional</td>
+<td>12+ months</td>
+</tr>
+</tbody>
+</table>
+<p>The bottleneck is often organizational trust rather than technology. Engineers need time to observe behavior before granting more authority.</p>
+<h2 id="316-checklist-data-engineering-agent-architecture-review">31.6 Checklist: Data Engineering Agent Architecture Review<a class="headerlink" href="#316-checklist-data-engineering-agent-architecture-review" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[ ] Are Planner and Executor separated at the code level?</li>
+<li>[ ] Does every write step include a rollback plan?</li>
+<li>[ ] Does every registered tool declare risk level and required permission?</li>
+<li>[ ] Does the Verifier cover format, statistical, and semantic checks?</li>
+<li>[ ] Does Human Gate use timeout escalation rather than auto-approval?</li>
+<li>[ ] Does every approval request include diff, impact scope, and rollback context?</li>
+<li>[ ] Does Lineage cover who, when, which tool, what changed, and validation result?</li>
+<li>[ ] Does Memory use TTL to avoid stale decisions?</li>
+<li>[ ] Are automation levels explicitly assigned?</li>
+<li>[ ] Is there an alert threshold for agent operation rollback rate?</li>
+</ul>
+<h2 id="317-chapter-links">31.7 Chapter Links<a class="headerlink" href="#317-chapter-links" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Chapters 18-20:</strong> reasoning, tool use, and agent memory provide foundations for Planner and Memory.</li>
+<li><strong>Chapters 24-26:</strong> DataOps flywheel, data versioning, and platform observability support Lineage and Verifier.</li>
+<li><strong>Chapter 32:</strong> applies this architecture to collection, parsing, and cleaning.</li>
+<li><strong>Chapter 33:</strong> extends Human Gate design into labeling and evaluation.</li>
+<li><strong>Chapter 34:</strong> extends Lineage and Memory into operational autonomy.</li>
+<li><strong>Chapter 35:</strong> deepens permissions, security, and human-AI collaboration.</li>
+<li><strong>Part XIV Project 15:</strong> builds an enterprise semantic query assistant with DataAgent.</li>
+</ul>
+<h2 id="318-further-reading-and-discussion">31.8 Further Reading and Discussion<a class="headerlink" href="#318-further-reading-and-discussion" title="Permanent link">&para;</a></h2>
+<h3 id="common-architecture-mistakes">Common Architecture Mistakes<a class="headerlink" href="#common-architecture-mistakes" title="Permanent link">&para;</a></h3>
+<p><strong>Mistake 1: "The stricter the Verifier, the better."</strong> Overly strict thresholds create alert floods and reviewer fatigue. Start by blocking only clear data damage, then tighten thresholds based on false-positive and false-negative measurements.</p>
+<p><strong>Mistake 2: "More approvers means safer."</strong> Multi-person approval increases safety but also delay. Approval count should scale with risk, not be uniform.</p>
+<p><strong>Mistake 3: "Memory is optional."</strong> Without memory, the agent reasons from scratch for similar issues and may make inconsistent decisions. Even a minimal JSON record of historical decision patterns can have high ROI.</p>
+<p><strong>Mistake 4: "Lineage belongs to operations, not agent design."</strong> Lineage is not only for postmortems. The agent needs lineage before planning so it can estimate downstream impact.</p>
+<h3 id="integration-path-with-existing-data-platforms">Integration Path With Existing Data Platforms<a class="headerlink" href="#integration-path-with-existing-data-platforms" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Start read-only.</strong> Deploy L1 recommendation agents first.</li>
+<li><strong>Validate in sandbox.</strong> Test write behavior against production snapshots.</li>
+<li><strong>Pilot on one noncritical table.</strong> Grant field-level writes and observe for two to four weeks.</li>
+<li><strong>Expand gradually.</strong> Increase scope by data classification and automation level.</li>
+<li><strong>Deploy platform-wide.</strong> Enable agents for eligible tables while retaining Human Gate as the final safety layer.</li>
+</ol>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter organized the core problems, processing flow, and acceptance criteria for "architecture and task boundaries of data engineering agents" in large-model data engineering. Its contribution is to place concepts, data objects, quality signals, and engineering delivery into one narrative so readers can judge which steps must be explicitly recorded and which results must be verified through sampling, evaluation, or audit.</p>
+<p>The methods in this chapter should be applied by jointly considering data sources, business goals, model capability, cost budget, and compliance requirements. For scenarios involving sensitive information, cross-system calls, automated decisions, or public release, human review, version freeze, permission control, and exception rollback should be retained. Example flows should not be generalized directly into production commitments; this is also consistent with production-grade MLOps and AI risk-governance requirements for traceability, risk classification, and human oversight.</p>
+<p>For boundary design, the chapter proposed four automation levels: recommendation, semi-automatic, approval-based, and autonomous. It clarified that schema changes, data deletion, rule release, and cross-system actions must require human review, and it proposed assessing whether a task is suitable for agentization through dimensions such as structurability, exception rate, and reversibility. Finally, the chapter demonstrated two minimum viable agent paths: data-quality repair and DataAgent semantic query, and used the maturity model to show that the bottleneck from L0 to L4 is mainly organizational trust rather than technology alone.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Besta M, Blach N, Kubicek A, Gerstenberger R, Podstawski M, Gianinazzi L, Gajda J, Lehmann T, Niewiadomski H, Nyczyk P, Hoefler T (2024) Graph of Thoughts: Solving Elaborate Problems with Large Language Models. In: Proceedings of the AAAI Conference on Artificial Intelligence 38(16):17682-17690. https://doi.org/10.1609/aaai.v38i16.29720.</p>
+<p>Gao L, Madaan A, Zhou S, Alon U, Liu P, Yang Y, Callan J, Neubig G (2023) PAL: Program-aided Language Models. In: Proceedings of the 40th International Conference on Machine Learning, pp 10764-10799. arXiv:2211.10435.</p>
+<p>Karpas E, Abend O, Belinkov Y, Lenz B, Lieber O, Ratner N, Shoham Y, Bata H, Levine Y, Leyton-Brown K, Muhlgay D, Rozen N, Schwartz E, Shashua A, Shuster K, Tenenbaum J, Wolf L, Zettlemoyer L, Riedel S (2022) MRKL Systems: A Modular, Neuro-Symbolic Architecture That Combines Large Language Models, External Knowledge Sources and Discrete Reasoning. arXiv preprint arXiv:2205.00445.</p>
+<p>Kreuzberger D, Kuhl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879. arXiv:2205.02302.</p>
+<p>Madaan A, Tandon N, Gupta P, Hallinan S, Gao L, Wiegreffe S, Alon U, Dziri N, Prabhumoye S, Yang Y, Gupta S, Majumder B P, Hermann K, Welleck S, Yazdanbakhsh A, Clark P (2023) Self-Refine: Iterative Refinement with Self-Feedback. In: Advances in Neural Information Processing Systems 36. arXiv:2303.17651.</p>
+<p>Mialon G, Dessi R, Lomeli M, Nalmpantis C, Pasunuru R, Raileanu R, Roziere B, Schick T, Dwivedi-Yu J, Celikyilmaz A, Grave E, LeCun Y, Scialom T (2023) Augmented Language Models: A Survey. Transactions on Machine Learning Research.</p>
+<p>Nakano R, Hilton J, Balaji S, Wu J, Ouyang L, Kim C, Hesse C, Jain S, Kosaraju V, Saunders W, Jiang X, Cobbe K, Eloundou T, Krueger G, Button K, Knight M, Chess B, Schulman J (2021) WebGPT: Browser-assisted question-answering with human feedback. arXiv preprint arXiv:2112.09332.</p>
+<p>Park J S, O'Brien J C, Cai C J, Morris M R, Liang P, Bernstein M S (2023) Generative Agents: Interactive Simulacra of Human Behavior. In: Proceedings of the 36th Annual ACM Symposium on User Interface Software and Technology, Article 2. https://doi.org/10.1145/3586183.3606763.</p>
+<p>Patil S G, Zhang T, Wang X, Gonzalez J E (2023) Gorilla: Large Language Model Connected with Massive APIs. arXiv preprint arXiv:2305.15334.</p>
+<p>Qin Y, Liang S, Ye Y, Zhu K, Yan L, Lu Y, Lin Y, Cong X, Tang X, Qian B, Zhao S, Tian R, Xie R, Zhou J, Gerstein M, Li D, Liu Z, Sun M (2024) ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs. In: International Conference on Learning Representations.</p>
+<p>Schick T, Dwivedi-Yu J, Dessi R, Raileanu R, Lomeli M, Hambro E, Zettlemoyer L, Cancedda N, Scialom T (2023) Toolformer: Language Models Can Teach Themselves to Use Tools. In: Advances in Neural Information Processing Systems 36. arXiv:2302.04761.</p>
+<p>Shinn N, Cassano F, Gopinath A, Narasimhan K, Yao S (2023) Reflexion: Language Agents with Verbal Reinforcement Learning. In: Advances in Neural Information Processing Systems 36. arXiv:2303.11366.</p>
+<p>Wang L, Ma C, Feng X, Zhang Z, Yang H, Zhang J, Chen Z, Tang J, Chen X, Lin Y, Zhao W X, Wei Z, Wen J-R (2023) A Survey on Large Language Model based Autonomous Agents. arXiv preprint arXiv:2308.11432.</p>
+<p>Wu Q, Bansal G, Zhang J, Wu Y, Li B, Zhu E, Jiang L, Zhang X, Zhang S, Liu J, Awadallah A H, White R W, Burger D, Wang C (2023) AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation. arXiv preprint arXiv:2308.08155.</p>
+<p>Xi Z, Chen W, Guo X, He W, Ding Y, Hong B, Zhang M, Wang J, Jin S, Zhou E, Zheng R, Fan X, Wang X, Xiong L, Zhou Y, Wang W, Jiang C, Zou Y, Liu X, Yin Z, Dou S, Weng R, Cheng W, Zhang Q, Qin W, Zheng Y, Qiu X, Huang X, Gui T (2023) The Rise and Potential of Large Language Model Based Agents: A Survey. arXiv preprint arXiv:2309.07864.</p>
+<p>Yao S, Zhao J, Yu D, Du N, Shafran I, Narasimhan K, Cao Y (2023) ReAct: Synergizing Reasoning and Acting in Language Models. In: International Conference on Learning Representations. arXiv:2210.03629.</p>
+<p>Yao S, Yu D, Zhao J, Shafran I, Griffiths T L, Cao Y, Narasimhan K (2023) Tree of Thoughts: Deliberate Problem Solving with Large Language Models. In: Advances in Neural Information Processing Systems 36. arXiv:2305.10601.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Part Overview">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Part Overview
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch32_auto_collection_parsing_cleaning/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 32: Automated Collection, Parsing, and Cleaning Agents">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

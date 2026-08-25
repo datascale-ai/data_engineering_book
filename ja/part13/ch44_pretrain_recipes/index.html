@@ -1,0 +1,1148 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part13/ch44_pretrain_recipes/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>第44章：LLM 预训练配方：DeepSeek 与 Qwen - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#44llm-deepseek-qwen" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              第44章：LLM 预训练配方：DeepSeek 与 Qwen
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part13/ch44_pretrain_recipes/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../en/part13/ch44_pretrain_recipes/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      摘要
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      关键词
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      学习目标
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1b-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      案例分析：1B Token 小规模复现中的等比例缩放失效问题
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#441" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.1 公开数据透明度光谱
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#442" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.2 数据组成横向对照大表
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#443" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.3 中英比与多语言策略
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.3 中英比与多语言策略">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qwen25" class="md-nav__link">
+    <span class="md-ellipsis">
+      Qwen2.5 的“泛多语言”战略
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deepseek-v3" class="md-nav__link">
+    <span class="md-ellipsis">
+      DeepSeek-V3 的“中英绝对双核”战略
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#444" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.4 代码数据的迁移红利
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.4 代码数据的迁移红利">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deepseek-coder-v3" class="md-nav__link">
+    <span class="md-ellipsis">
+      DeepSeek-Coder 到 V3 的进阶路径
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qwen25-coder" class="md-nav__link">
+    <span class="md-ellipsis">
+      Qwen2.5-Coder 的协同演进
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#llama-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      Llama-3 代码数据策略
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#olmo-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      OLMo-2 代码数据策略
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#445" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.5 数学/推理数据的合成演化
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.5 数学/推理数据的合成演化">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#deepseekmath-verifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      DeepSeekMath 的验证器（Verifier）流水线
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qwen2-math" class="md-nav__link">
+    <span class="md-ellipsis">
+      Qwen2-Math 的合成策略
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#446" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.6 长文本数据来源分析
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.6 长文本数据来源分析">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      自然长文本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      合成生成文本
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      短文档拼接
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      综合分析
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#447-curriculum-schedule" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.7 Curriculum 多阶段训练 schedule
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="44.7 Curriculum 多阶段训练 schedule">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#llama-3_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Llama-3：长上下文扩展与末段退火
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#olmo-2_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      OLMo-2：可复现的两阶段课程
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qwen25-schedule" class="md-nav__link">
+    <span class="md-ellipsis">
+      Qwen2.5：预训练、长上下文与后训练的连续 schedule
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      对复现工程的启示
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#448" class="md-nav__link">
+    <span class="md-ellipsis">
+      44.8 案例分析、常见问题与边界讨论
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      本章小结
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      参考文献
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="44llm-deepseek-qwen">第44章：LLM 预训练配方：DeepSeek 与 Qwen<a class="headerlink" href="#44llm-deepseek-qwen" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">王柯；梁家恩；於俊</div>
+
+<h2 id="_1">摘要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>大语言模型（Large Language Model，LLM）预训练数据配方往往以静态比例表的形式被公开，而真正决定复现成败的，是配方背后阶段化的数据流水线设计。本章以"配方"为分析视角，系统拆解 DeepSeek-V3、Qwen2.5、Llama-3.1 与全开源的 OLMo-2 等主流模型的预训练数据工程实践。内容首先建立由来源、配比、清洗规则与可下载性构成的"透明度光谱"，用以区分白盒、灰盒与黑盒披露；继而横向对照各模型在泛网络文本、代码、数学、书籍与学术文献上的数据组成，分析中英比与多语言采样、代码数据的跨文件依赖解析、数学推理数据的合成与验证器（Verifier）流水线，以及长文本来源与短文档拼接（Packing）策略；最后聚焦课程式（Curriculum）多阶段训练调度，说明数据何时输入、以何种质量与难度输入。本章强调，在有限 token 预算下复现大模型不能简单等比例缩放，而需将预算拆分为覆盖、能力压实、长上下文扩展与退火等阶段，使配方落地为可复盘、可验证的工程流程。</p>
+<h2 id="_2">关键词<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>LLM；数据配方；开源大模型；训练数据；阶段化调度</p>
+<h2 id="_3">学习目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li>能够运用透明度光谱区分 DeepSeek-V3、Qwen2.5、Llama-3.1 与 OLMo-2 等模型在数据披露上的白盒、灰盒与黑盒程度。</li>
+<li>能够对比主流模型在泛网络文本、代码、数学、书籍与学术文献上的数据组成，并分析中英比与多语言采样策略。</li>
+<li>能够设计代码数据的跨文件依赖解析、数学推理数据的合成与验证器流水线，以及长文本与短文档拼接策略。</li>
+<li>能够设计覆盖、能力压实、长上下文扩展与退火等阶段的课程式多阶段训练调度。</li>
+<li>能够解释在有限 token 预算下为何不能等比例缩放，并复现可复盘、可验证的预训练数据流水线。</li>
+</ul>
+<h2 id="1b-token">案例分析：1B Token 小规模复现中的等比例缩放失效问题<a class="headerlink" href="#1b-token" title="Permanent link">&para;</a></h2>
+<p>在尝试小规模复现大模型训练的过程中，研究人员常采用“等比例缩放（Proportional Scaling）”假设：即如果一个大模型在数万亿 Token 上训练成功，那么在 1B Token 规模下按相同比例缩小模型参数、批次大小（Batch Size）、学习率及数据配比，亦应观察到类似且平滑的 Loss 下降趋势。然而，实际的工程反馈往往偏离该假设。</p>
+<p>在典型的 1B Token 复现实验中，常出现以下现象：训练初期（前 20% Token）模型能快速拟合常见词法模式，Loss 正常下降；但在训练中后期，验证集 Loss 开始剧烈波动，特别是代码与数学样本上的困惑度（Perplexity）下降极缓；最终评测显示，模型虽记忆了高频模式，但在长上下文与逻辑推理能力上未见改善。对比实验表明，盲目采用全局静态混合配比的模型，其性能显著劣于采用分阶段课程式（Curriculum）调度的模型。</p>
+<p>究其原因，此类失效问题并非源自超参数设置，而是源于对“数据配方”概念的粗粒度理解。大规模模型技术报告中所披露的领域数据比例（例如网页、代码、数学文本占比），本质上是整个训练周期结束后的数据“统计截面”，而非各个训练阶段的“静态配比施工图”。在 1B Token 这样极为受限的训练预算下，这一问题被显著放大。大规模训练拥有充足的 Token 预算，允许模型在初期充分吸收通用语言分布后，再逐步学习高难度的结构化数据。若在短预算训练中自始至终采用同一套混合配比，模型在尚未建立稳定语言基座的早期，便被过早地引入风格差异大、难度高的数据（如复杂代码和证明题）。结果是：早期宝贵的学习窗口被部分低质量网络文本浪费，而后期的高价值样本又因采样过于分散，无法形成持续且有效的梯度信号，导致训练节奏严重错位。</p>
+<p>因此，有效的预训练“配方”必须被理解为一条高度动态化、阶段化的数据流水线。其实践模式通常包括三个核心阶段：第一阶段以干净的通用文本（General Text）为主，侧重基础语言能力的构建；第二阶段逐步提升专业领域知识（如百科、书籍、基础代码）的权重，引入结构化表达；第三阶段则重点引入数学推导、复杂推理与高质量对齐数据（如合成的指导样本），利用少而精的数据推动模型高阶能力的定向跃升。这一案例深刻表明，缩小 Token 预算绝不等同于机械地等比缩放各项超参数与数据比例。小规模复现对训练节奏的设计提出了更为严苛的要求，预训练中的每一步采样都需要根据模型当前的能力发展阶段进行动态调整。</p>
+<p>与简单缩放式试错不同，DeepSeek-V3 (Liu et al. 2024) 与 Qwen2.5 (Hui et al. 2024) 在研发初期展现出较强的数据阶段化意识。它们并没有试图用一套固定配比的超大混合数据集从头训练到尾，而是在预训练早期大量输入泛领域基础知识与代码，在训练中后期再引入高质量合成的长文本与数学语料。这种“按模型能力发展阶段动态配比数据”的工程策略，不仅降低了分布震荡导致的梯度爆炸风险，也成为这些模型在等比例扩展（Scaling Law）过程中保持推理能力稳步提升的重要原因。</p>
+<hr />
+<h2 id="441">44.1 公开数据透明度光谱<a class="headerlink" href="#441" title="Permanent link">&para;</a></h2>
+<p>在探讨具体的预训练数据配方之前，首先需要建立一个信息可信度标尺。由于商业竞争加剧，当今“开源模型”在数据披露上的态度差异较大。如果不对技术报告中的表述进行降噪，工程师很容易将宣传性表述误读为数据工程的真实依据。为此，本章将主流开源大模型的数据披露程度，划分为一个基于四个维度的“透明度光谱”：<strong>来源（Sources）</strong>、<strong>配比（Mixture/Ratio）</strong>、<strong>清洗规则（Cleaning Pipeline）</strong> 以及 <strong>可下载性（Downloadability）</strong>。</p>
+<p><a class="glightbox" href="../../../images/part13/Wang-Chap44-Fig01-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图44-1：数据配方漏斗 (Data Recipe Funnel)" src="../../../images/part13/Wang-Chap44-Fig01-EN.svg" /></a>
+<em>图44-1：数据配方漏斗 (Data Recipe Funnel)</em></p>
+<p>如图44-1 所示，数据配方的漏斗从上到下逐层收窄。技术报告中披露的宏观数字（如 14.8T Tokens）仅是表层；能够推断出各领域的精确配比已经深入一层；而真正能够落地到工程动作的，是启发式过滤阈值与清洗脚本等细节。</p>
+<ol>
+<li><strong>白盒（White-box）全透明</strong>：
+   这类模型不仅公开论文，还将从爬虫到最终打包的整个数据工厂开源。其数据来源精确到每一个 CommonCrawl dump，配比精确到小数点，清洗脚本（包括去重、过滤、分类器权重）完全公开，并且提供直接的 HuggingFace 下载链接。OLMo 系列 (Groeneveld et al. 2024) 和部分早期的 Amber 模型是典型代表，对开源社区具有较高的数据资产价值。</li>
+<li><strong>灰盒（Grey-box）部分透明</strong>：
+   这是当今大多数头部开源模型（如 DeepSeek-V3、Qwen2.5、Llama-3）所处的象限。这些模型在技术报告中会详细罗列训练所用的宏观数据分类（如 Web、Code、Math），甚至披露相对比例和总量。但通常<strong>不会开源具体的清洗流水线代码</strong>，也不会提供最终清洗完毕的高质量语料包。读者只能依据公开配方自行构建近似复现流程。</li>
+<li><strong>黑盒（Black-box）闭源</strong>：
+   仅在技术报告中模糊提及“我们收集了庞大且高质量的多语言语料库”，没有任何来源切分、没有具体比例、更无代码或数据下载。其披露的数字往往仅具备公关价值，工程指导意义极低。</li>
+</ol>
+<p>图44-2展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part13/Wang-Chap44-Fig02-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图44-2：大模型数据透明度光谱 (Data Transparency Spectrum)" src="../../../images/part13/Wang-Chap44-Fig02-EN.svg" /></a>
+<em>图44-2：大模型数据透明度光谱 (Data Transparency Spectrum)</em></p>
+<blockquote>
+<p><strong>提示</strong>：通用数据采集、清洗（如 MinHash LSH 去重）与分词（Tokenizer）的基础通用方法论，已经在 Ch04（数据源）、Ch05（清洗）、Ch06（分词）中做了详尽铺垫。如第4章给出的预训练数据源分层地图，构成了本章讨论的基石。本章及本篇将不再赘述这些底层基础设施，而是聚焦于不同模型在配方阶段的具体工程权衡。</p>
+</blockquote>
+<p>图44-3展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part13/Wang-Chap44-Fig03.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图44-3：预训练数据源分层地图" src="../../../images/part13/Wang-Chap44-Fig03.png" /></a>
+<em>图44-3：预训练数据源分层地图</em></p>
+<p>表44-1汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 44-1：主流开源大模型数据透明度光谱 (6 行 × 5 列)</em></p>
+<table>
+<thead>
+<tr>
+<th>模型谱系</th>
+<th>来源分类披露</th>
+<th>混合配比披露</th>
+<th>清洗规则/代码披露</th>
+<th>预训练数据可下载</th>
+<th>整体透明度评级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DeepSeek-V3</td>
+<td>详尽披露大类</td>
+<td>披露宏观比例</td>
+<td>仅提供高层策略描述</td>
+<td>否</td>
+<td>灰盒 (部分透明)</td>
+</tr>
+<tr>
+<td>Qwen2.5 系</td>
+<td>详尽披露大类</td>
+<td>披露演进与比例</td>
+<td>描述分类器/去重策略</td>
+<td>否</td>
+<td>灰盒 (部分透明)</td>
+</tr>
+<tr>
+<td>Qwen3 (预期)</td>
+<td>详尽披露大类</td>
+<td>披露演进与比例</td>
+<td>描述新清洗管线</td>
+<td>否</td>
+<td>灰盒 (部分透明)</td>
+</tr>
+<tr>
+<td>Llama-3.1/3.3</td>
+<td>公开大类</td>
+<td>披露阶段 token 比例</td>
+<td>描述阶段化清洗及 schedule</td>
+<td>否</td>
+<td>灰盒 (部分透明)</td>
+</tr>
+<tr>
+<td>OLMo-2</td>
+<td>公开大类</td>
+<td>披露各阶段比例</td>
+<td>代码与策略完全开源</td>
+<td>部分公开</td>
+<td>开放 (高透明度)</td>
+</tr>
+<tr>
+<td>---</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="442">44.2 数据组成横向对照大表<a class="headerlink" href="#442" title="Permanent link">&para;</a></h2>
+<p>剔除技术报告中的宣传性表述后，关键问题在于模型训练数据池的实际组成。表44-2 基于公开技术报告、模型特性倒推估算，以及开源社区复现实践汇总预训练数据组成。此表在 Ch04 提及的“表 4-1 数据源类型、许可与风险矩阵”基础上进行了实战化延展。</p>
+<p><em>(注：表中数值采用以下标注约定：[D] = 报告明确披露；[I] = 基于模型行为和已知信息的合理推断；[E] = 社区或作者估算。)</em></p>
+<p><em>表 44-2：主流开源大语言模型预训练数据组成对比 (6 行 × 8 列)</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">数据大类</th>
+<th style="text-align: left;">子类/特征</th>
+<th style="text-align: left;">质量要求</th>
+<th style="text-align: left;">DeepSeek-V3 (14.8T)</th>
+<th style="text-align: left;">Qwen2.5 (18T)</th>
+<th style="text-align: left;">Qwen3 (推断)</th>
+<th style="text-align: left;">Llama-3.1/3.3(推断)</th>
+<th style="text-align: left;">OLMo-2(推断)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>泛网络文本 (Web)</strong></td>
+<td style="text-align: left;">网页高质语料</td>
+<td style="text-align: left;">极高，去重去营销号</td>
+<td style="text-align: left;">~50% [I]</td>
+<td style="text-align: left;">~55% [I]</td>
+<td style="text-align: left;">~50% [E]</td>
+<td style="text-align: left;">~50% [I]，阶段化使用，高频前段</td>
+<td style="text-align: left;">高占比，严格去重，多级过滤</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>中文网页特化</strong></td>
+<td style="text-align: left;">新闻/论坛/百科</td>
+<td style="text-align: left;">语义完整，去水军</td>
+<td style="text-align: left;">高占比,特化清洗 [D]</td>
+<td style="text-align: left;">极高占比,多级去重 [D]</td>
+<td style="text-align: left;">更严苛过滤 [E]</td>
+<td style="text-align: left;">高占比,多阶段清洗，去重增强 [D]</td>
+<td style="text-align: left;">高占比,多级去重,专门水军过滤 [D]</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>专业书籍 (Books)</strong></td>
+<td style="text-align: left;">电子书/出版物</td>
+<td style="text-align: left;">版权合规，长逻辑</td>
+<td style="text-align: left;">~5-10% [E]</td>
+<td style="text-align: left;">~5% [E]</td>
+<td style="text-align: left;">~5% [E]</td>
+<td style="text-align: left;">~5-10% [E]，后期阶段高质量数据</td>
+<td style="text-align: left;">~5-8% [E]，Dolmino Mix 高质量阶段使用</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>代码 (Code)</strong></td>
+<td style="text-align: left;">源码/Issues/PR</td>
+<td style="text-align: left;">多语言，保持项目结构</td>
+<td style="text-align: left;">~15-20% [E]</td>
+<td style="text-align: left;">~18% [I]</td>
+<td style="text-align: left;">~20% [E]</td>
+<td style="text-align: left;">~15% [E]，阶段性增强结构化学习</td>
+<td style="text-align: left;">~15-20% [E]，保留项目结构及多语言覆盖</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>数理逻辑 (Math)</strong></td>
+<td style="text-align: left;">论坛/合成推导</td>
+<td style="text-align: left;">格式纯净，逻辑严密</td>
+<td style="text-align: left;">~10-15% [E]</td>
+<td style="text-align: left;">~12% [I]</td>
+<td style="text-align: left;">~15% [E]</td>
+<td style="text-align: left;">~10% [E]，高质量数学数据集中于后段</td>
+<td style="text-align: left;">~10-15% [E]，Dolmino Mix 高质量使用</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>学术文献 (Academic)</strong></td>
+<td style="text-align: left;">ArXiv/医学/法律</td>
+<td style="text-align: left;">专业名词，公式解析</td>
+<td style="text-align: left;">~5% [I]</td>
+<td style="text-align: left;">~5-8% [I]</td>
+<td style="text-align: left;">~8% [I]</td>
+<td style="text-align: left;">~5% [I]，高质量期刊/公开论文为主</td>
+<td style="text-align: left;">~5-8% [I]，Dolmino Mix 学术阶段集中使用</td>
+</tr>
+</tbody>
+</table>
+<p><a class="glightbox" href="../../../images/part13/Wang-Chap44-Fig04-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图44-4：三模型数据组成饼图对比 (Estimated Data Mixture Ratios)" src="../../../images/part13/Wang-Chap44-Fig04-EN.svg" /></a>
+<em>图44-4：三模型数据组成饼图对比 (Estimated Data Mixture Ratios)</em></p>
+<p>通过横向对比这张大表（如图44-4 所示），可以得到<strong>三个重要观察</strong>：</p>
+<ol>
+<li><strong>代码与数学数据占比提高成为推理能力的重要支撑</strong>：
+   在早期的 LLM（如 GPT-3 或 LLaMA-1）时代，代码和数学数据只占总体语料的 5% 左右，主要被视作特定垂直领域的能力补充。但在 DeepSeek-V3 与 Qwen2.5 中，代码与数学数据的总占比合计已经逼近甚至超过了 20-30% [E]。高密度的逻辑与结构化代码数据，是提升模型通用逻辑推理能力（不仅限于写代码本身）的重要来源。代码数据的严格语法树特性，能够帮助语言模型学习因果关联。</li>
+<li><strong>泛网络文本（General Web Text）的有效配比在逐代下降</strong>：
+   尽管总 Token 数量持续增长（达到 14.8T+），但泛网络闲聊与无结构文档的实际相对配比正在下降。模型团队倾向于用算力去重和严格启发式规则过滤掉大量 Web 数据，为高质量学术和合成数据保留训练窗口。这表明规模法则（Scaling Law）(Kaplan et al. 2020) 正在从单纯的“规模”转向“有效信息密度规模”。</li>
+<li><strong>合成数据（Synthetic Data）悄然接管预训练中后期</strong>：
+   纯靠自然人类产生的高质量数据（尤其是数学步骤和推理链）已经接近枯竭。无论是 DeepSeek 还是 Qwen 团队，都在预训练的中后期大量引入了用上一代强模型生成的合成问答和数学推导数据。这些数据填补了自然语料中逻辑跳跃过大的空白。</li>
+</ol>
+<hr />
+<h2 id="443">44.3 中英比与多语言策略<a class="headerlink" href="#443" title="Permanent link">&para;</a></h2>
+<p>在语言分布策略上，当今开源模型大致可分为“中英双强”与“英语主导”两类。Qwen2.5 与 DeepSeek-V3 是前者的典型代表。</p>
+<h3 id="qwen25">Qwen2.5 的“泛多语言”战略<a class="headerlink" href="#qwen25" title="Permanent link">&para;</a></h3>
+<p>Qwen2.5 的目标从一开始就并非单纯的双语模型，而是试图覆盖全球主要语种（支持多达 29 种以上语言）。在数据工程上，这带来了一个显著挑战：<strong>长尾小语种的高质量数据极其稀缺，且容易导致语言间的负迁移（Negative Transfer）</strong>，即“对齐税”（Alignment Tax）。
+为解决此问题，Qwen 团队采用了复杂的语种采样权重调整策略。</p>
+<ul>
+<li>对于英语等超高资源语言，采取较强的 MinHash LSH (Broder 1997) 去重后下采样（Down-sampling），以防止世界知识的同质化过拟合；</li>
+<li>对于低资源高质量的语种数据（如高质量阿拉伯语百科），则通过文档级别的上采样（Up-sampling）提高模型暴露率。
+更为关键的是，Qwen 广泛利用了多语言对齐语料（平行机器翻译语料与多语言维基百科），在词表中提升多语言 Token 的压缩效率，从而降低小语种推理成本，并改善跨语言知识迁移。</li>
+</ul>
+<h3 id="deepseek-v3">DeepSeek-V3 的“中英绝对双核”战略<a class="headerlink" href="#deepseek-v3" title="Permanent link">&para;</a></h3>
+<p>相比于追求广谱多语言，DeepSeek-V3 的策略更强调中英双核：<strong>在保持较强中文对齐理解能力的同时，推理与逻辑能力主要依赖规模较大且质量较高的英文社区数据，尤其是代码和学术文档</strong>。
+在配方上，DeepSeek 没有盲目追求中文在预训练中的“数量绝对优势”。互联网上高质量的理工科讨论、开源代码与学术论文仍以英文为主。因此，DeepSeek 预训练的中文数据清洗通常更严格，通过高阈值的质量分类器（Quality Classifier）剔除大量中文低质量营销号和内容农场。
+保留下来的中文语料虽然体量相对收缩，但纯度较高，足以锚定模型的中文表达习惯；而在推理层面，则更多依赖英文高质量 Token 所提供的逻辑、代码和学术结构。这种“英文侧强化推理，中文侧强化表达”的配方，成为兼顾资源效率与双语能力的一种典型做法。</p>
+<hr />
+<h2 id="444">44.4 代码数据的迁移红利<a class="headerlink" href="#444" title="Permanent link">&para;</a></h2>
+<p><em>(注：开源模型代码数据的底层采集来源、去重逻辑，以及如 The Stack 等通用来源，已在 Ch04 中系统铺垫，此处不再重述，仅聚焦高阶模型的工程权衡。)</em></p>
+<p>在高性能模型训练中，代码模型与基座模型并不是两条孤立路线。<strong>通过训练专用 Coder 模型反哺基座模型的逻辑能力，可称为“代码数据的迁移红利”。</strong></p>
+<h3 id="deepseek-coder-v3">DeepSeek-Coder 到 V3 的进阶路径<a class="headerlink" href="#deepseek-coder-v3" title="Permanent link">&para;</a></h3>
+<p>DeepSeek 早在 V2 时期，就验证了利用 DeepSeek-Coder 探索代码能力路径的经验。在构建 V3 时，其代码数据不再是简单的“全量 GitHub 仓库抓取”。工程团队针对代码构建了较精细的依赖关系图谱（Repository-level parsing）。
+相关经验表明，如果仅仅把代码当成离散文本块（File-level）输入模型，模型主要学到零散的语法规则；只有按照代码在仓库中的依赖顺序（先定义结构，后调用接口）进行跨文件拼接（Cross-file concatenation），模型才更容易学习项目级架构逻辑。这种文件级别的拓扑排序，是 DeepSeek-V3 在较低计算成本下保持较高代码能力的重要配方。</p>
+<h3 id="qwen25-coder">Qwen2.5-Coder 的协同演进<a class="headerlink" href="#qwen25-coder" title="Permanent link">&para;</a></h3>
+<p>Qwen 团队同样重视代码数据的迁移价值。Qwen2.5 的基座语料中融入了数 Trillion Token 规模的筛选代码数据。不仅包括 GitHub 源码，还包括大量包含代码片段的技术博客、StackOverflow 问答以及 Jupyter Notebook 交互记录。这种“代码+上下文自然语言”的交织数据（Text-Code Interleaved），有助于弥合人类模糊需求与机器精确指令之间的语义差距。</p>
+<h3 id="llama-3">Llama-3 代码数据策略<a class="headerlink" href="#llama-3" title="Permanent link">&para;</a></h3>
+<p>Llama-3 系列（包括 3.1 和 3.3）在长上下文能力训练中引入了大规模代码数据，这些数据主要来源于公开仓库和高质量代码集合，如 GitHub 项目、公开问题追踪和 Pull Request 日志等。核心目标是提供结构化、可解析的逻辑模式，让模型能够学习函数定义、变量作用域、逻辑嵌套及常见算法实现。  </p>
+<p>在训练 pipeline 中，代码数据被阶段化使用：前期以通用网页文本和长文数据建立语言基础，中期逐渐引入代码和数学数据，用于提升模型逻辑推理和结构化理解能力；后期在退火阶段，高质量代码数据被再次采样并上采样，以增强模型在复杂逻辑和多步计算场景下的生成能力。阶段化处理确保代码数据不会因为过早介入而扰乱模型对自然语言模式的学习，同时也保证了模型在短上下文和长上下文任务中都能保持稳定性能。</p>
+<p>针对短文拼接（Packing）策略，Llama-3 在代码数据上采用隔离处理：保持单项目或单文件内连续性，避免跨项目、跨语法环境随意拼接，从而减少潜在的语义冲突和上下文跳跃问题。此外，RoPE（Rotary Position Embedding）在代码数据阶段适当扩展，允许模型在更长上下文窗口内捕捉函数调用关系、循环嵌套和类继承结构，为长代码生成和跨函数推理提供支持。</p>
+<h3 id="olmo-2">OLMo-2 代码数据策略<a class="headerlink" href="#olmo-2" title="Permanent link">&para;</a></h3>
+<p>OLMo-2 作为全开源项目，其代码数据来源更为透明，包含多语言源码、问题追踪、代码评审日志、开源库文档以及 StackExchange 上的编程问答。训练过程同样采用两阶段 curriculum：第一阶段大规模网页文本建立语言基础，第二阶段 Dolmino Mix 高质量数据中集中包含代码数据，用于能力压实。代码数据在该阶段以结构化和去重后的形式进入模型，保持函数和逻辑块的完整性，避免破碎片段影响学习。</p>
+<p>OLMo-2 在代码数据处理上注重多语言覆盖和项目结构保留：每个样本尽量保持原项目的目录和文件层级，保证模型能够学习模块化设计、依赖关系和命名约定。去重策略严格执行，以防止模型重复记忆某些模板化代码，同时在数学推导和算法实现类代码中，保留了完整逻辑和注释，以辅助模型学习高阶逻辑推理。</p>
+<p>表44-3汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表 44-3：主流模型代码数据策略对比</em></p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">模型系</th>
+<th style="text-align: left;">代码总规模估算</th>
+<th style="text-align: left;">GitHub 源码占比</th>
+<th style="text-align: left;">交互式笔记/问答占比</th>
+<th style="text-align: left;">跨文件解析 (Repo-level)</th>
+<th style="text-align: left;">格式保留策略</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>DeepSeek-V3</strong></td>
+<td style="text-align: left;">~2.5T Tokens [E]</td>
+<td style="text-align: left;">~70% [E]</td>
+<td style="text-align: left;">~30% [E]</td>
+<td style="text-align: left;">强支持，拓扑排序 [D]</td>
+<td style="text-align: left;">保留缩进与目录树</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Qwen2.5</strong></td>
+<td style="text-align: left;">~3T Tokens [E]</td>
+<td style="text-align: left;">~65% [E]</td>
+<td style="text-align: left;">~35% [E]</td>
+<td style="text-align: left;">强支持，结合 FIM [I]</td>
+<td style="text-align: left;">保留 Markdown/Notebook</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Llama-3.1/3.3</strong></td>
+<td style="text-align: left;">~2.8T Tokens [I]</td>
+<td style="text-align: left;">~70% [I]</td>
+<td style="text-align: left;">~30% [I]</td>
+<td style="text-align: left;">强支持，保持项目/文件完整性 [I]</td>
+<td style="text-align: left;">保留缩进、函数块和目录树 [I]</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>OLMo-2</strong></td>
+<td style="text-align: left;">~2T Tokens [E]</td>
+<td style="text-align: left;">~60% [E]</td>
+<td style="text-align: left;">~40% [E]</td>
+<td style="text-align: left;">强支持，项目级解析 [D]</td>
+<td style="text-align: left;">保留缩进、目录结构和 Notebook 内容 [D]</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="445">44.5 数学/推理数据的合成演化<a class="headerlink" href="#445" title="Permanent link">&para;</a></h2>
+<p>在预训练阶段注入强大的数学基因，是解决大模型“幻觉”与“逻辑紊乱”的重头戏。由于自然存在的标准格式数学解题过程极为稀少，合成（Synthesis）与清洗便成了主要手段。</p>
+<h3 id="deepseekmath-verifier">DeepSeekMath 的验证器（Verifier）流水线<a class="headerlink" href="#deepseekmath-verifier" title="Permanent link">&para;</a></h3>
+<p>DeepSeek 的数学能力突飞猛进，离不开他们早期构建的 DeepSeekMath 语料库 (Shao et al. 2024) 的沉淀。传统爬虫在抓取数学网页时，常常会将 LaTeX 公式破坏成乱码。DeepSeek 团队不仅针对 HTML 中的 MathJax 与 LaTeX 标签重写了特化的 DOM 解析器，更关键的是引入了基于强化学习与形式化证明器的规则验证（Rule-based Verification）。
+他们通过从海量互联网文本中召回潜在的数学文本，再利用较小规模的打分模型过滤出含有完整推导逻辑的“黄金样本”。随后，他们通过让前代模型不断解答开源题库，把那些能在 SymPy 沙盒或 Lean 证明器中通过绝对验证的解答过程，回灌到预训练语料中，大幅提升了模型对长链条数学证明的敏感度。</p>
+<h3 id="qwen2-math">Qwen2-Math 的合成策略<a class="headerlink" href="#qwen2-math" title="Permanent link">&para;</a></h3>
+<p>Qwen 团队在数学数据的工程处理上更进一步，极大地依赖了<strong>合成数据回灌</strong>。在 Qwen2.5-Math 的公开披露中可以看出，他们大量使用了 Qwen-Max（或早期的强力版本）来作为教师模型，对基础数学题目进行多步思维链（CoT）解答的生成。
+为了防止合成数据带来分布坍塌，工程团队引入了答案一致性校验（Self-consistency）(Wang et al. 2023)：如果一个题目生成的几个推导过程最终都能在沙盒（Sandbox）中匹配出相同且正确的唯一解，这条合成的推导路径才会被允许合入预训练或后训练数据流。这意味着，数学数据的规模增长，已经彻底脱离了互联网的人工产生速度，转而由算力直接驱动。</p>
+<hr />
+<h2 id="446">44.6 长文本数据来源分析<a class="headerlink" href="#446" title="Permanent link">&para;</a></h2>
+<p>在大型语言模型训练中，长文本数据是支撑上下文理解、长程依赖捕捉以及复杂推理能力形成的核心资源。本节围绕长文本数据的来源展开分析，主要包括自然长文本、合成生成文本以及短文档拼接三类策略，每种策略都有其独特优势与局限性。</p>
+<p>说明：本节表格中的 token 规模、配比和窗口长度，混合了公开技术报告披露、模型仓库说明、社区复盘与基于行为的合理推断；其中 [D] 表示明确披露，[I] 表示推断，[E] 表示估算。不同模型对 token 的统计口径可能包含预训练、继续预训练、后训练或长上下文继续训练，因此这些数字不应被直接视为完全可比的精确事实。</p>
+<h3 id="_4">自然长文本<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>自然长文本通常来源于电子书、学术论文、技术手册、公开报告和高质量网页文章。这类文本的主要优势在于语料结构完整、语义连贯、逻辑关系清晰，适合训练模型理解复杂概念和捕捉长上下文关系。例如，小说章节、技术文档和学术论文往往包含数千到数万 token 的连续内容，模型在预训练阶段接触到这些文本，可以学习章节内部的主题发展、段落逻辑和推理链条，从而在下游任务中更好地处理长篇摘要、跨段问答或复杂指令执行。</p>
+<p>然而，自然长文本的数量有限，尤其是在高质量、许可明确的语料中。此外，不同来源的文本风格差异明显，如学术论文与新闻报道在句式、术语使用和段落结构上存在显著差异，这可能导致模型在处理特定风格文本时产生偏差。因此，模型训练通常需要通过阶段化采样策略，保证不同类型长文本的覆盖均衡，同时适当进行文本标准化和去重处理，以维持训练的多样性和语义一致性。</p>
+<h3 id="_5">合成生成文本<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p>合成生成文本是近年来提升长上下文训练量的有效手段，主要通过已有模型生成或人工规则生成大段连续文本。其核心目标是补充自然长文本不足的部分，例如在特定领域知识不足或真实数据受版权限制时，通过模型生成合理的长序列或组合现有短文本片段形成“伪长文本”。这种策略可以显著扩展训练语料的数量，使模型在有限自然长文本之外获得更多长程依赖训练机会。</p>
+<p>合成文本的优势在于可控性和可扩展性。研究者可以设定生成文本的主题、长度和结构，以满足训练阶段对不同 token 数量或上下文跨度的需求。此外，通过引入质量评分、内容过滤和多样化生成策略，可以在一定程度上保证合成文本的合理性与多样性。然而，合成文本本质上仍然是模型生成的近似样本，可能存在逻辑不严谨、语义重复或上下文衔接不自然的问题，需要配合人工抽检和自动化质量评估进行筛选。</p>
+<h3 id="_6">短文档拼接<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p>短文档拼接策略则通过将多个短文本片段组合成长序列，以模拟自然长文本的连续性。这些短文本可以来自新闻段落、论坛帖、问答对、代码注释或社交媒体帖子等，单条长度较短，语义相对独立。拼接时通常考虑文档边界、主题一致性以及长度控制，以保证生成的长序列既满足模型对上下文长度的要求，又尽量保持逻辑和主题连贯性。</p>
+<p>短文拼接的优势在于灵活性和数据覆盖广泛。通过拼接，可以快速扩展可训练长文本数量，同时引入多源、多风格的数据，提高模型对多样化内容的适应性。此外，在预训练阶段，拼接策略可以结合 Packing 技术和阶段化数据调度，实现跨文档隔离或跨主题混合，以优化模型在长上下文条件下的学习效率。</p>
+<p>然而，短文拼接的连贯性和逻辑性通常无法完全等同于自然长文本，过度拼接可能导致上下文跳跃、逻辑断裂或主题错位。因此，拼接策略常常与质量控制和长度分层相结合，例如引入主题聚类、过渡句生成或重复内容过滤，以降低拼接带来的潜在噪声影响。</p>
+<h3 id="_7">综合分析<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<p>在实际训练中，自然长文本、合成生成文本和短文拼接三种策略通常是混合使用的。自然长文本提供基础的语义连贯性和逻辑结构，合成生成文本弥补了高质量长文本的稀缺，短文拼接则增强了数据量和风格多样性。通过合理的阶段化数据调度、质量筛选和上下文长度控制，训练数据可以覆盖多样化的长文本场景，从而支撑模型在跨段推理、长文摘要、指令跟随和复杂问答等任务中的性能。</p>
+<p>这种多策略组合的长文本构建方法，体现了大模型训练中“量与质并重、结构与覆盖兼顾”的原则，为实现稳定、高效的长上下文学习提供了实践路径，也为后续模型迁移和数据工程设计提供了可复制的参考框架。</p>
+<p>表44-4汇总了本节的关键对象、工程要点与复核口径。</p>
+<p><em>表44-4：长上下文数据构建策略与训练阶段</em></p>
+<table>
+<thead>
+<tr>
+<th>模型系</th>
+<th style="text-align: right;">最大窗口支持</th>
+<th>长文数据来源</th>
+<th>短文拼接策略 (Packing)</th>
+<th>RoPE 缩放与微调阶段</th>
+<th>性能惩罚控制</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DeepSeek-V3</td>
+<td style="text-align: right;">128K [D]</td>
+<td>长篇书籍 / Repo级代码</td>
+<td>跨文档 Packing 隔离</td>
+<td>预训练末期退火拉升 [D]</td>
+<td>YaRN (Peng et al. 2023) 极低精度损失</td>
+</tr>
+<tr>
+<td>Qwen2.5</td>
+<td style="text-align: right;">128K [D]</td>
+<td>长报告 / 合成长文</td>
+<td>EOD Token 严格隔离</td>
+<td>渐进式窗口扩展 [I]</td>
+<td>YARN/动态基频调整</td>
+</tr>
+<tr>
+<td>Llama-3.1 / Llama-3 Herd</td>
+<td style="text-align: right;">128K [D]</td>
+<td>多语网页 / 代码 / 数学 / 长上下文继续预训练数据</td>
+<td>基础阶段以 8K 序列训练，长上下文阶段逐步提高序列长度；短文拼接需保留文档边界 [I]</td>
+<td>RoPE base frequency 提高到 500K；从 8K 分 6 个阶段扩展到 128K，并使用约 800B tokens 长上下文继续预训练 [D]</td>
+<td>每个窗口阶段检查短上下文能力恢复与 Needle-in-a-Haystack 通过率；末期 40M tokens 退火、高质量数据上采样与 checkpoint averaging [D]</td>
+</tr>
+<tr>
+<td>OLMo-2</td>
+<td style="text-align: right;">4K [D]</td>
+<td>DCLM 网页 / StarCoder 代码 / 学术论文 / arXiv STEM / Wikipedia &amp; Wikibooks / StackExchange / 合成数学数据</td>
+<td>4096 定长序列训练；短文 Packing 细节未在报告中展开，可按文档边界 + EOS 隔离实现 [I]</td>
+<td>使用 RoPE，θ 提高到 500K；没有公开的 128K 长窗扩展阶段，重点是 Dolmino Mix 1124 中期训练与退火 [D]</td>
+<td>RMSNorm、QK-Norm、Z-loss 提升训练稳定性；过滤重复 n-gram；Dolmino 高质量中期训练与 checkpoint soup 控制能力退化 [D]</td>
+</tr>
+</tbody>
+</table>
+<p>值得注意的是，超长上下文并不是一开始就在预训练中全量引入的。在 DeepSeek-V3 的训练末期，为了支持高达 128K 的上下文窗口（Context Window），团队采用了动态的长文本数据延长策略。他们专门从语料库中筛选出了结构完整的长篇书籍、长篇技术手册以及合并后的超长代码仓库（Repo-level code 拼接），并修改了 RoPE（旋转位置编码）(Su et al. 2024) 的基频。通过在训练的最后阶段，将序列长度从 4K 逐步扩充并微调，模型在极度节省总体算力的同时，完美地将局部短依赖逻辑推广到了超长语境中。</p>
+<hr />
+<h2 id="447-curriculum-schedule">44.7 Curriculum 多阶段训练 schedule<a class="headerlink" href="#447-curriculum-schedule" title="Permanent link">&para;</a></h2>
+<p>Curriculum schedule 在大模型训练中并不是一个附加技巧，而是数据配方真正落地的方式。静态数据比例只能说明训练集中有哪些语料、各自大致占多少；schedule 进一步决定这些语料在什么阶段出现、以什么权重出现、配合怎样的上下文长度和学习率策略。对复现者来说，最容易犯的错误是把公开报告里的数据比例当作“全程均匀采样表”。实际的大模型训练往往把能力形成拆成多个阶段：先用大规模通用语料建立语言基础，再通过高质量数据、长上下文数据、代码和数学数据定向补能力，最后用退火和后训练把模型状态稳定下来。</p>
+<h3 id="llama-3_1">Llama-3：长上下文扩展与末段退火<a class="headerlink" href="#llama-3_1" title="Permanent link">&para;</a></h3>
+<p>Llama-3 系列中更值得观察的是 Llama-3.1 的训练节奏。基础预训练阶段仍以通用 next-token prediction 为主，模型先在 8K 上下文窗口下学习大规模语言、知识、代码和数学分布。这个阶段的目标不是立即追求极长上下文，而是先让模型获得稳定的短上下文能力。长窗口训练的注意力计算成本随长度平方增长，如果过早引入 64K 或 128K 序列，会显著抬高计算成本，也可能在模型尚未学稳语言结构时引入无效长文噪声。</p>
+<p>因此，Llama-3.1 在预训练后段才进入长上下文继续训练。其公开报告中说明，模型从原始 8K 上下文开始，分六个阶段逐步扩展到 128K。每一次扩展并不是简单把最大长度调大，而是先训练到模型适应该长度，再进入下一阶段。适应标准主要看两类信号：短上下文评测是否恢复，以及 needle-in-a-haystack 这类长上下文检索任务是否能在对应长度上稳定通过。这个设计体现了 curriculum 的一个原则：窗口长度本身也是课程难度的一部分，需要逐步拉升。</p>
+<p>Llama-3.1 (Grattafiori et al. 2024) 的另一个重要环节是退火。公开报告中提到，在最后 40M tokens 训练中，学习率线性退火到 0，同时保持 128K 上下文窗口，并上采样高质量数据源，最后对退火过程中的 checkpoint 做平均。这个阶段不再追求大规模覆盖，而是让模型在较干净的数据分布上收束。可以把它理解为预训练末尾的“定型阶段”：前面的大规模语料负责广度，长上下文继续训练负责窗口能力，退火阶段负责把能力稳定到最终 checkpoint 上。</p>
+<h3 id="olmo-2_1">OLMo-2：可复现的两阶段课程<a class="headerlink" href="#olmo-2_1" title="Permanent link">&para;</a></h3>
+<p>OLMo-2 (Groeneveld et al. 2024) 的价值在于它把训练过程公开得更细，尤其适合作为工程复现的参照。它的预训练采用两阶段设计。第一阶段使用大规模、以网页为主的数据混合，1B 和 7B 规模训练约 4T tokens，13B 规模训练约 5T tokens。这个阶段承担语言基础、常识知识和广覆盖语料建模任务，相当于先让模型在足够大的文本空间中形成通用能力。</p>
+<p>第二阶段转向更小但更高质量的数据，也就是 Dolmino Mix 1124。OLMo-2 仓库说明中给出了更具体的规模：1B 模型使用约 50B 高质量 tokens 训练多次；7B 模型也使用约 50B 高质量 tokens 进行多种数据顺序训练，并对模型做 soup；13B 模型则包含多个 100B 高质量 token 训练分支，以及一个 300B 高质量 token 分支，最后进行权重平均。这里的重点不是“多训练几次”，而是用不同数据顺序和高质量后段数据减少偶然性，再通过 checkpoint 或权重平均提高最终模型的稳健性。</p>
+<p>OLMo-2 的 schedule 更像一个透明的工程模板：第一阶段用大规模数据获得覆盖，第二阶段用高质量目标数据进行能力压实。它没有把所有高质量数据平均撒入全程，而是集中放在后段使用。这样做的好处是，模型已经具备基础语言能力后，再接触密度更高、质量更好的数据，梯度信号会更集中。对中小规模复现来说，这种策略尤其重要，因为 token 预算有限，高质量数据如果过早、过散地混入，可能无法形成可见收益。</p>
+<h3 id="qwen25-schedule">Qwen2.5：预训练、长上下文与后训练的连续 schedule<a class="headerlink" href="#qwen25-schedule" title="Permanent link">&para;</a></h3>
+<p>Qwen2.5 的 schedule 可以从三个层次理解。第一层是基础预训练规模扩展。技术报告中提到，Qwen2.5 将高质量预训练数据从上一代的 7T tokens 扩展到 18T tokens，用以增强常识、专业知识和推理能力。这里的“高质量”并不只表示数据干净，还意味着数据经过领域组织、质量筛选和比例控制。对于 Qwen2.5 这种系列模型，基础预训练阶段需要同时支撑通用问答、代码、数学、多语言和结构化数据理解，因此数据配方不能只围绕网页文本展开。</p>
+<p>第二层是长上下文训练。Qwen2.5 系列公开模型支持较长上下文，而 Qwen2.5-1M 技术报告进一步展示了长上下文能力如何通过专门 schedule 扩展：长数据合成、渐进式预训练、多阶段监督微调共同使用。这里的渐进式预训练与 Llama-3.1 的思路相近，都避免一开始就把上下文长度推到极限。模型先适应较短长度，再逐步看到更长序列；同时通过合成长文数据补充真实长文不足的问题。真实长文虽然重要，但数量、质量和任务覆盖都有限，因此合成数据在长文问答、摘要、跨段检索、代码库推理等场景中承担了补齐训练任务结构的作用。</p>
+<p>第三层是后训练。Qwen2.5 技术报告提到，其 post-training 包含超过 100 万样本的复杂 SFT，以及多阶段强化学习。这个阶段不只优化聊天偏好，也提升长文本生成、结构化数据分析和指令跟随能力。对训练 schedule 来说，后训练不应被看作预训练之后的简单对齐步骤。它实际上延续了 curriculum：SFT 提供可控任务格式，偏好学习或强化学习调整回答风格、可靠性和复杂任务表现。若长上下文能力在预训练中已经形成，后训练阶段还需要把长上下文任务纳入数据混合，否则模型可能在对齐后重新偏向短指令场景。</p>
+<h3 id="_8">对复现工程的启示<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
+<p>把 Llama-3、OLMo-2 和 Qwen2.5 放在一起看，可以得到一个清晰结论：有效的数据配方不是静态比例表，而是阶段化的数据流水线。第一阶段解决覆盖问题，第二阶段解决质量和领域能力问题，长上下文阶段解决输入长度和全局依赖问题，退火或高质量后段训练解决模型收束问题，SFT 与 RL 阶段解决可用性和指令行为问题。</p>
+<p>因此，在 1B tokens 或更小预算下复现大模型时，不能简单按比例缩放大模型数据。更合理的做法是把 token 预算拆成阶段：前段使用干净通用文本，中段逐步提高代码、数学、百科和书籍比例，后段集中使用高质量数据进行退火或能力压实；如果需要长上下文能力，则单独安排窗口扩展阶段，并用短上下文评测和长文检索评测共同监控退化。训练 schedule 的本质，是让模型在合适的时间遇到合适难度的数据。只有这样，有限 token 才能转化为稳定能力，而不是被平均采样稀释掉。</p>
+<p>图44-5展示了相应的流程或结构。</p>
+<p><a class="glightbox" href="../../../images/part13/Wang-Chap44-Fig05-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="图44-5：Llama-3 退火期数据组成时间轴" src="../../../images/part13/Wang-Chap44-Fig05-EN.svg" /></a>
+<em>图44-5：Llama-3 退火期数据组成时间轴</em></p>
+<p>Qwen2.5 在数据采样策略上也体现了经典的 Curriculum Learning（课程学习）(Bengio et al. 2009) 思想。第一阶段（基础奠基），模型主要接触海量泛网页数据与基础语料，重点学习语言的统计分布与常识；第二阶段（高质量提纯），语料的质量过滤阈值被大幅提高，泛文本比例下降，代码、数学及严谨学术文档的密度增加，这是能力提升的关键期；第三阶段（退火与超长上下文），学习率下降（退火），开始引入较高比例的合成数据、特定领域的高精人工指令数据以及超长序列数据，实现从预训练到对齐（Alignment）的平滑过渡。</p>
+<hr />
+<h3 id="448">44.8 案例分析、常见问题与边界讨论<a class="headerlink" href="#448" title="Permanent link">&para;</a></h3>
+<p>在大模型数据工程实践中，理论与落地之间往往存在差距。本节通过三个具体案例展开分析，同时总结常见训练陷阱，并指出适用边界和进一步延伸的参考方向。</p>
+<p>Case A 涉及 DeepSeek 反推。团队在尝试复现内部模型时，首先根据公开论文和训练日志反推数据配方与训练策略。最初，他们将长篇书籍、Repo 级代码以及问答数据按论文比例混合后直接进入训练，但在小规模 token 预算下，模型表现远低于预期。分析发现，问题在于数据流的阶段化处理缺失。早期训练需要以通用语料为主，以保证语言基础稳定；中期逐步引入结构化代码和数学样本；后期再提高高质量指令数据的比例。缺少阶段化安排导致梯度信号被稀释，模型无法有效学习高阶逻辑和长上下文依赖。这一案例强调，即便数据比例看似合理，如果缺乏阶段化设计，也可能导致复现失败。</p>
+<p>Case B 讨论 Qwen 系列在扩展词表到 152K 时遇到的问题。团队最初尝试通过增加词表覆盖度以提升多语言和专业领域理解，但短序列任务性能下降明显。深入分析显示，问题源自短文拼接策略与 RoPE 缩放阶段的不匹配。在 token 长度较短时，扩大的 RoPE 参数导致模型对位置编码过敏，部分语义信息在短序列中被抹平。同时，跨文档 Packing 隔离处理不当，使模型在跨文档上下文中容易产生 hallucination。该案例提醒工程实践中，扩大词表和上下文窗口必须与训练 schedule 和短文处理策略紧密配合，否则会带来性能惩罚。</p>
+<p>Case C 涉及 OLMo-2 全开源对照。其预训练采用两阶段 curriculum：第一阶段利用大规模网页和多语语料建立语言基础，第二阶段 Dolmino Mix 高质量数据训练进一步压实能力。对比分析显示，开源数据与闭源内部数据的主要差异在于质量控制和阶段化设计。开源数据分层明确，每阶段都有独立 token 分布监控；闭源环境在处理多个任务和长上下文时，需要额外的动态采样和权重调整。该案例提供了开源数据工程策略的参考，并说明阶段化和质量控制对训练稳健性的重要性。</p>
+<p>在实际训练中，有几类常见问题需要注意。数据阶段化缺失会导致梯度稀释，无法学习高阶知识；短文拼接不当可能破坏上下文连续性，增加 hallucination 风险；RoPE 或位置编码扩展过早会影响短序列任务表现；高质量数据分布不均可能导致早期阶段无法形成有效梯度信号；token 序列长度配置与 batch 配置冲突容易引发显存溢出或梯度不稳定；过度数据清洗会降低模型泛化能力；缺乏阶段 checkpoint averaging 或模型 soup，会增加训练抖动和最终结果不稳定性。</p>
+<p>这些问题的适用边界如下。对于小规模复现（≤1B tokens），必须严格控制阶段化数据流，优先保证语言基础和短上下文稳定；长上下文任务应分阶段进行 RoPE 扩展和长文训练，以避免短序列任务退化；多源数据混合需要与 Packing 和权重调整配合，否则会出现 hallucination 或梯度稀释；高质量样本应集中在后期阶段使用，过早采样会降低训练稳定性。</p>
+<p>延伸阅读方面，Llama-3 Herd (Grattafiori et al. 2024) 技术报告提供了阶段化训练、长上下文扩展和退火 checkpoint averaging 的细节。OLMo-2 开源日志展示了 Dolmino Mix 数据阶段划分、两阶段 curriculum 与权重平均策略。Qwen2.5 系列论文和模型卡说明了高质量多源语料采样、词表扩展和长上下文训练 schedule。通过这些案例、训练陷阱和边界分析，可以更清楚地理解大模型训练中“配方”的复杂性。单看数据比例远不足以指导训练，必须结合阶段化 schedule、短文拼接策略、上下文窗口扩展和高质量样本采样，才能在有限 token 预算下获得稳定、可复现的能力。</p>
+<h2 id="_9">本章小结<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h2>
+<p>本章从开篇的 1B tokens 复现失败场景出发，论证了预训练数据配方的本质不是静态比例表，而是一条阶段化的数据流水线。通过透明度光谱区分白盒、灰盒与黑盒披露后，本章横向对照了 DeepSeek-V3、Qwen2.5、Llama-3.1 与 OLMo-2 的数据组成，归纳出三条主线：代码与数学数据占比上升以支撑通用推理能力，泛网络文本的有效配比逐代下降，合成数据在预训练中后期承接高质量样本枯竭的缺口。</p>
+<p>围绕代码、数学、长文本与多语言四类数据，本章进一步分析了仓库级跨文件依赖解析、验证器与自一致性校验、自然长文本与短文档拼接的取舍，以及中英双核与泛多语言两类采样策略。课程式多阶段调度则把这些数据组织串联起来：覆盖、能力压实、长上下文扩展与退火各司其职。</p>
+<p>由此得出对复现工程的核心启示：在有限 token 预算下复现大模型时，应将预算按训练节奏拆分为多个阶段，让模型在合适的时间遇到合适难度与质量的数据，而非按比例稀释式采样。本章为第十四篇的可复现项目案例提供了配方层的方法论支撑。</p>
+<h2 id="_10">参考文献<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h2>
+<p>Bavarian M, Jun H, Tezak N, Schulman J, McLeavey C, Tworek J, Chen M (2022) Efficient Training of Language Models to Fill in the Middle (FIM). arXiv preprint arXiv:2207.14255.</p>
+<p>Bengio Y, Louradour J, Collobert R, Weston J (2009) Curriculum Learning. In: Proceedings of the 26th Annual International Conference on Machine Learning, pp 41-48.</p>
+<p>Broder A Z (1997) On the Resemblance and Containment of Documents. In: Proceedings of the Compression and Complexity of Sequences, pp 21-29.</p>
+<p>Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, et al. (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.</p>
+<p>Groeneveld D, Magnusson I, Bhagia A, Schwenk D, Soldaini L, Tafjord O, Sherborne M, Kinney R, Authur C, Atkinson D, others (2024) OLMo: Accelerating the Science of Language Models. In: Proceedings of the 62nd Annual Meeting of the Association for Computational Linguistics, pp 15789-15809.</p>
+<p>Hoffmann J, Borgeaud S, Mensch A, Buchatskaya E, Cai T, Rutherford E, de Las Casas D, Hendricks L A, Welbl J, Clark A, others (2022) Training Compute-Optimal Large Language Models (Chinchilla). arXiv preprint arXiv:2203.15556.</p>
+<p>Hui B, Yang J, Cui Z, Yang J, Liu D, Zhang L, Liu B, Yu B, Lu K, Chi K, others (2024) Qwen2.5 Technical Report. arXiv preprint arXiv:2412.15115.</p>
+<p>Kaplan J, McCandlish S, Henighan T, Brown T B, Chess B, Child R, Gray S, Radford A, Wu J, Amodei D (2020) Scaling Laws for Neural Language Models. arXiv preprint arXiv:2001.08361.</p>
+<p>Liu A, Feng B, Xue B, Wang B, Wu B, Lu C, Zhao C, Deng C, Zhang C, Ruan C, others (2024) DeepSeek-V3 Technical Report. arXiv preprint arXiv:2412.19437.</p>
+<p>Peng B, Quesnelle J, Fan H, Shippole E (2023) YaRN: Efficient Context Window Extension of Large Language Models. arXiv preprint arXiv:2309.00071.</p>
+<p>Sennrich R, Haddow B, Birch A (2016) Neural Machine Translation of Rare Words with Subword Units (BPE). In: Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics, pp 1715-1725.</p>
+<p>Shao Z, Wang P, Zhu Q, Xu R, Song J, Zhang M, Li Y, Wu Y, Guo D (2024) DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv preprint arXiv:2402.03300.</p>
+<p>Su J, Lu Y, Pan S, Murtadha A, Wen B, Liu Y (2024) RoFormer: Enhanced Transformer with Rotary Position Embedding (RoPE). Neurocomputing 568:127063. https://doi.org/10.1016/j.neucom.2023.127063.</p>
+<p>Wang X, Wei J, Schuurmans D, Le Q, Chi E, Narang S, Chowdhery A, Zhou D (2023) Self-Consistency Improves Chain of Thought Reasoning in Language Models. In: International Conference on Learning Representations. arXiv:2203.11171.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

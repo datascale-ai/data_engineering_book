@@ -1,0 +1,4661 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part8/ch25_data_versioning_experiment_tracking/">
+      
+      
+        <link rel="prev" href="../ch24_dataops_flywheel_team/">
+      
+      
+        <link rel="next" href="../ch26_data_platform_observability/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 25: Data Version Management and Experiment Tracking - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-25-data-version-management-and-experiment-tracking" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 25: Data Version Management and Experiment Tracking
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part8/ch25_data_versioning_experiment_tracking/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part8/ch25_data_versioning_experiment_tracking/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_11" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#251-why-reviewable-iteration-is-impossible-without-version-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.1 Why Reviewable Iteration Is Impossible Without Version Management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.1 Why Reviewable Iteration Is Impossible Without Version Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2511-why-data-changes-are-the-hardest-to-track-in-terms-of-model-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.1.1 Why Data Changes Are the Hardest to Track in Terms of Model Performance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2512-upgrading-from-folder-management-to-lineage-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.1.2 Upgrading from "Folder Management" to "Lineage Management"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2513-the-core-value-proposition-of-version-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.1.3 The Core Value Proposition of Version Management
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#252-data-version-granularity-and-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.2 Data Version Granularity and Naming Conventions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.2 Data Version Granularity and Naming Conventions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2521-five-levels-of-version-granularity" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.2.1 Five Levels of Version Granularity
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2522-version-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.2.2 Version Naming Conventions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2523-branches-snapshots-and-rollback-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.2.3 Branches, Snapshots, and Rollback Points
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#253-experiment-tracking-result-write-back-and-audit-trails" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3 Experiment Tracking, Result Write-Back, and Audit Trails
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.3 Experiment Tracking, Result Write-Back, and Audit Trails">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2531-field-design-for-experiment-cards" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3.1 Field Design for Experiment Cards
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2532-result-write-back-and-bidirectional-association" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3.2 Result Write-Back and Bidirectional Association
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2533-the-value-of-failed-experiments-and-knowledge-preservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3.3 The Value of Failed Experiments and Knowledge Preservation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2534-the-minimum-information-set-for-an-audit-trail" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3.4 The Minimum Information Set for an Audit Trail
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#254-lineage-visualization-and-governance-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.4 Lineage Visualization and Governance Rules
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.4 Lineage Visualization and Governance Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2541-representations-of-data-lineage-graphs" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.4.1 Representations of Data Lineage Graphs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2542-change-audit-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.4.2 Change Audit Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2543-lineage-governance-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.4.3 Lineage Governance Rules
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#255-case-study-how-to-rapidly-trace-back-a-failed-experiment" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.5 Case Study: How to Rapidly Trace Back a Failed Experiment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.5 Case Study: How to Rapidly Trace Back a Failed Experiment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-background" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case Background
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retrospection-process-with-version-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Retrospection Process (With Version Management)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary-of-key-success-factors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary of Key Success Factors
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      Further Reading
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario Introduction
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#251-why-reviewable-iteration-is-impossible-without-version-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.1 Why Reviewable Iteration Is Impossible Without Version Management
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.1 Why Reviewable Iteration Is Impossible Without Version Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2511-why-data-changes-are-the-hardest-to-track-in-terms-of-model-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.1.1 Why Data Changes Are the Hardest to Track in Terms of Model Performance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2512-upgrading-from-folder-management-to-lineage-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.1.2 Upgrading from "Folder Management" to "Lineage Management"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2513-the-core-value-proposition-of-version-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.1.3 The Core Value Proposition of Version Management
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#252-data-version-granularity-and-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.2 Data Version Granularity and Naming Conventions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.2 Data Version Granularity and Naming Conventions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2521-five-levels-of-version-granularity" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.2.1 Five Levels of Version Granularity
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2522-version-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.2.2 Version Naming Conventions
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2523-branches-snapshots-and-rollback-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.2.3 Branches, Snapshots, and Rollback Points
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#253-experiment-tracking-result-write-back-and-audit-trails" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3 Experiment Tracking, Result Write-Back, and Audit Trails
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.3 Experiment Tracking, Result Write-Back, and Audit Trails">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2531-field-design-for-experiment-cards" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3.1 Field Design for Experiment Cards
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2532-result-write-back-and-bidirectional-association" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3.2 Result Write-Back and Bidirectional Association
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2533-the-value-of-failed-experiments-and-knowledge-preservation" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3.3 The Value of Failed Experiments and Knowledge Preservation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2534-the-minimum-information-set-for-an-audit-trail" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.3.4 The Minimum Information Set for an Audit Trail
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#254-lineage-visualization-and-governance-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.4 Lineage Visualization and Governance Rules
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.4 Lineage Visualization and Governance Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2541-representations-of-data-lineage-graphs" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.4.1 Representations of Data Lineage Graphs
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2542-change-audit-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.4.2 Change Audit Workflow
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2543-lineage-governance-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.4.3 Lineage Governance Rules
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#255-case-study-how-to-rapidly-trace-back-a-failed-experiment" class="md-nav__link">
+    <span class="md-ellipsis">
+      25.5 Case Study: How to Rapidly Trace Back a Failed Experiment
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="25.5 Case Study: How to Rapidly Trace Back a Failed Experiment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#case-background" class="md-nav__link">
+    <span class="md-ellipsis">
+      Case Background
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retrospection-process-with-version-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Retrospection Process (With Version Management)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary-of-key-success-factors" class="md-nav__link">
+    <span class="md-ellipsis">
+      Summary of Key Success Factors
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      Further Reading
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-25-data-version-management-and-experiment-tracking">Chapter 25: Data Version Management and Experiment Tracking<a class="headerlink" href="#chapter-25-data-version-management-and-experiment-tracking" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Wenzhuo Du; Can Wang; Jun Yu</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>"Our model performed worse last week than the week before, but the data team says nothing changed"—this complaint arises far more often in LLM projects than most teams expect. The insidious nature of data engineering lies in the fact that data changes tend to be cumulative and incremental rather than discrete and conspicuous. Without systematic version management, a team lacks the ability to answer even the most fundamental question—"what changed?"—let alone attribute causality to "why it changed."</p>
+<p>This chapter is written for teams responsible for data versioning, experiment logging, and traceability. It systematically explains how to connect data versions, sample changes, and experiment outcomes to form a complete, end-to-end traceable chain. The chapter unfolds across four dimensions: first, an analysis of why version management is a prerequisite for reviewable iteration; second, the establishment of a version granularity hierarchy and naming conventions; third, an engineering treatment of experiment tracking, result write-back, and audit trails; and finally, a discussion of lineage visualization and governance rule design.</p>
+<p>Upon completing this chapter, readers should have mastered a complete metadata design scheme, version naming conventions, and an experiment card template. They should also be able to understand, through a failed-experiment retrospective case study, how to locate the root cause of data problems in real engineering contexts.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>Data version management; experiment tracking; data lineage; metadata governance; reproducibility; audit trail</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Understand the role of data version management in model iteration, issue retrospection, and compliance auditing.</li>
+<li>Distinguish among sample-level, shard-level, dataset-level, experiment-level, and release-package-level version granularities.</li>
+<li>Design the key fields for experiment cards, result write-back, and audit trails.</li>
+<li>Master the basic methods for data lineage graphs, change audit workflows, and the preservation of failed experiments.</li>
+<li>Evaluate the trade-offs among version retention policies, permission boundaries, and platform governance costs.</li>
+</ul>
+<h2 id="scenario-introduction">Scenario Introduction<a class="headerlink" href="#scenario-introduction" title="Permanent link">&para;</a></h2>
+<p>After a large-scale experiment, an algorithm team at a company discovered that the mathematical reasoning ability of their new model version had dropped significantly—roughly 8 percentage points below the previous version. The algorithm lead asked the data team to identify the cause, and the data lead began the investigation.</p>
+<p><strong>Step 1: Examine the training set version.</strong> The data lead found that training sets for both the current and the previous version were stored in object storage, but with no version tags—only upload timestamps. Portions of both directories had been overwritten or deleted by subsequent jobs.</p>
+<p><strong>Step 2: Attempt to compare differences.</strong> The data lead found approximately 30,000 sample-level differences between the two versions but could not determine whether these differences represented additions, modifications, or deletions—because MD5 checksums had not been recorded.</p>
+<p><strong>Step 3: Attempt to trace data provenance.</strong> Among those 30,000 differing samples, some came from a newly added outsourced annotation batch, some resulted from changes to data-cleaning logic that altered filtering outcomes, and some were samples manually added by algorithm engineers for experimental purposes. These three categories of changes had no distinguishing markers; they were all mixed together with no way to separate them.</p>
+<p>The investigation lasted five full days. The root cause was ultimately identified: a boundary-condition modification in the data-cleaning logic had inadvertently filtered out a large number of high-quality samples containing mathematical formulas. This modification had been a "minor optimization" made four weeks earlier and left no change record whatsoever.</p>
+<p>This case reveals the core cost of lacking version management: <strong>there is an enormous information black hole between the moment a problem is discovered and the time spent investigating it.</strong> Without version management, there is no reviewable iteration. The design of experiment management systems and machine learning lifecycle platforms exists precisely to address the difficulty of tracking the relationships among models, data, parameters, and results (Vartak et al. 2016; Zaharia et al. 2018).</p>
+<p>Experience from production machine learning systems shows that data dependencies, configuration drift, and missing experiment records are major sources of technical debt that must be explicitly governed through versioning and metadata management (Sculley et al. 2015; Polyzotis et al. 2017). The fundamental requirement of reproducible research is that the relationships among data, code, parameters, environment, and results can be independently re-confirmed by others (Peng 2011; Sandve et al. 2013).</p>
+<hr />
+<h2 id="251-why-reviewable-iteration-is-impossible-without-version-management">25.1 Why Reviewable Iteration Is Impossible Without Version Management<a class="headerlink" href="#251-why-reviewable-iteration-is-impossible-without-version-management" title="Permanent link">&para;</a></h2>
+<h3 id="2511-why-data-changes-are-the-hardest-to-track-in-terms-of-model-performance">25.1.1 Why Data Changes Are the Hardest to Track in Terms of Model Performance<a class="headerlink" href="#2511-why-data-changes-are-the-hardest-to-track-in-terms-of-model-performance" title="Permanent link">&para;</a></h3>
+<p>In the complete pipeline of an LLM project, many variables affect model performance: model architecture, hyperparameters, training code, evaluation code, and data. Industrial ML practice research has also pointed out that changes in model performance often stem from the combined effects of data, features, training configuration, and serving environment rather than from any single, obvious code commit (Amershi et al. 2019). The first four categories of variables typically enjoy mature version management tooling—Git manages code, and configuration files record hyperparameters—but data changes remain the hardest to track, for three reasons:</p>
+<ol>
+<li>
+<p><strong>Inconsistent change granularity.</strong> Code changes can be pinpointed to a line; data changes may involve a single sample, a batch, a category of sources, or a single cleaning rule. Changes at different granularities have vastly different effects on model performance, yet there is no uniform way to record them.</p>
+</li>
+<li>
+<p><strong>Complex causal chains for changes.</strong> Data changes are not always actively triggered; they sometimes occur passively. An outsourcing vendor's annotation style drifts, a crawled source site modifies its content, or a cleaning tool is upgraded—all of these can alter the final training data without anyone explicitly "committing" the change.</p>
+</li>
+<li>
+<p><strong>Delayed impact of changes.</strong> A single data change may not produce a visible effect on model performance until three versions later, because the changed data must go through batch processing, blending, and retraining before the effect becomes apparent. This delay makes root-cause analysis extremely difficult.</p>
+</li>
+</ol>
+<p>From an engineering management perspective, the fundamental reason data changes are hard to track is that data simultaneously possesses both "asset properties" and "process properties." As an asset, a dataset manifests as a collection of files that can be trained on, evaluated, and reused; as a process, a dataset is the result of a series of activities—collection, cleaning, annotation, filtering, merging, and approval. If a team saves only the final files, process information is lost; if only processing logs are saved without binding them to specific data versions, it is still impossible to explain changes in final model performance. The task of version management is precisely to unify asset state with generation history.</p>
+<p>LLM data is especially in need of this unification. Pretraining corpora, SFT instruction data, preference data, evaluation sets, and online feedback data change at different frequencies, have different quality standards, and affect model performance through different pathways. Minor distributional shifts in pretraining corpora may not be apparent in overall metrics yet can affect long-tail knowledge. Changes in SFT data label definitions may directly alter the model's response style. Changes in preference data ranking criteria may affect safety, politeness, and refusal boundaries. Contamination of the evaluation set may cause model performance to be overestimated. Without version records, these effects are very difficult to disentangle.</p>
+<p>Therefore, data version management is not simply the act of tagging each data delivery with a label; it requires enabling the team to answer four categories of questions: first, what does a given data version contain; second, what has changed relative to the previous version; third, why did those changes occur; and fourth, which experiments and models have consumed those changes. Only when all four questions can be answered do data changes become explainable.</p>
+<h3 id="2512-upgrading-from-folder-management-to-lineage-management">25.1.2 Upgrading from "Folder Management" to "Lineage Management"<a class="headerlink" href="#2512-upgrading-from-folder-management-to-lineage-management" title="Permanent link">&para;</a></h3>
+<p>Most data teams start their version management journey with "folder management": naming folders by date, putting new data in new folders, and digging through historical folders when problems arise. The problem with this approach is not that nothing is recorded, but that the recorded information is insufficient. Dates tell you "when," but they cannot tell you:</p>
+<ul>
+<li><strong>What changed</strong>: which samples were added, which were deleted, which were modified</li>
+<li><strong>Why it changed</strong>: what was the business reason for this change, and who made the decision</li>
+<li><strong>Who made the change</strong>: which role or tool triggered this change</li>
+<li><strong>Downstream impact of the change</strong>: which experiments used this change and what results they produced</li>
+</ul>
+<p>Lineage Management is a systematic upgrade from folder management. Data provenance research has long distinguished between "why a result appeared" and "where a result came from," describing data generation pipelines through the relationships among processes, entities, and activities (Buneman, Khanna and Tan 2001; Moreau and Missier 2013). It records not only the "state of existence" of data but also the "generation history" of data: which data sources a dataset was processed from, which processing steps it went through, what changes each step produced, and which downstream tasks ultimately consumed it. Lineage management transforms a dataset from an isolated file into a living asset with a complete historical record.</p>
+<p>Folder management is common in the early stages because it is intuitive, low-cost, and well-suited to short-cycle exploration by small teams. But as a project enters a multi-team collaboration phase, folder naming quickly breaks down. Different members may use different naming conventions—<code>final</code>, <code>final_v2</code>, <code>cleaned_new</code>, <code>for_train_latest</code>—names that might be interpretable on the day they are created but lose their context within weeks. More critically, folders cannot express dependency relationships: a training set may be merged from multiple sources, some of which went through multiple rounds of filtering and annotation, and saving only the final directory cannot reconstruct those relationships.</p>
+<p>Lineage management requires teams to treat data objects as nodes in a graph structure rather than as isolated directories in a filesystem. Raw data, cleaned shards, annotation batches, training sets, experiments, models, and release packages should all be connected through clearly defined edges. An edge represents some transformation, reference, or consumption relationship. For example: "Shard A was processed by cleaning script B to produce Shard C"; "Dataset D references Shard C"; "Experiment E used Dataset D"; "Model F was produced by Experiment E." This form of expression makes impact analysis and root-cause analysis possible.</p>
+<p>From a capability-evolution perspective, folder management primarily records file locations, creation dates, and human-assigned names. It is suited to small-team exploration or temporary experiments but struggles to express differences, reasons, and downstream impacts. Manifest management further records dataset names, sizes, owners, and descriptions, and is appropriate for the early stages of multi-project sharing—but still lacks process history and experiment associations. Version management begins to record data states, change logs, snapshots, and rollback points, which suits stable training and evaluation phases; however, without lineage relationships, it remains difficult to conduct systematic impact analysis. Lineage management goes further to record the relationships among sources, processing, consumption, approvals, and results. It is suited to a platform-level DataOps stage; its construction cost is higher, but it supports automated querying, auditing, and governance rule enforcement.</p>
+<h3 id="2513-the-core-value-proposition-of-version-management">25.1.3 The Core Value Proposition of Version Management<a class="headerlink" href="#2513-the-core-value-proposition-of-version-management" title="Permanent link">&para;</a></h3>
+<p>Building a version management system delivers its most direct value in three scenarios:</p>
+<p><strong>Scenario 1: Experiment reproducibility.</strong> The algorithm team wants to re-run a historical experiment six months later and needs to find the data version used at the time. Reproducible practice in computational science emphasizes that raw data, processing scripts, runtime environments, and results should all be included in the record rather than saving only the final output (Stodden, Leisch and Peng 2014). With version management, the corresponding dataset version number can be found directly via the experiment ID, and the training environment can be reconstructed.</p>
+<p><strong>Scenario 2: Problem traceability.</strong> After a model problem is discovered, the data lineage enables rapid localization: from "which model version has the problem" → "which batch of data did this model version use" → "what is different between this batch and the previous version" → "which processing step did the difference originate from" → "when did this step change, and why."</p>
+<p><strong>Scenario 3: Compliance auditability.</strong> When a regulatory authority requests the training data provenance for a given model, version management enables the generation of a complete audit report covering data sources, processing records, and authorization information.</p>
+<p>Beyond these three scenarios, version management has an underappreciated additional value: it enables teams to accumulate knowledge over the long term. Without version management, experience tends to exist in verbal form—"adding a certain type of data last time seemed to hurt performance." With version management, teams can ground that experience in specific evidence: which data version, which samples, which experiment, what metrics, what conclusions. Experience transforms from a vague memory into a queryable record, providing a stable foundation for organizational learning.</p>
+<p>Version management also reduces collaboration friction. When the algorithm team identifies model degradation, the data team need not re-explain all processing details from scratch—they can present a version-diff report showing the scope of changes. When the quality team detects anomalies, they can directly locate the affected shards. When the compliance team reviews data provenance, they can see source authorization and processing records. When the platform team manages storage and compute resources, they can make archival decisions based on version activity. In other words, version management provides a common factual basis for different roles.</p>
+<p>It should be emphasized that the value of version management is not equivalent to saving all intermediate files. Unconstrained retention causes storage, retrieval, and governance costs to balloon. A mature versioning system should distinguish among frozen versions that must be retained permanently, process versions that require periodic retention, and temporary artifacts that can be cleaned up according to policy. The goal of version management is to retain information sufficient to support reproduction, retrospection, and auditing—not to retain every file forever.</p>
+<hr />
+<h2 id="252-data-version-granularity-and-naming-conventions">25.2 Data Version Granularity and Naming Conventions<a class="headerlink" href="#252-data-version-granularity-and-naming-conventions" title="Permanent link">&para;</a></h2>
+<h3 id="2521-five-levels-of-version-granularity">25.2.1 Five Levels of Version Granularity<a class="headerlink" href="#2521-five-levels-of-version-granularity" title="Permanent link">&para;</a></h3>
+<p>Data version management is not a problem of a single granularity; it requires maintaining version information simultaneously at five levels.</p>
+<p>Figure 25-1 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part8/Du-Chap25-Fig01-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 25-1: Overview of the Version Management System" src="../../../images/part8/Du-Chap25-Fig01-EN.svg" /></a></p>
+<p><em>Figure 25-1: Data version management and experiment tracking system</em></p>
+<p>The system uses five-level version granularity with a bidirectional association architecture.</p>
+<p>The Data Management Body of Knowledge typically treats data assets, metadata, lineage, quality, and lifecycle as shared governance objects; accordingly, version granularity should span multiple levels from individual samples to release packages (DAMA International 2017):</p>
+<p><strong>Sample level (Sample)</strong>: A single training sample. Version information includes sample ID, source URL/document ID, creation time, last modification time, and current status (active/deprecated/under_review). Sample-level versioning is primarily used for annotation quality traceability and compliance auditing.</p>
+<p><strong>Shard level (Shard)</strong>: A batch of logically related samples, typically the output of a single annotation task or the result of a single cleaning batch. Version information includes shard ID, number of samples contained, processing script version, processing time, and quality summary.</p>
+<p><strong>Dataset level (Dataset)</strong>: A complete dataset ready for training. Version information includes dataset ID, the list of component shards, version number (semantic versioning), the reason for creation, and a quality report. The dataset level is the most commonly used version granularity.</p>
+<p><strong>Experiment level (Experiment)</strong>: A specific training experiment. Version information includes experiment ID, dataset version used, model architecture, hyperparameter configuration, and evaluation results. Experiment-level versioning connects data to models.</p>
+<p><strong>Release package level (Release)</strong>: An externally released model version. Version information includes release version number, the corresponding model checkpoint, the dataset version used, the list of evaluation sets passed, and the release approval record.</p>
+<p>Table 25-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 25-1: Data version granularity and applicable scenarios</em></p>
+<table>
+<thead>
+<tr>
+<th>Version Granularity</th>
+<th>Primary Use</th>
+<th>Key Fields</th>
+<th>Retention Policy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sample level</td>
+<td>Compliance auditing, annotation traceability</td>
+<td>sample_id, source, status</td>
+<td>Permanent retention</td>
+</tr>
+<tr>
+<td>Shard level</td>
+<td>Quality analysis, processing traceability</td>
+<td>shard_id, script_version, quality_summary</td>
+<td>Retain for 12 months</td>
+</tr>
+<tr>
+<td>Dataset level</td>
+<td>Experiment comparison, version release</td>
+<td>dataset_id, version, shards, quality_report</td>
+<td>Permanent retention (frozen versions)</td>
+</tr>
+<tr>
+<td>Experiment level</td>
+<td>Result attribution, performance tracking</td>
+<td>experiment_id, dataset_version, results</td>
+<td>Retain for 18 months</td>
+</tr>
+<tr>
+<td>Release package level</td>
+<td>Deployment management, compliance review</td>
+<td>release_version, model_checkpoint, approval</td>
+<td>Permanent retention</td>
+</tr>
+</tbody>
+</table>
+<p>These five levels are not parallel—they form a hierarchical aggregation. Sample-level records answer "where does this data item come from?"; shard-level records answer "how was this batch of data generated?"; dataset-level records answer "what combination was used in this training run?"; experiment-level records answer "how did data affect the model?"; release-package-level records answer "what was ultimately delivered externally?" A gap in any level creates a break in the retrospection chain.</p>
+<p>In practice, teams need not automate management of all granularities from the start, but must clearly define the responsibility boundaries for each granularity. Sample-level information is typically produced by collection and annotation systems; shard-level information is maintained by data pipelines and annotation platforms; dataset-level information is maintained by version management tools; experiment-level information is maintained by experiment tracking systems; release-package-level information is maintained by model registration and release systems. If these systems share no unified IDs or association tables, data will remain only partially traceable.</p>
+<p>Granularity design must also account for cost. Sample-level versioning is the most fine-grained but incurs the highest storage and indexing costs; dataset-level versioning is the most widely used but insufficient for explaining fine-grained quality issues; release-package-level versioning is best suited to compliance auditing but cannot directly answer questions about processing details. Teams should therefore adopt a strategy of "fine granularity for critical paths, moderate granularity for ordinary paths." For formal training sets, evaluation sets, high-sensitivity data, and online feedback data, sample-level or shard-level records should be retained where possible. For one-off exploratory data, only dataset-level and experiment-level records may be needed, but these must be marked as ineligible for formal release.</p>
+<p>Table 25-2 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 25-2: Recommended version granularity by data type</em></p>
+<table>
+<thead>
+<tr>
+<th>Data Type</th>
+<th>Recommended Minimum Granularity</th>
+<th>Rationale</th>
+<th>Records That May Be Simplified</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Formal training set</td>
+<td>Shard level + Dataset level</td>
+<td>Need to explain data recipe and quality changes</td>
+<td>Temporary cleaning intermediate files may be cleaned up according to policy</td>
+</tr>
+<tr>
+<td>Critical evaluation set</td>
+<td>Sample level + Dataset level</td>
+<td>Need to prevent contamination and support item-by-item review</td>
+<td>Irrelevant experiment logs need not be retained long-term</td>
+</tr>
+<tr>
+<td>Preference data</td>
+<td>Sample level + Shard level</td>
+<td>Annotator identity, preference criteria, and disputed samples are critically important</td>
+<td>Low-value draft samples may be archived</td>
+</tr>
+<tr>
+<td>Online feedback data</td>
+<td>Sample level</td>
+<td>Involves user requests, permissions, and deletion requirements</td>
+<td>Aggregated statistics may be retained long-term; raw content requires time-limited control</td>
+</tr>
+<tr>
+<td>Exploratory synthetic data</td>
+<td>Dataset level + Experiment level</td>
+<td>Primarily for hypothesis validation; relatively low risk</td>
+<td>Generation-process logs per sample need not be retained, but generation configuration must be retained</td>
+</tr>
+<tr>
+<td>Externally released packages</td>
+<td>Release package level + Experiment level</td>
+<td>Need to account for model provenance and approval chain</td>
+<td>Training intermediate checkpoints may be compressed according to policy</td>
+</tr>
+</tbody>
+</table>
+<p>Overly fine granularity creates operational burden; overly coarse granularity weakens traceability. A practical heuristic is: when a problem occurs, can the team locate the scope of responsibility within a reasonable time? If the team can only identify that "some dataset has a problem" but cannot pinpoint the shard, source, or processing step, granularity is too coarse. If every minor field change requires complex approval workflows that cause the team to bypass the process, granularity and governance intensity are too fine. Version granularity should serve real investigation, reproduction, and auditing needs.</p>
+<h3 id="2522-version-naming-conventions">25.2.2 Version Naming Conventions<a class="headerlink" href="#2522-version-naming-conventions" title="Permanent link">&para;</a></h3>
+<p>Version naming conventions should follow three principles: readability (human-interpretable), sortability (temporal order can be inferred), and uniqueness (no duplicates). The practice of data versioning tools such as DVC also demonstrates that clear version identifiers, metadata, and remote storage conventions are the foundation for teams to share experiments and roll back data states (DVC Documentation 2024).</p>
+<p><strong>Dataset version: Semantic Versioning</strong></p>
+<p>Use the <code>MAJOR.MINOR.PATCH</code> format with the following rules:</p>
+<ul>
+<li><code>MAJOR</code>: A major data restructuring has occurred, such as replacing core data sources, large-scale re-annotation, or an incompatible data format change.</li>
+<li><code>MINOR</code>: A new category of data has been added, or more than 10% of the sample count has been added.</li>
+<li><code>PATCH</code>: Quality issues in existing samples have been fixed, or a small proportion of samples has been updated.</li>
+</ul>
+<p>Example: <code>dialogue-sft-zh_v2.3.1</code></p>
+<ul>
+<li><code>dialogue-sft-zh</code>: Dataset name (task type–training stage–language)</li>
+<li><code>v2.3.1</code>: Second major version, third feature version, first patch</li>
+</ul>
+<p><strong>Shard version: Timestamp + Source identifier</strong></p>
+<p>Format: <code>{source_tag}_{YYYYMMDD}_{sequence}_{hash}</code></p>
+<p>Example: <code>vendor_a_annotation_20240315_001_a3f7b2</code></p>
+<ul>
+<li><code>vendor_a_annotation</code>: Source identifier (annotation results from Vendor A)</li>
+<li><code>20240315</code>: Processing date</li>
+<li><code>001</code>: First batch of the day</li>
+<li><code>a3f7b2</code>: First six characters of the content hash, for rapid integrity verification</li>
+</ul>
+<p><strong>Experiment version: Project abbreviation + Date + Sequence number</strong></p>
+<p>Format: <code>{project}_{YYYYMMDD}_{seq_num}</code></p>
+<p>Example: <code>edu-math_20240315_exp003</code></p>
+<ul>
+<li><code>edu-math</code>: Project abbreviation (educational mathematics sub-task)</li>
+<li><code>20240315</code>: Experiment start date</li>
+<li><code>exp003</code>: Third experiment of the day</li>
+</ul>
+<p>The difficulty of naming conventions lies not in the rules themselves but in consistent long-term execution. Many teams have established naming rules but lack automatic validation and governance accountability, ultimately leading to multiple naming variants. To prevent this, version names should be generated by the system wherever possible, with humans responsible only for filling in required semantic fields. For example, a dataset name can be auto-generated from the combination of task type, training stage, language, and data domain; version numbers can be auto-incremented by the release workflow; content hashes can be computed by the system. The less manual input required, the more stable the naming becomes.</p>
+<p>Naming should also avoid including information that changes frequently or carries overly subjective interpretations. Names such as <code>best_dataset</code>, <code>high_quality_v1</code>, and <code>new_cleaned</code> may be readable in the short term but become uninterpretable over time. "Best" relative to which experiment? "High quality" by whose standard? "New" relative to which old version? None of these questions can be answered from the name alone. A better approach is to record quality ratings, applicable scenarios, and experiment outcomes in metadata rather than cramming them into version names.</p>
+<p>Version naming must also be distinguished from branching and environments. Production mainline, experimental branches, sandbox data, and archived versions should not share the same naming namespace. Otherwise, algorithm engineers may mistakenly use exploratory data to train official models, and quality evaluators may inadvertently include sandbox data in formal quality statistics. It is recommended to explicitly record an <code>environment</code> or <code>lifecycle_stage</code> field in metadata—such as <code>sandbox</code>, <code>candidate</code>, <code>frozen</code>, or <code>archived</code>. Names handle unique identification; lifecycle fields handle state expression.</p>
+<p>Once established, naming conventions should be written into the data release workflow. Before a release, the system automatically checks whether the name conforms to the rules, whether the version number is incremented, whether the hash matches, and whether metadata is complete. For data that does not conform to conventions, the system may allow entry into the sandbox environment but should block entry into the formal training or release pipeline. This way, the convention no longer depends on manual reminders but becomes an entry condition for the version management system.</p>
+<p>Naming conventions should also consider cross-team readability. Data engineers typically care about source and processing batches; algorithm engineers care about task, training stage, and experiment number; compliance teams care about authorization status and sensitivity classification; platform teams care about storage location and lifecycle status. A good version name cannot carry all of this information, but should provide a sufficiently stable entry point allowing different roles to query complete metadata further. Naming conventions and metadata management must therefore be designed together: names serve to locate objects; metadata serves to explain them.</p>
+<p>In large enterprises, teams must also avoid different departments independently defining conflicting abbreviations. For example, <code>cs</code> might mean customer service in a customer-facing project, computer science in a computational research team, and content safety in a content moderation team. Project abbreviations, task abbreviations, and language codes should be entered into a shared vocabulary to prevent accumulated ambiguity over time. Managing this vocabulary may seem trivial, but it directly affects version retrieval, automation scripts, and cross-team communication.</p>
+<h3 id="2523-branches-snapshots-and-rollback-points">25.2.3 Branches, Snapshots, and Rollback Points<a class="headerlink" href="#2523-branches-snapshots-and-rollback-points" title="Permanent link">&para;</a></h3>
+<p>Version management requires distinguishing three different types of operations. Modern lakehouse table formats also support data version retrospection and incremental change auditing through transaction logs, snapshots, and time-travel capabilities (Armbrust et al. 2020):</p>
+<p><strong>Branch</strong>: An experimental modification or extension of data that does not affect the mainline dataset. For example, to test "the effect of adding 20% synthetic data," one can create a branch from the current mainline dataset, add synthetic data on the branch, and decide after the experiment whether to merge it back to the mainline.</p>
+<p>Branches are appropriate when: a data decision's effectiveness is uncertain, or multiple data recipes need to be maintained simultaneously for different algorithm experiments.</p>
+<p><strong>Snapshot</strong>: A precise record of the current state of a dataset at a specific point in time. Snapshots are read-only and cannot be modified after creation. Quarterly version freezes are a typical snapshot operation.</p>
+<p>Snapshots are appropriate when: compliance auditing requires the preservation of historical states, or a stable reference version needs to be provided to external partners.</p>
+<p><strong>Rollback point</strong>: A marker created at a point in time when a version is known to be good, enabling rapid recovery to that state when a problem is discovered. Rollback points are typically set manually before major data changes.</p>
+<p>Rollback points are appropriate when: backing up state safely before large-scale cleaning rule changes, and before merging outsourced annotation batches.</p>
+<p>Branches, snapshots, and rollback points each serve different risk-control objectives. Branches support exploration, allowing teams to try new data recipes without affecting the mainline. Snapshots support auditing, ensuring that the state of data at a given point in time is immutable. Rollback points support recovery, helping teams quickly return to a known stable state when problems are discovered. Mixing these three carelessly leads to governance confusion. For example, if a branch is used as a snapshot, experimental data may continue to be modified, causing reproduction to fail. If a snapshot is treated as an ordinary branch and modified, audit credibility is undermined.</p>
+<p>Branch management also requires clear merge criteria. Whether a data branch can be merged back into the mainline should not depend solely on whether model metrics improve; it should also consider quality, compliance, coverage, and long-term maintenance costs. A branch that incorporates large volumes of synthetic data and shows short-term metric improvements may not be suitable for the mainline if its data source is unexplainable, its sample style is uniform, or it diverges from real user scenarios. The version management system should require merge requests to include diff reports, quality reports, and experiment results—not just final metrics.</p>
+<p>Snapshots must adhere to the read-only principle. If a problem is discovered in a frozen snapshot, the correct approach is not to modify it directly but to create a new version and record the reason for the fix. This may seem cumbersome but protects historical interpretability. An audit is concerned not only with "whether the current data is correct" but also with "what data state was available when that decision was made." If historical snapshots are silently modified, the organization loses the ability to explain and review past decisions.</p>
+<p>Rollback points should be established before high-risk changes, not sought as an afterthought when problems arise. High-risk changes include adding a large-scale new data source, replacing cleaning rules, merging outsourced annotation batches, modifying the label schema, deleting samples, and changing data mixing weights. Creating a rollback point before each high-risk change significantly reduces the cost of trial and error, enabling teams to pursue necessary improvements while maintaining a safety boundary.</p>
+<hr />
+<h2 id="253-experiment-tracking-result-write-back-and-audit-trails">25.3 Experiment Tracking, Result Write-Back, and Audit Trails<a class="headerlink" href="#253-experiment-tracking-result-write-back-and-audit-trails" title="Permanent link">&para;</a></h2>
+<h3 id="2531-field-design-for-experiment-cards">25.3.1 Field Design for Experiment Cards<a class="headerlink" href="#2531-field-design-for-experiment-cards" title="Permanent link">&para;</a></h3>
+<p>The core instrument of experiment tracking is the <strong>Experiment Card</strong>. Systems such as ModelDB and MLflow both treat experiment parameters, code versions, data versions, metrics, and artifacts as the core objects of unified experiment management (Vartak et al. 2016; Zaharia et al. 2018). A complete experiment card must record sufficient information so that any person can reproduce the experiment six months later and understand the decision context at the time.</p>
+<p>The following is a standard experiment card field design:</p>
+<p><strong>Basic Information</strong></p>
+<p>Table 25-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 25-3: Field Design for Experiment Cards</em></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>experiment_id</td>
+<td>string</td>
+<td>Unique experiment identifier</td>
+</tr>
+<tr>
+<td>experiment_name</td>
+<td>string</td>
+<td>Human-readable experiment name</td>
+</tr>
+<tr>
+<td>project</td>
+<td>string</td>
+<td>Name of the parent project</td>
+</tr>
+<tr>
+<td>created_by</td>
+<td>string</td>
+<td>Experiment initiator</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>datetime</td>
+<td>Experiment creation time</td>
+</tr>
+<tr>
+<td>status</td>
+<td>enum</td>
+<td>pending / running / completed / failed / abandoned</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Data Configuration</strong></p>
+<p>Table 25-4 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 25-4: Field Design for Experiment Cards</em></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dataset_id</td>
+<td>string</td>
+<td>ID of the dataset used</td>
+</tr>
+<tr>
+<td>dataset_version</td>
+<td>string</td>
+<td>Dataset version number</td>
+</tr>
+<tr>
+<td>data_splits</td>
+<td>object</td>
+<td>Sample counts for train/val/test splits</td>
+</tr>
+<tr>
+<td>data_filters</td>
+<td>list</td>
+<td>Additional filter conditions applied in this experiment (if any)</td>
+</tr>
+<tr>
+<td>data_mixing_weights</td>
+<td>object</td>
+<td>Weight of each dataset when mixing multiple datasets</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Model Configuration</strong></p>
+<p>Table 25-5 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 25-5: Field Design for Experiment Cards</em></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>base_model</td>
+<td>string</td>
+<td>Base model name and version</td>
+</tr>
+<tr>
+<td>training_framework</td>
+<td>string</td>
+<td>Training framework (e.g., DeepSpeed, Megatron)</td>
+</tr>
+<tr>
+<td>hyperparams</td>
+<td>object</td>
+<td>Complete hyperparameter configuration (learning rate, batch size, etc.)</td>
+</tr>
+<tr>
+<td>training_code_commit</td>
+<td>string</td>
+<td>Git commit hash of the training code</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Runtime Environment Configuration</strong></p>
+<p>Table 25-6 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 25-6: Field Design for Experiment Cards</em></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>runtime_env</td>
+<td>object</td>
+<td>Python, OS, training framework, and key runtime versions</td>
+</tr>
+<tr>
+<td>container_image</td>
+<td>string</td>
+<td>Container image name, version, or digest, used to lock the runtime environment</td>
+</tr>
+<tr>
+<td>dependency_lock</td>
+<td>string</td>
+<td>Path to the dependency lock file or package version snapshot (e.g., requirements.lock, conda-lock, poetry.lock)</td>
+</tr>
+<tr>
+<td>hardware_profile</td>
+<td>object</td>
+<td>GPU/accelerator model, count, VRAM, CPU, and memory configuration</td>
+</tr>
+<tr>
+<td>cuda_driver</td>
+<td>string</td>
+<td>Versions of CUDA, GPU driver, cuDNN/NCCL, and other critical low-level dependencies</td>
+</tr>
+<tr>
+<td>random_seed</td>
+<td>int</td>
+<td>Random seed used for this experiment</td>
+</tr>
+<tr>
+<td>determinism_flags</td>
+<td>object</td>
+<td>Settings related to deterministic training, such as deterministic operators, benchmark switches, and stochasticity controls</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Evaluation Results</strong></p>
+<p>Table 25-7 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 25-7: Field Design for Experiment Cards</em></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>eval_datasets</td>
+<td>list</td>
+<td>List of evaluation sets used</td>
+</tr>
+<tr>
+<td>metrics</td>
+<td>object</td>
+<td>Metric results on each evaluation set (key-value pairs)</td>
+</tr>
+<tr>
+<td>eval_code_commit</td>
+<td>string</td>
+<td>Git commit hash of the evaluation code</td>
+</tr>
+<tr>
+<td>eval_timestamp</td>
+<td>datetime</td>
+<td>Evaluation completion time</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Experiment Records</strong></p>
+<p>Table 25-8 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 25-8: Sample experiment card fields</em></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hypothesis</td>
+<td>string</td>
+<td>Experiment hypothesis (what this experiment aims to validate)</td>
+</tr>
+<tr>
+<td>motivation</td>
+<td>string</td>
+<td>Business motivation for the data or configuration adjustments</td>
+</tr>
+<tr>
+<td>notes</td>
+<td>string</td>
+<td>Observations and anomaly records during the experiment</td>
+</tr>
+<tr>
+<td>conclusion</td>
+<td>string</td>
+<td>Experiment conclusion</td>
+</tr>
+<tr>
+<td>next_actions</td>
+<td>list</td>
+<td>Follow-up actions based on the results of this experiment</td>
+</tr>
+</tbody>
+</table>
+<p>Special emphasis should be placed on the importance of the <code>hypothesis</code> field. Many teams record only "what was done" but not "why it was done." Six months later, the experiment results may still be available, but the rationale for running the experiment is nowhere to be found. Requiring the <code>hypothesis</code> field to be filled in forces the experiment initiator to explicitly state the experiment's purpose before it begins—and this alone can significantly improve the quality of experiment design.</p>
+<p>Experiment card design should avoid two extremes. One extreme is too few fields, recording only experiment ID, model version, and metric results—leaving experiments without explanatory power. The other extreme is too many fields, requiring researchers to fill in large amounts of low-value information, which ultimately degrades record quality. A better approach is to distinguish among required fields, conditionally required fields, and optional fields. Required fields ensure reproducibility and auditability; conditionally required fields apply to specific types of experiments; optional fields capture supplementary observations and analysis.</p>
+<p>Required fields typically include: experiment hypothesis, dataset version, training code version, base model version, key hyperparameters, evaluation set version, core metrics, and conclusion. Conditionally required fields depend on the nature of the experiment: if the experiment changes data mixing ratios, data mixing weights must be filled in; if the experiment uses a new data source, the compliance approval record must be filled in; if the experiment involves preference data, the annotation guide version and preference sampling strategy must be filled in. Through this layered design, experiment cards achieve both rigor and freedom from unnecessary overhead.</p>
+<p>Experiment cards should also record negative conditions. Many experiments fail not because the hypothesis is wrong, but because training resources are insufficient, the evaluation set is inappropriate, data preprocessing has errors, or logs are missing. If only the final metrics are recorded, subsequent reviewers cannot determine the reason for failure. Recording anomalies, limitations, and uncertainties helps the team distinguish between "this direction is invalid" and "execution conditions were insufficient." This distinction matters greatly for long-term R&amp;D, because erroneously ruling out a direction may incur a greater opportunity cost than repeating a failed experiment.</p>
+<p>Specifically, reproducibility fields should be required, including dataset version, code commit, base model, key hyperparameters, and random seed, to ensure the experiment can be re-run. Interpretation fields should also be required, including <code>hypothesis</code>, <code>motivation</code>, and a data change summary, to explain why the experiment was conducted. Results fields—including metrics, evaluation set version, conclusion, and next actions—support experiment comparison and decision-making. Risk and process fields may be conditionally required: when an experiment involves a new data source, sensitive data, or compliance restrictions, approvals and usage boundaries should be recorded; when the training process is interrupted, logs are missing, or anomalous fluctuations occur, process limitations should be recorded to help assess result reliability later. Supplementary fields may remain optional, for manual observations, chart links, and review comments.</p>
+<p>To improve experiment card quality, teams can establish pre-experiment and post-experiment checklists. The pre-experiment checklist confirms that the experiment hypothesis is clear, the dataset version is frozen or traceable, and the evaluation set version is specified. The post-experiment checklist confirms that metrics have been written in, conclusions are clear, failure reasons are recorded, and next actions are actionable. Neither checklist requires complex approval; both can be embedded in the experiment platform's submission interface. Their goal is not to impede experimentation but to make every experiment a piece of reusable knowledge.</p>
+<h3 id="2532-result-write-back-and-bidirectional-association">25.3.2 Result Write-Back and Bidirectional Association<a class="headerlink" href="#2532-result-write-back-and-bidirectional-association" title="Permanent link">&para;</a></h3>
+<p>An experiment card records only the one-directional relationship from "data" to "results." A complete tracking system also needs the ability to trace back from "results" to "data"—this is the <strong>Result Write-Back</strong> mechanism.</p>
+<p>Result write-back means: when the evaluation results of an experiment become available, rather than simply writing the results into the experiment card, the results are also "written back" to the metadata of the dataset, forming a bidirectional association. Production-grade ML platforms typically require training pipelines, metadata stores, validation components, and model registration systems to form a closed loop; otherwise, experiment results cannot stably feed back into data governance (Baylor et al. 2017; Kreuzberger, Kühl and Hirschl 2023):</p>
+<ul>
+<li>From the dataset perspective: one can query "which experiments used this dataset, and what results did they produce?"</li>
+<li>From the experiment perspective: one can query "which dataset versions did this experiment use?"</li>
+</ul>
+<p>The value of this bidirectional association lies in enabling teams, when facing a new data decision, to quickly query "what were the results of previous experiments using this type of data configuration?" and to learn from existing experiments rather than starting from scratch every time.</p>
+<p>Several technical implementation options exist for result write-back:</p>
+<ul>
+<li>Using the MLflow experiment tracking API to record dataset versions as artifact parameters of experiments</li>
+<li>Using DVC's <code>dvc params diff</code> and <code>dvc metrics diff</code> commands to compare experiment result differences across different data versions</li>
+<li>Building a custom metadata service that maintains a many-to-many association table for <code>(dataset_version, experiment_id)</code> pairs</li>
+</ul>
+<p>Regardless of the technical approach chosen, result write-back should be automated and must not rely on manual entry. The dataset version should be automatically recorded when an experiment starts, and evaluation results should be automatically read and written in when the experiment completes. Reducing manual intervention reduces opportunities for omissions.</p>
+<p>Result write-back should also distinguish between "metric write-back" and "interpretation write-back." Metric write-back records numerical results—accuracy, win rate, perplexity, safety evaluation pass rate, and so on. Interpretation write-back records why these results occurred—which sample types improved, which scenarios regressed, which data changes may have been responsible. Teams can compare experiments with metric write-back alone, but cannot learn from them. Adding interpretation write-back enables data teams to adjust collection, cleaning, and annotation strategies based on experiment results.</p>
+<p>Interpretation write-back is especially suited to data-driven model optimization. When experiment results show an improvement in mathematical reasoning evaluation, the team needs to know whether the improvement came from adding more math problems, improving annotation guidelines, adjusting data mixing weights, or changing training configuration. If the experiment card can associate results with a summary of specific data changes, the data team can replicate effective strategies. Conversely, if all changes happen simultaneously without records, the team cannot determine which practices to keep even when better metrics are obtained.</p>
+<p>Result write-back can also support data asset value assessment. A dataset that is used across many experiments and consistently delivers gains across multiple projects should be flagged as a high-value data asset, subject to stricter version freezing, quality maintenance, and permission management. Datasets that have consistently failed to improve performance, or are only effective in specific experiments, should be flagged as low-reuse or scenario-specific assets. This way, experiment tracking serves not only the algorithm team but also feeds back into data asset governance.</p>
+<p>In technical implementation, bidirectional associations should use stable IDs wherever possible rather than relying on name matching. Dataset names may change, experiment names may repeat, and file paths may migrate—but unique IDs and version numbers should remain stable. A metadata service can maintain relationship tables among datasets, shards, experiments, models, and release packages, and provide query interfaces. This way, when a data source is determined to be at risk, the team can automatically list all affected experiments and models without manual searching.</p>
+<h3 id="2533-the-value-of-failed-experiments-and-knowledge-preservation">25.3.3 The Value of Failed Experiments and Knowledge Preservation<a class="headerlink" href="#2533-the-value-of-failed-experiments-and-knowledge-preservation" title="Permanent link">&para;</a></h3>
+<p>A common misconception is that failed experiments do not need to be carefully recorded "because they have no value." Production-readiness assessment frameworks emphasize that failure cases, data anomalies, test coverage, and monitoring signals are all important evidence for reducing ML technical debt and should not be lost after an experiment concludes (Breck et al. 2017). This misconception causes enormous knowledge waste.</p>
+<p>The value of failed experiments manifests in three ways:</p>
+<ol>
+<li>
+<p><strong>Eliminating a search space</strong>: A failed experiment proves that "this path doesn't work," preventing the team from repeating similar mistakes in the same direction. If failed experiments are not recorded, a new algorithm engineer three months later may re-run the same experiment, wasting precious computational resources.</p>
+</li>
+<li>
+<p><strong>Anomaly signals</strong>: Failed experiments often contain valuable anomaly signals. Abnormal fluctuations in the loss curve, extreme errors on certain sample types, an unexpected rise in a metric on the evaluation set—these signals may be important findings even against the overall backdrop of "failure."</p>
+</li>
+<li>
+<p><strong>Reference baselines</strong>: When subsequent experiments try a new data recipe, historical failed experiments provide meaningful comparison groups. Without comparison groups, it is impossible to assess whether improvements are genuinely effective.</p>
+</li>
+</ol>
+<p>Knowledge preservation requirements for failed experiments:</p>
+<ol>
+<li>The <code>conclusion</code> field must be filled in to explicitly record why the experiment is considered a failure.</li>
+<li>The <code>next_actions</code> field must be filled in to record the follow-up actions based on the failure conclusion.</li>
+<li>The <code>status</code> of a failed experiment must be marked as <code>failed</code> or <code>abandoned</code>; experiments must not silently disappear.</li>
+<li>For "known failed directions," a shared "exclusion list" should be maintained, annotating which categories of experiments have been proven ineffective.</li>
+</ol>
+<p>Failed experiment preservation also requires distinguishing among different failure types. Failures caused by resource interruptions, data quality issues, invalid hypotheses, and mismatched evaluation criteria each require completely different follow-up handling. If the team uniformly labels all these experiments as <code>failed</code>, subsequent reviewers still cannot understand their value. A more refined approach adds a failure classification field and requires supporting evidence.</p>
+<p>For example, an experiment that terminates due to insufficient VRAM during training does not imply that the data recipe is invalid. An experiment that produces anomalous results due to evaluation set contamination does not imply a genuine improvement in model capability. An experiment that regresses because newly added data is mismatched to the task objective can clearly rule out that data direction. Failure classification enables the team to decide whether to re-run, fix the data, adjust evaluation, or add the direction to the exclusion list.</p>
+<p>Table 25-9 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 25-9: Failed experiment types and preservation requirements</em></p>
+<table>
+<thead>
+<tr>
+<th>Failure Type</th>
+<th>Typical Manifestation</th>
+<th>Should Re-Run?</th>
+<th>Information to Preserve</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Execution failure</td>
+<td>Training interrupted, logs missing, insufficient resources</td>
+<td>Usually should re-run</td>
+<td>Resource configuration, failure cause, re-run conditions</td>
+</tr>
+<tr>
+<td>Data failure</td>
+<td>Quality anomaly, distribution skew, incorrect label definitions</td>
+<td>Re-run after fixing data</td>
+<td>Affected data version, problematic samples, fix strategy</td>
+</tr>
+<tr>
+<td>Hypothesis failure</td>
+<td>No metric improvement or regression on critical scenarios</td>
+<td>Usually not immediately</td>
+<td>Experiment hypothesis, comparison results, exclusion conclusion</td>
+</tr>
+<tr>
+<td>Evaluation failure</td>
+<td>Evaluation set contamination, evaluation code error, metric definition change</td>
+<td>Re-run after fixing evaluation</td>
+<td>Evaluation version, erroneous definition, scope of impact</td>
+</tr>
+<tr>
+<td>Compliance failure</td>
+<td>Insufficient data authorization, non-compliant use, unprocessed sensitive information</td>
+<td>Should not re-run; risk must be addressed first</td>
+<td>Compliance conclusion, isolation measures, permission revocation</td>
+</tr>
+</tbody>
+</table>
+<p>Failed experiments can also form an organization-level "anti-pattern library." For example, a certain type of synthetic data repeatedly causes the model's output style to become mechanical; a certain filtering rule repeatedly deletes historical business process samples in error; a certain evaluation set cannot distinguish genuine capability improvement from template memorization. If these lessons only exist in personal notes, they cannot prevent the team from repeating similar mistakes. An anti-pattern library need not be complex, but should include a problem description, trigger conditions, evidence, avoidance strategies, and applicable boundaries.</p>
+<p>For R&amp;D teams, carefully recording failures also has cultural significance. It sends the signal that an experiment's value does not come only from successful metrics but also from reducing uncertainty. Rewarding only successful experiments encourages teams to choose conservative approaches and even conceal unfavorable results; acknowledging the knowledge value of failed experiments encourages more honest experiment records and more systematic exploration. Experiment tracking from a DataOps perspective is precisely about institutionalizing this exploration process.</p>
+<h3 id="2534-the-minimum-information-set-for-an-audit-trail">25.3.4 The Minimum Information Set for an Audit Trail<a class="headerlink" href="#2534-the-minimum-information-set-for-an-audit-trail" title="Permanent link">&para;</a></h3>
+<p>A complete audit trail must be able to answer the following core questions. Research on both data cards and model cards emphasizes that data sources, usage boundaries, evaluation conditions, and model behavior must be documented to support auditing and accountability tracing (Gebru et al. 2021; Mitchell et al. 2019):</p>
+<p>Table 25-10 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 25-10: Audit trail information requirements</em></p>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Information Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What data was used to train this model?</td>
+<td>Release package → Experiment → Dataset version</td>
+</tr>
+<tr>
+<td>Where did this batch of data come from?</td>
+<td>Dataset → Shards → Sample sources</td>
+</tr>
+<tr>
+<td>Who did what processing on this batch of data?</td>
+<td>Processing script version + Operator + Timestamp</td>
+</tr>
+<tr>
+<td>What quality checks did this batch of data pass?</td>
+<td>Quality evaluation records + Evaluator + Time</td>
+</tr>
+<tr>
+<td>Was the use of this data authorized through compliance review?</td>
+<td>Data compliance review records + Reviewer + Review conclusion</td>
+</tr>
+<tr>
+<td>If a user's data needs to be deleted, what is the scope of impact?</td>
+<td>Sample-level source index → Associated shards → Associated datasets → Associated experiments</td>
+</tr>
+</tbody>
+</table>
+<p>For auditing purposes, the principle is not "more records are better" but "critical information must be present." Every column of information in the table above constitutes the minimum necessary set for an audit; a gap in any single item creates a break in the audit chain.</p>
+<p>The audit trail must also cover "deletion and correction" scenarios. For training samples that contain user data or restricted business data, teams may receive deletion requests, authorization revocations, or data correction requirements. In such cases, the audit system must be able to start from the sample-level index and identify which shards that sample entered, which datasets, which experiments, and which released models. Only then can the team determine whether the original data must be deleted, the dataset rebuilt, the model retrained, or only relevant samples excluded from future versions.</p>
+<p>The audit trail must also distinguish between internal and external auditing. Internal auditing focuses more on problem localization and process improvement and may retain richer technical details. External auditing focuses more on source, authorization, use, approval, and risk handling, and requires structured reports. Data teams should avoid assembling audit materials ad hoc when an external audit arrives; instead, they should continuously accumulate evidence through routine version management. This way, when regulatory, client, or partner review requirements arise, the team can generate reports from the system rather than relying on last-minute manual compilation.</p>
+<p>The minimum information set must also meet quality thresholds. Some fields may technically exist but contain content too vague to support an audit. For example, a change reason written as "data optimization," a quality conclusion written as "checked," and a compliance opinion written as "no issues" cannot genuinely explain any decision. Audit records should be as specific as possible: what was optimized, which metrics were checked, what is the compliance basis, and what are the limiting conditions. The key to an audit is not filling out a form but enabling subsequent reviewers to understand the judgment made at the time.</p>
+<p>The audit trail should also have access controls. Not all audit information is appropriate for all teams to access—user-level source indexes, external vendor contract information, sensitive data authorization documents, and security incident records may all require stricter permissions. The version management system should support visibility controls at different granularities: ordinary R&amp;D staff can view data versions, quality summaries, and experiment associations; Data Owners can view complete change records; compliance and security roles can view authorization records, access logs, and sensitive field processing records. This balances collaborative transparency with limiting the exposure of sensitive information.</p>
+<hr />
+<h2 id="254-lineage-visualization-and-governance-rules">25.4 Lineage Visualization and Governance Rules<a class="headerlink" href="#254-lineage-visualization-and-governance-rules" title="Permanent link">&para;</a></h2>
+<h3 id="2541-representations-of-data-lineage-graphs">25.4.1 Representations of Data Lineage Graphs<a class="headerlink" href="#2541-representations-of-data-lineage-graphs" title="Permanent link">&para;</a></h3>
+<p>A data lineage graph is the visual representation of data provenance. A lineage graph is fundamentally a visualization of the relationships among data entities, processing activities, and responsible agents, consistent with the three core concepts of entities, activities, and agents in the W3C PROV data model (Moreau and Missier 2013). It displays the dependency and transformation relationships among data assets in the form of a directed acyclic graph (DAG).</p>
+<p>In LLM data engineering, a typical data lineage graph contains the following node types:</p>
+<ul>
+<li><strong>Data source nodes</strong>: Raw data sources, such as "Web crawl – CommonCrawl 2024Q1" and "Vendor A annotation batch 202403"</li>
+<li><strong>Processing nodes</strong>: Data transformation steps, such as "deduplication filtering," "language identification," and "annotation quality review"</li>
+<li><strong>Dataset nodes</strong>: A dataset at a particular version, such as "dialogue-sft-zh_v2.3.1"</li>
+<li><strong>Experiment nodes</strong>: Experiments using a particular dataset, such as "edu-math_exp003"</li>
+<li><strong>Model nodes</strong>: Models produced by training, such as "edu-math-7B-v1.2"</li>
+</ul>
+<p>Directed edges between nodes express "this node produced that node"; edges can be annotated with transformation rules (e.g., the version of the cleaning script) and the transformation time.</p>
+<p>Data lineage graphs support three typical query perspectives:</p>
+<p><strong>Forward tracking</strong>: Starting from a data source, trace all downstream outputs—which training sets did this crawled data ultimately enter, which experiments was it used in, and which models did it produce? Forward tracking supports impact analysis (if this data source has a problem, which artifacts are affected?).</p>
+<p><strong>Reverse tracking</strong>: Starting from a model or experiment, trace all upstream inputs—where did this model's training data come from, what processing did it undergo, and who conducted the quality evaluation? Reverse tracking supports root-cause analysis.</p>
+<p><strong>Diff comparison</strong>: Compare the lineage-level differences between two different versions of a dataset—which data sources changed, which processing steps changed, and how large is the difference? Diff comparison supports change auditing.</p>
+<p>The value of a lineage graph lies not merely in "drawing it" but in being queryable and interpretable. Many teams have drawn data flow diagrams in documentation, but once such diagrams are decoupled from the actual system, they quickly become outdated. Lineage graphs with genuine governance value should be automatically or semi-automatically generated by data pipelines, version tools, experiment tracking systems, and release systems, and should be updated as data objects change. Manually maintained diagrams may be useful for training and communication but must not be the sole basis for auditing and retrospection.</p>
+<p>Lineage graphs also need complexity control. LLM data pipelines often contain large numbers of data sources, processing steps, and experiment nodes; displaying all nodes at once makes the graph unreadable. Lineage visualization should therefore support filtering by perspective: during quality investigation, display data sources, processing steps, and quality reports; during experiment analysis, display datasets, experiments, and model metrics; during compliance auditing, display sources, authorizations, approvals, and usage scope. Different roles see not a single large graph but different views of the same underlying lineage data.</p>
+<p>Edge semantics should also be carefully designed. Edges are not merely "connections"—they should also specify the type of relationship. For example, <code>derived_from</code> denotes derivation, <code>filtered_by</code> denotes filtering, <code>annotated_by</code> denotes annotation, <code>evaluated_with</code> denotes evaluation, <code>approved_by</code> denotes approval, and <code>released_as</code> denotes release. The more clearly edge semantics are defined, the more precise queries become. Otherwise, a lineage graph can only display paths without explaining the governance meaning of those paths.</p>
+<p>Figure 25-2 shows a complete lineage graph from data sources to model release. It also marks forward and reverse tracking paths.</p>
+<p><a class="glightbox" href="../../../images/part8/Du-Chap25-Fig02-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 25-2: Data Lineage and Experiment Tracking Graph" src="../../../images/part8/Du-Chap25-Fig02-EN.svg" /></a></p>
+<p><em>Figure 25-2: Data lineage and experiment tracking graph</em></p>
+<h3 id="2542-change-audit-workflow">25.4.2 Change Audit Workflow<a class="headerlink" href="#2542-change-audit-workflow" title="Permanent link">&para;</a></h3>
+<p>Every change to a dataset version should go through a standardized audit workflow to ensure the change is authorized, recorded, and verified.</p>
+<p>The standard change audit workflow is as follows:</p>
+<ol>
+<li><strong>Change request</strong>: The proposing party (typically a data engineer or annotation engineer) fills out a change request form, describing the change content, the reason for the change, and the expected impact.</li>
+<li><strong>Impact assessment</strong>: Assess which downstream datasets and experiments this change will affect.</li>
+<li><strong>Compliance review</strong>: If the change involves a change in data source or data type, review by a legal compliance specialist is required.</li>
+<li><strong>Technical review</strong>: The Data Owner or a senior data engineer reviews the technical implementation plan for the change.</li>
+<li><strong>Change execution</strong>: Execute the change after creating a rollback point.</li>
+<li><strong>Change verification</strong>: Run automated quality checks and compare against the expected impact described in the change request.</li>
+<li><strong>Change recording</strong>: Write the change log into the dataset's metadata and update the lineage graph.</li>
+</ol>
+<p>Table 25-11 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 25-11: Data change audit workflow</em></p>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Executor</th>
+<th>Tool</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Change request</td>
+<td>Requesting party</td>
+<td>Change request form</td>
+<td>Completed request form</td>
+</tr>
+<tr>
+<td>Impact assessment</td>
+<td>Data engineer</td>
+<td>Lineage graph query tool</td>
+<td>Impact scope list</td>
+</tr>
+<tr>
+<td>Compliance review</td>
+<td>Legal compliance</td>
+<td>Compliance review checklist</td>
+<td>Review conclusion (approved / rejected / conditionally approved)</td>
+</tr>
+<tr>
+<td>Technical review</td>
+<td>Data Owner</td>
+<td>Code review</td>
+<td>Approval comments</td>
+</tr>
+<tr>
+<td>Change execution</td>
+<td>Data engineer</td>
+<td>Processing scripts + version tools</td>
+<td>New dataset version</td>
+</tr>
+<tr>
+<td>Change verification</td>
+<td>Quality evaluator</td>
+<td>Automated quality check tools</td>
+<td>Quality report</td>
+</tr>
+<tr>
+<td>Change recording</td>
+<td>Automated</td>
+<td>Metadata service</td>
+<td>Updated lineage graph and change log</td>
+</tr>
+</tbody>
+</table>
+<p>The core of change auditing is connecting "pre-change judgment" with "post-change verification." The change request phase articulates expected impacts—for example, a new data source will improve task coverage, or a modified filtering rule will reduce duplication. The change verification phase must then check whether actual results match expectations. If the expected and actual results diverge significantly, the team should not simply release the new version but should re-evaluate the change assumption. This transforms change auditing from a mere approval workflow into a miniature experiment feedback loop.</p>
+<p>Impact assessment is especially important. A seemingly local cleaning rule change may affect multiple downstream datasets; a label adjustment may make historical experiments and new experiments incompatible; a sample deletion may affect an already-frozen evaluation set. Impact assessment should use the lineage graph to automatically generate an initial scope, after which data engineers and the Data Owner assess the business implications. Relying entirely on human memory for impact assessment is a hallmark of an immature version management system.</p>
+<p>Change records should also document "rejected alternatives." Many important decisions are not made with a single technical option but involve trade-offs among multiple options. For example, when a data quality problem is found in a batch, options may include deletion, repair, down-weighting, or isolation; when adding a new data source, options may include direct merging, routing to an experimental branch first, or using it only for evaluation. Recording why the current option was chosen and why others were rejected aids subsequent retrospection and prevents the team from re-debating the same question months later.</p>
+<h3 id="2543-lineage-governance-rules">25.4.3 Lineage Governance Rules<a class="headerlink" href="#2543-lineage-governance-rules" title="Permanent link">&para;</a></h3>
+<p>Lineage governance rules are a set of "data behavioral guidelines" agreed upon by the data team, specifying which operations are permitted, which require approval, and which are prohibited. A survey on data provenance points out that lineage information only generates genuine engineering value when it is connected to querying, auditing, debugging, and reproduction needs (Simmhan, Plale and Gannon 2005).</p>
+<p>The following is a reference set of governance rules:</p>
+<p><strong>Freely permitted operations (no approval required)</strong></p>
+<ul>
+<li>Creating data branches in a sandbox environment for local experiments</li>
+<li>Viewing and exporting statistical summaries of datasets</li>
+<li>Adding or modifying non-critical metadata for datasets (e.g., tags, annotations)</li>
+</ul>
+<p><strong>Operations requiring approval (lightweight approval by data engineer or Tech Lead)</strong></p>
+<p>Any data version entering model training must pass automated quality checks. Automated data validation systems help teams detect data quality issues before training through statistical constraints, schema checks, and anomaly detection (Breck et al. 2019).</p>
+<ul>
+<li>Merging new data shards into the mainline dataset</li>
+<li>Modifying data cleaning rules</li>
+<li>Adding new data source categories</li>
+</ul>
+<p><strong>Operations requiring formal approval (Data Owner + legal compliance approval)</strong></p>
+<ul>
+<li>Changing the core sources of a dataset (e.g., replacing the annotation vendor, adding new crawl sites)</li>
+<li>Deleting an existing dataset version</li>
+<li>Sharing an internal dataset with an external partner</li>
+<li>Modifying a released dataset version (prohibited in principle; exceptional cases require complete documentation)</li>
+</ul>
+<p><strong>Permanently prohibited</strong></p>
+<ul>
+<li>Modifying a frozen dataset without a version record</li>
+<li>Using third-party copyrighted data without compliance review</li>
+<li>Directly modifying data submitted by others without leaving a modification record</li>
+</ul>
+<p>Governance rules must also be tied to the data lifecycle. From collection, cleaning, annotation, training, and evaluation through release to archival, the operations permitted at each stage differ. The collection stage allows relatively flexible source exploration but requires recording authorization and provenance. The cleaning stage allows iterative rule adjustment but should retain processing script versions. The annotation stage allows guideline revisions but must record the effective date. The training stage requires stable dataset versions. After release, the emphasis shifts to freezing, auditing, and rollback. Applying a single uniform set of rules to all stages makes early exploration overly burdensome and makes the release stage insufficiently rigorous.</p>
+<p>Governance rule enforcement should also be tiered. Low-risk operations can be completed through system prompts and automatic recording. Medium-risk operations require lightweight approval. High-risk operations require formal approval and auditing. Prohibited operations should be blocked directly by the system. Text-based policies alone cannot guarantee compliance because people under project pressure tend to bypass processes. Embedding rules into tools—such as frozen versions being read-only, failing quality checks blocking release, and unauthorized data sources being blocked from the mainline—is what genuinely reduces the probability of violations.</p>
+<p>Table 25-12 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 25-12: Lineage governance rules by data lifecycle stage</em></p>
+<table>
+<thead>
+<tr>
+<th>Lifecycle Stage</th>
+<th>Permitted Focus</th>
+<th>Key Constraints</th>
+<th>Primary Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Collection</td>
+<td>Explore data sources, build sample pools</td>
+<td>Source, authorization, and sensitivity classification must be recorded</td>
+<td>Source manifest, authorization records, collection logs</td>
+</tr>
+<tr>
+<td>Cleaning</td>
+<td>Adjust rules, generate shards</td>
+<td>Script versions and filtering outcomes must be traceable</td>
+<td>Processing scripts, quality summaries, diff reports</td>
+</tr>
+<tr>
+<td>Annotation</td>
+<td>Task distribution, guideline calibration, result collection</td>
+<td>Guideline version and annotator information must be recorded</td>
+<td>Annotation logs, guideline version, consistency reports</td>
+</tr>
+<tr>
+<td>Training</td>
+<td>Assemble datasets, launch experiments</td>
+<td>Dataset version must be stable and citable</td>
+<td>Experiment card, data version, parameter configuration</td>
+</tr>
+<tr>
+<td>Evaluation</td>
+<td>Compare model performance, analyze errors</td>
+<td>Evaluation set version and evaluation code must be fixed</td>
+<td>Metric records, error samples, evaluation commit</td>
+</tr>
+<tr>
+<td>Release</td>
+<td>Freeze model and data evidence</td>
+<td>Approval, quality, and compliance chains must be complete</td>
+<td>Release package, approval records, audit report</td>
+</tr>
+<tr>
+<td>Archival</td>
+<td>Reduce storage costs, retain necessary evidence</td>
+<td>Information required for reproduction and auditing must not be destroyed</td>
+<td>Archival policy, index records, recovery instructions</td>
+</tr>
+</tbody>
+</table>
+<p>Lineage governance also requires periodic review. Common review items include: whether any data shards exist without source records; whether any official models exist without associated experiments; whether any frozen datasets have been modified; whether any experiments use expired evaluation sets; and whether any unclosed compliance exceptions exist. Through periodic review, teams can identify systematic gaps in the governance chain rather than waiting for incidents to occur before investigating.</p>
+<p>Finally, governance rules should remain interpretable. Team members are more willing to follow rules not because there are many rules but because they understand the risks behind each rule. If the data lead can explain how a rule supports reproduction, rollback, or compliance, resistance to enforcement drops significantly. Conversely, if rules manifest only as additional approvals and forms, teams may regard them as a burden. Version management and experiment tracking governance must serve both engineering efficiency and risk control simultaneously.</p>
+<p>Lineage governance should also be integrated with storage cost governance. As the number of versions grows, training data, shards, intermediate results, and model checkpoints can rapidly consume large amounts of storage. Without lifecycle policies, teams either retain everything indefinitely at uncontrolled cost or delete arbitrarily, causing reproduction failures. A reasonable approach is to define different retention policies for different objects: frozen datasets and release packages are retained long-term; candidate versions are archived after the next stable version is established; temporary intermediate results are cleaned up once confirmed to have no audit value. Cleanup actions themselves should also be recorded so future queries can explain why certain intermediate artifacts are no longer available.</p>
+<p>For multimodal data with high storage costs, a tiered storage strategy may also be adopted. Hot data is kept in high-performance storage to support recent experiments and quality investigation; warm data is moved to lower-cost object storage with indexes and metadata retained; cold data is moved to archival storage, retrieved only for auditing or reproducing experiments. Regardless of strategy, metadata and version indexes must remain queryable online; otherwise, archival becomes another form of data loss.</p>
+<hr />
+<h2 id="255-case-study-how-to-rapidly-trace-back-a-failed-experiment">25.5 Case Study: How to Rapidly Trace Back a Failed Experiment<a class="headerlink" href="#255-case-study-how-to-rapidly-trace-back-a-failed-experiment" title="Permanent link">&para;</a></h2>
+<h3 id="case-background">Case Background<a class="headerlink" href="#case-background" title="Permanent link">&para;</a></h3>
+<p>A company is training a large conversational model for customer service. After the third major version iteration (<code>v3.0.0</code>) is released, online evaluation reveals that the model's accuracy on "refund process" questions has plummeted from 82% to 67%, triggering customer complaints.</p>
+<p>The algorithm team immediately submits a retrospection request to the data team: <strong>What changes occurred to "refund process"-related data in the past 6 weeks?</strong></p>
+<p>On the surface, this question is about model performance degradation; in substance, it is a data change attribution test. Customer service data has pronounced business time-sensitivity: policies, procedures, scripts, and exception handling rules all change over time. For this type of data, "outdated" does not necessarily mean "without value," because online users may still inquire about historical orders, previous-version entitlements, or special processes during a migration period. If quality review judges sample validity only against the current process, it may erroneously delete data that retains historical explanatory value.</p>
+<p>The company had completed foundational version management construction in the previous quarter and was now able to associate model release packages, training experiments, dataset versions, shard sources, quality reviews, and annotation records. The data team therefore did not start by manually searching through folders but instead began from the release package and experiment card, tracing back along the lineage chain. This starting point was deterministic rather than dependent on individual memory.</p>
+<h3 id="retrospection-process-with-version-management">Retrospection Process (With Version Management)<a class="headerlink" href="#retrospection-process-with-version-management" title="Permanent link">&para;</a></h3>
+<p><strong>Step 1: Locate the dataset version corresponding to the model version</strong> (Time: 5 minutes)</p>
+<p>Query the experiment tracking system for the training experiment ID corresponding to model <code>v3.0.0</code>: <code>cs-dialog_20240401_exp012</code>.</p>
+<p>Query the experiment card to find the dataset version: <code>cs-dialog-sft-zh_v2.8.0</code>.</p>
+<p>At this stage, the team also confirmed that the training code, evaluation code, and base model version had undergone no major changes. This action is critical because it first rules out the main confounding non-data factors. If training code and data change simultaneously, attribution becomes much more difficult; if evaluation code changes, the accuracy drop may merely reflect a change in evaluation definitions. The code commits, evaluation set versions, and hyperparameter records in the experiment card enable the team to quickly narrow the investigation scope.</p>
+<p><strong>Step 2: Compare differences between the current version and the previous stable version</strong> (Time: 15 minutes)</p>
+<p>Using the lineage query tool, compare the differences between <code>v2.8.0</code> and <code>v2.6.0</code> (the most recent version with good performance):</p>
+<ul>
+<li>Total sample count: <code>v2.6.0</code> has 182,000 samples; <code>v2.8.0</code> has 214,000 samples.</li>
+<li>Samples added: 32,156 (from two new shards)</li>
+<li>Samples removed: 1,823 (removed by quality filtering)</li>
+</ul>
+<p>The diff report also shows that the two new shards primarily come from a new round of annotation tasks from Vendor B, targeting supplementation of after-sales questions, while the deleted samples were concentrated in the quality filtering step rather than in the collection or annotation stage. This suggests the problem may not lie in the newly added data itself but in the quality review or filtering rules. The team therefore did not immediately roll back all of <code>v2.8.0</code> but continued to narrow the scope to avoid losing other valid improvements through a blunt rollback.</p>
+<p><strong>Step 3: Analyze changes in "refund process" label data</strong> (Time: 20 minutes)</p>
+<p>Filter by business label to examine the distribution of "refund process" samples across both versions:</p>
+<ul>
+<li><code>v2.6.0</code>: 6,847 refund process samples</li>
+<li><code>v2.8.0</code>: 4,102 refund process samples (a decrease of 40%!)</li>
+</ul>
+<p>Further analysis reveals that the decrease in refund process samples was not evenly distributed. Samples related to the current process remained largely stable; the largest decreases were in sub-categories such as legacy processes, historical orders, cross-system refunds, and manual customer service interventions. These sub-categories represent a small proportion of total samples yet correspond precisely to the scenarios most prone to error in online complaints. This finding shows that looking only at total sample volume or overall quality metrics is insufficient for identifying risk; distribution comparisons by business label and sub-scenario are essential.</p>
+<p><strong>Step 4: Trace the source of the reduction</strong> (Time: 30 minutes)</p>
+<p>Query the reason for the reduction in "refund process" samples, locating shard <code>vendor_b_annotation_20240318_003</code>:</p>
+<ul>
+<li>In this shard, 3,201 "refund process" samples had been tagged as "low quality."</li>
+<li>Tracing to the specific quality review record: reviewer <code>QA_Engineer_Wang</code> conducted a batch review on 2024-03-20.</li>
+</ul>
+<p>Querying <code>QA_Engineer_Wang</code>'s review records reveals: on March 20, he uniformly marked a batch of samples about the "legacy refund process" as low quality (reason: "process has been updated; description is outdated"), which were then removed by the quality filtering step.</p>
+<p>The review records also preserve the justification at the time: the new customer service knowledge base had already replaced the refund process documentation, and the quality review guidelines stated that "outdated processes should not enter the formal training set." Judged at the individual-rule level, the reviewer followed the process; the real problem was that the guideline had not distinguished between "processes that have lapsed and should not be answered" and "processes that still need to be explained historically." Without review records, this type of issue is easily misidentified as individual operational error rather than incomplete quality standard design.</p>
+<p><strong>Step 5: Confirm root cause and formulate a remediation plan</strong> (Time: 15 minutes)</p>
+<p><strong>Root cause</strong>: Quality reviewers assessed data quality against current business processes, treating samples describing "legacy refund processes" as low-quality data. However, legacy process handling scenarios (refunds on historical orders) still exist online, and these samples have important value for helping the model understand "refund process evolution."</p>
+<p><strong>Remediation plan</strong>:</p>
+<ol>
+<li>Short-term: Retrieve deleted refund process samples from <code>v2.6.0</code>, re-label them with a "historical refund process" tag, and re-ingest them.</li>
+<li>Medium-term: Update quality review guidelines to explicitly define retention principles for "historical process data."</li>
+<li>Long-term: Add an annotation dimension "applicable to historical scenarios?" to annotation tasks.</li>
+</ol>
+<p>The entire retrospection took approximately 85 minutes from "problem report" to "root cause confirmed"—a sharp contrast to the earlier case of "5 days without version management."</p>
+<p>Without version management, this investigation would likely have taken a very different path: the algorithm team first suspects training parameters and re-examines training logs; the data team then searches through recent weeks' data folders to determine which files were used for <code>v3.0.0</code>; the quality team needs to manually ask reviewers whether they processed refund samples; and the business team needs to recall when the refund process was updated. Every step depends on human memory, and different team members may give inconsistent timelines. Even if the cause is eventually identified, it is difficult to prove which operation caused the performance degradation.</p>
+<p>With version management, the retrospection path flows from model to experiment, experiment to dataset, dataset to shard, shard to quality review, and review record to business rule. This is a structured evidence chain. It not only shortens investigation time but also changes the way the team discusses problems: discussions are no longer centered on "who might have changed the data" but on "where the evidence chain shows a rule produced an unintended effect."</p>
+<p>Table 25-13 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 25-13: Comparison of retrospection approaches with and without version management</em></p>
+<table>
+<thead>
+<tr>
+<th>Retrospection Step</th>
+<th>Typical Approach Without Version Management</th>
+<th>Approach With Version Management</th>
+<th>Difference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Locate training data</td>
+<td>Ask experiment owner; search file folders</td>
+<td>Find dataset version through experiment card</td>
+<td>Starting point changes from memory to record</td>
+</tr>
+<tr>
+<td>Compare data differences</td>
+<td>Manually compare directories and file names</td>
+<td>Automatically generate version diff report</td>
+<td>Differences change from approximate to structured</td>
+</tr>
+<tr>
+<td>Find problematic samples</td>
+<td>Write ad-hoc scripts to scan historical files</td>
+<td>Query lineage by label and shard</td>
+<td>Scope narrows from full dataset to relevant subset</td>
+</tr>
+<tr>
+<td>Confirm reason for change</td>
+<td>Ask reviewers or search chat history</td>
+<td>Check review records and rule versions</td>
+<td>Reason changes from verbal explanation to evidence</td>
+</tr>
+<tr>
+<td>Formulate remediation</td>
+<td>Roll back the entire dataset or re-clean everything</td>
+<td>Precisely restore affected samples and update rules</td>
+<td>Fix changes from blunt to targeted</td>
+</tr>
+</tbody>
+</table>
+<h3 id="summary-of-key-success-factors">Summary of Key Success Factors<a class="headerlink" href="#summary-of-key-success-factors" title="Permanent link">&para;</a></h3>
+<p>The rapid retrospection succeeded because of the following critical version management design decisions. Reproducible computation research has repeatedly emphasized that only by binding data, code, environment, and results together in records can failed experiments become analyzable assets rather than one-time incidents (Peng 2011; Stodden, Leisch and Peng 2014):</p>
+<ol>
+<li><strong>Bidirectional association between experiments and data</strong>: Knowing which dataset version corresponds to <code>v3.0.0</code>.</li>
+<li><strong>Shard-level source tracking</strong>: Ability to locate the specific annotation batch.</li>
+<li><strong>Complete preservation of review records</strong>: Knowing who performed what review operations at what time.</li>
+<li><strong>Version maintenance of business labels</strong>: Ability to filter historical-version data by label.</li>
+</ol>
+<p>The absence of any one of these would have broken the retrospection chain.</p>
+<p>This case also demonstrates that version management is not merely a technical system—it is also a form of organizational collaboration. Experiment cards require the algorithm team to fill them in carefully; shard sources require the data engineering team to maintain in a standardized manner; quality review records require evaluators to document completely; business labels require product or business experts to participate in defining; and remediation plans require confirmation by multiple roles. Whenever any role treats record-keeping as extra overhead, the credibility of the entire chain is weakened.</p>
+<p>From a governance perspective, the root cause in this case was not "incorrect sample deletion" but "quality rules failing to express the business time dimension." The remediation plan therefore cannot remain at the level of sample restoration; it must also update annotation and review guidelines: categorizing legacy processes, transitional processes, deprecated processes, and processes that still need to be explained historically; setting different handling strategies for each category; and adding an applicable time range or business status field to the data schema. This way, findings generated by version management can be translated into improvements to data standards.</p>
+<p>From an experiment tracking perspective, a set of comparison experiments should also be run subsequently: a first group using the original <code>v2.8.0</code> data, a second group with historical refund samples restored, and a third group with restored samples and additional historical process labels. Through comparison experiments, the team can determine whether the accuracy recovery comes from increased sample volume or from the improved label dimension. If the data is only fixed without doing comparison experiments, the team resolves the immediate problem but cannot extract a more generalizable method.</p>
+<p>Finally, this case also prompts teams to establish special governance rules for "business time-sensitive data." In customer service, policy, financial, educational, medical, and enterprise knowledge-base scenarios, whether data is outdated is not a simple yes/no question. Some old information must be deleted; some must be retained but with a time boundary attached; some can only be used for historical explanation and cannot guide current operations. Version management can help teams see these distinctions, but genuine governance still requires the joint participation of business semantics, quality rules, and experiment feedback.</p>
+<p>When implementing in an enterprise, the version management system discussed in Chapter 25 can be advanced along a "record first, associate second, govern third" path. "Record first" means establishing stable IDs for datasets, shards, experiments, and release packages and recording the minimum required fields. "Associate second" means connecting data versions to experiment results, model versions, quality reports, and approval records. "Govern third" means gradually adding approval, rollback, archival, and access controls once an evidence chain is in place. This sequence matters. If full governance is pursued from the start without stable underlying object records, processes become hollow; if records exist without associations, data still fails to explain model performance.</p>
+<p>The goal of the first phase should be to stop the team from using uninterpretable folder naming. Even without a complex platform, a unified version number, a dataset description sheet, and an experiment card can be established first. As long as every experiment can state which data version was used, which shards compose the dataset, and which sources the shards came from, the team has already crossed the threshold from verbal memory to structured records. This phase does not require much automation but does require strict enforcement of minimum fields.</p>
+<p>The goal of the second phase is to integrate version records into actual workflows. When a dataset is released, a version description is automatically generated; when an experiment starts, the data version is automatically bound; when an experiment ends, metrics are automatically written back; and quality check results are automatically incorporated into dataset metadata. At this point, version management is no longer an additional document to fill in—it is the path through which teams complete their work. Only by entering the workflow will version records be stable, complete, and timely.</p>
+<p>The goal of the third phase is to enable the versioning system to generate governance capability. Teams can use lineage relationships for impact analysis, use experiment write-back to assess data asset value, use audit trails to respond to compliance questions, and use rollback points to reduce the cost of high-risk changes. At this phase, version management is no longer merely an engineering support tool—it has become a foundation for organizational decision-making. Data Owners can use it to judge which datasets deserve long-term maintenance; algorithm leads can use it to determine which experiment conclusions are reliable; and compliance teams can use it to assess whether risk boundaries are clearly defined.</p>
+<p>Version management does not inherently guarantee correctness. An erroneous data version can be completely recorded; an experiment of insufficient quality can be accurately tracked. What a versioning system provides is interpretability and traceability, not automatic validation that all decisions are correct. Therefore, it must be used in conjunction with quality assessment, experiment design, compliance review, and business expert judgment. Only when all these mechanisms operate together can version management support reliable iteration.</p>
+<p>In the long term, the maturity of data version management will directly influence the R&amp;D velocity of large model teams. Without version management, every model fluctuation requires rebuilding the investigation from scratch. With basic version management, teams can reproduce experiments. With experiment tracking and result write-back, teams can compare data strategies. With lineage governance and audit trails, teams can share data assets across a larger organizational scope. The higher the maturity, the more teams can transform each experiment into organizational knowledge rather than letting experience dissipate with each project cycle.</p>
+<p>The core of this chapter, therefore, is not to recommend any particular concrete tool but to emphasize an engineering principle: any data change that will affect model results, compliance boundaries, or organizational decisions should leave a queryable, interpretable, and verifiable record. Tools may differ; platform forms may differ; but this principle must never be absent.</p>
+<hr />
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter has systematically articulated the core design of version management and experiment tracking in LLM data engineering.</p>
+<p>At the conceptual level, the chapter analyzed the three fundamental reasons why data changes are difficult to track (inconsistent granularity, complex causal chains, and delayed impact), and the necessity of upgrading from "folder management" to "lineage management." The core value of version management lies in three capabilities: experiment reproducibility, problem traceability, and compliance auditability.</p>
+<p>At the version granularity level, the chapter defined a five-level version hierarchy spanning samples, shards, datasets, experiments, and release packages, as well as semantic version naming conventions and three types of version operations—branches, snapshots, and rollback points.</p>
+<p>At the experiment tracking level, we designed complete experiment card fields (basic information, data configuration, model configuration, runtime environment configuration, evaluation results, and experiment records), emphasizing the knowledge preservation value of failed experiments and the importance of result write-back in forming bidirectional associations.</p>
+<p>At the lineage governance level, the chapter introduced three query perspectives for data lineage graphs (forward tracking, reverse tracking, and diff comparison), as well as a standardized change audit workflow and tiered governance rules.</p>
+<p>Finally, through a complete retrospective case study of a failed experiment, the chapter demonstrated the tangible value that a version management system delivers in real scenarios—compressing retrospection time from 5 days to 85 minutes.</p>
+<hr />
+<h2 id="further-reading">Further Reading<a class="headerlink" href="#further-reading" title="Permanent link">&para;</a></h2>
+<p><strong>Recommended Tools</strong></p>
+<p>DVC (Data Version Control) is one of the most widely used data version control tools, deeply integrated with Git and supporting version management of large files and data lineage tracking. The "Data Registry" pattern in its documentation is a reference implementation for multi-project data sharing. MLflow is an open-source machine learning experiment tracking platform supporting unified recording of experiment parameters, metrics, and artifacts, as well as a visualization interface for version comparison. LakeFS is a version control tool for data lakes that provides Git-like branching, merging, and rollback operations, suited to version management of large-scale datasets.</p>
+<p><strong>In-Depth Reading</strong></p>
+<p>Zaharia et al.'s "Accelerating the Machine Learning Lifecycle with MLflow" (2018) is the original paper introducing MLflow and systematically presents the challenges and solutions for ML lifecycle management. Google's "Data Cards: Purposeful and Transparent Dataset Documentation for Responsible AI" (2022) provides best practices for dataset documentation and is an important reference for experiment card design.</p>
+<hr />
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Amershi S, Begel A, Bird C, DeLine R, Gall H, Kamar E, Nagappan N, Nushi B, Zimmermann T (2019) Software Engineering for Machine Learning: A Case Study. In: Proceedings of the 41st International Conference on Software Engineering: Software Engineering in Practice (ICSE-SEIP), pp 291-300. https://doi.org/10.1109/icse-seip.2019.00042.</p>
+<p>Armbrust M, Ghodsi A, Xin R, Zaharia M (2020) Delta Lake: High-Performance ACID Table Storage over Cloud Object Stores. Proceedings of the VLDB Endowment 13(12):3411-3424.</p>
+<p>Baylor D, Breck E, Cheng H-T, Fiedel N, Foo C Y, Haque Z, Haykal S, Ispir M, Jain V, Koc L, Koo C Y, Lew L, Mewald C, Modi A N, Polyzotis N, Ramesh S, Roy S, Whang S E, Wicke M, Wilkiewicz J, Zhang X, Zinkevich M (2017) TFX: A TensorFlow-Based Production-Scale Machine Learning Platform. In: Proceedings of the 23rd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, pp 1387-1395.</p>
+<p>Breck E, Cai S, Nielsen E, Salib M, Sculley D (2017) The ML Test Score: A Rubric for ML Production Readiness and Technical Debt Reduction. In: IEEE International Conference on Big Data, pp 1123-1132.</p>
+<p>Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for Machine Learning. In: Proceedings of Machine Learning and Systems 1, pp 334-347.</p>
+<p>Buneman P, Khanna S, Tan W-C (2001) Why and Where: A Characterization of Data Provenance. In: Proceedings of the 8th International Conference on Database Theory (ICDT), pp 316-330. https://doi.org/10.1007/3-540-44503-x_20.</p>
+<p>DAMA International (2017) DAMA-DMBOK: Data Management Body of Knowledge, 2nd Edition. Technics Publications.</p>
+<p>DVC Documentation (2024) Data Version Control Documentation. Available at: https://dvc.org/doc.</p>
+<p>Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92. https://doi.org/10.1145/3458723.</p>
+<p>Kreuzberger D, Kühl N, Hirschl S (2023) Machine Learning Operations (MLOps): Overview, Definition, and Architecture. IEEE Access 11:31866-31879. arXiv:2205.02302.</p>
+<p>Mitchell M, Wu S, Zaldivar A, Barnes P, Vasserman L, Hutchinson B, Spitzer E, Raji I D, Gebru T (2019) Model Cards for Model Reporting. In: Proceedings of the Conference on Fairness, Accountability, and Transparency, pp 220-229. https://doi.org/10.1145/3287560.3287596.</p>
+<p>Moreau L, Missier P (eds.) (2013) PROV-DM: The PROV Data Model. W3C Recommendation.</p>
+<p>Peng R D (2011) Reproducible Research in Computational Science. Science 334(6060):1226-1227. https://doi.org/10.1126/science.1213847.</p>
+<p>Polyzotis N, Roy S, Whang S E, Zinkevich M (2017) Data Management Challenges in Production Machine Learning. In: Proceedings of the 2017 ACM International Conference on Management of Data (SIGMOD), pp 1723-1726.</p>
+<p>Sandve G K, Nekrutenko A, Taylor J, Hovig E (2013) Ten Simple Rules for Reproducible Computational Research. PLOS Computational Biology 9(10):e1003285. https://doi.org/10.1371/journal.pcbi.1003285.</p>
+<p>Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503-2511.</p>
+<p>Simmhan Y L, Plale B, Gannon D (2005) A Survey of Data Provenance in e-Science. ACM SIGMOD Record 34(3):31-36. https://doi.org/10.1145/1084805.1084812.</p>
+<p>Stodden V, Leisch F, Peng R D (eds.) (2014) Implementing Reproducible Research. CRC Press. https://doi.org/10.1201/b16868.</p>
+<p>Vartak M, Subramanyam H, Lee W-E, Viswanathan S, Husnoo S, Madden S, Zaharia M (2016) ModelDB: A System for Machine Learning Model Management. In: Proceedings of the Workshop on Human-In-the-Loop Data Analytics (HILDA), Article 14.</p>
+<p>Zaharia M, Chen A, Davidson A, Ghodsi A, Hong S A, Konwinski A, Murching S, Nykodym T, Ogilvie P, Parkhe M, Xie F (2018) Accelerating the Machine Learning Lifecycle with MLflow. IEEE Data Engineering Bulletin 41(4):39-45.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ch24_dataops_flywheel_team/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Chapter 24: The DataOps Flywheel and Team Organization">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Chapter 24: The DataOps Flywheel and Team Organization
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch26_data_platform_observability/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 26: Data Platform Observability">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 26: Data Platform Observability
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

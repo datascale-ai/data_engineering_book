@@ -1,0 +1,4529 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part10/ch33_labeling_synthesis_evaluation/">
+      
+      
+        <link rel="prev" href="../ch32_auto_collection_parsing_cleaning/">
+      
+      
+        <link rel="next" href="../ch34_dataops_agent/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 33: Labeling, Synthesis, and Evaluation Agents - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-33-labeling-synthesis-and-evaluation-agents" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 33: Labeling, Synthesis, and Evaluation Agents
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part10/ch33_labeling_synthesis_evaluation/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part10/ch33_labeling_synthesis_evaluation/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_13" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-annotation-avalanche-and-distorted-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario: Annotation Avalanche and Distorted Evaluation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scenario: Annotation Avalanche and Distorted Evaluation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-engineering-pain-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Engineering Pain Points
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#331-labeling-assistance-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.1 Labeling-Assistance Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="33.1 Labeling-Assistance Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3311-four-dimensions-of-labeling-assistance" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.1.1 Four Dimensions of Labeling Assistance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3312-annotator-calibration-and-consistency-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.1.2 Annotator Calibration and Consistency Monitoring
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3313-annotation-economics-cost-quality-and-speed" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.1.3 Annotation Economics: Cost, Quality, and Speed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3314-intelligent-assignment-of-labeling-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.1.4 Intelligent Assignment of Labeling Tasks
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#332-synthetic-data-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.2 Synthetic Data Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="33.2 Synthetic Data Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3321-from-seed-expansion-to-quality-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.2.1 From Seed Expansion to Quality Reports
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3322-collapse-risk-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.2.2 Collapse Risk Control
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33221-early-indicators-of-collapse" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.2.2.1 Early Indicators of Collapse
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33222-intellectual-property-and-compliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.2.2.2 Intellectual Property and Compliance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3323-difficulty-control-for-synthetic-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.2.3 Difficulty Control for Synthetic Data
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#333-evaluation-and-red-team-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.3 Evaluation and Red-Team Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="33.3 Evaluation and Red-Team Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3331-automatic-challenge-set-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.3.1 Automatic Challenge Set Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3332-red-team-sample-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.3.2 Red-Team Sample Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33321-attack-strategy-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.3.2.1 Attack Strategy Categories
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33322-frequency-and-triggers-for-red-team-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.3.2.2 Frequency and Triggers for Red-Team Testing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3333-evaluation-slice-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.3.3 Evaluation Slice Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3334-evaluation-set-health-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.3.4 Evaluation Set Health Monitoring
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#334-consistency-calibration-avoiding-automated-evaluation-self-delusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.4 Consistency Calibration: Avoiding Automated Evaluation Self-Delusion
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="33.4 Consistency Calibration: Avoiding Automated Evaluation Self-Delusion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3341-calibrating-agent-judges-against-human-judges" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.4.1 Calibrating Agent Judges Against Human Judges
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3342-human-agent-consistency-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.4.2 Human-Agent Consistency Matrix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#335-case-review-agentizing-a-dialogue-model-labeling-and-evaluation-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.5 Case Review: Agentizing a Dialogue Model Labeling and Evaluation System
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="33.5 Case Review: Agentizing a Dialogue Model Labeling and Evaluation System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-lessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key Lessons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extended-case-synthetic-data-collapse-warning-and-intervention" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extended Case: Synthetic Data Collapse Warning and Intervention
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#336-checklist-labeling-synthesis-and-evaluation-agent-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.6 Checklist: Labeling, Synthesis, and Evaluation Agent Deployment
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#337-chapter-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.7 Chapter Links
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#338-further-reading-deeper-engineering-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.8 Further Reading: Deeper Engineering Issues
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="33.8 Further Reading: Deeper Engineering Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#making-annotation-standards-operational" class="md-nav__link">
+    <span class="md-ellipsis">
+      Making Annotation Standards Operational
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-realism-paradox-of-synthetic-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Realism Paradox of Synthetic Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defending-against-goodharts-law-in-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Defending Against Goodhart's Law in Evaluation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scenario-annotation-avalanche-and-distorted-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scenario: Annotation Avalanche and Distorted Evaluation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Scenario: Annotation Avalanche and Distorted Evaluation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-engineering-pain-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      Core Engineering Pain Points
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#331-labeling-assistance-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.1 Labeling-Assistance Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="33.1 Labeling-Assistance Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3311-four-dimensions-of-labeling-assistance" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.1.1 Four Dimensions of Labeling Assistance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3312-annotator-calibration-and-consistency-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.1.2 Annotator Calibration and Consistency Monitoring
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3313-annotation-economics-cost-quality-and-speed" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.1.3 Annotation Economics: Cost, Quality, and Speed
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3314-intelligent-assignment-of-labeling-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.1.4 Intelligent Assignment of Labeling Tasks
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#332-synthetic-data-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.2 Synthetic Data Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="33.2 Synthetic Data Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3321-from-seed-expansion-to-quality-reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.2.1 From Seed Expansion to Quality Reports
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3322-collapse-risk-control" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.2.2 Collapse Risk Control
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33221-early-indicators-of-collapse" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.2.2.1 Early Indicators of Collapse
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33222-intellectual-property-and-compliance" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.2.2.2 Intellectual Property and Compliance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3323-difficulty-control-for-synthetic-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.2.3 Difficulty Control for Synthetic Data
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#333-evaluation-and-red-team-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.3 Evaluation and Red-Team Agents
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="33.3 Evaluation and Red-Team Agents">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3331-automatic-challenge-set-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.3.1 Automatic Challenge Set Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3332-red-team-sample-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.3.2 Red-Team Sample Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33321-attack-strategy-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.3.2.1 Attack Strategy Categories
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33322-frequency-and-triggers-for-red-team-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.3.2.2 Frequency and Triggers for Red-Team Testing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3333-evaluation-slice-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.3.3 Evaluation Slice Generation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3334-evaluation-set-health-monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.3.4 Evaluation Set Health Monitoring
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#334-consistency-calibration-avoiding-automated-evaluation-self-delusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.4 Consistency Calibration: Avoiding Automated Evaluation Self-Delusion
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="33.4 Consistency Calibration: Avoiding Automated Evaluation Self-Delusion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#3341-calibrating-agent-judges-against-human-judges" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.4.1 Calibrating Agent Judges Against Human Judges
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3342-human-agent-consistency-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.4.2 Human-Agent Consistency Matrix
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#335-case-review-agentizing-a-dialogue-model-labeling-and-evaluation-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.5 Case Review: Agentizing a Dialogue Model Labeling and Evaluation System
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="33.5 Case Review: Agentizing a Dialogue Model Labeling and Evaluation System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-lessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      Key Lessons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extended-case-synthetic-data-collapse-warning-and-intervention" class="md-nav__link">
+    <span class="md-ellipsis">
+      Extended Case: Synthetic Data Collapse Warning and Intervention
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#336-checklist-labeling-synthesis-and-evaluation-agent-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.6 Checklist: Labeling, Synthesis, and Evaluation Agent Deployment
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#337-chapter-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.7 Chapter Links
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#338-further-reading-deeper-engineering-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      33.8 Further Reading: Deeper Engineering Issues
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="33.8 Further Reading: Deeper Engineering Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#making-annotation-standards-operational" class="md-nav__link">
+    <span class="md-ellipsis">
+      Making Annotation Standards Operational
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-realism-paradox-of-synthetic-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Realism Paradox of Synthetic Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defending-against-goodharts-law-in-evaluation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Defending Against Goodhart's Law in Evaluation
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-33-labeling-synthesis-and-evaluation-agents">Chapter 33: Labeling, Synthesis, and Evaluation Agents<a class="headerlink" href="#chapter-33-labeling-synthesis-and-evaluation-agents" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Zhili Wang; Zhongyi Liu; Jun Yu</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>Labeling and evaluation are two of the most human-intensive stages in LLM data engineering. Labeling requires many human judgments. Evaluation requires carefully designed test cases and consistency calibration. As model iteration accelerates and data needs diversify, fully manual labeling and evaluation quickly become bottlenecks.</p>
+<p>Labeling, synthesis, and evaluation agents are not meant to replace annotators and evaluators. They amplify human capacity in three ways: reducing cognitive load for each annotation, expanding long-tail coverage through synthetic data, and accelerating feedback loops through automated evaluation.</p>
+<p>This chapter starts with labeling-assistance agents, covering task explanation, example recommendation, gray-zone judgment, and conflict arbitration. It then moves to synthetic data agents, covering seed expansion, prompt generation, difficulty control, and verifier calls. Next it discusses evaluation and red-team agents that generate challenge sets and adversarial samples. Finally, it explains consistency calibration: how to avoid the self-congratulatory loop where agents evaluate data produced by agents. The chapter builds on Chapters 12-17, upgrading supervised fine-tuning (SFT), preference data, annotation, synthetic data, and collapse governance into agent-driven workflows.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>Labeling-assistance agents; synthetic data; automated evaluation; red-team samples; consistency calibration; LLM-as-judge</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<p>After reading this chapter, you should be able to:</p>
+<ul>
+<li>Design labeling-assistance agents for task explanation, example recommendation, gray-zone handling, and annotator calibration.</li>
+<li>Build seed expansion, prompt generation, and difficulty-control pipelines for synthetic data agents.</li>
+<li>Explain how evaluation agents generate challenge sets, failure cases, and red-team samples.</li>
+<li>Calibrate agent judges against human judges and avoid automated evaluation self-delusion.</li>
+<li>Evaluate the return on investment of labeling and evaluation agents in real workflows.</li>
+</ul>
+<h2 id="scenario-annotation-avalanche-and-distorted-evaluation">Scenario: Annotation Avalanche and Distorted Evaluation<a class="headerlink" href="#scenario-annotation-avalanche-and-distorted-evaluation" title="Permanent link">&para;</a></h2>
+<p>A conversational model team labels 5,000 new samples every week and maintains a 2,000-question evaluation set. The team has 15 people: 10 annotators, three evaluation designers, and two data engineers. Three problems appear at the same time.</p>
+<p><strong>Annotation avalanche.</strong> The model moves from v2.1 to v2.3 and adds code generation and long-document summarization. Weekly annotation demand jumps from 5,000 to 12,000 samples. Annotators work overtime, but quality falls. Fatigue leads to more arbitrary decisions in gray-zone cases, and inter-annotator agreement (IAA) drops from 0.88 to 0.72.</p>
+<p><strong>Evaluation distortion.</strong> The evaluation set was built three months ago. Many questions have effectively been memorized by the model. Offline accuracy reaches 92 percent, but online user satisfaction is only 3.8/5. The evaluation set has lost discriminative power.</p>
+<p><strong>Synthetic data runaway.</strong> To compensate for labeling capacity, the team uses large amounts of synthetic data. Difficulty is uncontrolled: samples are either too easy or unreasonable. Training gains diminish and early collapse signals appear.</p>
+<h3 id="core-engineering-pain-points">Core Engineering Pain Points<a class="headerlink" href="#core-engineering-pain-points" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Structural gap between labeling capacity and demand.</strong> Every new model capability dimension expands labeling demand superlinearly.</li>
+<li><strong>Evaluation-set aging.</strong> Static evaluation sets fail quickly under rapid model iteration.</li>
+<li><strong>Missing synthetic-data quality loop.</strong> Difficulty, diversity, and realism need systematic control.</li>
+<li><strong>Human-agent judgment mismatch.</strong> Agent-assisted labeling and evaluation must stay aligned with human judgment.</li>
+</ol>
+<h2 id="331-labeling-assistance-agents">33.1 Labeling-Assistance Agents<a class="headerlink" href="#331-labeling-assistance-agents" title="Permanent link">&para;</a></h2>
+<h3 id="3311-four-dimensions-of-labeling-assistance">33.1.1 Four Dimensions of Labeling Assistance<a class="headerlink" href="#3311-four-dimensions-of-labeling-assistance" title="Permanent link">&para;</a></h3>
+<p>The labeling-assistance agent is an intelligent co-pilot for annotators. It does not replace judgment; it reduces cognitive load and improves consistency.</p>
+<p>Figure 33-1 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part10/Wang-Chap33-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Four dimensions of labeling-assistance agents" src="../../../images/part10/Wang-Chap33-Fig01.svg" /></a></p>
+<p><em>Figure 33-1: Four dimensions of labeling-assistance agents</em></p>
+<p><strong>Task explanation.</strong> When annotation guidelines change or new dimensions are added, the agent parses updates, generates examples, and highlights common mistakes. For complex tasks, such as multi-turn dialogue quality scoring, it decomposes standards into checklists.</p>
+<p><strong>Example recommendation.</strong> For gray-zone cases, the agent retrieves similar historical annotations and shows labels and rationales, helping annotators make more consistent decisions.</p>
+<p><strong>Gray-zone support.</strong> The agent identifies likely controversial samples in advance, such as semantically ambiguous cases, boundary conditions, or conflicting standards. It flags them and recommends which guideline priorities to consult.</p>
+<p><strong>Conflict arbitration suggestions.</strong> When annotators disagree, the agent analyzes whether the conflict comes from different guideline interpretations or genuine sample ambiguity, then generates an arbitration recommendation for reviewers.</p>
+<h3 id="3312-annotator-calibration-and-consistency-monitoring">33.1.2 Annotator Calibration and Consistency Monitoring<a class="headerlink" href="#3312-annotator-calibration-and-consistency-monitoring" title="Permanent link">&para;</a></h3>
+<p>Inter-annotator agreement is a core quality metric. Agents can monitor each annotator's label distribution and deviation from baselines.</p>
+<p>Table 33-1 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 33-1: Annotator consistency monitoring metrics</em></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Calculation</th>
+<th>Alert threshold</th>
+<th>Suggested action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Individual-group consistency</td>
+<td>Cohen's Kappa / Fleiss' Kappa</td>
+<td>&lt; 0.7</td>
+<td>Notify annotator and push calibration samples</td>
+</tr>
+<tr>
+<td>Label distribution shift</td>
+<td>KL divergence, individual versus group</td>
+<td>&gt; 0.3</td>
+<td>Check for systematic bias</td>
+</tr>
+<tr>
+<td>Gray-zone annotation time</td>
+<td>Time per sample</td>
+<td>&lt; 3s or &gt; 120s</td>
+<td>Too fast may be careless; too slow may indicate confusion</td>
+</tr>
+<tr>
+<td>Revision rate</td>
+<td>Proportion changed after review rejection</td>
+<td>&gt; 15%</td>
+<td>Retrain or adjust assignment</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3313-annotation-economics-cost-quality-and-speed">33.1.3 Annotation Economics: Cost, Quality, and Speed<a class="headerlink" href="#3313-annotation-economics-cost-quality-and-speed" title="Permanent link">&para;</a></h3>
+<p>Annotation quality cannot be pursued without cost constraints. The key principle is: <strong>perfect labels have infinite cost; engineering needs a Pareto balance among cost, quality, and speed.</strong></p>
+<p>Table 33-2 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 33-2: Annotation cost structure comparison</em></p>
+<table>
+<thead>
+<tr>
+<th>Cost item</th>
+<th>Manual mode</th>
+<th>Agent-assisted mode</th>
+<th>Savings source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Annotator hourly wage</td>
+<td>$15-25/hr</td>
+<td>$15-25/hr</td>
+<td>No change</td>
+</tr>
+<tr>
+<td>Time per sample</td>
+<td>3-5 min simple / 10-20 min complex</td>
+<td>1-2 min / 4-8 min</td>
+<td>Agent provides context and examples</td>
+</tr>
+<tr>
+<td>Gray-zone arbitration time</td>
+<td>5-10 min per case</td>
+<td>2-3 min per case</td>
+<td>Agent pre-analysis and recommendation</td>
+</tr>
+<tr>
+<td>Annotator training cycle</td>
+<td>2-4 weeks</td>
+<td>1-2 weeks</td>
+<td>Real-time guideline explanation and calibration</td>
+</tr>
+<tr>
+<td>Review staffing</td>
+<td>1 reviewer : 5 annotators</td>
+<td>1 reviewer : 10 annotators</td>
+<td>Agent prefilters problematic labels</td>
+</tr>
+<tr>
+<td>Rework rate</td>
+<td>15-25%</td>
+<td>5-10%</td>
+<td>Real-time consistency checks</td>
+</tr>
+</tbody>
+</table>
+<p>In many teams, the investment in labeling-assistance agents pays back within two to three months, mainly through 30-50 percent efficiency gains and 50-70 percent rework reduction.</p>
+<p>When deadlines are tight, agents can support data-driven tradeoffs:</p>
+<ul>
+<li>If deadline pressure dominates, allow an "uncertain" label for gray-zone samples and preserve quality on simple samples.</li>
+<li>If quality dominates, increase calibration frequency and arbitration coverage.</li>
+<li>If annotator fatigue appears, insert breaks or switch task types.</li>
+</ul>
+<h3 id="3314-intelligent-assignment-of-labeling-tasks">33.1.4 Intelligent Assignment of Labeling Tasks<a class="headerlink" href="#3314-intelligent-assignment-of-labeling-tasks" title="Permanent link">&para;</a></h3>
+<p>Agents can assign the right samples to the right annotators.</p>
+<p>Table 33-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 33-3: Annotator-profile dimensions for assignment</em></p>
+<table>
+<thead>
+<tr>
+<th>Annotator profile dimension</th>
+<th>Collection method</th>
+<th>Assignment logic</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Domain proficiency</td>
+<td>Historical accuracy by domain</td>
+<td>Prefer samples in strong domains</td>
+</tr>
+<tr>
+<td>Gray-zone ability</td>
+<td>Consistency on gray-zone samples</td>
+<td>Route ambiguous samples to strong annotators</td>
+</tr>
+<tr>
+<td>Annotation speed</td>
+<td>Historical time per sample</td>
+<td>Match urgency</td>
+</tr>
+<tr>
+<td>Fatigue state</td>
+<td>Continuous work duration plus recent accuracy trend</td>
+<td>Route easy samples or recommend rest</td>
+</tr>
+<tr>
+<td>Language ability</td>
+<td>Declared languages</td>
+<td>Match sample language</td>
+</tr>
+</tbody>
+</table>
+<p>Each batch should also include calibration samples with known answers. If an annotator scores below 85 percent on calibration, the agent should recommend retraining or reassignment.</p>
+<h2 id="332-synthetic-data-agents">33.2 Synthetic Data Agents<a class="headerlink" href="#332-synthetic-data-agents" title="Permanent link">&para;</a></h2>
+<h3 id="3321-from-seed-expansion-to-quality-reports">33.2.1 From Seed Expansion to Quality Reports<a class="headerlink" href="#3321-from-seed-expansion-to-quality-reports" title="Permanent link">&para;</a></h3>
+<p>The core loop is a controlled generate-verify-filter pipeline.</p>
+<p>Figure 33-2 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part10/Wang-Chap33-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Synthetic data agent closed-loop pipeline" src="../../../images/part10/Wang-Chap33-Fig02.svg" /></a></p>
+<p><em>Figure 33-2: Synthetic data agent closed-loop pipeline</em></p>
+<p><strong>Seed expansion.</strong> Diversity depends on seed diversity. The agent extracts semantic features, intent types, and difficulty levels from high-quality labeled samples, then identifies under-covered types and sparse difficulty bands.</p>
+<p><strong>Prompt generation.</strong> The agent generates diverse prompts from seeds and expansion strategy. Prompt generation must control:</p>
+<ol>
+<li><strong>Semantic diversity.</strong> Cover different topics, scenarios, and phrasings rather than only high-frequency patterns.</li>
+<li><strong>Difficulty.</strong> Generate a gradient from simple extraction to multi-step reasoning using Bloom-like levels or custom rubrics.</li>
+<li><strong>Constraint reasonableness.</strong> Constraints must be logically satisfiable. "Summarize the full plot of a long novel in five characters" is not a useful constraint.</li>
+</ol>
+<p><strong>Verifier calls.</strong> Synthetic data must pass multiple checks before entering storage.</p>
+<p>Table 33-4 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 33-4: Multi-layer validation for synthetic data</em></p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Check</th>
+<th>Tool or method</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Format</td>
+<td>Conforms to schema</td>
+<td>Structured validation</td>
+</tr>
+<tr>
+<td>Consistency</td>
+<td>Prompt-response pair is logically consistent</td>
+<td>Agent judge plus rules</td>
+</tr>
+<tr>
+<td>Difficulty</td>
+<td>Difficulty matches target</td>
+<td>Inferred from model answer accuracy</td>
+</tr>
+<tr>
+<td>Safety</td>
+<td>Harmful or policy-violating content</td>
+<td>Safety classifier</td>
+</tr>
+<tr>
+<td>Diversity</td>
+<td>Semantic similarity to existing data</td>
+<td>Embedding similarity deduplication</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3322-collapse-risk-control">33.2.2 Collapse Risk Control<a class="headerlink" href="#3322-collapse-risk-control" title="Permanent link">&para;</a></h3>
+<p>The greatest risk of synthetic data is model collapse: as a model trains heavily on its own generated data, the distribution narrows and diversity disappears. Agents can control this risk through:</p>
+<ol>
+<li><strong>Diversity budget.</strong> Set semantic diversity budgets for each synthetic batch, such as maximum cosine similarity to existing training data.</li>
+<li><strong>Real-data anchoring.</strong> Keep synthetic data below a safe training proportion, often below 50 percent, and preserve human-labeled data as an anchor.</li>
+<li><strong>Distribution monitoring.</strong> Monitor synthetic-data embedding distributions and alert when concentration increases.</li>
+</ol>
+<h3 id="33221-early-indicators-of-collapse">33.2.2.1 Early Indicators of Collapse<a class="headerlink" href="#33221-early-indicators-of-collapse" title="Permanent link">&para;</a></h3>
+<p>Collapse has a latency period before it becomes obvious. Monitoring should track:</p>
+<p><strong>Distribution shift.</strong> Compute Wasserstein distance or MMD between synthetic and real embedding distributions. If the distance expands for three consecutive weeks, warn even before a hard threshold is crossed.</p>
+<p><strong>Diversity decay curve.</strong> Track semantic diversity through eigenvalue distribution of the embedding cosine-similarity matrix. A sustained decline is a strong collapse signal.</p>
+<p><strong>Tail coverage.</strong> Check whether synthetic data covers low-frequency but valid real-data types. Collapse usually starts in the tail.</p>
+<p><strong>Human sampling.</strong> Every two weeks, manually review 50-100 synthetic samples. Automated metrics can miss content degradation that looks statistically normal.</p>
+<h3 id="33222-intellectual-property-and-compliance">33.2.2.2 Intellectual Property and Compliance<a class="headerlink" href="#33222-intellectual-property-and-compliance" title="Permanent link">&para;</a></h3>
+<p>Synthetic data is generated by a model, but its legal and IP risks are not simple.</p>
+<p><strong>Derivative-work risk.</strong> If synthetic data is based on copyrighted seed data, it may be treated as derivative in some contexts. Engineering should be conservative: if seed copyright is unclear, mark the synthetic batch as "copyright pending" and restrict use.</p>
+<p><strong>Personal information leakage.</strong> The model may memorize and reproduce PII. Agents should scan for names, phone numbers, addresses, ID numbers, and other personal identifiers.</p>
+<p><strong>Toxic content generation.</strong> Synthetic agents can generate harmful content under certain prompts. Safety validation must apply to synthetic data; do not assume the generator is safe.</p>
+<h3 id="3323-difficulty-control-for-synthetic-data">33.2.3 Difficulty Control for Synthetic Data<a class="headerlink" href="#3323-difficulty-control-for-synthetic-data" title="Permanent link">&para;</a></h3>
+<p>Difficulty control prevents synthetic data from collapsing into trivial or impossible samples.</p>
+<p>Table 33-5 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 33-5: Difficulty-control dimensions for synthetic data</em></p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Evaluation method</th>
+<th>L1: basic</th>
+<th>L3: medium</th>
+<th>L5: difficult</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reasoning steps</td>
+<td>Minimum steps needed to answer</td>
+<td>1-2</td>
+<td>3-4</td>
+<td>5+</td>
+</tr>
+<tr>
+<td>Knowledge breadth</td>
+<td>Independent knowledge points required</td>
+<td>One domain</td>
+<td>2-3 domains</td>
+<td>3+ domains</td>
+</tr>
+<tr>
+<td>Constraint complexity</td>
+<td>Number and type of constraints</td>
+<td>None or one simple constraint</td>
+<td>2-3 constraints</td>
+<td>4+ constraints or contradiction detection</td>
+</tr>
+<tr>
+<td>Distractor information</td>
+<td>Irrelevant information to ignore</td>
+<td>None</td>
+<td>One distractor</td>
+<td>Multiple distractors plus active filtering</td>
+</tr>
+<tr>
+<td>Format requirement</td>
+<td>Output format complexity</td>
+<td>Free text</td>
+<td>Structured output</td>
+<td>Strict format plus content constraints</td>
+</tr>
+</tbody>
+</table>
+<p>The agent should set a target distribution, such as L1:L3:L5 = 40%:40%:20%, and adjust generation dynamically to keep the distribution balanced.</p>
+<h2 id="333-evaluation-and-red-team-agents">33.3 Evaluation and Red-Team Agents<a class="headerlink" href="#333-evaluation-and-red-team-agents" title="Permanent link">&para;</a></h2>
+<h3 id="3331-automatic-challenge-set-generation">33.3.1 Automatic Challenge Set Generation<a class="headerlink" href="#3331-automatic-challenge-set-generation" title="Permanent link">&para;</a></h3>
+<p>The first ability of an evaluation agent is generating discriminative test samples. A useful challenge set separates model capability levels. If all models score full marks or zero, the set has no value.</p>
+<p>Generation strategies:</p>
+<ol>
+<li><strong>Failure-sample analysis.</strong> Extract patterns from historical errors and generate targeted test cases.</li>
+<li><strong>Difficulty gradients.</strong> Build progressively harder samples for the same capability dimension.</li>
+<li><strong>Adversarial samples.</strong> Create plausible-looking traps, such as contradictory context or questions requiring implicit-assumption detection.</li>
+</ol>
+<h3 id="3332-red-team-sample-generation">33.3.2 Red-Team Sample Generation<a class="headerlink" href="#3332-red-team-sample-generation" title="Permanent link">&para;</a></h3>
+<p>A red-team agent actively searches for safety weaknesses and capability boundaries:</p>
+<ul>
+<li><strong>Jailbreak prompt variants.</strong> Rephrase known jailbreak patterns, switch languages, or wrap them in role-play.</li>
+<li><strong>Boundary stress tests.</strong> Use extreme inputs such as very long text, special-character sequences, or nested formats.</li>
+<li><strong>Knowledge blind-spot probing.</strong> Generate samples targeting under-covered time ranges, regions, or domains.</li>
+</ul>
+<h3 id="33321-attack-strategy-categories">33.3.2.1 Attack Strategy Categories<a class="headerlink" href="#33321-attack-strategy-categories" title="Permanent link">&para;</a></h3>
+<p>Red-team attacks can be grouped into six dimensions:</p>
+<ol>
+<li><strong>Jailbreak.</strong> Tests whether the model can be induced to bypass restrictions through role-play, hypothetical settings, or encoded requests.</li>
+<li><strong>Prompt injection.</strong> Tests whether the model distinguishes user instructions from data content.</li>
+<li><strong>Knowledge-boundary probing.</strong> Systematically explores coverage gaps across domains, regions, and time.</li>
+<li><strong>Reasoning traps.</strong> Constructs logically plausible questions with hidden errors, circular definitions, or false presuppositions.</li>
+<li><strong>Social bias probing.</strong> Builds contrastive samples across gender, race, age, region, and other axes.</li>
+<li><strong>Multilingual robustness.</strong> Asks the same question in different languages, dialects, and mixed-language forms.</li>
+</ol>
+<p>The red-team agent's output should be a continuously updated <strong>security defect database</strong>, not just a report. Each defect includes attack sample, model response, risk rating, and recommended mitigation. The database feeds safety training and input-filter rules.</p>
+<h3 id="33322-frequency-and-triggers-for-red-team-testing">33.3.2.2 Frequency and Triggers for Red-Team Testing<a class="headerlink" href="#33322-frequency-and-triggers-for-red-team-testing" title="Permanent link">&para;</a></h3>
+<p>Red-team testing belongs in continuous integration.</p>
+<p>Table 33-6 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 33-6: Frequency and Triggers for Red-Team Testing</em></p>
+<table>
+<thead>
+<tr>
+<th>Trigger</th>
+<th>Scope</th>
+<th>Depth</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Every model release</td>
+<td>Full red-team set</td>
+<td>Deep</td>
+</tr>
+<tr>
+<td>Weekly routine</td>
+<td>Newly added red-team samples</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>New data source</td>
+<td>Security tests for that source's domain</td>
+<td>Medium</td>
+</tr>
+<tr>
+<td>Security incident</td>
+<td>Incident-specific tests</td>
+<td>Deep</td>
+</tr>
+<tr>
+<td>Agent rule change</td>
+<td>Tests within affected rule scope</td>
+<td>Shallow</td>
+</tr>
+</tbody>
+</table>
+<p>When a new vulnerability type appears, the agent should generate variants and expand the test set. This keeps red-team evaluation fresh as attack methods evolve.</p>
+<h3 id="3333-evaluation-slice-generation">33.3.3 Evaluation Slice Generation<a class="headerlink" href="#3333-evaluation-slice-generation" title="Permanent link">&para;</a></h3>
+<p>Evaluation agents should slice results along multiple dimensions to locate weaknesses.</p>
+<p>Table 33-7 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 33-7: Evaluation slicing dimensions</em></p>
+<table>
+<thead>
+<tr>
+<th>Slice dimension</th>
+<th>Examples</th>
+<th>Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Capability</td>
+<td>Reasoning, knowledge, generation, safety</td>
+<td>Locate capability gaps</td>
+</tr>
+<tr>
+<td>Difficulty</td>
+<td>L1-L5</td>
+<td>Understand capability ceiling</td>
+</tr>
+<tr>
+<td>Domain/topic</td>
+<td>Medical, legal, financial, code</td>
+<td>Assess domain coverage</td>
+</tr>
+<tr>
+<td>Input length</td>
+<td>Short &lt; 512 tokens, medium, long &gt; 4096 tokens</td>
+<td>Evaluate long-context ability</td>
+</tr>
+<tr>
+<td>Language</td>
+<td>Chinese, English, mixed Chinese-English</td>
+<td>Evaluate multilingual ability</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3334-evaluation-set-health-monitoring">33.3.4 Evaluation Set Health Monitoring<a class="headerlink" href="#3334-evaluation-set-health-monitoring" title="Permanent link">&para;</a></h3>
+<p>Evaluation sets need continuous health monitoring.</p>
+<p>Table 33-8 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 33-8: Evaluation set health metrics</em></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Calculation</th>
+<th>Healthy threshold</th>
+<th>If unhealthy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Discriminative power</td>
+<td>Score variance across models</td>
+<td>Variance &gt; 0.05</td>
+<td>Add harder questions if variance is too small</td>
+</tr>
+<tr>
+<td>Ceiling effect</td>
+<td>Best-model score</td>
+<td>&lt; 95%</td>
+<td>Add harder questions</td>
+</tr>
+<tr>
+<td>Floor effect</td>
+<td>Random baseline score</td>
+<td>&gt; 10%</td>
+<td>Check solvability if near zero</td>
+</tr>
+<tr>
+<td>Freshness</td>
+<td>Share of questions added in last month</td>
+<td>&gt; 20%</td>
+<td>Trigger update</td>
+</tr>
+<tr>
+<td>Coverage</td>
+<td>Coverage across capability x difficulty</td>
+<td>&gt; 80%</td>
+<td>Add missing dimensions</td>
+</tr>
+</tbody>
+</table>
+<h2 id="334-consistency-calibration-avoiding-automated-evaluation-self-delusion">33.4 Consistency Calibration: Avoiding Automated Evaluation Self-Delusion<a class="headerlink" href="#334-consistency-calibration-avoiding-automated-evaluation-self-delusion" title="Permanent link">&para;</a></h2>
+<h3 id="3341-calibrating-agent-judges-against-human-judges">33.4.1 Calibrating Agent Judges Against Human Judges<a class="headerlink" href="#3341-calibrating-agent-judges-against-human-judges" title="Permanent link">&para;</a></h3>
+<p>When agents participate in both generation and evaluation, self-evaluation risk appears. Calibration is the defense:</p>
+<ol>
+<li><strong>Double-blind calibration.</strong> Periodically sample agent-evaluated items and have humans score them independently. Compute consistency.</li>
+<li><strong>Disagreement analysis.</strong> Analyze samples where agent and human scores diverge. Identify systematic bias, such as overrating a sample type.</li>
+<li><strong>Calibration set maintenance.</strong> Maintain a high-quality human-labeled calibration set. Before a new evaluation task, the agent judge must show acceptable agreement on that set.</li>
+</ol>
+<h3 id="3342-human-agent-consistency-matrix">33.4.2 Human-Agent Consistency Matrix<a class="headerlink" href="#3342-human-agent-consistency-matrix" title="Permanent link">&para;</a></h3>
+<p>Table 33-9 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 33-9: Human-agent evaluation consistency matrix</em></p>
+<table>
+<thead>
+<tr>
+<th>Evaluation dimension</th>
+<th>Agent-only scoring accuracy</th>
+<th>Human scoring accuracy</th>
+<th>Agent-human consistency</th>
+<th>Suggested use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Factual accuracy</td>
+<td>82%</td>
+<td>95%</td>
+<td>0.78</td>
+<td>Agent prescreen plus human review</td>
+</tr>
+<tr>
+<td>Response relevance</td>
+<td>88%</td>
+<td>93%</td>
+<td>0.85</td>
+<td>Agent primary plus human sampling</td>
+</tr>
+<tr>
+<td>Logical consistency</td>
+<td>75%</td>
+<td>90%</td>
+<td>0.72</td>
+<td>Agent suggests, human decides</td>
+</tr>
+<tr>
+<td>Safety judgment</td>
+<td>91%</td>
+<td>97%</td>
+<td>0.89</td>
+<td>Agent automatic plus human review of high risk</td>
+</tr>
+<tr>
+<td>Style/tone</td>
+<td>70%</td>
+<td>85%</td>
+<td>0.65</td>
+<td>Human-led</td>
+</tr>
+</tbody>
+</table>
+<p>Agents can take more automatic responsibility in rule-like dimensions such as safety and relevance. Human judgment should dominate subjective dimensions such as style and tone.</p>
+<h2 id="335-case-review-agentizing-a-dialogue-model-labeling-and-evaluation-system">33.5 Case Review: Agentizing a Dialogue Model Labeling and Evaluation System<a class="headerlink" href="#335-case-review-agentizing-a-dialogue-model-labeling-and-evaluation-system" title="Permanent link">&para;</a></h2>
+<p>A conversational model team agentizes labeling and evaluation in three stages.</p>
+<p><strong>Stage 1: labeling-assistance agent.</strong> The agent provides task explanations and gray-zone example recommendations. IAA recovers from 0.72 to 0.86 in two weeks. Gray-zone consistency improves from 0.55 to 0.78.</p>
+<p><strong>Stage 2: synthetic data agent.</strong> From 500 seed samples, the agent expands to 15,000 synthetic samples across eight capability dimensions and five difficulty levels. Verifiers filter out 12 percent of invalid samples. Training experiments show the optimal synthetic ratio is 35 percent; above that, marginal gains decline.</p>
+<p><strong>Stage 3: evaluation and red-team agents.</strong> The agent generates 200 new evaluation questions each week and replaces stale items. The red-team agent finds vulnerabilities in code injection and role-play jailbreaks, motivating targeted safety training.</p>
+<h3 id="key-lessons">Key Lessons<a class="headerlink" href="#key-lessons" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Labeling assistance depends on gray-zone detection accuracy.</strong> Marking simple samples as gray-zone increases unnecessary cognitive load.</li>
+<li><strong>Synthetic data needs verifiers.</strong> Unvalidated synthetic data introduces noise and can reduce performance.</li>
+<li><strong>Evaluation sets need an update rhythm.</strong> Replacing 20-30 percent of items monthly helps preserve discriminative power.</li>
+</ol>
+<h3 id="extended-case-synthetic-data-collapse-warning-and-intervention">Extended Case: Synthetic Data Collapse Warning and Intervention<a class="headerlink" href="#extended-case-synthetic-data-collapse-warning-and-intervention" title="Permanent link">&para;</a></h3>
+<p>In the fourth month, the team's monitoring system raises a collapse warning. Synthetic-data embeddings are becoming concentrated and drifting away from human-labeled data.</p>
+<p>Early signals:</p>
+<ul>
+<li>Semantic diversity index drops for three consecutive weeks, from 0.78 to 0.62.</li>
+<li>Prompt patterns are oversampled: prompts beginning with "please explain" reach 35 percent of synthetic data, versus 12 percent in real data.</li>
+<li>Difficulty distribution polarizes: L1 and L5 increase while L3 drops from 40 percent to 25 percent.</li>
+</ul>
+<p>Interventions:</p>
+<ol>
+<li>Reduce synthetic-data share in training from 40 percent to 25 percent and increase human-labeled data weight.</li>
+<li>Add diversity constraints: no prompt pattern may exceed 20 percent of one synthetic batch.</li>
+<li>Add reverse validation: train a temporary model on synthetic data and test on real data. If real-data performance drops by more than 2 percent, pause that batch.</li>
+</ol>
+<p>After four weeks, the diversity index recovers to 0.75 and real-world model performance stabilizes. The lesson is clear: a synthetic data agent must be a monitor, not only a generator.</p>
+<h2 id="336-checklist-labeling-synthesis-and-evaluation-agent-deployment">33.6 Checklist: Labeling, Synthesis, and Evaluation Agent Deployment<a class="headerlink" href="#336-checklist-labeling-synthesis-and-evaluation-agent-deployment" title="Permanent link">&para;</a></h2>
+<ul>
+<li>[ ] Does the labeling-assistance agent cover task explanation, example recommendation, gray-zone judgment, and conflict arbitration?</li>
+<li>[ ] Is there real-time IAA monitoring and calibration?</li>
+<li>[ ] Does synthetic seed expansion preserve semantic diversity?</li>
+<li>[ ] Does prompt generation control difficulty gradient and constraint reasonableness?</li>
+<li>[ ] Does synthetic data pass format, consistency, difficulty, safety, and diversity validation before storage?</li>
+<li>[ ] Are diversity budgets and real-data anchoring ratios defined?</li>
+<li>[ ] Can the evaluation agent generate challenge sets and red-team samples automatically?</li>
+<li>[ ] Is there periodic double-blind calibration between agent judges and human judges?</li>
+<li>[ ] Are evaluation results sliced by capability, difficulty, domain, and input length?</li>
+<li>[ ] Is the monthly evaluation-set refresh ratio defined, preferably 20-30 percent?</li>
+</ul>
+<h2 id="337-chapter-links">33.7 Chapter Links<a class="headerlink" href="#337-chapter-links" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Chapters 12-13:</strong> SFT data and preference alignment consume labeling and synthetic data.</li>
+<li><strong>Chapters 14-15:</strong> annotation-system design and synthetic data foundations are agentized here.</li>
+<li><strong>Chapters 16-17:</strong> synthetic data generation and collapse governance become operational mechanisms in this chapter.</li>
+<li><strong>Chapter 31:</strong> architecture and task boundaries guide the design of labeling and evaluation agents.</li>
+<li><strong>Chapter 32:</strong> collection and cleaning outputs become inputs for labeling and synthesis.</li>
+<li><strong>Chapter 35:</strong> security, permissions, and human-AI collaboration connect to red-team agent governance.</li>
+</ul>
+<h2 id="338-further-reading-deeper-engineering-issues">33.8 Further Reading: Deeper Engineering Issues<a class="headerlink" href="#338-further-reading-deeper-engineering-issues" title="Permanent link">&para;</a></h2>
+<h3 id="making-annotation-standards-operational">Making Annotation Standards Operational<a class="headerlink" href="#making-annotation-standards-operational" title="Permanent link">&para;</a></h3>
+<p>Guidelines are often written by experts in natural language: "judge whether the answer is friendly" or "evaluate whether reasoning is coherent." Humans already need training to apply such standards consistently; agents need even more structure.</p>
+<p>For an agent, "is the answer friendly" must become checkable criteria:</p>
+<ul>
+<li>Does it use offensive or belittling language?</li>
+<li>Does it provide alternatives when refusing?</li>
+<li>Is the tone neutral and objective?</li>
+<li>Does it show empathy when the user is confused?</li>
+</ul>
+<p>The key ability is not abstract understanding. It is converting vague standards into checks that humans and agents can apply consistently.</p>
+<h3 id="the-realism-paradox-of-synthetic-data">The Realism Paradox of Synthetic Data<a class="headerlink" href="#the-realism-paradox-of-synthetic-data" title="Permanent link">&para;</a></h3>
+<p>Synthetic data has a paradox. Its value comes from imitating real-data distribution. If it imitates perfectly, it adds no new information. If it adds new information, that information must be validated.</p>
+<p>The engineering answer is <strong>realism anchoring</strong>:</p>
+<ul>
+<li>Every synthetic item should trace to at least one real seed's semantic source.</li>
+<li>The "novel" part of synthetic data should not contradict real-data distribution.</li>
+<li>If synthetic distribution diverges significantly from real distribution, the agent should pause the batch and mark it for review.</li>
+</ul>
+<h3 id="defending-against-goodharts-law-in-evaluation">Defending Against Goodhart's Law in Evaluation<a class="headerlink" href="#defending-against-goodharts-law-in-evaluation" title="Permanent link">&para;</a></h3>
+<p>Goodhart's Law says that when a metric becomes a target, it stops being a good metric. If a model knows the evaluation set, the score no longer reflects real capability.</p>
+<p>Defenses:</p>
+<ol>
+<li>Keep part of the evaluation set hidden for final assessment.</li>
+<li>Continuously update evaluation questions with new knowledge backgrounds and reasoning patterns.</li>
+<li>Use multiple capability slices rather than a single score.</li>
+<li>Use online feedback, such as likes, complaints, and corrections, to supplement offline evaluation.</li>
+</ol>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter covered agentization across three data-production stages: labeling, synthesis, and evaluation. The main line was improving throughput while preserving data trustworthiness. Labeling-assistance agents were introduced through four dimensions: pre-labeling, confidence routing, annotator calibration and consistency monitoring, and intelligent task assignment, with automation bounded by the triangle of cost, quality, and speed. Synthetic data agents emphasized a closed loop from seed expansion to quality reports, focused on preventing distribution collapse, and built a difficulty-control system so synthetic samples are diverse yet controllable.</p>
+<p>Evaluation and red-team agents generate challenge sets, red-team samples, and evaluation slices, while monitoring evaluation-set health to prevent models from gaming the benchmark. The chapter specifically discussed consistency calibration, giving mechanisms for calibrating agent judges against human judges and a human-agent consistency matrix. It emphasized that automated evaluation must retain human anchors to avoid self-confirming scores. Finally, around the operationalization of labeling standards, the realism paradox of synthetic data, and Goodhart's Law in evaluation, the chapter argued that automation must keep human verification and sampling in the loop.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Alemohammad S, Casco-Rodriguez J, Luzi L, et al. (2024) Self-Consuming Generative Models Go MAD. In: International Conference on Learning Representations. arXiv:2307.01850.</p>
+<p>Bai Y, Kadavath S, Kundu S, et al. (2022) Constitutional AI: Harmlessness from AI Feedback. arXiv preprint arXiv:2212.08073.</p>
+<p>Cui G, Yuan L, Ding N, Yao G, Zhu W, Ni Y, Xie G, Liu Z, Sun M (2023) UltraFeedback: Boosting Language Models with Scaled AI Feedback. arXiv preprint arXiv:2310.01377.</p>
+<p>Dubois Y, Li X, Taori R, Zhang T, Gulrajani I, Ba J, Guestrin C, Liang P, Hashimoto T B (2023) AlpacaFarm: A Simulation Framework for Methods that Learn from Human Feedback. In: Advances in Neural Information Processing Systems 36. https://doi.org/10.52202/075280-1308.</p>
+<p>Gerstgrasser M, Schaeffer R, Dey A, et al. (2024) Is Model Collapse Inevitable? Breaking the Curse of Recursion by Accumulating Real and Synthetic Data. arXiv preprint arXiv:2404.01413.</p>
+<p>Kim S, Shin J, Cho Y, Jang J, Longpre S, Lee H, Yun S, Shin S, Kim S, Thorne J, Seo M (2024) Prometheus: Inducing Fine-grained Evaluation Capability in Language Models. In: International Conference on Learning Representations.</p>
+<p>Kim S, Suk J, Longpre S, Lin B Y, Shin J, Welleck S, Neubig G, Lee M, Lee K, Seo M (2024) Prometheus 2: An Open Source Language Model Specialized in Evaluating Other Language Models. arXiv preprint arXiv:2405.01535.</p>
+<p>Koh P W, Sagawa S, Marklund H, et al. (2021) WILDS: A Benchmark of in-the-Wild Distribution Shifts. In: Proceedings of the 38th International Conference on Machine Learning, pp 5637-5664.</p>
+<p>Lambert N, Pyatkin V, Morrison J, Miranda L, Lin B Y, Chandu K, Dziri N, Kumar S, Zick T, Choi Y, Smith N A, Hajishirzi H (2024) RewardBench: Evaluating Reward Models for Language Modeling. arXiv preprint arXiv:2403.13787.</p>
+<p>Liang P, Bommasani R, Lee T, et al. (2023) Holistic Evaluation of Language Models. Transactions on Machine Learning Research. arXiv:2211.09110.</p>
+<p>Liu Y, Iter D, Xu Y, et al. (2023) G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment. In: Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing, pp 2511-2522. arXiv:2303.16634.</p>
+<p>Lin B Y, et al. (2024) WildBench: Benchmarking LLMs with Challenging Tasks from Real Users in the Wild. arXiv preprint arXiv:2406.04770.</p>
+<p>Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S, Slama K, Ray A, Schulman J, Hilton J, Kelton F, Miller L, Simens M, Askell A, Welinder P, Christiano P, Leike J, Lowe R (2022) Training language models to follow instructions with human feedback. In: Advances in Neural Information Processing Systems 35, pp 27730-27744. arXiv:2203.02155.</p>
+<p>Perez E, Huang S, Song F, Cai T, Ring R, Aslanides J, Glaese A, McAleese N, Irving G (2022) Red Teaming Language Models with Language Models. In: Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing, pp 3419-3448. arXiv:2202.03286.</p>
+<p>Rafailov R, Sharma A, Mitchell E, Manning C D, Ermon S, Finn C (2023) Direct Preference Optimization: Your Language Model is Secretly a Reward Model. In: Advances in Neural Information Processing Systems 36. arXiv:2305.18290.</p>
+<p>Ribeiro M T, Wu T, Guestrin C, Singh S (2020) Beyond Accuracy: Behavioral Testing of NLP Models with CheckList. In: Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics, pp 4902-4912. https://doi.org/10.18653/v1/2020.acl-main.442.</p>
+<p>Shumailov I, Shumaylov Z, Zhao Y, et al. (2024) AI models collapse when trained on recursively generated data. Nature 631:755-759. https://doi.org/10.1038/s41586-024-07566-y.</p>
+<p>Wang Y, Kordi Y, Mishra S, et al. (2023) Self-Instruct: Aligning Language Models with Self-Generated Instructions. In: Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics, pp 13484-13508. https://doi.org/10.18653/v1/2023.acl-long.754.</p>
+<p>Zheng L, Chiang W-L, Sheng Y, et al. (2023) Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. In: Advances in Neural Information Processing Systems 36. arXiv:2306.05685.</p>
+<p>Zhu L, Wang X, Wang Y, et al. (2023) JudgeLM: Fine-tuned Large Language Models are Scalable Judges. arXiv preprint arXiv:2310.17631.</p>
+<p>Zhou C, Liu P, Xu P, et al. (2023) LIMA: Less Is More for Alignment. In: Advances in Neural Information Processing Systems 36. arXiv:2305.11206.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ch32_auto_collection_parsing_cleaning/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Chapter 32: Automated Collection, Parsing, and Cleaning Agents">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch34_dataops_agent/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 34: DataOps Agents and Platform Autonomy">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 34: DataOps Agents and Platform Autonomy
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

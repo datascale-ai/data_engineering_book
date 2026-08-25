@@ -1,0 +1,4420 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/appendix_c_cost_estimation_and_resource_templates/">
+      
+      
+        <link rel="prev" href="../appendix_b_compliance_and_release_checklist/">
+      
+      
+        <link rel="next" href="../appendix_d_paper_to_implementation_guide/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Appendix C: Cost Estimation and Resource Templates - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#appendix-c-cost-estimation-and-resource-templates" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Appendix C: Cost Estimation and Resource Templates
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../appendix_c_cost_estimation_and_resource_templates/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../ja/appendix_c_cost_estimation_and_resource_templates/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_18" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#c1-purpose-of-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.1 Purpose of This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c2-why-costs-should-be-split-by-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.2 Why Costs Should Be Split by Lifecycle
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c3-overall-estimation-formula" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.3 Overall Estimation Formula
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c4-data-ingestion-and-cleaning-cost-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.4 Data Ingestion and Cleaning Cost Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.4 Data Ingestion and Cleaning Cost Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c41-ingestion-cost-is-not-just-how-much-was-collected" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.4.1 Ingestion Cost Is Not Just "How Much Was Collected"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c42-cleaning-cost-often-underestimates-rework" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.4.2 Cleaning Cost Often Underestimates Rework
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c5-annotation-review-and-synthetic-data-cost-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.5 Annotation, Review, and Synthetic Data Cost Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.5 Annotation, Review, and Synthetic Data Cost Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c51-separate-first-pass-annotation-from-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.5.1 Separate First-Pass Annotation from Review
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c52-synthetic-data-is-not-zero-labor-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.5.2 Synthetic Data Is Not Zero Labor Cost
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c6-training-and-inference-resource-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.6 Training and Inference Resource Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.6 Training and Inference Resource Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c61-training-estimates-should-not-look-only-at-gpu-count" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.6.1 Training Estimates Should Not Look Only at GPU Count
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c62-split-inference-cost-by-scenario" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.6.2 Split Inference Cost by Scenario
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c7-evaluation-leaderboard-and-public-maintenance-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.7 Evaluation, Leaderboard, and Public Maintenance Costs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.7 Evaluation, Leaderboard, and Public Maintenance Costs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c71-long-term-benchmark-cost-often-exceeds-initial-release-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.7.1 Long-Term Benchmark Cost Often Exceeds Initial Release Cost
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c72-why-evaluation-cost-often-rises-late" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.7.2 Why Evaluation Cost Often Rises Late
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c8-storage-network-and-archival-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.8 Storage, Network, and Archival Costs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.8 Storage, Network, and Archival Costs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c81-multimodal-projects-must-list-storage-separately" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.8.1 Multimodal Projects Must List Storage Separately
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c82-archival-strategy-determines-maintainability-over-the-next-three-years" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.8.2 Archival Strategy Determines Maintainability Over the Next Three Years
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c83-network-egress-and-external-calls-should-not-be-hidden-under-other" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.8.3 Network Egress and External Calls Should Not Be Hidden Under "Other"
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c9-three-reusable-resource-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9 Three Reusable Resource Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.9 Three Reusable Resource Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c91-small-research-or-course-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.1 Small Research or Course Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c92-medium-team-project-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.2 Medium Team Project Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c93-open-benchmark-or-university-collaboration-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.3 Open Benchmark or University Collaboration Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c94-example-estimation-order-for-a-university-dataset-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.4 Example Estimation Order for a University Dataset Release
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c95-budget-ledger-fields-to-keep" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.5 Budget Ledger Fields to Keep
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c10-quarterly-reviews-should-not-ask-only-did-we-overspend" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.10 Quarterly Reviews Should Not Ask Only "Did We Overspend?"
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.10 Quarterly Reviews Should Not Ask Only "Did We Overspend?"">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c101-three-charts-worth-keeping-in-quarterly-reviews" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.10.1 Three Charts Worth Keeping in Quarterly Reviews
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c11-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.11 Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#c1-purpose-of-this-appendix" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.1 Purpose of This Appendix
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c2-why-costs-should-be-split-by-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.2 Why Costs Should Be Split by Lifecycle
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c3-overall-estimation-formula" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.3 Overall Estimation Formula
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c4-data-ingestion-and-cleaning-cost-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.4 Data Ingestion and Cleaning Cost Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.4 Data Ingestion and Cleaning Cost Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c41-ingestion-cost-is-not-just-how-much-was-collected" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.4.1 Ingestion Cost Is Not Just "How Much Was Collected"
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c42-cleaning-cost-often-underestimates-rework" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.4.2 Cleaning Cost Often Underestimates Rework
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c5-annotation-review-and-synthetic-data-cost-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.5 Annotation, Review, and Synthetic Data Cost Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.5 Annotation, Review, and Synthetic Data Cost Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c51-separate-first-pass-annotation-from-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.5.1 Separate First-Pass Annotation from Review
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c52-synthetic-data-is-not-zero-labor-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.5.2 Synthetic Data Is Not Zero Labor Cost
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c6-training-and-inference-resource-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.6 Training and Inference Resource Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.6 Training and Inference Resource Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c61-training-estimates-should-not-look-only-at-gpu-count" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.6.1 Training Estimates Should Not Look Only at GPU Count
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c62-split-inference-cost-by-scenario" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.6.2 Split Inference Cost by Scenario
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c7-evaluation-leaderboard-and-public-maintenance-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.7 Evaluation, Leaderboard, and Public Maintenance Costs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.7 Evaluation, Leaderboard, and Public Maintenance Costs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c71-long-term-benchmark-cost-often-exceeds-initial-release-cost" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.7.1 Long-Term Benchmark Cost Often Exceeds Initial Release Cost
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c72-why-evaluation-cost-often-rises-late" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.7.2 Why Evaluation Cost Often Rises Late
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c8-storage-network-and-archival-costs" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.8 Storage, Network, and Archival Costs
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.8 Storage, Network, and Archival Costs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c81-multimodal-projects-must-list-storage-separately" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.8.1 Multimodal Projects Must List Storage Separately
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c82-archival-strategy-determines-maintainability-over-the-next-three-years" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.8.2 Archival Strategy Determines Maintainability Over the Next Three Years
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c83-network-egress-and-external-calls-should-not-be-hidden-under-other" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.8.3 Network Egress and External Calls Should Not Be Hidden Under "Other"
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c9-three-reusable-resource-templates" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9 Three Reusable Resource Templates
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.9 Three Reusable Resource Templates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c91-small-research-or-course-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.1 Small Research or Course Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c92-medium-team-project-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.2 Medium Team Project Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c93-open-benchmark-or-university-collaboration-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.3 Open Benchmark or University Collaboration Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c94-example-estimation-order-for-a-university-dataset-release" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.4 Example Estimation Order for a University Dataset Release
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c95-budget-ledger-fields-to-keep" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.9.5 Budget Ledger Fields to Keep
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c10-quarterly-reviews-should-not-ask-only-did-we-overspend" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.10 Quarterly Reviews Should Not Ask Only "Did We Overspend?"
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="C.10 Quarterly Reviews Should Not Ask Only "Did We Overspend?"">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#c101-three-charts-worth-keeping-in-quarterly-reviews" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.10.1 Three Charts Worth Keeping in Quarterly Reviews
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#c11-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      C.11 Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="appendix-c-cost-estimation-and-resource-templates">Appendix C: Cost Estimation and Resource Templates<a class="headerlink" href="#appendix-c-cost-estimation-and-resource-templates" title="Permanent link">&para;</a></h1>
+<h2 id="c1-purpose-of-this-appendix">C.1 Purpose of This Appendix<a class="headerlink" href="#c1-purpose-of-this-appendix" title="Permanent link">&para;</a></h2>
+<p>The most underestimated part of a data-engineering project is often not technical complexity but cost structure. Many teams ask only how many GPUs are needed for training, while leaving unanswered questions such as: who collects and cleans samples, how many person-days annotation review requires, how much long-term evaluation and leaderboard maintenance costs, how much multimodal storage and egress traffic will cost, and whether teaching images need fixed resources for an entire semester. The resource consumption and carbon emissions of large-scale training have been discussed in dedicated studies, showing that training budgets should not be treated merely as temporary engineering expenses (Patterson et al. 2021).</p>
+<p>This appendix does not provide a universal price list. It provides a method, tables, and review templates for cost estimation. If the method is stable, teams can quickly update estimates even when unit prices change. Without a method, knowing one moment's unit price is not enough for reliable budgeting.</p>
+<h2 id="c2-why-costs-should-be-split-by-lifecycle">C.2 Why Costs Should Be Split by Lifecycle<a class="headerlink" href="#c2-why-costs-should-be-split-by-lifecycle" title="Permanent link">&para;</a></h2>
+<p>Budget debates often lose focus because different roles look at different cost objects. Researchers may look only at training GPUs. Platform teams care about storage and feedback flows. Course owners care about images and teaching-assistant time. Management cares about quarterly investment and delivery cadence.</p>
+<p>A more useful split for data-engineering projects is lifecycle-based:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Cost Category</th>
+<th style="text-align: left;">Core Question</th>
+<th style="text-align: left;">Typical Unit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Data ingestion</td>
+<td style="text-align: left;">What does it cost to obtain samples?</td>
+<td style="text-align: left;">Person-days, API calls, crawl jobs</td>
+</tr>
+<tr>
+<td style="text-align: left;">Cleaning and processing</td>
+<td style="text-align: left;">What does it cost to turn samples into usable assets?</td>
+<td style="text-align: left;">CPU/GPU hours, person-days</td>
+</tr>
+<tr>
+<td style="text-align: left;">Annotation and review</td>
+<td style="text-align: left;">How is supervision created?</td>
+<td style="text-align: left;">Per sample, per hour, per QA round</td>
+</tr>
+<tr>
+<td style="text-align: left;">Training and inference</td>
+<td style="text-align: left;">What does model consumption of data cost?</td>
+<td style="text-align: left;">GPU hours, tokens, throughput</td>
+</tr>
+<tr>
+<td style="text-align: left;">Evaluation and release</td>
+<td style="text-align: left;">What do comparison, leaderboard, and public maintenance cost?</td>
+<td style="text-align: left;">Task batches, human review, person-days</td>
+</tr>
+<tr>
+<td style="text-align: left;">Teaching and operations</td>
+<td style="text-align: left;">What does long-term reproducibility cost?</td>
+<td style="text-align: left;">Images, accounts, teaching-assistant time</td>
+</tr>
+</tbody>
+</table>
+<p>This split forces the team to recognize a key reality: the expensive part in the long term is often not the first training run, but governance and maintenance afterward.</p>
+<h2 id="c3-overall-estimation-formula">C.3 Overall Estimation Formula<a class="headerlink" href="#c3-overall-estimation-formula" title="Permanent link">&para;</a></h2>
+<p>A practical total-cost formula is:</p>
+<div class="arithmatex">\[
+\text{Total Cost} =
+C_{\text{ingest}} +
+C_{\text{clean}} +
+C_{\text{annotate}} +
+C_{\text{train/infer}} +
+C_{\text{evaluate}} +
+C_{\text{release/teach}}
+\]</div>
+<p>For execution, each item can be split into fixed cost, variable cost, and rework-risk reserve:</p>
+<div class="arithmatex">\[
+C_i = C_i^{fixed} + C_i^{variable} + C_i^{risk}
+\]</div>
+<p>Many budgets lose control not because the variable term is wrong, but because the risk term is missing. Re-annotation, anonymization rework, leaderboard review, sample withdrawal, and mid-semester image repair are not rare edge cases in real projects.</p>
+<h2 id="c4-data-ingestion-and-cleaning-cost-templates">C.4 Data Ingestion and Cleaning Cost Templates<a class="headerlink" href="#c4-data-ingestion-and-cleaning-cost-templates" title="Permanent link">&para;</a></h2>
+<h3 id="c41-ingestion-cost-is-not-just-how-much-was-collected">C.4.1 Ingestion Cost Is Not Just "How Much Was Collected"<a class="headerlink" href="#c41-ingestion-cost-is-not-just-how-much-was-collected" title="Permanent link">&para;</a></h3>
+<p>The ingestion stage should estimate at least three costs: ingestion-script development, data-pull execution, and source/license verification.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Item</th>
+<th style="text-align: left;">Unit</th>
+<th style="text-align: left;">Quantity</th>
+<th style="text-align: left;">Unit Cost / Hours</th>
+<th style="text-align: left;">Subtotal</th>
+<th style="text-align: left;">Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Ingestion script development</td>
+<td style="text-align: left;">Person-days</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Crawling, API access, parser adaptation</td>
+</tr>
+<tr>
+<td style="text-align: left;">Data pull jobs</td>
+<td style="text-align: left;">Batches</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Includes retries</td>
+</tr>
+<tr>
+<td style="text-align: left;">Source and license verification</td>
+<td style="text-align: left;">Person-days</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Partners, agreements, log organization</td>
+</tr>
+<tr>
+<td style="text-align: left;">Storage landing</td>
+<td style="text-align: left;">TB/month</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Raw-layer storage</td>
+</tr>
+<tr>
+<td style="text-align: left;">Data spot check</td>
+<td style="text-align: left;">Person-days</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">First quality baseline</td>
+</tr>
+</tbody>
+</table>
+<p>If a project has many sources, source verification should be listed separately rather than hidden inside script development, because it often becomes a hidden critical path for launch.</p>
+<h3 id="c42-cleaning-cost-often-underestimates-rework">C.4.2 Cleaning Cost Often Underestimates Rework<a class="headerlink" href="#c42-cleaning-cost-often-underestimates-rework" title="Permanent link">&para;</a></h3>
+<p>Cleaning cost usually includes rule development, batch-processing resources, abnormal-sample review, and reruns.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Cost Item</th>
+<th style="text-align: left;">Estimation Method</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Rule development</td>
+<td style="text-align: left;">Number of rules x average design and test hours</td>
+</tr>
+<tr>
+<td style="text-align: left;">Batch processing</td>
+<td style="text-align: left;">Data volume x unit processing resource</td>
+</tr>
+<tr>
+<td style="text-align: left;">Failed-sample review</td>
+<td style="text-align: left;">Number of abnormal samples x review time per sample</td>
+</tr>
+<tr>
+<td style="text-align: left;">Rerun cost</td>
+<td style="text-align: left;">Main-pipeline resource per rerun x expected rerun count</td>
+</tr>
+</tbody>
+</table>
+<p>In document, multimodal, and speech projects, rerun cost is often ignored. Once OCR strategy, deduplication thresholds, or audio-slicing rules change, entire intermediate layers may have to be regenerated.</p>
+<h2 id="c5-annotation-review-and-synthetic-data-cost-templates">C.5 Annotation, Review, and Synthetic Data Cost Templates<a class="headerlink" href="#c5-annotation-review-and-synthetic-data-cost-templates" title="Permanent link">&para;</a></h2>
+<h3 id="c51-separate-first-pass-annotation-from-review">C.5.1 Separate First-Pass Annotation from Review<a class="headerlink" href="#c51-separate-first-pass-annotation-from-review" title="Permanent link">&para;</a></h3>
+<p>Estimating annotation as one price per sample almost always underestimates the budget. Split annotation into:</p>
+<ul>
+<li>First-pass annotation.</li>
+<li>Review.</li>
+<li>Arbitration.</li>
+<li>Guideline iteration.</li>
+<li>Platform and management cost.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Item</th>
+<th style="text-align: left;">Unit</th>
+<th style="text-align: left;">Quantity</th>
+<th style="text-align: left;">Unit Cost / Hours</th>
+<th style="text-align: left;">Subtotal</th>
+<th style="text-align: left;">Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">First-pass annotation</td>
+<td style="text-align: left;">Item/page/minute</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Depends on task granularity</td>
+</tr>
+<tr>
+<td style="text-align: left;">Review</td>
+<td style="text-align: left;">Item/page/minute</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Estimate by sampling rate</td>
+</tr>
+<tr>
+<td style="text-align: left;">Arbitration</td>
+<td style="text-align: left;">Item/page/minute</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Budget for high-dispute samples</td>
+</tr>
+<tr>
+<td style="text-align: left;">Guideline iteration</td>
+<td style="text-align: left;">Person-days</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Guidelines and QA meetings</td>
+</tr>
+<tr>
+<td style="text-align: left;">Platform maintenance</td>
+<td style="text-align: left;">Month</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Accounts, permissions, export</td>
+</tr>
+</tbody>
+</table>
+<p>For preference alignment, multimodal region annotation, or controllable speech-emotion tasks, arbitration and guideline iteration can become bigger bottlenecks than first-pass annotation.</p>
+<h3 id="c52-synthetic-data-is-not-zero-labor-cost">C.5.2 Synthetic Data Is Not Zero Labor Cost<a class="headerlink" href="#c52-synthetic-data-is-not-zero-labor-cost" title="Permanent link">&para;</a></h3>
+<p>When teams hear that large models can generate synthetic data, they often assume cost will drop sharply. In practice, the first generation pass may become cheaper, but verification and filtering may not.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Cost Item</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Prompt/template design</td>
+<td style="text-align: left;">Who defines the generation protocol</td>
+</tr>
+<tr>
+<td style="text-align: left;">API or inference cost</td>
+<td style="text-align: left;">Tokens or GPU cost for generation</td>
+</tr>
+<tr>
+<td style="text-align: left;">Filtering and scoring</td>
+<td style="text-align: left;">Automatic judges and rule filters</td>
+</tr>
+<tr>
+<td style="text-align: left;">Human spot checks</td>
+<td style="text-align: left;">Verification that samples are actually usable</td>
+</tr>
+<tr>
+<td style="text-align: left;">Regeneration</td>
+<td style="text-align: left;">Reprocessing failed samples</td>
+</tr>
+</tbody>
+</table>
+<p>The safest budget is not "the API bill for generating 100,000 samples." It is the full-chain cost of generation, filtering, sampling, and rework.</p>
+<h2 id="c6-training-and-inference-resource-templates">C.6 Training and Inference Resource Templates<a class="headerlink" href="#c6-training-and-inference-resource-templates" title="Permanent link">&para;</a></h2>
+<h3 id="c61-training-estimates-should-not-look-only-at-gpu-count">C.6.1 Training Estimates Should Not Look Only at GPU Count<a class="headerlink" href="#c61-training-estimates-should-not-look-only-at-gpu-count" title="Permanent link">&para;</a></h3>
+<p>Training budgets are often simplified to "how many cards for how many days." The real cost also depends on effective throughput, probability of failed reruns, and number of tuning rounds. Large-scale training systems such as Megatron-LM show that model parallelism, data parallelism, and pipeline parallelism can significantly affect throughput, memory footprint, and failure-recovery cost (Narayanan et al. 2021).</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Item</th>
+<th style="text-align: left;">Unit</th>
+<th style="text-align: left;">Quantity</th>
+<th style="text-align: left;">Unit Cost / Hours</th>
+<th style="text-align: left;">Subtotal</th>
+<th style="text-align: left;">Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Training GPUs</td>
+<td style="text-align: left;">GPU hours</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Formal training</td>
+</tr>
+<tr>
+<td style="text-align: left;">Tuning GPUs</td>
+<td style="text-align: left;">GPU hours</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Small-scale experiments</td>
+</tr>
+<tr>
+<td style="text-align: left;">Evaluation inference</td>
+<td style="text-align: left;">GPU hours / tokens</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Includes slice evaluation</td>
+</tr>
+<tr>
+<td style="text-align: left;">Data preparation CPU</td>
+<td style="text-align: left;">Core hours</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Tokenization, packing, validation</td>
+</tr>
+<tr>
+<td style="text-align: left;">Failed-rerun reserve</td>
+<td style="text-align: left;">Percentage</td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Keep as a separate line</td>
+</tr>
+</tbody>
+</table>
+<p>If a team does not reserve resources for failed reruns, the budget usually becomes inaccurate after the second experiment. For engineering projects, a 10-30% risk reserve is often more valuable than pretending the first estimate is exact.</p>
+<h3 id="c62-split-inference-cost-by-scenario">C.6.2 Split Inference Cost by Scenario<a class="headerlink" href="#c62-split-inference-cost-by-scenario" title="Permanent link">&para;</a></h3>
+<p>Inference cost should be split into at least three scenarios. For long-context and high-concurrency serving, memory-management mechanisms such as PagedAttention have become important references for serving-cost estimation, and vLLM's engineering documentation provides a practical entry point for deployment and tuning (Kwon et al. 2023; vLLM Project 2026).</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Scenario</th>
+<th style="text-align: left;">Characteristics</th>
+<th style="text-align: left;">Estimation Focus</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Offline batch evaluation</td>
+<td style="text-align: left;">Batchable and queueable</td>
+<td style="text-align: left;">Throughput, concurrency, result caching</td>
+</tr>
+<tr>
+<td style="text-align: left;">Online service</td>
+<td style="text-align: left;">Latency-sensitive</td>
+<td style="text-align: left;">Peak concurrency, context length, fallback strategy</td>
+</tr>
+<tr>
+<td style="text-align: left;">Teaching experiment</td>
+<td style="text-align: left;">Time-window concentration</td>
+<td style="text-align: left;">Semester images, account limits, retry cost</td>
+</tr>
+</tbody>
+</table>
+<p>Mixing these three makes it hard to explain why online budgets are high or why course weeks produce resource spikes.</p>
+<h2 id="c7-evaluation-leaderboard-and-public-maintenance-costs">C.7 Evaluation, Leaderboard, and Public Maintenance Costs<a class="headerlink" href="#c7-evaluation-leaderboard-and-public-maintenance-costs" title="Permanent link">&para;</a></h2>
+<h3 id="c71-long-term-benchmark-cost-often-exceeds-initial-release-cost">C.7.1 Long-Term Benchmark Cost Often Exceeds Initial Release Cost<a class="headerlink" href="#c71-long-term-benchmark-cost-often-exceeds-initial-release-cost" title="Permanent link">&para;</a></h3>
+<p>A public benchmark costs more than its first release. Continuing costs include:</p>
+<ul>
+<li>Baseline reproduction and upgrades.</li>
+<li>Submission validation.</li>
+<li>Manual review of suspicious results.</li>
+<li>Dispute handling.</li>
+<li>Documentation and image maintenance.</li>
+<li>Teaching-version locking.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Item</th>
+<th style="text-align: left;">Cycle</th>
+<th style="text-align: left;">Unit</th>
+<th style="text-align: left;">Estimation Method</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Baseline reruns</td>
+<td style="text-align: left;">Quarterly / half-yearly</td>
+<td style="text-align: left;">GPU hours</td>
+<td style="text-align: left;">Number of baselines x cost per evaluation</td>
+</tr>
+<tr>
+<td style="text-align: left;">Submission review</td>
+<td style="text-align: left;">Monthly</td>
+<td style="text-align: left;">Person-days</td>
+<td style="text-align: left;">Submission count x review hours</td>
+</tr>
+<tr>
+<td style="text-align: left;">Issue handling</td>
+<td style="text-align: left;">Monthly</td>
+<td style="text-align: left;">Person-days</td>
+<td style="text-align: left;">Historical average issue volume</td>
+</tr>
+<tr>
+<td style="text-align: left;">Documentation update</td>
+<td style="text-align: left;">Per version release</td>
+<td style="text-align: left;">Person-days</td>
+<td style="text-align: left;">Card, FAQ, release notes</td>
+</tr>
+<tr>
+<td style="text-align: left;">Teaching image maintenance</td>
+<td style="text-align: left;">Semester</td>
+<td style="text-align: left;">Person-days / instances</td>
+<td style="text-align: left;">Pre-course freeze and in-semester patches</td>
+</tr>
+</tbody>
+</table>
+<p>Without this budget line, a public benchmark can be lively at launch and unreliable half a year later.</p>
+<h3 id="c72-why-evaluation-cost-often-rises-late">C.7.2 Why Evaluation Cost Often Rises Late<a class="headerlink" href="#c72-why-evaluation-cost-often-rises-late" title="Permanent link">&para;</a></h3>
+<p>Early in a project, evaluation may feel cheap because the team runs a few baselines internally. Once a dataset enters public release, courses, or multi-team collaboration, evaluation cost rises because:</p>
+<ul>
+<li>More slices are added, so one evaluation is no longer just one total score.</li>
+<li>More baselines must preserve historical comparability.</li>
+<li>Suspicious results require human review.</li>
+<li>Course experiments need a stable evaluation environment that cannot follow every mainline change.</li>
+</ul>
+<p>Maintain two ledgers: internal R&amp;D evaluation and public-maintenance evaluation. The first serves fast iteration; the second serves stable comparison.</p>
+<h2 id="c8-storage-network-and-archival-costs">C.8 Storage, Network, and Archival Costs<a class="headerlink" href="#c8-storage-network-and-archival-costs" title="Permanent link">&para;</a></h2>
+<h3 id="c81-multimodal-projects-must-list-storage-separately">C.8.1 Multimodal Projects Must List Storage Separately<a class="headerlink" href="#c81-multimodal-projects-must-list-storage-separately" title="Permanent link">&para;</a></h3>
+<p>Text projects can sometimes survive rough disk estimates. Document, image, audio, video, and agent-trajectory projects cannot.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Layer</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Raw files</td>
+<td style="text-align: left;">Largest layer, but not always frequently accessed</td>
+</tr>
+<tr>
+<td style="text-align: left;">Intermediate artifacts</td>
+<td style="text-align: left;">OCR, features, transcoding, indexes</td>
+</tr>
+<tr>
+<td style="text-align: left;">Curated versions</td>
+<td style="text-align: left;">Official training and evaluation inputs</td>
+</tr>
+<tr>
+<td style="text-align: left;">Release images</td>
+<td style="text-align: left;">External release and course reproduction versions</td>
+</tr>
+<tr>
+<td style="text-align: left;">Archive layer</td>
+<td style="text-align: left;">Cold storage and long-term preservation</td>
+</tr>
+</tbody>
+</table>
+<p>Without this layering, teams often discover late that training was not the expensive part; permanently retaining every intermediate artifact was. If Kubernetes is used to host training, evaluation, or teaching environments, resource quotas, storage volumes, namespaces, and job lifecycle should also be included in the budget sheet, with resource objects and scheduling semantics following the official Kubernetes documentation (Kubernetes Authors 2026).</p>
+<h3 id="c82-archival-strategy-determines-maintainability-over-the-next-three-years">C.8.2 Archival Strategy Determines Maintainability Over the Next Three Years<a class="headerlink" href="#c82-archival-strategy-determines-maintainability-over-the-next-three-years" title="Permanent link">&para;</a></h3>
+<p>Archiving is not simply compressing old versions. It determines whether future review and reproduction remain possible.</p>
+<p>A good archive budget answers:</p>
+<ol>
+<li>Which versions must be kept long term.</li>
+<li>Which versions keep only metadata and pointers.</li>
+<li>Which course images must be frozen by semester.</li>
+<li>Which public releases must be rollback-capable.</li>
+</ol>
+<p>Projects without an archive strategy often save a little storage cost while losing reviewability.</p>
+<h3 id="c83-network-egress-and-external-calls-should-not-be-hidden-under-other">C.8.3 Network Egress and External Calls Should Not Be Hidden Under "Other"<a class="headerlink" href="#c83-network-egress-and-external-calls-should-not-be-hidden-under-other" title="Permanent link">&para;</a></h3>
+<p>In multimodal projects, RAG projects, and open leaderboards, network and external-call costs are often placed under a vague "other" category. This weakens budget judgment.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Category</th>
+<th style="text-align: left;">Common Source</th>
+<th style="text-align: left;">Why It Must Be Separate</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Egress traffic</td>
+<td style="text-align: left;">Object-storage downloads, course image pulls</td>
+<td style="text-align: left;">Peaks often align with course milestones</td>
+</tr>
+<tr>
+<td style="text-align: left;">External APIs</td>
+<td style="text-align: left;">Judges, OCR, translation, anonymization</td>
+<td style="text-align: left;">Cost can scale rapidly with call volume</td>
+</tr>
+<tr>
+<td style="text-align: left;">External synchronization</td>
+<td style="text-align: left;">Public release, image replication, cross-region backup</td>
+<td style="text-align: left;">Strongly tied to compliance and availability strategy</td>
+</tr>
+</tbody>
+</table>
+<p>Separating these costs lets the team ask whether growth is caused by real project scale, release style, course usage, or dependency choices.</p>
+<h2 id="c9-three-reusable-resource-templates">C.9 Three Reusable Resource Templates<a class="headerlink" href="#c9-three-reusable-resource-templates" title="Permanent link">&para;</a></h2>
+<h3 id="c91-small-research-or-course-template">C.9.1 Small Research or Course Template<a class="headerlink" href="#c91-small-research-or-course-template" title="Permanent link">&para;</a></h3>
+<p>For labs, single courses, and prototypes.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Module</th>
+<th style="text-align: left;">Budgeting Logic</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Data processing</td>
+<td style="text-align: left;">Person-days first, resources second</td>
+</tr>
+<tr>
+<td style="text-align: left;">Annotation</td>
+<td style="text-align: left;">Small, high-quality samples; increase review ratio</td>
+</tr>
+<tr>
+<td style="text-align: left;">Training</td>
+<td style="text-align: left;">Estimate experiment rounds before formal runs</td>
+</tr>
+<tr>
+<td style="text-align: left;">Evaluation</td>
+<td style="text-align: left;">Emphasize slices and reviews rather than leaderboard expansion</td>
+</tr>
+<tr>
+<td style="text-align: left;">Teaching</td>
+<td style="text-align: left;">List images and teaching-assistant hours separately</td>
+</tr>
+</tbody>
+</table>
+<h3 id="c92-medium-team-project-template">C.9.2 Medium Team Project Template<a class="headerlink" href="#c92-medium-team-project-template" title="Permanent link">&para;</a></h3>
+<p>For multi-member collaboration, quarterly delivery, and internal or external users.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Module</th>
+<th style="text-align: left;">Budgeting Logic</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Data ingestion</td>
+<td style="text-align: left;">Build fixed entry points and version strategy</td>
+</tr>
+<tr>
+<td style="text-align: left;">Cleaning governance</td>
+<td style="text-align: left;">Separate rerun cost and abnormal-review cost</td>
+</tr>
+<tr>
+<td style="text-align: left;">Training and inference</td>
+<td style="text-align: left;">Split formal training, tuning, and evaluation ledgers</td>
+</tr>
+<tr>
+<td style="text-align: left;">Release maintenance</td>
+<td style="text-align: left;">Treat benchmark and issue operations as long-term items</td>
+</tr>
+<tr>
+<td style="text-align: left;">Compliance</td>
+<td style="text-align: left;">Count approval, anonymization, and withdrawal flows as management cost</td>
+</tr>
+</tbody>
+</table>
+<h3 id="c93-open-benchmark-or-university-collaboration-template">C.9.3 Open Benchmark or University Collaboration Template<a class="headerlink" href="#c93-open-benchmark-or-university-collaboration-template" title="Permanent link">&para;</a></h3>
+<p>For assets that require public release, course reproduction, and long-term maintenance.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Module</th>
+<th style="text-align: left;">Budgeting Logic</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Data versioning</td>
+<td style="text-align: left;">Keep at least raw, curated, and release layers</td>
+</tr>
+<tr>
+<td style="text-align: left;">Documentation</td>
+<td style="text-align: left;">Do not omit cards, FAQs, or release notes</td>
+</tr>
+<tr>
+<td style="text-align: left;">Leaderboard</td>
+<td style="text-align: left;">Budget for review, recheck, and removal mechanisms</td>
+</tr>
+<tr>
+<td style="text-align: left;">Teaching</td>
+<td style="text-align: left;">List frozen semester versions and experiment scripts</td>
+</tr>
+<tr>
+<td style="text-align: left;">Handoff</td>
+<td style="text-align: left;">Reserve cleanup time for each semester or version</td>
+</tr>
+</tbody>
+</table>
+<h3 id="c94-example-estimation-order-for-a-university-dataset-release">C.9.4 Example Estimation Order for a University Dataset Release<a class="headerlink" href="#c94-example-estimation-order-for-a-university-dataset-release" title="Permanent link">&para;</a></h3>
+<p>For a university collaboration dataset moving from organization and evaluation to public release, estimate in this order:</p>
+<ol>
+<li>Ingestion and license verification, because release depends on it.</li>
+<li>Cleaning, anonymization, and version packaging, because stable release depends on them.</li>
+<li>Baselines and evaluation scripts, because comparable release depends on them.</li>
+<li>Teaching images, leaderboard operations, and issue handling, because long-term survival depends on them.</li>
+</ol>
+<p>This order is opposite to many teams' intuition, but it matches the idea that a dataset is not merely pre-training raw material. It is an engineering asset that consumes maintenance resources over time.</p>
+<h3 id="c95-budget-ledger-fields-to-keep">C.9.5 Budget Ledger Fields to Keep<a class="headerlink" href="#c95-budget-ledger-fields-to-keep" title="Permanent link">&para;</a></h3>
+<p>Do not create a new spreadsheet from scratch every time. Maintain a continuous budget ledger.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Field</th>
+<th style="text-align: left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">budget_cycle</td>
+<td style="text-align: left;">Quarter, semester, or version cycle</td>
+</tr>
+<tr>
+<td style="text-align: left;">asset_scope</td>
+<td style="text-align: left;">Dataset, benchmark, or course involved</td>
+</tr>
+<tr>
+<td style="text-align: left;">planned_cost</td>
+<td style="text-align: left;">Budgeted value</td>
+</tr>
+<tr>
+<td style="text-align: left;">actual_cost</td>
+<td style="text-align: left;">Actual value</td>
+</tr>
+<tr>
+<td style="text-align: left;">variance_reason</td>
+<td style="text-align: left;">Reason for variance</td>
+</tr>
+<tr>
+<td style="text-align: left;">reusable_asset_output</td>
+<td style="text-align: left;">Long-term asset created in this cycle</td>
+</tr>
+<tr>
+<td style="text-align: left;">one_off_cost</td>
+<td style="text-align: left;">One-time cost</td>
+</tr>
+<tr>
+<td style="text-align: left;">maintenance_cost</td>
+<td style="text-align: left;">Future maintenance cost</td>
+</tr>
+</tbody>
+</table>
+<p>With these fields, a team can learn which investments become long-term assets and which expensive items are only reactive repairs.</p>
+<h2 id="c10-quarterly-reviews-should-not-ask-only-did-we-overspend">C.10 Quarterly Reviews Should Not Ask Only "Did We Overspend?"<a class="headerlink" href="#c10-quarterly-reviews-should-not-ask-only-did-we-overspend" title="Permanent link">&para;</a></h2>
+<p>The common mistake in budget reviews is checking only whether spending exceeded the plan. More useful questions are:</p>
+<ol>
+<li>Did overspending come mainly from training, rework, annotation, or maintenance?</li>
+<li>Which previously invisible cost must now enter the budget table?</li>
+<li>Which expenses created sustainable assets, and which merely patched holes?</li>
+<li>Were teaching, public benchmark, and production versions improperly mixed?</li>
+<li>Which layer should be controlled next quarter, rather than which number?</li>
+</ol>
+<p>The purpose of a budget is not to turn the project into a finance game. It is to explain which kind of data value the resources are buying.</p>
+<h3 id="c101-three-charts-worth-keeping-in-quarterly-reviews">C.10.1 Three Charts Worth Keeping in Quarterly Reviews<a class="headerlink" href="#c101-three-charts-worth-keeping-in-quarterly-reviews" title="Permanent link">&para;</a></h3>
+<p>For communicable budget reviews, keep three summary charts:</p>
+<ol>
+<li>Lifecycle cost distribution: ingestion, cleaning, annotation, training, evaluation, and maintenance.</li>
+<li>Budget-variance source: rework, call-volume growth, image maintenance, or human review.</li>
+<li>Asset-creation comparison: which reusable versions, templates, or public assets were created by this quarter's spending.</li>
+</ol>
+<p>These charts translate financial language back into engineering language.</p>
+<h2 id="c11-summary">C.11 Summary<a class="headerlink" href="#c11-summary" title="Permanent link">&para;</a></h2>
+<p>This appendix establishes cost-estimation methods and resource templates for data-engineering projects.</p>
+<p>First, costs must be split by lifecycle; otherwise teams see only training cost and miss governance cost.</p>
+<p>Second, the easiest items to underestimate are not unit prices, but rework, review, maintenance, and teaching reproduction.</p>
+<p>Third, mature cost management is not only about saving money. It makes the relationship between resource investment and data-asset value explainable.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Patterson D, Gonzalez J, Le Q, Liang C, Munguia L, Rothchild D, So D, Texier M, Dean J (2021) Carbon Emissions and Large Neural Network Training. arXiv preprint arXiv:2104.10350.</p>
+<p>Narayanan D, Shoeybi M, Casper J, LeGresley P, Patwary M, Catanzaro B (2021) Efficient Large-Scale Language Model Training on GPU Clusters Using Megatron-LM. In: Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis. arXiv:2104.04473.</p>
+<p>Kwon W, Li Z, Zhuang S, Sheng Y, Zheng L, Yu C H, Gonzalez J E, Zhang H, Stoica I (2023) Efficient Memory Management for Large Language Model Serving with PagedAttention. In: Proceedings of the ACM SIGOPS 29th Symposium on Operating Systems Principles, pp 611-626. https://doi.org/10.1145/3600006.3613165.</p>
+<p>Kubernetes Authors (2026) Kubernetes Documentation. https://kubernetes.io/docs/.</p>
+<p>vLLM Project (2026) vLLM Documentation. https://docs.vllm.ai/.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../appendix_b_compliance_and_release_checklist/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Appendix B: Compliance and Release Checklist">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Appendix B: Compliance and Release Checklist
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../appendix_d_paper_to_implementation_guide/" class="md-footer__link md-footer__link--next" aria-label="Next: Appendix D: From Paper to Implementation Guide">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Appendix D: From Paper to Implementation Guide
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

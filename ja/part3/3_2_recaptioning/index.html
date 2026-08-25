@@ -1,0 +1,867 @@
+
+<!doctype html>
+<html lang="ja" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/ja/part3/3_2_recaptioning/">
+      
+      
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>3 2 recaptioning - 大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#7" class="md-skip">
+          コンテンツにスキップ
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="ヘッダー">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-header__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              3 2 recaptioning
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="ダークモードに切り替え"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="ダークモードに切り替え" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="ライトモードに切り替え"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="ライトモードに切り替え" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="言語切り替え">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/data_engineering_book/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/data_engineering_book/en/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="検索" placeholder="検索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="検索">
+        
+        <button type="reset" class="md-search__icon md-icon" title="クリア" aria-label="クリア" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            検索を初期化
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="ナビゲーション" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" class="md-nav__button md-logo" aria-label="大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    大規模モデルデータエンジニアリング: アーキテクチャ・アルゴリズム・実践プロジェクト
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="リポジトリへ" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    目次
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../preface/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    序文
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目次">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目次
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      第 7 章: データの再キャプション
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="第 7 章: データの再キャプション">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      章の概要
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#71-web" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.1 代替テキストの制限: 生の Web 記述が使用できないのはなぜですか?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-vlm" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2 合成キャプション ファクトリー: VLM を使用してデータを再生成する
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.2 合成キャプション ファクトリー: VLM を使用してデータを再生成する">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#721" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2.1 モデルの選択とアーキテクチャ
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#722" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2.2 即時戦略: 粒度の制御
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#723-vllm" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.2.3 エンジニアリング実装: vLLM を使用した高スループット推論サービスの構築
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-ocr" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3 OCR 拡張: 画像からのテキストの抽出と融合
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.3 OCR 拡張: 画像からのテキストの抽出と融合">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#731-ocr" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3.1 OCR 拡張パイプライン
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#732-ocr" class="md-nav__link">
+    <span class="md-ellipsis">
+      7.3.2 コアコード: OCR 結果の挿入
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>3 2 recaptioning</h1>
+
+<h2 id="7">第 7 章: データの再キャプション<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
+<h3 id="_1">章の概要<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
+<p>インターネット上のオリジナルの Alt-text (代替テキスト) は、基本的に、検索エンジン最適化 (SEO) のために Web 開発者によって設計された補助コンテンツです。その中心的な目標は、検索結果における Web ページのランキングを向上させることであり、画像自体のビジュアル コンテンツを正確かつ包括的に記述することではありません。これにより、大量の生の代替テキストが生成され、ビジュアル言語モデル (VLM) トレーニングの「ビジュアル テキストの正確な位置合わせ」という中心要件を満たすことができなくなります。この章では、主流のビジュアル言語モデル (VLM) を活用して、大規模な画像データを自動的に再キャプションするための効率的でスケーラブルな「合成キャプション ファクトリ」を構築する方法を体系的に紹介します。説明の粒度 (概要から詳細まで) を正確に制御するプロンプト エンジニアリングの重要な役割を詳しく調査し、さまざまな下流タスクで区別される説明精度の要件を解決し、VLM のリッチ テキスト画像 (ドキュメント、ポスター、グラフなど) 内のテキストの認識が弱いことに対処する補足として光学式文字認識 (OCR) テクノロジを導入して、複雑な画像のモデルの理解をさらに強化します。</p>
+<p><strong>学習目標</strong>:
+* 代替テキストの「3 つの罪」（無関係、短すぎる、視覚的な省略）の本質的な原因と、そのような低品質の説明が視覚言語モデルと生成視覚モデルのトレーニングに引き起こす具体的な害（例：モデルの幻覚、視覚とテキストの整合性の失敗、一般化の不全）を深く理解します。
+* vLLM (効率的な大規模モデル推論エンジン) を使用して、LLaVA や CogVLM などの主流の VLM を展開する完全なワークフローをマスターし、高スループット推論の核となる原理を理解し、迅速な大規模画像リキャプションを実現します。
+* さまざまな下流タスク (CLIP スタイルのデュアルタワー モデルの事前トレーニング、Sora スタイルの生成モデル トレーニングなど) に基づいて階層化されたプロンプト戦略を設計でき、タスクの要件に正確に一致する簡単または詳細な画像説明を柔軟に生成できます。
+* コア OCR アプリケーション メソッドをマスターし、OCR 認識結果と VLM プロンプトの動的な融合を実装し、ドキュメントおよびポスター クラスのリッチ テキスト画像の低い記述品質を解決し、そのような画像の記述精度と豊かさを大幅に向上させます。</p>
+<p><strong>シナリオの紹介</strong>:</p>
+<blockquote>
+<p>「ソラのようなモデルをトレーニングしていると想像してください。エッフェル塔を背景に夕日の中を走るゴールデンレトリバーの画像をモデルに与えます。ただし、生データのラベルは「IMG_20240501.jpg」または「最高のドッグフード 50% オフ」です。このようなデータでは、モデルは「ゴールデン レトリバー」と「エッフェル塔」の視覚的な対応関係を学習することはなく、ましてや「夕日の照明」を理解することはできません。犬と塔をテキストに正確に書き込むには、AI にアノテーターとして機能させる「データ再キャプション」が必要です。」</p>
+</blockquote>
+<h3 id="71-web">7.1 代替テキストの制限: 生の Web 記述が使用できないのはなぜですか?<a class="headerlink" href="#71-web" title="Permanent link">&para;</a></h3>
+<p>視覚言語モデルと生成視覚モデルのトレーニングでは、データ品質がモデルの上限を直接決定します。Web ページの生の代替テキストは、まさに低品質の視覚テキスト データの主なソースの 1 つです。 DeepMind (「弱教師画像テキスト データを使用した言語画像の事前トレーニングのスケーリング」) および OpenAI (「人間のフィードバックによる指示に従う言語モデルのトレーニング」) の内部調査レポートによると、インターネットからクロールされた生の代替テキストをトレーニング データとして直接使用すると、モデルのパフォーマンスが時期尚早に「上限」に達する (つまり、データ量の増加に関係なく、モデルの視覚的理解とテキスト生成の精度がそれ以上改善できない) か、さらには低下する可能性があります。核心的な問題は「3 つの罪」として要約できます。</p>
+<ul>
+<li><strong>非常にノイズが多い</strong>: 大量の代替テキストには、ファイル名 (例: 「IMG_20240501.jpg」)、日付、無関係な SEO キーワードの積み重ね (例: 「安い靴を買う、ナイキ、アディダス」、「近くの最高のコーヒーショップ」) のみが含まれています。このような記述は画像のビジュアル内容とは全く関係ありません。これらをトレーニングに使用すると、モデルが視覚とテキストの対応を確立できないだけでなく、モデルの言語能力が損なわれ、モデルが無関係で冗長なテキスト、さらには重度の幻覚を生成する原因になります。</li>
+<li><strong>視覚的な省略</strong>: 代替テキストのデザイン意図は主に Web ページの機能をサポートすることであり、視覚的なコンテンツを説明することではありません。多くの場合、画像の機能 (例: 「購入ボタンをクリック」、「詳細を表示」) または商業的属性 (例: 「赤の XL サイズ」、「期間限定割引」) のみを説明し、画像の視覚的な詳細 (例: オブジェクトの形状、色、テクスチャ、空間関係、照明効果) を完全に無視します。たとえば、「胸に白いヴィンテージのロゴが付いた赤い純綿の T シャツが木製のテーブルの上に平らに置かれている」という画像には、単なる「赤い T シャツのプロモーション」という代替テキストが含まれている可能性があります。このような説明では、モデルに視覚的な特徴を学習させることはできません。</li>
+<li><strong>短すぎる</strong>: Common Crawl (世界最大の Web クロール データセット) の統計によると、代替テキストの 50% 以上が 5 単語未満であり、30% は 3 単語未満です。このような非常に短い説明では、複雑な視覚的ロジック、空間関係、および詳細情報を伝えることはできません。たとえば、複数のオブジェクト、シーン、および相互作用関係を含む「草の上に横たわるゴールデンレトリバー、赤いボールの上に前足、野の花でいっぱいの丘の中腹の背景」を説明することはできません。</li>
+</ul>
+<p><strong>再キャプションの価値</strong>: データ再キャプションの中心的な価値は、AI を使用して高品質の「ビジュアルテキストの正確な位置合わせ」説明を自動的に生成し、低品質の生の代替テキストを置き換え、モデルのパフォーマンスの上限を打ち破ることです。これは、トップの業界調査によって確認されています。OpenAI は、DALL-E 3 論文 (「DALL・E 3: アライメントを改善した自己回帰画像生成のスケーリング」) で、トレーニングに最大 95% の合成長文テキスト (合成キャプション、つまり VLM によって生成された再キャプション テキスト) を使用することが、OpenAI の指示追従能力と視覚復元精度が Stable Diffusion XL (SDXL) をはるかに上回る主な理由の 1 つであると明示しています。合成長文テキストは、画像の視覚的な詳細、論理的関係、シーンの雰囲気を正確にキャプチャすることができ、モデルが「見ているものを説明する」ことを真に学習できるため、その後の生成、認識、理解の能力が向上します。</p>
+<h3 id="72-vlm">7.2 合成キャプション ファクトリー: VLM を使用してデータを再生成する<a class="headerlink" href="#72-vlm" title="Permanent link">&para;</a></h3>
+<p>大規模な画像の再キャプションを実現するために、手動のアノテーションのみに依存すると、非常にコストがかかるだけでなく（画像ごとに数分、データセットは数百万または数十億の画像になることがよくあります）、一貫性のないアノテーション標準と低効率という問題もあります。したがって、VLM 主導の「合成キャプション ファクトリー」を構築する必要があります。生の画像を入力として、高品質で標準化されたテキストの説明を出力として受け取り、自動化とバッチ処理を通じてデータの再キャプションを完了し、データ価値の「再生」を実現します。</p>
+<p>この「ファクトリー」の中核となるロジックは、生の画像を最適化された VLM にフィードし、慎重に設計されたプロンプトによって記述の粒度とスタイルを制御し、次に効率的な推論エンジンによって処理スループットを向上させ、最終的に下流タスクの要件を満たす高品質な記述を出力することです。全体のフローは、「モデルの選択とアーキテクチャ設計」、「迅速な戦略の最適化」、および「エンジニアリングの導入」という 3 つのコア リンクに分割できます。</p>
+<h4 id="721">7.2.1 モデルの選択とアーキテクチャ<a class="headerlink" href="#721" title="Permanent link">&para;</a></h4>
+<p>VLM アーキテクチャは、記述の品質、速度、適用可能なシナリオを直接決定します。現在主流の VLM アーキテクチャは主に 3 つのタイプに分類されます。以下の表に、各アーキテクチャの代表的なモデル、メリット/デメリットの比較、推奨シナリオを示します。選択は、下流タスクの要件 (記述精度、処理速度、データ型など) に基づいて柔軟に行うことができます。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">モデルアーキテクチャ</th>
+<th style="text-align: left;">代表機種</th>
+<th style="text-align: left;">利点</th>
+<th style="text-align: left;">デメリット</th>
+<th style="text-align: left;">推奨されるシナリオ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Q-Former 接続</strong></td>
+<td style="text-align: left;">BLIP-2、InstructBLIP</td>
+<td style="text-align: left;">パラメータ数が少ない (通常は数十億で、大規模な言語モデルをはるかに下回る)、推論が速い (1 つの画像の推論に数十ミリ秒かかる場合がある)、トレーニングと展開のコストが低い、テキストの幻覚が発生しにくい (説明が画像にぴったりと一致する)</td>
+<td style="text-align: left;">説明の長さが短く、細部のキャプチャが平均的で、「繰り返しの説明」が発生しやすい (中心となるオブジェクトがほとんどなく、詳細が拡張されていない)、複雑なシーンの理解が限られている</td>
+<td style="text-align: left;">大量の画像の迅速な初期スクリーニング (貴重なデータをフィルタリングするための数十億の画像の大まかな要約など)、または短い代替テキストの生成 (説明の長さに厳密な制限があるシナリオの場合)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>MLP プロジェクション + LLM</strong></td>
+<td style="text-align: left;">LLaVA-1_6 / ネクスト</td>
+<td style="text-align: left;">非常に詳細な説明、微妙な画像の詳細 (照明、テクスチャ、オブジェクトの相互作用など) をキャプチャし、強力な指示に従います (「シーンの順序で説明する」、「コア オブジェクトをハイライトする」などのプロンプト要件に正確に対応します)、マルチターン ダイアログをサポートします (マルチターン プロンプトを通じて説明の品質を最適化できます)。大量のロジック計算 (LLaMA 2 7B/13B のような 7B 以上のパラメータ LLM が必要)、比較的遅い推論、プロンプト制約なし、冗長な説明になりがち</td>
+<td style="text-align: left;">高品質の長い形式の高密度キャプションを生成するためのメイン モデル (例: Sora スタイルの生成モデル、SD3 画像生成モデル、正確で詳細なビジュアルテキスト配置データを必要とするシナリオのトレーニング)</td>
+<td style="text-align: left;"></td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>ビジョンファーストのアーキテクチャ</strong></td>
+<td style="text-align: left;">CogVLM、Qwen-VL</td>
+<td style="text-align: left;">高い視覚解像度 (HD 画像入力をサポート、一部のモデルは 4K をサポート)、きめ細かいオブジェクト認識に優れ、特にリッチテキスト画像 (ドキュメント、チャート、UI スクリーンショット) 内のテキストおよび小さなウィジェット (ボタン、入力フィールド) の精度が高く、テキストと視覚要素の関連付けを理解します。 VRAM 使用率が高い (7B モデルの展開には少なくとも 24GB VRAM が必要)、非標準アーキテクチャ (モデルごとに展開アプローチが異なる)、展開がやや面倒、推論速度が中程度</td>
+<td style="text-align: left;">特にドキュメント、チャート、UI スクリーンショット、ポスター、およびその他のリッチテキスト データ (ドキュメント画像、UI インターフェイス、または画像内の正確なテキスト認識を必要とするシナリオを生成するトレーニング モデルなど) 向け</td>
+<td style="text-align: left;"></td>
+</tr>
+</tbody>
+</table>
+<p>補足: 3 つのアーキテクチャの主な違いは、「ビジュアル モジュールが言語モジュールにどのように接続されるか」にあります。Q-Former アーキテクチャは、専用の Q-Former モジュールを使用して、軽量言語モデルに入力する前に視覚特徴を言語が理解できるベクトルに変換します。 MLP プロジェクション アーキテクチャは、多層パーセプトロン (MLP) を使用して視覚的特徴を言語モデルEmbedding空間に投影し、大規模な言語モデルと深く統合します。ビジョンファーストアーキテクチャは、ビジュアルモジュールの解像度と認識能力を強化し、言語モジュールの冗長計算を弱め、「ビジョンファースト」を優先します。</p>
+<h4 id="722">7.2.2 即時戦略: 粒度の制御<a class="headerlink" href="#722" title="Permanent link">&para;</a></h4>
+<p>プロンプト エンジニアリングは、「合成キャプション ファクトリー」の「コア コントローラー」です。同じ VLM が、異なるプロンプト ガイダンスの下で、完全に異なるデータ分布 (説明の長さ、詳細の豊富さ、スタイル) を生成します。したがって、特定の下流タスク要件に基づいて階層化されたプロンプト戦略を設計し、生成された説明がタスクのニーズに完全に一致するように説明の粒度を正確に制御する必要があります。</p>
+<p>基本原則: プロンプト設計では、「タスクの指示」、「説明の範囲」、および「粒度の要件」を明確に指定し、曖昧な表現を避ける必要があります (たとえば、「このイメージを説明する」だけを使用すると、モデルの出力が不安定になります)。一方、「制約」（「単語数は 20 語以下」、「主要なオブジェクトと背景を強調表示」など）を追加すると、出力品質をさらに最適化できます。</p>
+<p><a class="glightbox" href="../../../images/part3/Wang-Chap07-Fig01-ZH.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="図 7-1: 簡潔なプロンプト戦略と詳細なプロンプト戦略" src="../../../images/part3/Wang-Chap07-Fig01-ZH.png" /></a>
+<em>図 7-1: 迅速な戦略の概要と詳細</em></p>
+<p>図 7-1 は、2 つのコア プロンプト ストラテジーの出力の違いを直感的に比較しています。短いプロンプトは、コア オブジェクトとシーンのみを含む簡潔な説明を生成します。詳細プロンプトは、オブジェクトの形状、照明、色、空間関係などを含む豊富な詳細情報を含む説明を生成します。2 つの戦略は、それぞれ異なる下流タスクに適応します。</p>
+<p>以下に、最も一般的に使用される 2 つの階層化プロンプト戦略を示します。実際のニーズに基づいて柔軟に調整するか、これに基づいて中粒度のプロンプト戦略を設計します。</p>
+<p><strong>戦略 1: 簡単な説明 (簡単なキャプション)</strong>
+* <strong>プロンプト</strong>: 「この画像を一文で簡潔に説明してください。」
+  補足的な最適化プロンプト (安定性のため): 「この画像を 1 文で簡潔に説明し、主要な被写体と重要な背景のみに焦点を当て、冗長な詳細は含まないでください。」
+* <strong>目的</strong>: CLIP スタイルのデュアルタワー モデル (ビジョン テキスト デュアルタワー アーキテクチャ) のコンテキスト長制限に適応します。このようなモデルでは通常、テキスト入力が 77 トークン以下に制限されます。過度に長い説明は切り捨てられるため、正常な学習が妨げられます。厳密な記述長要件があるシナリオ (画像の検索、迅速な注釈など) にも適しています。
+* <strong>期待される出力</strong>: 「エッフェル塔近くの芝生の上を走るゴールデンレトリバー」。
+  出力特性: 長さは 10 ～ 20 ワードに制御され、中心となるオブジェクト (ゴールデン レトリバー) のみ、キー アクション (走る)、中心となる背景 (エッフェル塔、草)、余分な詳細はなく、簡潔かつ明確です。</p>
+<p><strong>戦略 2: 詳細な説明 (詳細なキャプション)</strong>
+* <strong>プロンプト</strong>: 「この画像を詳細に説明してください。主要な主題から始めて、背景、照明、色、芸術的なスタイルについて説明してください。オブジェクト間の具体的な相互作用についても言及してください。」
+  補足的な最適化プロンプト (より詳細なキャプチャのため): 「この画像を詳細に説明してください。まず、主要な被写体の外観 (形状、色、テクスチャ)、次に背景シーン、照明効果 (明るさ、色温度)、カラー マッチング、および芸術的スタイルについて説明します。最後に、オブジェクト間の相互作用と画像全体の雰囲気について言及します。」
+* <strong>目的</strong>: GenAI モデル トレーニング (Sora、SD3、Ideogram など) に適応します。このようなモデルでは、高精度で命令に準拠した画像を生成するために、画像の詳細な特徴、論理的関係、シーンの雰囲気を学習するための詳細な記述が必要です。正確なビジュアルとテキストの位置合わせが必要なシナリオ (ビジュアル QA、画像編集など) にも適しています。
+* <strong>期待される出力</strong>: 「緑の芝生の上を楽しそうに走るふわふわのゴールデンレトリバーのダイナミックな広角ショット。犬の毛皮は夕日の暖かい金色の光に照らされ、薄茶色の毛束が日光の中で輝いています。走るとき耳は後ろに下がり、尻尾は高く上がって幸せな気分を示しています。ぼやけた背景の中で、エッフェル塔の象徴的な鉄の格子構造が紫色のグラデーションの空にそびえ立っています。芝生には小さなシロツメクサの花が点在しており、犬にソフトな焦点を当て、主要な被写体を強調するぼかした背景により、画像全体の雰囲気は暖かく活気に満ちています。」
+  出力特性: 長さは通常 50 ～ 200 ワードで、核となるオブジェクトの詳細、背景シーン、照明、色、芸術的スタイル、オブジェクトのインタラクション、全体的な雰囲気をカバーし、詳細が豊富で、ビジュアル テキストの位置合わせの精度が高くなります。</p>
+<p>補足: 上記の 2 つの戦略に加えて、説明の関連性をさらに高めるために、たとえば、電子商取引画像 (「製品の外観、色、サイズ、質感、配置に焦点を当て、電子商取引のプロモーションに適したこの商品画像を詳細に説明します」) や文書画像 (「テキストの内容、レイアウト、フォント スタイル、テキストの色を含めて、この文書画像を詳細に説明します」) については、「タスク指向プロンプト」を設計できます。</p>
+<h4 id="723-vllm">7.2.3 エンジニアリング実装: vLLM を使用した高スループット推論サービスの構築<a class="headerlink" href="#723-vllm" title="Permanent link">&para;</a></h4>
+<p>大規模なデータの再キャプション (10 億規模の画像データセットの処理など) の場合、通常の HuggingFace <code>generate()</code> でははるかに不十分です。推論が遅く、スループットが低く、GPU リソースを効率的に利用できません。 1 つの GPU で処理できる画像は 1 日に数千枚までです。大規模な処理には、かなりの時間とハードウェアのコストがかかります。したがって、専用の大規模モデル推論エンジンである vLLM が必要です。vLLM は、VLM 推論のスループットを 3 ～ 5 倍向上させながら、GPU VRAM の使用量を削減し、効率的で大規模な画像の再キャプションを実現できる 2 つのコア最適化手法である PagedAttendance と Continuous Batching をサポートします。</p>
+<p>vLLM は、カリフォルニア大学バークレー校の研究チームによって開発された高効率の大規模モデル推論エンジンです。主な利点は「高スループット、低遅延、高い GPU 使用率」で、HuggingFace と互換性のある API インターフェイスと最小限の移行コストを備えた LLaVA、CogVLM、およびその他の主流 VLM の導入に最適です。</p>
+<p>以下は、モデルの初期化、プロンプト テンプレートの設計、バッチ処理、出力抽出を含む、高スループットの画像再キャプションを目的とした vLLM を使用して LLaVA-1_5-7b-hf を展開するためのコア コードです。主要なパラメーターの解釈と最適化のヒントを含む完全なワークフローです。</p>
+<p><div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">vllm</span><span class="w"> </span><span class="kn">import</span> <span class="n">LLM</span><span class="p">,</span> <span class="n">SamplingParams</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>  <span class="c1"># For displaying batch processing progress</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># Initialize vLLM inference engine</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># tensor_parallel_size=4: Use 4 GPUs for tensor parallelism, for large models (7B/13B) deployment, adjust based on GPU count (1, 2, 4, 8)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># Note: Tensor parallelism requires multiple same-model GPUs with NVLink support for faster data transfer</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="c1"># trust_remote_code=True: Allow loading LLaVA custom code (e.g., vision-language fusion module), as LLaVA architecture is non-standard HuggingFace</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># model: Model name from HuggingFace Hub (e.g., llava-hf/llava-1_5-7b-hf, llava-hf/llava-1_5-13b-hf)</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="c1"># gpu_memory_utilization=0_9: Set GPU VRAM utilization to 90%, balance throughput and stability, avoid OOM</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="n">llm</span> <span class="o">=</span> <span class="n">LLM</span><span class="p">(</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;llava-hf/llava-1_5-7b-hf&quot;</span><span class="p">,</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span class="n">tensor_parallel_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>    <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span class="n">gpu_memory_utilization</span><span class="o">=</span><span class="mi">0_9</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="p">)</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="c1"># Define Prompt template (LLaVA requires specific dialogue format, otherwise affects instruction following)</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="c1"># Tip: Adding &quot;Analyze the image&quot; in Prompt often works better than &quot;Describe the image&quot;</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="c1"># because &quot;Analyze&quot; guides model to observe image details more carefully, reducing perfunctory descriptions</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="c1"># Here using detailed description template, can replace with brief description template as needed</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="n">prompt_template</span> <span class="o">=</span> <span class="s2">&quot;USER: &lt;image&gt;</span><span class="se">\n</span><span class="s2">Analyze this image and describe it in extreme detail. Start with the main subject, then describe the background, lighting, colors, and artistic style. Mention any specific interactions between objects. ASSISTANT:&quot;</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="c1"># Configure sampling parameters for description quality and stability</span>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="c1"># temperature=0_2: Lower randomness (0-1 range), lower temperature = more stable, image-fitting descriptions, fewer hallucinations</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="c1"># For more diverse descriptions, adjust to 0_5-0_7; if too high (&gt;0_8), likely to produce image-unrelated hallucinations</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="c1"># max_tokens=256: Limit output length, prevent overly verbose descriptions</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="c1"># top_p=0_95: Nucleus sampling, keep only tokens with cumulative probability to 95%, further reduce hallucination risk</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="n">sampling_params</span> <span class="o">=</span> <span class="n">SamplingParams</span><span class="p">(</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>    <span class="n">temperature</span><span class="o">=</span><span class="mi">0_2</span><span class="p">,</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>    <span class="n">max_tokens</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>    <span class="n">top_p</span><span class="o">=</span><span class="mi">0_95</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="p">)</span>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a><span class="k">def</span><span class="w"> </span><span class="nf">load_image_batch</span><span class="p">(</span><span class="n">image_dir</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">):</span>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a><span class="sd">    Batch load images for efficient processing</span>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a><span class="sd">    image_dir: Image folder path, all images in this folder</span>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a><span class="sd">    batch_size: Images per batch, adjust based on GPU VRAM (16, 32, 64), larger VRAM = larger batch_size</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a><span class="sd">    return: Batch image list (PIL.Image format) and corresponding image path list</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>    <span class="n">image_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">image_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">image_dir</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">((</span><span class="s1">&#39;jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="s1">&#39;jpeg&#39;</span><span class="p">))]</span>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>    <span class="n">image_batches</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>    <span class="n">path_batches</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>    <span class="c1"># Load images in batches</span>
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">image_paths</span><span class="p">),</span> <span class="n">batch_size</span><span class="p">):</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>        <span class="n">batch_paths</span> <span class="o">=</span> <span class="n">image_paths</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">batch_size</span><span class="p">]</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>        <span class="n">batch_images</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">batch_paths</span><span class="p">:</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>            <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>                <span class="c1"># Load image and convert to RGB (avoid model errors from grayscale/transparent images)</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>                <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>                <span class="n">batch_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to load image </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>                <span class="k">continue</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>        <span class="k">if</span> <span class="n">batch_images</span><span class="p">:</span>  <span class="c1"># Skip empty batches</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>            <span class="n">image_batches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch_images</span><span class="p">)</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>            <span class="n">path_batches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch_paths</span><span class="p">)</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>    <span class="k">return</span> <span class="n">image_batches</span><span class="p">,</span> <span class="n">path_batches</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a>
+<a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a><span class="k">def</span><span class="w"> </span><span class="nf">process_batch</span><span class="p">(</span><span class="n">image_batch</span><span class="p">):</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a><span class="sd">    Process a batch of images, generate corresponding recaption text</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a><span class="sd">    image_batch: List[PIL.Image], batch image list</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a><span class="sd">    return: List[str], recaption text list for each image</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a>    <span class="c1"># Generate corresponding Prompt for each image</span>
+<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a>    <span class="n">prompts</span> <span class="o">=</span> <span class="p">[</span><span class="n">prompt_template</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">image_batch</span><span class="p">))]</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>
+<a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a>    <span class="c1"># vLLM supports direct multi_modal_data input, no manual image format conversion needed</span>
+<a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>    <span class="c1"># This step is non-blocking; vLLM internally does Continuous Batching for efficient GPU utilization</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a>    <span class="c1"># When one batch completes partially, immediately load next batch partial data to avoid GPU idle</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a>    <span class="n">outputs</span> <span class="o">=</span> <span class="n">llm</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a>        <span class="n">prompts</span><span class="p">,</span> 
+<a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a>        <span class="n">sampling_params</span><span class="p">,</span> 
+<a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a>        <span class="n">multi_modal_data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image_batch</span><span class="p">}</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a>    <span class="p">)</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a>
+<a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a>    <span class="c1"># Extract generated description text, remove Prompt part, keep only model response</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a>    <span class="n">captions</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a>    <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">:</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a>        <span class="c1"># Extract content after ASSISTANT: as model-generated description</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a>        <span class="n">caption</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;ASSISTANT:&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a>        <span class="n">captions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">caption</span><span class="p">)</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a>    <span class="k">return</span> <span class="n">captions</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a>
+<a id="__codelineno-0-90" name="__codelineno-0-90" href="#__codelineno-0-90"></a><span class="k">def</span><span class="w"> </span><span class="nf">save_captions</span><span class="p">(</span><span class="n">image_paths</span><span class="p">,</span> <span class="n">captions</span><span class="p">,</span> <span class="n">save_path</span><span class="p">):</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92" href="#__codelineno-0-92"></a><span class="sd">    Save recaption text corresponding to image paths for subsequent use (e.g., model training)</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a><span class="sd">    image_paths: Image path list</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94" href="#__codelineno-0-94"></a><span class="sd">    captions: Recaption text list</span>
+<a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a><span class="sd">    save_path: Save file path (txt format)</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96" href="#__codelineno-0-96"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98" href="#__codelineno-0-98"></a>        <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">cap</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">image_paths</span><span class="p">,</span> <span class="n">captions</span><span class="p">):</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a>            <span class="c1"># Format: image_path\trecaption_text, for easy reading and parsing</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100" href="#__codelineno-0-100"></a>            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="se">\t</span><span class="si">{</span><span class="n">cap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a>
+<a id="__codelineno-0-102" name="__codelineno-0-102" href="#__codelineno-0-102"></a><span class="c1"># Main function: batch process images and generate recaptions</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104" href="#__codelineno-0-104"></a>    <span class="n">image_dir</span> <span class="o">=</span> <span class="s2">&quot;path/to/your/image/directory&quot;</span>  <span class="c1"># Replace with your image folder path</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a>    <span class="n">save_path</span> <span class="o">=</span> <span class="s2">&quot;recaption_results.txt&quot;</span>        <span class="c1"># Recaption results save path</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106" href="#__codelineno-0-106"></a>    <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">32</span>                            <span class="c1"># Images per batch, adjust based on GPU VRAM</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a>
+<a id="__codelineno-0-108" name="__codelineno-0-108" href="#__codelineno-0-108"></a>    <span class="c1"># Load image batches</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109" href="#__codelineno-0-109"></a>    <span class="n">image_batches</span><span class="p">,</span> <span class="n">path_batches</span> <span class="o">=</span> <span class="n">load_image_batch</span><span class="p">(</span><span class="n">image_dir</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110" href="#__codelineno-0-110"></a>
+<a id="__codelineno-0-111" name="__codelineno-0-111" href="#__codelineno-0-111"></a>    <span class="c1"># Batch process and save results</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112" href="#__codelineno-0-112"></a>    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">save_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113" href="#__codelineno-0-113"></a>        <span class="k">for</span> <span class="n">img_batch</span><span class="p">,</span> <span class="n">path_batch</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">image_batches</span><span class="p">,</span> <span class="n">path_batches</span><span class="p">),</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">image_batches</span><span class="p">)):</span>
+<a id="__codelineno-0-114" name="__codelineno-0-114" href="#__codelineno-0-114"></a>            <span class="n">captions</span> <span class="o">=</span> <span class="n">process_batch</span><span class="p">(</span><span class="n">img_batch</span><span class="p">)</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115" href="#__codelineno-0-115"></a>            <span class="c1"># Write current batch results</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116" href="#__codelineno-0-116"></a>            <span class="k">for</span> <span class="n">path</span><span class="p">,</span> <span class="n">cap</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">path_batch</span><span class="p">,</span> <span class="n">captions</span><span class="p">):</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117" href="#__codelineno-0-117"></a>                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="se">\t</span><span class="si">{</span><span class="n">cap</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118" href="#__codelineno-0-118"></a>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Recaptioning complete, results saved to </span><span class="si">{</span><span class="n">save_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+補足的なエンジニアリング最適化のヒント:</p>
+<ul>
+<li><strong>画像の前処理</strong>: バッチ読み込み時に、画像サイズの違いによるモデル推論速度の変動や VRAM の不安定性を避けるために、画像のサイズを均一に変更します (例: 224×224 または 448×448)。画像を正規化して記述精度を向上させます。</li>
+<li><strong>エラー処理</strong>: バッチ処理の中断を避けるために、画像の読み込み失敗とモデル推論の失敗に対する例外処理を追加します。失敗したイメージの場合は、パスを記録し、個別に処理します。</li>
+<li><strong>ハードウェアの最適化</strong>: 導入には NVIDIA A100、A800 を推奨します。 VRAM 少なくとも 24GB (7B モデル);非常に大規模な場合は、GPU クラスターと vLLM 分散推論を使用してスループットを高めます。</li>
+<li><strong>プロンプト キャッシュ</strong>: 同じタイプの画像 (バッチ電子商取引ポスターなど) の場合、プロンプト テンプレートをキャッシュして、繰り返し生成を回避し、処理速度を向上させます。</li>
+</ul>
+<h3 id="73-ocr">7.3 OCR 拡張: 画像からのテキストの抽出と融合<a class="headerlink" href="#73-ocr" title="Permanent link">&para;</a></h3>
+<p>通常の VLM はある程度の視覚的理解を持ち、画像内のオブジェクト、シーン、単純なテキストを認識できますが、高密度テキスト画像 (文書、ポスター、グラフ、PDF スクリーンショット) では 2 つの主要な問題に直面します。1 つはテキスト認識精度が低く、誤認識や省略が起こりやすい (特に芸術的なフォント、ぼやけたテキスト)。 2 つ目は、テキストを視覚要素に効果的に関連付けることができないため、説明でテキストの意味や役割が省略されてしまうことです。</p>
+<p>たとえば、「サマー セール 50% オフ」という大きなテキストを含む電子商取引ポスターは、通常の VLM からは「赤いプロモーション ポスター」のみを取得し、テキストは完全に無視されます。文字が認識されていても「サマーセール30％オフ」などのエラーが発生する場合があります。しかし、テキストはそのような画像を要約するために非常に重要であり、中心的な意味と目的を直接決定します。</p>
+<p>ベスト プラクティスは、VLM の「外部頭脳」として専用の OCR エンジン (PaddleOCR、Tesseract など) を導入することです。 OCR を使用して画像テキストを正確に抽出し、VLM プロンプトと動的に融合して、VLM がテキストを結合してより正確でリッチな説明を生成できるようにします。これにより、ドキュメントおよびポスタークラスのリッチテキスト画像の再現品質が大幅に向上します。</p>
+<p>OCR (光学文字認識) テクノロジーの中核は、画像内の印刷テキストや手書きテキストを編集可能なテキストに変換することです。そのテキスト認識精度は、特に高密度テキストや複雑なフォントのシナリオにおいて、通常の VLM をはるかに上回ります。現在、最も広く使用されている産業用、オープンソース、無料の高精度 OCR エンジンは、PaddleOCR (Baidu PaddlePaddle オープンソース OCR) です。多言語、マルチフォント、ぼやけたテキスト認識、高速推論、シンプルな導入、GPU アクセラレーションをサポートしており、VLM との組み合わせに非常に適しています。</p>
+<p><a class="glightbox" href="../../../images/part3/Wang-Chap07-Fig02-ZH.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="図 7-2: OCR 拡張パイプライン" src="../../../images/part3/Wang-Chap07-Fig02-ZH.png" /></a>
+<em>図 7-2: OCR 拡張パイプライン</em></p>
+<p><strong>チャート コアの解釈</strong>: 図 7-2 は、完全な OCR 拡張 VLM 再キャプション フローを示しています。コアは「OCRテキスト抽出→コンテキスト構築→プロンプトフュージョン→VLM説明生成」で、VLMのテキスト認識の弱点をOCRで補い、「視覚的な詳細+テキスト情報」の二重精度の説明を実現します。</p>
+<h4 id="731-ocr">7.3.1 OCR 拡張パイプライン<a class="headerlink" href="#731-ocr" title="Permanent link">&para;</a></h4>
+<p>OCR 拡張コアは、単純な連結ではなく、OCR で抽出されたテキストと VLM プロンプトを有機的に融合させます。パイプライン全体には 3 つの主要なステップがあり、それぞれに明確な最適化の方向性があり、テキストが効果的に要約の品質を向上させることができます。</p>
+<ol>
+<li><strong>検出と認識</strong>: PaddleOCR を使用して生画像を処理します。最初にすべてのテキスト領域 (テキスト位置の境界ボックス) を検出し、次に各領域を認識して、認識されたテキストと信頼度 (0 ～ 1、高い = より正確) を出力します。主な目標: 「正確なテキスト抽出、誤った認識のフィルタリング」 - 信頼性の低い結果をフィルタリングして、誤解を招く VLM を回避します。</li>
+<li><strong>コンテキストの構築</strong>: すべての有効な OCR テキスト (信頼性の低いフィルタリング後) を実際の画像の位置 (上から下、左から右、列順に複数列) で連結して、人間が読めるテキスト コンテキストを構築します。必要に応じて、VLM が階層と役割を理解できるようにテキスト (タイトル、本文、ボタンのテキストなど) を分類します。たとえば、ポスター テキスト「サマー セール」（タイトル）、「50% オフ」（サブタイトル）、「6 月 1 日 - 6 月 10 日」（時間）は、タイトル/本文ラベルを使用して「サマー セール、50% オフ、6 月 1 日 - 6 月 10 日」に連結されます。</li>
+<li><strong>プロンプト フュージョン</strong>: 構築されたテキスト コンテキストを VLM プロンプトに自然に統合し、VLM に「画像にはこれらのテキストが含まれています。テキストとビジュアル要素の組み合わせを記述してください」と明示的に指示し、VLM がテキストとビジュアル (位置、色、フォント スタイル、テキストの意味とシーン) を関連付けるように導きます。重要なのは、「自然な融合、冗長性のない」ことです。プロンプトの最後にテキストを不自然に追加して、VLM が視覚的な詳細を無視することを避けます。</li>
+</ol>
+<p><strong>補足事項</strong>: パイプラインの最適化は「信頼性フィルタリング」と「プロンプト フュージョン」に重点を置いています。信頼性の低いテキストをフィルタリングしないと、間違ったテキストが VLM の誤解を招きます。プロンプトの融合がぎこちない場合、VLM はテキストとビジュアルを分離し、真の強化を実現できません。</p>
+<h4 id="732-ocr">7.3.2 コアコード: OCR 結果の挿入<a class="headerlink" href="#732-ocr" title="Permanent link">&para;</a></h4>
+<p>以下は、PaddleOCR を使用して画像テキストを抽出し、VLM プロンプトに動的に融合するためのコア コードです。 OCR で強化された大規模な画像再キャプションのためのセクション 7.2.3 vLLM バッチ処理とシームレスに統合できます。このコードには、テキスト抽出、信頼性フィルタリング、コンテキスト構築、プロンプト融合のための完全なロジックに加えて、主要なパラメータの解釈と最適化のヒントが含まれています。</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">paddleocr</span><span class="w"> </span><span class="kn">import</span> <span class="n">PaddleOCR</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># Initialize OCR engine (recommend GPU for speed; set use_gpu=False if no GPU)</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># use_angle_cls=True: Enable text direction detection, supports tilted text (e.g., tilted poster, rotated documents) to avoid recognition errors</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># lang=&#39;en&#39;: English recognition; for Chinese set lang=&#39;ch&#39;; supports Chinese-English mixed (lang=&#39;ch_en&#39;)</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># det_model_dir, rec_model_dir: Can specify OCR detection/recognition model paths; auto-download if not specified</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># gpu_mem=500: GPU VRAM limit (MB), adjust based on GPU</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="n">ocr</span> <span class="o">=</span> <span class="n">PaddleOCR</span><span class="p">(</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="n">use_angle_cls</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="n">lang</span><span class="o">=</span><span class="s1">&#39;en&#39;</span><span class="p">,</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="n">use_gpu</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="n">gpu_mem</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="k">def</span><span class="w"> </span><span class="nf">generate_ocr_enhanced_prompt</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="n">base_prompt</span><span class="o">=</span><span class="s2">&quot;Describe this image in detail.&quot;</span><span class="p">):</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="sd">    Generate OCR-enhanced VLM Prompt, integrating OCR-extracted text into Prompt</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="sd">    image_path: Raw image path</span>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="sd">    base_prompt: Base Prompt (e.g., brief/detailed description) as Prompt body</span>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="sd">    return: Complete OCR-enhanced Prompt; if no valid text, return base Prompt</span>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>    <span class="c1"># Step 1: Run OCR, extract image text and confidence</span>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>    <span class="c1"># result is nested list: [[[[x1,y1], [x2,y2], [x3,y3], [x4,y4]], [text, confidence]], ...]</span>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>    <span class="c1"># [x1,y1]~[x4,y4] are Bounding Box coordinates (top-left, top-right, bottom-right, bottom-left)</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>    <span class="c1"># text is recognized content, confidence is recognition confidence</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">ocr</span><span class="o">.</span><span class="n">ocr</span><span class="p">(</span><span class="n">image_path</span><span class="p">,</span> <span class="bp">cls</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>    <span class="c1"># Handle OCR result: if no text or empty, fall back to base Prompt</span>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>    <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;USER: &lt;image&gt;</span><span class="se">\n</span><span class="si">{</span><span class="n">base_prompt</span><span class="si">}</span><span class="se">\n</span><span class="s2">ASSISTANT:&quot;</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>    <span class="c1"># Step 2: Extract valid text (filter low confidence), build text context</span>
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>    <span class="n">detected_texts</span> <span class="o">=</span> <span class="p">[]</span>
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a>        <span class="n">text</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Recognized text</span>
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>        <span class="n">confidence</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Recognition confidence</span>
+<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>        <span class="c1"># Filter results below 0_8 confidence (threshold adjustable, 0_7-0_9 based on image text clarity)</span>
+<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>        <span class="c1"># Also filter empty text and meaningless garbage (e.g., symbols only, spaces)</span>
+<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>        <span class="k">if</span> <span class="n">confidence</span> <span class="o">&gt;</span> <span class="mi">0_8</span> <span class="ow">and</span> <span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>            <span class="n">detected_texts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>    <span class="c1"># Build text context: concatenate by recognition order, comma-separated, human-readable</span>
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>    <span class="n">ocr_context</span> <span class="o">=</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">detected_texts</span><span class="p">)</span>
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>    <span class="c1"># Step 3: Dynamically fuse OCR result with base Prompt, generate enhanced Prompt</span>
+<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a>    <span class="c1"># Key technique: Tell model &quot;I have detected these texts...&quot; so model knows this is image text</span>
+<a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a>    <span class="c1"># and guide model to associate text with visuals (position, color, font, text meaning vs. scene)</span>
+<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ocr_context</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>  <span class="c1"># Only enhance when text long enough (&gt;10 chars) to avoid redundancy</span>
+<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>        <span class="n">enhanced_prompt</span> <span class="o">=</span> <span class="p">(</span>
+<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a>            <span class="sa">f</span><span class="s2">&quot;USER: &lt;image&gt;</span><span class="se">\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a>            <span class="sa">f</span><span class="s2">&quot;I have detected these text segments in the image: &#39;</span><span class="si">{</span><span class="n">ocr_context</span><span class="si">}</span><span class="s2">&#39;. &quot;</span>
+<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a>            <span class="sa">f</span><span class="s2">&quot;Using this text as a reference, describe the image in detail, &quot;</span>
+<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a>            <span class="sa">f</span><span class="s2">&quot;paying attention to how the text relates to the visual elements (such as the position, color, and font style of the text, &quot;</span>
+<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a>            <span class="sa">f</span><span class="s2">&quot;and the connection between the text content and the image scene). </span><span class="si">{</span><span class="n">base_prompt</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a>            <span class="sa">f</span><span class="s2">&quot;ASSISTANT:&quot;</span>
+<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a>        <span class="p">)</span>
+<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a>        <span class="k">return</span> <span class="n">enhanced_prompt</span>
+<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a>    <span class="k">else</span><span class="p">:</span>
+<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a>        <span class="c1"># If text too short (1-2 words), don&#39;t enhance, avoid redundancy, fall back to base Prompt</span>
+<a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a>        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;USER: &lt;image&gt;</span><span class="se">\n</span><span class="si">{</span><span class="n">base_prompt</span><span class="si">}</span><span class="se">\n</span><span class="s2">ASSISTANT:&quot;</span>
+<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a>
+<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a><span class="c1"># Test code: verify OCR-enhanced Prompt generation</span>
+<a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a>    <span class="c1"># Test image path (replace with your rich-text image, e.g., poster, document screenshot)</span>
+<a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a>    <span class="n">test_image_path</span> <span class="o">=</span> <span class="s2">&quot;path/to/your/test/poster.jpg&quot;</span>
+<a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a>    <span class="c1"># Base Prompt (detailed description template)</span>
+<a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a>    <span class="n">base_prompt</span> <span class="o">=</span> <span class="s2">&quot;Describe this image in extreme detail. Start with the main subject, then describe the background, lighting, colors, and artistic style.&quot;</span>
+<a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a>    <span class="c1"># Generate enhanced Prompt</span>
+<a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a>    <span class="n">enhanced_prompt</span> <span class="o">=</span> <span class="n">generate_ocr_enhanced_prompt</span><span class="p">(</span><span class="n">test_image_path</span><span class="p">,</span> <span class="n">base_prompt</span><span class="p">)</span>
+<a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a>    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;OCR-enhanced Prompt:&quot;</span><span class="p">)</span>
+<a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">enhanced_prompt</span><span class="p">)</span>
+</code></pre></div>
+<p><strong>補足的な最適化のヒント:</strong></p>
+<ul>
+<li><strong>信頼しきい値の調整</strong>: クリアテキスト画像 (HD ドキュメント、正式なポスター) の場合は、0_8 ～ 0_9 に調整して、いくつかのエラーをフィルタリングします。ぼやけた複雑なフォントの画像 (古いポスター、手書き) の場合は、有効なテキストの欠落を避けるために 0_7 ～ 0_8 に調整します。</li>
+<li><strong>テキスト コンテキストの最適化</strong>: 複数列の階層テキスト (タイトル、本文、脚注) の場合、境界ボックス座標を使用して分類および連結します (例: 「タイトル: サマー セール; 本文: 50% オフ、6 月 1 日から 6 月 10 日まで; 脚注: 最終解釈権は留保」)。VLM テキスト階層をより明確に理解できるようにします。</li>
+<li><strong>プロンプト フュージョンの最適化</strong>: 画像タイプごとにフュージョンの文言を調整します。ドキュメント画像には「テキストのレイアウトとテキストとドキュメント構造の関係の説明」が追加され、ポスター画像には「テキストのフォント スタイルとプロモーション シーンにおけるテキストの役割の説明」が追加され、よりターゲットを絞った説明が可能になります。</li>
+<li><strong>マルチ OCR エンジン フュージョン</strong>: 非常に高い精度が必要な場合は、PaddleOCR と Tesseract の両方を使用し、結果の共通部分を取得してテキスト認識精度を高めます。</li>
+</ul>
+<p><strong>実用的な利点</strong>: OCR 強化により、リッチテキスト画像の再現品質が大幅に向上します。一般的な比較:</p>
+<ul>
+<li><strong>電子商取引ポスター上の通常の VLM (OCR なし)</strong>: 「白い背景に赤いプロモーション ポスター。曖昧なテキストと下部にボタンが付いています。」</li>
+<li><strong>OCR 拡張 VLM</strong>: 「白い背景の赤いプロモーション ポスター。ポスターの上部中央に大きな白い太字で「SUMMER SALE 50% OFF」というテキストがあり、右下にある小さな青いボタンで「今すぐ購入」というテキストが特徴です。「SUMMER SALE」というテキストは装飾的なフォントであり、黄色のシャドウ効果が目立ちます。全体のレイアウトはシンプルで目を引くもので、プロモーション情報を強調することに重点を置いています。背景は次のとおりです。無地の白なので、赤いポスターと白い文字がより目立ちます。」</li>
+</ul>
+<p>この違いは、正確なテキストを生成するモデル (表意文字、SD3、ドキュメント生成モデル) をトレーニングする場合に重要です。正確なテキストを含むキャプションにより、モデルは「テキストの視覚的表現」と「テキストとシーンの関連付け」を学習し、より準拠した画像を生成します。視覚的な QA と画像検索の場合、OCR で強化された説明により、タスクの精度が向上し、画像の核となる意味のモデルの理解も向上します。</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  ページトップへ戻る
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "\u30b3\u30d4\u30fc\u3057\u307e\u3057\u305f", "clipboard.copy": "\u30af\u30ea\u30c3\u30d7\u30dc\u30fc\u30c9\u3078\u30b3\u30d4\u30fc", "search.result.more.one": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3082\u30461\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.more.other": "\u3053\u306e\u30da\u30fc\u30b8\u5185\u306b\u3042\u3068#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.none": "\u4f55\u3082\u898b\u3064\u304b\u308a\u307e\u305b\u3093\u3067\u3057\u305f", "search.result.one": "1\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.other": "#\u4ef6\u898b\u3064\u304b\u308a\u307e\u3057\u305f", "search.result.placeholder": "\u691c\u7d22\u30ad\u30fc\u30ef\u30fc\u30c9\u3092\u5165\u529b\u3057\u3066\u304f\u3060\u3055\u3044", "search.result.term.missing": "\u691c\u7d22\u306b\u542b\u307e\u308c\u306a\u3044", "select.version": "\u30d0\u30fc\u30b8\u30e7\u30f3\u5207\u308a\u66ff\u3048"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

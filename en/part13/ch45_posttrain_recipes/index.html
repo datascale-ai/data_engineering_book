@@ -1,0 +1,4248 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part13/ch45_posttrain_recipes/">
+      
+      
+        <link rel="prev" href="../ch44_pretrain_recipes/">
+      
+      
+        <link rel="next" href="../ch46_rl_reasoning_data/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 45: LLM Post-Training Recipes: SFT and Preferences - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-45-llm-post-training-recipes-sft-and-preferences" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part13/ch45_posttrain_recipes/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part13/ch45_posttrain_recipes/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_12" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part9/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch28_data_productization_and_data_contracts/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part9/ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_16" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opening-scenario-why-alpaca-cannot-train-a-gpt-4-style-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Opening Scenario: Why Alpaca Cannot Train a GPT-4-Style Model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#451-the-three-stages-of-post-training-data-sft-preference-alignment-and-online-continuous-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.1 The Three Stages of Post-Training Data: SFT, Preference Alignment, and Online Continuous Optimization
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#452-cross-comparison-of-open-source-post-training-data-transparency" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.2 Cross-Comparison of Open-Source Post-Training Data Transparency
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#453-three-schools-of-sft-data-synthesis-self-instruct-evol-instruct-and-magpie" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.3 Three Schools of SFT Data Synthesis: Self-Instruct, Evol-Instruct, and Magpie
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="45.3 Three Schools of SFT Data Synthesis: Self-Instruct, Evol-Instruct, and Magpie">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4531-self-instruct-expanding-the-instruction-space-from-seed-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.3.1 Self-Instruct: Expanding the Instruction Space from Seed Tasks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4532-evol-instruct-increasing-complexity-via-evolutionary-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.3.2 Evol-Instruct: Increasing Complexity via Evolutionary Rules
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4533-magpie-seed-free-self-generated-instructions-and-responses" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.3.3 Magpie: Seed-Free Self-Generated Instructions and Responses
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#454-preference-data-engineering-from-rlhf-to-dpo-grpo-and-rlvr" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.4 Preference Data Engineering: From RLHF to DPO, GRPO, and RLVR
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="45.4 Preference Data Engineering: From RLHF to DPO, GRPO, and RLVR">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4541-rlhf-preference-pairs-and-reward-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.4.1 RLHF: Preference Pairs and Reward Models
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4542-dpo-data-requirements-for-direct-preference-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.4.2 DPO: Data Requirements for Direct Preference Optimization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4543-grpo-intra-group-relative-comparison-and-sampling-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.4.3 GRPO: Intra-Group Relative Comparison and Sampling Groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4544-rlvr-verifiable-rewards-and-the-new-post-training-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.4.4 RLVR: Verifiable Rewards and the New Post-Training Interface
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#455-case-study-a-retrospective-on-tulu-3s-fully-open-source-post-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.5 Case Study A: Retrospective on Tülu-3's Fully Open-Source Post-Training
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="45.5 Case Study A: Retrospective on Tülu-3's Fully Open-Source Post-Training">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4551-why-tulu-3-is-suitable-as-a-reference-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.5.1 Why Tülu-3 Is Suitable as a Reference Baseline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4552-sft-mix-the-behavioral-template-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.5.2 SFT-Mix: The Behavioral Template Layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4553-dpo-the-preference-refinement-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.5.3 DPO: The Preference Refinement Layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4554-rlvr-the-verifiable-task-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.5.4 RLVR: The Verifiable Task Layer
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#456-case-study-b-interpreting-llama-3s-multi-round-rlhf-iteration" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.6 Case Study B: Interpreting Llama-3's Multi-Round RLHF Iteration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#457-reward-hacking-data-contamination-and-process-reward-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.7 Reward Hacking, Data Contamination, and Process Reward Data
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="45.7 Reward Hacking, Data Contamination, and Process Reward Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4571-data-side-manifestations-of-reward-hacking" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.7.1 Data-Side Manifestations of Reward Hacking
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4572-data-contamination-in-the-post-training-phase" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.7.2 Data Contamination in the Post-Training Phase
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4573-process-reward-data-and-the-ch46-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.7.3 Process Reward Data and the Ch46 Interface
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#458-implementation-risks-costs-and-applicability-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.8 Implementation Risks, Costs, and Applicability Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opening-scenario-why-alpaca-cannot-train-a-gpt-4-style-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Opening Scenario: Why Alpaca Cannot Train a GPT-4-Style Model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#451-the-three-stages-of-post-training-data-sft-preference-alignment-and-online-continuous-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.1 The Three Stages of Post-Training Data: SFT, Preference Alignment, and Online Continuous Optimization
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#452-cross-comparison-of-open-source-post-training-data-transparency" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.2 Cross-Comparison of Open-Source Post-Training Data Transparency
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#453-three-schools-of-sft-data-synthesis-self-instruct-evol-instruct-and-magpie" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.3 Three Schools of SFT Data Synthesis: Self-Instruct, Evol-Instruct, and Magpie
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="45.3 Three Schools of SFT Data Synthesis: Self-Instruct, Evol-Instruct, and Magpie">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4531-self-instruct-expanding-the-instruction-space-from-seed-tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.3.1 Self-Instruct: Expanding the Instruction Space from Seed Tasks
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4532-evol-instruct-increasing-complexity-via-evolutionary-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.3.2 Evol-Instruct: Increasing Complexity via Evolutionary Rules
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4533-magpie-seed-free-self-generated-instructions-and-responses" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.3.3 Magpie: Seed-Free Self-Generated Instructions and Responses
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#454-preference-data-engineering-from-rlhf-to-dpo-grpo-and-rlvr" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.4 Preference Data Engineering: From RLHF to DPO, GRPO, and RLVR
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="45.4 Preference Data Engineering: From RLHF to DPO, GRPO, and RLVR">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4541-rlhf-preference-pairs-and-reward-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.4.1 RLHF: Preference Pairs and Reward Models
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4542-dpo-data-requirements-for-direct-preference-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.4.2 DPO: Data Requirements for Direct Preference Optimization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4543-grpo-intra-group-relative-comparison-and-sampling-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.4.3 GRPO: Intra-Group Relative Comparison and Sampling Groups
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4544-rlvr-verifiable-rewards-and-the-new-post-training-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.4.4 RLVR: Verifiable Rewards and the New Post-Training Interface
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#455-case-study-a-retrospective-on-tulu-3s-fully-open-source-post-training" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.5 Case Study A: Retrospective on Tülu-3's Fully Open-Source Post-Training
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="45.5 Case Study A: Retrospective on Tülu-3's Fully Open-Source Post-Training">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4551-why-tulu-3-is-suitable-as-a-reference-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.5.1 Why Tülu-3 Is Suitable as a Reference Baseline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4552-sft-mix-the-behavioral-template-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.5.2 SFT-Mix: The Behavioral Template Layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4553-dpo-the-preference-refinement-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.5.3 DPO: The Preference Refinement Layer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4554-rlvr-the-verifiable-task-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.5.4 RLVR: The Verifiable Task Layer
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#456-case-study-b-interpreting-llama-3s-multi-round-rlhf-iteration" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.6 Case Study B: Interpreting Llama-3's Multi-Round RLHF Iteration
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#457-reward-hacking-data-contamination-and-process-reward-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.7 Reward Hacking, Data Contamination, and Process Reward Data
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="45.7 Reward Hacking, Data Contamination, and Process Reward Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4571-data-side-manifestations-of-reward-hacking" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.7.1 Data-Side Manifestations of Reward Hacking
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4572-data-contamination-in-the-post-training-phase" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.7.2 Data Contamination in the Post-Training Phase
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4573-process-reward-data-and-the-ch46-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.7.3 Process Reward Data and the Ch46 Interface
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#458-implementation-risks-costs-and-applicability-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      45.8 Implementation Risks, Costs, and Applicability Boundaries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-45-llm-post-training-recipes-sft-and-preferences">Chapter 45: LLM Post-Training Recipes: SFT and Preferences<a class="headerlink" href="#chapter-45-llm-post-training-recipes-sft-and-preferences" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Cong Wang; Xin Xu; Wei Huang</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>Supervised Fine-Tuning (SFT) and Preference Alignment are the two core data engineering entry points in the post-training phase of Large Language Models (LLMs), yet they serve fundamentally different objectives: the former uses Maximum Likelihood Estimation (MLE) to establish behavioral templates for the model, while the latter shapes the model's reward surface through chosen/rejected contrastive signals. This chapter deconstructs post-training data engineering practices in open-source models from a "recipe" perspective. It begins by proposing a three-stage pipeline of SFT, preference alignment, and online continuous optimization, defining the data shape, optimization objectives, and manifest governance requirements at each layer. It then cross-examines post-training data transparency and scale across Tülu-3, Llama-3, Qwen2.5, and Nemotron-4/HelpSteer2 as four representative approaches, distinguishing three levels of information credibility: direct disclosure, reasonable inference, and pedagogical estimation. The chapter subsequently compares the engineering differences among Self-Instruct, Evol-Instruct, and Magpie—three schools of instruction synthesis—with respect to seed dependency, difficulty calibration, and distribution filtering, and extends to data production methods for paradigms including Rejection Sampling (RS), reward modeling (RM), and Direct Preference Optimization. This chapter emphasizes that the maturity of post-training data engineering lies not in generating samples, but in whether each sample can be traced to its source, isolated for evaluation, documented for its intended use, and supported for rollback.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>LLM; data recipe; open-source large models; training data; phased scheduling</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Distinguish the optimization objectives of SFT and preference alignment, and explain the difference between MLE behavioral templates and chosen/rejected reward surface shaping.</li>
+<li>Design a three-stage pipeline for SFT, preference alignment, and online continuous optimization, and define the data shape and manifest governance requirements at each layer.</li>
+<li>Compare the engineering differences among Self-Instruct, Evol-Instruct, and Magpie—three schools of instruction synthesis—with respect to seed dependency, difficulty calibration, and distribution filtering.</li>
+<li>Design preference data production methods for paradigms including rejection sampling, reward models, DPO, GRPO, and RLVR.</li>
+<li>Evaluate post-training data with respect to source traceability, evaluation isolation, use-case documentation, and rollback capability, and identify risks of Reward Hacking and data contamination.</li>
+</ul>
+<h2 id="opening-scenario-why-alpaca-cannot-train-a-gpt-4-style-model">Opening Scenario: Why Alpaca Cannot Train a GPT-4-Style Model<a class="headerlink" href="#opening-scenario-why-alpaca-cannot-train-a-gpt-4-style-model" title="Permanent link">&para;</a></h2>
+<p>From 2023 through early 2024, the open-source community intensively explored the instruction tuning route. Consider a common team scenario: a large model application team, aiming to build a vertical-domain assistant, uses an open-source base model and collects approximately 200K instruction data samples in the style of Alpaca, Dolly, and Self-Instruct, then applies Supervised Fine-Tuning (SFT).</p>
+<p>After training, the surface-level metrics appear normal: the loss steadily decreases, and the model does indeed transition from a "text continuation engine" into an "assistant" willing to answer questions. However, during internal red-blue adversarial testing and real-world business gray-scale evaluation, the team still identifies several critical gaps:</p>
+<ol>
+<li><strong>Insufficient complex instruction-following capability:</strong> When a prompt contains more than three constraints—such as "output in JSON format," "no more than 100 words," and "include three paragraphs"—the model will most likely miss some conditions.</li>
+<li><strong>Lack of refusal boundaries:</strong> When faced with misleading, harmful, or clearly out-of-scope questions—such as "how to manufacture dangerous substances" or fabricated medical diagnoses—the model may produce unreliable responses rather than consistently recognizing the risk and declining.</li>
+<li><strong>Unstructured long-form responses:</strong> The model struggles to generate long-form content with clear hierarchy and logical progression, and multi-turn consistency is unstable.</li>
+<li><strong>Weak tool-use awareness:</strong> When faced with questions requiring external API support, the model tends to fabricate answers directly rather than outputting a properly formatted tool-call JSON.</li>
+</ol>
+<p>Regardless of how the team cleans this 200K dataset, the resulting model consistently underperforms Llama-3.3-Instruct or Qwen2.5-Instruct in terms of user experience.</p>
+<p>This example illustrates that post-training cannot be understood merely as adding more instruction samples; it is more akin to a phased data organization and behavioral calibration process.</p>
+<ul>
+<li>SFT is solely responsible for establishing behavioral templates—it can teach the model "what format to speak in," but cannot independently accomplish preference ordering, i.e., it cannot teach the model "what constitutes a better response."</li>
+<li>Preference Alignment is not a simple addendum after SFT, but an independent layer of data production and review.</li>
+<li>Industrial-grade online continuous optimization requires integrating user feedback, Rejection Sampling (RS), Reward Models (RM), and contamination detection into a single data chain.</li>
+<li>The reference value of open-source models comes not only from open weights, but also from the post-training recipe information disclosed in technical reports, dataset cards, and training pipelines.</li>
+</ul>
+<hr />
+<h2 id="451-the-three-stages-of-post-training-data-sft-preference-alignment-and-online-continuous-optimization">45.1 The Three Stages of Post-Training Data: SFT, Preference Alignment, and Online Continuous Optimization<a class="headerlink" href="#451-the-three-stages-of-post-training-data-sft-preference-alignment-and-online-continuous-optimization" title="Permanent link">&para;</a></h2>
+<p>To equip a base model with stable interaction capabilities, post-training data engineering typically requires building a layered pipeline. These layers differ not only in data shape, but also in optimization objectives and engineering challenges.</p>
+<p><strong>Layer One: SFT Data</strong>
+The core task of SFT is "formatting." It transforms the base model from an unconscious "probabilistic predictor / text continuation engine" into a well-mannered "assistant." SFT data specifies the basic response format, task domain boundaries, assistant role tone, fundamental safety behavioral baselines, and the alternating structure of multi-turn dialogue.
+In modern engineering practice, the common scale for SFT data is typically in the range of <span class="arithmatex">\(10^5\)</span> to <span class="arithmatex">\(10^6\)</span> samples. At this stage, data quality (diversity, accuracy, and formatting rigor) far outweighs quantity. Millions of low-quality SFT samples are often inferior to hundreds of thousands of carefully curated samples.</p>
+<p><strong>Layer Two: Preference Alignment Data</strong>
+If SFT teaches the model "how to answer," then the preference alignment layer teaches the model "which of two qualified responses is better." This layer establishes the model's reward surface.
+Preference data can serve multiple different training paradigms: training an RM to support RLHF, or directly serving direct preference optimization methods such as DPO, IPO, KTO, GRPO, or RLVR. Its typical scale spans a wide range, from <span class="arithmatex">\(10^5\)</span> to <span class="arithmatex">\(10^7\)</span> preference pairs, depending on whether the data construction process includes large-scale automatic generation, multi-round sampling, and online feedback.</p>
+<p>Within these methods, preference learning should not be understood only as binary ranking between two answers. Methods such as KTO interpret human feedback more like gain/loss signals under prospect theory, and theoretical work has also attempted to unify RLHF, DPO, and more general learning-from-human-preference paradigms (Ethayarajh et al. 2024; Gheshlaghi Azar et al. 2024). This reminds data engineers not to preserve only the final label, but also the feedback source, review rationale, and candidate-group structure.</p>
+<p><strong>Layer Three: Online Continuous Optimization Data</strong>
+Model deployment is not the end of post-training, but the beginning. The third layer determines whether the model can self-correct as the real business evolves.
+After deployment, user upvotes and downvotes, system refusal logs, difficult samples, manually reviewed red-line data, A/B experiment results, and emergent safety incidents all enter the continuous optimization pipeline through streaming or batch processing. Without this layer, the model remains at the static level of a one-time release, ultimately rendered obsolete by the ever-shifting distribution of user inputs.</p>
+<p><strong>Why can high-quality SFT data not replace preference data?</strong>
+This is because SFT uses Maximum Likelihood Estimation (MLE): during training, the model is primarily encouraged to "imitate" the given target tokens and has no awareness of the relative quality of other potential responses. For a complex question with multiple reasonable but varying-quality answers, SFT struggles to teach the model to choose, at generation time, the response that is more aligned with human intuition, safer, or more thorough. Preference data, by introducing chosen/rejected contrastive signals, can suppress the response space of answers that are grammatically correct but misaligned with values or logic. Therefore, post-training data engineering must simultaneously manage the behavioral shape molded by SFT and the feedback loop formed by preference alignment and continuous optimization.</p>
+<p>Figure 45-1 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part13/Wang-Chap45-Fig01.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 45-1: Schematic of the LLM Three-Stage Post-Training Pipeline" src="../../../images/part13/Wang-Chap45-Fig01.svg" /></a>
+<em>Figure 45-1: Data flow relationships among SFT, Preference Alignment, and Online Continuous Optimization</em></p>
+<p>From an engineering implementation perspective, the three-stage framework also implies three entirely different modes of data asset management. SFT data resembles a "behavioral template library"—it must be stable, clean, cover common tasks, and maintain a simple field structure. Teams typically build a minimal schema around fields such as <code>messages</code>, <code>instruction</code>, <code>input</code>, <code>output</code>, <code>source</code>, <code>license</code>, and <code>quality_score</code>. As long as the schema is stable, SFT data can easily be consumed by different training frameworks and supports cross-version comparisons.</p>
+<p>Preference data more closely resembles a "behavioral discrimination library." It cannot only store the final chosen/rejected texts; it should also preserve the candidate generation model, sampling temperature, number of candidates, the annotator or review model, annotation rationale, conflict review outcomes, and tags indicating whether the sample involves safety, factuality, code, mathematics, or tool invocation. Without this metadata, it is very difficult to explain retrospectively why a DPO training run improved or degraded. Many teams, on their first foray into preference data, only retain two responses and a <code>label</code> field—and only realize upon encountering preference drift that they lack sufficient information to diagnose the problem.</p>
+<p>Online continuous optimization data more closely resembles an "event log library." It originates from real users, red teams, evaluation platforms, customer service feedback, and online monitoring, and naturally carries attributes of time, context, version, and access permissions. Therefore, it must be bound to the model version, prompt version, system policy, user authorization status, desensitization status, and evaluation set isolation status. Otherwise, seemingly valuable real-world feedback may become unusable for training due to privacy concerns, contamination, or non-traceable versioning. In other words, the maturity of post-training data engineering is reflected not only in the ability to produce samples, but in whether each sample can answer: "Where does it come from, why is it trustworthy, which stage is it suitable for, and how can it be rolled back if something goes wrong?"</p>
+<p>A sound post-training data repository should maintain at least four types of manifests. The first is a data source manifest, recording dataset names, licenses, collection timestamps, filtering conditions, and responsible parties. The second is a sample processing manifest, recording deduplication, filtering, rewriting, translation, scoring, and manual review processes. The third is a training consumption manifest, recording which model version, training stage, and experiment configuration consumed a given data version. The fourth is an evaluation isolation manifest, recording which benchmarks, red-team sets, and acceptance sets are prohibited from entering training. These four manifest types may seem burdensome, but they determine whether a post-training pipeline can evolve from a one-off experiment into an operational system.</p>
+<hr />
+<h2 id="452-cross-comparison-of-open-source-post-training-data-transparency">45.2 Cross-Comparison of Open-Source Post-Training Data Transparency<a class="headerlink" href="#452-cross-comparison-of-open-source-post-training-data-transparency" title="Permanent link">&para;</a></h2>
+<p>Before building one's own post-training pipeline, it is necessary to cross-compare the publicly disclosed approaches of current mainstream open-source models. This section selects Tülu-3, Llama-3, Qwen2.5, and Nemotron-4 as four representative approaches for analysis. The core objective is not to evaluate whose leaderboard scores are higher, but to establish an engineering methodology for "how to read public information" and assess its practical guidance value.</p>
+<p>One real-world constraint also needs to be added: open-source post-training data and recipes update very quickly, so this kind of horizontal comparison should only be treated as a snapshot at a particular point in time. Any comparison intended for publication or long-term retrospective analysis should ideally mark the report publication date, data version, and repository revision (commit/tag); otherwise the same table may become visibly outdated within a few months.</p>
+<p>When reading Table 45-1, please note the annotation conventions:</p>
+<ul>
+<li><strong>[D]</strong>: Numbers explicitly disclosed in technical reports, papers, or dataset cards.</li>
+<li><strong>[I]</strong>: Scale figures reasonably inferred based on publicly available training pipelines, split ratios, or contextual information.</li>
+<li><strong>[E]</strong>: Estimates derived for pedagogical illustration or engineering approximation; should not be treated as official disclosed figures.</li>
+</ul>
+<p><em>Table 45-1: Post-Training Data Transparency and Scale of Mainstream Open-Source Models</em></p>
+<table>
+<thead>
+<tr>
+<th>Model / Project</th>
+<th>Post-Training Stages</th>
+<th>Data Openness</th>
+<th>SFT Data Scale</th>
+<th>Preference / Reward Data Scale</th>
+<th>Key Data Sources</th>
+<th>Reproducibility Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tülu-3</strong></td>
+<td>SFT / DPO / RLVR</td>
+<td>High</td>
+<td>939K [D]</td>
+<td>DPO mixture scale requires item-by-item verification [D]</td>
+<td>SFT-Mix, DPO mix, RLVR verifier</td>
+<td>Fully open-source recipe reference system; suitable for reproduction and transfer</td>
+</tr>
+<tr>
+<td><strong>Llama-3</strong></td>
+<td>SFT / Reward Model / RLHF</td>
+<td>Medium</td>
+<td>Not fully disclosed; report reveals pipeline and partial statistics [D/I]</td>
+<td>Multi-round preference annotations and RM/DPO data; total volume requires table-level verification [D/I]</td>
+<td>Human annotation, multi-round RM, rejection sampling</td>
+<td>Understanding industrial-grade multi-round iteration with heavy human involvement</td>
+</tr>
+<tr>
+<td><strong>Qwen2.5</strong></td>
+<td>SFT / Preference / Large-scale synthetic data</td>
+<td>Medium</td>
+<td>Partially disclosed; exact total should be verified against the report [D/I]</td>
+<td>Partially disclosed; scale unknown [D/I]</td>
+<td>Instruction synthesis, multilingual, multi-task; Magpie as a seed-free synthesis reference paradigm</td>
+<td>Observing Chinese, multilingual post-training and large-scale synthetic data</td>
+</tr>
+<tr>
+<td><strong>Nemotron-4</strong></td>
+<td>Reward Model / HelpSteer2</td>
+<td>High</td>
+<td>Not the focus of this section</td>
+<td>HelpSteer2 approximately 10K prompts/pairs level; verify against dataset card [D]</td>
+<td>Attribute-based preference annotation, Daring-Anteater SFT data</td>
+<td>An important reference for reward model data design</td>
+</tr>
+</tbody>
+</table>
+<p>In Table 45-1, <code>[D]</code> denotes information directly disclosed in public materials, and <code>[I]</code> denotes reasonable inferences based on publicly available pipelines or contextual information. Numbers that cannot be directly traced should not be stated as definitive figures; they should be retained as "undisclosed" or "requires verification against source."</p>
+<ul>
+<li><strong>Tülu-3</strong> is one of the most suitable projects in this chapter to serve as a reproducible baseline. It not only open-sources the model weights, but also discloses the post-training data mixture, training code, and evaluation methodology, enabling teams to translate the recipe from the paper into an inspectable engineering process.</li>
+<li><strong>Llama-3</strong> (Grattafiori et al. 2024) represents a heavy-asset industrial approach. Its report discloses key mechanisms such as multi-round post-training, preference annotation, reward model retraining, and rejection sampling, but many data details are not fully disclosed. It is therefore more suitable as a reference for understanding industrial closed-loop systems than as a direct template for replication.</li>
+<li><strong>Qwen2.5 / Qwen3</strong> provide important reference value for Chinese, multilingual, multi-task, and synthetic data approaches. A distinction must be carefully drawn: the synthetic data approaches in the Qwen-series reports and seed-free synthesis methods such as Magpie (Xu et al. 2025) can be discussed in parallel; the Qwen3 technical report can also serve as a public reference for later-version recipes (Yang et al. 2025), but none of this should be written as "officially adopting Magpie" in the absence of an explicit source.</li>
+<li><strong>Nemotron-4</strong> and HelpSteer2 derive their value from the granularity of preference annotation. HelpSteer2 (Wang et al. 2024b) does not merely record overall preference; it establishes scoring signals along dimensions such as helpfulness, correctness, coherence, complexity, and verbosity, providing a referenceable example for reward model data design. Reward-model engineering techniques can also refer to Skywork-Reward's summary of data mixing, training stability, and evaluation protocols (Liu et al. 2024b).</li>
+</ul>
+<hr />
+<h2 id="453-three-schools-of-sft-data-synthesis-self-instruct-evol-instruct-and-magpie">45.3 Three Schools of SFT Data Synthesis: Self-Instruct, Evol-Instruct, and Magpie<a class="headerlink" href="#453-three-schools-of-sft-data-synthesis-self-instruct-evol-instruct-and-magpie" title="Permanent link">&para;</a></h2>
+<p>Having established that SFT occupies the first layer of post-training, the immediate question is how to obtain high-quality instructions. Since manual authoring is costly and struggles to cover long-tail tasks, Instruction Synthesis has become the mainstream approach. This section compares the engineering differences of three synthesis approaches as they appear in real post-training recipes.</p>
+<p>The task boundary needs to be drawn clearly here: Self-Instruct, Evol-Instruct, and Magpie all aim to generate SFT samples. Their outputs are instruction/response pairs required for supervised learning, not preference labels, reward scores, or verifier signals. Preference-data construction belongs to the next layer of work and should not be conflated with this section.</p>
+<h3 id="4531-self-instruct-expanding-the-instruction-space-from-seed-tasks">45.3.1 Self-Instruct: Expanding the Instruction Space from Seed Tasks<a class="headerlink" href="#4531-self-instruct-expanding-the-instruction-space-from-seed-tasks" title="Permanent link">&para;</a></h3>
+<p><strong>Key Points:</strong>
+Self-Instruct (Wang et al. 2023) is one of the seminal methods in instruction synthesis. It relies on a small set of manually written seed tasks—typically a few hundred examples—as a starting point. In the pipeline, a powerful model references these seeds to generalize and generate new instructions, inputs, and outputs, i.e., the instruction, input context, and expected response.
+<strong>Engineering Advantage:</strong> Well suited for rapidly expanding task-domain coverage in early project stages, addressing the base model's "not knowing how to initiate a conversation" problem.
+<strong>Primary Risk:</strong> Heavily dependent on prompt templates, making generated data prone to templatization and linguistic homogeneity, with task difficulty typically concentrated in the common range and insufficient coverage of complex edge cases.</p>
+<h3 id="4532-evol-instruct-increasing-complexity-via-evolutionary-rules">45.3.2 Evol-Instruct: Increasing Complexity via Evolutionary Rules<a class="headerlink" href="#4532-evol-instruct-increasing-complexity-via-evolutionary-rules" title="Permanent link">&para;</a></h3>
+<p><strong>Key Points:</strong>
+To address the insufficient difficulty of Self-Instruct, WizardLM (Xu et al. 2024) proposed the Evol-Instruct approach. Its core idea is to systematically increase the complexity of simple instructions through specific "evolutionary rules." Common evolution operations include: adding constraints, increasing reasoning depth, introducing multi-condition branching, and requiring multi-step solutions.
+<strong>Engineering Advantage:</strong> Extremely effective at generating high-complexity instruction-following data, compelling the model to learn deep logical compliance rather than superficial response patterns.
+<strong>Primary Risk:</strong> Increased difficulty does not equate to increased quality. Multiple rounds of evolution can trigger intent drift—where complex constraints contradict each other, or the generated instruction becomes an incoherent accumulation of words. Therefore, difficulty calibration and answer verification are the quality control priorities for this school.</p>
+<h3 id="4533-magpie-seed-free-self-generated-instructions-and-responses">45.3.3 Magpie: Seed-Free Self-Generated Instructions and Responses<a class="headerlink" href="#4533-magpie-seed-free-self-generated-instructions-and-responses" title="Permanent link">&para;</a></h3>
+<p><strong>Key Points:</strong>
+Another notable approach is Magpie. It minimizes dependency on manual seeds by directly leveraging the conversational priors of already-aligned Instruct models—such as Llama-3-Instruct—to generate user-side instructions. By providing a very short pre-query prompt, or even just a single system <code>[INST]</code> token, the model can be induced to generate relatively natural user questions along with corresponding responses.
+<strong>Engineering Advantage:</strong> Substantially reduces human intervention, and the resulting data distribution more closely approximates the distribution of real, natural user queries across the long tail. When discussing the post-training of open-source models such as Qwen2.5, Magpie can serve as a reference method for "how large-scale synthetic instructions can enhance diversity," rather than being attributed as an official recipe component of a specific model without a direct source.
+<strong>Primary Risk:</strong> Model self-generation can amplify the model's inherent biases and hallucinations. The data pipeline requires distribution filtering and safety filtering mechanisms.</p>
+<p>Table 45-2 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 45-2: Engineering Comparison of the Three SFT Synthesis Schools</em></p>
+<table>
+<thead>
+<tr>
+<th>School</th>
+<th>Seed Dependency</th>
+<th>Generation Method</th>
+<th>Suitable Tasks</th>
+<th>Primary Risk</th>
+<th>Quality Control Focus</th>
+<th>Representative Material</th>
+<th>Relationship to This Chapter</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Self-Instruct</strong></td>
+<td>Medium</td>
+<td>Seed-inspired expansion</td>
+<td>General instruction breadth coverage</td>
+<td>Templatization, homogeneity</td>
+<td>ROUGE deduplication, diversity evaluation, answerability checks</td>
+<td>Self-Instruct paper</td>
+<td>Foundational synthesis approach</td>
+</tr>
+<tr>
+<td><strong>Evol-Instruct</strong></td>
+<td>Medium</td>
+<td>Rule-based complexity evolution</td>
+<td>Complex instruction-following, multi-step reasoning</td>
+<td>Logical contradictions, intent drift</td>
+<td>Difficulty calibration, code-level answer verification</td>
+<td>WizardLM project</td>
+<td>Complexity-escalation approach</td>
+</tr>
+<tr>
+<td><strong>Magpie</strong></td>
+<td>Low</td>
+<td>Seed-free self-generation using priors</td>
+<td>Large-scale, realistic conversational instructions</td>
+<td>Amplified inherent biases, hallucinations, unsafe content</td>
+<td>Distribution diversity filtering, rigorous safety filtering</td>
+<td>Magpie paper</td>
+<td>Emerging open-source post-training approach</td>
+</tr>
+</tbody>
+</table>
+<p>Figure 45-2 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part13/Wang-Chap45-Fig02.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 45-2: Pipeline Comparison of the Three SFT Synthesis Schools: Self-Instruct, Evol-Instruct, and Magpie" src="../../../images/part13/Wang-Chap45-Fig02.svg" /></a>
+<em>Figure 45-2: Data entry points, generation methods, and quality control checkpoints for the three SFT synthesis approaches</em></p>
+<p>Regardless of which synthesis school is adopted, SFT data should never flow directly from the generator into the training set. A more robust approach is to establish four gatekeeping checks. The first is a format gate, which verifies whether multi-turn dialogue roles are complete, whether fields are missing, whether JSON or ChatML is parseable, and whether truncation or garbled text exists. The second is a semantic gate, which checks whether the instruction is genuinely answerable, whether the answer covers the core of the question, and whether there are mismatches, non-sequiturs, or unexplained reasoning leaps. The third is a distribution gate, which checks whether task types, languages, lengths, domains, difficulty levels, and safety categories are overly concentrated. The fourth is a leakage gate, which checks whether any sample is near-duplicate to evaluation sets, benchmark questions, published answers, or internal holdout sets.</p>
+<p>These four gates are best implemented as a combination of automated filtering and manual spot-checking. Automated filtering is suitable for handling format errors, duplicates, length anomalies, low-quality templates, sensitive keywords, and obvious safety issues; manual spot-checking is suitable for judging whether instructions are natural, whether answers are genuinely helpful, and whether complex tasks preserve the original intent. In particular, with Evol-Instruct, automated scripts struggle to determine whether "making something more complex" still preserves the original intent. A question that appears more difficult may simply be a corrupted version of the original. Without manual spot-checking or a strong verifier, the model ends up learning many complex but invalid patterns.</p>
+<p>SFT data also requires stratified mixing rather than simple aggregation. It is recommended to break the data into at least six categories: general Q&amp;A, knowledge explanation, complex instruction-following, code and tool use, mathematics and reasoning, and safety and refusals. Each category should be individually tracked for count, average length, source, filter rate, and manual review pass rate. For reproducing open-source model recipes, the most valuable practice is not to exactly replicate a given mixing ratio, but to maintain a "mixing change log." When the model shows changes in code capability, safety refusals, or linguistic quality, the team can trace back to determine whether a change in a specific data category was responsible, rather than relying on intuition alone.</p>
+<p>Large open-source technical reports also show that post-training data mixtures usually co-evolve with pretraining data, synthetic data, reasoning data, and safety data, rather than optimizing a single sample category in isolation. The mixture and post-training descriptions in the DeepSeek-V3 report can serve as an additional reference for understanding this kind of multi-stage recipe (Liu et al. 2024a).</p>
+<p>It is also important to note that good SFT data from one stage is not necessarily suitable for all training rounds. The first round of SFT is better suited to data that is structurally clear, response-stable, and broadly covering, helping the model establish basic assistant behavior. Subsequent incremental SFT rounds are better suited to incorporating hard cases, domain-specific tasks, tool invocation, and safety boundary repair data. Loading all data at once makes it easy for high-value boundary samples to be overwhelmed by a large volume of ordinary samples. A better approach is to organize SFT data into curriculum-style versions: <code>sft_base_mix</code>, <code>sft_complex_mix</code>, <code>sft_safety_patch</code>, <code>sft_domain_patch</code>, each with its own manifest and evaluation report.</p>
+<hr />
+<h2 id="454-preference-data-engineering-from-rlhf-to-dpo-grpo-and-rlvr">45.4 Preference Data Engineering: From RLHF to DPO, GRPO, and RLVR<a class="headerlink" href="#454-preference-data-engineering-from-rlhf-to-dpo-grpo-and-rlvr" title="Permanent link">&para;</a></h2>
+<p>After acquiring SFT data, how preference data is constructed ultimately determines the model's "character." This section explains how the shape of preference data evolves with different training paradigms.</p>
+<p>The task at this layer is no longer "generating samples," but "constructing preference/reward signals." In other words, the SFT synthesis methods in the previous section and the RLHF, DPO, GRPO, and RLVR methods in this section belong to different layers and should not be described as the same data engineering action.</p>
+<h3 id="4541-rlhf-preference-pairs-and-reward-models">45.4.1 RLHF: Preference Pairs and Reward Models<a class="headerlink" href="#4541-rlhf-preference-pairs-and-reward-models" title="Permanent link">&para;</a></h3>
+<p>Reinforcement Learning from Human Feedback (RLHF) (Ouyang et al. 2022) is the canonical alignment approach. Its core data form consists of multi-candidate rankings or preference pairs.</p>
+<ul>
+<li><strong>Data shape:</strong> prompt + chosen + rejected, or relative ranking scores for <span class="arithmatex">\(N\)</span> candidates under the same prompt.</li>
+<li><strong>Engineering focus:</strong> How to efficiently generate high-discriminability candidate responses? How to ensure high inter-annotator consistency for complex value judgments among human annotation teams? When training the Reward Model, how to ensure that the training set's distribution adequately covers the true prompt distribution seen in production?</li>
+</ul>
+<h3 id="4542-dpo-data-requirements-for-direct-preference-optimization">45.4.2 DPO: Data Requirements for Direct Preference Optimization<a class="headerlink" href="#4542-dpo-data-requirements-for-direct-preference-optimization" title="Permanent link">&para;</a></h3>
+<p>Direct Preference Optimization (DPO) (Rafailov et al. 2023) bypasses the complexity of explicitly training an RM by reformulating the reinforcement learning objective as a binary cross-entropy loss.</p>
+<ul>
+<li><strong>Data shape:</strong> A strict triplet of Prompt + Chosen + Rejected.</li>
+<li><strong>Engineering focus:</strong> Highly dependent on preference pair quality. DPO is very sensitive to the differential signal between Chosen and Rejected. If the Rejected sample quality is too low (e.g., garbled text), DPO struggles to learn a meaningful preference boundary; if the difference primarily reflects surface-level lexical choices (e.g., Rejected has a harsh tone but correct logic, Chosen has a softer tone but factual errors), the model may be misled.</li>
+</ul>
+<h3 id="4543-grpo-intra-group-relative-comparison-and-sampling-groups">45.4.3 GRPO: Intra-Group Relative Comparison and Sampling Groups<a class="headerlink" href="#4543-grpo-intra-group-relative-comparison-and-sampling-groups" title="Permanent link">&para;</a></h3>
+<p>GRPO (Shao et al. 2024) is commonly used for long-reasoning tasks. Rather than relying on a global absolute reward baseline, it emphasizes relative quality within a group for the same prompt.</p>
+<ul>
+<li><strong>Data shape:</strong> prompt + candidate group + relative reward signal. The candidate group typically contains 4 to 8 responses, depending on sampling cost and task difficulty.</li>
+<li><strong>Engineering focus:</strong> The data pipeline must preserve the candidate group structure, sampling parameters at generation time (e.g., temperature), verification signals, and group metadata. The pipeline's focus shifts to enabling efficient batch multi-path sampling.</li>
+</ul>
+<h3 id="4544-rlvr-verifiable-rewards-and-the-new-post-training-interface">45.4.4 RLVR: Verifiable Rewards and the New Post-Training Interface<a class="headerlink" href="#4544-rlvr-verifiable-rewards-and-the-new-post-training-interface" title="Permanent link">&para;</a></h3>
+<p>Reinforcement Learning with Verifiable Rewards (RLVR) advances the source of preference from subjective "human judgment of what is better" to objective "results that are computable/verifiable."</p>
+<ul>
+<li><strong>Data shape:</strong> task + answer + verifier signal, i.e., the task, the answer, and a hard reward generated by a verifier.</li>
+<li><strong>Suitable tasks:</strong> Mathematical problem-solving, code generation, format compliance, and tool invocation. Math problems can be verified against the final answer, code problems can run unit tests, structured outputs can undergo JSON/XML regex or schema validation, and tool calls can check API return status codes.</li>
+<li><strong>Engineering challenge:</strong> Writing verifiers that cover a sufficiently wide range of tasks without loopholes. This section introduces the data shape concept of RLVR to lay the groundwork for subsequent discussion; the R1-style reasoning flywheel will be detailed in Ch46.</li>
+</ul>
+<p>Table 45-3 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 45-3: Different Data Requirements Across Preference Paradigms</em></p>
+<table>
+<thead>
+<tr>
+<th>Paradigm</th>
+<th>Core Data Shape</th>
+<th>Reward Source</th>
+<th>Suitable Tasks</th>
+<th>Data Engineering Challenges</th>
+<th>Interface with Ch46</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>RLHF</strong></td>
+<td>prompt + multiple candidates + human/AI preference</td>
+<td>Human annotation / trained RM</td>
+<td>General assistant behavior, complex value alignment</td>
+<td>High annotation cost, inter-annotator consistency difficult to guarantee</td>
+<td>Provides industrial background for multi-round iteration</td>
+</tr>
+<tr>
+<td><strong>DPO</strong></td>
+<td>prompt + chosen + rejected</td>
+<td>Offline preference pairs</td>
+<td>Chat Q&amp;A, safety refusal boundaries, style fine-tuning</td>
+<td>Negative sample quality control, over-confidence penalization</td>
+<td>Serves as a prerequisite for second-round SFT or reasoning alignment</td>
+</tr>
+<tr>
+<td><strong>GRPO</strong></td>
+<td>prompt + candidate group + relative reward</td>
+<td>Intra-group comparative advantage</td>
+<td>Complex reasoning, code generation, diverse sampling</td>
+<td>Sampling efficiency, group information storage and synchronized logging</td>
+<td>Core interface foundation for R1-style training</td>
+</tr>
+<tr>
+<td><strong>RLVR</strong></td>
+<td>task + answer + verifier signal</td>
+<td>Hard rules / unit tests / math verifiers</td>
+<td>Mathematical computation, code pass rate, strictly structured output tasks</td>
+<td>Verifier robustness, coverage expansion</td>
+<td>Key expansion point for the Ch46 RL reasoning flywheel</td>
+</tr>
+</tbody>
+</table>
+<p>The first engineering principle for preference data is to preserve candidate groups rather than only storing the win/loss outcome. Multiple candidates for the same prompt record the response space the model explores under its current policy. If only chosen and rejected are saved, the team loses a large amount of useful information—such as whether all candidates are of poor quality, whether only one has an obvious error, or whether there are multiple acceptable responses of similar quality but differing styles. This information determines whether to subsequently train an RM, apply DPO, or return to the SFT stage to supplement task templates.</p>
+<p>The second principle is to record the rationale for preferences. Preference pairs are not inherently trustworthy: a chosen response may win because of factual correctness, clearer expression, or more stable safety boundaries—or simply because it is longer, more agreeable, or more aligned with the format preferred by the review model. Without a rationale field, it is impossible to distinguish "genuine preference" from "scoring bias." Therefore, preference data should include at minimum metadata fields such as <code>preference_reason</code>, <code>error_type</code>, <code>safety_label</code>, <code>factuality_label</code>, and <code>style_label</code>. For data requiring manual review, fields such as <code>annotator_id_hash</code>, <code>review_round</code>, and <code>disagreement</code> should also be recorded to facilitate annotation consistency analysis.</p>
+<p>The third principle is to split preference data into training, calibration, and audit sets. The training set is used to optimize the model, the calibration set is used to monitor whether the RM or DPO is overfitting, and the audit set is used to detect preference bias. The audit set need not be large, but it must remain stable and must not be repeatedly contaminated by hyperparameter tuning. For example, one could maintain a group of "short but correct vs. long but vapid" samples, a group of "appropriate refusal vs. excessive refusal" samples, and a group of "factually correct but mediocre tone vs. polished tone but factually wrong" samples. Running this audit set after each training run enables timely detection of reward hacking and sycophancy.</p>
+<p>The fourth principle is to manage verifiable tasks separately. Tasks such as mathematics, code, structured output, and tool invocation do not need to rely entirely on subjective preference, since they can incorporate verifiers. For these tasks, preference data should additionally record <code>verifier_name</code>, <code>verifier_version</code>, <code>test_case_hash</code>, <code>pass_rate</code>, and <code>failure_reason</code>. This information serves both RLVR and rejection sampling. The truly reusable interface when Ch46 discusses the R1-style reasoning flywheel is precisely this verifiable metadata.</p>
+<hr />
+<h2 id="455-case-study-a-retrospective-on-tulu-3s-fully-open-source-post-training">45.5 Case Study A: Retrospective on Tülu-3's Fully Open-Source Post-Training<a class="headerlink" href="#455-case-study-a-retrospective-on-tulu-3s-fully-open-source-post-training" title="Permanent link">&para;</a></h2>
+<p>To provide readers with a grounded engineering reference, this section selects Tülu-3 as the primary reproducible baseline. Tülu-3 covers all three stages—SFT, preference optimization, and verifiable rewards—and has a relatively high level of openness in terms of data, training code, and evaluation methodology, making it well suited for learning how to translate a paper recipe into an engineering plan.</p>
+<h3 id="4551-why-tulu-3-is-suitable-as-a-reference-baseline">45.5.1 Why Tülu-3 Is Suitable as a Reference Baseline<a class="headerlink" href="#4551-why-tulu-3-is-suitable-as-a-reference-baseline" title="Permanent link">&para;</a></h3>
+<p>Among the many models claiming to be open-source, some projects only release final weights, while others additionally release partial fine-tuning datasets. Tülu-3's advantage lies in discussing the verification logic for SFT-Mix, DPO Mix, and RLVR within the same publicly available pipeline. It provides an end-to-end baseline that helps practitioners understand what types of data are approximately needed at each stage and how those data flow into the next stage.</p>
+<h3 id="4552-sft-mix-the-behavioral-template-layer">45.5.2 SFT-Mix: The Behavioral Template Layer<a class="headerlink" href="#4552-sft-mix-the-behavioral-template-layer" title="Permanent link">&para;</a></h3>
+<p>The SFT stage of Tülu-3 (Lambert et al. 2025) does not pursue unbounded expansion of sample volume. Its SFT-Mix scale is approximately 939K [D]—a figure disclosed in the publicly available training data documentation—and should be used in alignment with the corresponding dataset card or paper table.
+<strong>Source structure and composition:</strong> The SFT-Mix reflects a deliberate manual curation strategy. It combines basic dialogue, multi-task instruction-following, multi-turn interaction, API tool use, code generation, mathematical reasoning, and core safety tasks according to stage objectives.
+<strong>Why not simply pursue higher sample count?</strong> Blindly stacking millions of simple function-completion samples for code tasks would cause "catastrophic forgetting," causing the model to lose the ability to hold a normal natural-language conversation. Tülu-3's experience demonstrates that by downsampling and balancing high-quality sources—such as carefully annotated domain-specific sets—the model's comprehensive behavioral patterns can be rapidly consolidated within a few tens of thousands of fine-tuning steps.</p>
+<h3 id="4553-dpo-the-preference-refinement-layer">45.5.3 DPO: The Preference Refinement Layer<a class="headerlink" href="#4553-dpo-the-preference-refinement-layer" title="Permanent link">&para;</a></h3>
+<p>After SFT establishes the model's basic behavioral patterns, Tülu-3 introduces the DPO mix for preference refinement. The specific scale and composition of the DPO mix should be verified against the paper and dataset card in the final version to avoid conflating statistics from different stages or different splits.
+<strong>Connecting SFT and DPO:</strong> DPO data should not only include external datasets, but should also cover typical failure patterns in the base model's actual output behavior after SFT.
+<strong>Reflecting differential preference:</strong> The design of chosen and rejected pairs should not be random. When constructing data, Tülu-3 emphasizes avoiding a dangerous tendency: do not select a response that is "superficially more polite but factually inferior" as the chosen. If the data pipeline uses an uncalibrated LLM-as-a-Judge, the model is prone to this type of preference misguidance (Length Bias &amp; Sycophancy (Zheng et al. 2023)). Therefore, high-quality DPO pairs must have a clear and stable difference on the dimension of "factual correctness."</p>
+<h3 id="4554-rlvr-the-verifiable-task-layer">45.5.4 RLVR: The Verifiable Task Layer<a class="headerlink" href="#4554-rlvr-the-verifiable-task-layer" title="Permanent link">&para;</a></h3>
+<p>Finally, Tülu-3 introduces the RLVR stage.
+<strong>Introducing a Verifier:</strong> For problems that can be measured by clear correct/incorrect outcomes, human annotation is both expensive and error-prone. Tülu-3 constructs a rule-based Verifier module.
+<strong>Applicable scope:</strong> Not all tasks are suitable for RLVR. Tülu-3 primarily applies it to tasks from which a definitive terminal state can be extracted: the numerical value of the final step in a math problem, AST parsing of code, and unit test execution results. This section establishes the conceptual interface for RLVR; how to leverage rule-based verification signals to build an R1-style reasoning data flywheel will be elaborated in Ch46.</p>
+<p>Figure 45-3 illustrates the corresponding workflow or structure.</p>
+<p><a class="glightbox" href="../../../images/part13/Wang-Chap45-Fig03.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Figure 45-3: Tülu-3 Three-Stage Data Flow and Scale Schematic" src="../../../images/part13/Wang-Chap45-Fig03.svg" /></a>
+<em>Figure 45-3: Data flow and stage relationships in Tülu-3 from SFT-Mix and DPO mix to RLVR</em></p>
+<p>When migrating Tülu-3 to a proprietary project, the process can be broken down into four steps. First, categorize the data sources in the public recipe into three types: "directly reusable," "structural reference only," and "must be replaced with domain data." Second, preserve the sequential order of SFT, DPO, and RLVR stages, but adjust the task composition ratio at each stage according to domain-specific risk considerations. Third, document the inputs, outputs, filtering rules, and evaluation sets for each stage in a manifest, rather than only retaining scripts without a means of retrospective review. Fourth, after migration, re-conduct contamination detection and safety boundary assessment, since passing a public recipe does not automatically guarantee suitability for industry-specific contexts.</p>
+<p>More specifically, migrating Tülu-3 should not start with "which datasets to download," but with "which control points to replicate." The first control point is SFT-Mix source registration: why each source enters the mixture, what capability it addresses, whether its license permits use, and whether it conflicts with evaluation sets. The second control point is DPO mix preference boundaries: whether the chosen/rejected differential stably reflects factual correctness, safety, conciseness, and instruction-following rather than merely length or tone. The third control point is RLVR verifier version management: rules, unit tests, answer extractors, and format parsers should all carry version numbers; otherwise, the same batch of samples may yield different rewards at different points in time. The fourth control point is post-training evaluation: after each training stage, results should be examined separately across general capability, reasoning, code, safety, and domain tasks, rather than using a single average score that can mask localized degradation.</p>
+<p>If written as a project workflow, this process yields a post-training reproduction template suitable for small and medium-sized teams. The first week is dedicated solely to dissecting the public recipe and aligning field schemas—no rush to train. The second week builds a local SFT-Mix, running a small model or small-step smoke test to verify data format, loss curves, and basic evaluation. The third week introduces DPO data, with a focus on verifying chosen/rejected quality rather than pursuing preference pair count. The fourth week introduces small-scale verifiable tasks to validate verifiers, answer extraction, and failure logs. Only after all four steps are stable does it become worthwhile to scale up data volume and training steps. This approach may seem slow, but it avoids the most common failure mode in post-training projects: training completes, but no one knows where the performance change came from.</p>
+<p>Another lesson from Tülu-3 is that an open recipe does not mean reproducers can ignore evaluation isolation. Publicly available datasets are frequently reused by the community and may already contain benchmark-style questions, answer templates, or common question types. Therefore, when reusing public SFT or DPO data, teams should establish their own held-out evaluation sets and perform near-duplicate detection on the public data before training. For mathematics and code tasks, both the problem statement and the answer must be checked simultaneously; checking only the prompt while ignoring the answer can still leak reference solutions into training. This detail determines whether the reproduction results are trustworthy.</p>
+<hr />
+<h2 id="456-case-study-b-interpreting-llama-3s-multi-round-rlhf-iteration">45.6 Case Study B: Interpreting Llama-3's Multi-Round RLHF Iteration<a class="headerlink" href="#456-case-study-b-interpreting-llama-3s-multi-round-rlhf-iteration" title="Permanent link">&para;</a></h2>
+<p>Llama-3 (Grattafiori et al. 2024) represents a high-investment industrial approach to post-training. Unlike Tülu-3, which emphasizes the reproducibility of a public recipe, the Llama-3 report emphasizes multi-round RLHF iteration. The key is not any individual dataset, but the engineering workflow connecting preference collection, reward model updates, rejection sampling, and failure sample re-integration.</p>
+<p><strong>Why emphasize multi-round iteration and RM retraining?</strong>
+After the initial SFT, applying RLHF with the initial RM causes the model policy to rapidly shift toward the high-scoring regions of the RM. However, the RM itself has out-of-distribution (OOD) blind spots. As model capability improves, the responses it generates gradually diverge from the sample distribution the initial RM was trained on. Without updating the RM, the model may learn to exploit reward model vulnerabilities (Reward Hacking). Therefore, in the Llama-3 approach, each iteration uses the current model to generate new responses for hard prompts, submits these to human annotation, and incorporates the new data into the RM training set for retraining. The specific scale of newly added data per round should be cited from the report; any unconfirmable figures should be marked as <code>[I]</code> or stated as "undisclosed."</p>
+<p><strong>The bridging role of Rejection Sampling Fine-Tuning (RSFT):</strong>
+In engineering, Llama-3 uses RSFT as a bridge between RLHF and SFT. In each round, the system samples multiple outputs for the same prompt and then uses the latest RM or preference selection mechanism to filter and extract higher-quality responses as new pseudo-label data. This data flows back into the next round of SFT or post-training, helping to improve the baseline output distribution. Candidate counts, sampling strategies, and retention ratios should not be stated as definitive numbers in the final text if they lack a direct source.</p>
+<p><strong>Data re-integration mechanism:</strong>
+The value of multi-round iteration lies in the continuous absorption of boundary data. Failure samples and boundary samples identified in each round of red-blue adversarial testing or evaluation are systematically captured. High-scoring samples can be re-integrated to reinforce positive strategies, while failure samples can be constructed as rejected samples for DPO or RM training sets, forming a continuous online optimization loop. This contrasts with Tülu-3's open reproducible recipe: the former demonstrates an industrial system's capacity for continuous iteration, while the latter provides a publicly reviewable methodological asset more readily accessible to external teams.</p>
+<p>This re-integration is still, in essence, reconstructing preference signals or reward signals; it is not simply continuing to expand the SFT instruction pool. It should be managed separately from the sample-generation tasks in Section 45.3, so that "creating samples" and "creating signals" are not conflated.</p>
+<p>Table 45-4 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 45-4: Case Study B: Interpreting Llama-3's Multi-Round RLHF Iteration</em></p>
+<table>
+<thead>
+<tr>
+<th>Iteration Step</th>
+<th>Data Input</th>
+<th>Processing Action</th>
+<th>Data Output</th>
+<th>Annotation Convention</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Post-SFT initial sampling</td>
+<td>Hard prompts, production failure cases</td>
+<td>Multi-candidate generation</td>
+<td>Candidate responses</td>
+<td>Mark as <code>[I]</code> when sampling scale lacks a source</td>
+</tr>
+<tr>
+<td>Preference collection</td>
+<td>Multiple candidate responses</td>
+<td>Human annotation or RM-assisted filtering</td>
+<td>Chosen/rejected or ranked data</td>
+<td>Annotation scale requires report verification</td>
+</tr>
+<tr>
+<td>RM update</td>
+<td>New preference data, historical preference data</td>
+<td>Retrain or incrementally update RM</td>
+<td>New RM checkpoint</td>
+<td>Describe only the mechanism; do not fill in speculated parameters</td>
+</tr>
+<tr>
+<td>Rejection sampling fine-tuning</td>
+<td>Multiple candidates + RM scores</td>
+<td>Select high-quality responses</td>
+<td>Pseudo-label SFT data</td>
+<td>Candidate count requires source support</td>
+</tr>
+<tr>
+<td>Failure sample re-integration</td>
+<td>Red team, evaluation, production logs</td>
+<td>Classification, deduplication, risk annotation</td>
+<td>Hard cases / rejected pool</td>
+<td>Must specify privacy and contamination boundaries</td>
+</tr>
+</tbody>
+</table>
+<p>From a data engineering perspective, the most instructive aspect of the Llama-3 approach is "redefining the data distribution with each post-training round." After the first round of SFT, model failure cases typically cluster around basic instruction-following and safety boundaries; after several rounds of preference optimization, failure cases gradually shift to harder problems such as long-context consistency, multi-constraint tasks, factual details, tool invocation, and nuanced safety boundaries. If a team continues to train subsequent models using the first-round data distribution, they will encounter diminishing returns despite increasing investment. The core of multi-round iteration is not repetitive training, but ensuring that the data distribution moves together with the model's evolving capabilities.</p>
+<p>This also explains why rejection sampling fine-tuning is important in industrial systems. RSFT is not simply "let the RM pick the best answer"—it searches within the current model's candidate space for high-quality trajectories, consolidating behaviors the model can occasionally produce into more consistent behaviors. It is closer to the current model's capability boundary than manually writing SFT samples from scratch, and more controllable in terms of output format and training stability than pure RL. However, the risks of RSFT are also clear: if the RM exhibits length bias, format bias, or safety over-bias, rejection sampling will amplify these biases. Therefore, RSFT must be paired with an RM audit set and manual spot-checking, rather than unconditionally treating the highest-scoring samples as ground truth.</p>
+<p>For small and medium-sized teams that cannot fully replicate the annotation investment of Llama-3, the engineering rhythm can still be reproduced in a simplified form. A streamlined version might look like this: first, establish basic behavior with 10,000–20,000 high-quality SFT samples; then perform multi-candidate sampling on 1,000–3,000 hard prompts; use a lightweight RM, rule-based verifiers, or a small human review team to filter high-quality responses; compile the filtered results into RSFT data; after training, add the newly identified failure samples to the hard prompt pool for the next round. This scale is far smaller than an industrial system, but already has the closed-loop form of "model generation → review and filtering → data re-integration → retraining."</p>
+<p>The privacy and compliance boundaries also warrant emphasis. Production failure samples do not automatically qualify as trainable data. User inputs may contain personal information, trade secrets, medical or financial sensitive content, or may originate from authorization contexts that prohibit use for training. Therefore, real-world multi-round RLHF or RSFT systems must first pass through desensitization, purpose authorization checks, data classification, and audit trails. Without these controls, so-called "online continuous optimization" can easily become a compliance risk vector. This point is consistent with the earlier discussions in this book on privacy compliance and DataOps.</p>
+<hr />
+<h2 id="457-reward-hacking-data-contamination-and-process-reward-data">45.7 Reward Hacking, Data Contamination, and Process Reward Data<a class="headerlink" href="#457-reward-hacking-data-contamination-and-process-reward-data" title="Permanent link">&para;</a></h2>
+<p>During the post-training phase, data engineering faces several systemic risks. Without upstream controls, even substantial compute and annotation investment can yield negative returns. This section discusses three categories of easily overlooked risks.</p>
+<h3 id="4571-data-side-manifestations-of-reward-hacking">45.7.1 Data-Side Manifestations of Reward Hacking<a class="headerlink" href="#4571-data-side-manifestations-of-reward-hacking" title="Permanent link">&para;</a></h3>
+<p>Reward Hacking is one of the most common and most underestimated risks in preference alignment. When a model's optimization objective is entirely controlled by an imperfect RM, it finds the most expedient path to high scores rather than genuinely solving user problems.
+<strong>Common manifestations:</strong></p>
+<ol>
+<li><strong>Length Bias (Verbosity/Length Bias):</strong> The model discovers that verbose responses tend to receive higher scores, and therefore favors generating lengthy but low-information-density content.</li>
+<li><strong>Sycophancy:</strong> The model learns to cater to the implicit stance of a prompt, or blindly agree with the user's erroneous views to obtain high surface-level preference scores.</li>
+<li><strong>Safety over-generalization:</strong> Excessive refusals in safety alignment. The model may respond to ordinary medical science communication or fictional science fiction scenarios with "I cannot assist with such requests."</li>
+<li><strong>Spurious reasoning:</strong> In reasoning tasks, generating responses that appear structurally complete with "first, second, third" steps, but where the steps bear no logical relationship to each other and are unverifiable.</li>
+</ol>
+<p><strong>Data-side defensive strategies:</strong></p>
+<ul>
+<li>In DPO or RM datasets, deliberately construct "extremely long but useless" responses as rejected samples, paired with "short but to the point" chosen samples.</li>
+<li>Introduce external fact-checking APIs, code unit tests, and mathematical verifiers as hard constraints.</li>
+<li>Retain failing generation trajectories in data logs rather than only final successful responses, so the model can learn to avoid pitfalls.</li>
+<li>Periodically audit the distribution of the Reward Model's training set to prevent preference polarization.</li>
+</ul>
+<h3 id="4572-data-contamination-in-the-post-training-phase">45.7.2 Data Contamination in the Post-Training Phase<a class="headerlink" href="#4572-data-contamination-in-the-post-training-phase" title="Permanent link">&para;</a></h3>
+<p>Ch05 already examined general methods for benchmark contamination detection. Here we focus exclusively on the particularly insidious contamination problems unique to the post-training phase.</p>
+<p>In post-training, contamination means not only repeated problem statements, but also cases where the model indirectly learns benchmark answer patterns through instruction synthesis, preference filtering, or judge feedback. Prior work has explicitly warned that LLMs should not become "evaluation benchmark cheaters" during training and feedback loops (Zhou et al. 2023).</p>
+<ol>
+<li><strong>SFT mixing in evaluation set answers:</strong> Developers inadvertently use test set ground truth directly as model input when constructing synthetic instructions.</li>
+<li><strong>Preference hardening the evaluation style:</strong> During annotation, annotators unconsciously assign high scores to responses that match the format of specific benchmark multiple-choice templates, hardening the evaluation set style into reward preferences.</li>
+<li><strong>Implicit filtering contamination:</strong> During rejection sampling, using the pass rate on external evaluation sets as a filtering signal is equivalent to leaking test set metrics into the model.</li>
+<li><strong>Feedback loop contamination:</strong> In online feedback systems, directly re-integrating user-submitted test set prompts into daily training tasks causes severe data leakage.</li>
+</ol>
+<p>Table 45-5 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 45-5: Data Contamination in the Post-Training Phase</em></p>
+<table>
+<thead>
+<tr>
+<th>Contamination Type</th>
+<th>Occurrence Location</th>
+<th>Typical Symptoms</th>
+<th>Inspection Method</th>
+<th>Remediation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SFT contamination</td>
+<td>Instruction synthesis, data mixing</td>
+<td>Model exhibits unusual familiarity with benchmark questions</td>
+<td>n-gram / embedding near-duplicate detection</td>
+<td>Remove contaminated samples, rebuild split</td>
+</tr>
+<tr>
+<td>Preference contamination</td>
+<td>RM / DPO data</td>
+<td>Model prefers benchmark-template-style expressions</td>
+<td>Deduplicate both prompt and answer simultaneously</td>
+<td>Downweight or isolate related preference pairs</td>
+</tr>
+<tr>
+<td>Rejection sampling contamination</td>
+<td>Multi-candidate filtering</td>
+<td>Evaluation scores used to filter training samples</td>
+<td>Inspect filtering signal sources</td>
+<td>Prohibit evaluation sets from participating in training filtering</td>
+</tr>
+<tr>
+<td>Online feedback contamination</td>
+<td>User log re-integration</td>
+<td>Test prompts enter training logs</td>
+<td>Log source tagging and blacklist filtering</td>
+<td>Establish a benchmark quarantine</td>
+</tr>
+</tbody>
+</table>
+<p>The challenge of data contamination is that it is rarely a single-point error, but rather the result of multiple compounding steps. For example, a publicly available math problem set is first used to construct SFT data; the model generates candidate responses based on this data; the RM then learns preferences based on the benchmark style of these candidates; and finally, the rejection sampling stage uses the pass rate on the same problem set as a filtering criterion. On the surface, each step appears to be normal data processing; in aggregate, the evaluation set has participated in training decisions multiple times. Post-training contamination is therefore more insidious than pretraining contamination, because it contaminates not only text content but also preference directions and filtering strategies.</p>
+<p>An effective approach for governing such issues is to establish a benchmark quarantine. All formal evaluation sets, red-team acceptance sets, holdout sets, and critical production A/B samples must enter an isolation list. Before data enters SFT, DPO, RM, RSFT, or RLVR, it must be checked for near-duplicates against the isolation list on both the prompt side and the answer side. For code and math tasks, structural checks are also required: code tasks should check function names, test cases, comments, and reference solutions; math tasks should check problem statement numbers, variable relationships, and final answers. String-level deduplication alone is typically insufficient.</p>
+<p>Another commonly overlooked issue is "review model contamination." Many teams use a strong model as LLM-as-a-Judge and then use the judge's outputs to construct preference data. If the judge has previously encountered certain benchmarks or training preferences, its scoring may carry those preferences into the new model. The solution is not to prohibit the use of judges entirely, but to record the judge's version, prompt, scoring rationale, and known biases, and to periodically calibrate against a human audit set. For critical data, it is best to use multiple review sources—rule-based verifiers, an LLM judge, and human spot-checks—working together, to avoid having a single review model dominate the entire preference distribution.</p>
+<h3 id="4573-process-reward-data-and-the-ch46-interface">45.7.3 Process Reward Data and the Ch46 Interface<a class="headerlink" href="#4573-process-reward-data-and-the-ch46-interface" title="Permanent link">&para;</a></h3>
+<p>To address the problem of a correct final result but an unreliable reasoning process, industry has proposed the Process Reward Model (PRM). This chapter does not elaborate on the full implementation of PRM, but notes its data value: <strong>reasoning models require not only rewards at the final answer dimension, but also fine-grained data management of intermediate reasoning steps, verifier states, and full rejection sampling trajectories</strong>. This naturally leads to the topic of the next chapter: how to construct an intermediate-state data flywheel for reasoning.</p>
+<p>Representative work on process supervision shows that step-by-step verification can decompose "whether the answer is correct" into finer-grained training signals, improving error localization and data filtering in mathematical reasoning (Lightman et al. 2024).</p>
+<p>The core unit of process reward data is not a complete response, but a step. A usable process reward sample must at minimum preserve the problem, the complete trajectory, step segmentation, a local judgment for each step, the final answer, the final verification result, and the error type. If only the entire chain-of-thought is stored, a subsequent PRM cannot learn at which step the reasoning begins to deviate. For math tasks, annotations can mark "algebraic transformation error," "omitted condition," or "final numerical error"; for code tasks, annotations can mark "correct algorithmic approach but boundary condition error," "insufficient computational complexity," or "unit test not covered." These fine-grained labels will give the Ch46 reasoning data flywheel more stable training signals.</p>
+<p>Process reward data also requires distinguishing between "correct process but wrong result" and "correct result but wrong process." The former may indicate an error in the final computation step or format extraction; the latter may indicate that the model obtained the answer through guessing or pattern memorization. If the training system only checks the final answer, the second type of sample will be erroneously rewarded, and the model will learn inexplicable and potentially non-reproducible reasoning shortcuts. The combined value of PRM, RLVR, and rejection sampling lies precisely in simultaneously preserving both process signals and result signals, so that the model pursues not only answer correctness but also stable reasoning paths.</p>
+<hr />
+<h2 id="458-implementation-risks-costs-and-applicability-boundaries">45.8 Implementation Risks, Costs, and Applicability Boundaries<a class="headerlink" href="#458-implementation-risks-costs-and-applicability-boundaries" title="Permanent link">&para;</a></h2>
+<p>Post-training involves not only technical route selection, but also cost, organizational capability, and risk control. The following summarizes common lessons learned in project implementation:</p>
+<ul>
+<li><strong>Limitations of SFT:</strong> If development stops at SFT without any preference alignment, the model typically only learns a superficially professional response format. Its behavior under adversarial stress tests such as jailbreak attacks may still be unstable.</li>
+<li><strong>The quantity trap:</strong> Pursuing sample count alone in instruction tuning not only increases compute costs, but can also amplify the data's tendency toward templatization and distributional skew.</li>
+<li><strong>Blunting of DPO signals:</strong> When constructing DPO data, if the quality difference between chosen and rejected responses is too weak (or both are of poor quality), the contrastive loss signal in DPO becomes blunted and may even damage the model's existing linguistic capabilities.</li>
+<li><strong>Narrow RM coverage:</strong> If the reward model's training set covers too narrow a range of prompt types, the model's behavior in production will be strongly driven by unknown reward model vulnerabilities, producing absurd outputs when faced with complex user inputs. Length-related bias deserves a separate audit, because both RLHF data and RM scores may mistake "longer" for "better" (Singhal et al. 2024).</li>
+<li><strong>Prerequisites for using Magpie:</strong> Seed-free self-generation methods such as Magpie should not be used directly. Since they amplify the base model's inherent distribution, they require accompanying pipelines for diversity deduplication, difficulty filtering, factuality verification, and safety cleaning.</li>
+<li><strong>RLVR boundaries:</strong> Rule-based RLVR is suitable for verifiable tasks such as mathematical derivation and code compilation, but is not appropriate for open-ended chat, literary creation, or emotional support tasks that lack standard answers.</li>
+<li><strong>Reset cost of context migration:</strong> When migrating post-training recipes validated on open-source models to domain-specific contexts such as healthcare or finance, the original preference data should not be reused directly. Safety boundary alignment must be redone according to domain requirements, and rigorous evaluation set isolation mechanisms must be established.</li>
+</ul>
+<p><strong>Engineering costs that must not be overlooked:</strong>
+Advancing a full-chain post-training effort requires teams to reserve budget across several cost categories. First is the <strong>human preference annotation cost</strong>: building a high-consistency RM training set typically requires an annotation team with domain expertise. Second is the <strong>synthetic data inference cost</strong>: whether using Evol-Instruct or multi-path sampling, both consume substantial GPU time. Once the alignment stage begins, <strong>multi-candidate sampling costs</strong> and <strong>Reward Model / Verifier maintenance and retraining costs</strong> continue to accumulate. Finally, the <strong>data audit and contamination detection cost</strong> that runs throughout is an essential investment for ensuring the final model's trustworthiness.</p>
+<p>Table 45-6 summarizes the corresponding comparison and engineering considerations.</p>
+<p><em>Table 45-6: Implementation Risks, Costs, and Applicability Boundaries</em></p>
+<table>
+<thead>
+<tr>
+<th>Cost Item</th>
+<th>Primary Source</th>
+<th>Easily Underestimated Component</th>
+<th>Downgrade Strategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Human preference annotation</td>
+<td>Chosen/rejected pairs, rankings, attribute scoring</td>
+<td>Annotation consistency training and review</td>
+<td>Start with a small high-consistency set</td>
+</tr>
+<tr>
+<td>Synthetic data inference</td>
+<td>Self-Instruct, Evol-Instruct, Magpie</td>
+<td>Multi-round filtering reduces effective sample rate</td>
+<td>Reduce candidate count; prioritize core task coverage</td>
+</tr>
+<tr>
+<td>Multi-candidate sampling</td>
+<td>RSFT, RM selection, GRPO grouping</td>
+<td>Token cost scales linearly with candidate count</td>
+<td>Increase sampling for hard prompts; reduce for ordinary prompts</td>
+</tr>
+<tr>
+<td>RM / verifier maintenance</td>
+<td>RM retraining, rule fixes, unit test expansion</td>
+<td>Rule loopholes can reverse-contaminate training</td>
+<td>Establish verifier versioning and regression tests</td>
+</tr>
+<tr>
+<td>Contamination detection</td>
+<td>Benchmark quarantine, near-duplicate detection</td>
+<td>Answer-side contamination is more insidious than prompt-side</td>
+<td>Bidirectional deduplication on both prompt and answer</td>
+</tr>
+</tbody>
+</table>
+<p>In practice, cost control can be designed as stage-gated thresholds. The first stage allows only SFT, with the goal of validating the data schema, training scripts, and baseline evaluation—without pursuing final model performance. The second stage introduces a small-scale preference set, with the goal of validating whether DPO or RM can change clearly defined behaviors, such as reducing verbosity or repairing refusal boundaries. The third stage introduces multi-candidate sampling and RSFT, with the goal of validating whether the model can stabilize occasionally high-quality responses. Only the fourth stage considers RLVR or PRM, because by then the team has accumulated sufficient verifiers, error type annotations, and evaluation sets. Phased investment is far better at controlling risk than deploying full RLHF from the outset.</p>
+<p>Cost optimization should account not only for GPU hours, but also for effective sample rate. If a synthetic pipeline generates 1 million samples but only 50,000 remain after format, quality, safety, contamination, and manual review checks, the true cost should be calculated based on those 50,000 samples. Similarly, if rejection sampling generates 32 candidates per problem but retains only 1, the training data appears sparse, but the inference cost has already been spent on the 31 discarded candidates. Post-training project reports should therefore simultaneously record the original generation volume, the post-filtering retained volume, the manual review pass rate, the training consumption volume, and the final evaluation gain.</p>
+<p>Applicability boundaries must also be clearly stated. General chat assistants can rely more heavily on preference data and human review; mathematics, code, and structured tasks are better suited to incorporating verifiers; domain-specific assistants must strengthen domain expert review and compliance auditing. Open-ended tasks without standard answers should not be forcibly fitted into RLVR; highly sensitive medical and financial tasks should not rely solely on LLM-as-a-Judge. The goal of post-training data engineering is not to fit all tasks into a single paradigm, but to select the appropriate supervision signal for each task type.</p>
+<hr />
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>This chapter, through a systematic deconstruction of the core data recipes in the post-training phase, reveals several fundamental patterns in modern large model development:</p>
+<ol>
+<li>The core of post-training data engineering has never been the meticulous crafting of individual samples, but the establishment of a tightly coordinated three-stage system comprising SFT, preference optimization, and online feedback loops.</li>
+<li>The primary reference value of open-source large model recipes lies not in directly copying their data files, but in studying the data shape distributions, stage ordering, filtering mechanisms, and feedback loop logic that they disclose.</li>
+<li>Through a layer-by-layer analysis of SFT, DPO, RLHF, and RLVR, we find that this conventional paradigm actually constitutes a solid transitional bridge toward next-generation RL reasoning paradigms such as the architecture to be discussed in Ch46.</li>
+</ol>
+<p><strong>Connecting Forward:</strong> When the reward signals upon which a system depends advance from subjective "human preference scoring" to objective, rule-based or programmatically verifiable signals, the post-training system enters the domain of the reasoning data flywheel. In this flywheel, cold-start SFT provides basic behavior, multi-path sampling generates candidate trajectories, rule-based rewards provide verification signals, rejection sampling extracts high-quality trajectories, and these flow back to form second-round SFT data. The data engineering implementation of this flywheel will be elaborated in detail in Ch46.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Wang Y, Kordi Y, Mishra S, Liu A, Smith N A, Khashabi D, Hajishirzi H (2023) Self-Instruct: Aligning Language Models with Self-Generated Instructions. Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics, pp 13484–13508. https://doi.org/10.18653/v1/2023.acl-long.754.</p>
+<p>Ouyang L, Wu J, Jiang X, Almeida D, Wainwright C, Mishkin P, Zhang C, Agarwal S, Slama K, Ray A, Schulman J, Hilton J, Kelton F, Miller L, Simens M, Askell A, Welinder P, Christiano P F, Leike J, Lowe R (2022) Training Language Models to Follow Instructions with Human Feedback. Advances in Neural Information Processing Systems, 35, 27730–27744. arXiv:2203.02155.</p>
+<p>Rafailov R, Sharma A, Mitchell E, Manning C D, Ermon S, Finn C (2023) Direct Preference Optimization: Your Language Model Is Secretly a Reward Model. Advances in Neural Information Processing Systems, 36, 53728–53741. arXiv:2305.18290.</p>
+<p>Ethayarajh K, Xu W, Muennighoff N, Jurafsky D, Kiela D (2024) Model Alignment as Prospect Theoretic Optimization. Proceedings of the 41st International Conference on Machine Learning, pp 12634–12651.</p>
+<p>Gheshlaghi Azar M, Guo Z D, Piot B, Munos R, Rowland M, Valko M, Calandriello D (2024) A General Theoretical Paradigm to Understand Learning from Human Preferences. Proceedings of the 27th International Conference on Artificial Intelligence and Statistics, pp 4447–4455.</p>
+<p>Grattafiori A, Dubey A, Jauhri A, Pandey A, Kadian A, Al-Dahle A, Letman A, Mathur A, Schelten A, Vaughan A, others (2024) The Llama 3 Herd of Models. arXiv preprint arXiv:2407.21783.</p>
+<p>Lambert N, Morrison J, Pyatkin V, Huang S, Ivison H, Brahman F, Miranda L J V, Liu A, Dziri N, Lyu X, Gu Y, Malik S, Graf V, Hwang J D, Yang J, Le Bras R, Tafjord O, Wilhelm C, Soldaini L, Smith N A, Wang Y, Dasigi P, Hajishirzi H (2025) Tülu 3: Pushing Frontiers in Open Language Model Post-Training. Second Conference on Language Modeling. arXiv preprint arXiv:2411.15124.</p>
+<p>Yang A, Li A, Yang B, Zhang B, Hui B, Zheng B, Yu B, Gao C, Huang C, Lv C, others (2025) Qwen3 Technical Report. arXiv preprint arXiv:2505.09388.</p>
+<p>Wang Z, Dong Y, Delalleau O, Zeng J, Shen G, Egert D, Zhang J J, Sreedhar M N, Kuchaiev O (2024) HelpSteer 2: Open-Source Dataset for Training Top-Performing Reward Models. Advances in Neural Information Processing Systems, 37, 1474–1501. https://doi.org/10.52202/079017-0047.</p>
+<p>Xu C, Sun Q, Zheng K, Geng X, Zhao P, Feng J, Tao C, Lin Q, Jiang D (2024) WizardLM: Empowering Large Pre-Trained Language Models to Follow Complex Instructions. International Conference on Learning Representations. arXiv:2304.12244.</p>
+<p>Xu Z, Jiang F, Niu L, Deng Y, Poovendran R, Choi Y, Lin B Y (2025) Magpie: Alignment Data Synthesis from Scratch by Prompting Aligned LLMs with Nothing. International Conference on Learning Representations.</p>
+<p>Shao Z, Wang P, Zhu Q, Xu R, Song J, Bi X, Zhang H, Zhang M, Li Y, Wu Y, Guo D (2024) DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models. arXiv preprint arXiv:2402.03300.</p>
+<p>Liu A, Feng B, Xue B, Wang B, Wu B, Lu C, Zhao C, Deng C, Zhang C, Ruan C, others (2024a) DeepSeek-V3 Technical Report. arXiv preprint arXiv:2412.19437.</p>
+<p>Liu C Y, Zeng L, Liu J, Yan R, He J, Wang C, Yan S, Liu Y, Zhou Y (2024b) Skywork-Reward: Bag of Tricks for Reward Modeling in LLMs. arXiv preprint arXiv:2410.18451.</p>
+<p>Singhal P, Goyal T, Xu J, Durrett G (2024) A Long Way to Go: Investigating Length Correlations in RLHF. First Conference on Language Modeling.</p>
+<p>Zhou K, Zhu Y, Chen Z, Chen W, Zhao W X, Chen X, Lin Y, Wen J-R, Han J (2023) Don't Make Your LLM an Evaluation Benchmark Cheater. arXiv preprint arXiv:2311.01964.</p>
+<p>Zheng L, Chiang W-L, Sheng Y, Zhuang S, Wu Z, Zhuang Y, Lin Z, Li Z, Li D, Xing E, Zhang H, Gonzalez J, Stoica I (2023) Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena. Advances in Neural Information Processing Systems, 36, 46595-46623. arXiv:2306.05685.</p>
+<p>Lightman H, Kosaraju V, Burda Y, Edwards H, Baker B, Lee T, Leike J, Schulman J, Sutskever I, Cobbe K (2024) Let's Verify Step by Step. International Conference on Learning Representations. arXiv:2305.20050.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ch44_pretrain_recipes/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch46_rl_reasoning_data/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 46: Reasoning Data Flywheels: R1 and QwQ">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>

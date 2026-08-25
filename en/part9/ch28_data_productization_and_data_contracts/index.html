@@ -1,0 +1,4075 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="大模型数据工程：架构、算法及项目实战">
+      
+      
+        <meta name="author" content="ustc">
+      
+      
+        <link rel="canonical" href="https://datascale-ai.github.io/data_engineering_book/en/part9/ch28_data_productization_and_data_contracts/">
+      
+      
+        <link rel="prev" href="../ch27_data_catalog_and_metadata_governance/">
+      
+      
+        <link rel="next" href="../ch29_data_valuation_and_reuse/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+    
+    
+      
+        <title>Chapter 28: Data Productization and Data Contracts - Data Engineering for Large Foundation Models: A Handbook</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.8c3ca2c6.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+   <link href="../../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }
+    .gscrollbar-fixer { padding-right: 15px; }
+    .gdesc-inner { font-size: 0.75rem; }
+    body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+    body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+    body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}</style> <script src="../../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chapter-28-data-productization-and-data-contracts" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-header__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Data Engineering for Large Foundation Models: A Handbook
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chapter 28: Data Productization and Data Contracts
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="white" data-md-color-accent="red"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="red"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../part9/ch28_data_productization_and_data_contracts/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../../ja/part9/ch28_data_productization_and_data_contracts/" hreflang="ja" class="md-select__link">
+              日本語
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="Data Engineering for Large Foundation Models: A Handbook" class="md-nav__button md-logo" aria-label="Data Engineering for Large Foundation Models: A Handbook" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Data Engineering for Large Foundation Models: A Handbook
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/datascale-ai/data_engineering_book/tree/main" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.6.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Data Engineering for Large Foundation Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../abbreviations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Abbreviations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Author Information
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part1/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part I: Overview and Infrastructure
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Part I: Overview and Infrastructure
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch01_data_change/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 1: Data Revolution for Large Language Models
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch02_quality_framework/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 2: LLM Data Lifecycle and Quality Assessment Framework
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part1/ch03_data_stack/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 3: AI-Native Data Stack and Cost Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part2/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part II: Text Pre-training Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Part II: Text Pre-training Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch04_data_sources/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 4: Data Sources, Acquisition, and Copyright
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch05_cleaning_dedup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 5: Cleaning, Deduplication, and Decontamination
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch06_tokenization_loading/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 6: Tokenization, Serialization, and Efficient Data Loading
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part2/ch07_data_operations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 7: Data Evaluation, Quality Feedback Loops, and Operational Iteration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part3/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part III: Multimodal Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Part III: Multimodal Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch08_multimodal_image/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 8: Image-Text Pair Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch09_recaptioning_ocr/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 9: Recaptioning and Document Understanding
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch10_video_audio/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 10: Video and Audio Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part3/ch11_cross_modal_alignment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 11: Cross-Modal Alignment and Fusion
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part4/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IV: Instruction Fine-tuning and Preference Data
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Part IV: Instruction Fine-tuning and Preference Data
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch12_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 12: Supervised Fine-Tuning Data Design and Instruction Systems
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch13_preference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 13: Preference Data and Reward Signals
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part4/ch14_qa/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 14: Annotation Platforms and Quality Assurance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part5/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part V: Synthetic Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Part V: Synthetic Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch15_data_synthesis/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 15: The Synthetic Data Factory: From Seeds to Validation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch16_distillation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 16: Knowledge Distillation and Model Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part5/ch17_quality/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 17: Synthetic Data Quality Control and Model Collapse
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part6/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VI: Reasoning and Agent Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_9" id="__nav_9_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Part VI: Reasoning and Agent Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch18_cot/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 18: Chain-of-Thought and Reasoning Data Engineering
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch19_tool/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 19: Tool-Use and Function Calling Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part6/ch20_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 20: Agent Memory and Multi-Turn Interaction Data
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part7/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VII: Application-Level Data Engineering
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_10" id="__nav_10_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Part VII: Application-Level Data Engineering
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch21_rag_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 21: The RAG Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch22_multimodal_rag_visual_retrieval/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 22: Multimodal RAG and Visual Retrieval
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part7/ch23_online_feedback_knowledge_update/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 23: Online Feedback Loops and Knowledge Updates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part8/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part VIII: Data Operations and Platform Development
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_11" id="__nav_11_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            Part VIII: Data Operations and Platform Development
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch24_dataops_flywheel_team/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 24: The DataOps Flywheel and Team Organization
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch25_data_versioning_experiment_tracking/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 25: Data Version Management and Experiment Tracking
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part8/ch26_data_platform_observability/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 26: Data Platform Observability
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_12" checked>
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part IX: Data Assets, Data Products, and Data Contracts
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_12" id="__nav_12_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_12_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_12">
+            <span class="md-nav__icon md-icon"></span>
+            Part IX: Data Assets, Data Products, and Data Contracts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch27_data_catalog_and_metadata_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 27: Data Asset Catalog and Metadata Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 28: Data Productization and Data Contracts
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Guide
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#281-from-datasets-to-data-products" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.1 From Datasets to Data Products
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="28.1 From Datasets to Data Products">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2811-limits-of-dataset-thinking" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.1.1 Limits of Dataset Thinking
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2812-data-products-deliver-stable-capability-not-one-time-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.1.2 Data Products Deliver Stable Capability, Not One-Time Files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2813-data-product-canvas-inputs-outputs-sla-owner-and-change-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.1.3 Data Product Canvas: Inputs, Outputs, SLA, Owner, and Change Policy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2814-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.1.4 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#282-fields-and-boundaries-of-a-data-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.2 Fields and Boundaries of a Data Contract
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="28.2 Fields and Boundaries of a Data Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2821-what-is-a-data-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.2.1 What Is a Data Contract?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2822-five-core-contract-clauses" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.2.2 Five Core Contract Clauses
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2823-data-contract-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.2.3 Data Contract Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2824-execution-and-responsibility-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.2.4 Execution and Responsibility Boundaries
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2825-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.2.5 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#283-change-compatibility-and-consumer-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.3 Change Compatibility and Consumer Governance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="28.3 Change Compatibility and Consumer Governance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2831-change-is-the-main-risk-of-data-products" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.3.1 Change Is the Main Risk of Data Products
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2832-change-classification-and-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.3.2 Change Classification and Compatibility
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2833-advance-notice-and-canary-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.3.3 Advance Notice and Canary Validation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2834-consumer-governance-and-impact-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.3.4 Consumer Governance and Impact Analysis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2835-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.3.5 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#284-data-contract-failure-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.4 Data Contract Failure Review
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="28.4 Data Contract Failure Review">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2841-incident-background" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.4.1 Incident Background
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2842-timeline-how-an-upstream-field-change-propagated" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.4.2 Timeline: How an Upstream Field Change Propagated
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2843-consumer-impact-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.4.3 Consumer Impact Analysis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2844-how-contracts-and-rollback-contain-the-damage" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.4.4 How Contracts and Rollback Contain the Damage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2845-lessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.4.5 Lessons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2846-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.4.6 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch29_data_valuation_and_reuse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 29: Data Valuation and Reuse Mechanisms
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ch30_internal_data_market_and_sharing_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 30: Internal Data Markets and Sharing Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_13" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part10/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part X: Intelligent Data Engineering and Data Engineering Agents
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_13" id="__nav_13_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_13_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_13">
+            <span class="md-nav__icon md-icon"></span>
+            Part X: Intelligent Data Engineering and Data Engineering Agents
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch31_agent_architecture/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 31: Architecture and Task Boundaries for Data Engineering Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch32_auto_collection_parsing_cleaning/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 32: Automated Collection, Parsing, and Cleaning Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch33_labeling_synthesis_evaluation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 33: Labeling, Synthesis, and Evaluation Agents
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch34_dataops_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 34: DataOps Agents and Platform Autonomy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part10/ch35_security_permission_collaboration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 35: Agent Security and Human-AI Collaboration
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_14" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part11/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XI: Privacy Compliance and Data Security
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_14" id="__nav_14_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_14">
+            <span class="md-nav__icon md-icon"></span>
+            Part XI: Privacy Compliance and Data Security
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch36_compliance_framework_and_governance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 36: Data Compliance Frameworks and Governance
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part11/ch37_federated_learning_and_privacy_preserving_technologies/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 37: Federated Learning and Privacy-Preserving Technologies
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_15" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part12/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_15" id="__nav_15_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_15">
+            <span class="md-nav__icon md-icon"></span>
+            Part XII: Specialized Datasets and Multimodal Data Engineering Practice
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch38_text_corpora_transparent_ledger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 38: Text Corpus Engineering: Web and Ledgers
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch39_image_text_candidate_pool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 39: Image-Text Engineering: Filtering and DataComp
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch40_visual_document_table_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 40: Document Table Engineering: Sparse Tables
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch41_visual_reasoning_tool_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 41: Visual Reasoning Engineering: Charts and Tools
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch42_speech_audio_interaction_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 42: Speech Data Engineering: Control and Safety
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part12/ch43_reasoning_trace_compression_data_engineering/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 43: Reasoning Trace Engineering: Compression and Masks
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_16" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part13/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_16" id="__nav_16_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_16">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIII: Open-source LLM Data Engineering Recipes and Paradigms
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch44_pretrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 44: LLM Pre-Training Recipes: DeepSeek and Qwen
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch45_posttrain_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 45: LLM Post-Training Recipes: SFT and Preferences
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch46_rl_reasoning_data/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 46: Reasoning Data Flywheels: R1 and QwQ
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch47_vlm_data_recipes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 47: Vision-Language Recipes: Qwen-VL and InternVL
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part13/ch48_t2i_t2v/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Chapter 48: Generative Data Pipelines: FLUX and Wan
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_17" >
+        
+          
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../part14/" class="md-nav__link ">
+              
+  
+  <span class="md-ellipsis">
+    Part XIV: Practical Projects
+  </span>
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_17" id="__nav_17_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_17">
+            <span class="md-nav__icon md-icon"></span>
+            Part XIV: Practical Projects
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p01_mini_c4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 1: Building a Distributed Mini-C4 Data Pipeline with Ray
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p02_legal_sft/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 2: Vertical-Domain Supervised Fine-Tuning (Legal)
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p03_llava_instruct/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 3: LLaVA Multimodal Instruction Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p04_synthetic_textbook/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 4: Synthetic Mathematics and Code Textbook Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p05_mm_rag/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 5: Multimodal RAG Enterprise Financial Report Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p06_prm/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 6: Chain-of-Thought Dataset Construction and Process Reward Model Training
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p07_agent_tooluse/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 7: Agent Tool-Use Data Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p08_dataops/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 8: Enterprise DataOps Platform
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p09_privacy_pipeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 9: Privacy-Preserving Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p10_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 10: End-to-End LLM Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p11_mini_deepseek/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 11: Mini-DeepSeek Pre-Training Reproduction
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p12_r1_reasoning_flywheel/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 12: A Pedagogical R1 Reasoning Data Flywheel
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p13_multimodal_instruction_factory/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 13: Qwen-VL Multimodal Instruction Factory
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p14_video_generation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 14: Video Generation Data Pipeline
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../part14/p15_dataagent_semantic_nl2sql_agent/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Project 15: DataAgent Semantic Business Intelligence Assistant
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_18" >
+        
+          
+          <label class="md-nav__link" for="__nav_18" id="__nav_18_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Appendices
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_18_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_18">
+            <span class="md-nav__icon md-icon"></span>
+            Appendices
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_a_tools_and_frameworks_quick_reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix A: Tools and Frameworks Quick Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_b_compliance_and_release_checklist/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix B: Compliance and Release Checklist
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_c_cost_estimation_and_resource_templates/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix C: Cost Estimation and Resource Templates
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_d_paper_to_implementation_guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix D: From Paper to Implementation Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_e_common_bug_debugging_manual/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix E: Common Data-Engineering Bug Debugging Manual
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_f_terminology_and_chinese_english_mapping/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix F: Terminology and Chinese-English Mapping
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_g_datagallery_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix G: DataGallery Open-source Ecosystem and Reproduction Notes
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../appendix_h_mindspore_note/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Appendix H: MindSpore Technical Appendix and Acknowledgments
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../afterword/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Closing Volume: Afterword and User Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstract" class="md-nav__link">
+    <span class="md-ellipsis">
+      Abstract
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keywords" class="md-nav__link">
+    <span class="md-ellipsis">
+      Keywords
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learning-objectives" class="md-nav__link">
+    <span class="md-ellipsis">
+      Learning Objectives
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Guide
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#281-from-datasets-to-data-products" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.1 From Datasets to Data Products
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="28.1 From Datasets to Data Products">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2811-limits-of-dataset-thinking" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.1.1 Limits of Dataset Thinking
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2812-data-products-deliver-stable-capability-not-one-time-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.1.2 Data Products Deliver Stable Capability, Not One-Time Files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2813-data-product-canvas-inputs-outputs-sla-owner-and-change-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.1.3 Data Product Canvas: Inputs, Outputs, SLA, Owner, and Change Policy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2814-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.1.4 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#282-fields-and-boundaries-of-a-data-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.2 Fields and Boundaries of a Data Contract
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="28.2 Fields and Boundaries of a Data Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2821-what-is-a-data-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.2.1 What Is a Data Contract?
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2822-five-core-contract-clauses" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.2.2 Five Core Contract Clauses
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2823-data-contract-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.2.3 Data Contract Template
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2824-execution-and-responsibility-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.2.4 Execution and Responsibility Boundaries
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2825-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.2.5 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#283-change-compatibility-and-consumer-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.3 Change Compatibility and Consumer Governance
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="28.3 Change Compatibility and Consumer Governance">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2831-change-is-the-main-risk-of-data-products" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.3.1 Change Is the Main Risk of Data Products
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2832-change-classification-and-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.3.2 Change Classification and Compatibility
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2833-advance-notice-and-canary-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.3.3 Advance Notice and Canary Validation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2834-consumer-governance-and-impact-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.3.4 Consumer Governance and Impact Analysis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2835-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.3.5 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#284-data-contract-failure-review" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.4 Data Contract Failure Review
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="28.4 Data Contract Failure Review">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#2841-incident-background" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.4.1 Incident Background
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2842-timeline-how-an-upstream-field-change-propagated" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.4.2 Timeline: How an Upstream Field Change Propagated
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2843-consumer-impact-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.4.3 Consumer Impact Analysis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2844-how-contracts-and-rollback-contain-the-damage" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.4.4 How Contracts and Rollback Contain the Damage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2845-lessons" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.4.5 Lessons
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2846-section-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      28.4.6 Section Summary
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chapter-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chapter Summary
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      References
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="chapter-28-data-productization-and-data-contracts">Chapter 28: Data Productization and Data Contracts<a class="headerlink" href="#chapter-28-data-productization-and-data-contracts" title="Permanent link">&para;</a></h1>
+<div class="chapter-authors">Zhongyi Liu; Ye Yu; Wenzhuo Du</div>
+
+<h2 id="abstract">Abstract<a class="headerlink" href="#abstract" title="Permanent link">&para;</a></h2>
+<p>A dataset registered in a catalog may still have field semantics changed silently upstream or stop updating, and those changes can be amplified along the data chain into model degradation or online incidents. This chapter explains how to upgrade data from static datasets into data products that consumers can rely on over time, and how to use data contracts to constrain the rights and obligations of producers and consumers. It first draws on data mesh thinking and introduces a data product canvas covering inputs, outputs, service-level agreement (SLA), owner, and change policy. It then decomposes contracts into five machine-readable, verifiable, versioned clauses: schema, quality, freshness, privacy, and compatibility, while defining bidirectional responsibility boundaries. Next, it discusses change-compatibility categories and consumer governance, showing how field changes, distribution drift, index rebuilds, and evaluation-set refreshes can evolve through advance notice and canary validation. Finally, it reviews an incident in which splitting the <code>interaction_type</code> enum caused both training and retrieval degradation, showing how schema validation, distribution monitoring, and versioned rollback can catch silent failures before release.</p>
+<h2 id="keywords">Keywords<a class="headerlink" href="#keywords" title="Permanent link">&para;</a></h2>
+<p>Data productization and data contracts; data assets; metadata governance; data products; data contracts</p>
+<h2 id="learning-objectives">Learning Objectives<a class="headerlink" href="#learning-objectives" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Distinguish dataset thinking from data product thinking, and use a data product canvas to describe inputs, outputs, SLA, owner, and change policy.</li>
+<li>Design machine-readable, verifiable, versioned contract clauses for schema, quality, freshness, privacy, and compatibility.</li>
+<li>Define bidirectional responsibility boundaries between data producers and consumers, and classify the compatibility of field changes, distribution drift, index rebuilds, and evaluation-set refreshes.</li>
+<li>Design advance notice and canary validation mechanisms to govern consumer dependencies in a controlled and rollbackable way.</li>
+<li>Explain how silent schema failures can be amplified into both training and retrieval degradation, and propose preventive controls.</li>
+</ul>
+<h2 id="chapter-guide">Chapter Guide<a class="headerlink" href="#chapter-guide" title="Permanent link">&para;</a></h2>
+<p>Chapter 27 explained how data catalogs and metadata governance turn organizational data from "visible but unreachable" into discoverable, understandable, and trustworthy assets. But discoverable and understandable data is not automatically dependable. A cataloged dataset may still have field meanings changed silently upstream, or may stop updating after one ingestion failure. When downstream training pipelines, RAG knowledge bases, or evaluation systems depend on it, small upstream changes can be amplified into model degradation, online incidents, or compliance risks (Sambasivan et al. 2021).</p>
+<p>This chapter addresses that problem: how to upgrade data from "static datasets" into <strong>data products</strong> that consumers can rely on over time, and how to use explicit <strong>data contracts</strong> to define the rights and obligations of producers and consumers. Unlike traditional data delivery, data productization is not about handing data over once. It treats data like a software product that provides a service outward: the structure, quality, freshness, privacy boundaries, and change behavior of the data must be maintained continuously, and downstream consumers must be notified and protected in a controlled, predictable way when change occurs.</p>
+<p>This shift is especially important in large-model data engineering. Training solidifies data characteristics into parameters. RAG systems continuously consume changing knowledge sources. Evaluation systems depend on stable data distributions so that results remain comparable. In these settings, unnoticed upstream changes can mean failed training, wrong online answers, or distorted evaluation conclusions.</p>
+<p>The chapter proceeds in four parts. First, it explains the shift from datasets to data products and introduces product elements such as inputs, outputs, SLA, owner, and change policy. Second, it breaks down five core data-contract clauses: schema, quality, freshness, privacy, and compatibility. Third, it discusses change compatibility and consumer governance, explaining how field changes, sample-distribution changes, index rebuilds, and evaluation-set refreshes can be announced in advance and validated through canaries. Finally, it reviews a realistic incident in which an upstream field change caused both training and retrieval quality to decline, showing how contracts and rollback should have contained the damage.</p>
+<h2 id="281-from-datasets-to-data-products">28.1 From Datasets to Data Products<a class="headerlink" href="#281-from-datasets-to-data-products" title="Permanent link">&para;</a></h2>
+<h3 id="2811-limits-of-dataset-thinking">28.1.1 Limits of Dataset Thinking<a class="headerlink" href="#2811-limits-of-dataset-thinking" title="Permanent link">&para;</a></h3>
+<p>In many organizations, early data delivery follows a simple dataset mindset: when a team needs data, the producer exports a file or opens a table, and delivery is considered complete. This can work for one-off analysis and prototypes. It breaks down when multiple teams and applications depend on the same data for a long time.</p>
+<p>The first problem is that dataset thinking treats data as a static deliverable rather than a continuing service. A CSV export is disconnected from upstream as soon as it is delivered; downstream consumers cannot see schema evolution, definition changes, or quality fluctuations. The second problem is unclear responsibility. When data fails, consumers do not know whom to contact, and producers often do not feel responsible for downstream use. The third problem is uncontrolled change. Upstream producers may change fields, adjust meanings, or stop updates at any time, and the impact on downstream systems is completely unpredictable. That freedom is convenient for producers and disastrous for consumers: any depended-on dataset can quietly become invalid at any moment.</p>
+<p>The root issue is that dataset thinking asks whether data has been delivered, not whether it can be used reliably over time. In production ML systems, unmanaged data dependencies accumulate as technical debt and raise maintenance cost until failures appear (Sculley et al. 2015). Solving this requires upgrading delivery from a file to a product.</p>
+<h3 id="2812-data-products-deliver-stable-capability-not-one-time-files">28.1.2 Data Products Deliver Stable Capability, Not One-Time Files<a class="headerlink" href="#2812-data-products-deliver-stable-capability-not-one-time-files" title="Permanent link">&para;</a></h3>
+<p>The concept of a <strong>data product</strong> has become prominent with the rise of data mesh architectures (Dehghani 2022; Machado, Costa and Santos 2022). Its core idea is that data should be managed like a user-facing software product: it has clear consumers, promised service quality, a responsible owner, and predictable evolution.</p>
+<p>Treating data as a product means delivering not a snapshot at one moment, but a <strong>stable capability</strong> that consumers can rely on over time: the structure will not change without reason, quality will not degrade silently, and updates will not stop unexpectedly. This stability is not free. It requires producers to take continuing responsibility for downstream use, define service-level commitments, and follow established communication and canary processes when change occurs.</p>
+<p>The core of a data product is therefore not only the amount or richness of data. It is the system of <strong>predictability</strong> around the data. This matches a broader lesson from ML engineering: reliability in real environments often depends less on the model alone and more on the discipline around data (Paleyes, Urma and Lawrence 2022; Lwakatare et al. 2020).</p>
+<h3 id="2813-data-product-canvas-inputs-outputs-sla-owner-and-change-policy">28.1.3 Data Product Canvas: Inputs, Outputs, SLA, Owner, and Change Policy<a class="headerlink" href="#2813-data-product-canvas-inputs-outputs-sla-owner-and-change-policy" title="Permanent link">&para;</a></h3>
+<p>To build a real data product, the team must answer a structured set of questions: what upstream inputs does it consume, what outputs does it provide, what service quality does it promise, who owns it, and how will it evolve? These questions can be summarized in a <strong>Data Product Canvas</strong>, a shared template for defining and reviewing data products.</p>
+<p>As shown in Figure 28-1, the canvas organizes the key elements of a data product into one view, so that producers, consumers, and governance teams can discuss product boundaries and commitments in the same context.</p>
+<p><a class="glightbox" href="../../../images/part9/Liu-Chap28-Fig01-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Data product canvas" src="../../../images/part9/Liu-Chap28-Fig01-EN.svg" /></a></p>
+<p><em>Figure 28-1: Data product canvas</em></p>
+<p>Several elements are central:</p>
+<ul>
+<li><strong>Inputs</strong> describe the upstream data sources and assets this data product depends on. They make upstream lineage explicit, so that when an upstream source changes, the team can immediately assess whether this product is affected.</li>
+<li><strong>Outputs</strong> define the external data interface, including schema, granularity, field semantics, and access methods. Once published, the output interface becomes a consumer-facing commitment and cannot be changed arbitrarily.</li>
+<li><strong>SLA</strong> distinguishes a data product from an ordinary dataset. Borrowing from service-level engineering (Beyer et al. 2016), a data-product SLA usually includes update frequency and delay limits, such as "updated before 08:00 every day"; availability, such as "99.5% annual availability"; quality floors, such as "completeness not lower than 0.98"; and incident response time. SLA turns the vague promise of "best effort" into measurable, accountable indicators.</li>
+<li><strong>Owner</strong> defines who is ultimately accountable for the quality, stability, and evolution of the data product. A data product without a clear owner will eventually decay because nobody maintains it. In addition to the owner, a steward is usually responsible for day-to-day operations.</li>
+<li><strong>Change Policy</strong> defines how the data product evolves: which changes are allowed, how much advance notice is required, whether canarying is required, and how consumers are informed. Change policy is the institutional guarantee for product predictability and is the core topic of Section 28.3.</li>
+</ul>
+<p>Table 28-1 summarizes the fundamental differences between datasets and data products along these dimensions.</p>
+<p><em>Table 28-1: Dataset versus data product</em></p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Dataset</th>
+<th>Data Product</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Delivery form</td>
+<td>One-time file or snapshot</td>
+<td>Stable service that can be relied on</td>
+</tr>
+<tr>
+<td>Responsible party</td>
+<td>Often unclear</td>
+<td>Explicit owner and steward</td>
+</tr>
+<tr>
+<td>Service commitment</td>
+<td>None</td>
+<td>SLA for freshness, quality, and availability</td>
+</tr>
+<tr>
+<td>Change management</td>
+<td>Can change freely</td>
+<td>Controlled by policy and contracts</td>
+</tr>
+<tr>
+<td>Consumer relationship</td>
+<td>Loose and invisible</td>
+<td>Registered, traceable, notifiable</td>
+</tr>
+<tr>
+<td>Evolution</td>
+<td>Unpredictable</td>
+<td>Versioned, canaried, backward-compatible</td>
+</tr>
+</tbody>
+</table>
+<h3 id="2814-section-summary">28.1.4 Section Summary<a class="headerlink" href="#2814-section-summary" title="Permanent link">&para;</a></h3>
+<p>Moving from datasets to data products is a shift from static files to stable capability. By defining inputs, outputs, SLA, owner, and change policy, a data product anchors predictability in process rather than memory. But a canvas only describes what a product should promise. To make promises executable, checkable, and accountable, a more formal machine-readable agreement is needed: the data contract.</p>
+<h2 id="282-fields-and-boundaries-of-a-data-contract">28.2 Fields and Boundaries of a Data Contract<a class="headerlink" href="#282-fields-and-boundaries-of-a-data-contract" title="Permanent link">&para;</a></h2>
+<h3 id="2821-what-is-a-data-contract">28.2.1 What Is a Data Contract?<a class="headerlink" href="#2821-what-is-a-data-contract" title="Permanent link">&para;</a></h3>
+<p>If a data product canvas answers what a product promises, a <strong>data contract</strong> answers how those promises are precisely defined, machine-validated, and jointly followed. A data contract is a formal, versioned, executable agreement between data producers and consumers. It turns expectations that used to live in conversation and personal memory into structured, verifiable rules.</p>
+<p>A data contract is fundamentally different from a traditional schema definition. A schema describes structure: fields and types. A data contract describes a broader set of commitments: structure, quality, freshness, privacy, and compatibility. In this sense, a data contract can be understood as an executable counterpart to dataset documentation practices such as Datasheets for Datasets (Gebru et al. 2021): documentation records composition, uses, and limits; contracts further turn those commitments into engineering artifacts that can be checked automatically by pipelines and evolve with versions.</p>
+<p>Contracts are also bidirectional. They constrain what producers must provide and clarify what consumers can expect. They also state what consumers must not depend on. This makes responsibility clear when data fails: did the producer violate the contract, or did the consumer rely on behavior that was never promised?</p>
+<p>The idea is highly consistent with practice in ML data validation. In production ML systems, automatic validation of schema and statistical properties for incoming data has been shown to be an effective way to intercept low-quality data and prevent failures from propagating downstream (Breck et al. 2019). A data contract moves this validation earlier and institutionalizes it as a formal agreement between producer and consumer.</p>
+<h3 id="2822-five-core-contract-clauses">28.2.2 Five Core Contract Clauses<a class="headerlink" href="#2822-five-core-contract-clauses" title="Permanent link">&para;</a></h3>
+<p>A complete data contract usually contains five core clause groups, each covering a different side of data reliability. Table 28-2 summarizes the questions and examples for these five contract types.</p>
+<p><em>Table 28-2: Focus and examples of five data-contract types</em></p>
+<table>
+<thead>
+<tr>
+<th>Contract Type</th>
+<th>Question Answered</th>
+<th>Example Clauses</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Schema</td>
+<td>What does the data look like?</td>
+<td>Field names, types, nullability, enum values, primary keys</td>
+</tr>
+<tr>
+<td>Quality</td>
+<td>How trustworthy is it?</td>
+<td>Completeness &gt;= 0.98, validity &gt;= 0.97, deduplication rate, anomaly limits</td>
+</tr>
+<tr>
+<td>Freshness</td>
+<td>How current is it?</td>
+<td>Updated before 08:00 daily, latency &lt;= 2 hours, alert on missed update</td>
+</tr>
+<tr>
+<td>Privacy</td>
+<td>Who can use it, and how?</td>
+<td>PII fields, anonymization requirements, access scope, compliance tags</td>
+</tr>
+<tr>
+<td>Compatibility</td>
+<td>How can it evolve without breaking downstream users?</td>
+<td>Backward compatibility, notice period, deprecation window</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Schema contracts</strong> define field names, data types, nullability, enum values, primary-key constraints, and similar structural rules. The key point is to make value-range constraints explicit. For example, if an <code>interaction_type</code> field is declared as the closed set <code>{click, like, collect, share}</code>, then any new or split enum value introduced upstream immediately violates the contract and can be detected. This point becomes central in the incident review in Section 28.4. Schema contracts must also define field semantics, not just types, because a field with the same type but a changed meaning is one of the most dangerous failure modes (Rahm and Bernstein 2001).</p>
+<p><strong>Quality contracts</strong> define quality floors through measurable indicators: completeness, validity, duplication, outlier rates, and distribution stability (Wang and Strong 1996; Redman 1998). They should be tied to consumer needs; one dataset may need different quality thresholds for aggregate analysis and model training (Strong, Lee and Wang 1997).</p>
+<p><strong>Freshness contracts</strong> define update frequency, latency limits, and missed-update alerts. In RAG systems, freshness directly affects answer correctness: an outdated knowledge source can make the model answer from stale information. Freshness contracts turn the vague expectation of "how new the data should be" into a monitorable hard indicator.</p>
+<p><strong>Privacy contracts</strong> define privacy and compliance boundaries: which fields are PII, whether they have been anonymized, which roles and purposes may access the data, and which regulations apply. They turn the permission and compliance requirements discussed in the previous chapter into part of the public commitment of a data product, preventing sensitive data from being leaked accidentally or used beyond authorization during delivery.</p>
+<p><strong>Compatibility contracts</strong> define how the product evolves without harming downstream consumers: which changes are considered backward-compatible, how much notice is required before change, and how long older versions remain available before deprecation. Compatibility ideas borrow from schema evolution in data-intensive systems: backward compatibility means data produced by the new version can still be read correctly by consumers written against the old schema, while forward compatibility means the reverse (Kleppmann 2017). Compatibility contracts connect static commitments with dynamic change and are the core of Section 28.3.</p>
+<h3 id="2823-data-contract-template">28.2.3 Data Contract Template<a class="headerlink" href="#2823-data-contract-template" title="Permanent link">&para;</a></h3>
+<p>Putting the five clause groups together forms a complete data contract. As shown in Figure 28-2, a typical contract template includes metadata such as name, version, and owner; the five clause groups; and effective/change information.</p>
+<p><a class="glightbox" href="../../../images/part9/Liu-Chap28-Fig02-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Data contract template with five clause groups" src="../../../images/part9/Liu-Chap28-Fig02-EN.svg" /></a></p>
+<p><em>Figure 28-2: Data contract template</em></p>
+<p>Listing 28-1 provides a YAML configuration example.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">contract</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">user_interaction_feedback</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2.0.0</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">data-platform-team@company.com</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nt">consumers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">preference_training</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">rag_feedback</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">analytics</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nt">schema</span><span class="p">:</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">user_id</span><span class="p">:</span><span class="w">          </span><span class="l l-Scalar l-Scalar-Plain">string, required, hashed</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">interaction_type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">enum{click,like,collect,share}, required</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">event_time</span><span class="p">:</span><span class="w">       </span><span class="l l-Scalar l-Scalar-Plain">timestamp(UTC, ms), required</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="nt">quality</span><span class="p">:</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span><span class="nt">completeness</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&gt;=0.98&quot;</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">  </span><span class="nt">validity</span><span class="p">:</span><span class="w">     </span><span class="s">&quot;&gt;=0.97&quot;</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span><span class="nt">interaction_type_distribution</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;click</span><span class="nv"> </span><span class="s">ratio</span><span class="nv"> </span><span class="s">0.4-0.6;</span><span class="nv"> </span><span class="s">alert</span><span class="nv"> </span><span class="s">on</span><span class="nv"> </span><span class="s">abrupt</span><span class="nv"> </span><span class="s">drift&quot;</span>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="nt">freshness</span><span class="p">:</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span><span class="nt">update</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;before</span><span class="nv"> </span><span class="s">08:00</span><span class="nv"> </span><span class="s">UTC</span><span class="nv"> </span><span class="s">daily&quot;</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">  </span><span class="nt">max_delay</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2h&quot;</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">  </span><span class="nt">on_miss</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alert</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="nt">privacy</span><span class="p">:</span>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">  </span><span class="nt">pii_fields</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">user_id</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">  </span><span class="nt">handling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hashed</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">  </span><span class="nt">access</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">internal</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="nt">compatibility</span><span class="p">:</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">  </span><span class="nt">policy</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">backward_compatible</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">  </span><span class="nt">notice_period</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;14</span><span class="nv"> </span><span class="s">days&quot;</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="w">  </span><span class="nt">deprecation</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;old</span><span class="nv"> </span><span class="s">version</span><span class="nv"> </span><span class="s">retained</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">one</span><span class="nv"> </span><span class="s">version</span><span class="nv"> </span><span class="s">cycle&quot;</span>
+</code></pre></div>
+<p><em>Listing 28-1: YAML configuration example</em></p>
+<p>The contract is <strong>machine-readable, checkable, and versioned</strong>. It can live in version control, evolve with the data product, be checked by CI before release, and trigger alerts or blocks when violated. It is no longer a passive document; it is an engineering artifact embedded in the production process.</p>
+<h3 id="2824-execution-and-responsibility-boundaries">28.2.4 Execution and Responsibility Boundaries<a class="headerlink" href="#2824-execution-and-responsibility-boundaries" title="Permanent link">&para;</a></h3>
+<p>Contracts matter only if executed. Execution happens at multiple points:</p>
+<ul>
+<li><strong>Before release</strong>, CI checks schema and quality clauses and blocks nonconforming data.</li>
+<li><strong>At runtime</strong>, monitoring measures quality and freshness and alerts on violations.</li>
+<li><strong>During change</strong>, compatibility checks classify the change and trigger notification or canary processes.</li>
+</ul>
+<p>Contracts also define responsibility. Within the contract, producer failures are producer responsibility. If consumers depend on behavior outside the contract, such as assuming a nullable field is always non-null or an undocumented field will never disappear, they own that risk. Many production data incidents come from hidden consumer dependencies outside explicit contracts (Polyzotis et al. 2018; Shankar et al. 2022).</p>
+<h3 id="2825-section-summary">28.2.5 Section Summary<a class="headerlink" href="#2825-section-summary" title="Permanent link">&para;</a></h3>
+<p>Data contracts turn product promises from vague verbal agreements into precise, machine-readable, checkable formal specifications. Schema, quality, freshness, privacy, and compatibility cover the structural, quality, freshness, privacy, and evolution aspects of reliability. The bidirectional nature of contracts clarifies the rights and obligations of producers and consumers and draws clear responsibility boundaries. Static contracts alone are not enough, however, because data products inevitably change. How to keep change from harming downstream consumers is the core problem addressed in the next section.</p>
+<h2 id="283-change-compatibility-and-consumer-governance">28.3 Change Compatibility and Consumer Governance<a class="headerlink" href="#283-change-compatibility-and-consumer-governance" title="Permanent link">&para;</a></h2>
+<h3 id="2831-change-is-the-main-risk-of-data-products">28.3.1 Change Is the Main Risk of Data Products<a class="headerlink" href="#2831-change-is-the-main-risk-of-data-products" title="Permanent link">&para;</a></h3>
+<p>Data products evolve as business systems, upstream sources, structures, definitions, and distributions change. Change itself is healthy. The risk is <strong>ungoverned change</strong>: a producer changes data that consumers depend on without their knowledge.</p>
+<p>The danger comes from a fundamental property of data products: downstream consumers are often invisible, numerous, and independent. A local field adjustment can affect a training pipeline, a RAG index, and several reports. Unlike software API breaks, data changes often do not fail loudly. The pipeline continues running, but the result becomes wrong. Silent failure is the core reason data incidents are hard to detect early (Sambasivan et al. 2021).</p>
+<p>Change governance turns change from a risk source that may cause silent failure into a controlled, predictable, canaryable routine operation. It requires three things: <strong>classification</strong>, so that safe and dangerous changes are distinguished; <strong>advance notice and canary validation</strong>, so that risky changes are exposed before they affect everyone; and <strong>consumer visibility</strong>, so that impact analysis is possible.</p>
+<h3 id="2832-change-classification-and-compatibility">28.3.2 Change Classification and Compatibility<a class="headerlink" href="#2832-change-classification-and-compatibility" title="Permanent link">&para;</a></h3>
+<p>Not all changes are equally dangerous. Based on downstream impact, data changes can be divided into three categories, as shown in Table 28-3.</p>
+<p><em>Table 28-3: Field change types and compatibility</em></p>
+<table>
+<thead>
+<tr>
+<th>Change Type</th>
+<th>Example</th>
+<th>Compatibility</th>
+<th>Handling</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Backward-compatible</td>
+<td>Add nullable fields, broaden value range, improve documentation</td>
+<td>Safe</td>
+<td>Notify; no canary required</td>
+</tr>
+<tr>
+<td>Potentially breaking</td>
+<td>Add enum values, adjust field semantics, distribution drift</td>
+<td>Risky</td>
+<td>Advance notice plus canary validation</td>
+</tr>
+<tr>
+<td>Breaking</td>
+<td>Delete/rename fields, change type or unit, tighten constraints</td>
+<td>Dangerous</td>
+<td>Version upgrade with old/new coexistence</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Backward-compatible changes</strong> do not break existing consumers, such as adding a nullable field or broadening the allowed value range of a field. By definition, consumers written against the old schema can still read the new data correctly (Kleppmann 2017). These changes are relatively safe and usually require only notification, not canarying.</p>
+<p><strong>Breaking changes</strong> inevitably break existing consumers, such as deleting a field, renaming a field, changing a data type or unit, or tightening value constraints. They must never overwrite the existing product in place. Instead, they must go through a version-upgrade process: publish a new version, let old and new versions coexist during a transition window, and give consumers enough time to migrate.</p>
+<p>The most dangerous category is the middle ground: <strong>potentially breaking changes</strong>. They may look compatible at the schema level because no type changes and no fields disappear, but semantics or distributions have already changed. Adding an enum value, slightly changing a field's computation definition, or shifting the data distribution because an upstream sampling policy changed all belong to this category. These changes do not trigger type errors, but they can quietly invalidate downstream filtering logic, feature computation, or retrieval weights. Recognizing and handling this category well is the part of change governance that most tests engineering discipline.</p>
+<p>To judge quickly and consistently how a change should be handled in engineering practice, teams can use a <strong>change compatibility decision tree</strong>, as shown in Figure 28-3.</p>
+<p><a class="glightbox" href="../../../images/part9/Liu-Chap28-Fig03-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Change compatibility decision tree" src="../../../images/part9/Liu-Chap28-Fig03-EN.svg" /></a></p>
+<p><em>Figure 28-3: Change compatibility decision tree</em></p>
+<h3 id="2833-advance-notice-and-canary-validation">28.3.3 Advance Notice and Canary Validation<a class="headerlink" href="#2833-advance-notice-and-canary-validation" title="Permanent link">&para;</a></h3>
+<p>For potentially breaking and breaking changes, classification alone is not enough. A mechanism for <strong>advance notice and canary validation</strong> is also needed so that risk is exposed before downstream consumers are truly affected. Consider the four typical change categories emphasized in this section.</p>
+<ol>
+<li><strong>Field changes.</strong> When schema changes, the system should automatically classify compatibility from the compatibility contract and notify all registered consumers through agreed channels within the notice period, such as 14 days. For breaking changes, the new field behavior should first be released as a new version that coexists with the old version. Only after consumers migrate and confirm one by one should the old version enter the deprecation cycle. This dual-version coexistence is essentially trading storage and operational cost for a safe migration window.</li>
+<li><strong>Sample-distribution changes.</strong> Distribution drift is the most hidden kind of change because it changes statistical properties rather than structure. For example, an upstream anti-scraping policy adjustment may sharply reduce the proportion of samples from a certain user group. Schema validation cannot find this; only distribution monitoring in the quality contract can. When the value distribution of a key field deviates from the baseline beyond a threshold, the system should alert (Breck et al. 2019; Schelter et al. 2018). For training data, distribution drift can directly change the priors learned by the model. For evaluation data, it can make evaluation results no longer comparable.</li>
+<li><strong>Index rebuilds.</strong> In RAG and similar scenarios, knowledge-source updates often require rebuilding vector indexes. Index rebuilding is a special kind of change: it may introduce a new chunking strategy or a new embedding model and thereby change retrieval behavior. It should be canaried. First serve part of the traffic with the new index in a shadow environment, compare retrieval-quality metrics such as recall and citation accuracy between old and new indexes, and switch fully only after confirming no degradation, rather than overwriting the online index directly.</li>
+<li><strong>Evaluation-set refreshes.</strong> Evaluation sets are also data products that require governance. Refreshing an evaluation set changes the evaluation baseline, so model scores before and after the refresh are no longer directly comparable. Evaluation-set refreshes should therefore be versioned, and differences between old and new evaluation sets should be recorded at the time of refresh. Regression tests for critical models should run on both old and new evaluation sets for a period, ensuring that score changes come from the model itself rather than from the evaluation set. In addition, evaluation-set leakage into training data must be strictly prevented; once leakage occurs, evaluation results become systematically distorted.</li>
+</ol>
+<p>The shared principle of canary validation is to validate impact in a controlled scope before a change takes full effect. This mirrors canary release in software engineering: validate first in a small, reversible scope and keep risk within a tolerable range.</p>
+<h3 id="2834-consumer-governance-and-impact-analysis">28.3.4 Consumer Governance and Impact Analysis<a class="headerlink" href="#2834-consumer-governance-and-impact-analysis" title="Permanent link">&para;</a></h3>
+<p>Advance notice and impact analysis require knowing who consumes the data product. Mature platforms require consumers to register before use, declaring scenario, depended fields, and SLA requirements. The consumer registry plus lineage graph forms the basis of <strong>consumer impact analysis</strong>.</p>
+<p>When a change is proposed, impact analysis asks: which consumers are affected, how severe is the impact, and which consumers must confirm the migration? Using the consumer registry and lineage graph, the system can automatically list affected consumers and classify severity based on each consumer's depended fields, scenario, and SLA requirements. This turns blind pre-change guessing into precise, evidence-based evaluation, which is exactly the key capability demonstrated in the incident review in Section 28.4.</p>
+<h3 id="2835-section-summary">28.3.5 Section Summary<a class="headerlink" href="#2835-section-summary" title="Permanent link">&para;</a></h3>
+<p>Change is an unavoidable reality of data products, and ungoverned change is their main risk. By classifying changes as backward-compatible, potentially breaking, or breaking, and using a decision tree to guide handling, teams can assess risk consistently. For risky changes, advance notice and canary validation expose risk before it reaches downstream systems. The prerequisite for all of this is making consumer relationships registered and traceable, so precise impact analysis becomes possible. The next section uses a concrete incident review to show what happens when these mechanisms are missing and how contracts and rollback contain damage.</p>
+<h2 id="284-data-contract-failure-review">28.4 Data Contract Failure Review<a class="headerlink" href="#284-data-contract-failure-review" title="Permanent link">&para;</a></h2>
+<h3 id="2841-incident-background">28.4.1 Incident Background<a class="headerlink" href="#2841-incident-background" title="Permanent link">&para;</a></h3>
+<p>The best way to understand the value of data contracts is to review what happens without them. This section describes a representative composite incident, combining typical features from multiple real cases. It shows how one upstream field change propagates along the data chain and eventually causes both training and retrieval quality to decline, and how contracts and rollback mechanisms should have contained the damage.</p>
+<p>The incident involves a data product named <code>user_interaction_feedback</code>, a user-interaction feedback dataset consumed by two downstream systems: a preference-model training pipeline (<code>preference_training</code>) and a relevance-feedback module for a RAG system (<code>rag_feedback</code>).</p>
+<p>The key field is <code>interaction_type</code>, originally an enum with values <code>{click, like, collect, share}</code>. <code>click</code> is the largest and most important positive signal.</p>
+<h3 id="2842-timeline-how-an-upstream-field-change-propagated">28.4.2 Timeline: How an Upstream Field Change Propagated<a class="headerlink" href="#2842-timeline-how-an-upstream-field-change-propagated" title="Permanent link">&para;</a></h3>
+<p><strong>Stage 1: an upstream "harmless" change.</strong> The upstream logging team splits <code>click</code> into <code>click_card</code> and <code>click_detail</code> for finer behavior analysis. They see it as an enhancement: no field is deleted and the schema field list is unchanged. The change goes live without notification.</p>
+<p><strong>Stage 2: silent downstream failure.</strong> Both downstream systems filter on <code>interaction_type == "click"</code> to identify positive signals. After the change, the share of <code>click</code> drops near zero because it has been split into two new values. The pipelines do not error. Fields and types still exist. Training and RAG feedback jobs run normally, but positive samples have nearly disappeared.</p>
+<p><strong>Stage 3: degradation is noticed.</strong> A new preference model goes online and recommendation quality falls. At the same time, RAG answer relevance gets worse. Both teams first debug their own models and algorithms, trying hyperparameters, model rollback, and retrieval strategy changes. Days are spent without improvement because the shared data dependency is the cause (Sculley et al. 2015; Shankar et al. 2022).</p>
+<p><strong>Stage 4: root cause located.</strong> Only after an engineer compared historical data distributions did the team find the cliff-like drop in <code>click</code> and finally trace it to the upstream "harmless" enum split. Nearly a week passed from rollout to root-cause identification, during which online recommendation and QA quality continued to be harmed.</p>
+<h3 id="2843-consumer-impact-analysis">28.4.3 Consumer Impact Analysis<a class="headerlink" href="#2843-consumer-impact-analysis" title="Permanent link">&para;</a></h3>
+<p>This incident clearly exposes the cost of silent failure. If a consumer registry and impact-analysis capability had existed, the upstream team would have immediately received a list of affected consumers when proposing the change. Table 28-4 shows a retrospective consumer impact analysis.</p>
+<p><em>Table 28-4: Consumer impact analysis for splitting the interaction_type enum</em></p>
+<table>
+<thead>
+<tr>
+<th>Consumer</th>
+<th>Depended Field</th>
+<th>Use</th>
+<th>Impact</th>
+<th>Consequence</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>preference_training</td>
+<td>interaction_type</td>
+<td>Filter <code>== click</code> as positive samples</td>
+<td>Severe</td>
+<td>Positive samples nearly disappear; model quality drops</td>
+<td>Block change; migrate first</td>
+</tr>
+<tr>
+<td>rag_feedback</td>
+<td>interaction_type</td>
+<td>Weight chunks by click</td>
+<td>Severe</td>
+<td>Feedback weight fails; relevance drops</td>
+<td>Block change; migrate first</td>
+</tr>
+<tr>
+<td>analytics_daily</td>
+<td>interaction_type</td>
+<td>GROUP BY statistics by type</td>
+<td>Medium</td>
+<td>Reporting definition breaks</td>
+<td>Notify and update definition</td>
+</tr>
+</tbody>
+</table>
+<p>This table turns the impact of one change from vague concern into a row-level checklist: who is affected, how, how badly, and what to do. Even consumers such as <code>analytics_daily</code>, which are affected but less severely, are included, demonstrating the completeness of impact analysis. As shown in Figure 28-4, the essence of this analysis is to map one upstream change along lineage to all downstream consumers and grade them by impact severity.</p>
+<p><a class="glightbox" href="../../../images/part9/Liu-Chap28-Fig04-EN.svg" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="Consumer impact analysis" src="../../../images/part9/Liu-Chap28-Fig04-EN.svg" /></a></p>
+<p><em>Figure 28-4: Consumer impact analysis</em></p>
+<h3 id="2844-how-contracts-and-rollback-contain-the-damage">28.4.4 How Contracts and Rollback Contain the Damage<a class="headerlink" href="#2844-how-contracts-and-rollback-contain-the-damage" title="Permanent link">&para;</a></h3>
+<p>With data contracts, the same change would follow a different path.</p>
+<p><strong>First defense: schema contract interception.</strong> <code>interaction_type</code> is declared in the contract as the closed enum <code>{click, like, collect, share}</code>. When upstream tries to introduce <code>click_card</code> and <code>click_detail</code>, the pre-release CI check immediately detects that the enum values are outside the contract and <strong>blocks the release</strong>. At that point, the change is identified as potentially breaking and must go through advance notice and canary validation rather than directly overwriting the existing product.</p>
+<p><strong>Second defense: quality-contract distribution monitoring.</strong> Even if schema validation were bypassed for some reason, the distribution constraint in the contract, such as "<code>click</code> ratio should be between 0.4 and 0.6," would alert immediately when <code>click</code> dropped sharply (Schelter et al. 2018). This means the problem would be found <strong>on the day of the change, before the data entered training</strong>, rather than several days after the model went online and quality declined.</p>
+<p><strong>Third defense: versioning and rollback.</strong> Because the data product is versioned, downstream consumers can pin to a validated version instead of blindly following the latest data. Once a new version is found to be problematic, consumers can immediately <strong>roll back to the previous stable version</strong> and continue running, compressing time to mitigation from days to minutes. At the same time, a compatibility shim can temporarily map the new enum values <code>click_card</code> and <code>click_detail</code> back to the old value <code>click</code>, allowing downstream systems to transition smoothly without code changes until migration is complete and the finer-grained semantics are officially enabled.</p>
+<p>Together, these defenses turn a change that could have become a multi-day online incident into a routine operation that is blocked before release, canaried, and rollbackable. This is the core value of a data contract: it does not eliminate change; it makes change safe.</p>
+<h3 id="2845-lessons">28.4.5 Lessons<a class="headerlink" href="#2845-lessons" title="Permanent link">&para;</a></h3>
+<p>First, <strong>unchanged schema does not mean unchanged semantics</strong>. The most dangerous changes often look compatible at the schema layer but drift semantically. They do not raise errors; they simply make results quietly wrong. Closed enums, distribution monitoring, and similar constraints are designed to catch these hidden changes.</p>
+<p>Second, <strong>silent failure is more dangerous than explicit errors</strong>. Much of the high cost of data incidents comes from the fact that they are hard to notice in time. Explicitly declaring what data must satisfy as a checkable contract turns potential silent failures into visible, early alerts.</p>
+<p>Third, <strong>versioning is the prerequisite for rollback</strong>. Without versioning, there is no previous stable state to return to, so mitigation has nowhere to start. Data-product versioning and consumer version pinning are the last and most reliable safety net during incidents.</p>
+<p>Fourth, <strong>consumer visibility determines impact-analysis capability</strong>. The upstream team dared to make a "harmless" change because it could not see downstream consumers. Consumer registration and lineage tracking make invisible dependencies explicit and make precise pre-change impact assessment possible.</p>
+<h3 id="2846-section-summary">28.4.6 Section Summary<a class="headerlink" href="#2846-section-summary" title="Permanent link">&para;</a></h3>
+<p>The <code>interaction_type</code> enum-split incident shows how an unmanaged change can propagate silently along the data chain, causing days of hard-to-diagnose damage to both training and retrieval. Under data-contract protection, the same change would be intercepted by schema validation, alerted by distribution monitoring, and covered by versioning and rollback, dissolving the incident before it became visible to users. The value of data contracts is not to prevent change, but to make change transparent, controlled, and reversible for consumers.</p>
+<h2 id="chapter-summary">Chapter Summary<a class="headerlink" href="#chapter-summary" title="Permanent link">&para;</a></h2>
+<p>The shift from datasets to data products is fundamentally a shift from delivering a file to providing a stable capability that can be relied on over time. Data products define inputs, outputs, SLA, owner, and change policy so that predictability is anchored in process rather than personal memory. Data contracts further solidify these commitments into five machine-readable, checkable formal clause groups: schema, quality, freshness, privacy, and compatibility. Through bidirectional agreements, contracts draw responsibility boundaries between producers and consumers.</p>
+<p>Change is unavoidable for data products, and ungoverned change is their main risk. The danger is that data changes often do not report errors; they simply make results wrong. By classifying changes as backward-compatible, potentially breaking, or breaking, and combining that classification with advance notice, canary validation, consumer registration, and impact analysis, teams can turn change from a silent-failure risk source into a controlled, rollbackable routine operation. The incident review in this chapter shows that unchanged schema does not mean unchanged semantics, that versioning is the prerequisite for rollback, and that consumer visibility determines impact-analysis capability. The value of data contracts is not to prevent change, but to make change transparent, controlled, and reversible for consumers.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<p>Beyer B, Jones C, Petoff J, Murphy N R (2016) Site Reliability Engineering: How Google Runs Production Systems. O'Reilly Media, Sebastopol.</p>
+<p>Breck E, Polyzotis N, Roy S, Whang S E, Zinkevich M (2019) Data Validation for Machine Learning. In: Proceedings of the 2nd SysML Conference (MLSys).</p>
+<p>Dehghani Z (2022) Data Mesh: Delivering Data-Driven Value at Scale. O'Reilly Media, Sebastopol.</p>
+<p>Gebru T, Morgenstern J, Vecchione B, Vaughan J W, Wallach H, Daumé III H, Crawford K (2021) Datasheets for Datasets. Communications of the ACM 64(12):86-92. https://doi.org/10.1145/3458723.</p>
+<p>Kleppmann M (2017) Designing Data-Intensive Applications: The Big Ideas Behind Reliable, Scalable, and Maintainable Systems. O'Reilly Media, Sebastopol.</p>
+<p>Lwakatare L E, Raj A, Crnkovic I, Bosch J, Olsson H H (2020) Large-scale machine learning systems in real-world industrial settings: A review of challenges and solutions. Information and Software Technology 127:106368. https://doi.org/10.1016/j.infsof.2020.106368.</p>
+<p>Machado I A, Costa C, Santos M Y (2022) Data Mesh: Concepts and Principles of a Paradigm Shift in Data Architectures. Procedia Computer Science 196:263-271. https://doi.org/10.1016/j.procs.2021.12.013.</p>
+<p>Paleyes A, Urma R-G, Lawrence N D (2022) Challenges in Deploying Machine Learning: A Survey of Case Studies. ACM Computing Surveys 55(6):1-29. https://doi.org/10.1145/3533378.</p>
+<p>Polyzotis N, Roy S, Whang S E, Zinkevich M (2018) Data Lifecycle Challenges in Production Machine Learning: A Survey. ACM SIGMOD Record 47(2):17-28. https://doi.org/10.1145/3299887.3299891.</p>
+<p>Rahm E, Bernstein P A (2001) A survey of approaches to automatic schema matching. The VLDB Journal 10(4):334-350.</p>
+<p>Redman T C (1998) The Impact of Poor Data Quality on the Typical Enterprise. Communications of the ACM 41(2):79-82.</p>
+<p>Sambasivan N, Kapania S, Highfill H, Akrong D, Paritosh P, Aroyo L M (2021) "Everyone wants to do the model work, not the data work": Data Cascades in High-Stakes AI. In: Proceedings of the 2021 CHI Conference on Human Factors in Computing Systems, pp 1-15. https://doi.org/10.1145/3411764.3445518.</p>
+<p>Schelter S, Lange D, Schmidt P, Celikel M, Biessmann F, Grafberger A (2018) Automating Large-Scale Data Quality Verification. Proceedings of the VLDB Endowment 11(12):1781-1794.</p>
+<p>Sculley D, Holt G, Golovin D, Davydov E, Phillips T, Ebner D, Chaudhary V, Young M, Crespo J-F, Dennison D (2015) Hidden Technical Debt in Machine Learning Systems. In: Advances in Neural Information Processing Systems 28, pp 2503-2511.</p>
+<p>Shankar S, Garcia R, Hellerstein J M, Parameswaran A G (2022) Operationalizing Machine Learning: An Interview Study. arXiv preprint arXiv:2209.09125.</p>
+<p>Strong D M, Lee Y W, Wang R Y (1997) Data Quality in Context. Communications of the ACM 40(5):103-110. https://doi.org/10.1145/253769.253804.</p>
+<p>Wang R Y, Strong D M (1996) Beyond Accuracy: What Data Quality Means to Data Consumers. Journal of Management Information Systems 12(4):5-33. https://doi.org/10.1080/07421222.1996.11518099.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../ch27_data_catalog_and_metadata_governance/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Chapter 27: Data Asset Catalog and Metadata Governance">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Chapter 27: Data Asset Catalog and Metadata Governance
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../ch29_data_valuation_and_reuse/" class="md-footer__link md-footer__link--next" aria-label="Next: Chapter 29: Data Valuation and Reuse Mechanisms">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Chapter 29: Data Valuation and Reuse Mechanisms
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.6ce7567c.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.525ec568.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  <script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+document$.subscribe(() => { lightbox.reload() });
+</script></body>
+</html>
