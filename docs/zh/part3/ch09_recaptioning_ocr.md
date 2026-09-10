@@ -1,4 +1,4 @@
-# 第9章 重标注与文档理解
+# 第9章：重标注与文档理解
 
 <div class="chapter-authors">於俊；王柯；王聪</div>
 
@@ -81,8 +81,8 @@
 
 
 ```text
-[System Instruction]: You are a neutral, highly objective visually impaired helper. 
-[Task]: Describe the main objects, actions, and physical background in this image concisely and accurately. 
+[System Instruction]: You are a neutral, highly objective visually impaired helper.
+[Task]: Describe the main objects, actions, and physical background in this image concisely and accurately.
 [Constraint]: Do NOT use any generic filler words like 'This is an image of' or 'I can see'. Do NOT guess the location if no text is shown. Keep the entire response strictly under 50 words. Focus solely on visible facts.
 ```
 
@@ -260,7 +260,7 @@
 
 但现实世界并不只是一幅静态图片或一页电子发票。许多关键场景包含连续时间逻辑、运动轨迹和多波段音频信号。AnyRes 等静态图片策略虽然可以处理高分辨率图像，但面对每秒 30-60 帧、持续数分钟甚至数小时的视频时，视觉 Token、解码 I/O、音频转写和时间对齐成本会迅速增长，并可能触发显存溢出（Out-of-Memory）和数据加载瓶颈。
 
-因此，下一章将从静态图文与文档理解转向长时序数据，讨论视频与音频流的切片、转写、降噪和时间对齐问题：**第10章 视频与音频数据工程**。
+因此，下一章将从静态图文与文档理解转向长时序数据，讨论视频与音频流的切片、转写、降噪和时间对齐问题：**第10章：视频与音频数据工程**。
 
 ## 本章小结
 

@@ -1,4 +1,4 @@
-# 第3章 AI原生数据栈与成本治理
+# 第3章：AI原生数据栈与成本治理
 
 <div class="chapter-authors">於俊；王柯；陈长汶</div>
 

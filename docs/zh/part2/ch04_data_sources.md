@@ -1,4 +1,4 @@
-# 第4章 数据源、采集与版权
+# 第4章：数据源、采集与版权
 
 <div class="chapter-authors">於俊；王柯；陈长汶</div>
 
@@ -159,7 +159,7 @@ class AsyncEthicalCrawler:
         domain = urlparse(url).netloc
         if domain not in self.rp_cache:
             await self.fetch_robots(session, domain)
-        
+
         # 强制合规检查
         if not self.rp_cache[domain].can_fetch(self.user_agent, url):
             print(f"Skipping {url} (disallowed by robots.txt)")
@@ -180,7 +180,7 @@ class AsyncEthicalCrawler:
             async def bounded_fetch(url):
                 async with sem:
                     return await self.fetch_url(session, url)
-            
+
             tasks = [bounded_fetch(url) for url in urls]
             return await asyncio.gather(*tasks)
 ```
@@ -417,7 +417,7 @@ def classify_license(license_text: str) -> dict:
 
 本章从源头质量如何约束模型能力出发，建立了预训练数据源体系的认知框架。章节构建了涵盖八类核心数据源的分层地图，并通过风险矩阵（表4-1）和配比策略矩阵（表4-2）为工程决策提供可操作的量化工具。在采集流水线部分，本章说明了直接使用 WET 的风险，给出了基于 Trafilatura 的高质量 WARC 解析实现，并建立了“每条数据都有出生证明”的元数据存证标准。版权治理部分引入白名单、灰名单、黑名单的三级管理机制，配合许可证自动分类代码，为商业化 LLM 团队提供可落地的合规工程方案。两个案例分别从技术和法律两个维度说明，源头治理是预训练数据工程的第一道质量门禁。
 
-进入下一章，我们将在本章采集到的原始数据基础上，讨论**第5章 清洗、去重与去污染**。源头治理决定可以送入清洗管线的语料上限，而清洗管线决定哪些样本能够最终进入训练集。两章共同构成文本预训练数据工程的质量守门体系。
+进入下一章，我们将在本章采集到的原始数据基础上，讨论**第5章：清洗、去重与去污染**。源头治理决定可以送入清洗管线的语料上限，而清洗管线决定哪些样本能够最终进入训练集。两章共同构成文本预训练数据工程的质量守门体系。
 
 ## 参考文献
 
